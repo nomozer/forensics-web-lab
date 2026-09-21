@@ -97,6 +97,12 @@ graph TD
 | **Remote Metadata Inventory** | `research/evidence/phase-4b.1/tgif-orig-remote-inventory.json`, `tgif-sd2-sp-remote-inventory.json` | `audited-and-verified` |
 | **Small-Data Protocol & Options** | `docs/SMALL_DATA_PROTOCOL.md`, `research/evidence/phase-4b.1/small-data-options.json` | `protocol-established` |
 | **Learning Curve Config & Validator** | `ml/configs/pilot_a_learning_curve.yaml`, `ml/configs/validator.py` (sample size, overflow guard) | `implemented-and-tested` |
+| **Option P Acquisition Plan** | `datasets/acquisition-plans/pilot-a-tgif-option-p.v1.json` | `implemented-and-tested` |
+| **Option P Downloader & Safe Extract** | `ml/datasets/acquire.py` (`safe_extract_tar`, HTTP Range resume, Windows file lock retry/fallback) | `implemented-and-tested` |
+| **Option P Verification & Split Freeze** | `ml/datasets/verify_option_p.py` (Pillow decode audit, pairability matching, split freeze) | `implemented-and-tested` |
+| **Option P Manifest (Local)** | `data/research/tgif/manifests/manifest_pilot_a_option_p.csv` (outside Git) | `generated-and-verified` |
+| **Option P Split Lock Artifact** | `research/evidence/phase-4b.2/split-lock.json` (343 locked test sources, SHA-256 seal) | `frozen-and-sealed` |
+| **Option P Test Suite** | `ml/tests/test_option_p_protocol.py` (11 targeted tests: Tar Slip, resume, drift, split lock, coverage) | `implemented-and-tested` |
 | **Continuity Checker CLI** | `scripts/continuity-check.mjs` | `implemented-and-tested` |
 | **Continuity Checker Tests** | `scripts/__tests__/continuity-check.test.mjs` | `implemented-and-tested` |
 | **Continuity Contract** | `AGENTS.md` (Mục 4: Continuity Contract) | `contract-enforced` |

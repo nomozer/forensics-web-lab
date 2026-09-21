@@ -71,7 +71,26 @@ Mỗi tập dữ liệu được thẩm định trực tiếp từ nguồn chín
 * **Quyền phân phối trọng số**: `unclear`
 * **Quyết định thẩm định**: **`blocked`** (`status: proposed`, `licenseStatus: unverified`, `acquisitionEnabled: false`). Bị khóa cho đến khi thu thập đủ URL bằng chứng bản quyền chính thức.
 
-### 2.5 Synthetic Smoke Fixture
+### 2.5 TGIF & TGIF2 (Text-Guided Inpainting Forgery Dataset)
+* **Tác giả / Công bố**: IDLab-MEDIA (Ghent University - imec, WIFS 2024 / JIS 2026)
+* **Nguồn chính thức**: [GitHub: IDLabMedia/tgif-dataset](https://github.com/IDLabMedia/tgif-dataset)
+* **Kênh lưu trữ**: Nextcloud Share (`cloud.ilabt.imec.be`)
+* **Giấy phép dataset**: `CC BY-SA 4.0` (Attribution-ShareAlike 4.0 International)
+* **Nguồn ảnh gốc**: MS-COCO val2017 (`CC BY 4.0`)
+* **Điều khoản bổ sung bắt buộc**:
+  1. Ghi công tác giả bộ dữ liệu TGIF và MS-COCO.
+  2. Chia sẻ tương tự (Share-Alike): Các sản phẩm phái sinh từ dataset phải duy trì giấy phép tương thích.
+  3. Chỉ sử dụng trong phạm vi nghiên cứu học thuật (`Research Track only`).
+* **Tình trạng trọng số phái sinh và chính sách dự án**:
+  - `source_terms.dataset_derivative_works`: `share_alike_required`
+  - `legal_interpretation.trained_weights_status`: `unclear` (tác động của điều khoản Share-Alike lên trọng số mô hình học sâu chưa được giải quyết dứt điểm trong y văn pháp lý).
+  - `project_policy.production_use`: `prohibited`
+  - `project_policy.research_use`: `allowed_subject_to_terms`
+  - `productionPromotion`: `prohibited-by-project-policy`
+* **Phân loại luồng**: **`research-only`** (`purpose: scientific-benchmark`). Toàn bộ checkpoint huấn luyện từ TGIF bị khóa nghiêm ngặt trong Research Track (`models/research/`), tuyệt đối không đưa vào Product Track hay web bundle.
+* **Hiện trạng Option P (Phase 4B.2)**: Đã tải và xác minh 4 split archives (`orig_validation`, `orig_testing`, `sd2-sp_validation`, `sd2-sp_testing`, tổng 5.88 GB). Lưu tại `data/research/tgif/`. Dữ liệu và archives nằm ngoài Git (quarantine trong `.gitignore`).
+
+### 2.6 Synthetic Smoke Fixture
 * **Nguồn**: Mã nguồn dự án tại `ml/tests/fixtures/smoke_generator.py`
 * **Quyền sở hữu (Ownership)**: `project-generated`
 * **Trạng thái giấy phép**: `pending-project-license-decision`
@@ -88,6 +107,8 @@ Mỗi tập dữ liệu được thẩm định trực tiếp từ nguồn chín
 | Dataset ID | Purpose | Nguồn Chính thức | Code License | Dataset License | Thương mại? | Trọng số phái sinh | Production Promotion | Quyết định Track |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | `genimage` | `scientific-benchmark` | GitHub / Paper | Apache-2.0 | `CC BY-NC-SA 4.0 with terms` | Cấm (`prohibited`) | Chưa rõ (`unclear`) | `prohibited-by-project-policy` | **`research-only`** |
+| `tgif` | `scientific-benchmark` | GitHub / Nextcloud | `unverified` | `CC BY-SA 4.0` | Chưa rõ (`unclear`) | Chưa rõ (`unclear`) | `prohibited-by-project-policy` | **`research-only`** |
+| `tgif2` | `scientific-benchmark` | GitHub / Nextcloud | `unverified` | `CC BY-SA 4.0` | Chưa rõ (`unclear`) | Chưa rõ (`unclear`) | `prohibited-by-project-policy` | **`research-only`** |
 | `realhd` | `scientific-benchmark` | GitHub / Project page | `unverified` | `unverified` | Chưa rõ (`unclear`) | Chưa rõ (`unclear`) | `prohibited-by-project-policy` | **`blocked`** |
 | `sagi-d` | `scientific-benchmark` | GitHub / Kaggle | MIT | `unverified` | Cấm (`prohibited`) | Chưa rõ (`unclear`) | `prohibited-by-project-policy` | **`blocked`** |
 | `raid` | `scientific-benchmark` | GitHub / Project page | Apache-2.0 | `unverified` | Cấm (`prohibited`) | Chưa rõ (`unclear`) | `prohibited-by-project-policy` | **`blocked`** |

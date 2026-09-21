@@ -1,9 +1,9 @@
 # Trạng thái Hiện tại: Forensics Web Lab (Current State)
 
 > **Tài liệu đọc đầu tiên bắt buộc cho mọi phiên làm việc AI mới.**  
-> **Documented through substantive commit**: `e8db154`  
-> **Ending commit Phase 4B.0**: `3be606c`  
-> **Phase hoàn thành gần nhất**: Phase 4B.1 — Small-Data Feasibility and Pairability Audit  
+> **Documented through substantive commit**: `82a5266`  
+> **Ending commit Phase 4B.1**: `82a5266`  
+> **Phase hoàn thành gần nhất**: Phase 4B.2 — Controlled Option-P Acquisition, Pairability Verification and Split Freeze  
 > **Branch**: `feat/production-ai-image-forensics`  
 > **Base main commit**: `460f6d5` (bảo toàn nguyên vẹn, không commit trực tiếp)  
 > **Working tree**: clean  
@@ -59,17 +59,23 @@
 
 ## 5. Hiện trạng Dữ liệu và Mô hình
 
-* **Dữ liệu ngoại vi đã tải**: `42,327,429 bytes` (~40.37 MiB nhận qua mạng từ Phase 4B.0; tổng giải nén 141,559,934 bytes trên 31,238 mask PNG files). **Không tải thêm byte nội dung nào trong Phase 4B.1** (0 bytes content downloaded).
-* **Phạm vi tải**: Duy nhất `tgif-masks` đã tải. Các component `tgif-orig` (7,319,473,337 bytes) và `tgif-sd2-sp` (18,572,494,800 bytes) tiếp tục bị khóa (locked).
-* **Kiểm toán Source ID & Đơn vị Độc lập (Phase 4B.1)**:
-  * Khóa đơn vị thống kê độc lập duy nhất là **`source_id`** (MS-COCO 12 chữ số).
-  * Tổng số `source_id` độc lập toàn bộ dataset: **2,242** (1,558 train, 341 val, 343 test).
-  * Tổng số nhiệm vụ inpainting theo danh mục: **3,124** (2,440 train, 341 val, 343 test).
-  * Nguyên nhân chênh lệch 2,242 vs 3,124: 571 ảnh COCO trong `train` có đa nhãn đối tượng nên có mask trong nhiều danh mục.
-  * **Ranh giới cô lập phân vùng (Group-Isolation)**: Xác minh 0 rò rỉ chéo giữa train, val, test ($s_{\text{train}} \cap s_{\text{val}} = \emptyset$, $s_{\text{train}} \cap s_{\text{test}} = \emptyset$, $s_{\text{val}} \cap s_{\text{test}} = \emptyset$).
-* **Khảo sát Remote Metadata**: 10 requests (41,549 bytes < trần 5 MiB). Xác minh mỗi component upstream gồm 3 split archives độc lập; cho phép tải lẻ từng split mà không cần tải nguyên khối 25.89 GB.
-* **Hiện trạng Ghép cặp (Pairability)**: Ghi nhận `pending-content-acquisition` (cấu trúc archive đối xứng; kiểm chứng nội dung pixel chờ tải ảnh).
-* **Phương án dữ liệu khuyến nghị**: **Option P — Small-Data Thesis Pilot** (tải validation + test splits: 5.88 GB, bao phủ 684 sources độc lập).
+* **Dữ liệu ngoại vi đã tải (Option P hoàn tất)**: `5,921,830,211 bytes` (~5.52 GiB nhận qua mạng: 42,327,429 bytes mask từ Phase 4B.0 + 5,879,502,782 bytes từ 4 archive Option P trong Phase 4B.2).
+* **Bốn archive Option P đã tải và kiểm toán toàn vẹn**:
+  * `orig_validation.tar.gz`: 859,947,874 bytes, SHA-256 `c9f02a34...` (1,023 ảnh, 861,683,700 bytes).
+  * `orig_testing.tar.gz`: 806,962,390 bytes, SHA-256 `8020c2f2...` (1,029 ảnh, 808,321,851 bytes).
+  * `sd2-sp_validation.tar.gz`: 2,172,017,290 bytes, SHA-256 `3b3ba9f0...` (2,046 ảnh, 2,176,267,677 bytes).
+  * `sd2-sp_testing.tar.gz`: 2,040,575,228 bytes, SHA-256 `c346af3c...` (2,058 ảnh, 2,043,822,807 bytes).
+  * Tổng giải nén Option P: **6,156 file ảnh (5,890,096,035 bytes)**. 100% decode PIL thành công, 0 lỗi hỏng.
+* **Kiểm toán Ghép cặp (Tripartite Pairability Audit)**: Trạng thái **`verified`** (684 category instances ghép hoàn hảo 100% giữa authentic ↔ ai_edited ↔ masks; 0 missing originals, 0 missing edits, 0 missing masks, 0 dimension mismatches).
+* **Phân vùng Đóng băng Tất định (Frozen Splits - Seed 42)**:
+  * `development_train`: **250 unique `source_id`** (từ validation pool 341 sources).
+  * `inner_validation`: **91 unique `source_id`** (early stopping, calibration, threshold).
+  * `locked_test`: **343 unique `source_id`** (từ testing pool; niêm phong SHA-256 seal: `519e7a0e6815e781d1cefa95971e5221ac1f25656837374d8dc4ba41401fded9`).
+  * Cross-split source overlap: **0 tuyệt đối**.
+  * Learning curve lồng nhau: $N=50 \subset N=100 \subset N=250$.
+* **Class-Coverage Guard**:
+  * 2-class pipeline (`authentic` vs `ai_edited`): `runnable`.
+  * 3-class pipeline: `not-runnable-missing-fully-generated-data`.
 * **Trọng số mô hình đã tải / huấn luyện**: `0 bytes` (chưa tải checkpoint hay trọng số nào).
 * **Số lượt huấn luyện (Training runs)**: `0`.
 * **Chỉ số khoa học**: `not evaluated` (chưa đo lường thực nghiệm).
@@ -79,10 +85,10 @@
 ## 6. Kết quả Kiểm thử & Bản dựng Gần nhất (Latest Verification)
 
 * **TypeScript & Continuity Test Suite (`pnpm test`)**: 70/70 tests passing (57 vitest tests trên 6 packages + 13 continuity checker unit tests).
-* **Python Test Suite (`pytest ml/tests -v`)**: 55/55 tests passing (bao gồm 23 bài test an toàn thu nạp dữ liệu, 9 bài test kiểm toán source ID, small-data options và overflow guard).
-* **Pilot Config Validation (`ml/configs/validator.py --validate-all`)**: 3/3 pilot configs valid (`pilot_a_learning_curve.yaml`, `pilot_genimage_generated.yaml`, `pilot_tgif_edit.yaml`).
+* **Python Test Suite (`pytest ml/tests -v`)**: 66/66 tests passing (bao gồm 11 targeted tests cho Option P: Tar Slip, resume, drift detection, split lock, locked test access guard).
+* **Dataset Registry Validation**: 7/7 datasets valid.
+* **Production Web Build (`pnpm build`)**: Exit code 0, bundle tối ưu hợp lệ (55 modules, 9.57s).
 * **Continuity Enforcement Gate (`pnpm continuity:check`)**: `CONTINUITY_CHECK: PASS`.
-* **Production Web Build (`pnpm build`)**: Exit code 0, bundle tối ưu hợp lệ (3.95s).
 * **Clean Link Invariance**: 0 machine-local links (`file:///`, `C:\`, `D:\`) trong toàn bộ markdown và evidence repository.
 
 ---
@@ -91,7 +97,7 @@
 
 1. **Nguy cơ Shortcut Nguồn Dữ liệu**: Thiết kế matched-pair làm giảm đáng kể nguy cơ mô hình học đặc trưng nguồn dữ liệu vì ảnh gốc và ảnh chỉnh sửa chia sẻ cùng source image. Các nguy cơ shortcut từ codec, quy trình sinh ảnh, preprocessing, số lượng biến thể và artifacts của mô hình tạo sinh vẫn phải được đo bằng baseline và source-held-out evaluation.
 2. **Không có Model AI Cài Đặt**: Hiện tại toàn bộ kết quả phân tích AI trên UI hiển thị trung thực là `uncertain` với banner "Model not installed".
-3. **Chưa có Đo đạc Trực tiếp Trình duyệt Đa Thiết bị**: Runtime latency và peak memory trên mobile/low-end devices cần được kiểm chứng khi có checkpoint thật.
+3. **Phạm vi Phân loại 2 lớp trong Option P**: Option P chỉ chứa `authentic` và `ai_edited`. Không gian 3 lớp bị chặn cho đến khi có dataset `fully_generated` hợp lệ trong Research Track.
 
 ---
 
@@ -125,13 +131,17 @@
 * `EV-REMOTE-INVENTORY-001`: Khảo sát metadata remote của `orig` (7.32 GB) và `sd2-sp` (18.57 GB) chia theo 3 split archives.
 * `EV-SMALL-DATA-PROTOCOL-001`: Ban hành SMALL_DATA_PROTOCOL.md và cấu hình pilot_a_learning_curve.yaml ($N=50,100,250$).
 * `EV-OPTION-P-RECOMMENDATION-001`: Xây dựng 3 phương án dữ liệu và đề xuất Option P (5.88 GB, 684 sources) cho Pilot A.
+* `EV-OPTION-P-ACQUISITION-001`: Thu nạp thành công có kiểm soát 4 archive Option P (5,879,502,782 bytes), 100% SHA-256 khớp.
+* `EV-OPTION-P-EXTRACTION-001`: Safe extraction 6,156 file ảnh (5,890,096,035 bytes), 100% decode PIL PASS.
+* `EV-PAIRABILITY-VERIFIED-001`: Chứng minh toán học ghép cặp ba thành phần authentic ↔ edited ↔ mask đạt trạng thái `verified` (684 instances).
+* `EV-SPLIT-FREEZE-001`: Đóng băng phân vùng tất định (250 dev_train, 91 inner_val, 343 locked_test) kèm SHA-256 seal `519e7a0e...`.
+* `EV-CLASS-COVERAGE-GUARD-001`: Guard bảo vệ 2 lớp runnable và 3 lớp `not-runnable-missing-fully-generated-data`.
 
 ---
 
 ## 9. Công việc Đang thực hiện & Công việc Tiếp theo
 
-* **Đã hoàn thành (Phase 4B.1)**: Kiểm toán source ID và va chạm; làm rõ nguyên nhân 2,242 unique COCO sources vs 3,124 category instances; khóa đơn vị thống kê độc lập `source_id`; hoàn thành khảo sát WebDAV remote cho `orig` và `sd2-sp` (41,549 bytes < trần 5 MiB); xác lập pairability status `pending-content-acquisition`; ban hành giao thức ít dữ liệu và cấu hình learning curve; xây dựng 3 phương án dữ liệu và chọn đề xuất duy nhất Option P; vượt qua 55 bài test Python, 70 bài test TS, build sạch.
-* **Hiện trạng nghiên cứu**: External dataset content giữ nguyên 42,327,429 bytes; model weights bằng `0 bytes`; training runs bằng `0`; detection metrics giữ trạng thái `not evaluated`.
-* **Công việc tiếp theo (Phase 4B.2 / Live Image Acquisition)**: Chờ người dùng xem xét và phê duyệt `NEXT APPROVAL REQUEST` theo Option P (tải validation và testing split của `orig` và `sd2-sp`: 5.88 GB) nhằm phục vụ huấn luyện đường cong học tập cho Pilot A.
-
+* **Đã hoàn thành (Phase 4B.2)**: Thu nạp 4 archive Option P (5,879,502,782 bytes); an toàn trích xuất 6,156 ảnh (5,890,096,035 bytes); kiểm toán decode PIL 100% PASS; xác minh ghép cặp ba thành phần đạt trạng thái `verified` (684 instances); đóng băng phân vùng `development_train` (250), `inner_validation` (91), `locked_test` (343); khóa locked-test bằng SHA-256 seal; xác lập learning curve $N=50 \subset N=100 \subset N=250$; thiết lập class-coverage guard; vượt qua 66 bài test Python, 70 bài test TS, build production và continuity check đạt chuẩn.
+* **Hiện trạng nghiên cứu**: Dữ liệu ảnh Option P đã sẵn sàng trong `data/research/tgif/`; model weights bằng `0 bytes`; training runs bằng `0`; detection metrics giữ trạng thái `not evaluated`.
+* **Công việc tiếp theo (Phase 4C — Baseline Model Training & Learning Curve Evaluation)**: Huấn luyện baseline binary classifier (`authentic` vs `ai_edited`) trên frozen development train split; đo lường đường cong học tập tại $N=50, 100, 250$; đánh giá trên sealed `locked_test` sau khi đóng băng checkpoint.
 

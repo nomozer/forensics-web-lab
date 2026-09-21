@@ -30,10 +30,18 @@ Hệ thống đăng ký 5 mức quy mô ảnh nguồn:
 $$N \in \{50, 100, 250, 500, 1000\} \quad \text{unique } source\_id$$
 
 * **Cơ chế fail-closed**: Nếu mức $N$ vượt quá số lượng `eligible_source_id` thực tế trong tập huấn luyện, mức đó tự động chuyển trạng thái `not-runnable` và không được thực thi.
-* **Cấu hình Option P (Small-Data Thesis Pilot)**:
-  * Tập huấn luyện trích xuất từ validation pool (tối đa 341 sources).
-  * Mức chạy hợp lệ: $N = 50, 100, 250$.
-  * Mức $N = 500, 1000$: Đánh dấu `not-runnable` trong Option P (yêu cầu Option F).
+* **Cấu hình Option P Đóng băng (Phase 4B.2 Frozen State)**:
+  * Official Validation Pool: 341 unique `source_id`.
+  * Official Testing Pool: 343 unique `source_id`.
+  * **`development_train`**: 250 unique `source_id` (hạt giống cố định seed 42).
+  * **`inner_validation`**: 91 unique `source_id` (dành cho early stopping, calibration, threshold).
+  * **`locked_test`**: 343 unique `source_id` (chỉ evaluator cuối cùng đọc khi cấu hình đã đóng băng hoàn toàn).
+  * **Mã băm niêm phong (Split-Lock SHA-256)**: `519e7a0e6815e781d1cefa95971e5221ac1f25656837374d8dc4ba41401fded9` (tại `research/evidence/phase-4b.2/split-lock.json`).
+  * **Cross-Split Isolation**: Giao giữa các split theo `source_id` bằng đúng 0 (`overlap = 0`).
+  * **Nested Learning Curve Invariant**: $N=50 \subset N=100 \subset N=250$ (các tập con lồng nhau nghiêm ngặt theo chỉ mục source_id).
+  * **Mức hợp lệ trong Phase 4C**: $N = 50, 100, 250$.
+  * **Mức không hợp lệ**: $N = 500, 1000$ chuyển trạng thái `not-runnable-insufficient-independent-sources` (do `development_train` có 250 sources).
+  * **Class-Coverage Guard**: Phase 4B.2 / Phase 4C hiện chỉ hỗ trợ 2 lớp (`authentic`, `ai_edited`). Chế độ 3 lớp bị chặn với mã `not-runnable-missing-fully-generated-data`.
 
 ### 2.2. Kiểm soát Tính ngẫu nhiên & Cố định Tập Đánh giá
 
@@ -147,3 +155,5 @@ Một mô hình chỉ được công nhận là "học hiệu quả với ít d�
   * Phân loại 3 lớp: `authentic` vs `fully_generated` vs `ai_edited`.
   * Chỉ được kích hoạt sau khi cả Pilot A và Pilot B vượt qua kiểm toán shortcut độc lập.
   * Tuyệt đối không sử dụng TGIF `fr` làm đại diện cho `fully_generated`.
+  * **Trạng thái thực thi hiện tại (Phase 4B.2 / 4C)**: `not-runnable-missing-fully-generated-data`. Cơ chế Class-Coverage Guard tự động từ chối chạy chế độ 3 lớp cho đến khi có tập dữ liệu `fully_generated` hợp lệ được nạp vào Research Track.
+

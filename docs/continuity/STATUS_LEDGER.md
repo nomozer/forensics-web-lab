@@ -4,6 +4,18 @@
 > **Mục đích**: Biên niên sử cô đọng từng giai đoạn phát triển và nghiên cứu từ Phase 0 đến nay.  
 > **Quy ước**: Giai đoạn mới nhất nằm ở trên cùng; mỗi giai đoạn không quá 20 dòng; chi tiết kiểm chứng nằm tại `research/evidence/`.
 
+## Phase 4B.2 — Controlled Option-P Acquisition, Pairability Verification and Split Freeze
+- **Mục tiêu**: Thu nạp có kiểm soát Option P (4 archives, 5.88 GB), safe extraction, kiểm toán decode và pairability ba thành phần, đóng băng deterministic splits ($N=50,100,250$) và class-coverage guard.
+- **Starting commit**: `82a5266`
+- **Thay đổi chính**: Ban hành `pilot-a-tgif-option-p.v1.json` và `user-approval.json`; tải an toàn 4 archive Option P (5,879,502,782 bytes) từ duy nhất `cloud.ilabt.imec.be`, khớp 100% SHA-256; safe tar extraction 6,156 ảnh (5,890,096,035 bytes) chống Tar Slip; `verify_option_p.py` kiểm toán PIL decode 100% PASS; pairability status `verified` (684 instances, 0 missing, 0 dimension mismatch); đóng băng tất định seed 42: `development_train` (250 sources), `inner_validation` (91 sources), `locked_test` (343 sources, SHA-256 seal `519e7a0e...`); zero cross-split leakage; learning curve lồng nhau $N=50 \subset N=100 \subset N=250$; sinh `manifest_pilot_a_option_p.csv`; bổ sung 11 unit tests (`test_option_p_protocol.py`, 66/66 Python tests passed).
+- **Kiểm tra kỹ thuật**: `pnpm test` (70/70 passed), `pytest ml/tests` (66/66 passed), `pnpm build` (exit 0), `pnpm continuity:check` (PASS), dataset registry (7/7 valid), model weights: 0 bytes, training runs: 0.
+- **Kết quả khoa học**: Xác minh toàn diện dữ liệu Option P cho bài toán con authentic–AI-edited và localization; khóa hoàn toàn locked-test; class-coverage guard chặn pipeline 3 lớp khi chưa có fully_generated; detection metrics: `not evaluated`.
+- **Evidence**: `research/evidence/phase-4b.2/` (`acquisition-binding.json`, `user-approval.json`, `download-receipt.json`, `archive-inventory.json`, `extraction-summary.json`, `content-manifest-summary.json`, `pairability-audit.json`, `split-lock.json`, `class-coverage-audit.json`, `test-summary.json`, `build-summary.json`, `evidence-manifest.json`, `PHASE_REPORT.md`).
+- **Giới hạn**: Dữ liệu chỉ gồm 2 lớp (authentic, ai_edited); 3 lớp chưa runnable; model weights = 0 byte; training runs = 0.
+- **Quyết định tiếp theo**: Chuyển sang Phase 4C để huấn luyện baseline binary classifier và thực thi learning curve trên frozen splits.
+
+---
+
 ## Phase 4B.1 — Small-Data Feasibility and Pairability Audit
 - **Mục tiêu**: Kiểm toán căn nguyên chênh lệch 2.242/3.124, khóa đơn vị độc lập là `source_id`, khảo sát metadata remote `orig`/`sd2-sp`, thiết lập giao thức ít dữ liệu và 3 phương án tải.
 - **Starting commit**: `3be606c`

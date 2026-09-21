@@ -56,9 +56,13 @@ data/
   - TGIF2 FLUX: 110 GB (8 thư mục: masks-flux: 7.7 MB, orig-flux: 5.7 GB, các thư mục FLUX 16–18 GB).
   - TGIF2 random: 73 GB (13 thư mục: masks 900 KB, metadata: 1.8 MB, model subfolders).
 * **Khả năng tải độc lập**: Nextcloud public shares hỗ trợ tải độc lập từng thư mục con dưới dạng zip nén động (ví dụ: chỉ tải `masks` 40.4 MB, hoặc `orig` 6.8 GB) mà không bắt buộc tải toàn bộ 65.4 GB.
-* **Hiện trạng thu nạp (Phase 4B.0 Smoke)**:
+* **Hiện trạng thu nạp (Phase 4B.2 Option P Complete)**:
   - `tgif-masks`: **Đã tải và kiểm toán thành công** (`status: verified`). Tải về: 42,327,429 bytes (~40.37 MiB, SHA-256 archive `62c89a65...`). Giải nén an toàn: 141,559,934 bytes across 31,238 mask PNG files (12,495 bbox, 12,495 segm, 6,248 generic_mask) trên 2,242 MS-COCO `source_id`. Manifest lưu tại `data/research/tgif/manifests/masks-manifest.jsonl`, biên nhận tại `data/research/tgif/acquisition-receipt.json`.
-  - `tgif-orig` (~7.30 GB) và `tgif-sd2-sp` (~18.58 GB): **Chưa tải, tiếp tục bị khóa** (`status: locked`, chờ phê duyệt cho Phase 4B.1+).
+  - **Option P (Validation & Testing Splits)**: **Đã thu nạp và xác minh thành công** (`status: verified`). Gồm đúng 4 archives: `orig_validation.tar.gz` (859,947,874 bytes), `orig_testing.tar.gz` (806,962,390 bytes), `sd2-sp_validation.tar.gz` (2,172,017,290 bytes), `sd2-sp_testing.tar.gz` (2,040,575,228 bytes). Tổng byte: 5,879,502,782 bytes.
+  - **Giải nén an toàn**: 6,156 files (5,890,096,035 bytes uncompressed) tại `data/research/tgif/orig/` và `data/research/tgif/sd2-sp/`.
+  - **Kiểm định ảnh (Pillow Decodability Audit)**: 6,156 / 6,156 ảnh giải mã thành công 100.0%, 0 corrupt images.
+  - **Pairability Audit**: Trạng thái `verified`. 684 matched task instances đối ứng 3 bên (`authentic` ↔ `ai_edited` ↔ `ground-truth mask`). 0 missing originals, 0 missing edits, 0 missing masks, 0 dimension mismatches, 0 duplicate hashes.
+  - **Đóng băng phân vùng (Split Freeze)**: Seed 42. `development_train` (250 unique sources), `inner_validation` (91 unique sources), `locked_test` (343 unique sources). Cross-split overlap = 0. Đường cong học tập lồng nhau $N=50 \subset N=100 \subset N=250$. Mức $N=500, 1000$ đánh dấu `not-runnable-insufficient-independent-sources`. Niêm phong mã băm SHA-256 trong `split-lock.json`.
 * **Phân loại luồng**: **`research-only`** (`derivativeWeights: unclear`, `productionPromotion: prohibited-by-project-policy` do điều khoản Share-Alike).
 
 ### 2.3 RealHD
@@ -127,7 +131,12 @@ Dựa trên kết quả kiểm toán ngữ nghĩa nhãn tại Phase 4A.3, thành
 * **Số ảnh**: 3,124 authentic (verified) + 18,744 inpaintings (verified trong `sd2-sp`, thuộc 74,976 tổng toàn bộ TGIF) + ~6,248 binary masks (ước tính 2 mask per source image: segm & bbox).
 * **Ưu điểm khoa học**: Thiết kế matched-pair làm giảm đáng kể nguy cơ mô hình học đặc trưng nguồn dữ liệu vì ảnh gốc và ảnh chỉnh sửa chia sẻ cùng source image. Các nguy cơ shortcut từ codec, quy trình sinh ảnh, preprocessing, số lượng biến thể và artifacts của mô hình tạo sinh vẫn phải được đo bằng baseline và source-held-out evaluation.
 * **Mục tiêu khoa học**: Phân loại nhị phân `authentic` vs `ai_edited` và định vị vùng chỉnh sửa với ground-truth mask (Macro-F1, Balanced Acc, mIoU, Dice, Pixel AUROC).
-* **Phương án rút gọn tối thiểu (Low-Bandwidth Option)**: Tải trước `masks` (40.4 MB) + `orig` (6.8 GB) = 6.84 GB để kiểm thử pipeline định vị trước khi tải `sd2-sp`.
+* **Phương án triển khai thực tế (Option P - Small-Data Thesis Pilot)**: Đã hoàn thành thu nạp, giải nén và đóng băng split tại Phase 4B.2:
+  - 4 archives: `orig_validation`, `orig_testing`, `sd2-sp_validation`, `sd2-sp_testing` (5,879,502,782 bytes nén).
+  - 6,156 files ảnh trích xuất thành công (100% Pillow decodability).
+  - Tripartite pairability `verified` trên 684 task instances matched.
+  - Phân vùng đóng băng: `development_train` (250 sources), `inner_validation` (91 sources), `locked_test` (343 sources). Learning curves: $N=50 \subset N=100 \subset N=250$.
+  - Sẵn sàng chuyển sang huấn luyện Pilot A trong Phase 4C.
 
 ### Phương án Pilot B — Authentic vs Fully-Generated (GenImage Controlled Pairs)
 * **Cấu hình máy đọc**: `ml/configs/pilot_genimage_generated.yaml`

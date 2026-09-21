@@ -12,9 +12,13 @@ graph TD
   P36 --> P4A0[Phase 4A.0: License Correction, Track Isolation & Acquisition Dry-Run]
   P4A0 --> P4A1[Phase 4A.1: Acquisition Feasibility & Residual Correction]
   P4A1 --> P4A2[Phase 4A.2: Scope Freeze, Continuity & TGIF Audit]
-  P4A2 --> P4A[Phase 4A: Pilot Acquisition & Data Preparation]
-  P4A --> P4[Phase 4: Model Training & Evaluation]
-  P4 --> P5[Phase 5: ONNX Browser Integration]
+  P4A2 --> P4A3[Phase 4A.3: Pilot Protocol & Semantics Gate]
+  P4A3 --> P4A4[Phase 4A.4: Safety Gates & Acquisition Plan]
+  P4A4 --> P4B0[Phase 4B.0: TGIF Masks Live Acquisition Smoke]
+  P4B0 --> P4B1[Phase 4B.1: Small-Data Feasibility & Pairability Audit]
+  P4B1 --> P4B2[Phase 4B.2: Option-P Acquisition, Verification & Split Freeze]
+  P4B2 --> P4C[Phase 4C: Two-Stage Transfer Learning & Model Training]
+  P4C --> P5[Phase 5: ONNX Browser Integration]
   P2 --> P5
   P5 --> P6[Phase 6: Complete Forensic UX & Reporting]
   P6 --> P7[Phase 7: Hardening & Release Verification]
@@ -201,17 +205,41 @@ graph TD
 * [x] **TASK-4B006**: Build and execute mask inventory auditor `ml/datasets/audit_masks.py` scanning 31,238 mask PNG files (141,559,934 bytes uncompressed).
 * [x] **TASK-4B007**: Generate local mask manifest `masks-manifest.jsonl` (31,238 records) and evidence summaries (`tgif-masks-inventory.json`, `tgif-masks-validation.json`, `mask-manifest-summary.json`).
 * [x] **TASK-4B008**: Verify zero binary files tracked in Git; publish Phase 4B.0 report.
-* [ ] **TASK-4B101**: User decision on Phase 4B.1 NEXT APPROVAL REQUEST for remaining Pilot A components (`tgif-orig`: 7.30 GB, `tgif-sd2-sp`: 18.58 GB).
+* [x] **TASK-4B009**: Author Phase 4B.0 completion report and register evidence.
 
 ---
 
-### Phase 4: Model Training & Evaluation (Chờ phê duyệt)
-* [ ] **TASK-401**: Check data/compute authorization (Stop and confirm if large data download required).
-* [ ] **TASK-402**: Train and log baseline model with reproducible configs and deterministic seeds.
-* [ ] **TASK-403**: Run full evaluation suite across in-domain, unseen generator, and degradation matrices.
-* [ ] **TASK-404**: Fit temperature scaling calibration on held-out calibration split.
-* [ ] **TASK-405**: Record genuine experimental metrics in `models/MODEL_CARD.md` and research logs (no fake numbers).
-* [ ] **TASK-406**: Commit Phase 4 with message: `research: train and evaluate lightweight detector`.
+### Phase 4B.1: Small-Data Feasibility and Pairability Audit (Hoàn thành)
+* [x] **TASK-4B101**: Audit mask cardinality mismatch (31,238 files across 2,242 `source_id`).
+* [x] **TASK-4B102**: Codify small-data protocol (`docs/SMALL_DATA_PROTOCOL.md`) with $N \in \{50, 100, 250, 500, 1000\}$.
+* [x] **TASK-4B103**: Formulate Option P (Pilot A split-based acquisition: 4 archives, 5.88 GB).
+* [x] **TASK-4B104**: Verify remote Nextcloud HTTP Range resume and ETag support.
+* [x] **TASK-4B105**: Publish Phase 4B.1 report and evidence manifest.
+
+---
+
+### Phase 4B.2: Controlled Option-P Acquisition, Verification and Split Freeze (Hoàn thành)
+* [x] **TASK-4B201**: Implement HTTP Range resume, ETag matching, and safe tar extraction in `ml/datasets/acquire.py`.
+* [x] **TASK-4B202**: Execute controlled download of 4 split archives (5,879,502,782 bytes) from `cloud.ilabt.imec.be`.
+* [x] **TASK-4B203**: Safely extract 6,156 images into `data/research/tgif/orig/` and `data/research/tgif/sd2-sp/`.
+* [x] **TASK-4B204**: Execute 100.0% Pillow decodability audit across all 6,156 images (0 corrupt).
+* [x] **TASK-4B205**: Execute tripartite pairability audit (`pairabilityStatus: verified`, 684 matched task instances).
+* [x] **TASK-4B206**: Freeze deterministic splits (seed 42): `development_train` (250), `inner_validation` (91), `locked_test` (343); cross-split overlap = 0.
+* [x] **TASK-4B207**: Generate nested learning curves $N=50 \subset N=100 \subset N=250$; seal with SHA-256 `519e7a0e...` in `split-lock.json`.
+* [x] **TASK-4B208**: Implement Class-Coverage Guard (2-class runnable; 3-class blocked as `not-runnable-missing-fully-generated-data`).
+* [x] **TASK-4B209**: Implement 11 unit tests in `ml/tests/test_option_p_protocol.py` (66/66 Python tests passing).
+* [x] **TASK-4B210**: Update continuity files, evidence register, and docs; publish Phase 4B.2 report.
+
+---
+
+### Phase 4C: Two-Stage Transfer Learning & Model Training (Chờ thực thi)
+* [ ] **TASK-4C01**: Implement DataLoader reading `manifest_pilot_a_option_p.csv` respecting `split-lock.json`.
+* [ ] **TASK-4C02**: Implement Stage 1 frozen backbone transfer learning (MobileNetV3-Small) across $N=50, 100, 250$ nested train splits.
+* [ ] **TASK-4C03**: Evaluate against 6 mandatory baselines (Dummy, Metadata-Only, DSP-Only, Frozen Backbone, Fine-Tuned, Multimodal Fusion).
+* [ ] **TASK-4C04**: Fit temperature scaling calibration on `inner_validation` (91 sources).
+* [ ] **TASK-4C05**: Evaluate locked test split (`locked_test`, 343 sources) once configurations are frozen.
+* [ ] **TASK-4C06**: Record genuine experimental metrics in `models/MODEL_CARD.md` and research logs.
+* [ ] **TASK-4C07**: Commit Phase 4C with message: `research: train and evaluate small-data pilot-a detector`.
 
 ---
 

@@ -9,7 +9,9 @@
 > **Manifest máy đọc Phase 4A.3**: `research/evidence/phase-4a.3/evidence-manifest.json`  
 > **Manifest máy đọc Phase 4A.4**: `research/evidence/phase-4a.4/evidence-manifest.json`  
 > **Manifest máy đọc Phase 4B.0**: `research/evidence/phase-4b.0/evidence-manifest.json`  
-> **Cập nhật lần cuối**: Phase 4B.0 (TGIF Masks Live Acquisition Smoke)
+> **Manifest máy đọc Phase 4B.1**: `research/evidence/phase-4b.1/evidence-manifest.json`  
+> **Manifest máy đọc Phase 4B.2**: `research/evidence/phase-4b.2/evidence-manifest.json`  
+> **Cập nhật lần cuối**: Phase 4B.2 (Controlled Option-P Acquisition, Pairability Verification and Split Freeze)
 
 ---
 
@@ -30,7 +32,28 @@ Hệ sinh thái nghiên cứu và sản phẩm của **Forensics Web Lab** tuân
 
 ---
 
-## 2. Bảng Đăng ký Minh chứng Phase 4B.0 (TGIF Masks Live Acquisition Smoke)
+## 2. Bảng Đăng ký Minh chứng Phase 4B.2 (Controlled Option-P Acquisition & Split Freeze)
+
+| Evidence ID | Claim | Category | Status | Artifact | Reproduction command | Result | Limitations |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **EV-OPTION-P-ACQUISITION-001** | Thu nạp có kiểm soát đúng 4 split archives của TGIF Option P (5,879,502,782 bytes nén); khớp 100% Content-Length và tính SHA-256 cục bộ cho từng archive. | `dataset` | `verified` | [download-receipt.json](research/evidence/phase-4b.2/download-receipt.json) | `ml/.venv/Scripts/python -m ml.datasets.verify_option_p` | 4/4 archives hoàn thành, SHA-256 đã xác minh, 0 byte ngoài kế hoạch. | Chỉ gồm split validation và testing của TGIF; training split gốc giữ nguyên trên remote. |
+| **EV-OPTION-P-EXTRACTION-001** | Giải nén an toàn chống Tar Slip / escaping symlinks; trích xuất 6,156 files ảnh (5,890,096,035 bytes uncompressed); kiểm định giải mã Pillow đạt 100.0% (0 corrupt). | `dataset` | `verified` | [extraction-summary.json](research/evidence/phase-4b.2/extraction-summary.json) | `ml/.venv/Scripts/python -m ml.datasets.verify_option_p` | 6,156/6,156 ảnh giải mã thành công; ghi nhận format, resolution, byte count đầy đủ. | Dữ liệu nhị phân nằm ngoài Git trong `data/research/tgif/`. |
+| **EV-PAIRABILITY-VERIFIED-001** | Kiểm toán đối ứng 3 bên (`authentic` ↔ `ai_edited` ↔ `ground-truth mask`) đạt trạng thái `verified` trên 684 task instances; 0 missing originals/edits/masks. | `dataset` | `verified` | [pairability-audit.json](research/evidence/phase-4b.2/pairability-audit.json) | `ml/.venv/Scripts/python -m ml.datasets.verify_option_p` | 684/684 instances đối ứng hoàn hảo; phân tích rõ cấu trúc đa phân giải native, 512, 1024. | Giới hạn trong phạm vi 684 task instances của Option P. |
+| **EV-SPLIT-FREEZE-001** | Đóng băng phân vùng xác định theo `source_id` (seed 42): `development_train` (250 sources), `inner_validation` (91 sources), `locked_test` (343 sources). Cross-split overlap = 0. Đường cong lồng nhau $N=50 \subset N=100 \subset N=250$. Niêm phong mã băm SHA-256 `519e7a0e...`. | `science` | `verified` | [split-lock.json](research/evidence/phase-4b.2/split-lock.json) | `ml/.venv/Scripts/python -m ml.datasets.verify_option_p` | 3 phân vùng đóng băng độc lập; test split bị khóa truy cập; $N=500, 1000$ chuyển `not-runnable`. | Áp dụng cho bài toán Pilot A ít dữ liệu; $N \le 250$. |
+| **EV-CLASS-COVERAGE-GUARD-001** | Cơ chế Class-Coverage Guard xác nhận Phase 4B.2 có 2 lớp (`authentic`, `ai_edited`) runnable; pipeline 3 lớp chuyển trạng thái `not-runnable-missing-fully-generated-data`. | `pipeline` | `verified` | [class-coverage-audit.json](research/evidence/phase-4b.2/class-coverage-audit.json) | `ml/.venv/Scripts/python -m pytest ml/tests/test_option_p_protocol.py -k test_class_coverage_guard` | Guard tự động từ chối chạy 3 lớp khi thiếu lớp `fully_generated` hợp lệ trong Research Track. | Cần dataset `fully_generated` riêng trước khi kích hoạt Pilot C. |
+
+---
+
+## 3. Bảng Đăng ký Minh chứng Phase 4B.1 (Small-Data Feasibility & Pairability Audit)
+
+| Evidence ID | Claim | Category | Status | Artifact | Reproduction command | Result | Limitations |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **EV-MASK-CARDINALITY-RESOLVED-001** | Giải mã nguồn gốc 31,238 mask files: hình thành từ 2,242 unique `source_id` $\times$ 7 loại mask/res (`bbox`, `segm`, `generic` $\times$ native, 512, 1024). | `dataset` | `verified` | [PHASE_REPORT.md](research/evidence/phase-4b.1/PHASE_REPORT.md) | `ml/.venv/Scripts/python -m ml.datasets.audit_masks` | Loại bỏ hoàn toàn mâu thuẫn 31,238 vs 2,242; xác minh giải thuật trích xuất `source_id`. | Phân tích dựa trên kho mask đã giải nén. |
+| **EV-OPTION-P-FORMULATION-001** | Thiết lập phương án Option P tải 4 split archives chính thức (5.88 GB) thay vì toàn bộ 24.1 GB; chứng minh tính khả thi ít dữ liệu cho khóa luận. | `science` | `verified` | [PHASE_REPORT.md](research/evidence/phase-4b.1/PHASE_REPORT.md) | `git log -1 research/evidence/phase-4b.1/` | Kế hoạch thu nạp Option P được phê duyệt với 684 source_id độc lập. | Không tải training split gốc (7.8 GB nén). |
+
+---
+
+## 4. Bảng Đăng ký Minh chứng Phase 4B.0 (TGIF Masks Live Acquisition Smoke)
 
 | Evidence ID | Claim | Category | Status | Artifact | Reproduction command | Result | Limitations |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -40,7 +63,7 @@ Hệ sinh thái nghiên cứu và sản phẩm của **Forensics Web Lab** tuân
 
 ---
 
-## 3. Bảng Đăng ký Minh chứng Phase 4A.4 (Evidence Correction & Acquisition Safety Gate)
+## 5. Bảng Đăng ký Minh chứng Phase 4A.4 (Evidence Correction & Acquisition Safety Gate)
 
 | Evidence ID | Claim | Category | Status | Artifact | Reproduction command | Result | Limitations |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -52,7 +75,7 @@ Hệ sinh thái nghiên cứu và sản phẩm của **Forensics Web Lab** tuân
 
 ---
 
-## 3. Bảng Đăng ký Minh chứng Phase 4A.3 (Scientific Pilot Protocol & Label-Semantics Gate)
+## 6. Bảng Đăng ký Minh chứng Phase 4A.3 (Scientific Pilot Protocol & Label-Semantics Gate)
 
 | Evidence ID | Claim | Category | Status | Artifact | Reproduction command | Result | Limitations |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -65,7 +88,7 @@ Hệ sinh thái nghiên cứu và sản phẩm của **Forensics Web Lab** tuân
 
 ---
 
-## 3. Bảng Đăng ký Minh chứng Phase 4A.2 (Scope Freeze, Continuity & TGIF Feasibility Audit)
+## 7. Bảng Đăng ký Minh chứng Phase 4A.2 (Scope Freeze, Continuity & TGIF Feasibility Audit)
 
 | Evidence ID | Claim | Category | Status | Artifact | Reproduction command | Result | Limitations |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -79,7 +102,7 @@ Hệ sinh thái nghiên cứu và sản phẩm của **Forensics Web Lab** tuân
 
 ---
 
-## 3. Bảng Đăng ký Minh chứng Phase 4A.1 (Acquisition Feasibility & Residual Claim Correction)
+## 8. Bảng Đăng ký Minh chứng Phase 4A.1 (Acquisition Feasibility & Residual Claim Correction)
 
 | Evidence ID | Claim | Category | Status | Artifact | Reproduction command | Result | Limitations |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -92,7 +115,7 @@ Hệ sinh thái nghiên cứu và sản phẩm của **Forensics Web Lab** tuân
 
 ---
 
-## 3. Bảng Đăng ký Minh chứng Phase 4A.0 (Data Governance & Track Isolation)
+## 9. Bảng Đăng ký Minh chứng Phase 4A.0 (Data Governance & Track Isolation)
 
 | Evidence ID | Claim | Category | Status | Artifact | Reproduction command | Result | Limitations |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -109,7 +132,7 @@ Hệ sinh thái nghiên cứu và sản phẩm của **Forensics Web Lab** tuân
 
 ---
 
-## 3. Bảng Đăng ký Minh chứng Phase 3.6 (Lịch sử)
+## 10. Bảng Đăng ký Minh chứng Phase 3.6 (Lịch sử)
 
 | Evidence ID | Claim | Category | Status | Artifact | Reproduction command | Result | Limitations |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -129,7 +152,7 @@ Hệ sinh thái nghiên cứu và sản phẩm của **Forensics Web Lab** tuân
 
 ---
 
-## 4. Quy trình Tái tạo và Kiểm chứng bằng Máy
+## 11. Quy trình Tái tạo và Kiểm chứng bằng Máy
 
 Mọi minh chứng trong bảng trên đều có thể được xác minh tự động thông qua công cụ kiểm thử hợp đồng trong `@forensics/shared` và bộ test Python:
 
