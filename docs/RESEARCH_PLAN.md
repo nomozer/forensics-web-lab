@@ -101,7 +101,7 @@ Các giả thuyết được thiết lập theo nguyên tắc có thể bác b�
 
 ### Giao thức Thí nghiệm Pilot Hai Nhánh Độc lập (Two-Branch Architecture):
 Chi tiết xem [PILOT_PROTOCOL.md](docs/PILOT_PROTOCOL.md):
-1. **Pilot A (Authentic vs AI-Edited + Localization)**: Sử dụng các cặp matched pairs của TGIF (`orig` authentic MS-COCO + `sd2-sp` inpainting + `masks`). Triệt tiêu hoàn toàn rủi ro cross-dataset shortcut vì cả thật và sửa đều từ cùng nguồn ảnh MS-COCO.
+1. **Pilot A (Authentic vs AI-Edited + Localization)**: Sử dụng các cặp matched pairs của TGIF (`orig` authentic MS-COCO + `sd2-sp` inpainting + `masks`). Thiết kế matched-pair làm giảm đáng kể nguy cơ mô hình học đặc trưng nguồn dữ liệu vì ảnh gốc và ảnh chỉnh sửa chia sẻ cùng source image. Các nguy cơ shortcut từ codec, quy trình sinh ảnh, preprocessing, số lượng biến thể và artifacts của mô hình tạo sinh vẫn phải được đo bằng baseline và source-held-out evaluation.
 2. **Pilot B (Authentic vs Fully-Generated)**: Sử dụng cặp đối chứng trong cùng phân phối ImageNet của GenImage (val nature vs BigGAN ai).
 3. **Pilot C (Three-Class Exploratory)**: Chỉ được mở khi Pilot A và Pilot B vượt qua bài kiểm toán shortcut; bắt buộc kèm **Metadata-Only Baseline Guard**.
 

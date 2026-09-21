@@ -113,16 +113,16 @@ data/
 
 ## 5. Đề xuất Phương án Thử nghiệm Pilot (docs/PILOT_PROTOCOL.md) — Chờ Duyệt
 
-Dựa trên kết quả kiểm toán ngữ nghĩa nhãn tại Phase 4A.3, thành phần `fr` (fully regenerated) của TGIF **không được gán nhãn là `fully_generated`** mà phải thuộc `ai_edited` hoặc cách ly. Để triệt tiêu nguy cơ shortcut nguồn dữ liệu, dự án phân tách thành kiến trúc hai nhánh độc lập trước khi mở rộng sang 3 lớp:
+Dựa trên kết quả kiểm toán ngữ nghĩa nhãn tại Phase 4A.3, thành phần `fr` (fully regenerated) của TGIF **không được gán nhãn là `fully_generated`** mà phải thuộc `ai_edited` hoặc cách ly. Để giảm đáng kể nguy cơ shortcut nguồn dữ liệu, dự án phân tách thành kiến trúc hai nhánh độc lập trước khi mở rộng sang 3 lớp:
 
 ### Phương án Pilot A — Authentic vs AI-Edited & Localization (TGIF Matched Pairs)
 * **Cấu hình máy đọc**: `ml/configs/pilot_tgif_edit.yaml`
 * **Nguồn dữ liệu**: TGIF Nextcloud (`masks` 40.4 MB, `orig` 6.8 GB, `sd2-sp` 17.3 GB).
-* **Dung lượng nén**: 25,920,307,429 bytes (~24.1 GB).
+* **Dung lượng nén**: 25,919,643,647 bytes (~24.1 GB).
 * **Dung lượng giải nén ước tính**: ~27 GB.
 * **Ổ đĩa trống yêu cầu**: $\ge 55\text{ GB}$.
-* **Số ảnh**: 3,124 authentic + 74,976 inpaintings + 3,124 binary masks (hoặc tập mẫu cân bằng 3,124 ảnh mỗi lớp).
-* **Ưu điểm khoa học**: Cả ảnh thật và ảnh chỉnh sửa đều xuất phát từ cùng một nguồn ảnh MS-COCO (matched pairs), triệt tiêu hoàn toàn rủi ro cross-dataset shortcut.
+* **Số ảnh**: 3,124 authentic (verified) + 18,744 inpaintings (verified trong `sd2-sp`, thuộc 74,976 tổng toàn bộ TGIF) + ~6,248 binary masks (ước tính 2 mask per source image: segm & bbox).
+* **Ưu điểm khoa học**: Thiết kế matched-pair làm giảm đáng kể nguy cơ mô hình học đặc trưng nguồn dữ liệu vì ảnh gốc và ảnh chỉnh sửa chia sẻ cùng source image. Các nguy cơ shortcut từ codec, quy trình sinh ảnh, preprocessing, số lượng biến thể và artifacts của mô hình tạo sinh vẫn phải được đo bằng baseline và source-held-out evaluation.
 * **Mục tiêu khoa học**: Phân loại nhị phân `authentic` vs `ai_edited` và định vị vùng chỉnh sửa với ground-truth mask (Macro-F1, Balanced Acc, mIoU, Dice, Pixel AUROC).
 * **Phương án rút gọn tối thiểu (Low-Bandwidth Option)**: Tải trước `masks` (40.4 MB) + `orig` (6.8 GB) = 6.84 GB để kiểm thử pipeline định vị trước khi tải `sd2-sp`.
 
@@ -139,7 +139,7 @@ Dựa trên kết quả kiểm toán ngữ nghĩa nhãn tại Phase 4A.3, thành
 ### Phương án Pilot C — Thử nghiệm Khám phá Ba Lớp (Three-Class Exploratory)
 * **Điều kiện mở cổng**: Chỉ thực hiện sau khi Pilot A và Pilot B vượt qua bài kiểm toán rò rỉ và shortcut.
 * **Nguồn dữ liệu**: Kết hợp `authentic` (TGIF `orig`), `fully_generated` (GenImage BigGAN), `ai_edited` (TGIF `sd2-sp`).
-* **Ràng buộc khoa học**: Bắt buộc huấn luyện kèm **Metadata-Only Baseline Guard** (đo lường khả năng đoán nhãn chỉ từ resolution, aspect ratio, file size, codec). Nếu mô hình thị giác không vượt trội metadata baseline $\ge 15\%$, kết quả bị coi là shortcut learning do nguồn dataset.
+* **Ràng buộc khoa học**: Bắt buộc huấn luyện kèm **Metadata-Only Baseline Guard** (đo lường khả năng đoán nhãn chỉ từ resolution, aspect ratio, file size, codec). Đánh giá qua Paired Stratified Bootstrap 95% CI; chỉ nghiệm thu khi cận dưới 95% CI của $\Delta\text{Macro-F1} > 0.0$.
 * **Trạng thái**: Gắn nhãn bắt buộc là `exploratory pilot`, chưa dùng làm kết luận khẳng định cho đến khi kiểm chứng cross-dataset.
 
 ---
@@ -147,6 +147,6 @@ Dựa trên kết quả kiểm toán ngữ nghĩa nhãn tại Phase 4A.3, thành
 ### Kết luận Khuyến nghị (Recommended Acquisition Strategy):
 > **Dự án đề xuất lựa chọn Phương án Pilot A làm bước tải đầu tiên** vì:
 > 1. TGIF Nextcloud hỗ trợ tải riêng từng thư mục con độc lập.
-> 2. Cặp ảnh gốc MS-COCO và phiên bản inpainting `sd2-sp` là **matched pairs hoàn hảo**, loại bỏ $100\%$ rủi ro mô hình học đặc trưng camera/compression của dataset khác nhau.
+> 2. Cặp ảnh gốc MS-COCO và phiên bản inpainting `sd2-sp` chia sẻ cùng source image, giảm đáng kể nguy cơ học đặc trưng nguồn ảnh khác nhau.
 > 3. Cung cấp đồng thời ground-truth binary mask cho bài toán định vị (localization).
 > 4. Nếu người dùng muốn tối thiểu hóa lần tải đầu, có thể phê duyệt gói rút gọn `masks` (40.4 MB) + `orig` (6.8 GB) = 6.84 GB. Hoặc phê duyệt toàn bộ Pilot A (~24.1 GB nén, yêu cầu $\ge 55\text{ GB}$ đĩa trống).

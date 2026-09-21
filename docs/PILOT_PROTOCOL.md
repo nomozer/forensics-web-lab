@@ -63,7 +63,7 @@ graph TD
 
 ## 3. Kiến trúc Thí nghiệm Pilot Hai Nhánh Độc lập
 
-Nhằm triệt tiêu nguy cơ mô hình học đặc trưng riêng của dataset (*dataset shortcut*), dự án thiết kế hai nhánh pilot độc lập trước khi mở rộng sang 3 lớp:
+Nhằm giảm đáng kể nguy cơ mô hình học đặc trưng riêng của dataset (*dataset shortcut*), dự án thiết kế hai nhánh pilot độc lập trước khi mở rộng sang 3 lớp:
 
 ```mermaid
 graph LR
@@ -97,11 +97,15 @@ graph LR
 ### 3.1. Pilot A — Authentic vs AI-Edited và Localization
 * **Mục tiêu**: Đánh giá năng lực phân loại nhị phân giữa ảnh thật và ảnh chỉnh sửa cục bộ, đồng thời đo lường năng lực định vị vùng can thiệp bằng sliding window heatmap so với mask thật.
 * **Tập dữ liệu**:
-  - `authentic`: TGIF `orig` (MS-COCO).
-  - `ai_edited`: TGIF `sd2-sp` (hoặc `ps-sp`).
-  - `masks`: TGIF `masks` (ground-truth binary mask).
-* **Ưu điểm khoa học tuyệt đối**: Cả ảnh thật và ảnh chỉnh sửa đều xuất phát từ **cùng một nguồn ảnh gốc MS-COCO**. Mọi đặc trưng về cảm biến, độ phân giải gốc và phong cách chụp đều được triệt tiêu (matched pairs).
-* **Ràng buộc cách ly rò rỉ**: Bắt buộc chia tập theo `source_id` (mã COCO image ID). Một ảnh gốc và bản inpainting của nó **tuyệt đối không bao giờ nằm ở hai split khác nhau**.
+  - `authentic`: TGIF `orig` (3,124 ảnh MS-COCO verified).
+  - `ai_edited`: TGIF `sd2-sp` (18,744 ảnh chỉnh sửa verified).
+  - `masks`: TGIF `masks` (~6,248 binary masks ước tính, 2 masks per source image: segm & bbox).
+* **Ưu điểm khoa học**: Thiết kế matched-pair làm giảm đáng kể nguy cơ mô hình học đặc trưng nguồn dữ liệu vì ảnh gốc và ảnh chỉnh sửa chia sẻ cùng source image. Các nguy cơ shortcut từ codec, quy trình sinh ảnh, preprocessing, số lượng biến thể và artifacts của mô hình tạo sinh vẫn phải được đo bằng baseline và source-held-out evaluation.
+* **Ràng buộc cách ly rò rỉ (Zero-Leakage Group Split)**:
+  - `source_id`: Danh tính ảnh MS-COCO gốc (dùng làm group key duy nhất).
+  - `variant_id`: Danh tính từng phiên bản chỉnh sửa (`orig`, `sd2_v1`, `sd2_v2`, ...).
+  - `mask_id`: Danh tính mask tương ứng (`mask_segm`, `mask_bbox`).
+  - Mọi `variant_id` có cùng `source_id` **bắt buộc phải nằm trong cùng một split** (Train, Val hoặc Test). Tuyệt đối không bao giờ chia tách các biến thể của cùng một ảnh gốc sang các split khác nhau.
 * **Chỉ số đánh giá**:
   - Phân loại: Macro-F1, Balanced Accuracy, AUROC, Confusion Matrix.
   - Định vị: Mean IoU (mIoU), Dice Score, Pixel AUROC.
@@ -118,7 +122,20 @@ graph LR
   1. `authentic`: TGIF `orig` (hoặc tập hợp kiểm soát).
   2. `fully_generated`: GenImage BigGAN / SD.
   3. `ai_edited`: TGIF `sd2-sp`.
-* **Ràng buộc đạo đức nghiên cứu**: Pilot C bắt buộc phải huấn luyện thêm một **Metadata-Only Baseline** (mô hình phân loại chỉ dùng resolution, aspect ratio, file size, codec để đoán nhãn). Nếu visual model không vượt trội đáng kể so với metadata-only baseline, kết quả bị coi là shortcut learning và không được công nhận.
+* **Giao thức Metadata-Only Baseline Guard**:
+  - Metadata-only baseline là diagnostic baseline, không phải bằng chứng duy nhất để loại trừ shortcut.
+  - Tính hiệu suất vượt trội: $\Delta\text{Macro-F1} = \text{Macro-F1}_{\text{visual}} - \text{Macro-F1}_{\text{metadata}}$.
+  - Ước lượng khoảng tin cậy $95\%$ bằng phương pháp Paired Stratified Bootstrap ($1,000$ resamples) trên tập test set.
+  - Báo cáo đầy đủ:
+    1. Macro-F1 của visual model;
+    2. Macro-F1 của metadata-only baseline;
+    3. $\Delta\text{Macro-F1}$;
+    4. Bootstrap $95\%$ Confidence Interval $[CI_{\text{lower}}, CI_{\text{upper}}]$;
+    5. Balanced accuracy;
+    6. Confusion matrix;
+    7. Số lượng mẫu (sample count) từng lớp.
+  - **Quy tắc nghiệm thu**: Kết quả chỉ được xem là có bằng chứng visual model vượt metadata baseline khi **cận dưới $95\%$ CI của $\Delta\text{Macro-F1}$ lớn hơn $0$** ($CI_{\text{lower}} > 0.0$).
+  - Kết luận vẫn phải ghi nhận khả năng tồn tại các dạng shortcut khác (codec artifacts, perceptual patterns).
 * **Trạng thái khoa học**: Gắn nhãn bắt buộc là `exploratory pilot`, chưa dùng làm kết luận khẳng định cho đến khi kiểm chứng cross-dataset.
 
 ---
@@ -126,14 +143,14 @@ graph LR
 ## 4. Giao thức Kiểm soát Shortcut và Chống Rò rỉ Dữ liệu (Anti-Shortcut Protocol)
 
 1. **Deduplication Audit**: Quét toàn bộ mẫu bằng SHA-256 và perceptual hash (pHash khoảng cách Hamming $\le 3$). Mọi mẫu trùng lặp bị cô lập vào cùng một group ID.
-2. **Group Split theo `source_id`**: Phân chia Train (70%), Validation (15%), Test (15%) tuyệt đối dựa trên khóa nhóm ảnh gốc `source_id`.
+2. **Group Split theo `source_id`**: Phân chia Train (70%), Validation (15%), Test (15%) tuyệt đối dựa trên khóa nhóm ảnh gốc `source_id`. Toàn bộ `variant_id` và `mask_id` có cùng `source_id` bị khóa vào cùng một split.
 3. **Thống kê Đa chiều theo Lớp (Class-Level Profile Audit)**: Trước khi huấn luyện, script bắt buộc xuất bảng phân bố:
    - Tỷ lệ từng dataset source trên mỗi lớp.
    - Phân bố độ phân giải (width $\times$ height).
    - Phân bố tỷ lệ khung hình (aspect ratio).
    - Kích thước tệp trung bình (file size bytes).
    - Hệ số nén JPEG ước tính.
-4. **Metadata-Only Baseline Guard**: Đo lường độ chính xác khi phân loại nhãn chỉ bằng các trường phi thị giác. Nếu metadata-only đạt Balanced Accuracy $> 65\%$, hệ thống cảnh báo nguy cơ shortcut cao.
+4. **Metadata-Only Baseline Guard**: Đo lường độ chính xác khi phân loại nhãn chỉ bằng các trường phi thị giác (resolution, aspect ratio, file size, JPEG markers). Đánh giá thống kê qua Paired Stratified Bootstrap 95% CI.
 5. **Tiền xử lý Đồng nhất (Uniform Preprocessing)**: Mọi ảnh bất kể nguồn đều được giải mã ra RGB raw, áp dụng letterbox padding (giữ tỷ lệ, chèn viền trung tính) và resize về kích thước chuẩn ($224 \times 224$ px hoặc $512 \times 512$ px).
 6. **Zero Split Overlap**: Kiểm tra giao tập `source_id` giữa Train, Val, Test phải bằng rỗng ($S_{\text{train}} \cap S_{\text{val}} = \emptyset$, $S_{\text{train}} \cap S_{\text{test}} = \emptyset$).
 
@@ -146,5 +163,5 @@ graph LR
 | **Data Leakage Check** | $0$ ảnh trùng `source_id` giữa các split | Từ chối split, dừng pipeline ngay lập tức |
 | **Duplicate Check** | $0$ mã băm SHA-256 trùng giữa các split | Loại bỏ mẫu trùng, ghi log vi phạm |
 | **Lineage Audit** | $100\%$ mẫu có manifest chuẩn 14 trường và license track | Khóa không cho nạp DataLoader |
-| **Metadata Shortcut Check** | Visual Model Macro-F1 $\ge$ Metadata Baseline $+ 15\%$ | Ghi nhận kết quả bị nghi ngờ shortcut |
+| **Metadata Shortcut Check** | Cận dưới 95% CI của $\Delta\text{Macro-F1} > 0.0$ (Paired Stratified Bootstrap) | Gắn cờ: Chưa có bằng chứng vượt trội metadata baseline |
 | **Localization Heuristic** | Bản đồ nhiệt patch score chỉ được tuyên bố là định vị khi có mIoU $\ge 0.40$ so với mask thật | Gắn nhãn bản đồ nhiệt là `exploratory visualization` |

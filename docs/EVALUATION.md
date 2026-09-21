@@ -92,7 +92,12 @@
    - Chỉ số bắt buộc: Macro-F1, Balanced Accuracy, Cross-Generator F1 Drop.
 3. **Pilot C (Three-Class Exploratory) & Metadata-Only Baseline Guard**:
    - Khi hợp nhất 3 lớp từ các nguồn khác nhau, bắt buộc huấn luyện thêm một **Metadata-Only Baseline** (chỉ dùng resolution, aspect ratio, file size, codec để đoán nhãn).
-   - **Quy tắc nghiệm thu**: Mô hình thị giác phải đạt $\text{Macro-F1}_{\text{visual}} \ge \text{Macro-F1}_{\text{metadata}} + 15\%$. Nếu không vượt qua, kết quả bị coi là shortcut learning do nguồn dataset.
+   - Metadata-only baseline là diagnostic baseline, không phải bằng chứng duy nhất để loại trừ shortcut.
+   - Tính: $\Delta\text{Macro-F1} = \text{Macro-F1}_{\text{visual}} - \text{Macro-F1}_{\text{metadata}}$.
+   - Ước lượng paired stratified bootstrap 95% confidence interval ($1,000$ resamples) trên test set.
+   - Báo cáo: Macro-F1 của visual model, Macro-F1 của metadata-only baseline, $\Delta\text{Macro-F1}$, bootstrap 95% CI, balanced accuracy, confusion matrix, sample count từng lớp.
+   - **Quy tắc nghiệm thu**: Kết quả chỉ được xem là có bằng chứng visual model vượt metadata baseline khi **cận dưới 95% CI của $\Delta\text{Macro-F1}$ lớn hơn 0** ($CI_{\text{lower}} > 0.0$).
+   - Kết luận vẫn phải ghi nhận khả năng tồn tại shortcut khác; Pilot C tiếp tục mang trạng thái `exploratory`.
 
 ---
 

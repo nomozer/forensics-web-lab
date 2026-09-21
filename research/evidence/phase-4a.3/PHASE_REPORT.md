@@ -4,8 +4,9 @@
 > **Repository**: `nomozer/forensics-web-lab`  
 > **Branch**: `feat/production-ai-image-forensics`  
 > **Starting commit**: `0c42f3c`  
-> **Ending commit**: See repository HEAD  
+> **Ending commit**: `9ab0e67`  
 > **Base main commit**: `460f6d5` (bảo toàn nguyên vẹn, không thay đổi)  
+> **Working tree khi nghiệm thu**: clean  
 > **Thời điểm hoàn thành**: 2026-09-21  
 > **Tuyên bố trung thực khoa học**: `No scientific model-performance claim is currently supported.`  
 > **Phán quyết giai đoạn (Verdict)**: **`PASS`**
@@ -16,7 +17,7 @@
 
 1. Xác minh và đóng băng ý nghĩa khoa học của ba nhãn phân loại: `authentic`, `fully_generated`, `ai_edited`.
 2. Xác định chính xác thành phần nào của TGIF/TGIF2 phù hợp với từng nhãn, giải quyết dứt điểm tranh cãi về mặt phương pháp luận đối với hai thành phần `sp` (spliced) và `fr` (fully regenerated).
-3. Thiết kế kiến trúc pilot hai nhánh độc lập (Pilot A: Authentic vs AI-Edited + Localization; Pilot B: Authentic vs Fully-Generated; Pilot C: Three-Class Exploratory) để triệt tiêu nguy cơ mô hình học shortcut từ nguồn dataset (*dataset-source shortcut*).
+3. Thiết kế kiến trúc pilot hai nhánh độc lập (Pilot A: Authentic vs AI-Edited + Localization; Pilot B: Authentic vs Fully-Generated; Pilot C: Three-Class Exploratory) để giảm thiểu đáng kể nguy cơ mô hình học shortcut từ nguồn dataset (*dataset-source shortcut*).
 4. Xây dựng giao thức kiểm soát shortcut và chống rò rỉ dữ liệu (Deduplication SHA-256/pHash, Group Split `source_id`, Class-level profile audit, Metadata-only baseline guard).
 5. Xây dựng cấu hình pilot máy đọc (`ml/configs/pilot_tgif_edit.yaml`, `ml/configs/pilot_genimage_generated.yaml`), module kiểm định cấu hình (`ml/configs/validator.py`), và nâng cấp dry-run acquisition trong `ml/datasets/acquire.py`.
 6. Bổ sung báo cáo nghiệm thu Phase 4A.2 còn thiếu (`research/evidence/phase-4a.2/PHASE_REPORT.md`).
@@ -25,7 +26,7 @@
 
 ---
 
-## 2. Công việc Đã Hoàn thành
+## 2. Kết quả Thực hiện
 
 ### 2.1. Backfill Báo cáo Phase 4A.2 Còn Thiếu
 - Đã tạo `research/evidence/phase-4a.2/PHASE_REPORT.md` (112 dòng) tổng hợp trung thực toàn bộ kết quả khảo sát metadata TGIF/TGIF2, đóng băng phạm vi 3 lớp, hệ thống câu hỏi RQ1–RQ4 và bằng chứng `EV-CONTINUITY-001` đến `EV-PILOT-PROPOSAL-001`.
@@ -36,14 +37,14 @@
   - `fully_generated`: Toàn bộ nội dung ảnh ($100\%$ pixel) được sinh từ mô hình tạo sinh từ nhiễu hoặc văn bản, **không bắt đầu từ một ảnh thật cần giữ nguyên danh tính nội dung**.
   - `ai_edited`: Ảnh bắt đầu từ một ảnh thật, sau đó một phần hoặc toàn bộ canvas được biến đổi bằng generative inpainting/editing có điều kiện từ ảnh nguồn.
 - **Thẩm định `sp` vs `fr` của TGIF**:
-  - `sp` (Spliced): Vùng trong mask là inpainting của SD2/Firefly, vùng ngoài mask là ảnh MS-COCO thật $100\%$. Được xác minh tuyệt đối ($100\%$) là nhãn **`ai_edited`** và dùng cho bài toán localization với mask chuẩn.
+  - `sp` (Spliced): Vùng trong mask là inpainting của SD2/Firefly, vùng ngoài mask là ảnh MS-COCO thật. Được phân loại theo định nghĩa dự án là nhãn **`ai_edited`** và dùng cho bài toán localization với mask chuẩn.
   - `fr` (Fully Regenerated): Inpainter xuất toàn bộ canvas mà không ghép lại. Mặc dù mọi pixel đều đi qua diffusion/VAE, ảnh này **vẫn bắt đầu từ ảnh MS-COCO thật và giữ nguyên cấu trúc/danh tính nội dung của ảnh thật**.
   - **Kết luận phương pháp luận**: `fr` **KHÔNG ĐỦ CĂN CỨ để gọi là `fully_generated`**. Gán `fr` là `fully_generated` sẽ gây mâu thuẫn nhận thức cho mô hình. Thành phần `fr` được phân loại là `ai_edited (conditional regeneration)` và **tạm thời bị cách ly (quarantined) khỏi manifest huấn luyện ban đầu**.
 
 ### 2.3. Thiết kế Kiến trúc Pilot Hai Nhánh Độc lập
 - **Pilot A (Authentic vs AI-Edited + Localization)**:
-  - Nguồn: TGIF `orig` (3,124 ảnh thật), TGIF `sd2-sp` (74,976 ảnh chỉnh sửa), TGIF `masks` (3,124 binary mask).
-  - Ưu điểm: Triệt tiêu hoàn toàn rủi ro cross-dataset shortcut vì cả thật và giả đều xuất phát từ cùng ảnh MS-COCO (matched pairs).
+  - Nguồn: TGIF `orig` (3,124 ảnh thật), TGIF `sd2-sp` (18,744 ảnh chỉnh sửa verified, thuộc tổng 74,976 ảnh manipulated), TGIF `masks` (~6,248 mask ước tính, 2 per source image).
+  - Ưu điểm: Thiết kế matched-pair làm giảm đáng kể nguy cơ mô hình học đặc trưng nguồn dữ liệu vì ảnh gốc và ảnh chỉnh sửa chia sẻ cùng source image. Các nguy cơ shortcut từ codec, quy trình sinh ảnh, preprocessing, số lượng biến thể và artifacts của mô hình tạo sinh vẫn phải được đo bằng baseline và source-held-out evaluation.
   - Ràng buộc: Chia tập Train/Val/Test strictly theo khóa `source_id`.
   - Chỉ số: Macro-F1, Balanced Accuracy, AUROC, mIoU, Dice, Pixel AUROC.
 - **Pilot B (Authentic vs Fully-Generated)**:
@@ -52,7 +53,7 @@
   - Chỉ số: Macro-F1, Balanced Accuracy, AUROC, Cross-Generator F1 Drop.
 - **Pilot C (Three-Class Exploratory)**:
   - Điều kiện: Chỉ được mở khi Pilot A và Pilot B vượt qua bài kiểm toán shortcut.
-  - Ràng buộc: Bắt buộc đo kèm **Metadata-Only Baseline**. Nếu visual model không vượt trội baseline metadata $\ge 15\%$, kết quả bị gắn cờ shortcut learning.
+  - Ràng buộc: Bắt buộc đo kèm **Metadata-Only Baseline**. Nếu cận dưới 95% CI của $\Delta\text{Macro-F1}$ không lớn hơn 0 qua paired stratified bootstrap, kết quả bị gắn cờ không đủ bằng chứng visual model vượt trội metadata baseline.
 
 ### 2.4. Triển khai Cấu hình Máy đọc và Validator
 - Đã tạo `ml/configs/pilot_tgif_edit.yaml` (Pilot A) và `ml/configs/pilot_genimage_generated.yaml` (Pilot B).

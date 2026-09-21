@@ -180,7 +180,15 @@ graph TD
 
 ---
 
-### Phase 4A: Pilot Acquisition & Data Preparation (Chờ người dùng phê duyệt)
+### Phase 4A.4: Evidence Correction & Acquisition Safety Gate (Hoàn thành)
+* [x] **TASK-4A401**: Correct Phase 4A.3 commit references to `9ab0e67`, starting `0c42f3c`, main `460f6d5`, working tree clean; remove placeholder references.
+* [x] **TASK-4A402**: Calibrate scientific claims across code and docs: tone down absolute shortcut elimination statements to nuanced matched-pair risk reduction.
+* [x] **TASK-4A403**: Formulate statistical Metadata-Only Baseline Guard via Paired Stratified Bootstrap 95% CI; eliminate arbitrary 15% threshold.
+* [x] **TASK-4A404**: Audit TGIF cardinality (`tgif-cardinality-audit.json`), classifying verified (3,124 orig, 18,744 sd2-sp), estimated (~6,248 masks, filename, source extraction) and unverified fields.
+* [x] **TASK-4A405**: Create machine-readable auditable acquisition plan `datasets/acquisition-plans/pilot-a-tgif.v1.json` and schema `docs/schemas/acquisition-plan.v1.schema.json`; compute SHA-256 (`7da36f450fe424970e4676fc0c35047ea756385843dd2fb1c656f1fa45deac4e`).
+* [x] **TASK-4A406**: Implement safety gates in `ml/datasets/acquire.py` (free disk, .part file, resume capability, checksum mismatch, zip slip/symlink protection, staging isolation, acquisition receipt).
+* [x] **TASK-4A407**: Author offline unit test suite `ml/tests/test_acquisition_safety.py` (15 tests passing, zero external network requests).
+* [x] **TASK-4A408**: Record Phase 4A.4 evidence items in `docs/EVIDENCE_REGISTER.md` and `research/evidence/phase-4a.4/`.
 * [ ] **TASK-4A1**: User decision on Phase 4A pilot pathway (Recommended: Pilot A ~24.1 GB from TGIF subfolders or low-bandwidth subset masks + orig 6.84 GB vs Pilot B GenImage BigGAN ~24 GB).
 * [ ] **TASK-4A2**: Prepare authorized dataset/fixture splits with group-based anti-leakage isolation.
 
