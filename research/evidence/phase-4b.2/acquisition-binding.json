@@ -1,0 +1,64 @@
+{
+  "schemaVersion": "1.0.0",
+  "bindingId": "acq-binding-phase-4b.2-option-p",
+  "phase": "4B.2",
+  "repository": "nomozer/forensics-web-lab",
+  "branch": "feat/production-ai-image-forensics",
+  "executionHead": "82a5266b6ae01c1328fcc740f91cc4ba771ebeff",
+  "timestampUtc": "2026-09-21T16:51:00Z",
+  "datasetId": "tgif",
+  "option": "option-p",
+  "licenseTrack": "research-only",
+  "license": "CC BY-SA 4.0",
+  "originalLicense": "CC BY 4.0 (MS-COCO 2017)",
+  "remoteHost": "cloud.ilabt.imec.be",
+  "destination": "data/research/tgif/",
+  "totalExpectedBytes": 5879502782,
+  "hardNetworkCeilingBytes": 6442450944,
+  "acquisitionPlan": {
+    "file": "datasets/acquisition-plans/pilot-a-tgif-option-p.v1.json",
+    "sha256": "886e3776d3aa295195a8aa775f3737d6c158b806974cf8b53b8a6acc1b485c49"
+  },
+  "acquisitionScript": {
+    "file": "ml/datasets/acquire.py",
+    "sha256": "352810c55ae82fe91052daa4d900dddaaf11d434beef1565b1cdfbf7d0cfb029"
+  },
+  "archives": [
+    {
+      "componentId": "tgif-orig-validation",
+      "archiveName": "orig_validation.tar.gz",
+      "url": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o/download?path=%2Forig&files=orig_validation.tar.gz",
+      "expectedBytes": 859947874,
+      "expectedEtag": "d95a1202a7445d79872735f60cbeaa95",
+      "assignedLabel": "authentic",
+      "targetExtractDir": "data/research/tgif/orig/"
+    },
+    {
+      "componentId": "tgif-orig-testing",
+      "archiveName": "orig_testing.tar.gz",
+      "url": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o/download?path=%2Forig&files=orig_testing.tar.gz",
+      "expectedBytes": 806962390,
+      "expectedEtag": "fc2934fed45674aa89479640d0030beb",
+      "assignedLabel": "authentic",
+      "targetExtractDir": "data/research/tgif/orig/"
+    },
+    {
+      "componentId": "tgif-sd2-sp-validation",
+      "archiveName": "sd2-sp_validation.tar.gz",
+      "url": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o/download?path=%2Fsd2-sp&files=sd2-sp_validation.tar.gz",
+      "expectedBytes": 2172017290,
+      "expectedEtag": "44b9e62f224dd312f59d9a5bd79d1171",
+      "assignedLabel": "ai_edited",
+      "targetExtractDir": "data/research/tgif/sd2-sp/"
+    },
+    {
+      "componentId": "tgif-sd2-sp-testing",
+      "archiveName": "sd2-sp_testing.tar.gz",
+      "url": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o/download?path=%2Fsd2-sp&files=sd2-sp_testing.tar.gz",
+      "expectedBytes": 2040575228,
+      "expectedEtag": "2aa172ad2b1200973b7593259b37cc07",
+      "assignedLabel": "ai_edited",
+      "targetExtractDir": "data/research/tgif/sd2-sp/"
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "schemaVersion": "1.0.0",
+  "phase": "4B.2",
+  "startingCommit": "82a5266",
+  "verdict": "PASS",
+  "artifactsCount": 13,
+  "artifacts": [
+    {
+      "file": "acquisition-binding.json",
+      "bytes": 2606,
+      "sha256": "3b3ab3fc38b0e21871716c6f92a3c1ff492a49b83563bc34886cc51475781d4a"
+    },
+    {
+      "file": "archive-inventory.json",
+      "bytes": 2086,
+      "sha256": "776bb6c9227ef5f3458f4563fb625a64702e73dcca28e797f1215b1cadf03807"
+    },
+    {
+      "file": "build-summary.json",
+      "bytes": 435,
+      "sha256": "1321d88be355e23bab699eae30d117e5695b62dd05607d9aebf6f4554c9619e1"
+    },
+    {
+      "file": "class-coverage-audit.json",
+      "bytes": 1077,
+      "sha256": "f7a3eeacdf43dbaed9adaeb6221e97a80374c30262d3d96528dbbb2df14f32f7"
+    },
+    {
+      "file": "content-manifest-summary.json",
+      "bytes": 665,
+      "sha256": "e6c97ff2c334a3c3a401cf81488a179b7df0aaa3f988b98ea53512b5a2290d59"
+    },
+    {
+      "file": "download-receipt.json",
+      "bytes": 3901,
+      "sha256": "74bf64161b28c9ab2b01755795cd6d1eebef783e56dabc378ad850dbcb0a5c91"
+    },
+    {
+      "file": "environment.json",
+      "bytes": 456,
+      "sha256": "bf6641873782c6c5468bd855d4892031cdc481860baed53854e45c1d5a2cda1b"
+    },
+    {
+      "file": "extraction-summary.json",
+      "bytes": 1267,
+      "sha256": "a0ddeed2eb4b97e48389f312279c6cbfd803c7f8607ab41fd300768ad4216f23"
+    },
+    {
+      "file": "pairability-audit.json",
+      "bytes": 642,
+      "sha256": "c69f30ddea870663091937a15ad0f4ce9790489f3ed484e10a11850139d04e6a"
+    },
+    {
+      "file": "PHASE_REPORT.md",
+      "bytes": 11067,
+      "sha256": "beef510782d9cb9feb35f7e2f092cc05f3a4505621e0e0a77b4c62a4698d84b9"
+    },
+    {
+      "file": "split-lock.json",
+      "bytes": 8354,
+      "sha256": "04cbaebd5485470b07d83c9492726fae6c1fafffec4e072f51aff051ca841dc7"
+    },
+    {
+      "file": "test-summary.json",
+      "bytes": 716,
+      "sha256": "46e8222669ae3a9c50db9b0a8ec39cd4d8789f60358421426bb2da182f0ff223"
+    },
+    {
+      "file": "user-approval.json",
+      "bytes": 598,
+      "sha256": "eacc81104178763cb014293e8536230992546cafcfa36898ce53bfc8701570ad"
+    }
+  ]
+}

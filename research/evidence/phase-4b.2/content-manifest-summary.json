@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "1.0.0",
+  "phase": "4B.2",
+  "auditDate": "2026-09-21",
+  "totalAuthenticImages": 2052,
+  "totalAiEditedImages": 4104,
+  "totalMaskFiles": 6838,
+  "uniqueSourcesTotal": 684,
+  "partitions": {
+    "development_train": {
+      "sources": 250,
+      "authentic_images": 250
+    },
+    "inner_validation": {
+      "sources": 91,
+      "authentic_images": 91
+    },
+    "locked_test": {
+      "sources": 343,
+      "authentic_images": 343
+    }
+  },
+  "decodeIntegrity": {
+    "corruptImagesCount": 0,
+    "validDecodePercentage": 100.0
+  },
+  "manifestCsv": "data/research/tgif/manifests/manifest_pilot_a_option_p.csv"
+}

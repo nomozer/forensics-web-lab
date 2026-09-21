@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "1.0.0",
+  "phase": "4B.2",
+  "auditDate": "2026-09-21",
+  "datasetTrack": "research-only",
+  "classesPresentInResearchTrack": {
+    "authentic": {
+      "present": true,
+      "source": "TGIF orig (validation + testing)",
+      "imageCount": 2052,
+      "sourceCount": 684
+    },
+    "ai_edited": {
+      "present": true,
+      "source": "TGIF sd2-sp (validation + testing)",
+      "imageCount": 4104,
+      "sourceCount": 684
+    },
+    "fully_generated": {
+      "present": false,
+      "source": null,
+      "imageCount": 0,
+      "sourceCount": 0,
+      "status": "missing-fully-generated-data"
+    }
+  },
+  "pipelineReadiness": {
+    "twoClassAuthenticVsEdited": {
+      "status": "runnable",
+      "supported": true
+    },
+    "threeClassGeneralization": {
+      "status": "not-runnable-missing-fully-generated-data",
+      "supported": false,
+      "reason": "Option P contains only authentic and ai_edited images. Three-class experiments require Pilot B/C with an approved fully_generated dataset."
+    }
+  }
+}
