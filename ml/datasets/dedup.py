@@ -7,7 +7,10 @@ def compute_dhash(image_path: Path, hash_size: int = 8) -> int:
     try:
         with Image.open(image_path) as img:
             resized = img.convert("L").resize((hash_size + 1, hash_size), Image.Resampling.BILINEAR)
-            pixels = list(resized.getdata())
+            if hasattr(resized, "get_flattened_data"):
+                pixels = list(resized.get_flattened_data())
+            else:
+                pixels = list(resized.getdata())
 
             diff = []
             for row in range(hash_size):

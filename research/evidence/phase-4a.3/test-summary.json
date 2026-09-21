@@ -1,0 +1,33 @@
+{
+  "phase": "Phase 4A.3",
+  "testRunTimestampUtc": "2026-09-21T12:26:00Z",
+  "vitest": {
+    "status": "passed",
+    "totalTests": 57,
+    "passedTests": 57,
+    "failedTests": 0,
+    "packages": [
+      { "name": "@forensics/shared", "tests": 34, "status": "passed" },
+      { "name": "@forensics/provenance", "tests": 3, "status": "passed" },
+      { "name": "@forensics/report", "tests": 4, "status": "passed" },
+      { "name": "@forensics/forensics", "tests": 5, "status": "passed" },
+      { "name": "@forensics/inference", "tests": 8, "status": "passed" },
+      { "name": "web", "tests": 3, "status": "passed" }
+    ]
+  },
+  "pytest": {
+    "status": "passed",
+    "totalTests": 23,
+    "passedTests": 23,
+    "failedTests": 0,
+    "suites": [
+      { "name": "ml/tests/test_contamination_guard.py", "tests": 10, "status": "passed" },
+      { "name": "ml/tests/test_model_pipeline.py", "tests": 5, "status": "passed" },
+      { "name": "ml/tests/test_pilot_protocol.py", "tests": 8, "status": "passed" }
+    ]
+  },
+  "cleanLinkScan": {
+    "status": "passed",
+    "machineLocalLinksFound": 0
+  }
+}

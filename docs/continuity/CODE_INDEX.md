@@ -84,6 +84,7 @@ graph TD
 | **Evaluation Metrics Harness** | `ml/evaluation/metrics.py`, `evaluate.py` | `implemented-and-tested` |
 | **ONNX Export & Parity Test** | `ml/export/export_onnx.py`, `validate_contract.py` | `implemented-and-tested` |
 | **Acquisition Guard CLI** | `ml/datasets/acquire.py` | `implemented-and-tested` |
+| **Pilot Protocols & Configs** | `ml/configs/validator.py`, `pilot_tgif_edit.yaml`, `pilot_genimage_generated.yaml` | `implemented-and-tested` |
 
 ---
 

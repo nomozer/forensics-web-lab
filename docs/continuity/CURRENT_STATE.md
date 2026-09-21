@@ -75,7 +75,9 @@ Hệ thống phân biệt rõ ràng 5 mức độ sẵn sàng:
 | **Focal Loss & Calibration Math** | `technically verified` | `pipeline-only` | Đã test trên synthetic tensors |
 | **ONNX Export & Parity Harness** | `technically verified` | `pipeline-only` | Parity test $L_\infty < 10^{-4}$ trên un-trained model |
 | **Dual-Track Contamination Guards**| `technically verified` | `verified` | Cấm model sản phẩm dùng dataset phi thương mại |
-| **In-Browser ONNX Inference** | `implemented` | `blocked` | Chờ checkpoint huấn luyện thật từ Phase 4 |
+| **Scientific Pilot Protocol**     | `technically verified` | `exploratory` | Hai nhánh độc lập Pilot A/B, Pilot C có baseline guard |
+| **Label-Semantics Gate**          | `technically verified` | `verified` | sp là ai_edited, fr loại trừ khỏi fully_generated |
+| **In-Browser ONNX Inference**     | `implemented` | `blocked` | Chờ checkpoint huấn luyện thật từ Phase 4 |
 | **Scientific Detection Accuracy** | `planned` | `unverified` | **Not evaluated**; không có số liệu F1/ECE thật |
 
 ---
@@ -87,24 +89,25 @@ Hệ thống phân biệt rõ ràng 5 mức độ sẵn sàng:
 * **Runtime Web Engine**: `measured build artifact` (File WASM engine `ort-wasm-simd-threaded.jsep.wasm` đo được 28.3 MB; đây là runtime binary của ONNX Web, **không phải model weights**).
 * **Dataset bên ngoài**: `0 bytes` (chưa tải bất kỳ byte dataset bên ngoài nào; mạng bị khóa an toàn).
 * **Synthetic Smoke Fixture**: Track `fixture-only`, purpose `fixture`, `commercialUse: internal-testing-only` (sinh cục bộ bằng code, dùng cho test kỹ thuật).
-* **GenImage**: Track `research-only`, `derivativeWeights: unclear`, `productionPromotion: prohibited-by-project-policy`. BigGAN archive ~24 GB nén đã được kiểm kê toàn diện.
-* **TGIF / TGIF2**: Track `research-only`, `datasetLicense: CC BY-SA 4.0`, `original: CC BY 4.0 MS-COCO`. Khảo sát Nextcloud: 65.4 GB TGIF, 110 GB TGIF2 FLUX; hỗ trợ tải lẻ từng thư mục.
+* **GenImage**: Track `research-only`, `derivativeWeights: unclear`, `productionPromotion: prohibited-by-project-policy`. BigGAN archive ~24 GB nén đã được kiểm kê toàn diện. Cấu hình tại `ml/configs/pilot_genimage_generated.yaml`.
+* **TGIF / TGIF2**: Track `research-only`, `datasetLicense: CC BY-SA 4.0`, `original: CC BY 4.0 MS-COCO`. Nextcloud: 65.4 GB TGIF, 110 GB TGIF2 FLUX; hỗ trợ tải lẻ từng thư mục. Cấu hình tại `ml/configs/pilot_tgif_edit.yaml`.
 * **Datasets bị khóa**: `realhd`, `sagi-d`, `raid` (trạng thái `blocked`, `licenseStatus: unverified`).
 
 ---
 
 ## 6. Kết quả Kiểm thử & Bản dựng Gần nhất (Latest Verification)
 
-* **TypeScript Test Suite (`pnpm test`)**: 56/56 tests passing trên 6 package (@forensics/shared: 34, @forensics/provenance: 3, @forensics/report: 4, @forensics/forensics: 5, @forensics/inference: 8, web: 3).
-* **Python Test Suite (`pytest ml/tests -v`)**: 15/15 tests passing (kiểm soát ô nhiễm, download lock, manifest, split, focal loss, calibration).
-* **Production Web Build (`pnpm build`)**: Exit code 0, 3.03s, bundle hợp lệ.
+* **TypeScript Test Suite (`pnpm test`)**: 57/57 tests passing trên 6 package (@forensics/shared: 34, @forensics/provenance: 3, @forensics/report: 4, @forensics/forensics: 5, @forensics/inference: 8, web: 3).
+* **Python Test Suite (`pytest ml/tests -v`)**: 23/23 tests passing (kiểm soát ô nhiễm: 10, pipeline: 5, pilot protocol & label gate: 8).
+* **Pilot Config Validation**: 2/2 pilot configs valid theo `ml/configs/validator.py`.
+* **Production Web Build (`pnpm build`)**: Exit code 0, 3.33s, bundle hợp lệ.
 * **Clean Link Invariance**: 0 machine-local links (`file:///`, `C:\`, `D:\`) trong markdown links repository.
 
 ---
 
 ## 7. Giới hạn Kỹ thuật và Nguy cơ Ảnh hưởng Độ tin cậy
 
-1. **Nguy cơ Shortcut Nguồn Dữ liệu**: Nếu các lớp lấy từ các nguồn ảnh khác nhau, mô hình có thể học đặc trưng camera/compression thay vì dấu vết AI. Biện pháp: group split theo `source_id`, dùng matched pairs của TGIF, chuẩn hóa tiền xử lý.
+1. **Nguy cơ Shortcut Nguồn Dữ liệu**: Nếu các lớp lấy từ các nguồn ảnh khác nhau, mô hình có thể học đặc trưng camera/compression thay vì dấu vết AI. Biện pháp: thiết kế hai nhánh độc lập (Pilot A trên matched pairs MS-COCO, Pilot B trên ImageNet), chia tập group split theo `source_id`, chuẩn hóa tiền xử lý, và đo kèm metadata-only baseline cho Pilot C.
 2. **Không có Model AI Cài Đặt**: Hiện tại toàn bộ kết quả phân tích AI trên UI hiển thị trung thực là `uncertain` với banner "Model not installed".
 3. **Chưa có Đo đạc Trực tiếp Trình duyệt Đa Thiết bị**: Runtime latency và peak memory trên mobile/low-end devices cần được kiểm chứng khi có checkpoint thật.
 
@@ -118,12 +121,17 @@ Hệ thống phân biệt rõ ràng 5 mức độ sẵn sàng:
 * `EV-TGIF-METADATA-001`: Kiểm kê metadata TGIF/TGIF2 qua Nextcloud (65.4 GB, hỗ trợ tải lẻ).
 * `EV-TGIF-LICENSE-001`: Thẩm định giấy phép TGIF CC BY-SA 4.0 và MS-COCO CC BY 4.0.
 * `EV-GENIMAGE-REMOTE-METADATA-001`: Khảo sát Google Drive GenImage (BigGAN ~24 GB multi-part).
-* `EV-NOMODEL-001`: Trung thực trạng thái không có model (`uncertain`, `confidence: null`).
-* `EV-EXTERNAL-DOWNLOAD-LOCK-001`: Khóa tải ngoài bằng CLI, yêu cầu người dùng phê duyệt cụ thể.
+* `EV-LABEL-GATE-001`: Đóng băng 3 nhãn chuẩn tắc và loại bỏ nhãn giả tạo.
+* `EV-TGIF-SEMANTICS-001`: Thẩm định `sp` (ai_edited) và `fr` (quarantined/conditional regeneration).
+* `EV-PILOT-DESIGN-001`: Kiến trúc thí nghiệm pilot hai nhánh độc lập A/B/C.
+* `EV-SHORTCUT-PROTOCOL-001`: Giao thức chống rò rỉ và kiểm soát shortcut (dedup, group-split, metadata guard).
+* `EV-PILOT-CONFIGS-001`: Cấu hình pilot YAML máy đọc và validator tự động.
+* `EV-ACQUISITION-DRYRUN-001`: Dry-run thu nạp dữ liệu Pilot A/B đạt 0 bytes ngoại vi.
 
 ---
 
 ## 9. Công việc Đang thực hiện & Công việc Tiếp theo
 
-* **Đang thực hiện (Phase 4A.2)**: Đóng băng phạm vi nghiên cứu, thiết lập bộ tài liệu continuity 3 file, hoàn thành kiểm kê TGIF/TGIF2.
-* **Công việc tiếp theo (Phase 4A)**: Trình đề xuất Pilot B (~3,000 ảnh từ TGIF) để người dùng phê duyệt trước khi tải bất kỳ byte dữ liệu nào.
+* **Đã hoàn thành (Phase 4A.3)**: Hoàn thiện giao thức thí nghiệm pilot bảo vệ trước hội đồng, đóng băng ý nghĩa 3 nhãn, giải quyết ngữ nghĩa TGIF `sp`/`fr`, thiết kế pilot A/B/C, tạo cấu hình YAML máy đọc và validator, backfill báo cáo Phase 4A.2.
+* **Công việc tiếp theo (Phase 4B / Data Acquisition)**: Chờ người dùng phê duyệt `NEXT APPROVAL REQUEST` để mở khóa tải dữ liệu thật cho Pilot A (TGIF subfolders) hoặc Pilot B (GenImage BigGAN).
+

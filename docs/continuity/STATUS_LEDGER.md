@@ -6,10 +6,23 @@
 
 ---
 
+## Phase 4A.3 — Scientific Pilot Protocol & Label-Semantics Gate
+- **Mục tiêu**: Đóng băng định nghĩa 3 nhãn, giải quyết dứt điểm ngữ nghĩa TGIF `sp`/`fr`, thiết kế pilot hai nhánh độc lập (Pilot A/B/C), xây dựng cấu hình máy đọc và validator.
+- **Starting commit**: `0c42f3c`
+- **Ending commit**: See repository HEAD
+- **Thay đổi chính**: Tạo `docs/PILOT_PROTOCOL.md` (label gate, `sp` vs `fr` audit, anti-shortcut protocol); tạo `ml/configs/pilot_tgif_edit.yaml` và `ml/configs/pilot_genimage_generated.yaml`; tạo validator `ml/configs/validator.py`; cập nhật `ml/datasets/acquire.py` với lệnh `--pilot`; backfill báo cáo Phase 4A.2; viết unit test kiểm định 3 lớp, chống rò rỉ và dry-run.
+- **Kiểm tra kỹ thuật**: `pnpm test` (57/57 passing), `pytest` (23/23 passing), `pnpm build` (exit 0), 0 machine-local links, 0 byte external data.
+- **Kết quả khoa học**: Xác minh `sp` là `ai_edited`; loại trừ `fr` khỏi `fully_generated` (quarantined); tách Pilot A (TGIF matched pairs) và Pilot B (GenImage); Pilot C kèm metadata baseline; toàn bộ metric là `not evaluated`.
+- **Evidence**: `research/evidence/phase-4a.3/` (`EV-LABEL-GATE-001`, `EV-TGIF-SEMANTICS-001`, `EV-PILOT-DESIGN-001`, `EV-SHORTCUT-PROTOCOL-001`, `EV-PILOT-CONFIGS-001`, `EV-ACQUISITION-DRYRUN-001`).
+- **Giới hạn**: Chưa tải dữ liệu thật; chờ phê duyệt `NEXT APPROVAL REQUEST`.
+- **Quyết định tiếp theo**: Người dùng xem xét phê duyệt tải dữ liệu thật cho Pilot A hoặc Pilot B.
+
+---
+
 ## Phase 4A.2 — Research Scope Freeze, Continuity Protocol & TGIF Audit
 - **Mục tiêu**: Hợp nhất tài liệu continuity sang bộ 3 file thống nhất, đóng băng phạm vi khoa học (3 lớp + uncertain), khảo sát TGIF/TGIF2 và đề xuất phương án pilot.
 - **Starting commit**: `863a491`
-- **Ending commit**: See repository HEAD
+- **Ending commit**: `0c42f3c`
 - **Thay đổi chính**: Tạo `docs/continuity/` (CODE_INDEX, CURRENT_STATE, STATUS_LEDGER); xóa các file continuity cũ; cập nhật `AGENTS.md`; đóng băng 4 câu hỏi nghiên cứu và hệ thống chỉ số trong `docs/RESEARCH_PLAN.md` và `docs/EVALUATION.md`; thêm TGIF/TGIF2 vào `datasets/registry.json`; khảo sát 3 share Nextcloud TGIF (65.4 GB, 110 GB, 73 GB; hỗ trợ tải lẻ từng thư mục); đề xuất Pilot B (3,000 ảnh) cho khóa luận.
 - **Kiểm tra kỹ thuật**: `pnpm test` (56/56 passing), `pnpm build` (exit code 0), `pytest` (15/15 passing), 0 machine-local links, 0 byte external data.
 - **Kết quả khoa học**: Khóa phạm vi 3 lớp (`authentic`, `fully_generated`, `ai_edited`); localization là mục tiêu phụ; toàn bộ metric tiếp tục là `not evaluated`.

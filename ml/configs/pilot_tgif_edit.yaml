@@ -1,0 +1,92 @@
+# Pilot A Configuration: Authentic vs AI-Edited Classification and Inpainting Localization
+schema_version: "1.0.0"
+pilot_id: "pilot_tgif_edit"
+pilot_branch: "Pilot A"
+title: "Pilot A: Authentic vs AI-Edited Classification and Inpainting Localization"
+scientific_status: "exploratory_pilot"
+license_track: "research-only"
+
+task: "classification_and_localization"
+accepted_labels:
+  - "authentic"
+  - "ai_edited"
+
+dataset_components:
+  - component_id: "tgif_orig"
+    dataset_id: "tgif"
+    remote_folder: "orig"
+    assigned_label: "authentic"
+    semantic_role: "camera_authentic_source"
+    image_source: "MS-COCO 2017 (CC BY 4.0)"
+    source_license: "CC BY 4.0"
+    verified_bytes: 7301444403
+    expected_image_count: 3124
+
+  - component_id: "tgif_sd2_sp"
+    dataset_id: "tgif"
+    remote_folder: "sd2-sp"
+    assigned_label: "ai_edited"
+    semantic_role: "spliced_inpainting"
+    generator: "Stable Diffusion 2 Inpainting"
+    source_license: "CC BY-SA 4.0"
+    verified_bytes: 18576100556
+    expected_image_count: 74976
+
+  - component_id: "tgif_masks"
+    dataset_id: "tgif"
+    remote_folder: "masks"
+    assigned_label: "ground_truth_mask"
+    semantic_role: "localization_mask"
+    source_license: "CC BY-SA 4.0"
+    verified_bytes: 42362470
+    expected_image_count: 3124
+
+manifest:
+  manifest_path: "data/research/tgif/manifest_pilot_a.csv"
+  schema_version: "1.0.0"
+
+split:
+  group_key: "source_id"
+  split_strategy: "group_kfold"
+  num_splits: 5
+  train_ratio: 0.70
+  val_ratio: 0.15
+  test_ratio: 0.15
+  seed: 42
+  enforce_zero_leakage: true
+
+preprocessing:
+  target_size: [224, 224]
+  color_space: "RGB"
+  aspect_ratio_handling: "letterbox_neutral_pad"
+  normalization: "imagenet_standard"
+
+evaluation:
+  primary_classification_metrics:
+    - "macro_f1"
+    - "balanced_accuracy"
+  secondary_classification_metrics:
+    - "auroc"
+    - "precision_per_class"
+    - "recall_per_class"
+    - "f1_per_class"
+    - "confusion_matrix"
+  calibration_metrics:
+    - "expected_calibration_error"
+    - "brier_score"
+    - "negative_log_likelihood"
+  localization_metrics:
+    - "mean_iou"
+    - "dice_score"
+    - "pixel_auroc"
+
+shortcut_checks:
+  - "source_id_group_isolation"
+  - "sha256_exact_dedup"
+  - "phash_near_dedup"
+  - "class_resolution_profile_audit"
+  - "metadata_only_baseline_guard"
+
+rules:
+  fr_component_policy: "prohibited_from_fully_generated"
+  notes: "TGIF fr (fully regenerated) components are conditional on MS-COCO authentic images and must NEVER be mapped to fully_generated. In Pilot A, fr components are quarantined."

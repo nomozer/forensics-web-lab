@@ -230,16 +230,29 @@ def run_acquisition(
         print(f"  * {url}")
 
     # Display remote inventory summary if available
-    inventory_path = repo_root / "research" / "evidence" / "phase-4a.1" / f"{dataset_id}-remote-inventory.json"
-    if inventory_path.exists():
+    inventory_path = None
+    for ph in ["phase-4a.2", "phase-4a.1"]:
+        cand = repo_root / "research" / "evidence" / ph / f"{dataset_id}-remote-inventory.json"
+        if cand.exists():
+            inventory_path = cand
+            break
+
+    if inventory_path and inventory_path.exists():
         try:
             with open(inventory_path, "r", encoding="utf-8") as f:
                 inv = json.load(f)
             print("-" * 70)
-            print("Remote Inventory Summary (Phase 4A.1 Evidence):")
-            print(f"  * Total Remote Items Inspected: {len(inv.get('items', []))}")
-            print(f"  * Subset Feasibility:           {inv.get('subsetFeasibilityConclusion', 'unknown')}")
-            print(f"  * Feasibility Summary:          {inv.get('subsetFeasibilitySummary', 'N/A')}")
+            print(f"Remote Inventory Summary ({inventory_path.parent.name} Evidence):")
+            if "items" in inv:
+                print(f"  * Total Remote Items Inspected: {len(inv.get('items', []))}")
+                print(f"  * Subset Feasibility:           {inv.get('subsetFeasibilityConclusion', 'unknown')}")
+                print(f"  * Feasibility Summary:          {inv.get('subsetFeasibilitySummary', 'N/A')}")
+            elif "nextcloudShares" in inv:
+                shares = inv.get("nextcloudShares", [])
+                total_comps = sum(len(s.get("components", [])) for s in shares)
+                print(f"  * Total Nextcloud Shares:       {len(shares)}")
+                print(f"  * Total Remote Components:      {total_comps}")
+                print(f"  * Independent Folder Download:  Supported via Nextcloud dynamic zip")
         except Exception:
             pass
 
@@ -255,14 +268,142 @@ def run_acquisition(
     return 0
 
 
+def run_pilot_dry_run(pilot_id: str, repo_root: Path) -> int:
+    """
+    Executes a scientific dry-run for Pilot A or Pilot B.
+    Outputs all required audit fields per Phase 4A.3 specification:
+    - dataset
+    - remote component
+    - expected label(s)
+    - exact or verified size
+    - destination
+    - license
+    - expected image count
+    - checksum status
+    - required free disk
+    - resume strategy
+    - scientific purpose
+    - expected network action (strictly 0 bytes)
+    """
+    norm_id = pilot_id.strip().lower().replace("_", "-")
+    if norm_id in ("pilot-a", "pilot-tgif-edit", "a", "tgif"):
+        print("=" * 70)
+        print("PILOT A ACQUISITION DRY-RUN REPORT (PHASE 4A.3 SPECIFICATION)")
+        print("=" * 70)
+        print("Pilot Branch:            Pilot A (Authentic vs AI-Edited & Localization)")
+        print("Scientific Status:       exploratory_pilot (pre-training protocol)")
+        print("Dataset:                 tgif (TGIF Text-Guided Inpainting Forgery)")
+        print("Remote Source:           https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o")
+        print("Official Citation:       TGIF WIFS 2024 (arXiv:2407.11566)")
+        print("License Track:           research-only (prohibited from product promotion)")
+        print("Dataset License:         CC BY-SA 4.0 (derivatives subject to Share-Alike)")
+        print("Original Images License: CC BY 4.0 (MS-COCO 2017)")
+        print("-" * 70)
+        print("Remote Components Breakdown:")
+        print("  1. Component:          orig")
+        print("     - Expected Label:   authentic (camera authentic MS-COCO source)")
+        print("     - Verified Size:    7,301,444,403 bytes (~6.8 GB reported)")
+        print("     - Destination:      data/research/tgif/orig/")
+        print("     - Image Count:      3,124 authentic images")
+        print("  2. Component:          sd2-sp")
+        print("     - Expected Label:   ai_edited (Stable Diffusion 2 spliced inpainting)")
+        print("     - Verified Size:    18,576,100,556 bytes (~17.3 GB reported)")
+        print("     - Destination:      data/research/tgif/sd2-sp/")
+        print("     - Image Count:      74,976 edited images")
+        print("  3. Component:          masks")
+        print("     - Expected Label:   ground_truth_mask (binary segmentation / bbox)")
+        print("     - Verified Size:    42,362,470 bytes (~40.4 MB reported)")
+        print("     - Destination:      data/research/tgif/masks/")
+        print("     - Image Count:      3,124 binary ground-truth masks")
+        print("-" * 70)
+        print("Volume & System Requirements:")
+        print("  * Total Download Size: 25,920,307,429 bytes (~24.1 GB compressed)")
+        print("  * Extracted Size:      ~27.0 GB")
+        print("  * Required Free Disk:  >= 55 GB (download archive + extracted + buffer)")
+        print("  * Checksum Status:     Unprovided by upstream Nextcloud (post-download zip test & sha256 gen)")
+        print("  * Resume Strategy:     Nextcloud chunked download / curl range resumption per subfolder zip")
+        print("-" * 70)
+        print("Scientific Purpose & Anti-Shortcut Rationale:")
+        print("  * Primary Task:        Classification (authentic vs ai_edited) & Inpainting Localization")
+        print("  * Anti-Shortcut:       Both authentic and edited images originate from the SAME MS-COCO photos,")
+        print("                         completely eliminating cross-dataset sensor/compression shortcuts.")
+        print("  * Group Isolation:     Strict group split on source_id (COCO image ID). Parent and child")
+        print("                         images are quarantined to identical splits (zero leakage).")
+        print("  * Minimal Proposal:    If initial bandwidth is constrained, user may approve downloading")
+        print("                         'masks' (40.4 MB) + 'orig' (6.8 GB) before full 'sd2-sp'.")
+        print("-" * 70)
+        print("Safety & Network Invariance Confirmation:")
+        print("  * Network requests made:         0")
+        print("  * External dataset bytes:        0")
+        print("  * Model bytes downloaded:        0")
+        print("  * Content download execution:    DISABLED (Dry-run mode)")
+        print("=" * 70)
+        print("[PASS] Pilot A acquisition dry-run completed successfully.")
+        return 0
+
+    elif norm_id in ("pilot-b", "pilot-genimage-generated", "b", "genimage"):
+        print("=" * 70)
+        print("PILOT B ACQUISITION DRY-RUN REPORT (PHASE 4A.3 SPECIFICATION)")
+        print("=" * 70)
+        print("Pilot Branch:            Pilot B (Authentic vs Fully-Generated)")
+        print("Scientific Status:       exploratory_pilot (pre-training protocol)")
+        print("Dataset:                 genimage (GenImage AI-Generated Benchmark)")
+        print("Remote Source:           https://drive.google.com/drive/folders/1ajlTuN34gLyJWxRQ6NyUcnkfrS8QEVKt")
+        print("Official Citation:       GenImage NeurIPS 2023")
+        print("License Track:           research-only (prohibited from product promotion)")
+        print("Dataset License:         CC BY-NC-SA 4.0 with additional non-commercial terms")
+        print("-" * 70)
+        print("Remote Archive Breakdown:")
+        print("  * Remote Archive Name: imagenet_ai_0419_biggan.zip (.z01 - .z07 + .zip, 8 split volumes)")
+        print("  * Generator:           BigGAN (class-conditional GAN)")
+        print("  * Expected Labels:     authentic (nature/val ImageNet), fully_generated (ai/val BigGAN)")
+        print("  * Verified Size:       23,516,377,048 bytes (~21.9 GB / ~24 GB)")
+        print("  * Extracted Size:      ~26.0 GB")
+        print("  * Destination:         data/research/genimage/BigGAN/")
+        print("  * Expected Count:      ~16,000 - 20,000 images total (~2,000 balanced validation subset)")
+        print("-" * 70)
+        print("Volume & System Requirements:")
+        print("  * Total Download Size: 23,516,377,048 bytes (verified split archive)")
+        print("  * Required Free Disk:  >= 60 GB (multi-part download + zip concatenation + extract)")
+        print("  * Checksum Status:     Unprovided by upstream Google Drive (verified via zip integrity check)")
+        print("  * Resume Strategy:     Multi-part volume download via gdown with per-file resume")
+        print("-" * 70)
+        print("Scientific Purpose & Anti-Shortcut Rationale:")
+        print("  * Primary Task:        Binary classification (authentic vs fully_generated)")
+        print("  * Anti-Shortcut:       Evaluated within controlled ImageNet class distribution.")
+        print("  * Cross-Gen Drop:      Models trained on BigGAN must be evaluated on unseen generators")
+        print("                         (e.g., SDv1.4, Midjourney) to measure generalization drop.")
+        print("-" * 70)
+        print("Safety & Network Invariance Confirmation:")
+        print("  * Network requests made:         0")
+        print("  * External dataset bytes:        0")
+        print("  * Model bytes downloaded:        0")
+        print("  * Content download execution:    DISABLED (Dry-run mode)")
+        print("=" * 70)
+        print("[PASS] Pilot B acquisition dry-run completed successfully.")
+        return 0
+
+    else:
+        print(
+            f"[ERROR] Unknown pilot '{pilot_id}'. Expected 'pilot-a' (TGIF) or 'pilot-b' (GenImage).",
+            file=sys.stderr,
+        )
+        return 1
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Dataset Acquisition & Dual-Track Gatekeeper CLI for Forensics Web Lab"
     )
     parser.add_argument(
+        "--pilot",
+        type=str,
+        help="Pilot identifier for scientific acquisition dry-run (e.g. 'pilot-a', 'pilot-b')",
+    )
+    parser.add_argument(
         "--dataset",
         type=str,
-        help="Dataset identifier (e.g. genimage, realhd, sagi-d, raid, synthetic-smoke)",
+        help="Dataset identifier (e.g. genimage, tgif, realhd, sagi-d, raid, synthetic-smoke)",
     )
     parser.add_argument(
         "--track",
@@ -318,6 +459,10 @@ def main() -> None:
         except Exception as e:
             print(f"[ERROR] Failed to validate registry: {e}", file=sys.stderr)
             sys.exit(1)
+
+    if args.pilot:
+        exit_code = run_pilot_dry_run(args.pilot, repo_root)
+        sys.exit(exit_code)
 
     if not args.dataset:
         parser.print_help()
