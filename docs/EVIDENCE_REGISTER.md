@@ -4,7 +4,9 @@
 > **Phiên bản Schema**: `docs/schemas/evidence-manifest.v1.schema.json`  
 > **Manifest máy đọc Phase 3.6**: `research/evidence/phase-3.6/evidence-manifest.json`  
 > **Manifest máy đọc Phase 4A.0**: `research/evidence/phase-4a.0/evidence-manifest.json`  
-> **Cập nhật lần cuối**: Phase 4A.0 (Dual-Track Data Governance)
+> **Manifest máy đọc Phase 4A.1**: `research/evidence/phase-4a.1/evidence-manifest.json`  
+> **Manifest máy đọc Phase 4A.2**: `research/evidence/phase-4a.2/evidence-manifest.json`  
+> **Cập nhật lần cuối**: Phase 4A.2 (Research Scope Freeze & TGIF Feasibility Audit)
 
 ---
 
@@ -25,7 +27,21 @@ Hệ sinh thái nghiên cứu và sản phẩm của **Forensics Web Lab** tuân
 
 ---
 
-## 2. Bảng Đăng ký Minh chứng Phase 4A.1 (Acquisition Feasibility & Residual Claim Correction)
+## 2. Bảng Đăng ký Minh chứng Phase 4A.2 (Scope Freeze, Continuity & TGIF Feasibility Audit)
+
+| Evidence ID | Claim | Category | Status | Artifact | Reproduction command | Result | Limitations |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **EV-CONTINUITY-001** | Dự án thiết lập giao thức continuity 3 file thống nhất trong `docs/continuity/` (`CODE_INDEX.md`, `CURRENT_STATE.md`, `STATUS_LEDGER.md`), giải quyết dứt điểm phân mảnh tài liệu. | `git-state` | `verified` | [CURRENT_STATE.md](docs/continuity/CURRENT_STATE.md) | `git status docs/continuity/` | 3 tài liệu continuity được tạo với cấu trúc cô đọng; cập nhật thứ tự đọc bắt buộc trong `AGENTS.md`. | Cung cấp ngữ cảnh xuyên suốt cho các phiên AI; log chi tiết tiếp tục nằm tại `research/evidence/`. |
+| **EV-RESEARCH-SCOPE-001** | Phạm vi nghiên cứu được đóng băng vào 3 lớp huấn luyện (`authentic`, `fully_generated`, `ai_edited`); xác định `uncertain` là trạng thái quyết định sau calibration và localization là mục tiêu phụ. | `science` | `verified` | [RESEARCH_PLAN.md](docs/RESEARCH_PLAN.md) | `git log -1 docs/RESEARCH_PLAN.md` | Đóng băng không gian nhãn và vai trò của từng tác vụ; bản đồ nhiệt patch score được gắn nhãn là heuristic khám phá. | Năng lực định vị chỉ được công nhận sau khi đo mIoU/Dice so với ground-truth mask thật. |
+| **EV-RQ-METRIC-MAP-001** | Khóa 4 câu hỏi nghiên cứu (RQ1–RQ4) và hệ thống chỉ số toàn diện (Primary Macro-F1/Balanced Accuracy, Calibration ECE/Brier, Robustness, Browser runtime). | `science` | `verified` | [EVALUATION.md](docs/EVALUATION.md) | `git log -1 docs/EVALUATION.md` | Hệ thống chỉ số và giả thuyết được chính thức hóa; mọi chỉ số tiếp tục mang trạng thái `not evaluated`. | Đòi hỏi huấn luyện và đánh giá trên dữ liệu thật ở các phase sau. |
+| **EV-TGIF-METADATA-001** | Metadata kho lưu trữ chính thức TGIF và TGIF2 trên Nextcloud được khảo sát trực tiếp: TGIF (65.4 GB across 6 folders), TGIF2 FLUX (110 GB), TGIF2 random (73 GB); hỗ trợ tải lẻ từng thư mục con. | `dataset` | `verified` | [tgif-remote-inventory.json](research/evidence/phase-4a.2/tgif-remote-inventory.json) | `git log -1 research/evidence/phase-4a.2/tgif-remote-inventory.json` | Xác định dung lượng từng thư mục con (ví dụ: masks 40.4 MB, orig 6.8 GB); kiểm chứng khả năng tải độc lập qua Nextcloud share. | Khảo sát bằng truy vấn metadata/HTML; 0 byte content được tải về máy. |
+| **EV-TGIF-LICENSE-001** | TGIF phân phối theo `CC BY-SA 4.0`, ảnh gốc MS-COCO `CC BY 4.0`; trạng thái trọng số mô hình là `unclear`, chính sách dự án là `prohibited-by-project-policy` đối với sản phẩm web. | `license` | `verified` | [registry.json](datasets/registry.json) | `python -m ml.datasets.acquire --validate-registry` | Đăng ký `tgif` và `tgif2` vào registry ở luồng `research-only`, xác thực giấy phép chính thức. | Điều khoản Share-Alike tiềm ẩn ràng buộc lên weights; cách ly tuyệt đối trong Research Track. |
+| **EV-DATASET-SHORTCUT-RISK-001** | Nhận diện nguy cơ mô hình học shortcut đặc trưng của nguồn dữ liệu; thiết lập ma trận nghiên cứu–dữ liệu và các biện pháp kiểm soát bắt buộc (group split, matched pairs). | `dataset` | `verified` | [DATASETS.md](docs/DATASETS.md) | `git log -1 docs/DATASETS.md` | Ma trận 5 cột kiểm soát rủi ro shortcut được lập; quy định group split theo `source_id` và dùng matched pairs. | Cần kiểm chứng thực nghiệm bằng cross-dataset evaluation ở Phase 4. |
+| **EV-PILOT-PROPOSAL-001** | Xây dựng 3 phương án thử nghiệm (Pilot A Smoke, Pilot B Exploratory 3-Class, Pilot C Benchmark); kết luận khuyến nghị lựa chọn Pilot B (~3,000 mẫu) cho khóa luận. | `dataset` | `verified` | [DATASETS.md](docs/DATASETS.md) | `git log -1 docs/DATASETS.md` | Pilot B xác định rõ dung lượng nén (~15 GB), dung lượng giải nén (~18 GB), yêu cầu ổ đĩa ($\ge 35\text{ GB}$) và cấu hình compute. | Phương án đề xuất chờ phê duyệt; 0 byte external data được tải trong phase này. |
+
+---
+
+## 3. Bảng Đăng ký Minh chứng Phase 4A.1 (Acquisition Feasibility & Residual Claim Correction)
 
 | Evidence ID | Claim | Category | Status | Artifact | Reproduction command | Result | Limitations |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |

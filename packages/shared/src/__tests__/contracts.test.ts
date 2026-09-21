@@ -457,6 +457,22 @@ describe('@forensics/shared contracts', () => {
       expect(result.valid).toBe(true);
       expect(manifest.items.length).toBeGreaterThanOrEqual(6);
     });
+
+    it('validates the real research/evidence/phase-4a.2/evidence-manifest.json on disk', () => {
+      const manifestPath = path.resolve(__dirname, '../../../../research/evidence/phase-4a.2/evidence-manifest.json');
+      expect(fs.existsSync(manifestPath)).toBe(true);
+
+      const rawContent = fs.readFileSync(manifestPath, 'utf-8');
+      const manifest = JSON.parse(rawContent);
+      const result = validateEvidenceManifest(manifest);
+      if (!result.valid) {
+        console.error('Validation errors for phase-4a.2:', result.errors);
+      }
+      expect(result.errors).toEqual([]);
+      expect(result.valid).toBe(true);
+      expect(manifest.items.length).toBeGreaterThanOrEqual(7);
+    });
   });
 });
+
 

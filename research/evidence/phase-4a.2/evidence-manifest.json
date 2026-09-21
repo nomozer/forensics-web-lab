@@ -1,0 +1,78 @@
+{
+  "schemaVersion": "1.0.0",
+  "phase": "Phase 4A.2",
+  "commitAudited": "863a491",
+  "timestampUtc": "2026-09-21T12:08:00Z",
+  "items": [
+    {
+      "evidenceId": "EV-CONTINUITY-001",
+      "claim": "Project establishes unified three-file continuity protocol in docs/continuity/ (CODE_INDEX.md, CURRENT_STATE.md, STATUS_LEDGER.md) fully consolidating legacy tracking documents",
+      "category": "git-state",
+      "status": "verified",
+      "artifact": "docs/continuity/CURRENT_STATE.md",
+      "reproductionCommand": "git status docs/continuity/",
+      "result": "Three structured continuity documents authored with concise length budgets; AGENTS.md updated to enforce reading order",
+      "limitations": "Continuity protocol provides single source of truth for cross-session AI state; detailed experiment logs continue to reside in research/evidence/"
+    },
+    {
+      "evidenceId": "EV-RESEARCH-SCOPE-001",
+      "claim": "Research scope is frozen to three training classes (authentic, fully_generated, ai_edited), with uncertain defined strictly as post-calibration decision state and localization as secondary objective",
+      "category": "science",
+      "status": "verified",
+      "artifact": "docs/RESEARCH_PLAN.md",
+      "reproductionCommand": "git log -1 docs/RESEARCH_PLAN.md",
+      "result": "Core tasks partitioned into primary classification/calibration and secondary mask-based localization; heatmap from patch scores marked as exploratory",
+      "limitations": "Localization accuracy remains unverified until ground-truth mask evaluation is performed on real test data"
+    },
+    {
+      "evidenceId": "EV-RQ-METRIC-MAP-001",
+      "claim": "Four testable research questions (RQ1-RQ4) and metric hierarchy (primary Macro-F1/Balanced Accuracy, calibration, robustness, browser) are formally locked",
+      "category": "science",
+      "status": "verified",
+      "artifact": "docs/EVALUATION.md",
+      "reproductionCommand": "git log -1 docs/EVALUATION.md",
+      "result": "Comprehensive evaluation framework and 4 research questions formally codified in docs/EVALUATION.md and docs/RESEARCH_PLAN.md with pre-registered verification protocols",
+      "limitations": "Hypothesis evaluation requires training on authorized real datasets in Phase 4"
+    },
+    {
+      "evidenceId": "EV-TGIF-METADATA-001",
+      "claim": "TGIF and TGIF2 official repository and Nextcloud storage shares audited: TGIF (65.4 GB across 6 subfolders), TGIF2-FLUX (110 GB), TGIF2-random (73 GB); independent folder downloads supported",
+      "category": "dataset",
+      "status": "verified",
+      "artifact": "research/evidence/phase-4a.2/tgif-remote-inventory.json",
+      "reproductionCommand": "git log -1 research/evidence/phase-4a.2/tgif-remote-inventory.json",
+      "result": "Nextcloud shares inspected; exact component sizes recorded; subfolder-level archive downloading verified (e.g. masks at 40.4 MB, orig at 6.8 GB)",
+      "limitations": "Inspection performed via browser metadata querying; zero content bytes downloaded"
+    },
+    {
+      "evidenceId": "EV-TGIF-LICENSE-001",
+      "claim": "TGIF dataset is officially licensed under CC BY-SA 4.0; authentic images are CC BY 4.0 (MS-COCO); derivative weights status is unclear and prohibited from production by project policy",
+      "category": "license",
+      "status": "verified",
+      "artifact": "datasets/registry.json",
+      "reproductionCommand": "python -m ml.datasets.acquire --validate-registry",
+      "result": "TGIF registered under research-only track with CC BY-SA 4.0, derivativeWeights: unclear, productionPromotion: prohibited-by-project-policy",
+      "limitations": "Share-Alike condition of CC BY-SA 4.0 may attach to trained checkpoints; conservative policy confines usage to research track"
+    },
+    {
+      "evidenceId": "EV-DATASET-SHORTCUT-RISK-001",
+      "claim": "Dataset-source shortcut risk (model learning dataset artifacts instead of AI traces) is formally identified with mandatory group splitting and cross-dataset evaluation controls",
+      "category": "dataset",
+      "status": "verified",
+      "artifact": "docs/DATASETS.md",
+      "reproductionCommand": "git log -1 docs/DATASETS.md",
+      "result": "Research-data matrix documents shortcut risks per dataset; mandates source-held-out splits and matched authentic-forged pairs",
+      "limitations": "Heuristic control; true robustness against shortcut learning requires empirical cross-dataset validation"
+    },
+    {
+      "evidenceId": "EV-PILOT-PROPOSAL-001",
+      "claim": "Three-tier pilot pathways (A: Pipeline smoke, B: Exploratory three-class, C: Confirmatory benchmark) are formulated with exact resource budgets; Pilot B recommended for thesis resources",
+      "category": "dataset",
+      "status": "verified",
+      "artifact": "docs/DATASETS.md",
+      "reproductionCommand": "git log -1 docs/DATASETS.md",
+      "result": "Pilot B balanced 3-class proposal specified (~3,000 samples, ~15 GB download, ~18 GB extracted, >=35 GB disk); requires explicit user approval before execution",
+      "limitations": "Proposal only; zero external bytes downloaded in Phase 4A.2"
+    }
+  ]
+}

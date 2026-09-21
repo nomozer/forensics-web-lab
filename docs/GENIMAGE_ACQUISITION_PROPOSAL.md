@@ -75,20 +75,20 @@ graph TD
 
 ---
 
-## 4. Đề xuất Archive Nhỏ nhất Phù hợp (Smallest Usable Archive)
+## 4. Archive Đầu tiên Được Kiểm kê Toàn diện (First Fully Inventoried Archive)
 
-Để tối thiểu hóa dung lượng tải về và tài nguyên lưu trữ máy cá nhân:
+Khi chưa có bảng kích thước chi tiết của toàn bộ tám generator, BigGAN được xác lập là archive đầu tiên đã được kiểm kê toàn diện qua metadata Google Drive:
 
-| Tiêu chí | Thông số chính thức |
-|---|---|
-| **Bộ generator nhỏ nhất** | **BigGAN** (`imagenet_ai_0419_biggan`) |
-| **Cấu trúc lưu trữ** | 8 tệp split zip (`.z01` .. `.z07`, `.zip`) |
-| **Dung lượng nén tải về** | **~24 GB** (ước tính ~23.5 GB = ~25,232,932,864 bytes) |
-| **Dung lượng giải nén dự kiến** | `estimated` **~26 GB** |
-| **Không gian ổ đĩa an toàn đề xuất** | **Tối thiểu 55 GB** trống trên ổ đĩa chứa repo |
-| **Tổng số ảnh dự kiến** | ~20,000 ảnh (10,000 BigGAN AI + 10,000 ImageNet real) |
-| **Tập chia (Split)** | Cả hai tập `train` và `val` |
-| **Thời gian tải dự kiến** | `unknown` (tùy thuộc băng thông mạng người dùng và quota Google Drive) |
+| Tiêu chí | Thông số kiểm kê | Trạng thái minh chứng |
+|---|---|---|
+| **Generator được kiểm kê** | **BigGAN** (`imagenet_ai_0419_biggan`) | `verified` (khảo sát trực tiếp thư mục `1ajlTuN34gLyJWxRQ6NyUcnkfrS8QEVKt`) |
+| **Cấu trúc lưu trữ** | 8 tệp split zip (`.z01` .. `.z07`, `.zip`) | `verified` |
+| **Dung lượng nén tải về chính xác** | **23,516,377,048 bytes** (~23.52 GB / ~24 GB) | `verified` (tổng kích thước 8 file multi-part) |
+| **Dung lượng giải nén dự kiến** | **~26 GB** | `estimated` (tính toán dựa trên tỷ lệ nén ảnh JPEG/PNG) |
+| **Không gian ổ đĩa an toàn đề xuất** | **Tối thiểu 55 GB** trống trên ổ đĩa chứa repo | `estimated` (chứa đồng thời archive nén và thư mục giải nén) |
+| **Tổng số ảnh dự kiến** | ~16,000–20,000 ảnh (bao gồm cả real và BigGAN fake) | `estimated` (ước tính theo quy mô val split ImageNet) |
+| **Tập chia (Split)** | Tập `train` và `val` | `reported` |
+| **Thời gian tải dự kiến** | `unknown` (tùy thuộc băng thông mạng thực tế và quota Google Drive) | `unverified` |
 
 ---
 
