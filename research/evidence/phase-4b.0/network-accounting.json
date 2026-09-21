@@ -1,0 +1,26 @@
+{
+  "phase": "4B.0",
+  "componentId": "tgif-masks",
+  "accountingTimestamp": "2026-09-21T15:52:00Z",
+  "hardNetworkCeilingBytes": 67108864,
+  "expectedDatasetBytes": 42362470,
+  "remoteMetadataRequests": 0,
+  "remoteMetadataResponseBytes": 0,
+  "datasetContentRequests": 1,
+  "datasetContentBytes": 42327429,
+  "redirectCount": 1,
+  "archiveBytes": 42327429,
+  "extractedBytes": 141559934,
+  "validFiles": 31238,
+  "invalidFiles": 0,
+  "modelBytes": 0,
+  "trainingRuns": 0,
+  "networkSafety": {
+    "ceilingEnforced": true,
+    "ceilingExceeded": false,
+    "allowedHostnames": ["cloud.ilabt.imec.be"],
+    "initialUrl": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o/download?path=%2F&files=masks",
+    "finalUrl": "https://cloud.ilabt.imec.be/public.php/dav/files/xEeAzrY7ES9KA8o/masks?accept=zip",
+    "hostRestricted": true
+  }
+}

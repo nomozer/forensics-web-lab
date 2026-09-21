@@ -8,7 +8,8 @@
 > **Manifest máy đọc Phase 4A.2**: `research/evidence/phase-4a.2/evidence-manifest.json`  
 > **Manifest máy đọc Phase 4A.3**: `research/evidence/phase-4a.3/evidence-manifest.json`  
 > **Manifest máy đọc Phase 4A.4**: `research/evidence/phase-4a.4/evidence-manifest.json`  
-> **Cập nhật lần cuối**: Phase 4A.4 (Evidence Correction and Acquisition Safety Gate)
+> **Manifest máy đọc Phase 4B.0**: `research/evidence/phase-4b.0/evidence-manifest.json`  
+> **Cập nhật lần cuối**: Phase 4B.0 (TGIF Masks Live Acquisition Smoke)
 
 ---
 
@@ -29,7 +30,17 @@ Hệ sinh thái nghiên cứu và sản phẩm của **Forensics Web Lab** tuân
 
 ---
 
-## 2. Bảng Đăng ký Minh chứng Phase 4A.4 (Evidence Correction & Acquisition Safety Gate)
+## 2. Bảng Đăng ký Minh chứng Phase 4B.0 (TGIF Masks Live Acquisition Smoke)
+
+| Evidence ID | Claim | Category | Status | Artifact | Reproduction command | Result | Limitations |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **EV-PHASE4B0-SMOKE-001** | Live acquisition smoke tải thành công duy nhất `tgif-masks` (42,327,429 bytes nhận, archive SHA-256 `62c89a65...`), tôn trọng tuyệt đối trần mạng 64 MiB (`67,108,864` bytes). | `dataset` | `verified` | [acquisition-receipt.json](data/research/tgif/acquisition-receipt.json) | `ml/.venv/Scripts/python -m ml.datasets.acquire --plan datasets/acquisition-plans/pilot-a-tgif.v1.json --component tgif-masks --execute --approved-plan-sha256 7da36f450fe424970e4676fc0c35047ea756385843dd2fb1c656f1fa45deac4e --max-download-bytes 67108864` | Tải về 42,327,429 bytes; kiểm tra ZIP integrity đạt 100%; an toàn staging không rò rỉ. | Chỉ tải masks; orig và sd2-sp giữ locked. |
+| **EV-PHASE4B0-INVENTORY-001** | Kiểm toán toàn diện 31,238 file mask (141,559,934 bytes uncompressed) trên 2,242 MS-COCO `source_id`; chuyển `mask_count`, `filename_convention`, `source_id_extraction_method` sang verified. | `dataset` | `verified` | [tgif-masks-inventory.json](research/evidence/phase-4b.0/tgif-masks-inventory.json) | `ml/.venv/Scripts/python -m ml.datasets.audit_masks` | 31,238 file mask PNG hợp lệ (12,495 bbox, 12,495 segm, 6,248 generic_mask); 0 file lỗi; manifest JSONL sinh thành công. | Chỉ là ground-truth masks; chưa có ảnh gốc hoặc ảnh chỉnh sửa tương ứng. |
+| **EV-PHASE4B0-SAFETY-001** | Khóa fail-closed các component unapproved (`orig`, `sd2-sp`), cấm tải model weights (0 bytes), cấm huấn luyện (0 runs); giới hạn redirect trong `cloud.ilabt.imec.be`. | `pipeline` | `verified` | [network-accounting.json](research/evidence/phase-4b.0/network-accounting.json) | `ml/.venv/Scripts/python -m pytest ml/tests/test_acquisition_safety.py` | 23 unit tests an toàn bao quát component selection, trần mạng, và hostname handler đạt 100%. | Đảm bảo tính bất biến Zero-Egress và Dual-Track. |
+
+---
+
+## 3. Bảng Đăng ký Minh chứng Phase 4A.4 (Evidence Correction & Acquisition Safety Gate)
 
 | Evidence ID | Claim | Category | Status | Artifact | Reproduction command | Result | Limitations |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |

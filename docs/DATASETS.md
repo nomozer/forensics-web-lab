@@ -56,6 +56,9 @@ data/
   - TGIF2 FLUX: 110 GB (8 thư mục: masks-flux: 7.7 MB, orig-flux: 5.7 GB, các thư mục FLUX 16–18 GB).
   - TGIF2 random: 73 GB (13 thư mục: masks 900 KB, metadata: 1.8 MB, model subfolders).
 * **Khả năng tải độc lập**: Nextcloud public shares hỗ trợ tải độc lập từng thư mục con dưới dạng zip nén động (ví dụ: chỉ tải `masks` 40.4 MB, hoặc `orig` 6.8 GB) mà không bắt buộc tải toàn bộ 65.4 GB.
+* **Hiện trạng thu nạp (Phase 4B.0 Smoke)**:
+  - `tgif-masks`: **Đã tải và kiểm toán thành công** (`status: verified`). Tải về: 42,327,429 bytes (~40.37 MiB, SHA-256 archive `62c89a65...`). Giải nén an toàn: 141,559,934 bytes across 31,238 mask PNG files (12,495 bbox, 12,495 segm, 6,248 generic_mask) trên 2,242 MS-COCO `source_id`. Manifest lưu tại `data/research/tgif/manifests/masks-manifest.jsonl`, biên nhận tại `data/research/tgif/acquisition-receipt.json`.
+  - `tgif-orig` (~7.30 GB) và `tgif-sd2-sp` (~18.58 GB): **Chưa tải, tiếp tục bị khóa** (`status: locked`, chờ phê duyệt cho Phase 4B.1+).
 * **Phân loại luồng**: **`research-only`** (`derivativeWeights: unclear`, `productionPromotion: prohibited-by-project-policy` do điều khoản Share-Alike).
 
 ### 2.3 RealHD

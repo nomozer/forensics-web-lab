@@ -5,6 +5,7 @@
 > **Branch**: `feat/production-ai-image-forensics`  
 > **Starting commit**: `a480776`  
 > **Implementation snapshot commit**: `311cfd3`  
+> **Ending commit**: `8de2151`  
 > **Base main commit**: `460f6d5` (bảo toàn nguyên vẹn, không commit trực tiếp)  
 > **Evidence generated at UTC**: `2026-09-21T14:48:00Z`  
 > **Working tree**: clean  

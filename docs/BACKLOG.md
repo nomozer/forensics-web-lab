@@ -189,8 +189,19 @@ graph TD
 * [x] **TASK-4A406**: Implement safety gates in `ml/datasets/acquire.py` (free disk, .part file, resume capability, checksum mismatch, zip slip/symlink protection, staging isolation, acquisition receipt).
 * [x] **TASK-4A407**: Author offline unit test suite `ml/tests/test_acquisition_safety.py` (15 tests passing, zero external network requests).
 * [x] **TASK-4A408**: Record Phase 4A.4 evidence items in `docs/EVIDENCE_REGISTER.md` and `research/evidence/phase-4a.4/`.
-* [ ] **TASK-4A1**: User decision on Phase 4A pilot pathway (Recommended: Pilot A ~24.1 GB from TGIF subfolders or low-bandwidth subset masks + orig 6.84 GB vs Pilot B GenImage BigGAN ~24 GB).
-* [ ] **TASK-4A2**: Prepare authorized dataset/fixture splits with group-based anti-leakage isolation.
+
+---
+
+### Phase 4B.0: TGIF Masks Live Acquisition Smoke (Hoàn thành - Phase 4B.0)
+* [x] **TASK-4B001**: Implement component-scoped acquisition `--component` and hard network ceiling `--max-download-bytes` in `ml/datasets/acquire.py`.
+* [x] **TASK-4B002**: Implement `HostnameRestrictedRedirectHandler` enforcing redirect restriction strictly to `cloud.ilabt.imec.be`.
+* [x] **TASK-4B003**: Author 8 additional safety tests in `ml/tests/test_acquisition_safety.py` (23 tests passing total).
+* [x] **TASK-4B004**: Record machine-readable user approval in `research/evidence/phase-4b.0/user-approval.json`.
+* [x] **TASK-4B005**: Execute live acquisition smoke for `tgif-masks` (42,327,429 bytes, SHA-256 `62c89a65...`, receipt generated).
+* [x] **TASK-4B006**: Build and execute mask inventory auditor `ml/datasets/audit_masks.py` scanning 31,238 mask PNG files (141,559,934 bytes uncompressed).
+* [x] **TASK-4B007**: Generate local mask manifest `masks-manifest.jsonl` (31,238 records) and evidence summaries (`tgif-masks-inventory.json`, `tgif-masks-validation.json`, `mask-manifest-summary.json`).
+* [x] **TASK-4B008**: Verify zero binary files tracked in Git; publish Phase 4B.0 report.
+* [ ] **TASK-4B101**: User decision on Phase 4B.1 NEXT APPROVAL REQUEST for remaining Pilot A components (`tgif-orig`: 7.30 GB, `tgif-sd2-sp`: 18.58 GB).
 
 ---
 

@@ -4,11 +4,23 @@
 > **Mục đích**: Biên niên sử cô đọng từng giai đoạn phát triển và nghiên cứu từ Phase 0 đến nay.  
 > **Quy ước**: Giai đoạn mới nhất nằm ở trên cùng; mỗi giai đoạn không quá 20 dòng; chi tiết kiểm chứng nằm tại `research/evidence/`.
 
+## Phase 4B.0 — TGIF Masks Live Acquisition Smoke
+- **Mục tiêu**: Tải thực nghiệm duy nhất `tgif-masks`, thực thi trần mạng 64 MiB, kiểm toán toàn diện cardinality và thuộc tính mask.
+- **Starting commit**: `8de2151`
+- **Implementation snapshot commit**: `84aa127`
+- **Thay đổi chính**: Mở rộng `ml/datasets/acquire.py` với `--component` và `--max-download-bytes`; bổ sung `HostnameRestrictedRedirectHandler` (giới hạn `cloud.ilabt.imec.be`); kiểm tra trần mạng trước và trong stream; bổ sung 8 unit tests an toàn (23 tests suite); ghi nhận phê duyệt máy đọc `user-approval.json`; thực hiện live smoke tải `tgif-masks` (42,327,429 bytes nhận, archive SHA-256 `62c89a65...`); trích xuất an toàn 3 archive con; xây dựng `ml/datasets/audit_masks.py` kiểm toán 31,238 file mask PNG (141,559,934 bytes); sinh manifest cục bộ `masks-manifest.jsonl` (31,238 bản ghi) và receipt `acquisition-receipt.json`.
+- **Kiểm tra kỹ thuật**: `pnpm test` (70/70 passing), `pytest ml/tests` (46/46 passing), `pnpm build` (exit 0), `pnpm continuity:check` (PASS), 0 file nhị phân trong Git.
+- **Kết quả khoa học**: Xác minh cardinality mask TGIF là 31,238 files (12,495 bbox, 12,495 segm, 6,248 generic_mask) trên 2,242 `source_id`; chuyển `mask_count`, `filename_convention`, `source_id_extraction_method` sang verified; các thành phần `orig`, `sd2-sp` tiếp tục locked; detection metrics: `not evaluated`.
+- **Evidence**: `research/evidence/phase-4b.0/` (`user-approval.json`, `network-accounting.json`, `acquisition-summary.json`, `tgif-masks-inventory.json`, `tgif-masks-validation.json`, `mask-manifest-summary.json`, `test-summary.json`, `build-summary.json`, `evidence-manifest.json`, `PHASE_REPORT.md`).
+- **Giới hạn**: Chỉ `tgif-masks` được tải; external dataset content: 42,327,429 bytes; `orig` và `sd2-sp` chưa tải; model weights: 0 bytes; training runs: 0.
+- **Quyết định tiếp theo**: Người dùng xem xét phê duyệt tải hai component còn lại (`tgif-orig`: ~7.30 GB, `tgif-sd2-sp`: ~18.58 GB) để hoàn thiện Pilot A.
+
 ---
 
 ## Phase 4A.5 — Model-Agnostic Continuity Enforcement
 - **Mục tiêu**: Thiết lập cơ chế continuity tự động, chuẩn hóa hợp đồng agent, tích hợp checker CI, đóng chính xác Phase 4A.4.
 - **Starting commit**: `a480776`
+- **Ending commit**: `8de2151`
 - **Implementation snapshot commit**: `311cfd3`
 - **Thay đổi chính**: Đóng Phase 4A.4 với ending commit `a480776`; đổi thuật ngữ sang group-isolation invariant; xác thực SHA-256 acquisition plan; ban hành Continuity Contract trong `AGENTS.md` (read order, change matrix, phase closure); phát triển `scripts/continuity-check.mjs` (kiểm tra diff, 3 file chuẩn, duplicate files, local links, placeholders, line limits); viết 13 unit tests trong `scripts/__tests__/continuity-check.test.mjs`; tích hợp CI `pnpm continuity:check`.
 - **Kiểm tra kỹ thuật**: `pnpm continuity:check` (PASS), `pnpm test` (70/70 passing: 57 vitest + 13 continuity tests), `pytest ml/tests` (38/38 passing), `pnpm build` (exit 0), config validator passing, acquisition dry-run passing (0 byte external network).

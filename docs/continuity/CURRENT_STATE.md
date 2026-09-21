@@ -1,9 +1,9 @@
 # Trạng thái Hiện tại: Forensics Web Lab (Current State)
 
 > **Tài liệu đọc đầu tiên bắt buộc cho mọi phiên làm việc AI mới.**  
-> **Documented through substantive commit**: `a480776`  
-> **Implementation snapshot commit**: `311cfd3`  
-> **Phase hoàn thành gần nhất**: Phase 4A.5 — Model-Agnostic Continuity Enforcement  
+> **Documented through substantive commit**: `8de2151`  
+> **Ending commit Phase 4A.5**: `8de2151`  
+> **Phase hoàn thành gần nhất**: Phase 4B.0 — TGIF Masks Live Acquisition Smoke  
 > **Branch**: `feat/production-ai-image-forensics`  
 > **Base main commit**: `460f6d5` (bảo toàn nguyên vẹn, không commit trực tiếp)  
 > **Working tree**: clean  
@@ -49,59 +49,6 @@
 
 ---
 
-## 4. Bảng Phân loại Trạng thái Triển khai (Implementation Status Ledger)
-
-Hệ thống phân biệt rõ ràng 5 mức độ sẵn sàng:
-1. `implemented`: Đã viết mã nguồn.
-2. `technically verified`: Đã có unit test / integration test tự động kiểm chứng hoạt động kỹ thuật.
-3. `scientifically evaluated`: Đã đo lường trên dataset khoa học độc lập với số liệu thật (hiện tại: **chưa có tính năng nào đạt mức này**).
-4. `planned`: Đang trong kế hoạch lộ trình, chưa cài đặt.
-5. `blocked`: Bị chặn bởi giấy phép bản quyền, tài nguyên hoặc phụ thuộc bên ngoài.
-
-| Hạng mục / Chức năng | Trạng thái kỹ thuật | Trạng thái khoa học | Ghi chú & Giới hạn |
-| :--- | :--- | :--- | :--- |
-| **Defensive Image Validation** | `technically verified` | `not-applicable` | Magic byte audit JPEG/PNG/WebP, bomb guard |
-| **EXIF / XMP / IPTC Extraction** | `technically verified` | `not-applicable` | Trích xuất thẻ phần mềm AI, camera metadata |
-| **C2PA Provenance Adapter** | `technically verified` | `not-applicable` | Graceful fallback sang `unsupported` |
-| **2D FFT / DCT Spectral DSP** | `technically verified` | `exploratory` | Heuristic tín hiệu khám phá, không phải kết luận AI |
-| **Noise Residual & JPEG ELA** | `technically verified` | `exploratory` | Heuristic phát hiện bất thường cục bộ |
-| **Multimodal Fusion Engine** | `technically verified` | `unverified` | Logic tổng hợp phán quyết và abstention |
-| **Honest No-Model State** | `technically verified` | `verified` | Trả về `uncertain`, `confidence: null` khi thiếu model |
-| **Web Worker Async Architecture** | `technically verified` | `not-applicable` | Xử lý đa luồng ngầm không đơ UI |
-| **Canvas Heatmap Viewer** | `technically verified` | `exploratory` | Bản đồ nhiệt patch score; chưa đo mIoU trên mask thật |
-| **JSON & Printable PDF Report** | `technically verified` | `not-applicable` | Xuất báo cáo chuẩn schema v1 |
-| **Dataset Manifest & Adapters** | `technically verified` | `pipeline-only` | Kiểm thử trên fixture hình học nội bộ |
-| **Group-Split Anti-Leakage** | `technically verified` | `pipeline-only` | Ngăn chặn rò rỉ nhóm ảnh gốc `source_id` |
-| **PyTorch MobileNetV3 Architecture**| `technically verified` | `architecture-only` | Kiến trúc khởi tạo hợp lệ; **chưa huấn luyện** |
-| **Focal Loss & Calibration Math** | `technically verified` | `pipeline-only` | Đã test trên synthetic tensors |
-| **ONNX Export & Parity Harness** | `technically verified` | `pipeline-only` | Parity test $L_\infty < 10^{-4}$ trên un-trained model |
-| **Dual-Track Contamination Guards**| `technically verified` | `verified` | Cấm model sản phẩm dùng dataset phi thương mại |
-| **Scientific Pilot Protocol**     | `technically verified` | `exploratory` | Hai nhánh độc lập Pilot A/B, Pilot C có baseline guard |
-| **Label-Semantics Gate**          | `technically verified` | `verified` | sp là ai_edited, fr loại trừ khỏi fully_generated |
-| **Continuity Checker & CI Gate**  | `technically verified` | `not-applicable` | scripts/continuity-check.mjs, 13 unit tests, CI enforced |
-| **In-Browser ONNX Inference**     | `implemented` | `blocked` | Chờ checkpoint huấn luyện thật từ Phase 4 |
-| **Scientific Detection Accuracy** | `planned` | `unverified` | **Not evaluated**; không có số liệu F1/ECE thật |
-
-* **RQ1 (3-Class Generalization)**: Một mô hình nhẹ (MobileNetV3) khi huấn luyện trên dữ liệu đa nguồn có đạt Macro-F1 $\ge 0.82$ trên tập kiểm thử in-domain và không suy giảm quá $15\%$ Macro-F1 khi kiểm thử trên generator chưa từng thấy (*unseen generator*)?
-* **RQ2 (Lightweight Localization)**: Đầu ra localization nhẹ (patch-level / convolutional head) có đạt mIoU $\ge 0.55$ trên ảnh chỉnh sửa cục bộ (`ai_edited`) trong khi duy trì False Positive Rate $\le 0.08$ trên ảnh thật (`authentic`)?
-* **RQ3 (Zero-Egress Browser Efficiency)**: Pipeline pháp chứng kết hợp (DSP + ONNX inference) có chạy hoàn toàn trên trình duyệt client với độ trễ $\le 1500\text{ ms}$ (ảnh $512\times 512$ trên CPU WASM) và đỉnh bộ nhớ $\le 250\text{ MB}$?
-* **RQ4 (Calibration & Honest Uncertainty)**: Temperature scaling có giảm Expected Calibration Error (ECE) xuống $\le 0.06$ và cơ chế ngưỡng tự động có gắn cờ trung thực trạng thái `uncertain` cho các mẫu ngoài phân phối (*out-of-distribution*)?
-
----
-
-## 3. Hệ thống Nhãn Chuẩn tắc (Classification Taxonomy)
-
-Dự án đóng băng cấu trúc 3 nhãn phân loại chính và 1 trạng thái phụ trợ:
-
-1. **`authentic`**: Ảnh chụp từ cảm biến thực tế, không chứa pixel tạo sinh.
-2. **`fully_generated`**: Toàn bộ nội dung ảnh sinh từ mô hình AI từ nhiễu hoặc văn bản, không bắt đầu từ ảnh thật cần bảo tồn danh tính.
-3. **`ai_edited`**: Ảnh bắt đầu từ ảnh thật, sau đó một phần hoặc toàn bộ canvas bị biến đổi bằng generative inpainting/editing có điều kiện từ ảnh nguồn.
-4. **`uncertain`** (Diagnostic State): Trạng thái phụ trợ khi độ tin cậy thấp hoặc chưa cài đặt mô hình AI.
-
-> **Quyết định ngữ nghĩa TGIF**: Thành phần `sp` (spliced) được gán là `ai_edited`; thành phần `fr` (fully regenerated) là conditional regeneration từ ảnh MS-COCO thật nên **bị cách ly khỏi `fully_generated` và không đưa vào pilot ban đầu**.
-
----
-
 ## 4. Chiến lược Tách biệt Hai Luồng (Dual-Track Isolation - ADR-0006)
 
 * **Research Track (`data/research/`)**: Dành riêng cho nghiên cứu học thuật, khóa luận và viết bài báo. Cho phép sử dụng các dataset phi thương mại (GenImage CC BY-NC-SA 4.0, TGIF CC BY-SA 4.0).
@@ -112,20 +59,25 @@ Dự án đóng băng cấu trúc 3 nhãn phân loại chính và 1 trạng thá
 
 ## 5. Hiện trạng Dữ liệu và Mô hình
 
-* **Dữ liệu ngoại vi đã tải**: `0 bytes` (chưa tải bất kỳ dataset thật nào).
-* **Trọng số mô hình đã huấn luyện**: `0 bytes` (chưa có checkpoint nào).
-* **Chỉ số khoa học**: `not evaluated` (chưa đo lường thực nghiệm).
-* **Acquisition Plan**: Đã ban hành plan máy đọc có chữ ký SHA-256: `datasets/acquisition-plans/pilot-a-tgif.v1.json` (`7da36f450fe424970e4676fc0c35047ea756385843dd2fb1c656f1fa45deac4e`).
+* **Dữ liệu ngoại vi đã tải**: `42,327,429 bytes` (~40.37 MiB nhận qua mạng; tổng giải nén 141,559,934 bytes across 31,238 mask PNG files). **External dataset content không còn 0 bytes**.
+* **Phạm vi tải**: **Duy nhất component `tgif-masks` đã được tải**. Các component `tgif-orig` (7,301,444,403 bytes) và `tgif-sd2-sp` (18,575,836,774 bytes) vẫn **chưa tải** và tiếp tục bị khóa (locked).
+* **Archive Checksum**: SHA-256 archive tải về là `62c89a65441a35e6bd10d49abec8f2cad9ab028e91edf3d72b344ec29bfa0fe9`.
+* **Biên nhận thu nạp**: Lưu tại `data/research/tgif/acquisition-receipt.json`.
+* **Manifest mặt nạ cục bộ**: Lưu tại `data/research/tgif/manifests/masks-manifest.jsonl` (31,238 bản ghi).
+* **Trọng số mô hình đã tải / huấn luyện**: `0 bytes` (chưa tải checkpoint hay trọng số nào).
+* **Số lượt huấn luyện (Training runs)**: `0`.
+* **Chỉ số khoa học**: `not evaluated` (chưa đo lường thực nghiệm; mask acquisition chỉ chứng minh pipeline và inventory, chưa chứng minh chất lượng phát hiện).
+* **Acquisition Plan**: Plan máy đọc `datasets/acquisition-plans/pilot-a-tgif.v1.json` (SHA-256: `7da36f450fe424970e4676fc0c35047ea756385843dd2fb1c656f1fa45deac4e`) được giữ nguyên toàn vẹn.
 
 ---
 
 ## 6. Kết quả Kiểm thử & Bản dựng Gần nhất (Latest Verification)
 
 * **TypeScript & Continuity Test Suite (`pnpm test`)**: 70/70 tests passing (57 vitest tests trên 6 packages + 13 continuity checker unit tests).
-* **Python Test Suite (`pytest ml/tests -v`)**: 38/38 tests passing (bao gồm 15 bài test an toàn thu nạp dữ liệu, zip slip guard, free disk check, và paired bootstrap guard).
+* **Python Test Suite (`pytest ml/tests -v`)**: 46/46 tests passing (bao gồm 23 bài test an toàn thu nạp dữ liệu, zip slip guard, hard network ceiling, hostname redirect restriction, và component scoping).
 * **Pilot Config Validation**: 2/2 pilot configs valid theo `ml/configs/validator.py`.
-* **Continuity Enforcement Gate (`pnpm continuity:check`)**: `CONTINUITY_CHECK: PASS` (kiểm tra toàn bộ 3 file continuity, duplicate files, local links, placeholders, và ledger line limits).
-* **Production Web Build (`pnpm build`)**: Exit code 0, bundle tối ưu hợp lệ (3.08s).
+* **Continuity Enforcement Gate (`pnpm continuity:check`)**: `CONTINUITY_CHECK: PASS`.
+* **Production Web Build (`pnpm build`)**: Exit code 0, bundle tối ưu hợp lệ (3.11s).
 * **Clean Link Invariance**: 0 machine-local links (`file:///`, `C:\`, `D:\`) trong toàn bộ markdown và evidence repository.
 
 ---
@@ -162,12 +114,14 @@ Dự án đóng băng cấu trúc 3 nhãn phân loại chính và 1 trạng thá
 * `EV-CONTINUITY-CHECKER-001`: Công cụ kiểm tra continuity scripts/continuity-check.mjs đa nền tảng.
 * `EV-CONTINUITY-TESTS-001`: Bộ kiểm thử 13 unit tests cho continuity checker trong scripts/__tests__/.
 * `EV-CI-CONTINUITY-001`: Tích hợp continuity gate vào quy trình CI GitHub Actions.
+* `EV-PHASE4B0-SMOKE-001`: Live acquisition smoke tải thành công `tgif-masks` (42,327,429 bytes, trần 64 MiB).
+* `EV-PHASE4B0-INVENTORY-001`: Kiểm toán toàn diện 31,238 file mask PNG trên 2,242 `source_id`; xác minh cardinality và mapping.
 
 ---
 
 ## 9. Công việc Đang thực hiện & Công việc Tiếp theo
 
-* **Đã hoàn thành (Phase 4A.5)**: Thiết lập cơ chế kiểm tra continuity tự động, đóng chính xác Phase 4A.4 với ending commit `a480776`, thay thế thuật ngữ sang group-isolation invariant, ban hành Continuity Contract trong `AGENTS.md`, triển khai `scripts/continuity-check.mjs`, tích hợp CI và hoàn thành 13 bài test unit.
-* **Hiện trạng nghiên cứu**: Dataset content vẫn `0 bytes`, model content vẫn `0 bytes`, training runs bằng `0`, scientific metrics tiếp tục giữ trạng thái `not evaluated`.
-* **Công việc tiếp theo (Phase 4B / Live Data Acquisition)**: Chờ người dùng xem xét và phê duyệt `NEXT APPROVAL REQUEST` để mở khóa tải dữ liệu thật cho Pilot A (`pilot-a-tgif.v1.json`).
+* **Đã hoàn thành (Phase 4B.0)**: Mở rộng component-scoped acquisition và trần mạng trong `acquire.py`; vượt qua toàn bộ 46 tests Python và 70 tests TS; hoàn thành live acquisition smoke cho `tgif-masks` (42,327,429 bytes nhận, archive SHA-256 `62c89a65...`); trích xuất an toàn và kiểm toán 31,238 file mask PNG (141,559,934 bytes uncompressed); sinh local manifest và receipt; xác minh `mask_count`, `filename_convention`, `source_id_extraction_method` chuyển sang `verified`.
+* **Hiện trạng nghiên cứu**: External dataset content đạt 42,327,429 bytes; `orig` và `sd2-sp` tiếp tục locked; model content vẫn `0 bytes`; training runs bằng `0`; scientific detection metrics giữ trạng thái `not evaluated`.
+* **Công việc tiếp theo (Phase 4B.1 / Live Data Acquisition)**: Chờ người dùng xem xét và phê duyệt `NEXT APPROVAL REQUEST` để mở khóa tải hai component còn lại của TGIF (`tgif-orig`: ~7.30 GB, `tgif-sd2-sp`: ~18.58 GB) nhằm hoàn thiện bộ dữ liệu cho Pilot A.
 
