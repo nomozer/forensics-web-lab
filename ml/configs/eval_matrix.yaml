@@ -1,0 +1,41 @@
+evaluation:
+  manifest_path: "datasets/manifest.csv"
+  batch_size: 32
+  metrics:
+    - "macro_f1"
+    - "balanced_accuracy"
+    - "per_class_f1"
+    - "auroc"
+    - "ece"
+    - "brier_score"
+    - "confusion_matrix"
+
+suites:
+  - id: "exp01_indomain"
+    split: "test_indomain"
+    description: "In-domain test across known generators"
+
+  - id: "exp02_unseen_generator"
+    split: "test_unseen_generator"
+    description: "Evaluation on held-out unseen generator families"
+
+  - id: "exp03_localization"
+    split: "test_localization"
+    mask_required: true
+    description: "Pixel-level inpainting mask recovery (AUROC, mIoU, Dice)"
+
+  - id: "exp04_jpeg_degradation"
+    split: "test_indomain"
+    degradation:
+      type: "jpeg"
+      qualities: [90, 70, 50]
+
+  - id: "exp05_resize_degradation"
+    split: "test_indomain"
+    degradation:
+      type: "resize"
+      scales: [0.75, 0.5, 0.25]
+
+  - id: "exp06_traditional_edits"
+    split: "test_hard_negatives"
+    description: "Photoshop and traditional manual editing hard negatives"
