@@ -11,10 +11,14 @@ Enforces ADR-0006 (Research/Product Data Isolation):
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import os
+import shutil
 import sys
+import zipfile
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 
 def find_repo_root() -> Path:
@@ -25,6 +29,362 @@ def find_repo_root() -> Path:
             return parent
     # Fallback to current working directory
     return Path.cwd()
+
+
+def compute_file_sha256(file_path: Path) -> str:
+    """Computes SHA-256 hash of a file in 64KB blocks."""
+    h = hashlib.sha256()
+    with open(file_path, "rb") as f:
+        while chunk := f.read(65536):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def check_free_disk_space(target_path: Path, required_bytes: int) -> Tuple[bool, int, int]:
+    """
+    Checks if the filesystem containing target_path has at least required_bytes free.
+    Returns (has_space: bool, available_bytes: int, required_bytes: int).
+    """
+    check_dir = target_path if target_path.exists() else target_path.parent
+    while not check_dir.exists() and check_dir != check_dir.parent:
+        check_dir = check_dir.parent
+    try:
+        usage = shutil.disk_usage(check_dir)
+        available_bytes = usage.free
+        has_space = available_bytes >= required_bytes
+        return has_space, available_bytes, required_bytes
+    except Exception:
+        return True, 0, required_bytes
+
+
+def safe_extract_zip(zip_path: Path, target_dir: Path) -> List[Path]:
+    """
+    Safely extracts a ZIP archive preventing Zip Slip (path traversal),
+    absolute paths, and unsafe symlinks.
+    """
+    target_dir = target_dir.resolve()
+    target_dir.mkdir(parents=True, exist_ok=True)
+    extracted_paths: List[Path] = []
+
+    with zipfile.ZipFile(zip_path, "r") as zf:
+        for member in zf.infolist():
+            filename = member.filename
+            if filename.startswith("/") or filename.startswith("\\"):
+                raise ValueError(f"Unsafe absolute path in zip member: {filename}")
+
+            prospective = (target_dir / filename).resolve()
+            try:
+                prospective.relative_to(target_dir)
+            except ValueError:
+                raise ValueError(f"Zip slip security violation detected in member: {filename}")
+
+            # Check for symlink attribute (0o120000 in mode bits)
+            if (member.external_attr >> 16) & 0o120000 == 0o120000:
+                raise ValueError(f"Unsafe symlink detected in archive member: {filename}")
+
+            zf.extract(member, target_dir)
+            extracted_paths.append(prospective)
+
+    return extracted_paths
+
+
+def download_file_safely(
+    url: str,
+    target_path: Path,
+    expected_bytes: Optional[int] = None,
+    expected_sha256: Optional[str] = None,
+    mock_data: Optional[bytes] = None,
+    resume_supported: bool = False,
+) -> Dict[str, Any]:
+    """
+    Executes a safe download with .part suffix, atomic rename, content-length,
+    and SHA-256 verification.
+    """
+    target_path = target_path.resolve()
+    target_path.parent.mkdir(parents=True, exist_ok=True)
+
+    if target_path.exists():
+        actual_sha = compute_file_sha256(target_path)
+        if expected_sha256 is None or actual_sha.lower() == expected_sha256.lower():
+            return {
+                "status": "already_exists_verified",
+                "target_path": str(target_path),
+                "sha256": actual_sha,
+                "bytes_downloaded": 0,
+            }
+
+    part_path = target_path.with_name(target_path.name + ".part")
+
+    if mock_data is not None:
+        current_part_size = part_path.stat().st_size if (part_path.exists() and resume_supported) else 0
+        mode = "ab" if (current_part_size > 0 and resume_supported) else "wb"
+        with open(part_path, mode) as f:
+            f.write(mock_data[current_part_size:])
+    else:
+        raise RuntimeError("External network download is disabled in Phase 4A.4.")
+
+    actual_size = part_path.stat().st_size
+    if expected_bytes is not None and actual_size != expected_bytes:
+        part_path.unlink(missing_ok=True)
+        raise ValueError(f"Content-Length mismatch: expected {expected_bytes} bytes, got {actual_size} bytes")
+
+    actual_sha256 = compute_file_sha256(part_path)
+    if expected_sha256 is not None and actual_sha256.lower() != expected_sha256.lower():
+        part_path.unlink(missing_ok=True)
+        raise ValueError(f"Checksum mismatch: expected {expected_sha256}, got {actual_sha256}")
+
+    if target_path.exists():
+        target_path.unlink()
+    os.replace(part_path, target_path)
+
+    return {
+        "status": "download_completed_verified",
+        "target_path": str(target_path),
+        "sha256": actual_sha256,
+        "bytes_downloaded": actual_size,
+    }
+
+
+def validate_acquisition_plan(plan: Dict[str, Any]) -> List[str]:
+    """Validates an acquisition plan against schema rules."""
+    errors = []
+    if plan.get("schemaVersion") != "1.0.0":
+        errors.append(f"Invalid schemaVersion: '{plan.get('schemaVersion')}'. Expected '1.0.0'.")
+
+    for field in (
+        "planId",
+        "datasetId",
+        "pilotId",
+        "destination",
+        "requiredFreeDiskBytes",
+        "downloadMethod",
+        "resumeCapability",
+        "checksumPolicy",
+        "extractionPolicy",
+        "manifestOutput",
+        "components",
+    ):
+        if not plan.get(field):
+            errors.append(f"Missing required field: '{field}'.")
+
+    manifest_out = plan.get("manifestOutput", {})
+    if manifest_out.get("groupKey") != "source_id":
+        errors.append(
+            f"ANTI-LEAKAGE VIOLATION: manifestOutput.groupKey must be 'source_id', got '{manifest_out.get('groupKey')}'."
+        )
+
+    comps = plan.get("components", [])
+    if not isinstance(comps, list) or len(comps) == 0:
+        errors.append("Plan must contain a non-empty components array.")
+    else:
+        for idx, comp in enumerate(comps):
+            prefix = f"Component[{idx}] ({comp.get('componentId', 'unnamed')}):"
+            if not comp.get("componentId"):
+                errors.append(f"{prefix} Missing componentId.")
+            if not comp.get("remoteUrl"):
+                errors.append(f"{prefix} Missing remoteUrl.")
+            label = comp.get("assignedLabel")
+            if label not in ("authentic", "fully_generated", "ai_edited", "ground_truth_mask"):
+                errors.append(f"{prefix} Invalid assignedLabel '{label}'.")
+
+    return errors
+
+
+def run_plan_acquisition(
+    plan_path: Path,
+    execute: bool,
+    approved_sha256: Optional[str],
+    repo_root: Path,
+    mock_components: Optional[Dict[str, bytes]] = None,
+) -> int:
+    """
+    Executes or dry-runs an auditable acquisition plan.
+    Enforces Phase 4A.4 Safety Gates:
+    1. Plan JSON schema & anti-leakage validation.
+    2. Free disk space preflight.
+    3. Mandatory SHA-256 plan approval token matching for execution.
+    4. Safe zip extraction with path traversal and symlink checks.
+    5. Atomic part file staging and acquisition receipt generation.
+    """
+    if not plan_path.exists():
+        print(f"[ERROR] Plan file not found at: {plan_path}", file=sys.stderr)
+        return 1
+
+    try:
+        with open(plan_path, "r", encoding="utf-8") as f:
+            plan = json.load(f)
+    except Exception as e:
+        print(f"[ERROR] Failed to parse acquisition plan JSON: {e}", file=sys.stderr)
+        return 1
+
+    computed_sha256 = compute_file_sha256(plan_path)
+    errors = validate_acquisition_plan(plan)
+    if errors:
+        print(f"[FAIL] Plan validation errors for '{plan_path.name}':", file=sys.stderr)
+        for err in errors:
+            print(f"  - {err}", file=sys.stderr)
+        return 1
+
+    plan_id = plan.get("planId", "unknown")
+    dataset_id = plan.get("datasetId", "unknown")
+    pilot_id = plan.get("pilotId", "unknown")
+    dest_rel = plan.get("destination", f"data/research/{dataset_id}")
+    dest_dir = repo_root / dest_rel
+    req_disk = plan.get("requiredFreeDiskBytes", 0)
+    comps = plan.get("components", [])
+
+    # If dry-run (default when execute=False)
+    if not execute:
+        print("=" * 70)
+        print(f"AUDITABLE ACQUISITION PLAN DRY-RUN REPORT: {plan_id}")
+        print("=" * 70)
+        print(f"Plan ID:                {plan_id}")
+        print(f"Plan Version:           {plan.get('schemaVersion', '1.0.0')}")
+        print(f"Plan SHA-256:           {computed_sha256}")
+        print(f"Dataset ID:             {dataset_id}")
+        print(f"Pilot ID:               {pilot_id}")
+        print(f"Destination:            {dest_rel}")
+        print(f"License:                {plan.get('license', 'N/A')}")
+        print(f"Approval Status:        {plan.get('approvalStatus', 'pending-user-approval')}")
+        print(f"Required Free Disk:     {req_disk:,} bytes (~{req_disk / (1024**3):.1f} GB)")
+        print(f"Download Method:        {plan.get('downloadMethod', 'N/A')}")
+        print(f"Resume Capability:      {plan.get('resumeCapability', 'N/A')}")
+        print(f"Checksum Policy:        {plan.get('checksumPolicy', 'N/A')}")
+        print(f"Extraction Policy:      {plan.get('extractionPolicy', 'N/A')}")
+        print(f"Group Split Key:        {plan.get('manifestOutput', {}).get('groupKey', 'source_id')} (Enforces Zero Leakage)")
+        print("-" * 70)
+        print("Remote Components Breakdown:")
+        total_dl_bytes = 0
+        for idx, comp in enumerate(comps, 1):
+            c_bytes = comp.get("verifiedSizeBytes") or comp.get("estimatedSizeBytes") or comp.get("byteSize", 0)
+            c_status = "verified" if "verifiedSizeBytes" in comp else ("estimated" if "estimatedSizeBytes" in comp else comp.get("byteStatus", "unknown"))
+            total_dl_bytes += c_bytes
+            card_info = comp.get("expectedCardinality", {})
+            if isinstance(card_info, dict):
+                c_count = card_info.get("count")
+                c_card_status = card_info.get("status", "unknown")
+            else:
+                c_count = comp.get("expectedCount")
+                c_card_status = comp.get("cardinalityStatus", "unknown")
+            dest_sub = comp.get("remoteFolder") or comp.get("destinationSubdir", comp.get("componentId"))
+
+            print(f"  {idx}. Component:        {comp.get('componentId')}")
+            print(f"     - Label:            {comp.get('assignedLabel')}")
+            print(f"     - Remote URL:       {comp.get('remoteUrl')}")
+            print(f"     - Size:             {c_bytes:,} bytes (~{c_bytes / (1024**3):.2f} GB) [{c_status}]")
+            print(f"     - Cardinality:      {c_count} images [{c_card_status}]")
+            print(f"     - Subdirectory:     {dest_sub}")
+        print("-" * 70)
+        print(f"Total Download Bytes:   {total_dl_bytes:,} bytes (~{total_dl_bytes / (1024**3):.2f} GB)")
+        print(f"Scientific Purpose:     {plan.get('researchPurpose', 'N/A')}")
+        print("-" * 70)
+        print("Safety & Network Invariance Confirmation:")
+        print("  * Network requests made:         0")
+        print("  * External dataset bytes:        0")
+        print("  * Model bytes downloaded:        0")
+        print("  * Content download execution:    DISABLED (Plan Dry-run mode)")
+        print("=" * 70)
+        print(f"[PASS] Acquisition plan '{plan_id}' dry-run verified successfully.")
+        return 0
+
+    # Live Execution path
+    print("=" * 70)
+    print(f"AUDITABLE ACQUISITION PLAN EXECUTION GATE: {plan_id}")
+    print("=" * 70)
+
+    # Gate 1: Approval hash verification
+    if not approved_sha256 or approved_sha256.strip().lower() != computed_sha256.lower():
+        print("[BLOCKED] Plan Approval Hash Mismatch:", file=sys.stderr)
+        print(f"  Plan file SHA-256:      {computed_sha256}", file=sys.stderr)
+        print(f"  Approved SHA-256 given: {approved_sha256 or '<NONE>'}", file=sys.stderr)
+        print(
+            "  Execution is strictly BLOCKED unless --approved-plan-sha256 exactly matches the plan hash.",
+            file=sys.stderr,
+        )
+        return 1
+
+    # Gate 2: Preflight free disk space check
+    has_space, avail_bytes, required_bytes = check_free_disk_space(dest_dir, req_disk)
+    if not has_space:
+        print("[BLOCKED] Insufficient Free Disk Space:", file=sys.stderr)
+        print(f"  Target Path:      {dest_dir.as_posix()}", file=sys.stderr)
+        print(f"  Available Free:   {avail_bytes:,} bytes (~{avail_bytes / (1024**3):.2f} GB)", file=sys.stderr)
+        print(f"  Required Free:    {required_bytes:,} bytes (~{required_bytes / (1024**3):.2f} GB)", file=sys.stderr)
+        return 1
+
+    # Gate 3: External acquisition lock (Phase 4A.4 requires 0 external dataset bytes)
+    if mock_components is None:
+        print(
+            f"[BLOCKED] Plan '{plan_id}' has approvalStatus '{plan.get('approvalStatus')}'.\n"
+            f"  External network downloads are strictly disabled in Phase 4A.4 offline protocol.\n"
+            f"  Network requests made: 0\n"
+            f"  External bytes downloaded: 0",
+            file=sys.stderr,
+        )
+        return 1
+
+    # Safe mock/fixture execution for offline tests
+    staging_dir = dest_dir / ".staging"
+    staging_dir.mkdir(parents=True, exist_ok=True)
+    receipt_components = []
+
+    try:
+        for comp in comps:
+            comp_id = comp.get("componentId")
+            target_file = staging_dir / f"{comp_id}.zip"
+            mock_data = mock_components.get(comp_id, b"")
+            dl_res = download_file_safely(
+                url=comp.get("remoteUrl"),
+                target_path=target_file,
+                expected_bytes=len(mock_data),
+                mock_data=mock_data,
+                resume_supported=comp.get("resumeSupported", False),
+            )
+            # Safe staging extract
+            dest_sub = comp.get("remoteFolder") or comp.get("destinationSubdir") or comp_id
+            comp_extract_dir = staging_dir / dest_sub
+            safe_extract_zip(target_file, comp_extract_dir)
+
+            # Move from staging to destination
+            final_comp_dir = dest_dir / dest_sub
+            if final_comp_dir.exists():
+                shutil.rmtree(final_comp_dir)
+            final_comp_dir.parent.mkdir(parents=True, exist_ok=True)
+            shutil.move(str(comp_extract_dir), str(final_comp_dir))
+
+            receipt_components.append({
+                "componentId": comp_id,
+                "assignedLabel": comp.get("assignedLabel"),
+                "archiveSha256": dl_res.get("sha256"),
+                "bytesDownloaded": dl_res.get("bytes_downloaded"),
+                "destination": str(final_comp_dir.relative_to(repo_root)),
+            })
+            target_file.unlink(missing_ok=True)
+
+        # Generate acquisition receipt
+        receipt_path = dest_dir / "acquisition-receipt.json"
+        receipt_data = {
+            "receiptVersion": "1.0.0",
+            "planId": plan_id,
+            "approvedPlanSha256": approved_sha256,
+            "datasetId": dataset_id,
+            "pilotId": pilot_id,
+            "status": "completed_offline_fixture",
+            "components": receipt_components,
+            "manifestLineage": {
+                "manifestPath": plan.get("manifestOutput", {}).get("path"),
+                "groupKey": plan.get("manifestOutput", {}).get("groupKey"),
+            },
+        }
+        with open(receipt_path, "w", encoding="utf-8") as rf:
+            json.dump(receipt_data, rf, indent=2)
+
+        print(f"[PASS] Plan execution completed successfully into {dest_dir.as_posix()}.")
+        print(f"  Acquisition receipt written: {receipt_path.as_posix()}")
+        return 0
+    finally:
+        if staging_dir.exists():
+            shutil.rmtree(staging_dir, ignore_errors=True)
 
 
 def load_dataset_registry(repo_root: Path) -> Dict[str, Any]:
@@ -309,12 +669,12 @@ def run_pilot_dry_run(pilot_id: str, repo_root: Path) -> int:
         print("     - Expected Label:   ai_edited (Stable Diffusion 2 spliced inpainting)")
         print("     - Verified Size:    18,576,100,556 bytes (~17.3 GB reported)")
         print("     - Destination:      data/research/tgif/sd2-sp/")
-        print("     - Image Count:      74,976 edited images")
+        print("     - Image Count:      18,744 edited images (14,640 train, 2,046 val, 2,058 test)")
         print("  3. Component:          masks")
         print("     - Expected Label:   ground_truth_mask (binary segmentation / bbox)")
         print("     - Verified Size:    42,362,470 bytes (~40.4 MB reported)")
         print("     - Destination:      data/research/tgif/masks/")
-        print("     - Image Count:      3,124 binary ground-truth masks")
+        print("     - Image Count:      ~6,248 binary masks (estimated ~2 masks per source image: segm & bbox)")
         print("-" * 70)
         print("Volume & System Requirements:")
         print("  * Total Download Size: 25,920,307,429 bytes (~24.1 GB compressed)")
@@ -325,8 +685,10 @@ def run_pilot_dry_run(pilot_id: str, repo_root: Path) -> int:
         print("-" * 70)
         print("Scientific Purpose & Anti-Shortcut Rationale:")
         print("  * Primary Task:        Classification (authentic vs ai_edited) & Inpainting Localization")
-        print("  * Anti-Shortcut:       Both authentic and edited images originate from the SAME MS-COCO photos,")
-        print("                         completely eliminating cross-dataset sensor/compression shortcuts.")
+        print("  * Anti-Shortcut:       Thiết kế matched-pair làm giảm đáng kể nguy cơ mô hình học đặc trưng nguồn dữ liệu")
+        print("                         vì ảnh gốc và ảnh chỉnh sửa chia sẻ cùng source image. Các nguy cơ shortcut từ codec,")
+        print("                         quy trình sinh ảnh, preprocessing, số lượng biến thể và artifacts của mô hình tạo sinh")
+        print("                         vẫn phải được đo bằng baseline và source-held-out evaluation.")
         print("  * Group Isolation:     Strict group split on source_id (COCO image ID). Parent and child")
         print("                         images are quarantined to identical splits (zero leakage).")
         print("  * Minimal Proposal:    If initial bandwidth is constrained, user may approve downloading")
@@ -396,6 +758,16 @@ def main() -> None:
         description="Dataset Acquisition & Dual-Track Gatekeeper CLI for Forensics Web Lab"
     )
     parser.add_argument(
+        "--plan",
+        type=str,
+        help="Path to acquisition plan JSON file (e.g. datasets/acquisition-plans/pilot-a-tgif.v1.json)",
+    )
+    parser.add_argument(
+        "--approved-plan-sha256",
+        type=str,
+        help="Approved SHA-256 hash of the acquisition plan required for execution",
+    )
+    parser.add_argument(
         "--pilot",
         type=str,
         help="Pilot identifier for scientific acquisition dry-run (e.g. 'pilot-a', 'pilot-b')",
@@ -459,6 +831,18 @@ def main() -> None:
         except Exception as e:
             print(f"[ERROR] Failed to validate registry: {e}", file=sys.stderr)
             sys.exit(1)
+
+    if args.plan:
+        plan_path = Path(args.plan)
+        if not plan_path.is_absolute():
+            plan_path = repo_root / plan_path
+        exit_code = run_plan_acquisition(
+            plan_path=plan_path,
+            execute=args.execute,
+            approved_sha256=args.approved_plan_sha256,
+            repo_root=repo_root,
+        )
+        sys.exit(exit_code)
 
     if args.pilot:
         exit_code = run_pilot_dry_run(args.pilot, repo_root)

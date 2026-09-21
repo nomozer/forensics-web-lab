@@ -41,6 +41,7 @@ wandb/
 !/datasets/registry.json
 !/datasets/manifests/
 !/datasets/licenses/
+!/datasets/acquisition-plans/**
 !/datasets/**/*.schema.json
 
 /artifacts/**/*
