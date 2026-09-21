@@ -23,11 +23,13 @@ import shutil
 import tempfile
 import zipfile
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, List, Optional
+import urllib.request
 
 import pytest
 
 from ml.datasets.acquire import (
+    HostnameRestrictedRedirectHandler,
     check_free_disk_space,
     compute_file_sha256,
     download_file_safely,
@@ -538,3 +540,213 @@ def test_paired_bootstrap_guard_statistically_sound() -> None:
     assert res_fail["status"] == "rejected_no_evidence"
     assert res_fail["acceptance_criterion"] is False
     assert res_fail["ci_lower"] <= 0
+
+
+class MockStreamResponse:
+    """Mock urllib response supporting chunked reading and headers."""
+
+    def __init__(self, data: bytes, headers: Optional[Dict[str, str]] = None, url: str = "https://cloud.ilabt.imec.be/download"):
+        self.bio = io.BytesIO(data)
+        self.headers = headers or {}
+        self._url = url
+
+    def geturl(self) -> str:
+        return self._url
+
+    def read(self, size: int = -1) -> bytes:
+        return self.bio.read(size)
+
+    def __enter__(self) -> "MockStreamResponse":
+        return self
+
+    def __exit__(self, *args: Any) -> None:
+        pass
+
+
+class MockOpener:
+    """Mock urllib OpenerDirector returning a MockStreamResponse."""
+
+    def __init__(self, response: MockStreamResponse):
+        self.response = response
+        self.opened_urls: List[str] = []
+
+    def open(self, req: Any, timeout: int = 180) -> MockStreamResponse:
+        url = req.get_full_url() if hasattr(req, "get_full_url") else str(req)
+        self.opened_urls.append(url)
+        return self.response
+
+
+def test_full_plan_sha256_invariance() -> None:
+    """Enforces plan invariance: pilot-a-tgif.v1.json SHA-256 must match exactly."""
+    repo_root = find_repo_root()
+    plan_path = repo_root / "datasets" / "acquisition-plans" / "pilot-a-tgif.v1.json"
+    assert plan_path.exists()
+    computed = compute_file_sha256(plan_path)
+    assert computed == "7da36f450fe424970e4676fc0c35047ea756385843dd2fb1c656f1fa45deac4e"
+
+
+def test_component_selection_single_component_and_isolation() -> None:
+    """Verifies that --component tgif-masks isolates download only to masks and ignores orig and sd2-sp."""
+    repo_root = find_repo_root()
+    plan_path = repo_root / "datasets" / "acquisition-plans" / "pilot-a-tgif.v1.json"
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        temp_repo = Path(tmp_dir)
+        temp_plan_file = temp_repo / "plan.json"
+        temp_plan_file.write_text(plan_path.read_text(encoding="utf-8"), encoding="utf-8")
+        plan_sha256 = compute_file_sha256(temp_plan_file)
+
+        # Mock zip archive for tgif-masks
+        bio = io.BytesIO()
+        with zipfile.ZipFile(bio, "w") as zf:
+            zf.writestr("000000000001_segm.png", b"\x89PNG\r\n\x1a\nfake_mask")
+        mock_mask_zip = bio.getvalue()
+
+        exit_code = run_plan_acquisition(
+            plan_path=temp_plan_file,
+            execute=True,
+            approved_sha256=plan_sha256,
+            repo_root=temp_repo,
+            component="tgif-masks",
+            mock_components={"tgif-masks": mock_mask_zip},
+        )
+        assert exit_code == 0
+
+        tgif_dest = temp_repo / "data" / "research" / "tgif"
+        # tgif-masks should exist and be extracted
+        assert (tgif_dest / "masks" / "000000000001_segm.png").exists()
+
+        # orig and sd2-sp must NOT exist
+        assert not (tgif_dest / "orig").exists()
+        assert not (tgif_dest / "sd2-sp").exists()
+
+        # Check receipt
+        receipt_file = tgif_dest / "acquisition-receipt.json"
+        assert receipt_file.exists()
+        with open(receipt_file, "r", encoding="utf-8") as f:
+            receipt = json.load(f)
+
+        assert receipt["scopedComponent"] == "tgif-masks"
+        assert len(receipt["components"]) == 1
+        assert receipt["components"][0]["componentId"] == "tgif-masks"
+        assert receipt["networkAccounting"]["datasetContentRequests"] == 1
+        assert receipt["networkAccounting"]["modelBytes"] == 0
+        assert receipt["networkAccounting"]["trainingRuns"] == 0
+
+
+def test_nonexistent_component_rejected() -> None:
+    """Verifies that specifying a component not in the plan exits with non-zero code."""
+    repo_root = find_repo_root()
+    plan_path = repo_root / "datasets" / "acquisition-plans" / "pilot-a-tgif.v1.json"
+    plan_sha256 = compute_file_sha256(plan_path)
+
+    exit_code = run_plan_acquisition(
+        plan_path=plan_path,
+        execute=False,
+        approved_sha256=plan_sha256,
+        repo_root=repo_root,
+        component="nonexistent-component-xyz",
+    )
+    assert exit_code != 0
+
+
+def test_unapproved_components_locked_in_live_execution() -> None:
+    """Verifies that tgif-orig and tgif-sd2-sp are locked and blocked from live network execution."""
+    repo_root = find_repo_root()
+    plan_path = repo_root / "datasets" / "acquisition-plans" / "pilot-a-tgif.v1.json"
+    plan_sha256 = compute_file_sha256(plan_path)
+
+    # Attempting to execute tgif-orig live without mock must be BLOCKED
+    exit_orig = run_plan_acquisition(
+        plan_path=plan_path,
+        execute=True,
+        approved_sha256=plan_sha256,
+        repo_root=repo_root,
+        component="tgif-orig",
+        mock_components=None,
+    )
+    assert exit_orig == 1
+
+    # Attempting to execute tgif-sd2-sp live without mock must be BLOCKED
+    exit_sd2 = run_plan_acquisition(
+        plan_path=plan_path,
+        execute=True,
+        approved_sha256=plan_sha256,
+        repo_root=repo_root,
+        component="tgif-sd2-sp",
+        mock_components=None,
+    )
+    assert exit_sd2 == 1
+
+
+def test_content_length_exceeding_hard_ceiling_aborts() -> None:
+    """Verifies that if Content-Length exceeds max_download_bytes, download aborts before reading body."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        target = Path(tmp_dir) / "ceiling_test.zip"
+        mock_resp = MockStreamResponse(
+            data=b"dummy",
+            headers={"Content-Length": "70000000"},
+            url="https://cloud.ilabt.imec.be/large.zip",
+        )
+        mock_opener = MockOpener(mock_resp)
+
+        with pytest.raises(ValueError, match="exceeds hard network ceiling"):
+            download_file_safely(
+                url="https://cloud.ilabt.imec.be/large.zip",
+                target_path=target,
+                max_download_bytes=67108864,
+                opener=mock_opener,
+            )
+
+        assert not target.exists()
+        assert not target.with_name(target.name + ".part").exists()
+
+
+def test_streaming_exceeding_hard_ceiling_aborts_and_cleans_part() -> None:
+    """Verifies that chunked streaming exceeding max_download_bytes halts and removes .part file."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        target = Path(tmp_dir) / "stream_ceiling_test.zip"
+        mock_resp = MockStreamResponse(
+            data=b"X" * 500,
+            headers={},
+            url="https://cloud.ilabt.imec.be/stream.zip",
+        )
+        mock_opener = MockOpener(mock_resp)
+
+        with pytest.raises(ValueError, match="exceeded hard network ceiling"):
+            download_file_safely(
+                url="https://cloud.ilabt.imec.be/stream.zip",
+                target_path=target,
+                max_download_bytes=200,
+                opener=mock_opener,
+            )
+
+        assert not target.exists()
+        assert not target.with_name(target.name + ".part").exists()
+
+
+def test_hostname_restricted_redirect_handler() -> None:
+    """Verifies HostnameRestrictedRedirectHandler allows approved hostname and blocks unauthorized redirect."""
+    handler = HostnameRestrictedRedirectHandler(allowed_hostnames=["cloud.ilabt.imec.be"])
+    req = urllib.request.Request("https://cloud.ilabt.imec.be/initial")
+
+    # Same approved hostname redirect succeeds
+    handler.redirect_request(req, None, 302, "Found", {}, "https://cloud.ilabt.imec.be/final")
+    assert handler.redirect_count == 1
+
+    # Unauthorized hostname redirect is blocked
+    with pytest.raises(ValueError, match="Security violation: Redirect to unauthorized host 'malicious.org' blocked"):
+        handler.redirect_request(req, None, 302, "Found", {}, "https://malicious.org/payload.zip")
+
+
+def test_unauthorized_initial_hostname_blocked() -> None:
+    """Verifies that download_file_safely rejects unauthorized initial hostnames."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        target = Path(tmp_dir) / "unauth.zip"
+        with pytest.raises(ValueError, match="Security violation: Initial URL hostname 'unauthorized.com' not in allowed list"):
+            download_file_safely(
+                url="https://unauthorized.com/test.zip",
+                target_path=target,
+                allowed_hostnames=["cloud.ilabt.imec.be"],
+            )
+

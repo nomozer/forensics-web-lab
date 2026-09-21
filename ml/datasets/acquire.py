@@ -16,9 +16,31 @@ import json
 import os
 import shutil
 import sys
+import urllib.error
+import urllib.parse
+import urllib.request
 import zipfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+
+
+class HostnameRestrictedRedirectHandler(urllib.request.HTTPRedirectHandler):
+    """Enforces that HTTP redirects remain strictly within approved hostnames."""
+
+    def __init__(self, allowed_hostnames: List[str]):
+        super().__init__()
+        self.allowed_hostnames = [h.lower() for h in allowed_hostnames]
+        self.redirect_count = 0
+        self.redirect_history: List[str] = []
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        parsed = urllib.parse.urlparse(newurl)
+        target_host = (parsed.hostname or "").lower()
+        if target_host not in self.allowed_hostnames:
+            raise ValueError(f"Security violation: Redirect to unauthorized host '{target_host}' blocked.")
+        self.redirect_count += 1
+        self.redirect_history.append(newurl)
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
 
 
 def find_repo_root() -> Path:
@@ -95,13 +117,23 @@ def download_file_safely(
     expected_sha256: Optional[str] = None,
     mock_data: Optional[bytes] = None,
     resume_supported: bool = False,
+    max_download_bytes: Optional[int] = None,
+    allowed_hostnames: Optional[List[str]] = None,
+    opener: Optional[urllib.request.OpenerDirector] = None,
+    strict_expected_bytes: bool = False,
 ) -> Dict[str, Any]:
     """
     Executes a safe download with .part suffix, atomic rename, content-length,
-    and SHA-256 verification.
+    hard download ceiling, hostname restriction, and SHA-256 verification.
     """
     target_path = target_path.resolve()
     target_path.parent.mkdir(parents=True, exist_ok=True)
+
+    allowed = [h.lower() for h in (allowed_hostnames or ["cloud.ilabt.imec.be"])]
+    parsed_url = urllib.parse.urlparse(url)
+    initial_host = (parsed_url.hostname or "").lower()
+    if mock_data is None and initial_host not in allowed:
+        raise ValueError(f"Security violation: Initial URL hostname '{initial_host}' not in allowed list: {allowed}")
 
     if target_path.exists():
         actual_sha = compute_file_sha256(target_path)
@@ -111,19 +143,63 @@ def download_file_safely(
                 "target_path": str(target_path),
                 "sha256": actual_sha,
                 "bytes_downloaded": 0,
+                "content_length": target_path.stat().st_size,
+                "final_url": url,
+                "redirect_count": 0,
             }
 
     part_path = target_path.with_name(target_path.name + ".part")
+    redirect_count = 0
+    final_url = url
 
     if mock_data is not None:
+        if max_download_bytes is not None and len(mock_data) > max_download_bytes:
+            raise ValueError(
+                f"Download ceiling exceeded: mock data size {len(mock_data)} exceeds max allowed {max_download_bytes} bytes."
+            )
         current_part_size = part_path.stat().st_size if (part_path.exists() and resume_supported) else 0
         mode = "ab" if (current_part_size > 0 and resume_supported) else "wb"
         with open(part_path, mode) as f:
             f.write(mock_data[current_part_size:])
+        actual_size = part_path.stat().st_size
     else:
-        raise RuntimeError("External network download is disabled in Phase 4A.4.")
+        redirect_handler = HostnameRestrictedRedirectHandler(allowed)
+        active_opener = opener or urllib.request.build_opener(redirect_handler)
+        req = urllib.request.Request(url, headers={"User-Agent": "ForensicsWebLab-Acquisition/1.0"})
 
-    actual_size = part_path.stat().st_size
+        try:
+            with active_opener.open(req, timeout=180) as resp:
+                final_url = resp.geturl()
+                final_host = (urllib.parse.urlparse(final_url).hostname or "").lower()
+                if final_host not in allowed:
+                    raise ValueError(f"Security violation: Final response hostname '{final_host}' not in allowed list: {allowed}")
+
+                cl_header = resp.headers.get("Content-Length")
+                content_length = int(cl_header) if cl_header and cl_header.isdigit() else None
+                if max_download_bytes is not None and content_length is not None and content_length > max_download_bytes:
+                    raise ValueError(
+                        f"Content-Length ({content_length} bytes) exceeds hard network ceiling of {max_download_bytes} bytes."
+                    )
+
+                bytes_downloaded = 0
+                with open(part_path, "wb") as f:
+                    while True:
+                        chunk = resp.read(65536)
+                        if not chunk:
+                            break
+                        bytes_downloaded += len(chunk)
+                        if max_download_bytes is not None and bytes_downloaded > max_download_bytes:
+                            raise ValueError(
+                                f"Download stream exceeded hard network ceiling of {max_download_bytes} bytes (read {bytes_downloaded} bytes)."
+                            )
+                        f.write(chunk)
+
+                actual_size = bytes_downloaded
+                redirect_count = redirect_handler.redirect_count
+        except Exception:
+            part_path.unlink(missing_ok=True)
+            raise
+
     if expected_bytes is not None and actual_size != expected_bytes:
         part_path.unlink(missing_ok=True)
         raise ValueError(f"Content-Length mismatch: expected {expected_bytes} bytes, got {actual_size} bytes")
@@ -142,6 +218,8 @@ def download_file_safely(
         "target_path": str(target_path),
         "sha256": actual_sha256,
         "bytes_downloaded": actual_size,
+        "final_url": final_url,
+        "redirect_count": redirect_count,
     }
 
 
@@ -195,16 +273,22 @@ def run_plan_acquisition(
     execute: bool,
     approved_sha256: Optional[str],
     repo_root: Path,
+    component: Optional[str] = None,
+    max_download_bytes: int = 67108864,
     mock_components: Optional[Dict[str, bytes]] = None,
+    opener: Optional[urllib.request.OpenerDirector] = None,
 ) -> int:
     """
     Executes or dry-runs an auditable acquisition plan.
-    Enforces Phase 4A.4 Safety Gates:
+    Enforces Phase 4B.0 Safety Gates:
     1. Plan JSON schema & anti-leakage validation.
-    2. Free disk space preflight.
+    2. Component-scoped filtering and non-existent component rejection.
     3. Mandatory SHA-256 plan approval token matching for execution.
-    4. Safe zip extraction with path traversal and symlink checks.
-    5. Atomic part file staging and acquisition receipt generation.
+    4. Explicit user approval scope check (tgif-masks only for live network; orig/sd2-sp locked).
+    5. Hard network ceiling enforcement before and during streaming.
+    6. Hostname restriction (cloud.ilabt.imec.be only).
+    7. Safe zip extraction with path traversal and symlink checks.
+    8. Atomic part file staging and acquisition receipt generation.
     """
     if not plan_path.exists():
         print(f"[ERROR] Plan file not found at: {plan_path}", file=sys.stderr)
@@ -232,6 +316,19 @@ def run_plan_acquisition(
     dest_dir = repo_root / dest_rel
     req_disk = plan.get("requiredFreeDiskBytes", 0)
     comps = plan.get("components", [])
+    available_comp_ids = [c.get("componentId") for c in comps]
+
+    if component is not None:
+        if component not in available_comp_ids:
+            print(
+                f"[ERROR] Component '{component}' not found in plan '{plan_id}'. "
+                f"Available components: {available_comp_ids}",
+                file=sys.stderr,
+            )
+            return 1
+        target_comps = [c for c in comps if c.get("componentId") == component]
+    else:
+        target_comps = comps
 
     # If dry-run (default when execute=False)
     if not execute:
@@ -246,6 +343,8 @@ def run_plan_acquisition(
         print(f"Destination:            {dest_rel}")
         print(f"License:                {plan.get('license', 'N/A')}")
         print(f"Approval Status:        {plan.get('approvalStatus', 'pending-user-approval')}")
+        if component is not None:
+            print(f"Scoped Component:       {component}")
         print(f"Required Free Disk:     {req_disk:,} bytes (~{req_disk / (1024**3):.1f} GB)")
         print(f"Download Method:        {plan.get('downloadMethod', 'N/A')}")
         print(f"Resume Capability:      {plan.get('resumeCapability', 'N/A')}")
@@ -253,9 +352,9 @@ def run_plan_acquisition(
         print(f"Extraction Policy:      {plan.get('extractionPolicy', 'N/A')}")
         print(f"Group Split Key:        {plan.get('manifestOutput', {}).get('groupKey', 'source_id')} (Enforces Zero Leakage)")
         print("-" * 70)
-        print("Remote Components Breakdown:")
+        print("Components Breakdown:")
         total_dl_bytes = 0
-        for idx, comp in enumerate(comps, 1):
+        for idx, comp in enumerate(target_comps, 1):
             c_bytes = comp.get("verifiedSizeBytes") or comp.get("estimatedSizeBytes") or comp.get("byteSize", 0)
             c_status = "verified" if "verifiedSizeBytes" in comp else ("estimated" if "estimatedSizeBytes" in comp else comp.get("byteStatus", "unknown"))
             total_dl_bytes += c_bytes
@@ -303,8 +402,29 @@ def run_plan_acquisition(
         )
         return 1
 
-    # Gate 2: Preflight free disk space check
-    has_space, avail_bytes, required_bytes = check_free_disk_space(dest_dir, req_disk)
+    # Gate 2: User Approval Scope Check
+    # In Phase 4B.0, user approval is GRANTED FOR 'tgif-masks' ONLY.
+    if mock_components is None:
+        if component != "tgif-masks":
+            print(
+                f"[BLOCKED] Component '{component or 'ALL'}' is locked / unapproved.\n"
+                f"  User approval in Phase 4B.0 is granted strictly FOR 'tgif-masks' ONLY.\n"
+                f"  Locked components: tgif-orig, tgif-sd2-sp, GenImage.\n"
+                f"  No network request will be issued.",
+                file=sys.stderr,
+            )
+            return 1
+
+    # Gate 3: Preflight free disk space check
+    if component == "tgif-masks":
+        comp_item = target_comps[0]
+        comp_dl_bytes = comp_item.get("verifiedSizeBytes", 42362470)
+        comp_ext_bytes = comp_item.get("estimatedExtractedBytes", 50000000)
+        req_disk_calc = max(max_download_bytes * 2, comp_dl_bytes + comp_ext_bytes + 50_000_000)
+    else:
+        req_disk_calc = req_disk
+
+    has_space, avail_bytes, required_bytes = check_free_disk_space(dest_dir, req_disk_calc)
     if not has_space:
         print("[BLOCKED] Insufficient Free Disk Space:", file=sys.stderr)
         print(f"  Target Path:      {dest_dir.as_posix()}", file=sys.stderr)
@@ -312,52 +432,80 @@ def run_plan_acquisition(
         print(f"  Required Free:    {required_bytes:,} bytes (~{required_bytes / (1024**3):.2f} GB)", file=sys.stderr)
         return 1
 
-    # Gate 3: External acquisition lock (Phase 4A.4 requires 0 external dataset bytes)
-    if mock_components is None:
-        print(
-            f"[BLOCKED] Plan '{plan_id}' has approvalStatus '{plan.get('approvalStatus')}'.\n"
-            f"  External network downloads are strictly disabled in Phase 4A.4 offline protocol.\n"
-            f"  Network requests made: 0\n"
-            f"  External bytes downloaded: 0",
-            file=sys.stderr,
-        )
-        return 1
-
-    # Safe mock/fixture execution for offline tests
+    # Safe execution (staging isolation)
     staging_dir = dest_dir / ".staging"
+    if staging_dir.exists():
+        shutil.rmtree(staging_dir, ignore_errors=True)
     staging_dir.mkdir(parents=True, exist_ok=True)
+
     receipt_components = []
+    total_dl_bytes = 0
+    total_ext_bytes = 0
+    total_redirects = 0
+    total_content_reqs = 0
 
     try:
-        for comp in comps:
+        for comp in target_comps:
             comp_id = comp.get("componentId")
             target_file = staging_dir / f"{comp_id}.zip"
-            mock_data = mock_components.get(comp_id, b"")
+            mock_data = mock_components.get(comp_id) if mock_components is not None else None
+            expected_bytes = len(mock_data) if mock_data is not None else None
+
             dl_res = download_file_safely(
                 url=comp.get("remoteUrl"),
                 target_path=target_file,
-                expected_bytes=len(mock_data),
+                expected_bytes=expected_bytes,
                 mock_data=mock_data,
-                resume_supported=comp.get("resumeSupported", False),
+                resume_supported=comp.get("resumeCapability", {}).get("resumeSupported", False) if isinstance(comp.get("resumeCapability"), dict) else comp.get("resumeSupported", False),
+                max_download_bytes=max_download_bytes,
+                allowed_hostnames=["cloud.ilabt.imec.be"],
+                opener=opener,
             )
+            total_content_reqs += 1
+            dl_bytes = dl_res.get("bytes_downloaded", 0)
+            total_dl_bytes += dl_bytes
+            total_redirects += dl_res.get("redirect_count", 0)
+            archive_sha256 = dl_res.get("sha256")
+
+            # Verify zip integrity
+            with zipfile.ZipFile(target_file, "r") as zf:
+                test_err = zf.testzip()
+                if test_err is not None:
+                    raise ValueError(f"Corrupted zip archive detected at member: {test_err}")
+
             # Safe staging extract
             dest_sub = comp.get("remoteFolder") or comp.get("destinationSubdir") or comp_id
-            comp_extract_dir = staging_dir / dest_sub
-            safe_extract_zip(target_file, comp_extract_dir)
+            comp_extract_tmp = staging_dir / f"_extract_{comp_id}"
+            comp_extract_tmp.mkdir(parents=True, exist_ok=True)
+            safe_extract_zip(target_file, comp_extract_tmp)
 
-            # Move from staging to destination
+            nested_sub = comp_extract_tmp / dest_sub
+            if nested_sub.exists() and nested_sub.is_dir():
+                source_to_move = nested_sub
+            else:
+                source_to_move = comp_extract_tmp
+
             final_comp_dir = dest_dir / dest_sub
             if final_comp_dir.exists():
                 shutil.rmtree(final_comp_dir)
             final_comp_dir.parent.mkdir(parents=True, exist_ok=True)
-            shutil.move(str(comp_extract_dir), str(final_comp_dir))
+            shutil.move(str(source_to_move), str(final_comp_dir))
+
+            extracted_files = [p for p in final_comp_dir.rglob("*") if p.is_file()]
+            comp_ext_bytes = sum(f.stat().st_size for f in extracted_files)
+            total_ext_bytes += comp_ext_bytes
 
             receipt_components.append({
                 "componentId": comp_id,
                 "assignedLabel": comp.get("assignedLabel"),
-                "archiveSha256": dl_res.get("sha256"),
-                "bytesDownloaded": dl_res.get("bytes_downloaded"),
-                "destination": str(final_comp_dir.relative_to(repo_root)),
+                "remoteUrl": comp.get("remoteUrl"),
+                "archiveSha256": archive_sha256,
+                "bytesDownloaded": dl_bytes,
+                "extractedBytes": comp_ext_bytes,
+                "extractedFilesCount": len(extracted_files),
+                "finalUrl": dl_res.get("final_url"),
+                "redirectCount": dl_res.get("redirect_count", 0),
+                "destination": str(final_comp_dir.relative_to(repo_root)).replace("\\", "/"),
             })
             target_file.unlink(missing_ok=True)
 
@@ -369,7 +517,19 @@ def run_plan_acquisition(
             "approvedPlanSha256": approved_sha256,
             "datasetId": dataset_id,
             "pilotId": pilot_id,
-            "status": "completed_offline_fixture",
+            "status": "completed_live_smoke" if mock_components is None else "completed_offline_fixture",
+            "scopedComponent": component,
+            "networkAccounting": {
+                "remoteMetadataRequests": 0,
+                "remoteMetadataResponseBytes": 0,
+                "datasetContentRequests": total_content_reqs,
+                "datasetContentBytes": total_dl_bytes,
+                "redirectCount": total_redirects,
+                "archiveBytes": total_dl_bytes,
+                "extractedBytes": total_ext_bytes,
+                "modelBytes": 0,
+                "trainingRuns": 0,
+            },
             "components": receipt_components,
             "manifestLineage": {
                 "manifestPath": plan.get("manifestOutput", {}).get("path"),
@@ -379,7 +539,7 @@ def run_plan_acquisition(
         with open(receipt_path, "w", encoding="utf-8") as rf:
             json.dump(receipt_data, rf, indent=2)
 
-        print(f"[PASS] Plan execution completed successfully into {dest_dir.as_posix()}.")
+        print(f"[PASS] Plan acquisition completed successfully into {dest_dir.as_posix()}.")
         print(f"  Acquisition receipt written: {receipt_path.as_posix()}")
         return 0
     finally:
@@ -768,6 +928,17 @@ def main() -> None:
         help="Approved SHA-256 hash of the acquisition plan required for execution",
     )
     parser.add_argument(
+        "--component",
+        type=str,
+        help="Component identifier from the acquisition plan to scope acquisition to a single component (e.g. 'tgif-masks')",
+    )
+    parser.add_argument(
+        "--max-download-bytes",
+        type=int,
+        default=67108864,
+        help="Hard ceiling on downloaded content bytes (default: 67108864 = 64 MiB)",
+    )
+    parser.add_argument(
         "--pilot",
         type=str,
         help="Pilot identifier for scientific acquisition dry-run (e.g. 'pilot-a', 'pilot-b')",
@@ -841,6 +1012,8 @@ def main() -> None:
             execute=args.execute,
             approved_sha256=args.approved_plan_sha256,
             repo_root=repo_root,
+            component=args.component,
+            max_download_bytes=args.max_download_bytes,
         )
         sys.exit(exit_code)
 

@@ -85,6 +85,10 @@ graph TD
 | **ONNX Export & Parity Test** | `ml/export/export_onnx.py`, `validate_contract.py` | `implemented-and-tested` |
 | **Acquisition Guard CLI** | `ml/datasets/acquire.py` | `implemented-and-tested` |
 | **Acquisition Safety & Execution Gate** | `ml/datasets/acquire.py` (free-disk, .part, resume, checksum, safe-extract, staging, receipt) | `implemented-and-tested` |
+| **Component-Scoped Acquisition** | `ml/datasets/acquire.py` (`--component`, `--max-download-bytes`, `HostnameRestrictedRedirectHandler`) | `implemented-and-tested` |
+| **Mask Inventory & Audit Processor** | `ml/datasets/audit_masks.py` (PIL verification, pixel profile, dimension, source_id mapping) | `implemented-and-tested` |
+| **Mask Data Manifest (Local)** | `data/research/tgif/manifests/masks-manifest.jsonl` (31,238 records, outside Git) | `generated-and-verified` |
+| **Acquisition Receipt Location** | `data/research/tgif/acquisition-receipt.json` | `generated-and-verified` |
 | **Acquisition Plan & Schema** | `docs/schemas/acquisition-plan.v1.schema.json`, `datasets/acquisition-plans/pilot-a-tgif.v1.json` | `implemented-and-tested` |
 | **Paired Bootstrap Guard** | `ml/evaluation/bootstrap_guard.py` (stratified paired bootstrap 95% CI) | `implemented-and-tested` |
 | **TGIF Cardinality Audit** | `research/evidence/phase-4a.4/tgif-cardinality-audit.json` | `audited-and-verified` |
