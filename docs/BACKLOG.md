@@ -7,7 +7,8 @@ graph TD
   P0[Phase 0: Audit & Architecture Specification] --> P1[Phase 1: Production Monorepo Foundation]
   P1 --> P2[Phase 2: Local Browser Forensic Pipeline]
   P1 --> P3[Phase 3: Dataset & Research Pipeline]
-  P3 --> P4[Phase 4: Model Training & Evaluation]
+  P3 --> P35[Phase 3.5: Persistent Memory, Truth Audit & Model Readiness]
+  P35 --> P4[Phase 4: Model Training & Evaluation]
   P4 --> P5[Phase 5: ONNX Browser Integration]
   P2 --> P5
   P5 --> P6[Phase 6: Complete Forensic UX & Reporting]
@@ -18,7 +19,7 @@ graph TD
 
 ## 2. Granular Task Breakdown
 
-### Phase 0: Audit & Specification (Current Phase)
+### Phase 0: Audit & Specification (Hoàn thành - Commit `625e584`)
 * [x] **TASK-001**: Audit repository status, git branch, verify `forensics-web-lab` workspace.
 * [x] **TASK-002**: Create and switch to development branch `feat/production-ai-image-forensics`.
 * [x] **TASK-003**: Formulate comprehensive architecture specification (`docs/ARCHITECTURE.md`).
@@ -37,54 +38,69 @@ graph TD
 * [x] **TASK-016**: Create Model Registry config and schema (`models/registry.json`, `docs/schemas/model-registry.v1.schema.json`).
 * [x] **TASK-017**: Author Architectural Decision Records (ADRs 0001 through 0005).
 * [x] **TASK-018**: Define Analysis Output JSON Schema (`docs/schemas/analysis-output.v1.schema.json`).
-* [ ] **TASK-019**: Commit Phase 0 with commit message: `docs: define product and research architecture`.
+* [x] **TASK-019**: Commit Phase 0 with commit message: `docs: define product and research architecture`.
 
 ---
 
-### Phase 1: Production Monorepo Foundation
-* [ ] **TASK-101**: Configure monorepo root: `pnpm-workspace.yaml`, `.npmrc`, root `package.json`, `.gitignore`.
-* [ ] **TASK-102**: Configure `packages/shared` with TypeScript types, contracts, constants, and schema exports.
-* [ ] **TASK-103**: Configure `packages/provenance` package skeleton for EXIF/XMP parsing and C2PA adapter.
-* [ ] **TASK-104**: Configure `packages/forensics` package skeleton for 2D DSP signal processing.
-* [ ] **TASK-105**: Configure `packages/inference` package skeleton for ONNX Runtime Web session and worker abstractions.
-* [ ] **TASK-106**: Configure `packages/report` package skeleton for report generation.
-* [ ] **TASK-107**: Set up `apps/web` with Vite, React, TypeScript strict mode, CSS design tokens, and layout.
-* [ ] **TASK-108**: Set up `ml/` Python workspace: `pyproject.toml`, `requirements.txt`, directory layout (`configs/`, `datasets/`, `training/`, `evaluation/`, `export/`, `tests/`).
-* [ ] **TASK-109**: Configure ESLint, Prettier, TypeScript build configs across all packages.
-* [ ] **TASK-110**: Configure GitHub Actions CI workflow (`.github/workflows/ci.yml`) for lint, typecheck, test, build.
-* [ ] **TASK-111**: Configure reproducible Docker development / build container (`Dockerfile`, `docker-compose.yml`).
-* [ ] **TASK-112**: Commit Phase 1 with message: `build: establish production monorepo foundation`.
+### Phase 1: Production Monorepo Foundation (Hoàn thành - Commit `f2a7fb4`)
+* [x] **TASK-101**: Configure monorepo root: `pnpm-workspace.yaml`, `.npmrc`, root `package.json`, `.gitignore`.
+* [x] **TASK-102**: Configure `packages/shared` with TypeScript types, contracts, constants, and schema exports.
+* [x] **TASK-103**: Configure `packages/provenance` package skeleton for EXIF/XMP parsing and C2PA adapter.
+* [x] **TASK-104**: Configure `packages/forensics` package skeleton for 2D DSP signal processing.
+* [x] **TASK-105**: Configure `packages/inference` package skeleton for ONNX Runtime Web session and worker abstractions.
+* [x] **TASK-106**: Configure `packages/report` package skeleton for report generation.
+* [x] **TASK-107**: Set up `apps/web` with Vite, React, TypeScript strict mode, CSS design tokens, and layout.
+* [x] **TASK-108**: Set up `ml/` Python workspace: `pyproject.toml`, `requirements.txt`, directory layout (`configs/`, `datasets/`, `training/`, `evaluation/`, `export/`, `tests/`).
+* [x] **TASK-109**: Configure ESLint, Prettier, TypeScript build configs across all packages.
+* [x] **TASK-110**: Configure GitHub Actions CI workflow (`.github/workflows/ci.yml`) for lint, typecheck, test, build.
+* [x] **TASK-111**: Configure reproducible Docker development / build container (`Dockerfile`, `docker-compose.yml`).
+* [x] **TASK-112**: Commit Phase 1 with message: `build: establish production monorepo foundation`.
 
 ---
 
-### Phase 2: Local Browser Forensic Pipeline
-* [ ] **TASK-201**: Implement defensive file validation (magic byte audit, dimension cap, decompression bomb guard).
-* [ ] **TASK-202**: Implement pure-TS EXIF, XMP, and IPTC metadata parser with software signature matching.
-* [ ] **TASK-203**: Implement C2PA Content Credentials adapter interface with graceful `unsupported` handling.
-* [ ] **TASK-204**: Implement canvas preprocessing (orientation normalization, tensor extraction, letterbox).
-* [ ] **TASK-205**: Implement 2D-FFT / 2D-DCT azimuthal frequency energy analyzer in TypeScript.
-* [ ] **TASK-206**: Implement spatial noise residual variance analyzer.
-* [ ] **TASK-207**: Implement JPEG 8x8 block grid artifact analyzer and Error Level Analysis (ELA) generator.
-* [ ] **TASK-208**: Implement dedicated Web Worker (`forensics.worker.ts`) with progress events and cancellation protocol.
-* [ ] **TASK-209**: Write comprehensive unit tests for validation, metadata, and forensic signal extractors.
-* [ ] **TASK-210**: Commit Phase 2 with message: `feat: add local browser forensic pipeline`.
+### Phase 2: Local Browser Forensic Pipeline (Hoàn thành - Commit `a882eee`)
+* [x] **TASK-201**: Implement defensive file validation (magic byte audit, dimension cap, decompression bomb guard).
+* [x] **TASK-202**: Implement pure-TS EXIF, XMP, and IPTC metadata parser with software signature matching.
+* [x] **TASK-203**: Implement C2PA Content Credentials adapter interface with graceful `unsupported` handling.
+* [x] **TASK-204**: Implement canvas preprocessing (orientation normalization, tensor extraction, letterbox).
+* [x] **TASK-205**: Implement 2D-FFT / 2D-DCT azimuthal frequency energy analyzer in TypeScript.
+* [x] **TASK-206**: Implement spatial noise residual variance analyzer.
+* [x] **TASK-207**: Implement JPEG 8x8 block grid artifact analyzer and Error Level Analysis (ELA) generator.
+* [x] **TASK-208**: Implement dedicated Web Worker (`forensics.worker.ts`) with progress events and cancellation protocol.
+* [x] **TASK-209**: Write comprehensive unit tests for validation, metadata, and forensic signal extractors.
+* [x] **TASK-210**: Commit Phase 2 with message: `feat: add local browser forensic pipeline`.
 
 ---
 
-### Phase 3: Dataset & Research Pipeline
-* [ ] **TASK-301**: Implement dataset manifest generator (`ml/datasets/manifest.py`) adhering to schema.
-* [ ] **TASK-302**: Implement adapters for GenImage, SAGI-D, RealHD, RAID, and traditional edit datasets.
-* [ ] **TASK-303**: Implement perceptual hashing (pHash) and SHA-256 duplicate detection script.
-* [ ] **TASK-304**: Implement strict `source_id` group-based splitting and unseen-generator holdout splitters.
-* [ ] **TASK-305**: Implement multi-stage realistic degradation augmentation pipeline (Albumentations/torchvision).
-* [ ] **TASK-306**: Implement model training engine with class-weighted focal loss and checkpointing.
-* [ ] **TASK-307**: Implement evaluation harness computing Macro F1, ECE, Brier score, and localization mIoU.
-* [ ] **TASK-308**: Write unit tests for ML dataset adapters, splitting, and augmentation transforms.
-* [ ] **TASK-309**: Commit Phase 3 with message: `feat: add reproducible dataset and experiment pipeline`.
+### Phase 3: Dataset & Research Pipeline (Hoàn thành - Commit `6555b02`)
+* [x] **TASK-301**: Implement dataset manifest generator (`ml/datasets/manifest.py`) adhering to schema.
+* [x] **TASK-302**: Implement adapters for GenImage, SAGI-D, RealHD, RAID, and traditional edit datasets.
+* [x] **TASK-303**: Implement perceptual hashing (pHash) and SHA-256 duplicate detection script.
+* [x] **TASK-304**: Implement strict `source_id` group-based splitting and unseen-generator holdout splitters.
+* [x] **TASK-305**: Implement multi-stage realistic degradation augmentation pipeline (Albumentations/torchvision).
+* [x] **TASK-306**: Implement model training engine with class-weighted focal loss and checkpointing.
+* [x] **TASK-307**: Implement evaluation harness computing Macro F1, ECE, Brier score, and localization mIoU.
+* [x] **TASK-308**: Write unit tests for ML dataset adapters, splitting, and augmentation transforms.
+* [x] **TASK-309**: Commit Phase 3 with message: `feat: add reproducible dataset and experiment pipeline`.
 
 ---
 
-### Phase 4: Model Training & Evaluation
+### Phase 3.5: Persistent Memory, Implementation Truth Audit & Model Readiness (Đang thực hiện)
+* [x] **TASK-351**: Create root `AGENTS.md` establishing persistent memory rules and scientific truthfulness.
+* [x] **TASK-352**: Create `docs/PROJECT_STATE.md` with active project status, scope, and blockers.
+* [x] **TASK-353**: Create `docs/CODE_MAP.md` mapping all modules, files, and actual verified statuses.
+* [x] **TASK-354**: Conduct and document Implementation Truth Audit (`docs/IMPLEMENTATION_TRUTH_AUDIT.md`).
+* [x] **TASK-355**: Audit pretrained candidate checkpoints in `docs/PRETRAINED_MODEL_CANDIDATES.md`.
+* [x] **TASK-356**: Define Model Acquisition Gate in `docs/MODEL_ACQUISITION_GATE.md`.
+* [x] **TASK-357**: Create `docs/SESSION_HANDOFF.md` and update `docs/BACKLOG.md`.
+* [ ] **TASK-358**: Refactor `FusionCalibrator` and worker to enforce honest no-model state (`uncertain`, `confidence: null`, `probabilities: null`, `modelAvailable: false`).
+* [ ] **TASK-359**: Update UI (`ResultVerdictCard`, `HeatmapViewer`, `ForensicsInspector`) to display "Model not installed" and classify heuristics as exploratory.
+* [ ] **TASK-360**: Implement automated registry integrity validation in `@forensics/shared` and add unit tests.
+* [ ] **TASK-361**: Verify all test suites (`pnpm test`, `pnpm build`, `pytest`) and create Phase 3.5 commits.
+
+---
+
+### Phase 4: Model Training & Evaluation (Chờ phê duyệt)
 * [ ] **TASK-401**: Check data/compute authorization (Stop and confirm if large data download required).
 * [ ] **TASK-402**: Train and log baseline model with reproducible configs and deterministic seeds.
 * [ ] **TASK-403**: Run full evaluation suite across in-domain, unseen generator, and degradation matrices.
@@ -94,7 +110,7 @@ graph TD
 
 ---
 
-### Phase 5: ONNX Browser Integration
+### Phase 5: ONNX Browser Integration (Chờ Phase 4)
 * [ ] **TASK-501**: Implement PyTorch -> ONNX export script with dynamic batching and Opset 17.
 * [ ] **TASK-502**: Implement numerical contract tests verifying PyTorch vs ONNX Runtime CPU outputs.
 * [ ] **TASK-503**: Implement INT8 post-training quantization and verify quantized accuracy and size.
