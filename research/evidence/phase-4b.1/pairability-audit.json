@@ -1,0 +1,63 @@
+{
+  "phase": "4B.1",
+  "auditDate": "2026-09-21",
+  "definition": {
+    "eligible_source_id": "source_id with authentic orig image AND at least one sd2-sp edited image AND valid ground-truth mask AND deterministic split assignment"
+  },
+  "mask_source_ids": {
+    "uniqueSourceIds": 2242,
+    "taskInstances": 3124,
+    "splitBreakdown": {
+      "train": { "uniqueSources": 1558, "taskInstances": 2440 },
+      "val": { "uniqueSources": 341, "taskInstances": 341 },
+      "test": { "uniqueSources": 343, "taskInstances": 343 }
+    },
+    "status": "verified-local"
+  },
+  "remote_orig_source_ids": {
+    "expectedTotal": 3124,
+    "splitBreakdown": {
+      "train": 2440,
+      "val": 341,
+      "test": 343
+    },
+    "archives": [
+      { "filename": "orig_training.tar.gz", "bytes": 5652563073, "split": "train" },
+      { "filename": "orig_validation.tar.gz", "bytes": 859947874, "split": "val" },
+      { "filename": "orig_testing.tar.gz", "bytes": 806962390, "split": "test" }
+    ],
+    "status": "verified-remote-archive-level"
+  },
+  "remote_sd2_sp_source_ids": {
+    "expectedTotalImages": 18744,
+    "expectedTaskInstances": 3124,
+    "variantsPerInstance": 6,
+    "splitBreakdown": {
+      "train": 14640,
+      "val": 2046,
+      "test": 2058
+    },
+    "archives": [
+      { "filename": "sd2-sp_training.tar.gz", "bytes": 14359902282, "split": "train" },
+      { "filename": "sd2-sp_validation.tar.gz", "bytes": 2172017290, "split": "val" },
+      { "filename": "sd2-sp_testing.tar.gz", "bytes": 2040575228, "split": "test" }
+    ],
+    "status": "verified-remote-archive-level"
+  },
+  "verified_intersection": {
+    "splitsAligned": ["train", "val", "test"],
+    "maskSplitCounts": { "train": 24400, "val": 3410, "test": 3428 },
+    "maskUniqueSourcesVerified": 2242,
+    "maskTaskInstancesVerified": 3124
+  },
+  "estimated_intersection": {
+    "eligibleUniqueSourceIds": 2242,
+    "eligibleTaskInstances": 3124,
+    "fullTripletsExpected": 3124
+  },
+  "unresolved_intersection": {
+    "individualPixelContentVerification": "Requires downloading image archive components to verify zero missing image files within split tarballs"
+  },
+  "pairability_status": "pending-content-acquisition",
+  "notes": "Remote metadata confirms split-level archive symmetry across orig, sd2-sp, and masks. Full content pairing verification is gated until image acquisition."
+}

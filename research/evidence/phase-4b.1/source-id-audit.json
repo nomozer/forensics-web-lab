@@ -1,0 +1,110 @@
+{
+  "phase": "4B.1",
+  "auditDate": "2026-09-21",
+  "dataset": "tgif",
+  "component": "tgif-masks",
+  "totalRecords": 31238,
+  "uniqueBasenames": 22418,
+  "uniqueSha256Hashes": 25432,
+  "cardinalityDiscrepancyResolution": {
+    "reportedPaperAuthenticInstances": 3124,
+    "previousParserReportedSourceIds": 2242,
+    "rootCause": "Multi-category object annotations in MS-COCO val2017 training set. 571 MS-COCO images contain annotations for multiple target classes, resulting in 2,440 (category, image) inpainting instances across 1,558 unique physical COCO images in training.",
+    "mathematicalValidation": {
+      "trainInstances": 2440,
+      "valInstances": 341,
+      "testInstances": 343,
+      "sumInstances": 3124,
+      "expectedSum": 3124,
+      "isExactMatch": true
+    },
+    "statisticalIndependenceResolution": {
+      "independentStatisticalUnit": "source_id (MS-COCO 12-digit image ID)",
+      "totalIndependentUnits": 2242,
+      "trainIndependentUnits": 1558,
+      "valIndependentUnits": 341,
+      "testIndependentUnits": 343,
+      "crossSplitOverlap": 0,
+      "groupIsolationVerified": true
+    }
+  },
+  "candidateParsers": {
+    "parser_1_raw_coco_id": {
+      "description": "Pure leading numeric token (12-digit zero-padded COCO ID)",
+      "uniqueIdsTotal": 2242,
+      "uniqueIdsBySplit": {
+        "train": 1558,
+        "val": 341,
+        "test": 343
+      },
+      "failures": 0,
+      "crossSplitCollisions": 0,
+      "multiCategoryImagesInTrain": 571,
+      "maxCategoriesForOneImage": 7
+    },
+    "parser_2_category_instance_id": {
+      "description": "Category-scoped task annotation ID '{category}_{coco_id}'",
+      "uniqueIdsTotal": 3124,
+      "uniqueIdsBySplit": {
+        "train": 2440,
+        "val": 341,
+        "test": 343
+      },
+      "failures": 0,
+      "crossSplitCollisions": 0,
+      "variantDistributionPerInstance": {
+        "10": 3123,
+        "8": 1
+      },
+      "instancesWithMissingVariants": 1
+    },
+    "parser_3_canonical_dual_key": {
+      "description": "Canonical dual-key model distinguishing independent source units from category-task instances",
+      "canonicalSourceIdKey": "source_id (independent statistical unit)",
+      "taskInstanceIdKey": "instance_id (inpainting annotation task unit)",
+      "recommendedForStatisticalReporting": "source_id",
+      "recommendedForMaskAlignment": "instance_id"
+    }
+  },
+  "numericTokenAudit": {
+    "leadingNumericToken": "MS-COCO 12-digit zero-padded identifier",
+    "secondaryTokensObserved": {
+      "1024": 9372,
+      "512": 9372
+    },
+    "nonStandardTokensObserved": 0,
+    "status": "verified-clean"
+  },
+  "maskVariantAudit": {
+    "totalMaskFiles": 31238,
+    "maskTypeCounts": {
+      "generic_mask": 6248,
+      "bbox": 12495,
+      "segm": 12495
+    },
+    "resolutionCounts": {
+      "1024": 9372,
+      "512": 9372,
+      "native": 12494
+    },
+    "instancesWithExactly10Masks": 3123,
+    "instancesWithAnomalousCount": 1,
+    "anomalousInstanceDetails": [
+      {
+        "instance_id": "airplane_000000208901",
+        "file_count": 8,
+        "files": [
+          "data/research/tgif/masks/testing/airplane/208901_mask_1024.png",
+          "data/research/tgif/masks/testing/airplane/208901_mask_512.png",
+          "data/research/tgif/masks/testing/airplane/208901_mask_bbox.png_ps_mask.png",
+          "data/research/tgif/masks/testing/airplane/208901_mask_bbox_1024.png",
+          "data/research/tgif/masks/testing/airplane/208901_mask_bbox_512.png",
+          "data/research/tgif/masks/testing/airplane/208901_mask_segm.png_ps_mask.png",
+          "data/research/tgif/masks/testing/airplane/208901_mask_segm_1024.png",
+          "data/research/tgif/masks/testing/airplane/208901_mask_segm_512.png"
+        ]
+      }
+    ]
+  },
+  "verificationStatus": "verified"
+}

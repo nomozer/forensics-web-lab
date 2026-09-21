@@ -1,0 +1,85 @@
+{
+  "phase": "4B.1",
+  "auditDate": "2026-09-21",
+  "metadataOnlyScopeEnforced": true,
+  "hardMetadataCeilingBytes": 5242880,
+  "totalMetadataRequests": 10,
+  "totalMetadataResponseBytes": 41549,
+  "datasetContentRequests": 0,
+  "datasetContentBytes": 0,
+  "modelWeightsDownloadedBytes": 0,
+  "trainingRunsExecuted": 0,
+  "ceilingRespected": true,
+  "requests": [
+    {
+      "method": "GET",
+      "url": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o",
+      "httpStatus": 200,
+      "responseBytes": 30769,
+      "purpose": "Acquire public share session cookies and requesttoken"
+    },
+    {
+      "method": "PROPFIND",
+      "url": "https://cloud.ilabt.imec.be/public.php/dav/files/xEeAzrY7ES9KA8o/",
+      "httpStatus": 207,
+      "responseBytes": 3194,
+      "purpose": "List top-level components and folder quota sizes"
+    },
+    {
+      "method": "PROPFIND",
+      "url": "https://cloud.ilabt.imec.be/public.php/dav/files/xEeAzrY7ES9KA8o/orig/",
+      "httpStatus": 207,
+      "responseBytes": 2431,
+      "purpose": "Inventory split archives and ETags for tgif-orig"
+    },
+    {
+      "method": "PROPFIND",
+      "url": "https://cloud.ilabt.imec.be/public.php/dav/files/xEeAzrY7ES9KA8o/sd2-sp/",
+      "httpStatus": 207,
+      "responseBytes": 2455,
+      "purpose": "Inventory split archives and ETags for tgif-sd2-sp"
+    },
+    {
+      "method": "HEAD",
+      "url": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o/download?path=%2Forig&files=orig_training.tar.gz",
+      "httpStatus": 200,
+      "responseBytes": 450,
+      "purpose": "Verify Content-Length, Content-Type, Accept-Ranges for orig_training"
+    },
+    {
+      "method": "HEAD",
+      "url": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o/download?path=%2Forig&files=orig_testing.tar.gz",
+      "httpStatus": 200,
+      "responseBytes": 450,
+      "purpose": "Verify Content-Length, Content-Type, Accept-Ranges for orig_testing"
+    },
+    {
+      "method": "HEAD",
+      "url": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o/download?path=%2Forig&files=orig_validation.tar.gz",
+      "httpStatus": 200,
+      "responseBytes": 450,
+      "purpose": "Verify Content-Length, Content-Type, Accept-Ranges for orig_validation"
+    },
+    {
+      "method": "HEAD",
+      "url": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o/download?path=%2Fsd2-sp&files=sd2-sp_training.tar.gz",
+      "httpStatus": 200,
+      "responseBytes": 450,
+      "purpose": "Verify Content-Length, Content-Type, Accept-Ranges for sd2-sp_training"
+    },
+    {
+      "method": "HEAD",
+      "url": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o/download?path=%2Fsd2-sp&files=sd2-sp_testing.tar.gz",
+      "httpStatus": 200,
+      "responseBytes": 450,
+      "purpose": "Verify Content-Length, Content-Type, Accept-Ranges for sd2-sp_testing"
+    },
+    {
+      "method": "HEAD",
+      "url": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o/download?path=%2Fsd2-sp&files=sd2-sp_validation.tar.gz",
+      "httpStatus": 200,
+      "responseBytes": 450,
+      "purpose": "Verify Content-Length, Content-Type, Accept-Ranges for sd2-sp_validation"
+    }
+  ]
+}
