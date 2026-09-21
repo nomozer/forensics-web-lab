@@ -123,6 +123,8 @@ export const App: React.FC = () => {
             confidence={result.result.confidence}
             probabilities={result.result.probabilities}
             explanation={result.result.explanation}
+            modelAvailable={result.modelAvailable}
+            modelStatus={result.modelStatus}
           />
 
           <HeatmapViewer

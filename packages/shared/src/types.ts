@@ -103,10 +103,12 @@ export interface AnalysisResult {
   schemaVersion: '1.0.0';
   timestamp: string;
   imageInfo: ImageMetadataInfo;
+  modelAvailable: boolean;
+  modelStatus: 'not-installed' | 'not-trained' | 'training' | 'installed' | 'ready';
   result: {
     label: AnalysisVerdict;
-    confidence: number;
-    probabilities: ClassProbabilities;
+    confidence: number | null;
+    probabilities: ClassProbabilities | null;
     explanation: string;
   };
   localization: LocalizationResult;
@@ -139,9 +141,11 @@ export interface AnalysisProgressEvent {
 
 export type ModelLifecycleStatus =
   | 'not-trained'
+  | 'not-installed'
   | 'training'
   | 'trained'
   | 'quantized'
+  | 'ready'
   | 'deprecated';
 
 export interface ModelRegistryItem {

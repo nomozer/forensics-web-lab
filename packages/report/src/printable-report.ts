@@ -68,6 +68,12 @@ export class PrintableReportGenerator {
       .map((l) => `<li>${escapeHtml(l)}</li>`)
       .join('');
 
+    const hasModel =
+      result.modelAvailable &&
+      result.modelStatus !== 'not-installed' &&
+      result.result.confidence !== null &&
+      result.result.probabilities !== null;
+
     return `<!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -211,24 +217,31 @@ export class PrintableReportGenerator {
   </div>
 
   <div class="verdict-box">
+    ${
+      !hasModel
+        ? `<div style="background: #fef3c7; border: 1px solid #f59e0b; color: #b45309; padding: 8px 12px; border-radius: 6px; font-weight: bold; margin-bottom: 10px;">
+            ⚠️ Model not installed (Mô hình học sâu chưa được cài đặt) — Báo cáo giám định chạy ở chế độ khám phá sơ bộ.
+           </div>`
+        : ''
+    }
     <div class="verdict-title">${verdictTitle}</div>
     <div>${escapeHtml(result.result.explanation)}</div>
 
     <div class="metrics-grid">
       <div class="metric-card">
-        <div class="metric-value">${Math.round(result.result.confidence * 100)}%</div>
+        <div class="metric-value">${hasModel && result.result.confidence !== null ? `${Math.round(result.result.confidence * 100)}%` : 'N/A'}</div>
         <div class="metric-label">Độ tin cậy hiệu chuẩn</div>
       </div>
       <div class="metric-card">
-        <div class="metric-value">${Math.round(result.result.probabilities.no_ai_evidence * 100)}%</div>
+        <div class="metric-value">${hasModel && result.result.probabilities ? `${Math.round(result.result.probabilities.no_ai_evidence * 100)}%` : 'N/A'}</div>
         <div class="metric-label">Chưa có dấu vết AI</div>
       </div>
       <div class="metric-card">
-        <div class="metric-value">${Math.round(result.result.probabilities.fully_generated * 100)}%</div>
+        <div class="metric-value">${hasModel && result.result.probabilities ? `${Math.round(result.result.probabilities.fully_generated * 100)}%` : 'N/A'}</div>
         <div class="metric-label">Tạo sinh toàn phần</div>
       </div>
       <div class="metric-card">
-        <div class="metric-value">${Math.round(result.result.probabilities.ai_edited * 100)}%</div>
+        <div class="metric-value">${hasModel && result.result.probabilities ? `${Math.round(result.result.probabilities.ai_edited * 100)}%` : 'N/A'}</div>
         <div class="metric-label">Chỉnh sửa cục bộ</div>
       </div>
     </div>
@@ -282,7 +295,7 @@ export class PrintableReportGenerator {
   <h2>5. Môi trường thực thi cục bộ</h2>
   <table>
     <tr><th>Backend</th><td>${escapeHtml(result.runtime.backend.toUpperCase())}</td><th>Thời gian xử lý</th><td>${result.runtime.durationMs} ms</td></tr>
-    <tr><th>Mô hình</th><td>${escapeHtml(result.runtime.modelId)} (${escapeHtml(result.runtime.modelVersion)})</td><th>Thiết bị</th><td>Xử lý 100% trên trình duyệt người dùng (Zero-Egress)</td></tr>
+    <tr><th>Mô hình</th><td>${hasModel ? `${escapeHtml(result.runtime.modelId)} (${escapeHtml(result.runtime.modelVersion)})` : 'Chưa cài đặt (Model not installed)'}</td><th>Thiết bị</th><td>Xử lý 100% trên trình duyệt người dùng (Zero-Egress)</td></tr>
   </table>
 
   <div class="disclaimer">

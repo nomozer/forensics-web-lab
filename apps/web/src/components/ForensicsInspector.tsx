@@ -14,9 +14,14 @@ export const ForensicsInspector: React.FC<ForensicsInspectorProps> = ({ signals 
 
   return (
     <div className="glass-panel" style={{ padding: '20px', marginBottom: '24px' }}>
-      <h3 style={{ fontSize: '16px', fontWeight: '700', marginBottom: '14px' }}>
-        Chỉ số phân tích miền tần số và nén (DSP Forensics)
-      </h3>
+      <div style={{ marginBottom: '14px' }}>
+        <h3 style={{ fontSize: '16px', fontWeight: '700', margin: 0 }}>
+          Chỉ số phân tích miền tần số và nén (DSP Forensics)
+        </h3>
+        <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '4px 0 0 0' }}>
+          Tín hiệu khám phá sơ bộ (Exploratory Heuristics) — Chỉ mang tính gợi ý điều tra, không cấu thành kết luận mô hình.
+        </p>
+      </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
         {signals.map((sig) => {

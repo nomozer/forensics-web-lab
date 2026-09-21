@@ -135,6 +135,8 @@ if (typeof self !== 'undefined' && typeof (self as unknown as Worker).postMessag
           height: data.height,
           sha256: data.sha256,
         },
+        modelAvailable: fusion.modelAvailable,
+        modelStatus: fusion.modelStatus,
         result: {
           label: fusion.label,
           confidence: fusion.confidence,

@@ -3,9 +3,11 @@ import { AnalysisVerdict, ClassProbabilities } from '@forensics/shared';
 
 interface ResultVerdictCardProps {
   verdict: AnalysisVerdict;
-  confidence: number;
-  probabilities: ClassProbabilities;
+  confidence: number | null;
+  probabilities: ClassProbabilities | null;
   explanation: string;
+  modelAvailable?: boolean;
+  modelStatus?: string;
 }
 
 export const ResultVerdictCard: React.FC<ResultVerdictCardProps> = ({
@@ -13,8 +15,26 @@ export const ResultVerdictCard: React.FC<ResultVerdictCardProps> = ({
   confidence,
   probabilities,
   explanation,
+  modelAvailable = false,
+  modelStatus = 'not-installed',
 }) => {
+  const isModelMissing =
+    !modelAvailable ||
+    modelStatus === 'not-installed' ||
+    confidence === null ||
+    probabilities === null;
+
   const getVerdictStyle = () => {
+    if (isModelMissing) {
+      return {
+        title: 'Chưa có mô hình / Không chắc chắn (uncertain)',
+        color: 'var(--accent-purple)',
+        bg: 'rgba(139, 92, 246, 0.1)',
+        border: 'rgba(139, 92, 246, 0.3)',
+        icon: '?',
+      };
+    }
+
     switch (verdict) {
       case 'no_ai_evidence':
         return {
@@ -64,6 +84,29 @@ export const ResultVerdictCard: React.FC<ResultVerdictCardProps> = ({
         background: style.bg,
       }}
     >
+      {isModelMissing && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '10px 14px',
+            marginBottom: '16px',
+            borderRadius: 'var(--radius-md)',
+            background: 'rgba(245, 158, 11, 0.15)',
+            border: '1px solid rgba(245, 158, 11, 0.4)',
+            color: 'var(--accent-amber)',
+            fontSize: '13px',
+            fontWeight: '600',
+          }}
+        >
+          <span>⚠️</span>
+          <span>
+            <strong>Model not installed</strong> (Mô hình học sâu chưa được cài đặt) — Hệ thống đang chạy ở chế độ giám định khám phá sơ bộ (Exploratory Forensics).
+          </span>
+        </div>
+      )}
+
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
         <div>
           <span
@@ -100,10 +143,10 @@ export const ResultVerdictCard: React.FC<ResultVerdictCardProps> = ({
           }}
         >
           <div style={{ fontSize: '24px', fontWeight: '800', color: style.color }}>
-            {Math.round(confidence * 100)}%
+            {confidence !== null ? `${Math.round(confidence * 100)}%` : 'N/A'}
           </div>
           <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-            Độ tin cậy hiệu chuẩn
+            {confidence !== null ? 'Độ tin cậy hiệu chuẩn' : 'Chưa có mô hình'}
           </div>
         </div>
       </div>
@@ -113,61 +156,81 @@ export const ResultVerdictCard: React.FC<ResultVerdictCardProps> = ({
           marginTop: '20px',
           paddingTop: '16px',
           borderTop: '1px solid rgba(148, 163, 184, 0.1)',
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-          gap: '16px',
         }}
       >
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px' }}>
-            <span style={{ color: 'var(--text-secondary)' }}>Chưa có dấu vết AI</span>
-            <span style={{ fontWeight: '600' }}>{Math.round(probabilities.no_ai_evidence * 100)}%</span>
+        {isModelMissing ? (
+          <div
+            style={{
+              padding: '12px 16px',
+              background: 'rgba(15, 23, 42, 0.4)',
+              borderRadius: 'var(--radius-md)',
+              fontSize: '12px',
+              color: 'var(--text-secondary)',
+              lineHeight: 1.6,
+            }}
+          >
+            <strong>Lưu ý khoa học:</strong> Xác suất dự đoán 3 lớp bị vô hiệu hóa vì chưa có checkpoint mô hình AI được cài đặt và kiểm định. Các phân tích DSP và siêu dữ liệu bên dưới là các tín hiệu khám phá điều tra sơ bộ, không phải kết luận dự đoán của mạng nơ-ron.
           </div>
-          <div className="progress-track" style={{ height: '6px' }}>
-            <div
-              style={{
-                height: '100%',
-                width: `${probabilities.no_ai_evidence * 100}%`,
-                background: 'var(--accent-emerald)',
-                borderRadius: 'var(--radius-full)',
-              }}
-            ></div>
-          </div>
-        </div>
+        ) : (
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+              gap: '16px',
+            }}
+          >
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>Chưa có dấu vết AI</span>
+                <span style={{ fontWeight: '600' }}>{Math.round(probabilities.no_ai_evidence * 100)}%</span>
+              </div>
+              <div className="progress-track" style={{ height: '6px' }}>
+                <div
+                  style={{
+                    height: '100%',
+                    width: `${probabilities.no_ai_evidence * 100}%`,
+                    background: 'var(--accent-emerald)',
+                    borderRadius: 'var(--radius-full)',
+                  }}
+                ></div>
+              </div>
+            </div>
 
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px' }}>
-            <span style={{ color: 'var(--text-secondary)' }}>Tạo hoàn toàn bằng AI</span>
-            <span style={{ fontWeight: '600' }}>{Math.round(probabilities.fully_generated * 100)}%</span>
-          </div>
-          <div className="progress-track" style={{ height: '6px' }}>
-            <div
-              style={{
-                height: '100%',
-                width: `${probabilities.fully_generated * 100}%`,
-                background: 'var(--accent-rose)',
-                borderRadius: 'var(--radius-full)',
-              }}
-            ></div>
-          </div>
-        </div>
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>Tạo hoàn toàn bằng AI</span>
+                <span style={{ fontWeight: '600' }}>{Math.round(probabilities.fully_generated * 100)}%</span>
+              </div>
+              <div className="progress-track" style={{ height: '6px' }}>
+                <div
+                  style={{
+                    height: '100%',
+                    width: `${probabilities.fully_generated * 100}%`,
+                    background: 'var(--accent-rose)',
+                    borderRadius: 'var(--radius-full)',
+                  }}
+                ></div>
+              </div>
+            </div>
 
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px' }}>
-            <span style={{ color: 'var(--text-secondary)' }}>Chỉnh sửa cục bộ bằng AI</span>
-            <span style={{ fontWeight: '600' }}>{Math.round(probabilities.ai_edited * 100)}%</span>
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>Chỉnh sửa cục bộ bằng AI</span>
+                <span style={{ fontWeight: '600' }}>{Math.round(probabilities.ai_edited * 100)}%</span>
+              </div>
+              <div className="progress-track" style={{ height: '6px' }}>
+                <div
+                  style={{
+                    height: '100%',
+                    width: `${probabilities.ai_edited * 100}%`,
+                    background: 'var(--accent-amber)',
+                    borderRadius: 'var(--radius-full)',
+                  }}
+                ></div>
+              </div>
+            </div>
           </div>
-          <div className="progress-track" style={{ height: '6px' }}>
-            <div
-              style={{
-                height: '100%',
-                width: `${probabilities.ai_edited * 100}%`,
-                background: 'var(--accent-amber)',
-                borderRadius: 'var(--radius-full)',
-              }}
-            ></div>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

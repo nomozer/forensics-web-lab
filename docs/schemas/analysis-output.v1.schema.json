@@ -8,6 +8,8 @@
     "schemaVersion",
     "timestamp",
     "imageInfo",
+    "modelAvailable",
+    "modelStatus",
     "result",
     "localization",
     "provenance",
@@ -36,21 +38,28 @@
         "sha256": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" }
       }
     },
+    "modelAvailable": {
+      "type": "boolean"
+    },
+    "modelStatus": {
+      "type": "string",
+      "enum": ["not-installed", "not-trained", "training", "installed", "ready"]
+    },
     "result": {
       "type": "object",
-      "required": ["label", "confidence", "probabilities", "explanation"],
+      "required": ["label", "explanation"],
       "properties": {
         "label": {
           "type": "string",
           "enum": ["no_ai_evidence", "fully_generated", "ai_edited", "uncertain"]
         },
         "confidence": {
-          "type": "number",
+          "type": ["number", "null"],
           "minimum": 0.0,
           "maximum": 1.0
         },
         "probabilities": {
-          "type": "object",
+          "type": ["object", "null"],
           "required": ["no_ai_evidence", "fully_generated", "ai_edited"],
           "properties": {
             "no_ai_evidence": { "type": "number", "minimum": 0.0, "maximum": 1.0 },

@@ -131,6 +131,62 @@ describe('@forensics/inference components', () => {
     });
 
     expect(result.label).toBe('uncertain');
+    expect(result.confidence).toBeNull();
+    expect(result.probabilities).toBeNull();
+    expect(result.modelAvailable).toBe(false);
+    expect(result.modelStatus).toBe('not-installed');
     expect(result.refutingEvidence.some((e) => e.includes('Model not installed'))).toBe(true);
+  });
+
+  it('never outputs AI verdict or probabilities in no-model state even with elevated DSP or metadata', () => {
+    const aiProvenance: ProvenanceResult = {
+      c2paStatus: 'unsupported',
+      metadataSummary: [
+        {
+          tag: 'Software',
+          value: 'Midjourney v6.0',
+          category: 'software',
+          suspicionScore: 0.95,
+        },
+      ],
+    };
+
+    const elevatedForensics: ForensicSummary = {
+      signals: [
+        {
+          id: 'fft_radial_anomaly',
+          name: 'FFT',
+          category: 'frequency',
+          score: 0.88,
+          interpretation: 'Phát hiện đỉnh năng lượng cao',
+          details: {},
+        },
+        {
+          id: 'noise_residual_inconsistency',
+          name: 'Noise',
+          category: 'noise',
+          score: 0.85,
+          interpretation: 'Nhiễu bất đồng nhất',
+          details: {},
+        },
+      ],
+      supportingEvidence: [],
+      refutingEvidence: [],
+    };
+
+    const result = FusionCalibrator.fuse({
+      hasModel: false,
+      localization: dummyLocalization,
+      forensics: elevatedForensics,
+      provenance: aiProvenance,
+    });
+
+    // Invariant: Without deep model, verdict MUST be uncertain, probabilities MUST be null
+    expect(result.label).toBe('uncertain');
+    expect(result.confidence).toBeNull();
+    expect(result.probabilities).toBeNull();
+    expect(result.modelAvailable).toBe(false);
+    expect(result.modelStatus).toBe('not-installed');
+    expect(result.supportingEvidence.some((e) => e.includes('Tín hiệu khám phá sơ bộ'))).toBe(true);
   });
 });

@@ -18,11 +18,13 @@ export interface FusionInputs {
 
 export interface FusionOutput {
   label: AnalysisVerdict;
-  confidence: number;
-  probabilities: ClassProbabilities;
+  confidence: number | null;
+  probabilities: ClassProbabilities | null;
   explanation: string;
   supportingEvidence: string[];
   refutingEvidence: string[];
+  modelAvailable: boolean;
+  modelStatus: 'not-installed' | 'installed';
 }
 
 export class FusionCalibrator {
@@ -109,68 +111,48 @@ export class FusionCalibrator {
       explanation,
       supportingEvidence: supporting,
       refutingEvidence: refuting,
+      modelAvailable: true,
+      modelStatus: 'installed',
     };
   }
 
   /**
    * Fallback rule-based fusion when deep model weights are not loaded.
    * Strictly adheres to rule: No fake numbers or mock model inferences.
+   * Verdict MUST be 'uncertain', confidence and probabilities MUST be null.
    */
   private static fuseWithoutModel(
     inputs: FusionInputs,
     supporting: string[],
     refuting: string[]
   ): FusionOutput {
-    refuting.push('Mô hình học sâu chưa được cài đặt (Model not installed); chỉ đánh giá dựa trên DSP và metadata.');
+    refuting.push('Mô hình học sâu chưa được cài đặt (Model not installed); hệ thống không đưa ra xác suất dự đoán hay nhãn phân loại AI.');
 
     const hasAiMetadata = inputs.provenance.metadataSummary.some((m) => m.suspicionScore > 0.8);
     const fftSignal = inputs.forensics.signals.find((s) => s.id === 'fft_radial_anomaly');
     const noiseSignal = inputs.forensics.signals.find((s) => s.id === 'noise_residual_inconsistency');
 
     if (hasAiMetadata) {
-      return {
-        label: 'fully_generated',
-        confidence: 0.85,
-        probabilities: {
-          no_ai_evidence: 0.1,
-          fully_generated: 0.8,
-          ai_edited: 0.1,
-        },
-        explanation: 'Metadata chứa thông tin rõ ràng về công cụ/mô hình AI tạo sinh.',
-        supportingEvidence: [...supporting, 'Metadata chứa định danh công cụ AI.'],
-        refutingEvidence: refuting,
-      };
+      supporting.push('Tín hiệu khám phá sơ bộ: Metadata chứa định danh công cụ AI (mang tính gợi ý điều tra, không phải kết luận mô hình).');
     }
 
-    const highFft = (fftSignal?.score ?? 0) > 0.7;
-    const highNoiseInconsistency = (noiseSignal?.score ?? 0) > 0.75;
+    if ((fftSignal?.score ?? 0) > 0.7) {
+      supporting.push('Tín hiệu khám phá sơ bộ: Phổ tần số 2D-FFT có bất thường năng lượng bán kính cao.');
+    }
 
-    if (highFft && highNoiseInconsistency) {
-      return {
-        label: 'ai_edited',
-        confidence: 0.68,
-        probabilities: {
-          no_ai_evidence: 0.2,
-          fully_generated: 0.2,
-          ai_edited: 0.6,
-        },
-        explanation: 'Phát hiện bất thường nhiễu hạt cục bộ và đỉnh phổ 2D-FFT trùng khớp với dấu vết can thiệp vi mô.',
-        supportingEvidence: supporting,
-        refutingEvidence: refuting,
-      };
+    if ((noiseSignal?.score ?? 0) > 0.75) {
+      supporting.push('Tín hiệu khám phá sơ bộ: Phần dư nhiễu vi mô Laplacian có sự bất đồng nhất cục bộ.');
     }
 
     return {
       label: 'uncertain',
-      confidence: 0.5,
-      probabilities: {
-        no_ai_evidence: 0.33,
-        fully_generated: 0.33,
-        ai_edited: 0.34,
-      },
-      explanation: 'Không đủ bằng chứng độc lập từ DSP/Metadata và mô hình ML chưa được tải để đưa ra kết luận chính thức.',
+      confidence: null,
+      probabilities: null,
+      explanation: 'Mô hình học sâu chưa được cài đặt (Model not installed). Đánh giá dựa trên tín hiệu phân tích DSP và siêu dữ liệu chỉ có tính chất khám phá sơ bộ, không cấu thành kết luận mô hình.',
       supportingEvidence: supporting,
       refutingEvidence: refuting,
+      modelAvailable: false,
+      modelStatus: 'not-installed',
     };
   }
 

@@ -58,7 +58,7 @@ export const HeatmapViewer: React.FC<HeatmapViewerProps> = ({
               ? `Tỷ lệ diện tích nghi vấn: ~${Math.round((localization.suspiciousAreaRatio ?? 0) * 100)}% (${
                   localization.regions.length
                 } cụm không gian)`
-              : 'Chưa có bản đồ nhiệt (mô hình học sâu chưa cài đặt hoặc không phát hiện cụm cục bộ)'}
+              : 'Bản đồ nhiệt không khả dụng (Mô hình học sâu chưa được cài đặt — Model not installed)'}
           </p>
         </div>
 
