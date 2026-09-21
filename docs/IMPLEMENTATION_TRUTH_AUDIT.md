@@ -128,9 +128,22 @@
   - `docs/schemas/analysis-output.v1.schema.json`
 - **Evidence test**:
   - `packages/report/src/__tests__/report.test.ts`
-- **Verdict**: `partially-verified`
-- **Phân tích chi tiết**: Báo cáo HTML hiện tại ghi `Mô hình: none (none)`, nhưng mục 4 ô chỉ số thống kê trên cùng vẫn hiển thị tỷ lệ % dựa trên các trường `confidence` và `probabilities` giả định từ `fuseWithoutModel`. Báo cáo JSON schema v1 chưa có trường tường minh `modelAvailable` và `modelStatus`.
-- **Required correction**:
-  - Bổ sung trường `modelAvailable: false` và `modelStatus: "not-installed"` vào contract `AnalysisResult`.
-  - Cho phép `confidence: null` và `probabilities: null`.
-  - Cập nhật `PrintableReportGenerator` hiển thị `N/A` và banner thông báo khi không có mô hình.
+- **Verdict**: `verified` (đã sửa trong Phase 3.5 với cờ `modelAvailable: false`, `modelStatus: 'not-installed'`, `confidence: null`, `probabilities: null`)
+- **Phân tích chi tiết**: Báo cáo JSON và HTML print đã được kiểm thử tự động, bắt buộc xuất `N/A` và banner thông báo rõ ràng khi không có mô hình.
+- **Required correction**: Duy trì test tự động và kiểm tra định kỳ tính tuân thủ schema v1.
+
+---
+
+## 3. Kiểm toán Cải chính Tuyên bố Khoa học & Mô hình (Phase 3.6 Audit)
+
+| Tuyên bố Cũ (Phase 3.5) | Bằng chứng Thực tế | Phân loại Chuẩn mực Phase 3.6 | Cải chính Bắt buộc |
+| :--- | :--- | :--- | :--- |
+| Đã có "checkpoint nội bộ" sẵn sàng | Chỉ có mã kiến trúc PyTorch trong `ml/training/mobilenetv3_forensics.py`; chưa từng huấn luyện | `architecture-only` | Đổi tên từ `CAND-C2-INHOUSE-MNV3` sang `ARCH-C2-INHOUSE-MNV3`. Không gọi là checkpoint khi chưa có trọng số. |
+| Trọng số do dự án sở hữu 100% bản quyền | Trọng số chưa tồn tại; quyền sở hữu tương lai phụ thuộc ImageNet backbone và dataset | `not-applicable` | Giấy phép trọng số là `not-applicable`. Không tự gán giấy phép cho thứ chưa tồn tại. |
+| Mô hình INT8 có kích thước ~2.6 MB | Đây là ước tính lý thuyết dựa trên $2.54\text{M} \times 1\text{ byte}$; chưa đo trên file thật | `estimated` | Ghi rõ kích thước là `estimated`, chưa đo trên artifact thật (`not measured`). |
+| Mô hình đã hỗ trợ 3 lớp và localization | Mã chia 3 lớp và gom cụm heatmap đã viết, nhưng chưa có trọng số để kiểm chứng | `architecture-only` | Khả năng phát hiện và định vị thực tế là `unverified` cho đến khi có kết quả benchmark thật. |
+| ONNX parity đã được xác minh | Test `test_model_pipeline.py` chạy với PyTorch model un-trained trên dummy tensor | `pipeline-only` | Parity trên checkpoint huấn luyện thật là `unverified`; test hiện tại chỉ chứng minh pipeline chạy được. |
+| WASM runtime đã chứng minh trên trình duyệt | File WASM có trong bundle Vite; chưa đo trên Safari/Firefox/Chrome thực tế | `pipeline-only` | Khả năng tương thích và hiệu năng đa trình duyệt thực tế là `unverified`. |
+| Dataset < 50 MB đủ để tạo mô hình phát hiện | Tập dữ liệu nhỏ chỉ đủ cho smoke test kỹ thuật, không có giá trị tổng quát hóa | `blocked` | Khẳng định rõ: dataset nhỏ chỉ dùng cho pipeline smoke test, cấm dùng để đưa ra kết luận khoa học. |
+| Tuyên bố chỉ số F1, ECE, AUROC | Chưa từng chạy đánh giá trên dataset thật | `not evaluated` | Bảng chỉ số Model Card phải ghi `not evaluated`, cấm bịa đặt bất kỳ con số nào. |
+

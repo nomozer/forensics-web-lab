@@ -8,7 +8,7 @@ To support rigorous, scientifically reproducible model development and evaluatio
 1. **No Large Datasets in Git**: Training data, uncompressed benchmarks, raw images, and multi-gigabyte archives must NEVER be committed to the Git repository.
 2. **Pre-Download Audit & Human Authorization**: Prior to downloading any external dataset:
    * The official academic or institutional source is verified.
-   * The legal license terms are documented in [docs/DATA_LICENSES.md](file:///d:/Documents/forensics-web-lab/docs/DATA_LICENSES.md).
+   * The legal license terms are documented in [docs/DATA_LICENSES.md](DATA_LICENSES.md).
    * Exact archive download size and uncompressed storage requirements are calculated.
    * Cryptographic checksums (SHA-256 / MD5) are recorded.
    * **Explicit human confirmation is obtained before initiating large downloads.**
@@ -24,7 +24,7 @@ To support rigorous, scientifically reproducible model development and evaluatio
 * **Purpose**: Multi-generator benchmark for whole-image synthetic generation vs. authentic imagery.
 * **Covered Generators**: Stable Diffusion (v1.4, v1.5), Midjourney, DALL-E 2/3, GLIDE, VQDM, BigGAN, ADM, Wukong.
 * **Authentic Source**: Curated ImageNet validation subset.
-* **License**: Research / Academic Use Only (refer to [docs/DATA_LICENSES.md](file:///d:/Documents/forensics-web-lab/docs/DATA_LICENSES.md)).
+* **License**: Research / Academic Use Only (refer to [docs/DATA_LICENSES.md](DATA_LICENSES.md)).
 * **Estimated Archive Size**: ~30 GB - 120 GB (depending on generator subsets).
 
 ### 2.2 SAGI-D (Synthetic and AI-Generated Inpainting Dataset)

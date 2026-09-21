@@ -1,0 +1,138 @@
+{
+  "schemaVersion": "1.0.0",
+  "phase": "Phase 3.6",
+  "commitAudited": "cd59136",
+  "timestampUtc": "2026-09-21T07:45:00Z",
+  "items": [
+    {
+      "evidenceId": "EV-GIT-001",
+      "claim": "Repository working tree is on feat/production-ai-image-forensics branch, main is untouched at 460f6d5, remote is unchanged",
+      "category": "git-state",
+      "status": "verified",
+      "artifact": "research/evidence/phase-3.6/environment.json",
+      "reproductionCommand": "git status --short && git branch --show-current && git rev-parse HEAD && git rev-parse main && git remote -v",
+      "result": "Branch feat/production-ai-image-forensics, HEAD cd59136, main 460f6d5, working tree clean prior to Phase 3.6, remote origin unchanged",
+      "limitations": "Local workspace audit only; does not verify upstream GitHub remote synchronization"
+    },
+    {
+      "evidenceId": "EV-TEST-TS-001",
+      "claim": "TypeScript test suite passes 100% across all 6 monorepo packages",
+      "category": "test-ts",
+      "status": "verified",
+      "artifact": "research/evidence/phase-3.6/test-summary.json",
+      "reproductionCommand": "pnpm test",
+      "result": "40 of 40 tests passed across @forensics/shared, @forensics/provenance, @forensics/report, @forensics/forensics, @forensics/inference, and web",
+      "limitations": "Unit and contract tests executed in Node.js/jsdom via Vitest; does not constitute multi-browser real-device E2E validation"
+    },
+    {
+      "evidenceId": "EV-TEST-PY-001",
+      "claim": "Python ML test suite passes across model architecture, loss function, manifest parsing, leakage-free splitting, and calibration",
+      "category": "test-py",
+      "status": "verified",
+      "artifact": "research/evidence/phase-3.6/test-summary.json",
+      "reproductionCommand": "ml/.venv/Scripts/python -m pytest ml/tests -v",
+      "result": "5 of 5 tests passed in 5.73s (test_mobilenetv3_forward_shape, test_focal_loss_computation, test_manifest_csv_roundtrip, test_group_split_prevents_leakage, test_temperature_scaler_and_ece)",
+      "limitations": "Tests run on synthetic/mock tensor fixtures; does not validate training convergence or real-world dataset metrics"
+    },
+    {
+      "evidenceId": "EV-BUILD-001",
+      "claim": "Production web bundle builds successfully with TypeScript strict mode and Vite bundling",
+      "category": "build",
+      "status": "verified",
+      "artifact": "research/evidence/phase-3.6/build-summary.json",
+      "reproductionCommand": "pnpm build",
+      "result": "Build exited 0 in 2.99s, generated dist/index.html (1.08 kB), forensics.worker.js (437.93 kB), and ONNX WASM asset (28.3 MB)",
+      "limitations": "Proves static asset bundling and compilation; does not prove browser WebGPU/WASM runtime performance under load"
+    },
+    {
+      "evidenceId": "EV-NOMODEL-001",
+      "claim": "System outputs verdict uncertain with confidence null and probabilities null when no trained model is installed; disallows fake AI verdicts",
+      "category": "no-model",
+      "status": "verified",
+      "artifact": "packages/shared/src/__tests__/contracts.test.ts",
+      "reproductionCommand": "pnpm test",
+      "result": "Contract tests verify honest no-model state and assert that no-model state rejecting confident AI predictions (fully_generated, ai_edited) passes",
+      "limitations": "Enforced at contract, worker fusion, UI, and report levels; exploratory DSP signals must not be interpreted as definitive AI verdicts"
+    },
+    {
+      "evidenceId": "EV-REPORT-001",
+      "claim": "Exported forensic reports explicitly disclose 'Model not installed' and omit misleading AI confidence scores when model is absent",
+      "category": "no-model",
+      "status": "verified",
+      "artifact": "packages/report/src/__tests__/report.test.ts",
+      "reproductionCommand": "pnpm test",
+      "result": "Report module produces valid JSON schema output and HTML print view disclosing model unavailable without fake confidence",
+      "limitations": "Verifies reporting logic and disclosures; does not audit physical printer output"
+    },
+    {
+      "evidenceId": "EV-REGISTRY-001",
+      "claim": "Model registry validator rejects unverified/mock models and prohibits marking any model as ready without full verification",
+      "category": "registry",
+      "status": "verified",
+      "artifact": "packages/shared/src/registry-validator.ts",
+      "reproductionCommand": "pnpm test",
+      "result": "Validator enforces 7 mandatory criteria for ready status (path, sha256, sizeBytes, task contract, runtime compatibility, license, evaluation status) and rejects mock/dummy fixtures",
+      "limitations": "Validates schema and disk presence when fs function provided; cannot verify deep mathematical correctness of weights"
+    },
+    {
+      "evidenceId": "EV-ONNX-001",
+      "claim": "ONNX export pipeline and numerical parity verification pipeline function correctly on neural architectures",
+      "category": "onnx-pipeline",
+      "status": "pipeline-only",
+      "artifact": "ml/export/export_onnx.py",
+      "reproductionCommand": "ml/.venv/Scripts/python -m pytest ml/tests/test_model_pipeline.py -v",
+      "result": "Pipeline code exists and operates on synthetic tensor forward shapes in unit test; numerical parity on genuine trained checkpoint is unverified",
+      "limitations": "No trained checkpoint exists; true parity, INT8 precision degradation, and opset runtime bugs remain unverified until weights are trained"
+    },
+    {
+      "evidenceId": "EV-RUNTIME-001",
+      "claim": "ONNX Runtime Web WASM assets are bundled and browser runtime execution on Chrome, Edge, Firefox, and Safari is verified",
+      "category": "browser-runtime",
+      "status": "unverified",
+      "artifact": "packages/inference/src/ort-session.ts",
+      "reproductionCommand": "pnpm build",
+      "result": "WASM binary asset (28.3 MB) is bundled in apps/web/dist; actual live inference execution across all 4 major browsers has not been verified",
+      "limitations": "Blocked on availability of a trained ONNX model and physical cross-browser testing environment"
+    },
+    {
+      "evidenceId": "EV-SIZE-001",
+      "claim": "In-house MobileNetV3 model INT8 quantized size is approximately 2.6 MB",
+      "category": "model-size",
+      "status": "estimated",
+      "artifact": "docs/PRETRAINED_MODEL_CANDIDATES.md",
+      "reproductionCommand": "ml/.venv/Scripts/python -c \"from ml.training.mobilenetv3_forensics import MobileNetV3Forensics; m = MobileNetV3Forensics(); p = sum(p.numel() for p in m.parameters()); print(f'Params: {p}')\"",
+      "result": "Architecture defines 2,544,115 parameters; theoretical 1 byte/param estimation yields ~2.43 - 2.6 MB; no actual INT8 ONNX file has been measured",
+      "limitations": "Purely a theoretical mathematical calculation; real artifact size will depend on ONNX graph overhead, quantization schema, and tensor metadata"
+    },
+    {
+      "evidenceId": "EV-LICENSE-001",
+      "claim": "Repository and future model weights have verified open licenses (e.g. MIT/Apache-2.0)",
+      "category": "license",
+      "status": "unverified",
+      "artifact": "docs/LICENSING.md",
+      "reproductionCommand": "git log -1 docs/LICENSING.md",
+      "result": "Repository license is pending maintainer decision; model weights license is currently not-applicable as no weights exist",
+      "limitations": "Future weight distribution rights are strictly contingent on code license, pretrained backbone license, and training dataset licenses"
+    },
+    {
+      "evidenceId": "EV-DATA-001",
+      "claim": "Academic training datasets (GenImage, SAGI-D, RealHD, RAID) are downloaded and validated in repository",
+      "category": "dataset",
+      "status": "blocked",
+      "artifact": "docs/DATASETS.md",
+      "reproductionCommand": "git status --short data/",
+      "result": "0 bytes of dataset downloaded; all dataset acquisition is strictly blocked pending explicit user authorization",
+      "limitations": "Small local subsets (<50 MB) may only be used for pipeline smoke tests; scientific training requires user-approved datasets"
+    },
+    {
+      "evidenceId": "EV-SCIENCE-001",
+      "claim": "System possesses measured detection accuracy, generalization across unseen generators, or robust inpainting localization",
+      "category": "science",
+      "status": "unverified",
+      "artifact": "docs/EVALUATION.md",
+      "reproductionCommand": "git log -1 docs/EVALUATION.md",
+      "result": "Macro F1, ECE, Brier score, and mIoU are explicitly recorded as 'not measured' / 'not evaluated'; no scientific claims are made",
+      "limitations": "Cannot claim detection capability without trained weights evaluated on independent, leakage-free benchmark datasets"
+    }
+  ]
+}

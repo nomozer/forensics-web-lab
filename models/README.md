@@ -11,6 +11,6 @@ This directory contains configuration, schemas, and metadata for machine learnin
 
 ## Model Registry Specification
 
-The file [`registry.json`](file:///d:/Documents/forensics-web-lab/models/registry.json) tracks available models, their paths, SHA-256 hashes, quantized sizes, input shapes, opset versions, and lifecycle status (`not-trained`, `trained`, `quantized`, `deprecated`).
+The file [`registry.json`](registry.json) tracks available models, their paths, SHA-256 hashes, quantized sizes, input shapes, opset versions, and lifecycle status (`not-trained`, `trained`, `quantized`, `deprecated`).
 
-See [`MODEL_CARD.md`](file:///d:/Documents/forensics-web-lab/models/MODEL_CARD.md) for full architecture and evaluation specifications.
+See [`MODEL_CARD.md`](MODEL_CARD.md) for full architecture and evaluation specifications.

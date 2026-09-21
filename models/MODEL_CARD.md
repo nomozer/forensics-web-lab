@@ -7,7 +7,7 @@
 * **Date**: September 2026
 * **Model Type**: Multi-task Convolutional Neural Network (Spatial Backbone: MobileNetV3-Small / Dual-Branch Spatial-Frequency variant)
 * **Target Parameter Count**: ~2.5M to 9.5M parameters (well under the 15M target ceiling)
-* **License**: To be determined (see [docs/LICENSING.md](file:///d:/Documents/forensics-web-lab/docs/LICENSING.md))
+* **License**: not-applicable (weights not trained; see [docs/LICENSING.md](../docs/LICENSING.md))
 * **Framework**: PyTorch 2.x -> Exported to ONNX Runtime Web (WASM / WebGPU)
 * **Target Download Footprint**: < 20 MB unquantized, < 10 MB INT8 quantized (well below the 35 MB project ceiling)
 * **ONNX Opset**: `17` (broad browser WASM & WebGPU operator compatibility)

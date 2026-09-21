@@ -1,0 +1,46 @@
+{
+  "phase": "Phase 3.6",
+  "commitAudited": "cd59136",
+  "timestampUtc": "2026-09-21T07:45:00Z",
+  "command": "pnpm build",
+  "exitCode": 0,
+  "bundler": "vite v6.4.3",
+  "modulesTransformed": 54,
+  "durationSeconds": 2.99,
+  "outputDirectory": "apps/web/dist",
+  "artifacts": [
+    {
+      "path": "apps/web/dist/index.html",
+      "sizeBytes": 1080,
+      "sizeFormatted": "1.08 kB",
+      "gzipBytes": 620,
+      "gzipFormatted": "0.62 kB"
+    },
+    {
+      "path": "apps/web/dist/assets/forensics.worker.js",
+      "sizeBytes": 437930,
+      "sizeFormatted": "437.93 kB"
+    },
+    {
+      "path": "apps/web/dist/assets/ort-wasm-simd-threaded.jsep.wasm",
+      "sizeBytes": 28312030,
+      "sizeFormatted": "28,312.03 kB",
+      "gzipBytes": 6727970,
+      "gzipFormatted": "6,727.97 kB"
+    },
+    {
+      "path": "apps/web/dist/assets/index.css",
+      "sizeBytes": 3970,
+      "sizeFormatted": "3.97 kB",
+      "gzipBytes": 1450,
+      "gzipFormatted": "1.45 kB"
+    },
+    {
+      "path": "apps/web/dist/assets/index.js",
+      "sizeBytes": 683690,
+      "sizeFormatted": "683.69 kB",
+      "gzipBytes": 196900,
+      "gzipFormatted": "196.90 kB"
+    }
+  ]
+}

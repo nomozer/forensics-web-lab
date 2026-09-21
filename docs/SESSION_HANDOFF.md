@@ -1,35 +1,38 @@
 # Biên bản Bàn giao Phiên làm việc (Session Handoff)
 
-> **Cập nhật lúc**: 2026-09-21  
+> **Cập nhật lúc**: 2026-09-21 (Phase 3.6)  
 > **Tài liệu này được cập nhật ở cuối mỗi phiên làm việc để đảm bảo tính liên tục và lưu trữ ngữ cảnh trong Git.**
 
 ---
 
 - **Branch**: `feat/production-ai-image-forensics`
-- **Starting commit**: `6555b02`
-- **Ending commit**: `e1379b4` (Commit 2: `fix: enforce honest no-model analysis state`)
-- **Completed**:
-  - Thiết lập trí nhớ dự án bền vững trong Git: `AGENTS.md`, `docs/PROJECT_STATE.md`, `docs/CODE_MAP.md`, `docs/SESSION_HANDOFF.md`.
-  - Thực hiện kiểm chứng toàn diện 7 câu hỏi trong `docs/IMPLEMENTATION_TRUTH_AUDIT.md`.
-  - Khảo sát các ứng viên mô hình tiền huấn luyện trong `docs/PRETRAINED_MODEL_CANDIDATES.md`.
-  - Thiết lập cổng kiểm định và tiếp nhận mô hình nghiêm ngặt trong `docs/MODEL_ACQUISITION_GATE.md`.
-  - Sửa đổi mã nguồn để áp đặt trạng thái "No-Model Honest State": không sinh xác suất 3 lớp, không gán nhãn `fully_generated`/`ai_edited`, verdict là `uncertain`, `confidence: null`, `probabilities: null`, hiển thị banner "Model not installed".
-  - Thêm kiểm tra tự động tính toàn vẹn của Model Registry (`validateModelRegistry`).
-  - Cập nhật tài liệu tiến độ `docs/BACKLOG.md`.
+- **Starting commit**: `cd59136`
+- **Base main commit**: `460f6d5` (giữ nguyên tuyệt đối)
+- **Completed (Phase 3.6 — Evidence Hardening and Claim Correction)**:
+  - Kiểm toán và loại bỏ 100% đường dẫn tuyệt đối của máy cá nhân (`file:///`, `D:\`, `C:\`, `/Users/`, `/home/`) khỏi toàn bộ tài liệu và mã nguồn.
+  - Sửa đổi toàn diện các tuyên bố phóng đại: đổi `CAND-C2-INHOUSE-MNV3` thành `ARCH-C2-INHOUSE-MNV3` (kiến trúc `architecture-only`, không phải checkpoint); kích thước INT8 ~2.6 MB phân loại là `estimated`; ONNX parity phân loại là `pipeline-only`; giấy phép trọng số là `not-applicable` do chưa tồn tại; chỉ số phát hiện/tổng quát hóa là `unverified` / `not measured`.
+  - Thiết lập hệ thống quản lý minh chứng có thể kiểm tra bằng máy:
+    - Sổ đăng ký: `docs/EVIDENCE_REGISTER.md`
+    - Manifest máy đọc: `research/evidence/phase-3.6/evidence-manifest.json`
+    - Schema JSON chuẩn hóa: `docs/schemas/evidence-manifest.v1.schema.json`
+    - Tóm tắt môi trường & kết quả chạy thật: `environment.json`, `test-summary.json`, `build-summary.json`.
+  - Nâng cấp `validateModelRegistry` trong `@forensics/shared` ép buộc đủ 7 tiêu chí bắt buộc trước khi chuyển sang `ready` (path, sha256, sizeBytes, task contract, runtime compatibility, license, evaluation status).
+  - Triển khai `packages/shared/src/evidence-validator.ts` và test tự động đọc trực tiếp `evidence-manifest.json` từ đĩa, ngăn ngừa đường dẫn tuyệt đối và các kết quả giả định.
+  - Mở rộng `docs/MODEL_ACQUISITION_GATE.md` thành 17 tiêu chí nghiêm ngặt trước khi một mô hình được nạp vào sản phẩm.
+  - Soạn thảo `docs/PHASE_4A_DATA_FEASIBILITY.md` phân biệt rõ ràng pipeline smoke test (<50 MB) với huấn luyện khoa học, thiết lập ma trận quyết định dataset và cổng phê duyệt bắt buộc trước khi tải.
 - **Verified**:
-  - Baseline & Final unit test suite: `pnpm test` (all packages passing).
-  - Production bundle build: `pnpm build` (TypeScript strict check + Vite bundle thành công).
-  - Python ML test suite: `pytest ml/tests -v` (5/5 tests passing).
-  - Không có file binary model hay dataset nào bị tải về trái phép.
-  - Working tree được đối chiếu và không thay đổi remote/main.
+  - `pnpm test`: 40/40 tests passing trên 6 package (shared: 17, provenance: 3, report: 4, forensics: 5, inference: 8, web: 3).
+  - `pnpm build`: Thành công 100%, mã thoát 0 trong 2.99s.
+  - `ml/.venv/Scripts/python -m pytest ml/tests -v`: 5/5 tests passing trong 5.73s.
+  - Không tải bất kỳ byte dataset hay model weights nào.
+  - `main` không bị thay đổi (`460f6d5`), remote `origin` nguyên vẹn, không push, không deploy.
 - **Not verified**:
-  - Độ trễ thực tế của ONNX inference trên model thật trong trình duyệt (do chưa nạp checkpoint).
-  - Kiểm thử đa trình duyệt thực tế (Safari WebGPU, Firefox WASM) trên thiết bị vật lý.
-- **Model status**: `not trained` (chưa có checkpoint; `models/registry.json` ở trạng thái `status: not-trained`, `sizeBytes: 0`, `path: ""`).
-- **Dataset status**: `none` (chưa tải dataset).
+  - Độ chính xác thực tế của mô hình phát hiện (do chưa có trọng số huấn luyện).
+  - Độ trễ thực tế của suy luận trên thiết bị vật lý đa trình duyệt (Chrome, Safari, Edge, Firefox).
+- **Model status**: `not trained` (chỉ có thiết kế kiến trúc `ARCH-C2-INHOUSE-MNV3`; `models/registry.json` ở trạng thái `status: not-trained`, `sizeBytes: 0`, `path: ""`).
+- **Dataset status**: `none` (0 byte dữ liệu được tải về).
 - **Known blockers**:
-  1. Cần người dùng phê duyệt phương án checkpoint/dataset trước khi tiến hành tải hoặc huấn luyện.
-  2. Các checkpoint từ bên thứ ba (LAID, TruFor, CNNDetection) đang bị vướng giấy phép (`blocked-license` hoặc `rejected`).
+  - Cần người dùng phê duyệt đề xuất trong `docs/PHASE_4A_DATA_FEASIBILITY.md` trước khi tải bất kỳ dữ liệu nào.
 - **Next exact task**:
-  - Trình duyệt báo cáo `PHASE_3_5_MODEL_READINESS_REPORT` cho người dùng.
-  - Chờ quyết định của người dùng về việc lựa chọn huấn luyện nội bộ checkpoint nhẹ (`CAND-C2-INHOUSE-MNV3`) hay cấp phép tải lát cắt dữ liệu nhỏ cho Phase 4.
+  - Trình báo cáo nghiệm thu Phase 3.6 cho người dùng.
+  - Dừng lại, KHÔNG tự ý triển khai Phase 4A cho đến khi nhận được chỉ thị cụ thể.

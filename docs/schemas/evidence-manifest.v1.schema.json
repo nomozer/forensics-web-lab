@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://forensics-web-lab.local/schemas/evidence-manifest.v1.schema.json",
+  "title": "EvidenceManifest",
+  "description": "Standardized schema for machine-readable research and engineering evidence registers in Forensics Web Lab",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "phase",
+    "commitAudited",
+    "timestampUtc",
+    "items"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "enum": ["1.0.0"]
+    },
+    "phase": {
+      "type": "string",
+      "pattern": "^Phase [0-9.]+$"
+    },
+    "commitAudited": {
+      "type": "string",
+      "pattern": "^[a-fA-F0-9]{7,40}$"
+    },
+    "timestampUtc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "evidenceId",
+          "claim",
+          "category",
+          "status",
+          "artifact",
+          "reproductionCommand",
+          "result",
+          "limitations"
+        ],
+        "properties": {
+          "evidenceId": {
+            "type": "string",
+            "pattern": "^EV(?:-[A-Z0-9]+)+-[0-9]{3}$"
+          },
+          "claim": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "git-state",
+              "test-ts",
+              "test-py",
+              "build",
+              "no-model",
+              "registry",
+              "onnx-pipeline",
+              "browser-runtime",
+              "model-size",
+              "license",
+              "dataset",
+              "science"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "verified",
+              "reported",
+              "estimated",
+              "architecture-only",
+              "pipeline-only",
+              "unverified",
+              "blocked",
+              "rejected"
+            ]
+          },
+          "artifact": {
+            "type": "string",
+            "description": "Relative path to verifiable source code, script, test, or log file"
+          },
+          "reproductionCommand": {
+            "type": "string",
+            "description": "Shell or CLI command to reproduce the verified output"
+          },
+          "result": {
+            "type": "string",
+            "description": "Concrete outcome or measured metrics"
+          },
+          "limitations": {
+            "type": "string",
+            "description": "Explicit boundaries and unverified aspects"
+          }
+        }
+      }
+    }
+  }
+}

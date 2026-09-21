@@ -8,7 +8,8 @@ graph TD
   P1 --> P2[Phase 2: Local Browser Forensic Pipeline]
   P1 --> P3[Phase 3: Dataset & Research Pipeline]
   P3 --> P35[Phase 3.5: Persistent Memory, Truth Audit & Model Readiness]
-  P35 --> P4[Phase 4: Model Training & Evaluation]
+  P35 --> P36[Phase 3.6: Evidence Hardening & Claim Correction]
+  P36 --> P4[Phase 4: Model Training & Evaluation]
   P4 --> P5[Phase 5: ONNX Browser Integration]
   P2 --> P5
   P5 --> P6[Phase 6: Complete Forensic UX & Reporting]
@@ -85,7 +86,7 @@ graph TD
 
 ---
 
-### Phase 3.5: Persistent Memory, Implementation Truth Audit & Model Readiness (Đang thực hiện)
+### Phase 3.5: Persistent Memory, Implementation Truth Audit & Model Readiness (Hoàn thành - Commit `cd59136`)
 * [x] **TASK-351**: Create root `AGENTS.md` establishing persistent memory rules and scientific truthfulness.
 * [x] **TASK-352**: Create `docs/PROJECT_STATE.md` with active project status, scope, and blockers.
 * [x] **TASK-353**: Create `docs/CODE_MAP.md` mapping all modules, files, and actual verified statuses.
@@ -93,10 +94,23 @@ graph TD
 * [x] **TASK-355**: Audit pretrained candidate checkpoints in `docs/PRETRAINED_MODEL_CANDIDATES.md`.
 * [x] **TASK-356**: Define Model Acquisition Gate in `docs/MODEL_ACQUISITION_GATE.md`.
 * [x] **TASK-357**: Create `docs/SESSION_HANDOFF.md` and update `docs/BACKLOG.md`.
-* [ ] **TASK-358**: Refactor `FusionCalibrator` and worker to enforce honest no-model state (`uncertain`, `confidence: null`, `probabilities: null`, `modelAvailable: false`).
-* [ ] **TASK-359**: Update UI (`ResultVerdictCard`, `HeatmapViewer`, `ForensicsInspector`) to display "Model not installed" and classify heuristics as exploratory.
-* [ ] **TASK-360**: Implement automated registry integrity validation in `@forensics/shared` and add unit tests.
-* [ ] **TASK-361**: Verify all test suites (`pnpm test`, `pnpm build`, `pytest`) and create Phase 3.5 commits.
+* [x] **TASK-358**: Refactor `FusionCalibrator` and worker to enforce honest no-model state (`uncertain`, `confidence: null`, `probabilities: null`, `modelAvailable: false`).
+* [x] **TASK-359**: Update UI (`ResultVerdictCard`, `HeatmapViewer`, `ForensicsInspector`) to display "Model not installed" and classify heuristics as exploratory.
+* [x] **TASK-360**: Implement automated registry integrity validation in `@forensics/shared` and add unit tests.
+* [x] **TASK-361**: Verify all test suites (`pnpm test`, `pnpm build`, `pytest`) and create Phase 3.5 commits.
+
+---
+
+### Phase 3.6: Evidence Hardening & Claim Correction (Hoàn thành)
+* [x] **TASK-362**: Conduct independent repository state audit and enforce clean Git baseline.
+* [x] **TASK-363**: Audit and eliminate all absolute machine paths (`file:///`, `D:\`, `C:\`, `/Users/`, `/home/`) across documentation and code.
+* [x] **TASK-364**: Correct overstated readiness claims: rename `CAND-C2-INHOUSE-MNV3` to `ARCH-C2-INHOUSE-MNV3`, mark size as `estimated`, parity as `pipeline-only`, weight license as `not-applicable`, and detection metrics as `unverified` / `not measured`.
+* [x] **TASK-365**: Formalize 8 standardized evidence classifications across all project documentation.
+* [x] **TASK-366**: Establish machine-readable Evidence Register (`docs/EVIDENCE_REGISTER.md`, `research/evidence/phase-3.6/evidence-manifest.json`) and JSON Schema (`docs/schemas/evidence-manifest.v1.schema.json`).
+* [x] **TASK-367**: Implement automated manifest validator and expand registry validator to enforce 7 mandatory readiness gates with test coverage.
+* [x] **TASK-368**: Expand `docs/MODEL_ACQUISITION_GATE.md` with 17 mandatory criteria before admitting any model to `ready` status.
+* [x] **TASK-369**: Author `docs/PHASE_4A_DATA_FEASIBILITY.md` with dataset decision matrix and user authorization gate.
+* [x] **TASK-370**: Execute genuine verification runs and capture execution summaries (`environment.json`, `test-summary.json`, `build-summary.json`).
 
 ---
 

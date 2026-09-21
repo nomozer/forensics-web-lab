@@ -4,27 +4,32 @@
 > **Nguyên tắc tối thượng**:  
 > - **Không bao giờ tự ý tải file trọng số binary lớn** khi chưa có sự phê duyệt bằng văn bản từ người dùng.  
 > - **Không bao giờ commit file nhị phân mô hình vào Git repository**.  
-> - Kiểm tra an toàn mã độc (Pickle injection), xác thực mã băm SHA-256 và đo lường tính đúng đắn trước khi tích hợp vào Web Worker.
+> - Kiểm tra an toàn mã độc (Pickle injection), xác thực mã băm SHA-256 và đo lường tính đúng đắn trước khi tích hợp vào Web Worker.  
+> - **Phải thỏa mãn đầy đủ 17 tiêu chuẩn bắt buộc** mới được phép gắn nhãn `ready`. Nếu thiếu bất kỳ tiêu chí nào, model chỉ được mang một trong các trạng thái: `proposed`, `architecture-only`, `blocked`, `experimental`, `rejected`.
 
 ---
 
 ## 1. Vòng đời Trạng thái Mô hình (Model Lifecycle States)
 
-Mọi checkpoint mô hình trong dự án phải tuân theo vòng đời trạng thái 4 cấp độ:
+Mọi đề xuất mô hình trong dự án phải tuân theo vòng đời trạng thái phân cấp nghiêm ngặt:
 
 ```mermaid
 graph TD
-    A["1. candidate<br/>(Chỉ khảo sát metadata, chưa tải)"] -->|Người dùng phê duyệt văn bản| B["2. approved-for-download<br/>(Được phép tải về thư mục local)"]
-    B -->|Tải xong, băm SHA-256, scan format, smoke test CPU| C["3. candidate-downloaded<br/>(Đã tải và xác thực local an toàn)"]
-    C -->|Xuất ONNX, Parity Test, WASM Load, Benchmark thật| D["4. browser-ready<br/>(Sẵn sàng cho Web Worker production)"]
+    P["proposed / architecture-only<br/>(Chỉ khảo sát thiết kế hoặc mã kiến trúc)"] -->|Hồ sơ duyệt 13 tiêu chí + Người dùng cấp phép| A["approved-for-download<br/>(Được phép tải về thư mục local)"]
+    A -->|Tải xong, băm SHA-256, scan format, smoke test CPU| B["experimental<br/>(Đã tải local, đang thử nghiệm)"]
+    B -->|Thỏa mãn ĐỦ 17 tiêu chuẩn kiểm định khắt khe| C["ready / browser-ready<br/>(Sẵn sàng nạp vào Web Worker production)"]
     
-    A -.->|Vi phạm giấy phép / quá nặng| X["rejected / blocked"]
+    P -.->|Thiếu weights / Giấy phép không rõ| X["blocked / rejected"]
+    B -.->|Parity fail / Vượt dung lượng / ECE cao| X
 ```
 
-1. `candidate`: Mới khảo sát metadata, thông số kỹ thuật và giấy phép từ tài liệu khoa học/kho lưu trữ chính thức. Trạng thái tải: `not-downloaded`.
-2. `candidate-downloaded`: Đã tải về máy local theo đúng nguồn duyệt, đã tính SHA-256, quét định dạng an toàn và load thành công trên CPU PyTorch.
-3. `browser-ready`: Đã xuất sang định dạng ONNX, vượt qua kiểm thử sai số parity với PyTorch ($L_\infty < 10^{-4}$), load thành công vào ONNX Runtime Web (WASM), có benchmark độ trễ thực tế, Model Card và `registry.json` được cập nhật đầy đủ checksum và dung lượng thật.
-4. `rejected` / `blocked-license` / `blocked-missing-weights`: Bị từ chối hoặc bị chặn do không đáp ứng tiêu chuẩn.
+### Các trạng thái hợp lệ:
+* `proposed`: Mô hình được đề xuất dựa trên tài liệu khoa học, chưa tải.
+* `architecture-only`: Thiết kế kiến trúc và mã nguồn mạng nơ-ron (như `ARCH-C2-INHOUSE-MNV3`), chưa có trọng số huấn luyện.
+* `experimental`: Đã tải về máy local để kiểm thử kỹ thuật, chưa đạt đủ 17 tiêu chuẩn để phát hành.
+* `blocked`: Bị chặn do thiếu dữ liệu, thiếu file trọng số, hoặc giấy phép không rõ ràng.
+* `rejected`: Bị từ chối do không đáp ứng tiêu chuẩn sản phẩm (kích thước quá lớn, latency cao, vi phạm bản quyền).
+* `ready` (`browser-ready`): Đã vượt qua toàn bộ 17 tiêu chuẩn kiểm định thực tế.
 
 ---
 
@@ -48,11 +53,11 @@ Trước khi người dùng cho phép tải bất kỳ checkpoint nào, phải l
 
 ---
 
-## 3. Cổng 1: Chuyển sang `candidate-downloaded`
+## 3. Cổng 1: Chuyển sang `experimental` (Local Validation Gate)
 
-Chỉ chuyển trạng thái sang `candidate-downloaded` khi hoàn thành tuần tự tất cả các bước:
+Chỉ chuyển trạng thái sang `experimental` khi hoàn thành tuần tự tất cả các bước:
 
-1. **Tải file từ nguồn đã duyệt**: Sử dụng script Python hoặc `curl` ghi vào thư mục local được chỉ định.
+1. **Tải file từ nguồn đã duyệt**: Ghi vào thư mục local được chỉ định.
 2. **Tính toán mã băm SHA-256**:
    ```bash
    python -c "import hashlib; print(hashlib.sha256(open('path/to/file', 'rb').read()).hexdigest())"
@@ -73,51 +78,45 @@ Chỉ chuyển trạng thái sang `candidate-downloaded` khi hoàn thành tuần
 
 ---
 
-## 4. Cổng 2: Chuyển sang `browser-ready`
+## 4. Cổng 2: 17 Tiêu chuẩn Bắt buộc để Chuyển sang `ready` (Production Gate)
 
-Chỉ chuyển trạng thái sang `browser-ready` và đưa vào Web Worker khi hoàn thành tất cả các yêu cầu sau:
+Để một model được cấp phép mang trạng thái `ready` (hoặc `browser-ready`) trong `models/registry.json`, **bắt buộc phải thỏa mãn đồng thời toàn bộ 17 tiêu chuẩn sau**:
 
-1. **Xuất sang ONNX chuẩn hóa**:
-   - Sử dụng script `ml/export/export_onnx.py` với `opset_version=17`.
-   - Cấu hình dynamic batch size hoặc fixed input $[1, 3, 224, 224]$.
-2. **Kiểm tra sai số Parity (PyTorch vs ONNX)**:
-   - Chạy `ml/export/validate_contract.py`.
-   - Sai số tuyệt đối lớn nhất giữa đầu ra PyTorch và ONNX trên 100 mẫu thử ngẫu nhiên phải thỏa mãn:
-     $$\max |y_{\text{pytorch}} - y_{\text{onnx}}| < 10^{-4}$$
-3. **Lượng tử hóa INT8 (INT8 Quantization)**:
-   - Lượng tử hóa trọng số bằng `onnxruntime.quantization` (dynamic quantization hoặc static calibration).
-   - Tổng dung lượng file `.onnx` thành phẩm phải $\le 15\text{ MB}$ (mục tiêu tối ưu $\le 5\text{ MB}$).
-4. **Kiểm thử Tải và Thực thi trên Trình duyệt (WASM Smoke Test)**:
-   - Nạp file ONNX vào `OnnxSessionManager.initializeSession()` trong môi trường test browser/Node.
-   - Xác nhận khởi tạo thành công với backend `wasm`, không phát sinh lỗi bộ nhớ hoặc thiếu operator.
-5. **Đo đạc Benchmark Thực tế**:
-   - Đo thời gian suy luận trung bình trên 10 ảnh:
-     - Toàn ảnh: $\le 150\text{ ms}$ (WASM CPU đa luồng).
-     - Quét bản đồ nhiệt (24–36 patches): $\le 1500\text{ ms}$.
-   - Đo bộ nhớ RAM tăng thêm trong browser tab: $\le 60\text{ MB}$.
-6. **Cập nhật Model Card & Registry**:
-   - Điền đầy đủ thông số thật vào `models/MODEL_CARD.md`.
-   - Cập nhật `models/registry.json`:
-     - `path`: đường dẫn tương đối tới file ONNX assets.
-     - `sha256`: chuỗi băm 64 ký tự hex thật của file ONNX.
-     - `sizeBytes`: kích thước byte thật $> 0$.
-     - `status`: chuyển từ `"not-trained"` sang `"ready"` hoặc `"quantized"`.
+| STT | Tiêu chuẩn Kiểm định | Tiêu chí Đạt (Pass Criteria) | Trạng thái Hiện tại |
+| :--- | :--- | :--- | :--- |
+| 1 | **Nguồn và version rõ ràng** | Có commit hash / release URL chính thức; version tuân thủ SemVer | `unverified` (chưa có model) |
+| 2 | **License của code** | Giấy phép mã nguồn mở permissive (MIT/Apache-2.0/BSD) được xác thực | `verified` (mã nguồn dự án) |
+| 3 | **License của weights** | Giấy phép cho phép phân phối và tích hợp client-side hợp pháp | `not-applicable` (chưa có weights) |
+| 4 | **License & Provenance của dữ liệu** | Báo cáo nguồn gốc tập train, xác nhận không vi phạm bản quyền dữ liệu | `unverified` |
+| 5 | **Checksum của artifact** | Mã băm SHA-256 (64 ký tự hex) khớp chính xác với file ONNX thành phẩm | `not measured` |
+| 6 | **Kích thước file đo thực tế** | Dung lượng file nhị phân đo thực tế trên đĩa $\le 35\text{ MB}$ (mục tiêu $\le 10\text{ MB}$) | `not measured` (chỉ có `estimated`) |
+| 7 | **Input/Output contract** | Input $[1, 3, 224, 224]$, output 3 logits ánh xạ 4 trạng thái chuẩn | `architecture-only` |
+| 8 | **ONNX export trên checkpoint thật** | Xuất thành công file `.onnx` hợp lệ opset 17 từ checkpoint thật | `unverified` |
+| 9 | **Numerical parity trên checkpoint thật** | Sai số lớn nhất $\max \|y_{\text{pytorch}} - y_{\text{onnx}}\| < 10^{-4}$ trên dữ liệu thật | `unverified` (mới test `pipeline-only`) |
+| 10 | **WASM runtime test thực tế** | Load và chạy suy luận thành công trong Web Worker trên Chrome, Edge, Firefox, Safari | `unverified` (mới test `pipeline-only`) |
+| 11 | **CPU latency & peak memory đo thật** | Latency toàn ảnh $\le 150\text{ ms}$, RAM tăng thêm $\le 60\text{ MB}$ đo trên máy thật | `not measured` |
+| 12 | **In-domain evaluation** | Macro F1 $\ge 0.85$, AUC $\ge 0.90$ trên tập test cùng phân phối | `not evaluated` |
+| 13 | **Cross-dataset evaluation** | Đánh giá độc lập trên ít nhất 2 dataset khác nguồn huấn luyện | `not evaluated` |
+| 14 | **Unseen-generator evaluation** | Đánh giá độ nhạy trên generator chưa từng thấy trong tập train | `not evaluated` |
+| 15 | **Calibration evaluation** | Expected Calibration Error (ECE) $\le 0.10$ sau khi fit Temperature Scaling | `not evaluated` |
+| 16 | **Known limitations rõ ràng** | Tài liệu hóa các trường hợp suy giảm (JPEG nén nặng, resize nhỏ, screenshot) | `verified` (trong Model Card) |
+| 17 | **Model card hoàn chỉnh** | Cập nhật đầy đủ số liệu đo thật vào `models/MODEL_CARD.md`, không để trống | `unverified` |
+
+> **Quy tắc tuyệt đối**: Nếu thiếu bất kỳ tiêu chuẩn nào trong số 17 tiêu chuẩn trên, mô hình **KHÔNG ĐƯỢC PHÉP** chuyển sang `ready` hay `quantized` trong `models/registry.json`. Mô hình phải giữ trạng thái `proposed`, `architecture-only`, `blocked`, hoặc `experimental`.
 
 ---
 
-## 5. Quy tắc Kiểm tra Tính toàn vẹn của Registry (Registry Integrity Guard)
+## 5. Ràng buộc Tự động cho Registry Integrity
 
-Hệ thống CI/CD và test suite tự động kiểm tra các ràng buộc sau đối với `models/registry.json`:
+Hệ thống test suite tự động kiểm tra các ràng buộc sau đối với `models/registry.json`:
 
 1. **Ràng buộc trạng thái `ready`**: Bất kỳ model nào khai báo `status: "ready"` hoặc `status: "quantized"` bắt buộc:
    - File nhị phân tại `path` phải tồn tại thực tế trên ổ đĩa.
    - `sizeBytes` phải là số nguyên dương $> 0$.
-   - `sha256` phải khớp chính xác với mã băm tính từ nội dung file.
+   - `sha256` phải là chuỗi 64 ký tự hex thật khớp nội dung file.
+   - Model ID không được chứa từ khóa test/mock/dummy.
 2. **Ràng buộc trạng thái `not-trained` / `not-installed`**:
-   - Bắt buộc `path: ""` hoặc `sizeBytes: 0`.
-   - Tuyệt đối không khai báo đường dẫn file giả lập không tồn tại.
+   - Bắt buộc `path: ""` và `sizeBytes: 0` và `sha256: ""`.
+   - Tuyệt đối cấm khai báo đường dẫn file giả lập không tồn tại.
 3. **Ngăn chặn Checkpoint Giả trong Production Build**:
    - Kiểm tra bundle production không chứa các file `.onnx` giả mạo (zero-byte hoặc dummy payload).
-   - Các mock fixture chỉ được phép tồn tại trong thư mục test (`packages/*/src/__tests__/fixtures/`).
-
-> **CẢNH BÁO CHO PHASE 3.5**: Trong giai đoạn này, `models/registry.json` **bắt buộc giữ nguyên trạng thái `not-trained`**; không được phép chuyển sang `ready` hay khai báo path giả.

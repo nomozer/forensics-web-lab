@@ -1,0 +1,21 @@
+{
+  "phase": "Phase 3.6",
+  "commitAudited": "cd59136",
+  "timestampUtc": "2026-09-21T07:45:00Z",
+  "os": {
+    "platform": "win32",
+    "type": "Windows"
+  },
+  "runtimes": {
+    "node": "v24.13.0",
+    "pnpm": "10.33.0",
+    "python": "3.12.10"
+  },
+  "git": {
+    "branch": "feat/production-ai-image-forensics",
+    "head": "cd59136b0509b248e427efeb13b797b4ec8a6df3",
+    "main": "460f6d501d5ce5a37172fe4d7d4ee712cfa87ff1",
+    "remote": "origin (unchanged)",
+    "workingTreeStatus": "clean-prior-to-phase-3.6"
+  }
+}

@@ -402,14 +402,14 @@
 
 ### Model Architecture
 - **File**: `ml/training/mobilenetv3_forensics.py`
-- **Responsibility**: Xây dựng kiến trúc mạng MobileNetV3-Small nhẹ (~2.54M tham số), điều chỉnh classifier head cho 3 lớp bài toán (`authentic`, `fully_generated`, `ai_edited`).
+- **Responsibility**: Xây dựng kiến trúc mạng MobileNetV3-Small nhẹ (~2.54M tham số, mã định danh kiến trúc `ARCH-C2-INHOUSE-MNV3`), điều chỉnh classifier head cho 3 lớp bài toán (`authentic`, `fully_generated`, `ai_edited`).
 - **Public API**: `MobileNetV3Forensics(num_classes=3, pretrained=True)`
 - **Inputs**: Tensor ảnh $[B, 3, 224, 224]$.
 - **Outputs**: Logits $[B, 3]$.
 - **Dependencies**: `torch`, `torchvision.models`.
 - **Tests**: `ml/tests/test_model_pipeline.py`.
-- **Actual status**: `implemented-and-tested`
-- **Known gaps**: Hiện kiến trúc đã được kiểm thử tính đúng đắn với dummy input; trọng số chưa được huấn luyện trên dataset thật (`not trained`).
+- **Actual status**: `implemented-and-tested` (mã kiến trúc và forward pass đã test với dummy tensor)
+- **Known gaps**: Trọng số chưa được huấn luyện trên dataset thật (`not trained`); chưa có file checkpoint thật; khả năng phân loại và tổng quát hóa thực tế là `unverified`.
 
 ### Focal Loss & Class Imbalance
 - **File**: `ml/training/loss.py`
@@ -430,8 +430,8 @@
 - **Outputs**: Mô hình đã gắn tham số nhiệt độ $T$ tối ưu.
 - **Dependencies**: `torch`.
 - **Tests**: `ml/tests/test_model_pipeline.py`.
-- **Actual status**: `implemented-and-tested`
-- **Known gaps**: Sẽ được chạy trên tập validation thật ở Phase 4.
+- **Actual status**: `implemented-and-tested` (thuật toán đã test trên tensor tổng hợp)
+- **Known gaps**: Chưa có tập validation thật; việc hiệu chuẩn trên dữ liệu thực nghiệm sẽ thực hiện ở Phase 4.
 
 ### ONNX Export & Contract Validation
 - **File**: `ml/export/export_onnx.py`, `ml/export/quantize.py`, `ml/export/validate_contract.py`
@@ -441,8 +441,8 @@
 - **Outputs**: File ONNX unquantized `.onnx` và quantized `.onnx`.
 - **Dependencies**: `torch`, `onnx`, `onnxruntime`.
 - **Tests**: `ml/tests/test_model_pipeline.py`.
-- **Actual status**: `implemented-and-tested`
-- **Known gaps**: Chờ checkpoint huấn luyện thật từ Phase 4 để xuất file production.
+- **Actual status**: `implemented-and-tested` (đường ống xuất ONNX và parity test đã kiểm thử thành công trên mô hình un-trained)
+- **Known gaps**: Chờ checkpoint huấn luyện thật từ Phase 4 để xuất file production; parity trên checkpoint thật là `unverified`.
 
 ---
 
@@ -451,11 +451,11 @@
 ### Model Registry
 - **File**: `models/registry.json`
 - **Responsibility**: Bản kê khai danh mục các mô hình được hỗ trợ bởi hệ thống, định dạng input, số lớp, trạng thái vòng đời (`status: not-trained`).
-- **Actual status**: `implemented-and-tested`
-- **Known gaps**: `status: "not-trained"`, `path: ""`, `sizeBytes: 0`, `sha256: ""`.
+- **Actual status**: `implemented-and-tested` (kiểm thử tính toàn vẹn qua `validateModelRegistry` trong test suite)
+- **Known gaps**: `status: "not-trained"`, `path: ""`, `sizeBytes: 0`, `sha256: ""` (không có file nhị phân checkpoint nào được cài đặt trong production).
 
 ### Model Card
 - **File**: `models/MODEL_CARD.md`
 - **Responsibility**: Báo cáo chuẩn mực về thông số mô hình, kiến trúc, phạm vi ứng dụng, rủi ro, và bảng chỉ số thực nghiệm (chưa điền kết quả giả mạo, ghi rõ chưa huấn luyện).
 - **Actual status**: `implemented-and-tested`
-- **Known gaps**: Bảng chỉ số thực nghiệm đang ở trạng thái chờ kết quả thật từ Phase 4.
+- **Known gaps**: Bảng chỉ số thực nghiệm khoa học đang ở trạng thái `not evaluated` chờ kết quả thật từ Phase 4. Kích thước INT8 ghi nhận là `estimated` (~2.6 MB), chưa đo trên artifact thật.
