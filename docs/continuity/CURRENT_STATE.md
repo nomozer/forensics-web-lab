@@ -1,8 +1,9 @@
 # Trạng thái Hiện tại: Forensics Web Lab (Current State)
 
 > **Tài liệu đọc đầu tiên bắt buộc cho mọi phiên làm việc AI mới.**  
-> **Documented through substantive commit**: `9ab0e67`  
-> **Implementation snapshot commit**: Được xác định qua `git log -1 --format=%H -- research/evidence/phase-4a.4/PHASE_REPORT.md`  
+> **Documented through substantive commit**: `a480776`  
+> **Implementation snapshot commit**: `311cfd3`  
+> **Phase hoàn thành gần nhất**: Phase 4A.5 — Model-Agnostic Continuity Enforcement  
 > **Branch**: `feat/production-ai-image-forensics`  
 > **Base main commit**: `460f6d5` (bảo toàn nguyên vẹn, không commit trực tiếp)  
 > **Working tree**: clean  
@@ -77,6 +78,7 @@ Hệ thống phân biệt rõ ràng 5 mức độ sẵn sàng:
 | **Dual-Track Contamination Guards**| `technically verified` | `verified` | Cấm model sản phẩm dùng dataset phi thương mại |
 | **Scientific Pilot Protocol**     | `technically verified` | `exploratory` | Hai nhánh độc lập Pilot A/B, Pilot C có baseline guard |
 | **Label-Semantics Gate**          | `technically verified` | `verified` | sp là ai_edited, fr loại trừ khỏi fully_generated |
+| **Continuity Checker & CI Gate**  | `technically verified` | `not-applicable` | scripts/continuity-check.mjs, 13 unit tests, CI enforced |
 | **In-Browser ONNX Inference**     | `implemented` | `blocked` | Chờ checkpoint huấn luyện thật từ Phase 4 |
 | **Scientific Detection Accuracy** | `planned` | `unverified` | **Not evaluated**; không có số liệu F1/ECE thật |
 
@@ -119,11 +121,12 @@ Dự án đóng băng cấu trúc 3 nhãn phân loại chính và 1 trạng thá
 
 ## 6. Kết quả Kiểm thử & Bản dựng Gần nhất (Latest Verification)
 
-* **TypeScript Test Suite (`pnpm test`)**: 57/57 tests passing trên 6 package (@forensics/shared: 34, @forensics/provenance: 3, @forensics/report: 4, @forensics/forensics: 5, @forensics/inference: 8, web: 3).
+* **TypeScript & Continuity Test Suite (`pnpm test`)**: 70/70 tests passing (57 vitest tests trên 6 packages + 13 continuity checker unit tests).
 * **Python Test Suite (`pytest ml/tests -v`)**: 38/38 tests passing (bao gồm 15 bài test an toàn thu nạp dữ liệu, zip slip guard, free disk check, và paired bootstrap guard).
 * **Pilot Config Validation**: 2/2 pilot configs valid theo `ml/configs/validator.py`.
-* **Production Web Build (`pnpm build`)**: Exit code 0, bundle tối ưu hợp lệ.
-* **Clean Link Invariance**: 0 machine-local links (`file:///`, `C:\`, `D:\`) trong markdown links repository.
+* **Continuity Enforcement Gate (`pnpm continuity:check`)**: `CONTINUITY_CHECK: PASS` (kiểm tra toàn bộ 3 file continuity, duplicate files, local links, placeholders, và ledger line limits).
+* **Production Web Build (`pnpm build`)**: Exit code 0, bundle tối ưu hợp lệ (3.08s).
+* **Clean Link Invariance**: 0 machine-local links (`file:///`, `C:\`, `D:\`) trong toàn bộ markdown và evidence repository.
 
 ---
 
@@ -154,11 +157,17 @@ Dự án đóng băng cấu trúc 3 nhãn phân loại chính và 1 trạng thá
 * `EV-ACQUISITION-PLAN-001`: Kế hoạch thu nạp dữ liệu máy đọc và schema v1 có mã băm SHA-256.
 * `EV-DOWNLOADER-SAFETY-001`: Bộ lọc an toàn tải file (.part, resume, checksum, safe-extract, staging).
 * `EV-BOOTSTRAP-GUARD-001`: Cổng thống kê Paired Stratified Bootstrap 95% CI cho metadata baseline guard.
+* `EV-PHASE4A4-CLOSURE-001`: Đóng Phase 4A.4 với ending commit a480776, chuẩn hóa group-isolation invariant.
+* `EV-CONTINUITY-CONTRACT-001`: Quy chế Continuity Contract trong AGENTS.md cho mọi coding agent.
+* `EV-CONTINUITY-CHECKER-001`: Công cụ kiểm tra continuity scripts/continuity-check.mjs đa nền tảng.
+* `EV-CONTINUITY-TESTS-001`: Bộ kiểm thử 13 unit tests cho continuity checker trong scripts/__tests__/.
+* `EV-CI-CONTINUITY-001`: Tích hợp continuity gate vào quy trình CI GitHub Actions.
 
 ---
 
 ## 9. Công việc Đang thực hiện & Công việc Tiếp theo
 
-* **Đã hoàn thành (Phase 4A.4)**: Sửa minh chứng và commit references Phase 4A.3, hiệu chỉnh tuyên bố shortcut khoa học, kiểm toán cardinality TGIF, lập acquisition plan máy đọc có SHA-256, hoàn thiện bộ tải dữ liệu an toàn và 15 bài unit test offline.
+* **Đã hoàn thành (Phase 4A.5)**: Thiết lập cơ chế kiểm tra continuity tự động, đóng chính xác Phase 4A.4 với ending commit `a480776`, thay thế thuật ngữ sang group-isolation invariant, ban hành Continuity Contract trong `AGENTS.md`, triển khai `scripts/continuity-check.mjs`, tích hợp CI và hoàn thành 13 bài test unit.
+* **Hiện trạng nghiên cứu**: Dataset content vẫn `0 bytes`, model content vẫn `0 bytes`, training runs bằng `0`, scientific metrics tiếp tục giữ trạng thái `not evaluated`.
 * **Công việc tiếp theo (Phase 4B / Live Data Acquisition)**: Chờ người dùng xem xét và phê duyệt `NEXT APPROVAL REQUEST` để mở khóa tải dữ liệu thật cho Pilot A (`pilot-a-tgif.v1.json`).
 

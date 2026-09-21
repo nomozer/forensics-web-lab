@@ -4,7 +4,8 @@
 > **Repository**: `nomozer/forensics-web-lab`  
 > **Branch**: `feat/production-ai-image-forensics`  
 > **Starting commit**: `9ab0e67`  
-> **Implementation snapshot commit**: Xác định sau commit báo cáo qua `git log -1 --format=%H -- research/evidence/phase-4a.4/PHASE_REPORT.md`  
+> **Ending commit**: `a480776`  
+> **Implementation snapshot commit**: `a480776`  
 > **Base main commit**: `460f6d5` (bảo toàn nguyên vẹn, không commit trực tiếp)  
 > **Evidence generated at UTC**: `2026-09-21T13:25:00Z`  
 > **Working tree**: clean  
@@ -72,7 +73,7 @@
 - Plan quy định:
   - Destination: `data/research/tgif`.
   - Required Free Disk: `59,055,800,320` bytes (~55 GB).
-  - Group Split Key: `source_id` (Zero-Leakage Invariant).
+  - Group Split Key: `source_id` (group-isolation invariant).
   - Resume capability: `resumeSupported: false` (Nextcloud dynamic zip).
   - Checksum policy: SHA-256 local calculation and zip test.
   - Staging extraction with path traversal and symlink guards.
@@ -191,7 +192,7 @@ Dự án đệ trình kế hoạch thu nạp dữ liệu máy đọc đã đư�
 * **Download Method**: Nextcloud dynamic ZIP per subfolder
 * **Resume Capability**: `resumeSupported: false` (Nextcloud endpoint sinh ZIP động trên máy chủ)
 * **Checksum Policy**: Tính SHA-256 cục bộ và kiểm tra tính toàn vẹn ZIP ngay sau khi tải
-* **Mục đích khoa học**: Thử nghiệm Pilot A (Authentic vs AI-Edited classification và inpainting localization trên cặp matched pairs MS-COCO với phân chia Zero-Leakage theo `source_id`).
+* **Mục đích khoa học**: Thử nghiệm Pilot A (Authentic vs AI-Edited classification và inpainting localization trên cặp matched pairs MS-COCO với phân chia group-isolation theo `source_id`).
 * **Lệnh thực thi chính xác (sau khi người dùng phê duyệt)**:
   ```bash
   python -m ml.datasets.acquire \

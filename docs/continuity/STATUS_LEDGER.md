@@ -6,10 +6,24 @@
 
 ---
 
+## Phase 4A.5 — Model-Agnostic Continuity Enforcement
+- **Mục tiêu**: Thiết lập cơ chế continuity tự động, chuẩn hóa hợp đồng agent, tích hợp checker CI, đóng chính xác Phase 4A.4.
+- **Starting commit**: `a480776`
+- **Implementation snapshot commit**: `311cfd3`
+- **Thay đổi chính**: Đóng Phase 4A.4 với ending commit `a480776`; đổi thuật ngữ sang group-isolation invariant; xác thực SHA-256 acquisition plan; ban hành Continuity Contract trong `AGENTS.md` (read order, change matrix, phase closure); phát triển `scripts/continuity-check.mjs` (kiểm tra diff, 3 file chuẩn, duplicate files, local links, placeholders, line limits); viết 13 unit tests trong `scripts/__tests__/continuity-check.test.mjs`; tích hợp CI `pnpm continuity:check`.
+- **Kiểm tra kỹ thuật**: `pnpm continuity:check` (PASS), `pnpm test` (70/70 passing: 57 vitest + 13 continuity tests), `pytest ml/tests` (38/38 passing), `pnpm build` (exit 0), config validator passing, acquisition dry-run passing (0 byte external network).
+- **Kết quả khoa học**: Cơ chế continuity bảo toàn trung thực khoa học, ngăn ngừa AI hallucination về trạng thái dự án, bảo toàn ranh giới Zero-Egress và Dual-Track.
+- **Evidence**: `research/evidence/phase-4a.5/` (`EV-PHASE4A4-CLOSURE-001`, `EV-CONTINUITY-CONTRACT-001`, `EV-CONTINUITY-CHECKER-001`, `EV-CONTINUITY-TESTS-001`, `EV-CI-CONTINUITY-001`).
+- **Giới hạn**: External dataset content: 0 bytes; model content: 0 bytes; training runs: 0.
+- **Quyết định tiếp theo**: Người dùng xem xét phê duyệt lệnh tải dữ liệu thật cho Pilot A (`pilot-a-tgif.v1.json`) tại Phase 4B.
+
+---
+
 ## Phase 4A.4 — Evidence Correction and Acquisition Safety Gate
 - **Mục tiêu**: Hiệu chỉnh minh chứng và tuyên bố khoa học, kiểm toán cardinality TGIF, lập acquisition plan có SHA-256, hoàn thiện bộ tải dữ liệu an toàn offline.
 - **Starting commit**: `9ab0e67`
-- **Implementation snapshot commit**: Được xác định qua git log của `research/evidence/phase-4a.4/PHASE_REPORT.md`
+- **Ending commit**: `a480776`
+- **Implementation snapshot commit**: `a480776`
 - **Thay đổi chính**: Sửa commit reference Phase 4A.3 (`9ab0e67`); loại bỏ các tuyên bố triệt tiêu 100% shortcut; chuẩn hóa Metadata Guard sang Paired Stratified Bootstrap 95% CI ($\Delta\text{Macro-F1} > 0$); kiểm toán cardinality TGIF (`tgif-cardinality-audit.json`); ban hành schema và plan máy đọc (`datasets/acquisition-plans/pilot-a-tgif.v1.json`, SHA-256: `7da36f450fe424970e4676fc0c35047ea756385843dd2fb1c656f1fa45deac4e`); nâng cấp safety gates trong `ml/datasets/acquire.py` (free disk, `.part`, resume, checksum, safe zip extraction, staging, receipt); bổ sung 15 unit tests offline.
 - **Kiểm tra kỹ thuật**: `pnpm test` (57/57 passing), `pytest ml/tests` (38/38 passing), `pnpm build` (exit 0), validator passing, external dataset/model content: 0 bytes.
 - **Kết quả khoa học**: Xác minh TGIF 3,124 orig, 18,744 sd2-sp; masks ước tính ~6,248; matched-pair claim được chuẩn hóa; metadata guard có cơ sở thống kê chặt chẽ.
