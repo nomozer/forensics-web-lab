@@ -1,8 +1,8 @@
 # Trạng thái Hiện tại: Forensics Web Lab (Current State)
 
 > **Tài liệu đọc đầu tiên bắt buộc cho mọi phiên làm việc AI mới.**  
-> **Documented through substantive commit**: `863a491`  
-> **Continuity update commit**: see repository HEAD  
+> **Documented through substantive commit**: `9ab0e67`  
+> **Implementation snapshot commit**: Được xác định qua `git log -1 --format=%H -- research/evidence/phase-4a.4/PHASE_REPORT.md`  
 > **Branch**: `feat/production-ai-image-forensics`  
 > **Base main commit**: `460f6d5` (bảo toàn nguyên vẹn, không commit trực tiếp)  
 > **Working tree**: clean  
@@ -80,34 +80,56 @@ Hệ thống phân biệt rõ ràng 5 mức độ sẵn sàng:
 | **In-Browser ONNX Inference**     | `implemented` | `blocked` | Chờ checkpoint huấn luyện thật từ Phase 4 |
 | **Scientific Detection Accuracy** | `planned` | `unverified` | **Not evaluated**; không có số liệu F1/ECE thật |
 
+* **RQ1 (3-Class Generalization)**: Một mô hình nhẹ (MobileNetV3) khi huấn luyện trên dữ liệu đa nguồn có đạt Macro-F1 $\ge 0.82$ trên tập kiểm thử in-domain và không suy giảm quá $15\%$ Macro-F1 khi kiểm thử trên generator chưa từng thấy (*unseen generator*)?
+* **RQ2 (Lightweight Localization)**: Đầu ra localization nhẹ (patch-level / convolutional head) có đạt mIoU $\ge 0.55$ trên ảnh chỉnh sửa cục bộ (`ai_edited`) trong khi duy trì False Positive Rate $\le 0.08$ trên ảnh thật (`authentic`)?
+* **RQ3 (Zero-Egress Browser Efficiency)**: Pipeline pháp chứng kết hợp (DSP + ONNX inference) có chạy hoàn toàn trên trình duyệt client với độ trễ $\le 1500\text{ ms}$ (ảnh $512\times 512$ trên CPU WASM) và đỉnh bộ nhớ $\le 250\text{ MB}$?
+* **RQ4 (Calibration & Honest Uncertainty)**: Temperature scaling có giảm Expected Calibration Error (ECE) xuống $\le 0.06$ và cơ chế ngưỡng tự động có gắn cờ trung thực trạng thái `uncertain` cho các mẫu ngoài phân phối (*out-of-distribution*)?
+
 ---
 
-## 5. Trạng thái Hiện tại của Model và Dataset
+## 3. Hệ thống Nhãn Chuẩn tắc (Classification Taxonomy)
 
-* **Model Checkpoint**: `none` (chưa có checkpoint; `models/registry.json` ghi nhận `status: not-trained`, `sizeBytes: 0`, `path: ""`).
-* **Kích thước mô hình**: `estimated` (~10.2 MB FP32, ~2.6 MB INT8 theo tham số lý thuyết; chưa có file thật).
-* **Runtime Web Engine**: `measured build artifact` (File WASM engine `ort-wasm-simd-threaded.jsep.wasm` đo được 28.3 MB; đây là runtime binary của ONNX Web, **không phải model weights**).
-* **Dataset bên ngoài**: `0 bytes` (chưa tải bất kỳ byte dataset bên ngoài nào; mạng bị khóa an toàn).
-* **Synthetic Smoke Fixture**: Track `fixture-only`, purpose `fixture`, `commercialUse: internal-testing-only` (sinh cục bộ bằng code, dùng cho test kỹ thuật).
-* **GenImage**: Track `research-only`, `derivativeWeights: unclear`, `productionPromotion: prohibited-by-project-policy`. BigGAN archive ~24 GB nén đã được kiểm kê toàn diện. Cấu hình tại `ml/configs/pilot_genimage_generated.yaml`.
-* **TGIF / TGIF2**: Track `research-only`, `datasetLicense: CC BY-SA 4.0`, `original: CC BY 4.0 MS-COCO`. Nextcloud: 65.4 GB TGIF, 110 GB TGIF2 FLUX; hỗ trợ tải lẻ từng thư mục. Cấu hình tại `ml/configs/pilot_tgif_edit.yaml`.
-* **Datasets bị khóa**: `realhd`, `sagi-d`, `raid` (trạng thái `blocked`, `licenseStatus: unverified`).
+Dự án đóng băng cấu trúc 3 nhãn phân loại chính và 1 trạng thái phụ trợ:
+
+1. **`authentic`**: Ảnh chụp từ cảm biến thực tế, không chứa pixel tạo sinh.
+2. **`fully_generated`**: Toàn bộ nội dung ảnh sinh từ mô hình AI từ nhiễu hoặc văn bản, không bắt đầu từ ảnh thật cần bảo tồn danh tính.
+3. **`ai_edited`**: Ảnh bắt đầu từ ảnh thật, sau đó một phần hoặc toàn bộ canvas bị biến đổi bằng generative inpainting/editing có điều kiện từ ảnh nguồn.
+4. **`uncertain`** (Diagnostic State): Trạng thái phụ trợ khi độ tin cậy thấp hoặc chưa cài đặt mô hình AI.
+
+> **Quyết định ngữ nghĩa TGIF**: Thành phần `sp` (spliced) được gán là `ai_edited`; thành phần `fr` (fully regenerated) là conditional regeneration từ ảnh MS-COCO thật nên **bị cách ly khỏi `fully_generated` và không đưa vào pilot ban đầu**.
+
+---
+
+## 4. Chiến lược Tách biệt Hai Luồng (Dual-Track Isolation - ADR-0006)
+
+* **Research Track (`data/research/`)**: Dành riêng cho nghiên cứu học thuật, khóa luận và viết bài báo. Cho phép sử dụng các dataset phi thương mại (GenImage CC BY-NC-SA 4.0, TGIF CC BY-SA 4.0).
+* **Product Track (`data/product/`)**: Dành cho bản web thương mại/sản phẩm. Tuyệt đối cấm sử dụng trọng số mô hình hoặc dữ liệu từ nguồn phi thương mại.
+* **Fixture Track (`ml/tests/fixtures/`)**: Dành cho kiểm thử tự động nội bộ (dữ liệu tổng hợp bằng code deterministic, 0 byte external network).
+
+---
+
+## 5. Hiện trạng Dữ liệu và Mô hình
+
+* **Dữ liệu ngoại vi đã tải**: `0 bytes` (chưa tải bất kỳ dataset thật nào).
+* **Trọng số mô hình đã huấn luyện**: `0 bytes` (chưa có checkpoint nào).
+* **Chỉ số khoa học**: `not evaluated` (chưa đo lường thực nghiệm).
+* **Acquisition Plan**: Đã ban hành plan máy đọc có chữ ký SHA-256: `datasets/acquisition-plans/pilot-a-tgif.v1.json` (`7da36f450fe424970e4676fc0c35047ea756385843dd2fb1c656f1fa45deac4e`).
 
 ---
 
 ## 6. Kết quả Kiểm thử & Bản dựng Gần nhất (Latest Verification)
 
 * **TypeScript Test Suite (`pnpm test`)**: 57/57 tests passing trên 6 package (@forensics/shared: 34, @forensics/provenance: 3, @forensics/report: 4, @forensics/forensics: 5, @forensics/inference: 8, web: 3).
-* **Python Test Suite (`pytest ml/tests -v`)**: 23/23 tests passing (kiểm soát ô nhiễm: 10, pipeline: 5, pilot protocol & label gate: 8).
+* **Python Test Suite (`pytest ml/tests -v`)**: 38/38 tests passing (bao gồm 15 bài test an toàn thu nạp dữ liệu, zip slip guard, free disk check, và paired bootstrap guard).
 * **Pilot Config Validation**: 2/2 pilot configs valid theo `ml/configs/validator.py`.
-* **Production Web Build (`pnpm build`)**: Exit code 0, 3.33s, bundle hợp lệ.
+* **Production Web Build (`pnpm build`)**: Exit code 0, bundle tối ưu hợp lệ.
 * **Clean Link Invariance**: 0 machine-local links (`file:///`, `C:\`, `D:\`) trong markdown links repository.
 
 ---
 
 ## 7. Giới hạn Kỹ thuật và Nguy cơ Ảnh hưởng Độ tin cậy
 
-1. **Nguy cơ Shortcut Nguồn Dữ liệu**: Nếu các lớp lấy từ các nguồn ảnh khác nhau, mô hình có thể học đặc trưng camera/compression thay vì dấu vết AI. Biện pháp: thiết kế hai nhánh độc lập (Pilot A trên matched pairs MS-COCO, Pilot B trên ImageNet), chia tập group split theo `source_id`, chuẩn hóa tiền xử lý, và đo kèm metadata-only baseline cho Pilot C.
+1. **Nguy cơ Shortcut Nguồn Dữ liệu**: Thiết kế matched-pair làm giảm đáng kể nguy cơ mô hình học đặc trưng nguồn dữ liệu vì ảnh gốc và ảnh chỉnh sửa chia sẻ cùng source image. Các nguy cơ shortcut từ codec, quy trình sinh ảnh, preprocessing, số lượng biến thể và artifacts của mô hình tạo sinh vẫn phải được đo bằng baseline và source-held-out evaluation.
 2. **Không có Model AI Cài Đặt**: Hiện tại toàn bộ kết quả phân tích AI trên UI hiển thị trung thực là `uncertain` với banner "Model not installed".
 3. **Chưa có Đo đạc Trực tiếp Trình duyệt Đa Thiết bị**: Runtime latency và peak memory trên mobile/low-end devices cần được kiểm chứng khi có checkpoint thật.
 
@@ -127,11 +149,16 @@ Hệ thống phân biệt rõ ràng 5 mức độ sẵn sàng:
 * `EV-SHORTCUT-PROTOCOL-001`: Giao thức chống rò rỉ và kiểm soát shortcut (dedup, group-split, metadata guard).
 * `EV-PILOT-CONFIGS-001`: Cấu hình pilot YAML máy đọc và validator tự động.
 * `EV-ACQUISITION-DRYRUN-001`: Dry-run thu nạp dữ liệu Pilot A/B đạt 0 bytes ngoại vi.
+* `EV-PHASE4A3-CORRECTION-001`: Sửa toàn bộ commit references của Phase 4A.3 về `9ab0e67`.
+* `EV-TGIF-CARDINALITY-001`: Kiểm toán cardinality TGIF phân biệt verified, estimated và unverified.
+* `EV-ACQUISITION-PLAN-001`: Kế hoạch thu nạp dữ liệu máy đọc và schema v1 có mã băm SHA-256.
+* `EV-DOWNLOADER-SAFETY-001`: Bộ lọc an toàn tải file (.part, resume, checksum, safe-extract, staging).
+* `EV-BOOTSTRAP-GUARD-001`: Cổng thống kê Paired Stratified Bootstrap 95% CI cho metadata baseline guard.
 
 ---
 
 ## 9. Công việc Đang thực hiện & Công việc Tiếp theo
 
-* **Đã hoàn thành (Phase 4A.3)**: Hoàn thiện giao thức thí nghiệm pilot bảo vệ trước hội đồng, đóng băng ý nghĩa 3 nhãn, giải quyết ngữ nghĩa TGIF `sp`/`fr`, thiết kế pilot A/B/C, tạo cấu hình YAML máy đọc và validator, backfill báo cáo Phase 4A.2.
-* **Công việc tiếp theo (Phase 4B / Data Acquisition)**: Chờ người dùng phê duyệt `NEXT APPROVAL REQUEST` để mở khóa tải dữ liệu thật cho Pilot A (TGIF subfolders) hoặc Pilot B (GenImage BigGAN).
+* **Đã hoàn thành (Phase 4A.4)**: Sửa minh chứng và commit references Phase 4A.3, hiệu chỉnh tuyên bố shortcut khoa học, kiểm toán cardinality TGIF, lập acquisition plan máy đọc có SHA-256, hoàn thiện bộ tải dữ liệu an toàn và 15 bài unit test offline.
+* **Công việc tiếp theo (Phase 4B / Live Data Acquisition)**: Chờ người dùng xem xét và phê duyệt `NEXT APPROVAL REQUEST` để mở khóa tải dữ liệu thật cho Pilot A (`pilot-a-tgif.v1.json`).
 

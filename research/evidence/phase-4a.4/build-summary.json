@@ -1,0 +1,15 @@
+{
+  "phase": "Phase 4A.4",
+  "buildTimestampUtc": "2026-09-21T13:25:00Z",
+  "buildDurationSeconds": 4.57,
+  "exitCode": 0,
+  "bundleMetrics": {
+    "indexHtmlSizeBytes": 1080,
+    "forensicsWorkerSizeBytes": 437930,
+    "wasmRuntimeSizeBytes": 28312030,
+    "mainJsSizeBytes": 683690,
+    "mainCssSizeBytes": 3970
+  },
+  "status": "passed",
+  "verificationTarget": "apps/web build (Vite + TypeScript)"
+}

@@ -6,10 +6,23 @@
 
 ---
 
+## Phase 4A.4 — Evidence Correction and Acquisition Safety Gate
+- **Mục tiêu**: Hiệu chỉnh minh chứng và tuyên bố khoa học, kiểm toán cardinality TGIF, lập acquisition plan có SHA-256, hoàn thiện bộ tải dữ liệu an toàn offline.
+- **Starting commit**: `9ab0e67`
+- **Implementation snapshot commit**: Được xác định qua git log của `research/evidence/phase-4a.4/PHASE_REPORT.md`
+- **Thay đổi chính**: Sửa commit reference Phase 4A.3 (`9ab0e67`); loại bỏ các tuyên bố triệt tiêu 100% shortcut; chuẩn hóa Metadata Guard sang Paired Stratified Bootstrap 95% CI ($\Delta\text{Macro-F1} > 0$); kiểm toán cardinality TGIF (`tgif-cardinality-audit.json`); ban hành schema và plan máy đọc (`datasets/acquisition-plans/pilot-a-tgif.v1.json`, SHA-256: `7da36f450fe424970e4676fc0c35047ea756385843dd2fb1c656f1fa45deac4e`); nâng cấp safety gates trong `ml/datasets/acquire.py` (free disk, `.part`, resume, checksum, safe zip extraction, staging, receipt); bổ sung 15 unit tests offline.
+- **Kiểm tra kỹ thuật**: `pnpm test` (57/57 passing), `pytest ml/tests` (38/38 passing), `pnpm build` (exit 0), validator passing, external dataset/model content: 0 bytes.
+- **Kết quả khoa học**: Xác minh TGIF 3,124 orig, 18,744 sd2-sp; masks ước tính ~6,248; matched-pair claim được chuẩn hóa; metadata guard có cơ sở thống kê chặt chẽ.
+- **Evidence**: `research/evidence/phase-4a.4/` (`EV-PHASE4A3-CORRECTION-001`, `EV-TGIF-CARDINALITY-001`, `EV-ACQUISITION-PLAN-001`, `EV-DOWNLOADER-SAFETY-001`, `EV-BOOTSTRAP-GUARD-001`).
+- **Giới hạn**: External dataset content: 0 bytes; model content: 0 bytes; training runs: 0.
+- **Quyết định tiếp theo**: Người dùng xem xét phê duyệt acquisition plan `pilot-a-tgif.v1.json` cho live acquisition.
+
+---
+
 ## Phase 4A.3 — Scientific Pilot Protocol & Label-Semantics Gate
 - **Mục tiêu**: Đóng băng định nghĩa 3 nhãn, giải quyết dứt điểm ngữ nghĩa TGIF `sp`/`fr`, thiết kế pilot hai nhánh độc lập (Pilot A/B/C), xây dựng cấu hình máy đọc và validator.
 - **Starting commit**: `0c42f3c`
-- **Ending commit**: See repository HEAD
+- **Ending commit**: `9ab0e67`
 - **Thay đổi chính**: Tạo `docs/PILOT_PROTOCOL.md` (label gate, `sp` vs `fr` audit, anti-shortcut protocol); tạo `ml/configs/pilot_tgif_edit.yaml` và `ml/configs/pilot_genimage_generated.yaml`; tạo validator `ml/configs/validator.py`; cập nhật `ml/datasets/acquire.py` với lệnh `--pilot`; backfill báo cáo Phase 4A.2; viết unit test kiểm định 3 lớp, chống rò rỉ và dry-run.
 - **Kiểm tra kỹ thuật**: `pnpm test` (57/57 passing), `pytest` (23/23 passing), `pnpm build` (exit 0), 0 machine-local links, 0 byte external data.
 - **Kết quả khoa học**: Xác minh `sp` là `ai_edited`; loại trừ `fr` khỏi `fully_generated` (quarantined); tách Pilot A (TGIF matched pairs) và Pilot B (GenImage); Pilot C kèm metadata baseline; toàn bộ metric là `not evaluated`.

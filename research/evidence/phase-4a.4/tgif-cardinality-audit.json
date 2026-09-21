@@ -1,0 +1,84 @@
+{
+  "schemaVersion": "1.0.0",
+  "auditDate": "2026-09-21",
+  "auditor": "AI Assistant (Scientific Honesty Audit)",
+  "datasetId": "tgif",
+  "primarySourceUrl": "https://github.com/IDLabMedia/tgif-dataset",
+  "remoteShareUrl": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o",
+  "fields": {
+    "authentic_images_orig": {
+      "value": 3124,
+      "status": "verified",
+      "source_url": "https://github.com/IDLabMedia/tgif-dataset",
+      "source_location": "README.md and arXiv:2407.11566 Table 1",
+      "notes": "Authentic images from MS-COCO val2017: 2,440 train, 341 val, 343 test = 3,124 total."
+    },
+    "mask_count": {
+      "value": null,
+      "status": "estimated",
+      "source_url": "https://github.com/IDLabMedia/tgif-dataset",
+      "source_location": "README.md 'Dataset specifications' (# masks: 2 - segmentation & bounding box)",
+      "notes": "Authors specify 2 mask types per image (segm and bbox) yielding an estimated ~6,248 masks across 3,124 authentic images. Total masks directory is 42,362,470 bytes (~40.4 MB). Exact physical file count is unverified until download receipt."
+    },
+    "sd2_sp_images": {
+      "value": 18744,
+      "status": "verified",
+      "source_url": "https://github.com/IDLabMedia/tgif-dataset",
+      "source_location": "README.md specifications (3,124 images * 2 masks * 3 batch variations = 18,744)",
+      "notes": "TGIF contains 74,976 total manipulated images across 4 sub-datasets (SD2-sp, PS-sp, SD2-fr, SDXL-fr). Each sub-dataset contains exactly 18,744 images (14,640 train, 2,046 val, 2,058 test). Total folder size in Nextcloud is 18,575,836,774 bytes (~17.3 GB reported)."
+    },
+    "split_counts": {
+      "value": {
+        "authentic": { "train": 2440, "validation": 341, "test": 343, "total": 3124 },
+        "sd2_sp": { "train": 14640, "validation": 2046, "test": 2058, "total": 18744 },
+        "total_tgif_manipulated": { "train": 58560, "validation": 8184, "test": 8232, "total": 74976 }
+      },
+      "status": "verified",
+      "source_url": "https://arxiv.org/abs/2407.11566",
+      "source_location": "arXiv:2407.11566 Table 1",
+      "notes": "Official split proportions (78.1% train, 10.9% val, 11.0% test) are strictly grouped by source image to prevent leakage."
+    },
+    "edit_variants_per_source_id": {
+      "value": 6,
+      "status": "verified",
+      "source_url": "https://github.com/IDLabMedia/tgif-dataset",
+      "source_location": "README.md (2 masks * 3 variations in batch = 6 variants per generator sub-dataset)",
+      "notes": "For SD2-sp, each authentic image has 2 masks (segm, bbox) with 3 batch variations each, generating 6 manipulated variants per source_id. Across all 4 TGIF sub-datasets, there are 24 variants per source_id."
+    },
+    "relationship_orig_to_manipulated": {
+      "value": "1 authentic : 6 edited variants in SD2-sp (1:24 across all 4 TGIF sub-datasets)",
+      "status": "verified",
+      "source_url": "https://github.com/IDLabMedia/tgif-dataset",
+      "source_location": "README.md 'Dataset specifications'",
+      "notes": "74,976 manipulated / 3,124 authentic = 24 total. 18,744 in SD2-sp / 3,124 authentic = 6."
+    },
+    "mask_sharing_relation": {
+      "value": "One mask is shared across 3 batch variations under the same mask type (segm or bbox)",
+      "status": "verified",
+      "source_url": "https://github.com/IDLabMedia/tgif-dataset",
+      "source_location": "README.md ('each inpainting operation creates 3 variations in batch')",
+      "notes": "Each authentic image has 1 segm mask and 1 bbox mask. Inpainting on segm mask produces 3 variations sharing that mask; inpainting on bbox mask produces 3 variations sharing that mask."
+    },
+    "filename_convention": {
+      "value": "Derived from MS-COCO 12-digit image ID prefix with mask/generator/variant suffixes",
+      "status": "estimated",
+      "source_url": "https://github.com/IDLabMedia/tgif-dataset",
+      "source_location": "arXiv:2407.11566 & MS-COCO conventions",
+      "notes": "Filenames begin with MS-COCO identifier (e.g., 000000xxxxxx) to preserve source identity. Exact suffix format will be verified upon inspection of downloaded samples."
+    },
+    "source_id_extraction_method": {
+      "value": "Parse leading numeric token or string preceding first delimiter '_' corresponding to MS-COCO ID",
+      "status": "estimated",
+      "source_url": "https://github.com/IDLabMedia/tgif-dataset",
+      "source_location": "MS-COCO val2017 specification",
+      "notes": "All variant files sharing the same leading COCO image identifier are mapped to the same source_id."
+    },
+    "download_granularity": {
+      "value": "Subfolder dynamic ZIP download via Nextcloud public share",
+      "status": "verified",
+      "source_url": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o",
+      "source_location": "Nextcloud Web Interface",
+      "notes": "Nextcloud supports downloading individual subdirectories (masks, orig, sd2-sp) as server-side dynamically generated ZIP archives. Direct individual image URL download without fetching folder archive is unsupported for bulk dataset access."
+    }
+  }
+}

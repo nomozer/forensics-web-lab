@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "1.0.0",
+  "phase": "Phase 4A.4",
+  "startingCommit": "9ab0e67",
+  "timestampUtc": "2026-09-21T13:25:00Z",
+  "items": [
+    {
+      "evidenceId": "EV-PHASE4A3-CORRECTION-001",
+      "claim": "Phase 4A.3 commit references corrected to starting 0c42f3c, ending 9ab0e67, main 460f6d5, clean working tree; eliminated all 'See repository HEAD' placeholders",
+      "category": "continuity",
+      "status": "verified",
+      "artifact": "research/evidence/phase-4a.3/PHASE_REPORT.md",
+      "reproductionCommand": "git log -1 9ab0e67",
+      "result": "Ending commit accurately identified as 9ab0e67; placeholder eliminated across all continuity files",
+      "limitations": "Phase 4A.4 uses non-self-referencing implementation snapshot commit architecture"
+    },
+    {
+      "evidenceId": "EV-TGIF-CARDINALITY-001",
+      "claim": "TGIF cardinality audited and explicitly classified into verified (3,124 orig, 18,744 sd2-sp, 74,976 total manipulated), estimated (~6,248 masks, filename convention, source_id extraction), and unverified fields",
+      "category": "dataset",
+      "status": "verified",
+      "artifact": "research/evidence/phase-4a.4/tgif-cardinality-audit.json",
+      "reproductionCommand": "ml/.venv/Scripts/python -m pytest ml/tests/test_acquisition_safety.py -k test_unverified_cardinality_audit",
+      "result": "10 cardinality fields audited against primary paper arXiv:2407.11566 and Nextcloud metadata; verified distinct variant relations",
+      "limitations": "Exact mask file count awaits extraction receipt inspection"
+    },
+    {
+      "evidenceId": "EV-ACQUISITION-PLAN-001",
+      "claim": "Machine-readable acquisition plan (datasets/acquisition-plans/pilot-a-tgif.v1.json) and JSON schema v1 authored with SHA-256 integrity hash",
+      "category": "pipeline",
+      "status": "verified",
+      "artifact": "datasets/acquisition-plans/pilot-a-tgif.v1.json",
+      "reproductionCommand": "ml/.venv/Scripts/python -m ml.datasets.acquire --plan datasets/acquisition-plans/pilot-a-tgif.v1.json --dry-run",
+      "result": "Plan validated against schema; SHA-256 computed as 7da36f450fe424970e4676fc0c35047ea756385843dd2fb1c656f1fa45deac4e; dry-run exits with 0 bytes downloaded",
+      "limitations": "Live execution strictly locked until user approval token is provided"
+    },
+    {
+      "evidenceId": "EV-DOWNLOADER-SAFETY-001",
+      "claim": "Downloader safety enhancements implemented in ml/datasets/acquire.py and offline-verified across 15 unit tests: free-disk check, .part suffix, atomic rename, resume capability, checksum mismatch, zip-slip and symlink protection, staging isolation, acquisition receipt",
+      "category": "pipeline",
+      "status": "verified",
+      "artifact": "ml/datasets/acquire.py",
+      "reproductionCommand": "ml/.venv/Scripts/python -m pytest ml/tests/test_acquisition_safety.py",
+      "result": "All 15 offline unit tests passing; zero external content requests made",
+      "limitations": "Offline verified via mocks and fixtures; real network execution gated on approved plan hash"
+    },
+    {
+      "evidenceId": "EV-BOOTSTRAP-GUARD-001",
+      "claim": "Metadata-Only Baseline Guard formulated using Paired Stratified Bootstrap 95% Confidence Interval (acceptance: lower CI > 0.0); replaced arbitrary 15% threshold",
+      "category": "science",
+      "status": "verified",
+      "artifact": "ml/evaluation/bootstrap_guard.py",
+      "reproductionCommand": "ml/.venv/Scripts/python -m pytest ml/tests/test_acquisition_safety.py -k test_paired_bootstrap_guard",
+      "result": "Bootstrap estimation algorithm and guard decision logic validated; correctly accepts when lower CI > 0 and rejects when lower CI <= 0",
+      "limitations": "Tested on synthetic distributions; empirical evaluation to be run on genuine test split"
+    }
+  ]
+}
