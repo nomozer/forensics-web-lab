@@ -116,3 +116,26 @@
 | **Kích thước mô hình** | Lượng tử hóa INT8 ONNX size | $\le 10\text{ MB}$ (backbone) | `not evaluated` |
 | **Độ trễ suy luận** | Single-image global inference (WASM CPU)| $\le 250\text{ ms}$ | `not evaluated` |
 | **Đỉnh bộ nhớ Web** | Web Worker Peak RAM | $\le 200\text{ MB}$ | `not evaluated` |
+
+---
+
+## 4. Tiêu chuẩn Nghiệm thu Khoa học với Dữ liệu Nhỏ (Few-Data Scientific Acceptance Protocol)
+
+Chi tiết quy định tại [SMALL_DATA_PROTOCOL.md](docs/SMALL_DATA_PROTOCOL.md). Để kết luận mô hình học máy đạt hiệu quả với dữ liệu nhỏ (*sample-efficient*), bắt buộc phải thỏa mãn:
+
+1. **Khóa đơn vị độc lập là `source_id`**: Mọi bảng kết quả cỡ mẫu phải báo cáo đồng thời `file_count`, `variant_count`, `unique_source_id_count` và `paired_source_id_count`. Tuyệt đối không dùng 31,238 mask files làm cỡ mẫu độc lập.
+2. **So sánh bắt buộc với 6 Baseline**:
+   * Stratified Dummy Classifier.
+   * Metadata-Only Classifier (EXIF/C2PA).
+   * DSP-Only Classifier (2D FFT / DCT / Noise).
+   * Frozen Visual Backbone (Stage 1).
+   * Fine-Tuned Visual Model (Stage 2).
+   * Multimodal Fusion Calibrator.
+3. **Ý nghĩa Thống kê Cận dưới (Statistically Significant Lower Bound)**:
+   * $\text{CI}_{95\%}[\Delta\text{Macro-F1}_{\text{visual} - \text{dummy}}] > 0$.
+   * $\text{CI}_{95\%}[\Delta\text{Macro-F1}_{\text{visual} - \text{metadata}}] > 0$.
+   * Khoảng tin cậy được tính bằng Paired Stratified Bootstrap với tối thiểu $1,000$ lần tái lấy mẫu trên tập Test cố định.
+4. **Độ Ổn định qua các Hạt giống**: Độ lệch chuẩn $\sigma_{\text{Macro-F1}} < 0.03$ trên tối thiểu 3 seeds (exploratory) và 5 seeds (confirmatory).
+5. **Độ Đơn điệu của Đường cong Học tập**: Đường cong học tập trên các mức $N \in \{50, 100, 250\}$ thể hiện xu hướng tăng trưởng nhất quán.
+6. **Định nghĩa Trạng thái Quyết định**: Nhãn `no_ai_evidence` chỉ biểu thị không phát hiện đủ bằng chứng AI trong phạm vi mô hình và dữ liệu đánh giá; không đồng nghĩa với chứng minh ảnh thật tuyệt đối. Mọi trường hợp độ tin cậy thấp hoặc xung đột tín hiệu bắt buộc chuyển sang `uncertain`.
+

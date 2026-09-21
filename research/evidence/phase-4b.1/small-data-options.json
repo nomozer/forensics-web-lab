@@ -1,0 +1,141 @@
+{
+  "phase": "4B.1",
+  "auditDate": "2026-09-21",
+  "recommendation": "option_p_small_data_pilot",
+  "selectionCriteria": {
+    "scientificValue": "Provides 684 strictly isolated source_ids across 2 splits, supporting fixed test evaluation (343 sources) and paired bootstrap 95% CI",
+    "bandwidthFootprint": "5.88 GB download vs 25.89 GB full dataset (77.3% bandwidth reduction)",
+    "diskEfficiency": "14.7 GB required headroom vs 64.7 GB (comfortably within 99.71 GB available disk)",
+    "thesisScope": "Focuses thesis on few-data learning curve efficiency (MobileNetV3) rather than brute-force big data compute",
+    "reproducibility": "Fully deterministic split archives with verifiable ETags and upstream provenance"
+  },
+  "options": {
+    "option_s_smallest_engineering_subset": {
+      "name": "Option S — Smallest Engineering Subset",
+      "targetComponents": [
+        {
+          "component": "tgif-orig",
+          "archive": "orig_validation.tar.gz",
+          "bytes": 859947874,
+          "url": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o/download?path=%2Forig&files=orig_validation.tar.gz"
+        },
+        {
+          "component": "tgif-sd2-sp",
+          "archive": "sd2-sp_validation.tar.gz",
+          "bytes": 2172017290,
+          "url": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o/download?path=%2Fsd2-sp&files=sd2-sp_validation.tar.gz"
+        }
+      ],
+      "totalDownloadBytes": 3031965164,
+      "expectedUniqueSourceIds": 341,
+      "expectedImageCount": {
+        "authentic": 341,
+        "sd2_sp_edits": 2046,
+        "masks_already_on_disk": 3410
+      },
+      "scientificPurpose": "End-to-end engineering smoke validation of paired dataset loader, patch sliding window, and training step mechanics",
+      "supportedClaims": "Data loader correctness, training pipeline smoke execution, memory profiling",
+      "unsupportedClaims": "Model generalization, statistical significance, detection performance metrics",
+      "requiredDiskHeadroomBytes": 7579912910,
+      "licenseTrack": "research-only (CC BY-SA 4.0)"
+    },
+    "option_p_small_data_pilot": {
+      "name": "Option P — Small-Data Thesis Pilot (Recommended)",
+      "targetComponents": [
+        {
+          "component": "tgif-orig",
+          "archive": "orig_validation.tar.gz",
+          "bytes": 859947874,
+          "url": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o/download?path=%2Forig&files=orig_validation.tar.gz"
+        },
+        {
+          "component": "tgif-orig",
+          "archive": "orig_testing.tar.gz",
+          "bytes": 806962390,
+          "url": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o/download?path=%2Forig&files=orig_testing.tar.gz"
+        },
+        {
+          "component": "tgif-sd2-sp",
+          "archive": "sd2-sp_validation.tar.gz",
+          "bytes": 2172017290,
+          "url": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o/download?path=%2Fsd2-sp&files=sd2-sp_validation.tar.gz"
+        },
+        {
+          "component": "tgif-sd2-sp",
+          "archive": "sd2-sp_testing.tar.gz",
+          "bytes": 2040575228,
+          "url": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o/download?path=%2Fsd2-sp&files=sd2-sp_testing.tar.gz"
+        }
+      ],
+      "totalDownloadBytes": 5879502782,
+      "expectedUniqueSourceIds": 684,
+      "expectedImageCount": {
+        "authentic": 684,
+        "sd2_sp_edits": 4104,
+        "masks_already_on_disk": 6838
+      },
+      "splitBreakdown": {
+        "validation_pool": { "sources": 341, "orig": 341, "edits": 2046, "masks": 3410 },
+        "test_pool": { "sources": 343, "orig": 343, "edits": 2058, "masks": 3428 }
+      },
+      "scientificPurpose": "Execute few-data learning curve protocol (N=50, 100, 250 source_id samples) with strictly isolated fixed test benchmark (343 sources) and paired bootstrap 95% CI evaluation",
+      "supportedClaims": "Sample efficiency of lightweight backbones, statistical validation vs baselines (Dummy, Metadata, DSP), selective abstention efficacy",
+      "unsupportedClaims": "Universal generalization to unseen generator families (e.g., GANs, Autoregressive) without Pilot B/C",
+      "requiredDiskHeadroomBytes": 14698756955,
+      "licenseTrack": "research-only (CC BY-SA 4.0)"
+    },
+    "option_f_full_pilot_a": {
+      "name": "Option F — Full Pilot A",
+      "targetComponents": [
+        {
+          "component": "tgif-orig",
+          "archive": "orig_training.tar.gz",
+          "bytes": 5652563073,
+          "url": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o/download?path=%2Forig&files=orig_training.tar.gz"
+        },
+        {
+          "component": "tgif-orig",
+          "archive": "orig_validation.tar.gz",
+          "bytes": 859947874,
+          "url": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o/download?path=%2Forig&files=orig_validation.tar.gz"
+        },
+        {
+          "component": "tgif-orig",
+          "archive": "orig_testing.tar.gz",
+          "bytes": 806962390,
+          "url": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o/download?path=%2Forig&files=orig_testing.tar.gz"
+        },
+        {
+          "component": "tgif-sd2-sp",
+          "archive": "sd2-sp_training.tar.gz",
+          "bytes": 14359902282,
+          "url": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o/download?path=%2Fsd2-sp&files=sd2-sp_training.tar.gz"
+        },
+        {
+          "component": "tgif-sd2-sp",
+          "archive": "sd2-sp_validation.tar.gz",
+          "bytes": 2172017290,
+          "url": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o/download?path=%2Fsd2-sp&files=sd2-sp_validation.tar.gz"
+        },
+        {
+          "component": "tgif-sd2-sp",
+          "archive": "sd2-sp_testing.tar.gz",
+          "bytes": 2040575228,
+          "url": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o/download?path=%2Fsd2-sp&files=sd2-sp_testing.tar.gz"
+        }
+      ],
+      "totalDownloadBytes": 25891968137,
+      "expectedUniqueSourceIds": 2242,
+      "expectedImageCount": {
+        "authentic": 3124,
+        "sd2_sp_edits": 18744,
+        "masks_already_on_disk": 31238
+      },
+      "scientificPurpose": "Complete asymptotic benchmark reproduction across all 3,124 TGIF inpainting task instances",
+      "supportedClaims": "Asymptotic accuracy of full-scale inpainting detection, full paper reproduction",
+      "unsupportedClaims": "Cross-generator generalization without external test sets",
+      "requiredDiskHeadroomBytes": 64729920342,
+      "licenseTrack": "research-only (CC BY-SA 4.0)"
+    }
+  }
+}

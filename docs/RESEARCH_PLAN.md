@@ -110,3 +110,46 @@ Chi tiết xem [PILOT_PROTOCOL.md](docs/PILOT_PROTOCOL.md):
 2. **Dùng Matched Pairs**: Khi dùng TGIF, sử dụng chính các cặp ảnh gốc authentic (MS-COCO) đi kèm với các biến thể inpainting của chính ảnh đó.
 3. **Chuẩn hóa Tiền xử lý (Standardized Preprocessing)**: Toàn bộ ảnh đầu vào đều đi qua pipeline đồng nhất (letterbox padding, resize về $224 \times 224$ px hoặc $512 \times 512$ px, chuẩn hóa kênh màu theo ImageNet mean/std).
 4. **Đánh giá Cross-Dataset & Source-Held-Out**: Báo cáo kết quả chi tiết theo từng nguồn dataset và từng generator cụ thể; không gộp chung số liệu để che giấu hiện tượng sụt giảm độ chính xác trên nguồn ảnh lạ.
+
+---
+
+## 8. Tổng quan Nghiên cứu Liên quan & Đối sánh Phương pháp (Related Work Matrix)
+
+Các công trình nền tảng được khảo sát từ nguồn xuất bản chính thức, phân định rõ giữa bài báo phản biện đồng cấp (*peer-reviewed*) và bản thảo tiền ấn phẩm (*preprint*). Tuyệt đối không sao chép số liệu công bố thành kết quả của đề tài.
+
+### 8.1. Universal Fake Image Detectors (CVPR 2023 — Peer-Reviewed)
+* **Trích dẫn**: Utkarsh Ojha, Yuheng Li, Yong Jae Lee. *"Towards Universal Fake Image Detectors That Generalize Across Generative Models"*, IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 2023.
+* **Method**: Khai thác không gian đặc trưng biểu diễn thị giác đóng băng của mô hình nền tảng đa phương thức (CLIP ViT-L/14) kết hợp với đầu dò tuyến tính (linear probe) hoặc phân loại láng giềng gần nhất (k-NN).
+* **Training data regime**: Chỉ huấn luyện trên đúng 1 mô hình tạo sinh (ProGAN) với 20 lớp đối tượng.
+* **Generalization setting**: Đánh giá zero-shot cross-generator trên các họ mô hình GAN chưa thấy (StyleGAN, BigGAN, StarGAN) và họ Diffusion (LDM, GLIDE, DALL-E, Guided Diffusion).
+* **Model / Runtime cost**: Trọng số rất nặng (~300M tham số, dung lượng >600 MB FP32), yêu cầu GPU hoặc WASM bộ nhớ lớn, không khả thi cho runtime trình duyệt di động / zero-egress tức thì.
+* **Relevance to this thesis**: Minh chứng khoa học cho thấy biểu diễn visual đóng băng (frozen pretrained representations) có khả năng khái quát hóa vượt trội với dữ liệu huấn luyện ít; làm cơ sở trực tiếp cho Stage 1 (Frozen Transfer Learning) trong giao thức ít dữ liệu của khóa luận.
+* **Limitation**: Chỉ đánh giá bài toán nhị phân tạo hoàn toàn (`authentic` vs `fully_generated`), không hỗ trợ phát hiện hay định vị vùng chỉnh sửa cục bộ (`ai_edited`), và chi phí tính toán vượt xa ngưỡng nhẹ cho web client.
+
+### 8.2. DIRE for Diffusion Detection (ICCV 2023 — Peer-Reviewed)
+* **Trích dẫn**: Zhendong Wang, Jianmin Bao, Wengang Zhou, Weilun Wang, Hezhen Hu, Hong Chen, Houqiang Li. *"DIRE for Diffusion-Generated Image Detection"*, IEEE/CVF International Conference on Computer Vision (ICCV), 2023.
+* **Method**: Sai số tái tạo khuếch tán (Diffusion Reconstruction Error - DIRE) — chiếu ảnh qua quy trình nghịch đảo DDIM (inversion) của mô hình diffusion xác định sẵn, sau đó đo khoảng cách sai lệch pixel/feature giữa ảnh đầu vào và ảnh tái tạo.
+* **Training data regime**: Huấn luyện bộ phân loại nhị phân trên sai số DIRE từ các tập ảnh sinh bởi ADM, LDM và Stable Diffusion.
+* **Generalization setting**: Đạt khả năng phát hiện cross-diffusion vượt trội nhờ bóc tách đặc trưng sai số bước nhảy khuếch tán đặc thù của kiến trúc diffusion.
+* **Model / Runtime cost**: Chi phí tính toán cực kỳ tốn kém — yêu cầu chạy từ 20 đến 50 bước khuếch tán ngược cho mỗi ảnh đơn lẻ (>10 giây/ảnh trên GPU máy chủ cao cấp), hoàn toàn bất khả thi trên CPU/WASM client-side.
+* **Relevance to this thesis**: Khẳng định sự tồn tại của các dấu vết thuật toán đặc thù trong quy trình khuếch tán; định hướng cho khóa luận tìm kiếm các tín hiệu xấp xỉ nhẹ hơn (như phổ tần số 2D FFT/DCT và noise residual của DSP) thay thế việc chạy toàn bộ mô hình diffusion ngược.
+* **Limitation**: Thời gian suy luận quá chậm; không thể nhúng vào web browser; chủ yếu tập trung vào full generation hơn là inpainting nhẹ.
+
+### 8.3. TGIF / TGIF2 Benchmark (arXiv:2407.11566 & arXiv:2603.28613 — Preprint / Under Review)
+* **Trích dẫn**: Andrea Cornia, Lorenzo Baraldi, Rita Cucchiara, et al. *"TGIF: A Dataset for Image Forensic Analysis on Social Media and Inpainting Localization"*, arXiv:2407.11566, 2024 / IDLabMedia.
+* **Method**: Thiết lập benchmark chuẩn tắc cho bài toán phát hiện và định vị inpainting trên mạng xã hội, sử dụng các kiến trúc phân đoạn và phân loại mạng sâu (ResNet-50, EfficientNet, Mask R-CNN).
+* **Training data regime**: 3,124 ảnh gốc MS-COCO val2017 đi kèm 74,976 ảnh chỉnh sửa (SD2, SDXL, Photoshop Firefly) và 31,238 file mặt nạ ground-truth (bbox và segm).
+* **Generalization setting**: Đánh giá theo cặp matched pairs trên các split chuẩn Train (2,440)/Val (341)/Test (343); kiểm tra năng lực chuyển dịch sang ảnh bị nén mạng xã hội (Twitter, Reddit, WhatsApp).
+* **Model / Runtime cost**: Sử dụng mô hình chuẩn máy chủ, chưa tối ưu hóa cho môi trường biên (edge) hoặc trình duyệt.
+* **Relevance to this thesis**: Nguồn dữ liệu cốt lõi cho Pilot A (`authentic` vs `ai_edited` + localization mask); cung cấp cấu trúc cặp đối ứng hoàn hảo giúp loại bỏ shortcut nguồn nền ảnh.
+* **Limitation**: Chưa xuất bản trên tạp chí/hội nghị peer-reviewed chính thức (đang là preprint); thống kê ban đầu gộp chung 3,124 category instances chưa làm rõ 2,242 unique MS-COCO image sources; không nghiên cứu giải pháp client-side in-browser.
+
+### 8.4. GenImage Benchmark (NeurIPS 2023 — Peer-Reviewed)
+* **Trích dẫn**: Mingkun Yang, Chuanbin Liu, et al. *"GenImage: A Large-Scale Dataset for Image Forensics"*, Advances in Neural Information Processing Systems (NeurIPS), 2023.
+* **Method**: Xây dựng benchmark quy mô lớn gồm 1.3 triệu ảnh trên 8 họ mô hình tạo sinh khác nhau (BigGAN, GLIDE, VQDM, SD v1.4, SD v1.5, Midjourney, ADM, Wukong) ghép cặp với ảnh đối ứng trong ImageNet.
+* **Training data regime**: 1.3 triệu ảnh, chia đều cho 8 generator và 1,000 lớp ImageNet; thử nghiệm với các kiến trúc ResNet-50, Swin-T, DeiT-S.
+* **Generalization setting**: Ma trận đánh giá chéo cross-generator chuẩn tắc (huấn luyện trên Gen A, kiểm thử trên 7 Gen còn lại).
+* **Model / Runtime cost**: Trọng số và tài nguyên tính toán lớn; dung lượng toàn bộ dataset hàng trăm gigabytes.
+* **Relevance to this thesis**: Nguồn ứng viên cho Pilot B (`fully_generated` vs `authentic`), giúp khóa luận thiết lập kiểm thử ảnh tạo hoàn toàn có kiểm soát phân bố đối chứng ImageNet.
+* **Limitation**: Dung lượng quá tải so với tài nguyên sinh viên khóa luận; không có ảnh inpainting hay mask định vị (100% là full generation).
+

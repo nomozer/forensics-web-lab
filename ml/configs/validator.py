@@ -21,11 +21,125 @@ VALID_CLASSIFICATION_LABELS = {"authentic", "fully_generated", "ai_edited"}
 VALID_COMPONENT_LABELS = VALID_CLASSIFICATION_LABELS | {"ground_truth_mask"}
 VALID_TASKS = {"classification", "classification_and_localization", "localization"}
 VALID_LICENSE_TRACKS = {"research-only", "product-eligible", "fixture-only"}
-VALID_SCIENTIFIC_STATUSES = {"exploratory_pilot", "confirmatory_benchmark", "pipeline_smoke"}
+VALID_SCIENTIFIC_STATUSES = {
+    "exploratory_pilot",
+    "confirmatory_benchmark",
+    "pipeline_smoke",
+    "preregistered_protocol",
+}
+
+MANDATORY_BASELINES = {
+    "stratified_dummy",
+    "metadata_only",
+    "dsp_only",
+    "frozen_visual_linear",
+    "finetuned_visual",
+    "multimodal_fusion",
+}
+
+
+def validate_learning_curve_config_dict(config: Dict[str, Any], config_source: str = "config") -> List[str]:
+    """Validates small-data learning curve protocol configuration against scientific standards."""
+    errors: List[str] = []
+
+    # 1. Schema and metadata
+    if config.get("schema_version") != "1.0.0":
+        errors.append(f"[{config_source}] Invalid or missing schema_version: '{config.get('schema_version')}'")
+
+    if not config.get("config_id"):
+        errors.append(f"[{config_source}] Missing config_id.")
+
+    status = config.get("scientific_status")
+    if status not in VALID_SCIENTIFIC_STATUSES:
+        errors.append(f"[{config_source}] Invalid scientific_status: '{status}'. Expected one of: {sorted(VALID_SCIENTIFIC_STATUSES)}")
+
+    track = config.get("license_track")
+    if track not in VALID_LICENSE_TRACKS:
+        errors.append(f"[{config_source}] Invalid license_track: '{track}'. Expected one of: {sorted(VALID_LICENSE_TRACKS)}")
+
+    # 2. Independent statistical unit declaration
+    unit = config.get("independent_statistical_unit")
+    if unit != "source_id":
+        errors.append(
+            f"[{config_source}] INDEPENDENT-UNIT VIOLATION: independent_statistical_unit must be 'source_id', got '{unit}'."
+        )
+
+    if not config.get("enforce_source_isolation", False):
+        errors.append(f"[{config_source}] enforce_source_isolation must be True.")
+
+    if not config.get("forbid_masks_as_independent_samples", False):
+        errors.append(f"[{config_source}] forbid_masks_as_independent_samples must be True.")
+
+    if not config.get("no_fr_to_fully_generated", False):
+        errors.append(f"[{config_source}] no_fr_to_fully_generated must be True.")
+
+    # 3. Data scope
+    data_scope = config.get("data_scope", {})
+    if not isinstance(data_scope, dict):
+        errors.append(f"[{config_source}] Missing data_scope section.")
+    else:
+        labels = data_scope.get("labels", [])
+        if "fully_generated" in labels and data_scope.get("target_task") == "authentic_vs_ai_edited":
+            errors.append(f"[{config_source}] UNSUPPORTED THREE-CLASS ACTIVATION: Pilot A only accepts authentic and ai_edited.")
+
+        train_pool = data_scope.get("train_pool_sources", 0)
+
+        # 4. Learning curve sample sizes and over-capacity guard
+        lc = config.get("learning_curve", {})
+        sample_sizes = lc.get("sample_sizes", [])
+        if not isinstance(sample_sizes, list) or len(sample_sizes) == 0:
+            errors.append(f"[{config_source}] learning_curve.sample_sizes must be a non-empty list.")
+        else:
+            for s in sample_sizes:
+                n = s.get("n_sources")
+                s_status = s.get("status")
+                if not isinstance(n, int) or n <= 0:
+                    errors.append(f"[{config_source}] Invalid n_sources: {n}")
+                if s_status not in ("runnable", "not_runnable"):
+                    errors.append(f"[{config_source}] Invalid status for level N={n}: '{s_status}'")
+                if n > train_pool and s_status == "runnable":
+                    errors.append(
+                        f"[{config_source}] CAPACITY OVERFLOW: Sample size N={n} exceeds training pool "
+                        f"({train_pool} sources) but status is 'runnable'. Must be 'not_runnable'."
+                    )
+
+    # 5. Experimental protocol (seeds, fixed test evaluation)
+    proto = config.get("experimental_protocol", {})
+    if not isinstance(proto, dict):
+        errors.append(f"[{config_source}] Missing experimental_protocol section.")
+    else:
+        exp_seeds = proto.get("exploratory_seeds", [])
+        if not isinstance(exp_seeds, list) or len(exp_seeds) < 3:
+            errors.append(f"[{config_source}] exploratory_seeds must contain at least 3 seeds.")
+
+        fin_seeds = proto.get("final_evaluation_seeds", [])
+        if not isinstance(fin_seeds, list) or len(fin_seeds) < 5:
+            errors.append(f"[{config_source}] final_evaluation_seeds must contain at least 5 seeds.")
+
+        if not proto.get("fixed_test_evaluation", False):
+            errors.append(f"[{config_source}] fixed_test_evaluation must be True.")
+
+    # 6. Mandatory baselines
+    baselines = config.get("baselines", [])
+    if not isinstance(baselines, list):
+        errors.append(f"[{config_source}] baselines must be a list.")
+    else:
+        b_ids = {b.get("id") for b in baselines if isinstance(b, dict)}
+        missing_baselines = MANDATORY_BASELINES - b_ids
+        if missing_baselines:
+            errors.append(
+                f"[{config_source}] Missing mandatory baselines: {sorted(missing_baselines)}"
+            )
+
+    return errors
 
 
 def validate_pilot_config_dict(config: Dict[str, Any], config_source: str = "config") -> List[str]:
     """Validates an in-memory pilot configuration dictionary against scientific gates."""
+    # Check if this is a learning curve protocol config
+    if config.get("config_id") == "pilot_a_learning_curve" or "learning_curve" in config:
+        return validate_learning_curve_config_dict(config, config_source=config_source)
+
     errors: List[str] = []
 
     # 1. Schema version
