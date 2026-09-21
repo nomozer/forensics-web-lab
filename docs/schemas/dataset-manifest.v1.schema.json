@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://forensics-web-lab.local/schemas/dataset-manifest.v1.schema.json",
+  "title": "DatasetManifest",
+  "description": "Schema for normalized image sample provenance and anti-leakage tracking in Forensics Web Lab",
+  "type": "object",
+  "required": ["schemaVersion", "datasetId", "licenseTrack", "samples"],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "enum": ["1.0.0"]
+    },
+    "datasetId": {
+      "type": "string"
+    },
+    "licenseTrack": {
+      "type": "string",
+      "enum": ["research-only", "product-eligible"]
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "samples": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "sample_id",
+          "dataset_id",
+          "source_id",
+          "original_filename",
+          "sha256",
+          "label",
+          "task",
+          "generator_family",
+          "generator_version",
+          "edit_method",
+          "mask_path",
+          "license_track",
+          "split_group",
+          "acquired_at"
+        ],
+        "properties": {
+          "sample_id": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_-]+$",
+            "description": "Unique immutable sample ID (never a filepath)"
+          },
+          "dataset_id": {
+            "type": "string",
+            "description": "Origin dataset identifier matching datasets/registry.json"
+          },
+          "source_id": {
+            "type": "string",
+            "description": "Parent image ID for leakage prevention across splits"
+          },
+          "original_filename": {
+            "type": "string"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "label": {
+            "type": "string",
+            "enum": ["authentic", "fully_generated", "ai_edited"]
+          },
+          "task": {
+            "type": "string",
+            "enum": ["classification", "localization", "dual"]
+          },
+          "generator_family": {
+            "type": "string"
+          },
+          "generator_version": {
+            "type": "string"
+          },
+          "edit_method": {
+            "type": "string"
+          },
+          "mask_path": {
+            "type": "string",
+            "description": "Relative path to binary ground-truth mask, or empty string"
+          },
+          "license_track": {
+            "type": "string",
+            "enum": ["research-only", "product-eligible"]
+          },
+          "split_group": {
+            "type": "string",
+            "enum": [
+              "train",
+              "val",
+              "test_indomain",
+              "test_unseen_generator",
+              "test_degraded"
+            ]
+          },
+          "acquired_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  }
+}

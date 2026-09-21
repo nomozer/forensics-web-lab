@@ -74,7 +74,7 @@ const VALID_STATUSES: EvidenceStatus[] = [
 
 const EVIDENCE_ID_REGEX = /^EV(?:-[A-Z0-9]+)+-[0-9]{3}$/;
 const COMMIT_REGEX = /^[a-fA-F0-9]{7,40}$/;
-const PHASE_REGEX = /^Phase [0-9.]+$/;
+const PHASE_REGEX = /^Phase [0-9A-Za-z.]+$/;
 const ABSOLUTE_PATH_REGEX = /(?:^[a-zA-Z]:[\\/]|^\/Users\/|^\/home\/|^file:\/\/\/)/i;
 
 /**

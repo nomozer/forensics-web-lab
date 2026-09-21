@@ -24,10 +24,30 @@ runs/
 wandb/
 
 # Datasets & Large Artifacts (Strictly quarantined from Git)
-/data/
-/datasets/
+/data/**/*
+!/data/**/
+!/data/**/README.md
+!/data/**/*.schema.json
+!/data/**/manifest*.json
+!/data/**/checksums.txt
+!/data/**/provenance.json
+
 /raw_data/
 !ml/datasets/
+
+/datasets/**/*
+!/datasets/**/
+!/datasets/README.md
+!/datasets/registry.json
+!/datasets/manifests/
+!/datasets/licenses/
+!/datasets/**/*.schema.json
+
+/artifacts/**/*
+!/artifacts/**/
+!/artifacts/**/README.md
+!/artifacts/**/*.json
+
 *.zip
 *.tar
 *.tar.gz
@@ -41,11 +61,13 @@ wandb/
 *.bin
 
 # Model weights (Large binaries)
-models/*.onnx
-models/*.bin
-models/*.safetensors
+models/**/*.onnx
+models/**/*.bin
+models/**/*.safetensors
+models/**/*.pt
+models/**/*.pth
+!models/**/README.md
 !models/registry.json
-!models/README.md
 !models/MODEL_CARD.md
 
 # Operating System & IDE
