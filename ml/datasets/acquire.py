@@ -16,6 +16,8 @@ import json
 import os
 import shutil
 import sys
+import tarfile
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -110,6 +112,46 @@ def safe_extract_zip(zip_path: Path, target_dir: Path) -> List[Path]:
     return extracted_paths
 
 
+def safe_extract_tar(tar_path: Path, target_dir: Path) -> List[Path]:
+    """
+    Safely extracts a TAR / TAR.GZ archive preventing Tar Slip (path traversal),
+    absolute paths, and unsafe symlinks/hardlinks pointing outside target_dir.
+    """
+    target_dir = target_dir.resolve()
+    target_dir.mkdir(parents=True, exist_ok=True)
+    extracted_paths: List[Path] = []
+
+    with tarfile.open(tar_path, "r:*") as tf:
+        for member in tf.getmembers():
+            filename = member.name
+            if filename.startswith("/") or filename.startswith("\\"):
+                raise ValueError(f"Unsafe absolute path in tar member: {filename}")
+
+            prospective = (target_dir / filename).resolve()
+            try:
+                prospective.relative_to(target_dir)
+            except ValueError:
+                raise ValueError(f"Tar slip security violation detected in member: {filename}")
+
+            if member.issym() or member.islnk():
+                link_target = Path(member.linkname)
+                if link_target.is_absolute():
+                    raise ValueError(f"Unsafe absolute symlink detected in archive member: {filename} -> {member.linkname}")
+                resolved_link = (prospective.parent / member.linkname).resolve()
+                try:
+                    resolved_link.relative_to(target_dir)
+                except ValueError:
+                    raise ValueError(f"Unsafe escaping symlink detected in archive member: {filename} -> {member.linkname}")
+
+            if hasattr(tarfile, "data_filter"):
+                tf.extract(member, target_dir, filter="data")
+            else:
+                tf.extract(member, target_dir)
+            extracted_paths.append(prospective)
+
+    return extracted_paths
+
+
 def download_file_safely(
     url: str,
     target_path: Path,
@@ -152,7 +194,10 @@ def download_file_safely(
     redirect_count = 0
     final_url = url
 
-    if mock_data is not None:
+    if part_path.exists() and expected_bytes is not None and part_path.stat().st_size == expected_bytes and mock_data is None:
+        actual_size = part_path.stat().st_size
+        redirect_count = 0
+    elif mock_data is not None:
         if max_download_bytes is not None and len(mock_data) > max_download_bytes:
             raise ValueError(
                 f"Download ceiling exceeded: mock data size {len(mock_data)} exceeds max allowed {max_download_bytes} bytes."
@@ -165,7 +210,10 @@ def download_file_safely(
     else:
         redirect_handler = HostnameRestrictedRedirectHandler(allowed)
         active_opener = opener or urllib.request.build_opener(redirect_handler)
+        current_part_size = part_path.stat().st_size if (part_path.exists() and resume_supported) else 0
         req = urllib.request.Request(url, headers={"User-Agent": "ForensicsWebLab-Acquisition/1.0"})
+        if current_part_size > 0:
+            req.add_header("Range", f"bytes={current_part_size}-")
 
         try:
             with active_opener.open(req, timeout=180) as resp:
@@ -174,15 +222,22 @@ def download_file_safely(
                 if final_host not in allowed:
                     raise ValueError(f"Security violation: Final response hostname '{final_host}' not in allowed list: {allowed}")
 
+                is_partial = getattr(resp, "status", 200) == 206
+                if is_partial and resume_supported:
+                    bytes_downloaded = current_part_size
+                    mode = "ab"
+                else:
+                    bytes_downloaded = 0
+                    mode = "wb"
+
                 cl_header = resp.headers.get("Content-Length")
                 content_length = int(cl_header) if cl_header and cl_header.isdigit() else None
-                if max_download_bytes is not None and content_length is not None and content_length > max_download_bytes:
+                if max_download_bytes is not None and content_length is not None and (bytes_downloaded + content_length) > max_download_bytes:
                     raise ValueError(
                         f"Content-Length ({content_length} bytes) exceeds hard network ceiling of {max_download_bytes} bytes."
                     )
 
-                bytes_downloaded = 0
-                with open(part_path, "wb") as f:
+                with open(part_path, mode) as f:
                     while True:
                         chunk = resp.read(65536)
                         if not chunk:
@@ -194,14 +249,16 @@ def download_file_safely(
                             )
                         f.write(chunk)
 
-                actual_size = bytes_downloaded
+                actual_size = part_path.stat().st_size
                 redirect_count = redirect_handler.redirect_count
         except Exception:
-            part_path.unlink(missing_ok=True)
+            if not resume_supported:
+                part_path.unlink(missing_ok=True)
             raise
 
     if expected_bytes is not None and actual_size != expected_bytes:
-        part_path.unlink(missing_ok=True)
+        if not resume_supported:
+            part_path.unlink(missing_ok=True)
         raise ValueError(f"Content-Length mismatch: expected {expected_bytes} bytes, got {actual_size} bytes")
 
     actual_sha256 = compute_file_sha256(part_path)
@@ -209,9 +266,24 @@ def download_file_safely(
         part_path.unlink(missing_ok=True)
         raise ValueError(f"Checksum mismatch: expected {expected_sha256}, got {actual_sha256}")
 
-    if target_path.exists():
-        target_path.unlink()
-    os.replace(part_path, target_path)
+    replaced = False
+    for attempt in range(5):
+        try:
+            if target_path.exists():
+                target_path.unlink()
+            os.replace(part_path, target_path)
+            replaced = True
+            break
+        except PermissionError:
+            time.sleep(1.0)
+
+    if not replaced:
+        import shutil
+        shutil.copyfile(part_path, target_path)
+        try:
+            part_path.unlink(missing_ok=True)
+        except Exception:
+            pass
 
     return {
         "status": "download_completed_verified",
@@ -312,6 +384,21 @@ def run_plan_acquisition(
     plan_id = plan.get("planId", "unknown")
     dataset_id = plan.get("datasetId", "unknown")
     pilot_id = plan.get("pilotId", "unknown")
+
+    if plan_id == "pilot-a-tgif-option-p":
+        if execute and (not approved_sha256 or approved_sha256.strip().lower() != computed_sha256.lower()):
+            print("[BLOCKED] Plan Approval Hash Mismatch:", file=sys.stderr)
+            print(f"  Plan file SHA-256:      {computed_sha256}", file=sys.stderr)
+            print(f"  Approved SHA-256 given: {approved_sha256 or '<NONE>'}", file=sys.stderr)
+            return 1
+        return run_option_p_acquisition(
+            repo_root=repo_root,
+            execute=execute,
+            max_download_bytes=max_download_bytes,
+            mock_archives=mock_components,
+            opener=opener,
+        )
+
     dest_rel = plan.get("destination", f"data/research/{dataset_id}")
     dest_dir = repo_root / dest_rel
     req_disk = plan.get("requiredFreeDiskBytes", 0)
@@ -545,6 +632,355 @@ def run_plan_acquisition(
     finally:
         if staging_dir.exists():
             shutil.rmtree(staging_dir, ignore_errors=True)
+
+
+def run_option_p_acquisition(
+    repo_root: Path,
+    execute: bool = False,
+    user_approval_path: Optional[Path] = None,
+    max_download_bytes: int = 6442450944,
+    mock_archives: Optional[Dict[str, bytes]] = None,
+    opener: Optional[urllib.request.OpenerDirector] = None,
+) -> int:
+    """
+    Executes controlled Option P dataset acquisition for Phase 4B.2:
+    - 4 archives: orig_validation, orig_testing, sd2-sp_validation, sd2-sp_testing.
+    - Preflight disk space check (15.728 GB).
+    - Host allowlist: cloud.ilabt.imec.be only.
+    - User approval verification.
+    - Remote drift check before download.
+    - Atomic part file writing.
+    - SHA-256 calculation and per-archive receipt generation.
+    - Safe tar extraction (path traversal / symlink protection).
+    - Preserves archive intact in data/research/tgif/archives/.
+    """
+    approval_file = user_approval_path or (repo_root / "research" / "evidence" / "phase-4b.2" / "user-approval.json")
+    if execute and mock_archives is None:
+        if not approval_file.exists():
+            print(f"[BLOCKED] User approval file not found at: {approval_file}", file=sys.stderr)
+            return 1
+        try:
+            with open(approval_file, "r", encoding="utf-8") as f:
+                approval_data = json.load(f)
+            if approval_data.get("approvalStatus") != "granted" or approval_data.get("scope") != "option-p":
+                print(f"[BLOCKED] User approval not granted for option-p in: {approval_file}", file=sys.stderr)
+                return 1
+        except Exception as e:
+            print(f"[BLOCKED] Failed to read user approval file: {e}", file=sys.stderr)
+            return 1
+
+    tgif_dir = repo_root / "data" / "research" / "tgif"
+    req_disk_bytes = 15_728_000_000
+    has_space, avail_bytes, _ = check_free_disk_space(tgif_dir, req_disk_bytes)
+    if not has_space:
+        print(f"[BLOCKED] Insufficient free disk space: {avail_bytes:,} available < {req_disk_bytes:,} required", file=sys.stderr)
+        return 1
+
+    archives_spec = [
+        {
+            "name": "orig_validation.tar.gz",
+            "component": "tgif-orig",
+            "split": "validation",
+            "url": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o/download?path=%2Forig&files=orig_validation.tar.gz",
+            "expectedBytes": 859947874,
+            "expectedEtag": '"d95a1202a7445d79872735f60cbeaa95"',
+            "targetExtractSubdir": "orig",
+            "assignedLabel": "authentic",
+        },
+        {
+            "name": "orig_testing.tar.gz",
+            "component": "tgif-orig",
+            "split": "testing",
+            "url": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o/download?path=%2Forig&files=orig_testing.tar.gz",
+            "expectedBytes": 806962390,
+            "expectedEtag": '"fc2934fed45674aa89479640d0030beb"',
+            "targetExtractSubdir": "orig",
+            "assignedLabel": "authentic",
+        },
+        {
+            "name": "sd2-sp_validation.tar.gz",
+            "component": "tgif-sd2-sp",
+            "split": "validation",
+            "url": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o/download?path=%2Fsd2-sp&files=sd2-sp_validation.tar.gz",
+            "expectedBytes": 2172017290,
+            "expectedEtag": '"44b9e62f224dd312f59d9a5bd79d1171"',
+            "targetExtractSubdir": "sd2-sp",
+            "assignedLabel": "ai_edited",
+        },
+        {
+            "name": "sd2-sp_testing.tar.gz",
+            "component": "tgif-sd2-sp",
+            "split": "testing",
+            "url": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o/download?path=%2Fsd2-sp&files=sd2-sp_testing.tar.gz",
+            "expectedBytes": 2040575228,
+            "expectedEtag": '"2aa172ad2b1200973b7593259b37cc07"',
+            "targetExtractSubdir": "sd2-sp",
+            "assignedLabel": "ai_edited",
+        },
+    ]
+
+    total_expected_bytes = sum(a["expectedBytes"] for a in archives_spec)
+
+    if not execute:
+        print("=" * 70)
+        print("OPTION P DATASET ACQUISITION DRY-RUN REPORT")
+        print("=" * 70)
+        print(f"Target Scope:           Option P — Small-Data Thesis Pilot (Validation + Testing)")
+        print(f"Dataset ID:             tgif")
+        print(f"Destination:            {tgif_dir.as_posix()}")
+        print(f"Total Archives:         {len(archives_spec)}")
+        print(f"Total Expected Bytes:   {total_expected_bytes:,} bytes (~{total_expected_bytes / (1024**3):.2f} GB)")
+        print(f"Required Free Disk:     {req_disk_bytes:,} bytes (~{req_disk_bytes / (1024**3):.2f} GB)")
+        print(f"Available Free Disk:    {avail_bytes:,} bytes (~{avail_bytes / (1024**3):.2f} GB)")
+        print("-" * 70)
+        for idx, item in enumerate(archives_spec, 1):
+            print(f"  {idx}. {item['name']}")
+            print(f"     Component:     {item['component']} ({item['assignedLabel']})")
+            print(f"     Split:         {item['split']}")
+            print(f"     Size:          {item['expectedBytes']:,} bytes")
+            print(f"     Expected ETag: {item['expectedEtag']}")
+            print(f"     URL:           {item['url']}")
+        print("-" * 70)
+        print("Safety Invariance Confirmation:")
+        print("  * Network requests made:      0")
+        print("  * Content downloaded:         0 bytes")
+        print("  * Model weights downloaded:   0 bytes")
+        print("  * Training runs:              0")
+        print("=" * 70)
+        print("[PASS] Option P dry-run verified successfully.")
+        return 0
+
+    print("=" * 70)
+    print("OPTION P CONTROLLED ACQUISITION EXECUTION")
+    print("=" * 70)
+
+    archives_dir = tgif_dir / "archives"
+    receipts_dir = tgif_dir / "receipts"
+    manifests_dir = tgif_dir / "manifests"
+    archives_dir.mkdir(parents=True, exist_ok=True)
+    receipts_dir.mkdir(parents=True, exist_ok=True)
+    manifests_dir.mkdir(parents=True, exist_ok=True)
+
+    evidence_phase_dir = repo_root / "research" / "evidence" / "phase-4b.2"
+    evidence_phase_dir.mkdir(parents=True, exist_ok=True)
+
+    receipt_records = []
+    total_downloaded_bytes = 0
+    total_extracted_bytes = 0
+    total_extracted_files = 0
+    total_content_reqs = 0
+
+    for idx, item in enumerate(archives_spec, 1):
+        name = item["name"]
+        url = item["url"]
+        exp_bytes = item["expectedBytes"]
+        exp_etag = item["expectedEtag"]
+        archive_path = archives_dir / name
+        extract_dir = tgif_dir / item["targetExtractSubdir"]
+        extract_dir.mkdir(parents=True, exist_ok=True)
+
+        print(f"\n--- [{idx}/{len(archives_spec)}] Processing {name} ---", flush=True)
+
+        mock_data = mock_archives.get(name) if mock_archives is not None else None
+        if mock_data is not None:
+            exp_bytes = len(mock_data)
+
+        # Check if already exists and valid
+        already_valid = False
+        if archive_path.exists() and mock_data is None:
+            if archive_path.stat().st_size == exp_bytes:
+                try:
+                    with tarfile.open(archive_path, "r:gz") as tf:
+                        _ = tf.next()
+                    already_valid = True
+                    print(f"  [REUSE] Archive {name} already exists and passed integrity verification.", flush=True)
+                except Exception:
+                    already_valid = False
+
+        if already_valid:
+            actual_sha256 = compute_file_sha256(archive_path)
+            dl_bytes = 0
+            final_url = url
+            status = "already_exists_verified"
+        else:
+            # Preflight drift check on remote
+            if mock_data is None:
+                try:
+                    head_req = urllib.request.Request(url, method="HEAD", headers={"User-Agent": "ForensicsWebLab-OptionP/1.0"})
+                    head_resp = (opener or urllib.request.urlopen)(head_req, timeout=30)
+                    cl = int(head_resp.headers.get("Content-Length", 0))
+                    etag = head_resp.headers.get("ETag", "")
+                    if cl != exp_bytes or (exp_etag and etag and etag.strip('"') != exp_etag.strip('"')):
+                        print(f"[ERROR] Remote metadata drift detected for {name}:", file=sys.stderr)
+                        print(f"  Content-Length: got {cl}, expected {exp_bytes}", file=sys.stderr)
+                        print(f"  ETag: got {etag}, expected {exp_etag}", file=sys.stderr)
+                        return 1
+                except Exception as e:
+                    print(f"[ERROR] Preflight HEAD check failed for {name}: {e}", file=sys.stderr)
+                    return 1
+
+            # Download safely with HTTP Range resume support
+            print(f"  [Downloading] {name} ({exp_bytes:,} bytes)...", flush=True)
+            dl_res = None
+            for dl_attempt in range(5):
+                try:
+                    dl_res = download_file_safely(
+                        url=url,
+                        target_path=archive_path,
+                        expected_bytes=exp_bytes,
+                        mock_data=mock_data,
+                        resume_supported=True,
+                        max_download_bytes=max_download_bytes,
+                        allowed_hostnames=["cloud.ilabt.imec.be"],
+                        opener=opener,
+                    )
+                    break
+                except Exception as e:
+                    print(f"  [Download Interrupted] {e} (attempt {dl_attempt + 1}/5, retrying with resume...)", flush=True)
+                    if dl_attempt == 4:
+                        raise
+                    time.sleep(2.0)
+            total_content_reqs += 1
+            actual_sha256 = dl_res["sha256"]
+            dl_bytes = dl_res.get("bytes_downloaded", exp_bytes)
+            total_downloaded_bytes += dl_bytes
+            final_url = dl_res.get("final_url", url)
+            status = "download_completed_verified"
+            print(f"  [Downloaded] {name}: SHA-256 = {actual_sha256}", flush=True)
+
+        # Verify tar integrity
+        print(f"  [Verifying] Checking tar integrity of {name}...", flush=True)
+        try:
+            with tarfile.open(archive_path, "r:gz") as tf:
+                member_count = len(tf.getmembers())
+            print(f"  [Integrity PASS] {member_count} members found in archive.", flush=True)
+        except Exception as e:
+            print(f"[ERROR] Corrupted archive {name}: {e}", file=sys.stderr)
+            return 1
+
+        # Safe extraction
+        target_split_dir = extract_dir / item["split"]
+        if target_split_dir.exists() and any(target_split_dir.iterdir()) and already_valid:
+            print(f"  [Extraction Skip] Split directory {target_split_dir.as_posix()} already populated.", flush=True)
+            ext_files = [p for p in target_split_dir.rglob("*") if p.is_file()]
+            ext_bytes = sum(p.stat().st_size for p in ext_files)
+        else:
+            print(f"  [Extracting] Safely extracting {name} into {extract_dir.as_posix()}...", flush=True)
+            extracted_paths = safe_extract_tar(archive_path, extract_dir)
+            ext_files = [p for p in extracted_paths if p.is_file()]
+            ext_bytes = sum(p.stat().st_size for p in ext_files)
+            print(f"  [Extraction Complete] {len(ext_files)} files ({ext_bytes:,} bytes) extracted.", flush=True)
+
+        total_extracted_bytes += ext_bytes
+        total_extracted_files += len(ext_files)
+
+        # Per-archive receipt
+        archive_receipt = {
+            "archiveName": name,
+            "component": item["component"],
+            "split": item["split"],
+            "assignedLabel": item["assignedLabel"],
+            "status": status,
+            "remoteUrl": url,
+            "finalUrl": final_url,
+            "expectedBytes": exp_bytes,
+            "actualBytes": archive_path.stat().st_size,
+            "expectedEtag": exp_etag,
+            "sha256": actual_sha256,
+            "extractedFilesCount": len(ext_files),
+            "extractedBytes": ext_bytes,
+            "extractedDestination": str(extract_dir.relative_to(repo_root)).replace("\\", "/"),
+            "timestampUtc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        }
+        per_archive_receipt_path = receipts_dir / f"{name}.receipt.json"
+        with open(per_archive_receipt_path, "w", encoding="utf-8") as pf:
+            json.dump(archive_receipt, pf, indent=2)
+        print(f"  [Receipt Written] {per_archive_receipt_path.as_posix()}", flush=True)
+
+        receipt_records.append(archive_receipt)
+
+    # Aggregate Receipt
+    aggregate_receipt = {
+        "receiptVersion": "1.0.0",
+        "phase": "4B.2",
+        "scope": "option-p",
+        "datasetId": "tgif",
+        "destination": str(tgif_dir.relative_to(repo_root)).replace("\\", "/"),
+        "timestampUtc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "networkAccounting": {
+            "datasetContentRequests": total_content_reqs,
+            "datasetContentBytes": total_downloaded_bytes,
+            "totalArchiveBytes": sum(r["actualBytes"] for r in receipt_records),
+            "totalExtractedBytes": total_extracted_bytes,
+            "totalExtractedFiles": total_extracted_files,
+            "modelBytes": 0,
+            "trainingRuns": 0,
+        },
+        "archives": receipt_records,
+    }
+
+    tgif_receipt_path = receipts_dir / "option_p_download_receipt.json"
+    evidence_receipt_path = evidence_phase_dir / "download-receipt.json"
+    with open(tgif_receipt_path, "w", encoding="utf-8") as f:
+        json.dump(aggregate_receipt, f, indent=2)
+    with open(evidence_receipt_path, "w", encoding="utf-8") as f:
+        json.dump(aggregate_receipt, f, indent=2)
+
+    # Archive inventory
+    archive_inventory = {
+        "schemaVersion": "1.0.0",
+        "phase": "4B.2",
+        "inventoryDate": time.strftime("%Y-%m-%d", time.gmtime()),
+        "datasetId": "tgif",
+        "totalArchives": len(receipt_records),
+        "totalArchiveBytes": sum(r["actualBytes"] for r in receipt_records),
+        "archives": [
+            {
+                "name": r["archiveName"],
+                "bytes": r["actualBytes"],
+                "sha256": r["sha256"],
+                "etag": r["expectedEtag"],
+                "component": r["component"],
+                "split": r["split"],
+            }
+            for r in receipt_records
+        ],
+    }
+    with open(evidence_phase_dir / "archive-inventory.json", "w", encoding="utf-8") as f:
+        json.dump(archive_inventory, f, indent=2)
+
+    # Extraction summary
+    val_orig = [r for r in receipt_records if r["split"] == "validation" and r["component"] == "tgif-orig"]
+    val_sd2 = [r for r in receipt_records if r["split"] == "validation" and r["component"] == "tgif-sd2-sp"]
+    test_orig = [r for r in receipt_records if r["split"] == "testing" and r["component"] == "tgif-orig"]
+    test_sd2 = [r for r in receipt_records if r["split"] == "testing" and r["component"] == "tgif-sd2-sp"]
+
+    extraction_summary = {
+        "schemaVersion": "1.0.0",
+        "phase": "4B.2",
+        "datasetId": "tgif",
+        "extractionMethod": "safe_extract_tar",
+        "totalExtractedFiles": total_extracted_files,
+        "totalExtractedBytes": total_extracted_bytes,
+        "splits": {
+            "validation": {
+                "orig": val_orig[0]["extractedFilesCount"] if val_orig else 0,
+                "sd2_sp": val_sd2[0]["extractedFilesCount"] if val_sd2 else 0,
+            },
+            "testing": {
+                "orig": test_orig[0]["extractedFilesCount"] if test_orig else 0,
+                "sd2_sp": test_sd2[0]["extractedFilesCount"] if test_sd2 else 0,
+            },
+        },
+    }
+    with open(evidence_phase_dir / "extraction-summary.json", "w", encoding="utf-8") as f:
+        json.dump(extraction_summary, f, indent=2)
+
+    print("\n" + "=" * 70, flush=True)
+    print(f"[PASS] Option P acquisition and safe extraction completed successfully.", flush=True)
+    print(f"  Aggregate receipt: {evidence_receipt_path.as_posix()}", flush=True)
+    print("=" * 70, flush=True)
+    return 0
 
 
 def load_dataset_registry(repo_root: Path) -> Dict[str, Any]:
@@ -939,6 +1375,17 @@ def main() -> None:
         help="Hard ceiling on downloaded content bytes (default: 67108864 = 64 MiB)",
     )
     parser.add_argument(
+        "--option",
+        type=str,
+        choices=["option-p", "option-s", "option-f"],
+        help="Target data option (e.g. 'option-p' for Phase 4B.2 thesis pilot)",
+    )
+    parser.add_argument(
+        "--user-approval-file",
+        type=str,
+        help="Path to user approval JSON file (e.g. research/evidence/phase-4b.2/user-approval.json)",
+    )
+    parser.add_argument(
         "--pilot",
         type=str,
         help="Pilot identifier for scientific acquisition dry-run (e.g. 'pilot-a', 'pilot-b')",
@@ -1015,7 +1462,21 @@ def main() -> None:
             component=args.component,
             max_download_bytes=args.max_download_bytes,
         )
-        sys.exit(exit_code)
+    if args.option:
+        if args.option == "option-p":
+            approval_path = Path(args.user_approval_file) if args.user_approval_file else None
+            if approval_path and not approval_path.is_absolute():
+                approval_path = repo_root / approval_path
+            exit_code = run_option_p_acquisition(
+                repo_root=repo_root,
+                execute=args.execute,
+                user_approval_path=approval_path,
+                max_download_bytes=args.max_download_bytes if args.max_download_bytes != 67108864 else 6442450944,
+            )
+            sys.exit(exit_code)
+        else:
+            print(f"[ERROR] Option '{args.option}' is not currently executable.", file=sys.stderr)
+            sys.exit(1)
 
     if args.pilot:
         exit_code = run_pilot_dry_run(args.pilot, repo_root)

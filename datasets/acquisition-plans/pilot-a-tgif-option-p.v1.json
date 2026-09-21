@@ -1,0 +1,106 @@
+{
+  "schemaVersion": "1.0.0",
+  "planId": "pilot-a-tgif-option-p",
+  "datasetId": "tgif",
+  "pilotId": "pilot_tgif_edit",
+  "approvalStatus": "approved",
+  "researchPurpose": "Pilot A Option P: Small-data binary classification (authentic vs ai_edited) and inpainting localization on matched validation and testing splits (684 unique source_id instances)",
+  "destination": "data/research/tgif",
+  "license": {
+    "datasetLicense": "CC BY-SA 4.0",
+    "originalImagesLicense": "CC BY 4.0 (MS-COCO 2017)",
+    "track": "research-only",
+    "derivativeWeightsPolicy": "quarantined-to-research-track-prohibited-from-production"
+  },
+  "requiredFreeDiskBytes": 15728000000,
+  "downloadMethod": "direct-http",
+  "resumeCapability": {
+    "resumeSupported": false,
+    "notes": "Nextcloud public share direct download returns Accept-Ranges: None. Atomic .part files are utilized with integrity verification."
+  },
+  "checksumPolicy": {
+    "upstreamChecksumAvailable": true,
+    "postDownloadVerification": "sha256-hash-generation-and-etag-verification"
+  },
+  "extractionPolicy": {
+    "stagingDirectory": "data/research/tgif/.staging",
+    "safeZipExtraction": true,
+    "enforceDiskCheck": true
+  },
+  "manifestOutput": {
+    "path": "data/research/tgif/manifests/manifest_pilot_a_option_p.csv",
+    "groupKey": "source_id",
+    "variantKey": "variant_id",
+    "maskKey": "mask_id"
+  },
+  "components": [
+    {
+      "componentId": "tgif-orig-validation",
+      "remoteFolder": "orig",
+      "remoteUrl": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o/download?path=%2Forig&files=orig_validation.tar.gz",
+      "archiveFilename": "orig_validation.tar.gz",
+      "expectedEtag": "d95a1202a7445d79872735f60cbeaa95",
+      "assignedLabel": "authentic",
+      "semanticRole": "authentic_camera_source_val",
+      "verifiedSizeBytes": 859947874,
+      "estimatedExtractedBytes": 900000000,
+      "expectedCardinality": {
+        "count": 341,
+        "status": "verified",
+        "notes": "341 authentic MS-COCO validation images"
+      },
+      "status": "verified"
+    },
+    {
+      "componentId": "tgif-orig-testing",
+      "remoteFolder": "orig",
+      "remoteUrl": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o/download?path=%2Forig&files=orig_testing.tar.gz",
+      "archiveFilename": "orig_testing.tar.gz",
+      "expectedEtag": "fc2934fed45674aa89479640d0030beb",
+      "assignedLabel": "authentic",
+      "semanticRole": "authentic_camera_source_test",
+      "verifiedSizeBytes": 806962390,
+      "estimatedExtractedBytes": 850000000,
+      "expectedCardinality": {
+        "count": 343,
+        "status": "verified",
+        "notes": "343 authentic MS-COCO test images"
+      },
+      "status": "verified"
+    },
+    {
+      "componentId": "tgif-sd2-sp-validation",
+      "remoteFolder": "sd2-sp",
+      "remoteUrl": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o/download?path=%2Fsd2-sp&files=sd2-sp_validation.tar.gz",
+      "archiveFilename": "sd2-sp_validation.tar.gz",
+      "expectedEtag": "44b9e62f224dd312f59d9a5bd79d1171",
+      "assignedLabel": "ai_edited",
+      "semanticRole": "spliced_inpainting_sd2_val",
+      "verifiedSizeBytes": 2172017290,
+      "estimatedExtractedBytes": 2300000000,
+      "expectedCardinality": {
+        "count": 2046,
+        "status": "verified",
+        "notes": "2,046 SD2 spliced inpainting edits (341 instances x 6 variants)"
+      },
+      "status": "verified"
+    },
+    {
+      "componentId": "tgif-sd2-sp-testing",
+      "remoteFolder": "sd2-sp",
+      "remoteUrl": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o/download?path=%2Fsd2-sp&files=sd2-sp_testing.tar.gz",
+      "archiveFilename": "sd2-sp_testing.tar.gz",
+      "expectedEtag": "2aa172ad2b1200973b7593259b37cc07",
+      "assignedLabel": "ai_edited",
+      "semanticRole": "spliced_inpainting_sd2_test",
+      "verifiedSizeBytes": 2040575228,
+      "estimatedExtractedBytes": 2200000000,
+      "expectedCardinality": {
+        "count": 2058,
+        "status": "verified",
+        "notes": "2,058 SD2 spliced inpainting edits (343 instances x 6 variants)"
+      },
+      "status": "verified"
+    }
+  ]
+}
