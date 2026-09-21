@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://forensics-web-lab.local/schemas/model-registry.v1.schema.json",
+  "title": "ForensicsWebLabModelRegistry",
+  "description": "Schema for managing registered detection models in Forensics Web Lab",
+  "type": "object",
+  "required": ["version", "models"],
+  "properties": {
+    "version": { "type": "string" },
+    "models": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "version",
+          "path",
+          "sha256",
+          "sizeBytes",
+          "inputShape",
+          "classes",
+          "opset",
+          "quantization",
+          "status"
+        ],
+        "properties": {
+          "id": { "type": "string" },
+          "version": { "type": "string" },
+          "path": { "type": "string" },
+          "sha256": { "type": "string" },
+          "sizeBytes": { "type": "integer", "minimum": 0 },
+          "inputShape": {
+            "type": "array",
+            "items": { "type": "integer" }
+          },
+          "classes": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "opset": { "type": "integer", "minimum": 0 },
+          "quantization": {
+            "type": "string",
+            "enum": ["none", "int8", "fp16", "int4"]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["not-trained", "training", "trained", "quantized", "deprecated"]
+          }
+        }
+      }
+    }
+  }
+}

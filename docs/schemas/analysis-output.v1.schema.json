@@ -1,0 +1,190 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://forensics-web-lab.local/schemas/analysis-output.v1.schema.json",
+  "title": "ForensicsWebLabAnalysisOutput",
+  "description": "Standardized output schema for image forensic analysis in Forensics Web Lab",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "timestamp",
+    "imageInfo",
+    "result",
+    "localization",
+    "provenance",
+    "forensics",
+    "runtime",
+    "limitations"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "enum": ["1.0.0"]
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "imageInfo": {
+      "type": "object",
+      "required": ["filename", "fileSizeBytes", "mimeType", "width", "height", "sha256"],
+      "properties": {
+        "filename": { "type": "string" },
+        "fileSizeBytes": { "type": "integer", "minimum": 0 },
+        "mimeType": { "type": "string" },
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 },
+        "sha256": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" }
+      }
+    },
+    "result": {
+      "type": "object",
+      "required": ["label", "confidence", "probabilities", "explanation"],
+      "properties": {
+        "label": {
+          "type": "string",
+          "enum": ["no_ai_evidence", "fully_generated", "ai_edited", "uncertain"]
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0
+        },
+        "probabilities": {
+          "type": "object",
+          "required": ["no_ai_evidence", "fully_generated", "ai_edited"],
+          "properties": {
+            "no_ai_evidence": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+            "fully_generated": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+            "ai_edited": { "type": "number", "minimum": 0.0, "maximum": 1.0 }
+          }
+        },
+        "explanation": {
+          "type": "string"
+        }
+      }
+    },
+    "localization": {
+      "type": "object",
+      "required": ["available", "suspiciousAreaRatio", "regions"],
+      "properties": {
+        "available": { "type": "boolean" },
+        "suspiciousAreaRatio": {
+          "type": ["number", "null"],
+          "minimum": 0.0,
+          "maximum": 1.0
+        },
+        "heatmapResolution": {
+          "type": "object",
+          "properties": {
+            "rows": { "type": "integer" },
+            "cols": { "type": "integer" }
+          }
+        },
+        "regions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["box", "score", "label"],
+            "properties": {
+              "box": {
+                "type": "object",
+                "required": ["x", "y", "width", "height"],
+                "properties": {
+                  "x": { "type": "number", "minimum": 0, "maximum": 1 },
+                  "y": { "type": "number", "minimum": 0, "maximum": 1 },
+                  "width": { "type": "number", "minimum": 0, "maximum": 1 },
+                  "height": { "type": "number", "minimum": 0, "maximum": 1 }
+                }
+              },
+              "score": { "type": "number", "minimum": 0, "maximum": 1 },
+              "label": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["c2paStatus", "metadataSummary"],
+      "properties": {
+        "c2paStatus": {
+          "type": "string",
+          "enum": ["present_valid", "present_invalid", "absent", "unsupported", "unknown"]
+        },
+        "c2paDetails": {
+          "type": "object"
+        },
+        "metadataSummary": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["tag", "value", "category", "suspicionScore"],
+            "properties": {
+              "tag": { "type": "string" },
+              "value": { "type": "string" },
+              "category": { "type": "string" },
+              "suspicionScore": { "type": "number", "minimum": 0.0, "maximum": 1.0 }
+            }
+          }
+        }
+      }
+    },
+    "forensics": {
+      "type": "object",
+      "required": ["signals"],
+      "properties": {
+        "signals": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "name", "category", "score", "interpretation", "details"],
+            "properties": {
+              "id": { "type": "string" },
+              "name": { "type": "string" },
+              "category": {
+                "type": "string",
+                "enum": ["frequency", "compression", "noise", "metadata", "model"]
+              },
+              "score": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+              "interpretation": { "type": "string" },
+              "details": { "type": "object" }
+            }
+          }
+        },
+        "supportingEvidence": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "refutingEvidence": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "required": ["modelId", "modelVersion", "backend", "durationMs"],
+      "properties": {
+        "modelId": { "type": "string" },
+        "modelVersion": { "type": "string" },
+        "backend": {
+          "type": "string",
+          "enum": ["wasm", "webgpu", "cpu-fallback", "none"]
+        },
+        "durationMs": { "type": "number", "minimum": 0 },
+        "deviceInfo": {
+          "type": "object",
+          "properties": {
+            "userAgent": { "type": "string" },
+            "hardwareConcurrency": { "type": "integer" },
+            "deviceMemoryGb": { "type": "number" }
+          }
+        }
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}
