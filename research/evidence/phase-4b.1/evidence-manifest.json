@@ -1,0 +1,68 @@
+{
+  "phase": "4B.1",
+  "startingCommit": "3be606c",
+  "implementationSnapshotCommit": "e8db154",
+  "verdict": "PASS",
+  "artifacts": [
+    {
+      "file": "build-summary.json",
+      "bytes": 435,
+      "sha256": "5eb5cf398cbc150371433a50dc4dcd735a86a5ae3bc067ebeb730009f437c4aa"
+    },
+    {
+      "file": "environment.json",
+      "bytes": 455,
+      "sha256": "ff1b19148113d2e18abfc9bae610ac64454361e709af309d2435e3de1c573092"
+    },
+    {
+      "file": "network-accounting.json",
+      "bytes": 422,
+      "sha256": "e0ea3ce1fba309a069781caa60f5ff07c55a23a96e9487bbbec460e4445c6af4"
+    },
+    {
+      "file": "pairability-audit.json",
+      "bytes": 2373,
+      "sha256": "26c6ea11794800505df82dc14d425cb977ead5f268e904ec2638cc12421f6c3b"
+    },
+    {
+      "file": "PHASE_REPORT.md",
+      "bytes": 9205,
+      "sha256": "f98ef742ee028a5250cf85222e05fe7f9ec7485e836ba4fb097d2aff2e8bc2c3"
+    },
+    {
+      "file": "remote-metadata-accounting.json",
+      "bytes": 3170,
+      "sha256": "f266efb61b170b35f80f92217212c1df7b78d132fdbd6eb0df59c1f6f5973781"
+    },
+    {
+      "file": "small-data-options.json",
+      "bytes": 6625,
+      "sha256": "a63fa271a0248e202d5d18652a55fb03b08bd1c9567f282ea0f07a8cbe01f648"
+    },
+    {
+      "file": "source-id-audit.json",
+      "bytes": 3921,
+      "sha256": "1857aa8bdca25b73fc8c29b2d60ac04602ca39ba610a4786da40bd5e4ffbeac8"
+    },
+    {
+      "file": "source-id-collision-report.json",
+      "bytes": 1021,
+      "sha256": "8e32eab8309d02f937ecc17e181ecf79c8249c02ccb56e38d1fd527401ddc1b3"
+    },
+    {
+      "file": "test-summary.json",
+      "bytes": 609,
+      "sha256": "ada4026e4523490c9b1f979d704bd7fedc9f0e3bf0415f1b1bc07a1063797df2"
+    },
+    {
+      "file": "tgif-orig-remote-inventory.json",
+      "bytes": 4275,
+      "sha256": "ff6016d8ef6340c73bfa5fbc1c108a6020a565452bef9b777db93dfc288b68ca"
+    },
+    {
+      "file": "tgif-sd2-sp-remote-inventory.json",
+      "bytes": 4287,
+      "sha256": "d206e1503583b8190ff0ba91bb05d47e9d47fe5372ab477f6605cd00848a52a8"
+    }
+  ]
+}

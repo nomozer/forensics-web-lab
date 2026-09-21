@@ -4,10 +4,23 @@
 > **Mục đích**: Biên niên sử cô đọng từng giai đoạn phát triển và nghiên cứu từ Phase 0 đến nay.  
 > **Quy ước**: Giai đoạn mới nhất nằm ở trên cùng; mỗi giai đoạn không quá 20 dòng; chi tiết kiểm chứng nằm tại `research/evidence/`.
 
+## Phase 4B.1 — Small-Data Feasibility and Pairability Audit
+- **Mục tiêu**: Kiểm toán căn nguyên chênh lệch 2.242/3.124, khóa đơn vị độc lập là `source_id`, khảo sát metadata remote `orig`/`sd2-sp`, thiết lập giao thức ít dữ liệu và 3 phương án tải.
+- **Starting commit**: `3be606c`
+- **Thay đổi chính**: Phát triển `ml/datasets/audit_source_ids.py` xác minh 31.238 masks xuất phát từ 2.242 unique COCO sources (1.558 train, 341 val, 343 test) và 3.124 category instances; zero cross-split leakage; khảo sát WebDAV remote 10 requests (41.549 bytes < 5 MiB ceiling) xác định mỗi component gồm 3 split archives độc lập; pairability status `pending-content-acquisition`; ban hành `docs/SMALL_DATA_PROTOCOL.md` và `ml/configs/pilot_a_learning_curve.yaml` ($N=50,100,250$); mở rộng `ml/configs/validator.py`; xây dựng 3 phương án dữ liệu (Option S/P/F) và đề xuất Option P (5.88 GB, 684 sources); bổ sung 9 tests pytest (55/55 passed).
+- **Kiểm tra kỹ thuật**: `pnpm test` (70/70 passed), `pytest ml/tests` (55/55 passed), `pnpm build` (exit 0), `pnpm continuity:check` (PASS), config validator (3/3 valid), dataset content: 0 bytes, model weights: 0 bytes.
+- **Kết quả khoa học**: Xác minh nguyên nhân 2.242/3.124 do 571 ảnh train có đa danh mục; chuẩn hóa đơn vị độc lập `source_id`; khóa ranh giới chống shortcut; detection metrics: `not evaluated`.
+- **Evidence**: `research/evidence/phase-4b.1/` (`environment.json`, `network-accounting.json`, `source-id-audit.json`, `source-id-collision-report.json`, `tgif-orig-remote-inventory.json`, `tgif-sd2-sp-remote-inventory.json`, `remote-metadata-accounting.json`, `pairability-audit.json`, `small-data-options.json`, `test-summary.json`, `build-summary.json`, `evidence-manifest.json`, `PHASE_REPORT.md`).
+- **Giới hạn**: Chưa tải ảnh orig và sd2-sp; pairability content pending; model chưa huấn luyện; metrics chưa đánh giá.
+- **Quyết định tiếp theo**: Người dùng xem xét phê duyệt Option P (tải validation + test split: 5.88 GB) cho Pilot A.
+
+---
+
 ## Phase 4B.0 — TGIF Masks Live Acquisition Smoke
 - **Mục tiêu**: Tải thực nghiệm duy nhất `tgif-masks`, thực thi trần mạng 64 MiB, kiểm toán toàn diện cardinality và thuộc tính mask.
 - **Starting commit**: `8de2151`
 - **Implementation snapshot commit**: `84aa127`
+- **Ending commit**: `3be606c`
 - **Thay đổi chính**: Mở rộng `ml/datasets/acquire.py` với `--component` và `--max-download-bytes`; bổ sung `HostnameRestrictedRedirectHandler` (giới hạn `cloud.ilabt.imec.be`); kiểm tra trần mạng trước và trong stream; bổ sung 8 unit tests an toàn (23 tests suite); ghi nhận phê duyệt máy đọc `user-approval.json`; thực hiện live smoke tải `tgif-masks` (42,327,429 bytes nhận, archive SHA-256 `62c89a65...`); trích xuất an toàn 3 archive con; xây dựng `ml/datasets/audit_masks.py` kiểm toán 31,238 file mask PNG (141,559,934 bytes); sinh manifest cục bộ `masks-manifest.jsonl` (31,238 bản ghi) và receipt `acquisition-receipt.json`.
 - **Kiểm tra kỹ thuật**: `pnpm test` (70/70 passing), `pytest ml/tests` (46/46 passing), `pnpm build` (exit 0), `pnpm continuity:check` (PASS), 0 file nhị phân trong Git.
 - **Kết quả khoa học**: Xác minh cardinality mask TGIF là 31,238 files (12,495 bbox, 12,495 segm, 6,248 generic_mask) trên 2,242 `source_id`; chuyển `mask_count`, `filename_convention`, `source_id_extraction_method` sang verified; các thành phần `orig`, `sd2-sp` tiếp tục locked; detection metrics: `not evaluated`.

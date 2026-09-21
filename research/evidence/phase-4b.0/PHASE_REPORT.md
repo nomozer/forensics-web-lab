@@ -7,6 +7,7 @@
 | **Phase** | **4B.0 — TGIF Masks Live Acquisition Smoke** |
 | **Starting Commit** | `8de2151` |
 | **Implementation Snapshot Commit** | `84aa127` |
+| **Ending Commit** | `3be606c` |
 | **Main Branch Ref** | `460f6d5` (Strictly untouched) |
 | **User Approval Scope** | `tgif-masks` ONLY |
 | **Requested URL** | `https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o/download?path=%2F&files=masks` |

@@ -2,6 +2,7 @@
   "phase": "4B.0",
   "startingCommit": "8de2151",
   "implementationSnapshotCommit": "84aa127",
+  "endingCommit": "3be606c",
   "verdict": "PASS",
   "artifacts": [
     {
@@ -31,8 +32,8 @@
     },
     {
       "file": "PHASE_REPORT.md",
-      "bytes": 4727,
-      "sha256": "ac6231b8c36036c703a6361877606884cbe7a2462efabd08e5ce673288bcea3b"
+      "bytes": 4761,
+      "sha256": "52ac4d0f9fd9a7e8234965e764cf6204f6141c51665b3bce74585e2939ffcfd3"
     },
     {
       "file": "test-summary.json",

@@ -93,6 +93,10 @@ graph TD
 | **Paired Bootstrap Guard** | `ml/evaluation/bootstrap_guard.py` (stratified paired bootstrap 95% CI) | `implemented-and-tested` |
 | **TGIF Cardinality Audit** | `research/evidence/phase-4a.4/tgif-cardinality-audit.json` | `audited-and-verified` |
 | **Pilot Protocols & Configs** | `ml/configs/validator.py`, `pilot_tgif_edit.yaml`, `pilot_genimage_generated.yaml` | `implemented-and-tested` |
+| **Source ID Auditor & Collision Engine** | `ml/datasets/audit_source_ids.py` (COCO source vs category-task disambiguation) | `implemented-and-tested` |
+| **Remote Metadata Inventory** | `research/evidence/phase-4b.1/tgif-orig-remote-inventory.json`, `tgif-sd2-sp-remote-inventory.json` | `audited-and-verified` |
+| **Small-Data Protocol & Options** | `docs/SMALL_DATA_PROTOCOL.md`, `research/evidence/phase-4b.1/small-data-options.json` | `protocol-established` |
+| **Learning Curve Config & Validator** | `ml/configs/pilot_a_learning_curve.yaml`, `ml/configs/validator.py` (sample size, overflow guard) | `implemented-and-tested` |
 | **Continuity Checker CLI** | `scripts/continuity-check.mjs` | `implemented-and-tested` |
 | **Continuity Checker Tests** | `scripts/__tests__/continuity-check.test.mjs` | `implemented-and-tested` |
 | **Continuity Contract** | `AGENTS.md` (Mục 4: Continuity Contract) | `contract-enforced` |

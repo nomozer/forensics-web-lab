@@ -1,0 +1,21 @@
+{
+  "phase": "4B.1",
+  "buildDate": "2026-09-21",
+  "tool": "pnpm -r run build",
+  "status": "PASS",
+  "exitCode": 0,
+  "apps": {
+    "web": {
+      "framework": "React 18 + Vite",
+      "modulesTransformed": 55,
+      "buildTimeSeconds": 3.95,
+      "assets": {
+        "indexHtmlBytes": 1080,
+        "cssBytes": 3970,
+        "jsBytes": 683690,
+        "workerJsBytes": 437930,
+        "wasmSimdBytes": 28991518
+      }
+    }
+  }
+}

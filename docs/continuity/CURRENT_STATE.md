@@ -1,9 +1,9 @@
 # Trạng thái Hiện tại: Forensics Web Lab (Current State)
 
 > **Tài liệu đọc đầu tiên bắt buộc cho mọi phiên làm việc AI mới.**  
-> **Documented through substantive commit**: `8de2151`  
-> **Ending commit Phase 4A.5**: `8de2151`  
-> **Phase hoàn thành gần nhất**: Phase 4B.0 — TGIF Masks Live Acquisition Smoke  
+> **Documented through substantive commit**: `e8db154`  
+> **Ending commit Phase 4B.0**: `3be606c`  
+> **Phase hoàn thành gần nhất**: Phase 4B.1 — Small-Data Feasibility and Pairability Audit  
 > **Branch**: `feat/production-ai-image-forensics`  
 > **Base main commit**: `460f6d5` (bảo toàn nguyên vẹn, không commit trực tiếp)  
 > **Working tree**: clean  
@@ -42,10 +42,10 @@
 * **Ngoài phạm vi**: Không hỗ trợ video deepfake; không gửi dữ liệu về máy chủ; không tuyên bố tính nguyên bản tuyệt đối của ảnh.
 
 ### 3.2. Bốn trạng thái đầu ra của Web App
-1. `no_ai_evidence`: Không phát hiện dấu vết AI; nhất quán với ảnh thông thường (không gọi là "ảnh thật 100%").
+1. `no_ai_evidence`: Không phát hiện dấu vết AI trong phạm vi mô hình và dữ liệu đánh giá; nhất quán với ảnh thông thường (tuyệt đối không khẳng định "ảnh thật 100%").
 2. `fully_generated`: Dấu vết tạo sinh AI toàn phần.
 3. `ai_edited`: Dấu vết chỉnh sửa, thay thế nội dung cục bộ bằng AI.
-4. `uncertain`: Mức độ tin cậy thấp, tín hiệu mâu thuẫn, hoặc **chưa cài đặt mô hình**.
+4. `uncertain`: Mức độ tin cậy thấp, tín hiệu mâu thuẫn, mẫu ngoại lai, hoặc **chưa cài đặt mô hình**.
 
 ---
 
@@ -59,25 +59,30 @@
 
 ## 5. Hiện trạng Dữ liệu và Mô hình
 
-* **Dữ liệu ngoại vi đã tải**: `42,327,429 bytes` (~40.37 MiB nhận qua mạng; tổng giải nén 141,559,934 bytes across 31,238 mask PNG files). **External dataset content không còn 0 bytes**.
-* **Phạm vi tải**: **Duy nhất component `tgif-masks` đã được tải**. Các component `tgif-orig` (7,301,444,403 bytes) và `tgif-sd2-sp` (18,575,836,774 bytes) vẫn **chưa tải** và tiếp tục bị khóa (locked).
-* **Archive Checksum**: SHA-256 archive tải về là `62c89a65441a35e6bd10d49abec8f2cad9ab028e91edf3d72b344ec29bfa0fe9`.
-* **Biên nhận thu nạp**: Lưu tại `data/research/tgif/acquisition-receipt.json`.
-* **Manifest mặt nạ cục bộ**: Lưu tại `data/research/tgif/manifests/masks-manifest.jsonl` (31,238 bản ghi).
+* **Dữ liệu ngoại vi đã tải**: `42,327,429 bytes` (~40.37 MiB nhận qua mạng từ Phase 4B.0; tổng giải nén 141,559,934 bytes trên 31,238 mask PNG files). **Không tải thêm byte nội dung nào trong Phase 4B.1** (0 bytes content downloaded).
+* **Phạm vi tải**: Duy nhất `tgif-masks` đã tải. Các component `tgif-orig` (7,319,473,337 bytes) và `tgif-sd2-sp` (18,572,494,800 bytes) tiếp tục bị khóa (locked).
+* **Kiểm toán Source ID & Đơn vị Độc lập (Phase 4B.1)**:
+  * Khóa đơn vị thống kê độc lập duy nhất là **`source_id`** (MS-COCO 12 chữ số).
+  * Tổng số `source_id` độc lập toàn bộ dataset: **2,242** (1,558 train, 341 val, 343 test).
+  * Tổng số nhiệm vụ inpainting theo danh mục: **3,124** (2,440 train, 341 val, 343 test).
+  * Nguyên nhân chênh lệch 2,242 vs 3,124: 571 ảnh COCO trong `train` có đa nhãn đối tượng nên có mask trong nhiều danh mục.
+  * **Ranh giới cô lập phân vùng (Group-Isolation)**: Xác minh 0 rò rỉ chéo giữa train, val, test ($s_{\text{train}} \cap s_{\text{val}} = \emptyset$, $s_{\text{train}} \cap s_{\text{test}} = \emptyset$, $s_{\text{val}} \cap s_{\text{test}} = \emptyset$).
+* **Khảo sát Remote Metadata**: 10 requests (41,549 bytes < trần 5 MiB). Xác minh mỗi component upstream gồm 3 split archives độc lập; cho phép tải lẻ từng split mà không cần tải nguyên khối 25.89 GB.
+* **Hiện trạng Ghép cặp (Pairability)**: Ghi nhận `pending-content-acquisition` (cấu trúc archive đối xứng; kiểm chứng nội dung pixel chờ tải ảnh).
+* **Phương án dữ liệu khuyến nghị**: **Option P — Small-Data Thesis Pilot** (tải validation + test splits: 5.88 GB, bao phủ 684 sources độc lập).
 * **Trọng số mô hình đã tải / huấn luyện**: `0 bytes` (chưa tải checkpoint hay trọng số nào).
 * **Số lượt huấn luyện (Training runs)**: `0`.
-* **Chỉ số khoa học**: `not evaluated` (chưa đo lường thực nghiệm; mask acquisition chỉ chứng minh pipeline và inventory, chưa chứng minh chất lượng phát hiện).
-* **Acquisition Plan**: Plan máy đọc `datasets/acquisition-plans/pilot-a-tgif.v1.json` (SHA-256: `7da36f450fe424970e4676fc0c35047ea756385843dd2fb1c656f1fa45deac4e`) được giữ nguyên toàn vẹn.
+* **Chỉ số khoa học**: `not evaluated` (chưa đo lường thực nghiệm).
 
 ---
 
 ## 6. Kết quả Kiểm thử & Bản dựng Gần nhất (Latest Verification)
 
 * **TypeScript & Continuity Test Suite (`pnpm test`)**: 70/70 tests passing (57 vitest tests trên 6 packages + 13 continuity checker unit tests).
-* **Python Test Suite (`pytest ml/tests -v`)**: 46/46 tests passing (bao gồm 23 bài test an toàn thu nạp dữ liệu, zip slip guard, hard network ceiling, hostname redirect restriction, và component scoping).
-* **Pilot Config Validation**: 2/2 pilot configs valid theo `ml/configs/validator.py`.
+* **Python Test Suite (`pytest ml/tests -v`)**: 55/55 tests passing (bao gồm 23 bài test an toàn thu nạp dữ liệu, 9 bài test kiểm toán source ID, small-data options và overflow guard).
+* **Pilot Config Validation (`ml/configs/validator.py --validate-all`)**: 3/3 pilot configs valid (`pilot_a_learning_curve.yaml`, `pilot_genimage_generated.yaml`, `pilot_tgif_edit.yaml`).
 * **Continuity Enforcement Gate (`pnpm continuity:check`)**: `CONTINUITY_CHECK: PASS`.
-* **Production Web Build (`pnpm build`)**: Exit code 0, bundle tối ưu hợp lệ (3.11s).
+* **Production Web Build (`pnpm build`)**: Exit code 0, bundle tối ưu hợp lệ (3.95s).
 * **Clean Link Invariance**: 0 machine-local links (`file:///`, `C:\`, `D:\`) trong toàn bộ markdown và evidence repository.
 
 ---
@@ -116,12 +121,17 @@
 * `EV-CI-CONTINUITY-001`: Tích hợp continuity gate vào quy trình CI GitHub Actions.
 * `EV-PHASE4B0-SMOKE-001`: Live acquisition smoke tải thành công `tgif-masks` (42,327,429 bytes, trần 64 MiB).
 * `EV-PHASE4B0-INVENTORY-001`: Kiểm toán toàn diện 31,238 file mask PNG trên 2,242 `source_id`; xác minh cardinality và mapping.
+* `EV-SOURCE-ID-AUDIT-001`: Kiểm toán căn nguyên 2,242 vs 3,124; khóa đơn vị thống kê độc lập `source_id`.
+* `EV-REMOTE-INVENTORY-001`: Khảo sát metadata remote của `orig` (7.32 GB) và `sd2-sp` (18.57 GB) chia theo 3 split archives.
+* `EV-SMALL-DATA-PROTOCOL-001`: Ban hành SMALL_DATA_PROTOCOL.md và cấu hình pilot_a_learning_curve.yaml ($N=50,100,250$).
+* `EV-OPTION-P-RECOMMENDATION-001`: Xây dựng 3 phương án dữ liệu và đề xuất Option P (5.88 GB, 684 sources) cho Pilot A.
 
 ---
 
 ## 9. Công việc Đang thực hiện & Công việc Tiếp theo
 
-* **Đã hoàn thành (Phase 4B.0)**: Mở rộng component-scoped acquisition và trần mạng trong `acquire.py`; vượt qua toàn bộ 46 tests Python và 70 tests TS; hoàn thành live acquisition smoke cho `tgif-masks` (42,327,429 bytes nhận, archive SHA-256 `62c89a65...`); trích xuất an toàn và kiểm toán 31,238 file mask PNG (141,559,934 bytes uncompressed); sinh local manifest và receipt; xác minh `mask_count`, `filename_convention`, `source_id_extraction_method` chuyển sang `verified`.
-* **Hiện trạng nghiên cứu**: External dataset content đạt 42,327,429 bytes; `orig` và `sd2-sp` tiếp tục locked; model content vẫn `0 bytes`; training runs bằng `0`; scientific detection metrics giữ trạng thái `not evaluated`.
-* **Công việc tiếp theo (Phase 4B.1 / Live Data Acquisition)**: Chờ người dùng xem xét và phê duyệt `NEXT APPROVAL REQUEST` để mở khóa tải hai component còn lại của TGIF (`tgif-orig`: ~7.30 GB, `tgif-sd2-sp`: ~18.58 GB) nhằm hoàn thiện bộ dữ liệu cho Pilot A.
+* **Đã hoàn thành (Phase 4B.1)**: Kiểm toán source ID và va chạm; làm rõ nguyên nhân 2,242 unique COCO sources vs 3,124 category instances; khóa đơn vị thống kê độc lập `source_id`; hoàn thành khảo sát WebDAV remote cho `orig` và `sd2-sp` (41,549 bytes < trần 5 MiB); xác lập pairability status `pending-content-acquisition`; ban hành giao thức ít dữ liệu và cấu hình learning curve; xây dựng 3 phương án dữ liệu và chọn đề xuất duy nhất Option P; vượt qua 55 bài test Python, 70 bài test TS, build sạch.
+* **Hiện trạng nghiên cứu**: External dataset content giữ nguyên 42,327,429 bytes; model weights bằng `0 bytes`; training runs bằng `0`; detection metrics giữ trạng thái `not evaluated`.
+* **Công việc tiếp theo (Phase 4B.2 / Live Image Acquisition)**: Chờ người dùng xem xét và phê duyệt `NEXT APPROVAL REQUEST` theo Option P (tải validation và testing split của `orig` và `sd2-sp`: 5.88 GB) nhằm phục vụ huấn luyện đường cong học tập cho Pilot A.
+
 

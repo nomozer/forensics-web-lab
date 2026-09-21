@@ -1,0 +1,15 @@
+{
+  "phase": "4B.1",
+  "auditDate": "2026-09-21",
+  "scope": "metadata-only",
+  "hardMetadataCeilingBytes": 5242880,
+  "remoteHost": "cloud.ilabt.imec.be",
+  "totalRemoteMetadataRequests": 10,
+  "totalRemoteMetadataResponseBytes": 41549,
+  "datasetContentRequests": 0,
+  "datasetContentBytes": 0,
+  "modelWeightsDownloadedBytes": 0,
+  "trainingRunsExecuted": 0,
+  "ceilingEnforced": true,
+  "zeroContentViolation": true
+}
