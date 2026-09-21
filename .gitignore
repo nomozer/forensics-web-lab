@@ -1,0 +1,64 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+
+# Python & ML
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+dist-ml/
+checkpoints/
+ml_checkpoints/
+runs/
+wandb/
+
+# Datasets & Large Artifacts (Strictly quarantined from Git)
+/data/
+/datasets/
+/raw_data/
+!ml/datasets/
+*.zip
+*.tar
+*.tar.gz
+*.tar.bz2
+*.7z
+*.h5
+*.hdf5
+*.safetensors
+*.pt
+*.pth
+*.bin
+
+# Model weights (Large binaries)
+models/*.onnx
+models/*.bin
+models/*.safetensors
+!models/registry.json
+!models/README.md
+!models/MODEL_CARD.md
+
+# Operating System & IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
+*.tmp
+.cache/
+
+# Test & Playwright
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
