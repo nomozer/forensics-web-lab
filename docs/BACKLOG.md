@@ -165,8 +165,23 @@ graph TD
 
 ---
 
+### Phase 4A.3: Scientific Pilot Protocol & Label-Semantics Gate (Hoàn thành)
+* [x] **TASK-4A301**: Backfill missing Phase 4A.2 completion report in `research/evidence/phase-4a.2/PHASE_REPORT.md`.
+* [x] **TASK-4A302**: Audit and freeze scientific definitions for `authentic`, `fully_generated`, and `ai_edited` in `docs/PILOT_PROTOCOL.md`.
+* [x] **TASK-4A303**: Audit TGIF components: verify `sp` as `ai_edited` with ground-truth mask, verify `fr` canvas as conditioned on real photo and strictly prohibit assignment to `fully_generated`.
+* [x] **TASK-4A304**: Design two-branch pilot architecture: Pilot A (authentic vs ai_edited + localization on matched MS-COCO pairs) and Pilot B (authentic vs fully_generated on GenImage pairs).
+* [x] **TASK-4A305**: Author `docs/PILOT_PROTOCOL.md` codifying anti-shortcut (dedup, group-split, class profile, metadata-only baseline guard) and anti-leakage invariants.
+* [x] **TASK-4A306**: Author machine-readable pilot configurations: `ml/configs/pilot_tgif_edit.yaml` and `ml/configs/pilot_genimage_generated.yaml`.
+* [x] **TASK-4A307**: Implement automated pilot configuration validator `ml/configs/validator.py` enforcing schema, label taxonomy, and semantics rules.
+* [x] **TASK-4A308**: Implement pytest test suite `ml/tests/test_pilot_protocol.py` (8 tests passing).
+* [x] **TASK-4A309**: Enhance `ml/datasets/acquire.py` with specialized `--pilot pilot-a` and `--pilot pilot-b` dry-run reporting all 12 required fields.
+* [x] **TASK-4A310**: Verify Zero-Egress network invariance: 0 external dataset bytes, 0 model bytes, 0 training runs.
+* [x] **TASK-4A311**: Record Phase 4A.3 evidence items in `docs/EVIDENCE_REGISTER.md` and `research/evidence/phase-4a.3/`.
+
+---
+
 ### Phase 4A: Pilot Acquisition & Data Preparation (Chờ người dùng phê duyệt)
-* [ ] **TASK-4A1**: User decision on Phase 4A pilot pathway (Recommended: Pilot B ~3,000 samples from TGIF subfolders vs Option 1: synthetic fixture only vs Option 3: full benchmark).
+* [ ] **TASK-4A1**: User decision on Phase 4A pilot pathway (Recommended: Pilot A ~24.1 GB from TGIF subfolders or low-bandwidth subset masks + orig 6.84 GB vs Pilot B GenImage BigGAN ~24 GB).
 * [ ] **TASK-4A2**: Prepare authorized dataset/fixture splits with group-based anti-leakage isolation.
 
 ---

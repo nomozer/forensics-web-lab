@@ -81,6 +81,21 @@
 
 ---
 
+### 2.6. Tiêu chuẩn Đánh giá Giao thức Pilot và Cổng Shortcut (docs/PILOT_PROTOCOL.md)
+
+1. **Pilot A (Authentic vs AI-Edited + Localization)**:
+   - Đo đạc trên cặp matched pairs MS-COCO của TGIF.
+   - Chỉ số bắt buộc: Macro-F1, Balanced Accuracy, AUROC, mIoU, Dice, Pixel AUROC.
+   - Điều kiện: Không rò rỉ `source_id` giữa Train, Val và Test.
+2. **Pilot B (Authentic vs Fully-Generated)**:
+   - Đo đạc trên ImageNet val vs BigGAN trong GenImage.
+   - Chỉ số bắt buộc: Macro-F1, Balanced Accuracy, Cross-Generator F1 Drop.
+3. **Pilot C (Three-Class Exploratory) & Metadata-Only Baseline Guard**:
+   - Khi hợp nhất 3 lớp từ các nguồn khác nhau, bắt buộc huấn luyện thêm một **Metadata-Only Baseline** (chỉ dùng resolution, aspect ratio, file size, codec để đoán nhãn).
+   - **Quy tắc nghiệm thu**: Mô hình thị giác phải đạt $\text{Macro-F1}_{\text{visual}} \ge \text{Macro-F1}_{\text{metadata}} + 15\%$. Nếu không vượt qua, kết quả bị coi là shortcut learning do nguồn dataset.
+
+---
+
 ## 3. Bảng Theo dõi Chỉ số Khoa học (Evaluation Status Table)
 
 | Hạng mục | Chỉ số cụ thể | Ngưỡng mục tiêu nghiên cứu | Trạng thái thực tế |

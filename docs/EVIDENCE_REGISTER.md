@@ -6,7 +6,8 @@
 > **Manifest máy đọc Phase 4A.0**: `research/evidence/phase-4a.0/evidence-manifest.json`  
 > **Manifest máy đọc Phase 4A.1**: `research/evidence/phase-4a.1/evidence-manifest.json`  
 > **Manifest máy đọc Phase 4A.2**: `research/evidence/phase-4a.2/evidence-manifest.json`  
-> **Cập nhật lần cuối**: Phase 4A.2 (Research Scope Freeze & TGIF Feasibility Audit)
+> **Manifest máy đọc Phase 4A.3**: `research/evidence/phase-4a.3/evidence-manifest.json`  
+> **Cập nhật lần cuối**: Phase 4A.3 (Scientific Pilot Protocol and Label-Semantics Gate)
 
 ---
 
@@ -27,7 +28,20 @@ Hệ sinh thái nghiên cứu và sản phẩm của **Forensics Web Lab** tuân
 
 ---
 
-## 2. Bảng Đăng ký Minh chứng Phase 4A.2 (Scope Freeze, Continuity & TGIF Feasibility Audit)
+## 2. Bảng Đăng ký Minh chứng Phase 4A.3 (Scientific Pilot Protocol & Label-Semantics Gate)
+
+| Evidence ID | Claim | Category | Status | Artifact | Reproduction command | Result | Limitations |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **EV-LABEL-GATE-001** | Cổng kiểm định nhãn khoa học đóng băng không gian 3 lớp chuẩn tắc (`authentic`, `fully_generated`, `ai_edited`); từ chối mọi nhãn không hợp lệ. | `science` | `verified` | [PILOT_PROTOCOL.md](docs/PILOT_PROTOCOL.md) | `ml/.venv/Scripts/python -m pytest ml/tests/test_pilot_protocol.py -k test_label_taxonomy` | Định nghĩa 3 nhãn chuẩn tắc được kiểm thử tự động; validator từ chối nhãn nằm ngoài tập chuẩn. | Áp dụng cho phân loại ảnh tĩnh; không bao gồm video deepfake. |
+| **EV-TGIF-SEMANTICS-001** | Kiểm toán ngữ nghĩa TGIF: thành phần `sp` (spliced) được xác minh là `ai_edited` kèm mask; thành phần `fr` (fully regenerated) canvas có điều kiện từ ảnh gốc, bị cấm gán `fully_generated` và được cách ly. | `dataset` | `verified` | [PILOT_PROTOCOL.md](docs/PILOT_PROTOCOL.md) | `ml/.venv/Scripts/python -m pytest ml/tests/test_pilot_protocol.py -k test_tgif_fr` | Đã chứng minh `fr` không đủ căn cứ gán `fully_generated`; validator tự động bắt lỗi vi phạm ngữ nghĩa nếu cố tình gán. | Dựa trên tài liệu chính thức TGIF (arXiv:2407.11566) và kiểm toán Nextcloud. |
+| **EV-PILOT-DESIGN-001** | Thiết kế kiến trúc pilot hai nhánh độc lập (Pilot A trên TGIF matched pairs, Pilot B trên GenImage ImageNet) nhằm triệt tiêu nguy cơ shortcut nguồn dữ liệu; Pilot C ba lớp chỉ mở khi vượt qua audit shortcut. | `science` | `verified` | [PILOT_PROTOCOL.md](docs/PILOT_PROTOCOL.md) | `ml/.venv/Scripts/python -m ml.configs.validator --validate-all` | Pilot A và B cấu hình độc lập; Pilot C yêu cầu kèm metadata-only baseline guard. | Thí nghiệm đang ở giai đoạn giao thức trước huấn luyện; chưa tải dữ liệu thật. |
+| **EV-SHORTCUT-PROTOCOL-001** | Giao thức chống rò rỉ và kiểm soát shortcut codified: deduplication (SHA-256 + pHash), group split theo `source_id`, class-level distribution audit, và metadata-only baseline guard. | `science` | `verified` | [PILOT_PROTOCOL.md](docs/PILOT_PROTOCOL.md) | `ml/.venv/Scripts/python -m pytest ml/tests/test_pilot_protocol.py -k test_manifest_group_isolation` | Zero leakage giữa các split được kiểm chứng bằng unit test; nhóm ảnh gốc và bản inpainting không bao giờ cắt chéo split. | Deduplication đầy đủ trên toàn bộ dataset sẽ chạy sau khi tải dữ liệu thật. |
+| **EV-PILOT-CONFIGS-001** | Cấu hình pilot YAML máy đọc (`pilot_tgif_edit.yaml`, `pilot_genimage_generated.yaml`) và module validator tự động (`ml/configs/validator.py`) được triển khai và kiểm thử 100%. | `pipeline` | `verified` | [validator.py](ml/configs/validator.py) | `ml/.venv/Scripts/python -m ml.configs.validator --validate-all` | 13 trường bắt buộc, quy tắc nhãn và ràng buộc anti-leakage được tự động kiểm định đạt 100%. | Sẵn sàng nạp DataLoader khi manifest được sinh từ dữ liệu thật. |
+| **EV-ACQUISITION-DRYRUN-001** | CLI `acquire.py` hỗ trợ dry-run chuyên biệt cho Pilot A và Pilot B, in đầy đủ 12 trường thông tin kiểm toán với 0 request mạng và 0 byte tải về. | `pipeline` | `verified` | [acquire.py](ml/datasets/acquire.py) | `ml/.venv/Scripts/python -m ml.datasets.acquire --pilot pilot-a` | Lệnh dry-run in chi tiết từng component, dung lượng xác minh, ổ đĩa yêu cầu và giữ mạng ở mức 0 bytes. | Thao tác tải thật bị khóa fail-closed chờ người dùng phê duyệt. |
+
+---
+
+## 3. Bảng Đăng ký Minh chứng Phase 4A.2 (Scope Freeze, Continuity & TGIF Feasibility Audit)
 
 | Evidence ID | Claim | Category | Status | Artifact | Reproduction command | Result | Limitations |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |

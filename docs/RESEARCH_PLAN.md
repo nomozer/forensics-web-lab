@@ -89,18 +89,24 @@ Các giả thuyết được thiết lập theo nguyên tắc có thể bác b�
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Synthetic Smoke** | Fixture kiểm thử kỹ thuật pipeline | authentic, fully_generated, ai_edited (hình học giả lập) | Dữ liệu vẽ bằng code, không có giá trị học máy | Đặt track `fixture-only`, cấm huấn luyện model sản phẩm | `verified` |
 | **GenImage** | Huấn luyện & benchmark ảnh tạo hoàn toàn | `fully_generated` (8 generator), `authentic` (ImageNet val) | Chỉ có ảnh fully generated, không có mask inpainting; archive lớn | Phân luồng Research Track; First fully inventoried archive (BigGAN ~24 GB) | `verified` |
-| **TGIF / TGIF2** | Huấn luyện & benchmark ảnh chỉnh sửa | `ai_edited` (spliced/FR), `authentic` (MS-COCO pairs), masks | Dung lượng lớn (65.4 GB - 110 GB); điều khoản CC BY-SA 4.0 | Nextcloud cho phép tải độc lập thư mục nhỏ; cách ly trong Research Track | `verified` |
+| **TGIF / TGIF2** | Huấn luyện & benchmark ảnh chỉnh sửa | `ai_edited` (spliced `sp`), `authentic` (MS-COCO pairs), masks (`fr` quarantined) | Dung lượng lớn (65.4 GB - 110 GB); điều khoản CC BY-SA 4.0; `fr` cấm gán `fully_generated` | Nextcloud cho phép tải độc lập thư mục nhỏ; cách ly trong Research Track; `sp` dùng cho Pilot A | `verified` |
 | **RAID** | Đánh giá độ bền vững đối kháng (Adversarial Robustness) | Đa dạng generator và độ suy giảm nặng | Bản quyền dataset card chưa chứng minh quyền phân phối ảnh | Trạng thái `blocked`, chỉ xem xét làm candidate kiểm định sau | `blocked` |
 | **RealHD** | Ứng viên tương lai cho inpainting đa dạng | AI-edited đa dạng | Tác giả chưa phát hành archive và license công khai | Trạng thái `blocked` | `blocked` |
 
 ---
 
-## 7. Rủi ro Shortcut Nguồn Dữ liệu (Dataset-Source Shortcut Risk)
+## 7. Rủi ro Shortcut Nguồn Dữ liệu và Giao thức Thí nghiệm Pilot (docs/PILOT_PROTOCOL.md)
 
 > **Cảnh báo khoa học**: Nếu mỗi lớp nhãn được lấy từ một dataset hoàn toàn tách biệt (ví dụ: `authentic` lấy từ ImageNet, `ai_edited` lấy từ MS-COCO, `fully_generated` lấy từ GenImage), mô hình nơ-ron có xu hướng ghi nhớ các đặc trưng riêng của từng nguồn dữ liệu (độ phân giải gốc, camera color gamut, profile nén JPEG, bộ lọc tiền xử lý) thay vì học bản chất dấu vết thuật toán AI.
 
-### Biện pháp kiểm soát bắt buộc trong giao thức thí nghiệm:
-1. **Group Split theo ảnh gốc**: Đảm bảo toàn bộ biến thể phái sinh từ một ảnh gốc (ảnh authentic, ảnh inpaint, các prompt biến thể) luôn nằm trọn vẹn trong một split duy nhất (Train, Val hoặc Test).
+### Giao thức Thí nghiệm Pilot Hai Nhánh Độc lập (Two-Branch Architecture):
+Chi tiết xem [PILOT_PROTOCOL.md](docs/PILOT_PROTOCOL.md):
+1. **Pilot A (Authentic vs AI-Edited + Localization)**: Sử dụng các cặp matched pairs của TGIF (`orig` authentic MS-COCO + `sd2-sp` inpainting + `masks`). Triệt tiêu hoàn toàn rủi ro cross-dataset shortcut vì cả thật và sửa đều từ cùng nguồn ảnh MS-COCO.
+2. **Pilot B (Authentic vs Fully-Generated)**: Sử dụng cặp đối chứng trong cùng phân phối ImageNet của GenImage (val nature vs BigGAN ai).
+3. **Pilot C (Three-Class Exploratory)**: Chỉ được mở khi Pilot A và Pilot B vượt qua bài kiểm toán shortcut; bắt buộc kèm **Metadata-Only Baseline Guard**.
+
+### Biện pháp kiểm soát bắt buộc:
+1. **Group Split theo ảnh gốc**: Đảm bảo toàn bộ biến thể phái sinh từ một ảnh gốc (`source_id`) luôn nằm trọn vẹn trong một split duy nhất (Train, Val hoặc Test).
 2. **Dùng Matched Pairs**: Khi dùng TGIF, sử dụng chính các cặp ảnh gốc authentic (MS-COCO) đi kèm với các biến thể inpainting của chính ảnh đó.
 3. **Chuẩn hóa Tiền xử lý (Standardized Preprocessing)**: Toàn bộ ảnh đầu vào đều đi qua pipeline đồng nhất (letterbox padding, resize về $224 \times 224$ px hoặc $512 \times 512$ px, chuẩn hóa kênh màu theo ImageNet mean/std).
 4. **Đánh giá Cross-Dataset & Source-Held-Out**: Báo cáo kết quả chi tiết theo từng nguồn dataset và từng generator cụ thể; không gộp chung số liệu để che giấu hiện tượng sụt giảm độ chính xác trên nguồn ảnh lạ.

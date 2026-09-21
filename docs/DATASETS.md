@@ -111,51 +111,42 @@ data/
 
 ---
 
-## 5. Đề xuất Phương án Thử nghiệm (Pilot Proposals) — Chờ Duyệt
+## 5. Đề xuất Phương án Thử nghiệm Pilot (docs/PILOT_PROTOCOL.md) — Chờ Duyệt
 
-Dự án chuẩn bị 3 phương án quy mô thử nghiệm để người dùng phê duyệt trước khi tải dữ liệu thật:
+Dựa trên kết quả kiểm toán ngữ nghĩa nhãn tại Phase 4A.3, thành phần `fr` (fully regenerated) của TGIF **không được gán nhãn là `fully_generated`** mà phải thuộc `ai_edited` hoặc cách ly. Để triệt tiêu nguy cơ shortcut nguồn dữ liệu, dự án phân tách thành kiến trúc hai nhánh độc lập trước khi mở rộng sang 3 lớp:
 
-### Phương án Pilot A — Pipeline Smoke (Kiểm thử Kỹ thuật)
-* **Sample Count**: 10–50 ảnh.
-* **Compressed Bytes**: 0 byte (dùng `synthetic-smoke` nội bộ) hoặc ~40.4 MB (chỉ tải thư mục `masks` của TGIF).
-* **Estimated Extracted Bytes**: ~50 MB.
-* **Required Disk Space**: $\ge 1\text{ GB}$.
-* **Required Compute**: CPU thông thường (không cần GPU).
-* **Expected Runtime**: $< 1$ phút.
-* **License**: Project-Internal / CC BY-SA 4.0.
-* **Scientific Purpose**: `pipeline-only` (kiểm tra acquisition adapter, mã băm SHA-256, manifest parser, DataLoader batching). Không tạo metric khoa học.
-* **Limitations**: Không có giá trị đánh giá độ chính xác hay khả năng phát hiện AI.
+### Phương án Pilot A — Authentic vs AI-Edited & Localization (TGIF Matched Pairs)
+* **Cấu hình máy đọc**: `ml/configs/pilot_tgif_edit.yaml`
+* **Nguồn dữ liệu**: TGIF Nextcloud (`masks` 40.4 MB, `orig` 6.8 GB, `sd2-sp` 17.3 GB).
+* **Dung lượng nén**: 25,920,307,429 bytes (~24.1 GB).
+* **Dung lượng giải nén ước tính**: ~27 GB.
+* **Ổ đĩa trống yêu cầu**: $\ge 55\text{ GB}$.
+* **Số ảnh**: 3,124 authentic + 74,976 inpaintings + 3,124 binary masks (hoặc tập mẫu cân bằng 3,124 ảnh mỗi lớp).
+* **Ưu điểm khoa học**: Cả ảnh thật và ảnh chỉnh sửa đều xuất phát từ cùng một nguồn ảnh MS-COCO (matched pairs), triệt tiêu hoàn toàn rủi ro cross-dataset shortcut.
+* **Mục tiêu khoa học**: Phân loại nhị phân `authentic` vs `ai_edited` và định vị vùng chỉnh sửa với ground-truth mask (Macro-F1, Balanced Acc, mIoU, Dice, Pixel AUROC).
+* **Phương án rút gọn tối thiểu (Low-Bandwidth Option)**: Tải trước `masks` (40.4 MB) + `orig` (6.8 GB) = 6.84 GB để kiểm thử pipeline định vị trước khi tải `sd2-sp`.
 
-### Phương án Pilot B — Exploratory Three-Class (Đề xuất Khuyến nghị cho Khóa luận)
-* **Sample Count**: ~3,000 ảnh (cân bằng 3 lớp: ~1,000 `authentic`, ~1,000 `fully_generated`, ~1,000 `ai_edited`).
-  - `authentic`: Lấy từ TGIF `orig` (MS-COCO camera authentic).
-  - `ai_edited`: Lấy từ TGIF `sd2-sp` hoặc `ps-sp` (cùng source ID với ảnh authentic).
-  - `fully_generated`: Lấy từ TGIF `sd2-fr` / `sdxl-fr` hoặc GenImage BigGAN sample.
-* **Compressed Bytes**: ~14–15 GB (tải thư mục `masks` 40.4 MB, `orig` 6.8 GB, và `sd2-fr` 7.1 GB từ Nextcloud TGIF).
-* **Estimated Extracted Bytes**: ~17–18 GB.
-* **Required Disk Space**: $\ge 35\text{ GB}$ trống.
-* **Required Compute**: GPU cá nhân (VRAM $\ge 6\text{ GB}$) hoặc Google Colab T4 / CPU đa luồng (chạy trong vài giờ).
-* **Expected Runtime**: 2–4 giờ huấn luyện thử nghiệm.
-* **License**: CC BY-SA 4.0 (MS-COCO CC BY 4.0) — Quarantined trong Research Track.
-* **Scientific Purpose**: `exploratory pilot` (chạy thử nghiệm training loop 3 lớp hoàn chỉnh, đo CPU/GPU time thật, kiểm tra leakage qua group split, kiểm tra loss convergence và xuất ONNX).
-* **Limitations**: Số lượng mẫu giới hạn ở mức pilot khám phá; toàn bộ metric gắn nhãn `exploratory, not publication-grade`.
+### Phương án Pilot B — Authentic vs Fully-Generated (GenImage Controlled Pairs)
+* **Cấu hình máy đọc**: `ml/configs/pilot_genimage_generated.yaml`
+* **Nguồn dữ liệu**: GenImage BigGAN split archive (`imagenet_ai_0419_biggan.z01` – `.zip`).
+* **Dung lượng nén**: 23,516,377,048 bytes (~21.9 GB / ~24 GB).
+* **Dung lượng giải nén ước tính**: ~26 GB.
+* **Ổ đĩa trống yêu cầu**: $\ge 60\text{ GB}$.
+* **Số ảnh**: ~16,000–20,000 ảnh (~2,000 ảnh trong validation split cân bằng 1,000 real / 1,000 fake).
+* **Ưu điểm khoa học**: Phân loại nhị phân trong cùng phân phối ImageNet của GenImage tác giả.
+* **Mục tiêu khoa học**: Phân loại `authentic` vs `fully_generated` và đo lường suy giảm khi kiểm thử trên generator chưa thấy (cross-generator drop).
 
-### Phương án Pilot C — Confirmatory Benchmark (Đánh giá Đầy đủ)
-* **Sample Count**: Toàn bộ split chính thức (>80,000 ảnh từ GenImage và TGIF).
-* **Compressed Bytes**: ~90 GB (BigGAN ~24 GB + TGIF 65.4 GB).
-* **Estimated Extracted Bytes**: ~100 GB.
-* **Required Disk Space**: $\ge 220\text{ GB}$ trống.
-* **Required Compute**: GPU chuyên dụng (NVIDIA A100 / RTX 3090/4090, VRAM $\ge 16\text{ GB}$).
-* **Expected Runtime**: 24–48 giờ.
-* **License**: CC BY-NC-SA 4.0 / CC BY-SA 4.0 — Research Track.
-* **Scientific Purpose**: `scientific-benchmark` (đánh giá chính thức in-domain, cross-generator, unseen generator, calibration ECE, báo cáo khoảng tin cậy 95% phục vụ bài báo khoa học).
-* **Limitations**: Đòi hỏi tài nguyên tính toán và lưu trữ vượt quá giới hạn máy cá nhân hiện tại.
+### Phương án Pilot C — Thử nghiệm Khám phá Ba Lớp (Three-Class Exploratory)
+* **Điều kiện mở cổng**: Chỉ thực hiện sau khi Pilot A và Pilot B vượt qua bài kiểm toán rò rỉ và shortcut.
+* **Nguồn dữ liệu**: Kết hợp `authentic` (TGIF `orig`), `fully_generated` (GenImage BigGAN), `ai_edited` (TGIF `sd2-sp`).
+* **Ràng buộc khoa học**: Bắt buộc huấn luyện kèm **Metadata-Only Baseline Guard** (đo lường khả năng đoán nhãn chỉ từ resolution, aspect ratio, file size, codec). Nếu mô hình thị giác không vượt trội metadata baseline $\ge 15\%$, kết quả bị coi là shortcut learning do nguồn dataset.
+* **Trạng thái**: Gắn nhãn bắt buộc là `exploratory pilot`, chưa dùng làm kết luận khẳng định cho đến khi kiểm chứng cross-dataset.
 
 ---
 
-### Kết luận Khuyến nghị (Single Recommended Pilot):
-> **Dự án đề xuất lựa chọn Phương án Pilot B (Exploratory Three-Class)** vì:
-> 1. Đây là phương án nhỏ nhất vừa đủ để tạo ra một không gian bài toán **ba lớp cân bằng hoàn chỉnh** (`authentic`, `fully_generated`, `ai_edited`).
-> 2. Khai thác tính năng của Nextcloud TGIF cho phép **tải riêng từng thư mục con** (chỉ tải `masks`, `orig` và `sd2-fr` hoặc `sd2-sp`), tiết kiệm hơn 75% băng thông so với việc tải toàn bộ 65.4 GB.
-> 3. Kiểm soát được nguy cơ **shortcut learning** nhờ sử dụng matched pairs từ cùng nguồn MS-COCO của TGIF.
-> 4. Phù hợp hoàn toàn với giới hạn tài nguyên máy tính và thời gian thực hiện khóa luận.
+### Kết luận Khuyến nghị (Recommended Acquisition Strategy):
+> **Dự án đề xuất lựa chọn Phương án Pilot A làm bước tải đầu tiên** vì:
+> 1. TGIF Nextcloud hỗ trợ tải riêng từng thư mục con độc lập.
+> 2. Cặp ảnh gốc MS-COCO và phiên bản inpainting `sd2-sp` là **matched pairs hoàn hảo**, loại bỏ $100\%$ rủi ro mô hình học đặc trưng camera/compression của dataset khác nhau.
+> 3. Cung cấp đồng thời ground-truth binary mask cho bài toán định vị (localization).
+> 4. Nếu người dùng muốn tối thiểu hóa lần tải đầu, có thể phê duyệt gói rút gọn `masks` (40.4 MB) + `orig` (6.8 GB) = 6.84 GB. Hoặc phê duyệt toàn bộ Pilot A (~24.1 GB nén, yêu cầu $\ge 55\text{ GB}$ đĩa trống).
