@@ -1,8 +1,8 @@
 # Trạng thái Dự án: Forensics Web Lab (Project State)
 
-> **Cập nhật lúc**: Phase 4A.0  
+> **Cập nhật lúc**: Phase 4A.1  
 > **Branch**: `feat/production-ai-image-forensics`  
-> **Starting commit**: `e36cdb6`  
+> **Starting commit**: `a0e71d5`  
 > **Base main commit**: `460f6d5` (bảo toàn nguyên vẹn)  
 > **Nguyên tắc cốt lõi**: Trung thực khoa học (*Scientific Honesty*), không dùng số liệu giả, không gọi kiến trúc là checkpoint, cách ly tuyệt đối hai luồng Research Track và Product Track.
 
@@ -75,8 +75,9 @@ Dự án áp dụng quy định cách ly nghiêm ngặt giữa hai luồng:
 | **Phase 3** | Hoàn thành | `6555b02` | Dataset manifest generator, adapters, perceptual hash dedup, group split chống rò rỉ, augmentation, PyTorch MobileNetV3 backbone, Focal loss, calibration, test pipeline. |
 | **Phase 3.5** | Hoàn thành | `cd59136` | Trí nhớ dự án bền vững trong Git (`AGENTS.md`, `PROJECT_STATE.md`, `CODE_MAP.md`, `SESSION_HANDOFF.md`), Truth Audit, Model Acquisition Gate v1, trung thực trạng thái không có model (`uncertain`, `confidence: null`). |
 | **Phase 3.6** | Hoàn thành | `e36cdb6` | Evidence Hardening: loại bỏ toàn bộ đường dẫn máy cá nhân, sửa các tuyên bố quá mức, thiết lập Evidence Register và schema manifest máy đọc, củng cố kiểm định Model Registry, phân định smoke test vs scientific training. |
-| **Phase 4A.0**| Hoàn thành | *Current* | Thẩm định và đính chính giấy phép dataset (GenImage, RealHD), thiết lập chính sách Dual-Track (ADR-0006), Dataset Registry máy đọc, Acquisition CLI dry-run, Synthetic smoke fixture và Contamination guards. |
-| **Phase 4A** | Chưa bắt đầu | *Chờ phê duyệt* | Chuẩn bị dữ liệu (Smoke test nội bộ hoặc lát cắt nghiên cứu theo phê duyệt của người dùng). |
+| **Phase 4A.0**| Hoàn thành | `a0e71d5` | Thẩm định và đính chính giấy phép dataset (GenImage, RealHD), thiết lập chính sách Dual-Track (ADR-0006), Dataset Registry máy đọc, Acquisition CLI dry-run, Synthetic smoke fixture và Contamination guards. |
+| **Phase 4A.1**| Hoàn thành | *Current* | Đính chính mức độ minh chứng & giấy phép tồn dư (GenImage weights unclear, synthetic-smoke fixture-only), kiểm tra Google Drive GenImage remote inventory, kết luận feasibility B (BigGAN multi-part ~24 GB), đề xuất 3 cấp A/B/C (`docs/GENIMAGE_ACQUISITION_PROPOSAL.md`), `--metadata-only` acquisition CLI, external download lock. |
+| **Phase 4A** | Chưa bắt đầu | *Chờ phê duyệt* | Chuẩn bị dữ liệu (Lựa chọn tải BigGAN archive chính thức cho Research Track hoặc giữ nguyên fixture-only). |
 | **Phase 4** | Chưa bắt đầu | *Chờ Phase 4A* | Huấn luyện mô hình thật, đo đạc chỉ số F1/ECE thật, cân chỉnh xác suất (Temperature Scaling). |
 | **Phase 5** | Chưa bắt đầu | *Chờ Phase 4* | Xuất ONNX từ checkpoint thật, parity test, lượng tử hóa INT8 thật, đo latency WASM/WebGPU thực tế trên trình duyệt. |
 
@@ -91,20 +92,22 @@ Dự án áp dụng quy định cách ly nghiêm ngặt giữa hai luồng:
 * **ONNX Parity**: `pipeline-only` (chỉ chứng minh pipeline kiểm thử chạy thành công trên mô hình PyTorch chưa huấn luyện trong unit test; chưa thực hiện trên checkpoint thật).
 * **Web Runtime & WASM Asset Budget**: `measured build artifact` (tài nguyên engine ONNX Runtime Web WASM `ort-wasm-simd-threaded.jsep.wasm` trong bundle Vite đo được 28.3 MB; đây là engine WebAssembly của runtime, KHÔNG PHẢI kích thước mô hình model weights).
 * **Chỉ số khoa học**: `not evaluated` (tuyệt đối không bịa đặt chỉ số accuracy, F1, ECE, AUROC, mIoU).
-* **Dataset**: `none` (chưa tải bất kỳ dataset nào).
-* **Synthetic Smoke Fixture**: Dữ liệu giả lập hình học/gradient do code tự sinh trong `ml/tests/fixtures/generated-smoke/`, dùng riêng cho kiểm thử pipeline, không phải dữ liệu ảnh thật.
-* **Giấy phép trọng số**: `not-applicable` (chưa có trọng số tồn tại; quyền phân phối sau này tuân thủ quy chế Dual-Track).
+* **Dataset**: `none` (chưa tải bất kỳ dataset bên ngoài nào; `external dataset bytes downloaded: 0`, `model bytes downloaded: 0`, `training runs: 0`).
+* **Synthetic Smoke Fixture**: Track `fixture-only`, purpose `fixture`, license `pending-project-license-decision`, `commercialUse: internal-testing-only`. Dữ liệu giả lập hình học/gradient do code tự sinh trong `ml/tests/fixtures/generated-smoke/`, dùng riêng cho kiểm thử loader/contract, không tham gia huấn luyện sản phẩm hay đo accuracy.
+* **GenImage Remote Inventory & Feasibility**: Remote metadata đã kiểm chứng tại Google Drive (`research/evidence/phase-4a.1/genimage-remote-inventory.json`). Kết luận khả thi: **Conclusion B** (phải tải multi-part archive chính thức, không có endpoint tải lẻ từng ảnh; archive nhỏ nhất là BigGAN gồm 8 file `.z01`–`.z07` + `.zip` với tổng dung lượng nén ~24 GB, giải nén ~26 GB, cần tối thiểu 55 GB đĩa trống).
+* **Quy chế trọng số GenImage**: `derivativeWeights: unclear` và `productionPromotion: prohibited-by-project-policy`. Giữ toàn bộ checkpoint học từ GenImage trong research track.
+* **SAGI-D, RAID, RealHD**: Track `blocked`, `licenseStatus: unverified`, `acquisitionEnabled: false`.
 
 ---
 
 ## 7. Các Blocker hiện tại
 
-1. **Cần người dùng phê duyệt phương án chuẩn bị dữ liệu cho Phase 4A**: Lựa chọn giữa Phương án 1 (Synthetic Smoke Fixture 0 byte tải mạng) và Phương án 2 (Custom smoke subset sampled from GenImage cho Research Track).
-2. **Quy định ranh giới sản phẩm**: Tuyệt đối không nạp trọng số huấn luyện từ GenImage hay bất kỳ dataset phi thương mại nào vào bản web sản phẩm.
+1. **Cần người dùng phê duyệt phương án tải dữ liệu cụ thể trước Phase 4A**: Proposal chi tiết đã lập tại `docs/GENIMAGE_ACQUISITION_PROPOSAL.md`. Người dùng cần xem xét phê duyệt hoặc từ chối tải archive BigGAN (~24 GB) cho Research Track, hoặc tiếp tục dùng `fixture-only`.
+2. **Khóa tải ngoài (External Download Lock)**: Lệnh `python -m ml.datasets.acquire --execute` đang bị khóa an toàn với thông báo `Acquisition is prepared. User approval with exact archive and byte size is required.`
 
 ---
 
 ## 8. Nhiệm vụ tiếp theo
 
-1. Trình báo cáo nghiệm thu Phase 4A.0 cho người dùng.
-2. Dừng lại chờ chỉ thị chính thức của người dùng về việc cấp phép phương án dữ liệu trước khi chuyển sang tải dữ liệu hoặc huấn luyện.
+1. Trình báo cáo nghiệm thu Phase 4A.1 cho người dùng kèm proposal 3 cấp (`docs/GENIMAGE_ACQUISITION_PROPOSAL.md`).
+2. Dừng lại chờ chỉ thị phê duyệt chính thức của người dùng về dataset, archive, dung lượng byte trước khi kích hoạt bất kỳ lệnh tải mạng nào.

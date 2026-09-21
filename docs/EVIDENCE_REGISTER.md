@@ -25,7 +25,20 @@ Hệ sinh thái nghiên cứu và sản phẩm của **Forensics Web Lab** tuân
 
 ---
 
-## 2. Bảng Đăng ký Minh chứng Phase 4A.0 (Data Governance & Track Isolation)
+## 2. Bảng Đăng ký Minh chứng Phase 4A.1 (Acquisition Feasibility & Residual Claim Correction)
+
+| Evidence ID | Claim | Category | Status | Artifact | Reproduction command | Result | Limitations |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **EV-LICENSE-WEIGHTS-INTERPRETATION-001** | GenImage cấm sử dụng thương mại dataset và derivative works; tình trạng pháp lý của checkpoint là `unclear`, chính sách dự án là `prohibited-by-project-policy` đối với sản phẩm. | `license` | `verified` | [DATA_LICENSES.md](docs/DATA_LICENSES.md) | `git log -1 docs/DATA_LICENSES.md` | Tách biệt nguồn điều khoản (`prohibited_for_commercial_use`), giải thích pháp lý (`unclear`) và chính sách dự án (`production_use: prohibited`). | Chính sách bảo thủ của dự án; chưa phải ý kiến tư vấn pháp lý chính thức. |
+| **EV-FIXTURE-TRACK-001** | `synthetic-smoke` được định danh lại vào luồng `fixture-only` (`purpose: fixture`), chỉ dùng kiểm thử kỹ thuật pipeline và tuyệt đối không tham gia huấn luyện hay đánh giá sản phẩm. | `dataset` | `verified` | [registry.json](datasets/registry.json) | `pnpm --filter @forensics/shared test` | Validator và schema từ chối `fixture-only` trong model lineage sản phẩm; `commercialUse: internal-testing-only`. | Chỉ là dữ liệu hình học giả lập sinh bằng script nội bộ. |
+| **EV-GENIMAGE-REMOTE-METADATA-001** | Metadata thư mục Google Drive chính thức của GenImage (`1jGt10bwTbhEZuGXLyvrCuxOI0cBqQ1FS`) được khảo sát trực tiếp: chứa 8 thư mục generator lưu dưới dạng file nén phân mảnh multi-part zip (`.z01` .. `.zip`). | `dataset` | `verified` | [genimage-remote-inventory.json](research/evidence/phase-4a.1/genimage-remote-inventory.json) | `git log -1 research/evidence/phase-4a.1/genimage-remote-inventory.json` | 16 mục được ghi nhận; thư mục BigGAN (`1ajlTuN34gLyJWxRQ6NyUcnkfrS8QEVKt`) gồm 8 file split volumes `imagenet_ai_0419_biggan.z01` .. `.zip`. | Khảo sát bằng browser inspection; không tải file zip nội dung. |
+| **EV-GENIMAGE-SUBSET-FEASIBILITY-001** | Nguồn chính thức GenImage không hỗ trợ tải trực tiếp từng ảnh hoặc tập con 50-100 ảnh; bắt buộc phải tải archive nén phân mảnh hoàn chỉnh rồi mới lấy mẫu (Kết luận B). | `dataset` | `verified` | [GENIMAGE_ACQUISITION_PROPOSAL.md](docs/GENIMAGE_ACQUISITION_PROPOSAL.md) | `git log -1 docs/GENIMAGE_ACQUISITION_PROPOSAL.md` | Archive nhỏ nhất phù hợp là BigGAN (~24 GB compressed, estimated ~26 GB uncompressed, yêu cầu ổ đĩa >= 55 GB); loại bỏ hoàn toàn con số <50 MB cho nguồn chính thức. | Việc lấy mẫu 10-50 ảnh chỉ thực hiện được sau khi đã tải và giải nén toàn bộ archive. |
+| **EV-EXTERNAL-DOWNLOAD-LOCK-001** | Thao tác tải dataset ngoài được khóa chặt chẽ (`acquisitionEnabled: false`, `approvalStatus: pending-user-approval`), yêu cầu sự phê duyệt tường minh kèm tên archive và dung lượng byte chính xác từ người dùng. | `dataset` | `verified` | [acquire.py](ml/datasets/acquire.py) | `ml/.venv/Scripts/python -m ml.datasets.acquire --dataset genimage --track research --execute` | Lệnh execute trả về thông báo khóa và yêu cầu phê duyệt; riêng `synthetic-smoke --execute` sinh fixture cục bộ (0 network, 0 external bytes). | Ngăn chặn việc vô tình kích hoạt tải dữ liệu lớn khi chưa cấp phép. |
+| **EV-LOCAL-LINK-SCAN-001** | Toàn bộ tài liệu, manifest và code trong repository đạt 0 liên kết máy cá nhân (`file:///`, `C:\`, `D:\`, `/Users/`, `/home/`). | `test-ts` | `verified` | [dataset-registry.test.ts](packages/shared/src/__tests__/dataset-registry.test.ts) | `pnpm --filter @forensics/shared test -t "Repository Clean Link"` | 0 liên kết máy cá nhân trong toàn bộ cây thư mục; phân biệt rõ ví dụ minh họa và liên kết thực. | Duy trì kiểm tra tự động trong CI/test suite. |
+
+---
+
+## 3. Bảng Đăng ký Minh chứng Phase 4A.0 (Data Governance & Track Isolation)
 
 | Evidence ID | Claim | Category | Status | Artifact | Reproduction command | Result | Limitations |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |

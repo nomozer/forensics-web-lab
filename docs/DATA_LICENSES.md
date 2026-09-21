@@ -33,8 +33,14 @@ Mỗi tập dữ liệu được thẩm định trực tiếp từ nguồn chín
   1. Chỉ được dùng cho mục đích phi thương mại (nghiên cứu khoa học, giảng dạy, công bố học thuật).
   2. Nghiêm cấm sử dụng tập dữ liệu và các **sản phẩm phái sinh (derivative works)** cho bất kỳ mục đích thương mại nào.
   3. Bắt buộc bảo lưu ghi công (attribution) và chia sẻ tương tự (share-alike).
-* **Quyền phân phối trọng số phái sinh**: `prohibited` đối với sản phẩm thương mại; chỉ được dùng nội bộ trong nghiên cứu.
-* **Phân loại luồng**: **`research-only`**. Tuyệt đối không đưa mô hình huấn luyện từ GenImage vào Product Track.
+* **Tình trạng trọng số phái sinh và cách diễn đạt chuẩn mực**:
+  - `source_terms.dataset_derivative_works`: `prohibited_for_commercial_use`
+  - `legal_interpretation.trained_weights_status`: `unclear`
+  - `project_policy.production_use`: `prohibited`
+  - `project_policy.research_use`: `allowed_subject_to_terms`
+  - `productionPromotion`: `prohibited-by-project-policy`
+  > *GenImage cấm sử dụng thương mại dataset và derivative works. Việc checkpoint có được xem là derivative work hay không chưa được dự án xác lập bằng ý kiến pháp lý. Chính sách bảo thủ của dự án là giữ toàn bộ checkpoint học từ GenImage trong research track.*
+* **Phân loại luồng**: **`research-only`** (`purpose: scientific-benchmark`). Tuyệt đối không đưa mô hình huấn luyện từ GenImage vào Product Track.
 * **Lưu ý về tập con**: Không tồn tại dataset chính thức tên "GenImage Mini". Mọi tập con mẫu nhỏ dùng để thử nghiệm kỹ thuật được định danh là **`Custom smoke subset sampled from GenImage`** (hoặc `Project-defined GenImage smoke subset`), vẫn kế thừa đầy đủ điều khoản `CC BY-NC-SA 4.0 with additional dataset terms`.
 
 ### 2.2 RealHD
@@ -45,47 +51,64 @@ Mỗi tập dữ liệu được thẩm định trực tiếp từ nguồn chín
 * **Giấy phép mã nguồn**: `unverified`
 * **Giấy phép dữ liệu**: `unverified` (Chưa công bố văn bản giấy phép chính thức).
 * **Quyền phân phối trọng số**: `unclear`
-* **Quyết định thẩm định**: **`blocked`**. Không tự ý suy đoán RealHD là CC-BY-NC hay bất kỳ giấy phép nào khi tác giả chưa phát hành chính thức.
+* **Quyết định thẩm định**: **`blocked`** (`status: blocked`, `acquisitionEnabled: false`). Không tự ý suy đoán RealHD là CC-BY-NC hay bất kỳ giấy phép nào khi tác giả chưa phát hành chính thức.
 
 ### 2.3 SAGI-D (Synthetic and AI-Generated Inpainting Dataset)
 * **Tác giả / Tổ chức**: MEVER Team
 * **Kho mã nguồn**: [GitHub: mever-team/SAGI](https://github.com/mever-team/SAGI)
 * **Kênh phân phối dữ liệu**: Kaggle ([sagitdataset/sagi-d](https://www.kaggle.com/datasets/sagitdataset/sagi-d))
 * **Giấy phép mã nguồn**: MIT License
-* **Giấy phép dữ liệu**: Phi thương mại / Nghiên cứu học thuật (`unverified` về quyền phân phối lại ma trận trọng số phái sinh).
+* **Giấy phép dữ liệu**: Phi thương mại / Nghiên cứu học thuật (`unverified` về bằng chứng giấy phép chính thức và quyền phân phối lại ma trận trọng số phái sinh).
 * **Quyền phân phối trọng số**: `unclear`
-* **Phân loại luồng**: **`research-only`**. Cần thẩm định thêm trước khi sử dụng cho bất kỳ mục đích nào ngoài đo lường inpainting mask.
+* **Quyết định thẩm định**: **`blocked`** (`status: proposed`, `licenseStatus: unverified`, `acquisitionEnabled: false`). Bị khóa cho đến khi thu thập đủ URL bằng chứng bản quyền chính thức.
 
 ### 2.4 RAID Benchmark
 * **Tác giả / Tổ chức**: Academic Consortium
 * **Kho mã nguồn**: [GitHub: raid-benchmark/raid](https://github.com/raid-benchmark/raid)
 * **Trang dự án**: [raid-benchmark.com](https://raid-benchmark.com)
 * **Giấy phép mã nguồn**: Apache-2.0
-* **Giấy phép dữ liệu**: Đánh giá nghiên cứu phi thương mại (tổng hợp từ nhiều mô hình sinh ảnh công cộng).
+* **Giấy phép dữ liệu**: Đánh giá nghiên cứu phi thương mại (`unverified` về quyền phân phối lại dữ liệu).
 * **Quyền phân phối trọng số**: `unclear`
-* **Phân loại luồng**: **`research-only`**. Chỉ dùng làm tập kiểm thử held-out đánh giá độ bền vững, không dùng để huấn luyện.
+* **Quyết định thẩm định**: **`blocked`** (`status: proposed`, `licenseStatus: unverified`, `acquisitionEnabled: false`). Bị khóa cho đến khi thu thập đủ URL bằng chứng bản quyền chính thức.
+
+### 2.5 Synthetic Smoke Fixture
+* **Nguồn**: Mã nguồn dự án tại `ml/tests/fixtures/smoke_generator.py`
+* **Quyền sở hữu (Ownership)**: `project-generated`
+* **Trạng thái giấy phép**: `pending-project-license-decision`
+* **Mục đích thương mại**: `internal-testing-only`
+* **Phân loại luồng**: **`fixture-only`** (`purpose: fixture`).
+* **Phạm vi áp dụng**:
+  - Cho phép: Kiểm tra manifest, kiểm tra loader, kiểm tra split, kiểm tra forward/backward kỹ thuật, kiểm tra export contract.
+  - Cấm: Không tham gia huấn luyện checkpoint sản phẩm, không đánh giá accuracy hay năng lực phát hiện AI thực tế, không thuộc product model lineage.
 
 ---
 
-## 3. Bảng Tổng hợp Thẩm định Giấy phép
+## 3. Bảng Tổng hợp Thẩm định Giấy phép & Phân luồng Mục đích
 
-| Dataset ID | Nguồn Chính thức | Code License | Dataset License | Thương mại? | Trọng số phái sinh | Khả dụng | Quyết định Track |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| `genimage` | GitHub / Paper | Apache-2.0 | `CC BY-NC-SA 4.0 with additional dataset terms` | Cấm (`prohibited`) | Cấm thương mại (`prohibited`) | Khả dụng (`available`) | **`research-only`** |
-| `realhd` | GitHub / Project page | `unverified` | `unverified` | Chưa rõ (`unclear`) | Chưa rõ (`unclear`) | Chưa phát hành (`pending`) | **`blocked`** |
-| `sagi-d` | GitHub / Kaggle | MIT | Research / Academic (`unverified`) | Cấm (`prohibited`) | Chưa rõ (`unclear`) | Khả dụng (`available`) | **`research-only`** |
-| `raid` | GitHub / Project page | Apache-2.0 | Research Evaluation Only | Cấm (`prohibited`) | Chưa rõ (`unclear`) | Khả dụng (`available`) | **`research-only`** |
-| `synthetic-smoke` | Mã nguồn nội bộ repo | Project-Internal | Project-Internal | Cho phép (`allowed`) | Cho phép (`allowed`) | Khả dụng (`available`) | **`product-eligible`** |
+| Dataset ID | Purpose | Nguồn Chính thức | Code License | Dataset License | Thương mại? | Trọng số phái sinh | Production Promotion | Quyết định Track |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| `genimage` | `scientific-benchmark` | GitHub / Paper | Apache-2.0 | `CC BY-NC-SA 4.0 with terms` | Cấm (`prohibited`) | Chưa rõ (`unclear`) | `prohibited-by-project-policy` | **`research-only`** |
+| `realhd` | `scientific-benchmark` | GitHub / Project page | `unverified` | `unverified` | Chưa rõ (`unclear`) | Chưa rõ (`unclear`) | `prohibited-by-project-policy` | **`blocked`** |
+| `sagi-d` | `scientific-benchmark` | GitHub / Kaggle | MIT | `unverified` | Cấm (`prohibited`) | Chưa rõ (`unclear`) | `prohibited-by-project-policy` | **`blocked`** |
+| `raid` | `scientific-benchmark` | GitHub / Project page | Apache-2.0 | `unverified` | Cấm (`prohibited`) | Chưa rõ (`unclear`) | `prohibited-by-project-policy` | **`blocked`** |
+| `synthetic-smoke` | `fixture` | Mã nguồn nội bộ repo | Project-Internal | `pending-project-license-decision` | Nội bộ (`internal-testing-only`) | Chưa rõ (`unclear`) | `prohibited-by-project-policy` | **`fixture-only`** |
 
 ---
 
 ## 4. Giao thức Tải Dữ liệu và Kiểm soát Ô nhiễm (Contamination Gatekeeper)
 
-1. **Không tải tự động**: Mọi script tải dữ liệu trong `ml/datasets/` mặc định chỉ chạy ở chế độ `--dry-run`.
-2. **Cấm vượt luồng (Strict Track Isolation)**:
-   - Tuyệt đối từ chối nạp dataset `research-only` vào cấu hình huấn luyện `product`.
-   - Tuyệt đối từ chối đăng ký checkpoint bắt nguồn từ `research-only` vào `models/registry.json` của sản phẩm.
-3. **Điều kiện tải thật (Future Execution)**:
-   - Phải có cờ `--execute`.
-   - Phải gõ xác nhận chính xác mã giấy phép qua `--accept-license <exact-license-id>`.
-   - Phải khai báo ngưỡng dung lượng tối đa qua `--expected-bytes <number>`.
+1. **Mặc định không tải nội dung**: Mọi script tải dữ liệu trong `ml/datasets/acquire.py` chỉ hoạt động ở chế độ `--metadata-only` hoặc `--dry-run`.
+2. **Khóa tải ngoài (External Acquisition Lock)**:
+   - Toàn bộ dataset ngoài duy trì `acquisitionEnabled: false` và `approvalStatus: pending-user-approval`.
+   - Lệnh gọi tải với `--execute` trả về: `Acquisition is prepared. User approval with exact archive and byte size is required.`
+3. **Thực thi cục bộ (Local Fixture Generation)**:
+   - Riêng dataset `synthetic-smoke` với cờ `--execute` thực hiện sinh dữ liệu thử nghiệm cục bộ thuần túy từ code:
+     - `operation: local deterministic fixture generation`
+     - `networkRequests: 0`
+     - `externalBytesDownloaded: 0`
+     - `classification: local-test-execution`
+4. **Mức độ bảo vệ của `.gitignore`**:
+   - Khẳng định bảo vệ được: **verified against the tested extension and path matrix**.
+   - Ma trận phần mở rộng đã kiểm thử: `.png`, `.jpg`, `.jpeg`, `.webp`, `.pt`, `.pth`, `.onnx`, `.bin`, `.safetensors`, `.zip`, `.tar.gz`.
+   - Ma trận đường dẫn đã kiểm thử: `data/research/*`, `data/product/*`, `models/product/*`, `models/research/*`, `artifacts/research/*`, `artifacts/product/*`, `ml/tests/fixtures/generated-smoke/*`.
+

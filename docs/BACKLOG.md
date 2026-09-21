@@ -10,7 +10,8 @@ graph TD
   P3 --> P35[Phase 3.5: Persistent Memory, Truth Audit & Model Readiness]
   P35 --> P36[Phase 3.6: Evidence Hardening & Claim Correction]
   P36 --> P4A0[Phase 4A.0: License Correction, Track Isolation & Acquisition Dry-Run]
-  P4A0 --> P4A[Phase 4A: Data Preparation & Smoke Fixtures]
+  P4A0 --> P4A1[Phase 4A.1: Acquisition Feasibility & Residual Correction]
+  P4A1 --> P4A[Phase 4A: Data Preparation & Acquisition Approval]
   P4A --> P4[Phase 4: Model Training & Evaluation]
   P4 --> P5[Phase 5: ONNX Browser Integration]
   P2 --> P5
@@ -134,8 +135,22 @@ graph TD
 
 ---
 
+### Phase 4A.1: Acquisition Feasibility & Residual Evidence Correction (Hoàn thành)
+* [x] **TASK-4A101**: Re-classify GenImage derivative weights as `unclear` and project policy as `prohibited-by-project-policy`.
+* [x] **TASK-4A102**: Re-classify `synthetic-smoke` to `fixture-only`, purpose `fixture`, commercialUse `internal-testing-only`.
+* [x] **TASK-4A103**: Block unverified datasets (SAGI-D, RAID, RealHD) with `track: blocked`, `licenseStatus: unverified`, `acquisitionEnabled: false`.
+* [x] **TASK-4A104**: Audit official GenImage Google Drive folder (`1jGt10bwTbhEZuGXLyvrCuxOI0cBqQ1FS`) and record remote metadata in `research/evidence/phase-4a.1/genimage-remote-inventory.json`.
+* [x] **TASK-4A105**: Establish subset feasibility Conclusion B (must download official multi-part archive sequence; BigGAN archive is smallest at ~24 GB; no < 50 MB partial downloading).
+* [x] **TASK-4A106**: Author 3-tier acquisition proposal `docs/GENIMAGE_ACQUISITION_PROPOSAL.md` (smoke, exploratory pilot, scientific benchmark).
+* [x] **TASK-4A107**: Implement `--metadata-only` and external download lock in `ml/datasets/acquire.py` (fail-closed requiring user approval).
+* [x] **TASK-4A108**: Update `.gitignore` statement to "verified against the tested extension and path matrix" and register local test fixture path.
+* [x] **TASK-4A109**: Scan and verify 0 machine-local links across documentation.
+* [x] **TASK-4A110**: Record Phase 4A.1 evidence items in `docs/EVIDENCE_REGISTER.md` and evidence manifest.
+
+---
+
 ### Phase 4A: Data Preparation & Smoke Fixtures (Chờ người dùng phê duyệt)
-* [ ] **TASK-4A1**: User decision on Phase 4A dataset pathway (Option 1: Synthetic Smoke Fixture vs Option 2: Custom smoke subset sampled from GenImage).
+* [ ] **TASK-4A1**: User decision on Phase 4A dataset pathway (Option 1: Synthetic Smoke Fixture vs Option 2: BigGAN official archive acquisition for Research Track).
 * [ ] **TASK-4A2**: Prepare authorized dataset/fixture splits with group-based anti-leakage isolation.
 
 ---

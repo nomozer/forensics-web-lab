@@ -31,10 +31,11 @@ When determining the open release or distribution terms for Forensics Web Lab, t
    * All chosen npm libraries (React, Vite, `onnxruntime-web`) are distributed under standard permissive licenses (MIT, Apache 2.0).
 2. **Machine Learning Datasets**:
    * Mỗi tập dữ liệu học thuật sở hữu giấy phép và điều khoản riêng biệt, không dùng một giấy phép chung:
-     * **GenImage**: Được phát hành dưới điều khoản `CC BY-NC-SA 4.0 with additional dataset terms`, cấm sử dụng thương mại đối với cả dataset lẫn các sản phẩm phái sinh (derivative works). Chỉ được sử dụng trong **Research Track**.
+     * **GenImage**: Được phát hành dưới điều khoản `CC BY-NC-SA 4.0 with additional dataset terms`, cấm sử dụng thương mại đối với cả dataset lẫn các sản phẩm phái sinh (derivative works). Việc checkpoint có cấu thành derivative work hay không chưa có kết luận pháp lý thống nhất (`legal_interpretation.trained_weights_status: unclear`). Theo chính sách bảo thủ của dự án, toàn bộ mô hình huấn luyện từ GenImage bị cấm đưa vào sản phẩm (`productionPromotion: prohibited-by-project-policy`) và chỉ lưu tại **Research Track**.
      * **RealHD**: Trạng thái hiện tại là `unavailable-or-pending` ("Coming soon" trên GitHub), giấy phép `unverified`, tình trạng `blocked`. Tuyệt đối không suy diễn giấy phép khi chưa có nguồn chính thức.
-     * **SAGI-D / RAID**: Dành riêng cho nghiên cứu học thuật phi thương mại (`research-only`).
-   * Trọng số mô hình huấn luyện từ các tập dữ liệu phi thương mại trên **tuyệt đối không được đưa vào ứng dụng web sản phẩm (`models/product/`)**.
+     * **SAGI-D / RAID**: Đang ở trạng thái `blocked` (`status: proposed`, `licenseStatus: unverified`, `acquisitionEnabled: false`) cho đến khi thu thập đủ URL bằng chứng bản quyền chính thức.
+     * **Synthetic Smoke Fixture**: Dữ liệu giả lập hình học/gradient/nhiễu sinh cục bộ bằng code, xếp vào **`fixture-only`** (`purpose: fixture`, `ownership: project-generated`, `licenseStatus: pending-project-license-decision`, `commercialUse: internal-testing-only`). Không thuộc product model lineage.
+   * Trọng số mô hình huấn luyện từ các tập dữ liệu phi thương mại hoặc thử nghiệm trên **tuyệt đối không được đưa vào ứng dụng web sản phẩm (`models/product/`)**.
    * Mô hình sản phẩm chỉ được huấn luyện từ tập dữ liệu thuộc **Product Track** (dữ liệu tự sở hữu hoặc có quyền thương mại rõ ràng).
 
 ---

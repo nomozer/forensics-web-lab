@@ -1,0 +1,98 @@
+{
+  "schemaVersion": "1.0.0",
+  "phase": "Phase 4A.1",
+  "commitAudited": "a0e71d5",
+  "timestampUtc": "2026-09-21T08:45:00Z",
+  "items": [
+    {
+      "evidenceId": "EV-LICENSE-WEIGHTS-INTERPRETATION-001",
+      "claim": "GenImage derivative weights legal status is unclear under author additional terms; project policy conservatively quarantines all derived checkpoints to research track and prohibits product promotion",
+      "category": "license",
+      "status": "verified",
+      "artifact": "docs/DATA_LICENSES.md",
+      "reproductionCommand": "git log -1 docs/DATA_LICENSES.md",
+      "result": "Separated source terms (prohibited_for_commercial_use), legal interpretation (unclear), and project policy (production_use: prohibited)",
+      "limitations": "Conservative project policy; not a formal court ruling or legal opinion"
+    },
+    {
+      "evidenceId": "EV-FIXTURE-TRACK-001",
+      "claim": "Synthetic smoke fixture is classified into fixture-only track for internal pipeline testing and strictly prohibited from product model lineage or accuracy claims",
+      "category": "dataset",
+      "status": "verified",
+      "artifact": "datasets/registry.json",
+      "reproductionCommand": "pnpm --filter @forensics/shared test",
+      "result": "Track set to fixture-only, purpose set to fixture, commercialUse set to internal-testing-only; model lineage validator rejects fixture datasets",
+      "limitations": "Generated mathematical/geometric patterns; cannot evaluate real AI forensics accuracy"
+    },
+    {
+      "evidenceId": "EV-GENIMAGE-REMOTE-METADATA-001",
+      "claim": "Official GenImage Google Drive repository (1jGt10bwTbhEZuGXLyvrCuxOI0cBqQ1FS) metadata inspected live: contains 8 generator folders distributed exclusively as multi-part split zip archives",
+      "category": "dataset",
+      "status": "verified",
+      "artifact": "research/evidence/phase-4a.1/genimage-remote-inventory.json",
+      "reproductionCommand": "git log -1 research/evidence/phase-4a.1/genimage-remote-inventory.json",
+      "result": "16 remote items inventoried; BigGAN folder (1ajlTuN34gLyJWxRQ6NyUcnkfrS8QEVKt) contains 8 split zip volumes imagenet_ai_0419_biggan.z01 to .zip",
+      "limitations": "Browser inspection of official remote folder structure; 0 archive content bytes downloaded"
+    },
+    {
+      "evidenceId": "EV-GENIMAGE-SUBSET-FEASIBILITY-001",
+      "claim": "Official GenImage source does not support direct downloading of individual images or small 50-100 image subsets without downloading complete split archive sequences (Conclusion B)",
+      "category": "dataset",
+      "status": "verified",
+      "artifact": "docs/GENIMAGE_ACQUISITION_PROPOSAL.md",
+      "reproductionCommand": "git log -1 docs/GENIMAGE_ACQUISITION_PROPOSAL.md",
+      "result": "Smallest viable official generator archive identified as BigGAN (~24 GB compressed, estimated ~26 GB uncompressed, requiring >= 55 GB disk space); <50 MB assumption refuted",
+      "limitations": "Sampling 10-50 images is only possible downstream after fetching and unzipping full multi-part archive"
+    },
+    {
+      "evidenceId": "EV-EXTERNAL-DOWNLOAD-LOCK-001",
+      "claim": "External dataset downloading is locked (acquisitionEnabled: false, approvalStatus: pending-user-approval); --execute requires explicit user approval with exact archive and byte size",
+      "category": "dataset",
+      "status": "verified",
+      "artifact": "ml/datasets/acquire.py",
+      "reproductionCommand": "ml/.venv/Scripts/python -m ml.datasets.acquire --dataset genimage --track research --execute",
+      "result": "External execution blocked with clear prompt; local fixture generation with synthetic-smoke --execute succeeds with 0 network requests and 0 external bytes",
+      "limitations": "CLI enforcement guard; prevents accidental large downloads"
+    },
+    {
+      "evidenceId": "EV-LOCAL-LINK-SCAN-001",
+      "claim": "Zero machine-local links exist across repository markdown and JSON documentation, verified by automated link audit scanner",
+      "category": "test-ts",
+      "status": "verified",
+      "artifact": "packages/shared/src/__tests__/dataset-registry.test.ts",
+      "reproductionCommand": "pnpm --filter @forensics/shared test -t \"Repository Clean Link\"",
+      "result": "0 machine-local links found across docs/, datasets/, models/, research/, and README.md; documentation examples in backticks preserved",
+      "limitations": "Scans markdown link syntax [text](path) for file:/// and machine root paths"
+    },
+    {
+      "evidenceId": "EV-ZEROEGRESS-001",
+      "claim": "Zero server egress claim is supported by client-side browser architecture; real-world automated network verification remains unverified",
+      "category": "no-model",
+      "status": "unverified",
+      "artifact": "docs/PRIVACY.md",
+      "reproductionCommand": "git log -1 docs/PRIVACY.md",
+      "result": "Claim classified as architecture-supported, runtime-network-verification: unverified; recorded in backlog TASK-E2E-001",
+      "limitations": "Requires browser E2E test with automated network request interception"
+    },
+    {
+      "evidenceId": "EV-WASM-BUDGET-001",
+      "claim": "Production build bundle includes 28.3 MB WebAssembly engine (ort-wasm-simd-threaded.jsep.wasm); verified as inference runtime binary rather than model weights",
+      "category": "build",
+      "status": "verified",
+      "artifact": "research/evidence/phase-4a.1/build-summary.json",
+      "reproductionCommand": "pnpm build",
+      "result": "Vite production build output accurately accounts for 28,312.03 kB ONNX Runtime WebAssembly execution engine binary",
+      "limitations": "Measures uncompressed disk size of static asset; runtime latency and cache behavior tracked in backlog TASK-WEB-001"
+    },
+    {
+      "evidenceId": "EV-SCIENCE-002",
+      "claim": "All scientific detection accuracy, cross-generator generalizability, inpainting localization mIoU, and ECE calibration metrics remain unverified",
+      "category": "science",
+      "status": "unverified",
+      "artifact": "models/MODEL_CARD.md",
+      "reproductionCommand": "git log -1 models/MODEL_CARD.md",
+      "result": "No synthetic or speculative accuracy numbers are claimed; all metrics honestly documented as not evaluated",
+      "limitations": "Model not trained; evaluation deferred to future phases"
+    }
+  ]
+}

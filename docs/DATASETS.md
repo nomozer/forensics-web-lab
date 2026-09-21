@@ -29,40 +29,47 @@ data/
 ## 2. Danh mục Dữ liệu Khảo sát (Dataset Catalog)
 
 ### 2.1 GenImage
-* **Mục đích**: Nghiên cứu phát hiện toàn ảnh nhân tạo từ nhiều bộ tạo sinh khác nhau.
+* **Mục đích**: Nghiên cứu phát hiện toàn ảnh nhân tạo từ nhiều bộ tạo sinh khác nhau (`purpose: scientific-benchmark`).
 * **Nguồn chính thức**: [GitHub: GenImage-Dataset/GenImage](https://github.com/GenImage-Dataset/GenImage)
 * **Văn bản giấy phép**: [GenImage License](https://github.com/GenImage-Dataset/GenImage/blob/main/License)
 * **Giấy phép chính thức**: `CC BY-NC-SA 4.0 with additional dataset terms`
 * **Hạn chế pháp lý**: Chỉ dùng cho mục đích phi thương mại (nghiên cứu, giảng dạy). Nghiêm cấm sử dụng dataset và **sản phẩm phái sinh (derivative works)** cho mục đích thương mại.
-* **Quyền phân phối trọng số**: `prohibited` cho bản thương mại.
+* **Tình trạng trọng số phái sinh và chính sách dự án**:
+  - `source_terms.dataset_derivative_works`: `prohibited_for_commercial_use`
+  - `legal_interpretation.trained_weights_status`: `unclear`
+  - `project_policy.production_use`: `prohibited`
+  - `project_policy.research_use`: `allowed_subject_to_terms`
+  - `productionPromotion`: `prohibited-by-project-policy`
+  > *GenImage cấm sử dụng thương mại dataset và derivative works. Việc checkpoint có được xem là derivative work hay không chưa được dự án xác lập bằng ý kiến pháp lý. Chính sách bảo thủ của dự án là giữ toàn bộ checkpoint học từ GenImage trong research track.*
 * **Phân loại luồng**: **`research-only`** (Lưu tại `data/research/genimage/`).
 * **Lưu ý quan trọng**: Không tồn tại dataset chính thức tên "GenImage Mini". Mọi tập con mẫu nhỏ do dự án tự lấy mẫu phục vụ thử nghiệm kỹ thuật được gọi là **`Custom smoke subset sampled from GenImage`** (hoặc `Project-defined GenImage smoke subset`), vẫn kế thừa đầy đủ điều khoản `CC BY-NC-SA 4.0 with additional dataset terms`.
 
 ### 2.2 RealHD
-* **Mục đích**: Khảo sát phát hiện can thiệp cục bộ độ phân giải cao.
+* **Mục đích**: Khảo sát phát hiện can thiệp cục bộ độ phân giải cao (`purpose: scientific-benchmark`).
 * **Trang dự án**: [real-hd.github.io](https://real-hd.github.io)
 * **Kho mã nguồn**: [GitHub: Hanzhe-yu/RealHD](https://github.com/Hanzhe-yu/RealHD)
 * **Tình trạng khả dụng**: `unavailable-or-pending` (Kho mã nguồn tác giả tại thời điểm kiểm tra hiển thị "Coming soon").
 * **Giấy phép**: `unverified` (Chưa công bố văn bản giấy phép chính thức).
-* **Quyết định**: **`blocked`**. Nghiêm cấm suy đoán giấy phép khi chưa có văn bản công khai.
+* **Quyết định**: **`blocked`** (`status: blocked`, `acquisitionEnabled: false`). Nghiêm cấm suy đoán giấy phép khi chưa có văn bản công khai.
 
 ### 2.3 SAGI-D (Synthetic and AI-Generated Inpainting Dataset)
-* **Mục đích**: Nghiên cứu phát hiện và định vị inpainting cục bộ (`ai_edited`).
+* **Mục đích**: Nghiên cứu phát hiện và định vị inpainting cục bộ (`ai_edited`, `purpose: scientific-benchmark`).
 * **Nguồn chính thức**: [GitHub: mever-team/SAGI](https://github.com/mever-team/SAGI) và Kaggle.
-* **Giấy phép mã nguồn**: MIT | **Giấy phép ảnh**: Phi thương mại / Nghiên cứu học thuật (`unverified` quyền phân phối lại ma trận trọng số).
-* **Phân loại luồng**: **`research-only`** (Lưu tại `data/research/sagi-d/`).
+* **Giấy phép mã nguồn**: MIT | **Giấy phép ảnh**: Phi thương mại / Nghiên cứu học thuật (`unverified` về bằng chứng giấy phép chính thức và quyền phân phối lại ma trận trọng số).
+* **Quyết định**: **`blocked`** (`status: proposed`, `licenseStatus: unverified`, `acquisitionEnabled: false`). Bị khóa cho đến khi xác minh đầy đủ URL bằng chứng bản quyền chính thức.
 
 ### 2.4 RAID Benchmark
-* **Mục đích**: Tập đánh giá độ bền vững trước suy giảm và nén thực tế.
+* **Mục đích**: Tập đánh giá độ bền vững trước suy giảm và nén thực tế (`purpose: scientific-benchmark`).
 * **Nguồn chính thức**: [raid-benchmark.com](https://raid-benchmark.com) | [GitHub: raid-benchmark/raid](https://github.com/raid-benchmark/raid)
-* **Giấy phép**: Apache-2.0 (code) / Nghiên cứu học thuật (ảnh).
-* **Phân loại luồng**: **`research-only`** (Dành riêng cho held-out evaluation, không dùng để huấn luyện).
+* **Giấy phép**: Apache-2.0 (code) / Nghiên cứu học thuật (`unverified` quyền phân phối lại dữ liệu).
+* **Quyết định**: **`blocked`** (`status: proposed`, `licenseStatus: unverified`, `acquisitionEnabled: false`). Dành riêng cho held-out evaluation khi mở khóa, không dùng để huấn luyện.
 
 ### 2.5 Synthetic Smoke Fixture (Dữ liệu Giả lập Nội bộ)
-* **Mục đích**: Kiểm thử thông suốt pipeline kỹ thuật (manifest, split, loader, export interface) mà không phụ thuộc dữ liệu bên ngoài.
+* **Mục đích**: Kiểm thử thông suốt pipeline kỹ thuật (manifest, split, loader, export contract) mà không phụ thuộc dữ liệu bên ngoài (`purpose: fixture`).
 * **Nguồn gốc**: Sinh 100% bằng script nội bộ dự án (`ml/tests/fixtures/generated-smoke/`).
 * **Đặc tính**: Các hình khối hình học, gradient màu và nhiễu toán học đơn giản; **tuyệt đối không phải ảnh chụp thật**.
-* **Phân loại luồng**: **`product-eligible`** (về mặt bản quyền kỹ thuật; không được dùng để đo lường độ chính xác).
+* **Phân loại luồng**: **`fixture-only`** (`commercialUse: internal-testing-only`, `ownership: project-generated`, `licenseStatus: pending-project-license-decision`).
+* **Phạm vi áp dụng**: Không tham gia huấn luyện checkpoint sản phẩm, không đánh giá accuracy hay năng lực phát hiện AI thực tế, không thuộc product model lineage.
 
 ---
 

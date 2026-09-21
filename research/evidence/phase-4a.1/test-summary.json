@@ -1,0 +1,53 @@
+{
+  "phase": "Phase 4A.1",
+  "commitAudited": "a0e71d5",
+  "timestampUtc": "2026-09-21T08:45:00Z",
+  "typescriptTests": {
+    "command": "pnpm test",
+    "exitCode": 0,
+    "packagesCount": 6,
+    "packages": [
+      { "name": "@forensics/shared", "tests": 32, "passed": 32, "failed": 0 },
+      { "name": "@forensics/provenance", "tests": 3, "passed": 3, "failed": 0 },
+      { "name": "@forensics/report", "tests": 4, "passed": 4, "failed": 0 },
+      { "name": "@forensics/forensics", "tests": 5, "passed": 5, "failed": 0 },
+      { "name": "@forensics/inference", "tests": 8, "passed": 8, "failed": 0 },
+      { "name": "web", "tests": 3, "passed": 3, "failed": 0 }
+    ],
+    "totalTests": 55,
+    "totalPassed": 55,
+    "totalFailed": 0
+  },
+  "pythonTests": {
+    "command": "ml/.venv/Scripts/python -m pytest ml/tests -v",
+    "exitCode": 0,
+    "runner": "pytest-9.1.1",
+    "totalTests": 15,
+    "totalPassed": 15,
+    "totalFailed": 0,
+    "tests": [
+      { "nodeId": "ml/tests/test_contamination_guard.py::test_official_dataset_registry_validation", "status": "PASSED" },
+      { "nodeId": "ml/tests/test_contamination_guard.py::test_reject_research_dataset_in_product_track", "status": "PASSED" },
+      { "nodeId": "ml/tests/test_contamination_guard.py::test_reject_fixture_dataset_in_product_track", "status": "PASSED" },
+      { "nodeId": "ml/tests/test_contamination_guard.py::test_reject_blocked_dataset", "status": "PASSED" },
+      { "nodeId": "ml/tests/test_contamination_guard.py::test_accept_research_dataset_in_research_track", "status": "PASSED" },
+      { "nodeId": "ml/tests/test_contamination_guard.py::test_accept_synthetic_smoke_in_fixture_track", "status": "PASSED" },
+      { "nodeId": "ml/tests/test_contamination_guard.py::test_genimage_metadata_only_run", "status": "PASSED" },
+      { "nodeId": "ml/tests/test_contamination_guard.py::test_external_dataset_execute_locked_without_approval", "status": "PASSED" },
+      { "nodeId": "ml/tests/test_contamination_guard.py::test_local_fixture_execute_succeeds_with_zero_network", "status": "PASSED" },
+      { "nodeId": "ml/tests/test_contamination_guard.py::test_synthetic_smoke_fixture_generation_and_provenance", "status": "PASSED" },
+      { "nodeId": "ml/tests/test_model_pipeline.py::test_mobilenetv3_forward_shape", "status": "PASSED" },
+      { "nodeId": "ml/tests/test_model_pipeline.py::test_focal_loss_computation", "status": "PASSED" },
+      { "nodeId": "ml/tests/test_model_pipeline.py::test_manifest_csv_roundtrip", "status": "PASSED" },
+      { "nodeId": "ml/tests/test_model_pipeline.py::test_group_split_prevents_leakage", "status": "PASSED" },
+      { "nodeId": "ml/tests/test_model_pipeline.py::test_temperature_scaler_and_ece", "status": "PASSED" }
+    ]
+  },
+  "acquisitionMetadataOnly": {
+    "command": "python -m ml.datasets.acquire --dataset genimage --track research --metadata-only",
+    "exitCode": 0,
+    "networkRequestsMade": 0,
+    "externalBytesDownloaded": 0,
+    "filesCreated": 0
+  }
+}
