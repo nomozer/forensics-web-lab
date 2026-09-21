@@ -50,6 +50,25 @@ export function validateModelRegistry(
       if (typeof item.sizeBytes !== 'number' || item.sizeBytes <= 0) {
         errors.push(`${prefix} Status '${item.status}' requires 'sizeBytes' > 0.`);
       }
+      // Task contract validation
+      if (!Array.isArray(item.inputShape) || item.inputShape.length < 2 || item.inputShape.some((dim) => typeof dim !== 'number' || dim <= 0)) {
+        errors.push(`${prefix} Status '${item.status}' requires a valid 'inputShape' task contract.`);
+      }
+      if (!Array.isArray(item.classes) || item.classes.length < 2 || item.classes.some((cls) => typeof cls !== 'string' || cls.trim() === '')) {
+        errors.push(`${prefix} Status '${item.status}' requires a valid 'classes' task contract with at least 2 classes.`);
+      }
+      // Runtime compatibility, license status, and evaluation status
+      if (item.status === 'ready') {
+        if (!Array.isArray(item.runtimeCompatibility) || item.runtimeCompatibility.length === 0) {
+          errors.push(`${prefix} Status 'ready' requires 'runtimeCompatibility' with at least one verified runtime.`);
+        }
+        if (!item.license || typeof item.license !== 'string' || ['unverified', 'unknown', 'not-applicable'].includes(item.license.trim().toLowerCase())) {
+          errors.push(`${prefix} Status 'ready' requires verified 'license' status.`);
+        }
+        if (!item.evaluationStatus || typeof item.evaluationStatus !== 'string' || ['unverified', 'not-evaluated', 'none'].includes(item.evaluationStatus.trim().toLowerCase())) {
+          errors.push(`${prefix} Status 'ready' requires verified 'evaluationStatus'.`);
+        }
+      }
       if (fsExistsSync && item.path) {
         const exists = fsExistsSync(item.path);
         if (!exists) {

@@ -1,9 +1,13 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { describe, it, expect } from 'vitest';
 import {
   validateAnalysisResult,
   validateModelRegistry,
+  validateEvidenceManifest,
   AnalysisResult,
   ModelRegistry,
+  EvidenceManifest,
   CALIBRATION_THRESHOLDS,
 } from '../index.js';
 
@@ -271,5 +275,158 @@ describe('@forensics/shared contracts', () => {
       expect(result.valid).toBe(false);
       expect(result.errors.some((e) => e.includes('Test fixtures or mock paths cannot be registered'))).toBe(true);
     });
+
+    it('rejects ready entry with invalid task contract, runtime compatibility, license, or evaluation status', () => {
+      const baseReadyModel = {
+        id: 'real-model-v1',
+        version: '1.0.0',
+        path: 'models/real_model.onnx',
+        sha256: 'e'.repeat(64),
+        sizeBytes: 1048576,
+        inputShape: [1, 3, 224, 224],
+        classes: ['authentic', 'fully_generated', 'ai_edited'],
+        opset: 17,
+        quantization: 'none' as const,
+        status: 'ready' as const,
+        license: 'unverified', // VIOLATION
+        runtimeCompatibility: [], // VIOLATION
+        evaluationStatus: 'not-evaluated', // VIOLATION
+      };
+
+      const registry: ModelRegistry = {
+        version: '1.0.0',
+        models: [baseReadyModel],
+      };
+
+      const result = validateModelRegistry(registry, () => true);
+      expect(result.valid).toBe(false);
+      expect(result.errors.some((e) => e.includes('runtimeCompatibility'))).toBe(true);
+      expect(result.errors.some((e) => e.includes('license'))).toBe(true);
+      expect(result.errors.some((e) => e.includes('evaluationStatus'))).toBe(true);
+    });
+
+    it('accepts ready entry when all 7 criteria are fully satisfied', () => {
+      const validReadyRegistry: ModelRegistry = {
+        version: '1.0.0',
+        models: [
+          {
+            id: 'real-model-v1',
+            version: '1.0.0',
+            path: 'models/real_model.onnx',
+            sha256: 'f'.repeat(64),
+            sizeBytes: 2600000,
+            inputShape: [1, 3, 224, 224],
+            classes: ['authentic', 'fully_generated', 'ai_edited'],
+            opset: 17,
+            quantization: 'int8',
+            status: 'ready',
+            license: 'Apache-2.0',
+            runtimeCompatibility: ['onnxruntime-web/wasm', 'onnxruntime-web/webgpu'],
+            evaluationStatus: 'evaluated-macro-f1-0.88',
+          },
+        ],
+      };
+
+      const result = validateModelRegistry(validReadyRegistry, () => true);
+      expect(result.valid).toBe(true);
+      expect(result.errors.length).toBe(0);
+    });
+  });
+
+  describe('Evidence Manifest Validator', () => {
+    const validManifest: EvidenceManifest = {
+      schemaVersion: '1.0.0',
+      phase: 'Phase 3.6',
+      commitAudited: 'cd59136',
+      timestampUtc: '2026-09-21T12:00:00Z',
+      items: [
+        {
+          evidenceId: 'EV-GIT-001',
+          claim: 'Repository working tree is clean and on feat/production-ai-image-forensics branch',
+          category: 'git-state',
+          status: 'verified',
+          artifact: 'research/evidence/phase-3.6/environment.json',
+          reproductionCommand: 'git status --short && git branch --show-current',
+          result: 'Working tree clean, branch feat/production-ai-image-forensics',
+          limitations: 'Local workspace environment only',
+        },
+        {
+          evidenceId: 'EV-NOMODEL-001',
+          claim: 'System outputs uncertain verdict with null confidence and null probabilities when no model is installed',
+          category: 'no-model',
+          status: 'verified',
+          artifact: 'packages/shared/src/__tests__/contracts.test.ts',
+          reproductionCommand: 'pnpm test',
+          result: 'Contracts enforce honest no-model state and reject fake predictions',
+          limitations: 'Applies to UI and report export; does not evaluate trained model accuracy',
+        },
+      ],
+    };
+
+    it('accepts a fully conforming evidence manifest', () => {
+      const result = validateEvidenceManifest(validManifest);
+      expect(result.valid).toBe(true);
+      expect(result.errors.length).toBe(0);
+    });
+
+    it('rejects manifest containing absolute machine paths', () => {
+      const manifestWithAbsPath = {
+        ...validManifest,
+        items: [
+          {
+            ...validManifest.items[0],
+            artifact: 'D:\\Documents\\forensics-web-lab\\research\\evidence\\phase-3.6\\environment.json',
+          },
+        ],
+      };
+
+      const result = validateEvidenceManifest(manifestWithAbsPath);
+      expect(result.valid).toBe(false);
+      expect(result.errors.some((e) => e.includes('absolute machine paths prohibited'))).toBe(true);
+    });
+
+    it('rejects duplicate evidence IDs', () => {
+      const manifestWithDupId = {
+        ...validManifest,
+        items: [validManifest.items[0], validManifest.items[0]],
+      };
+
+      const result = validateEvidenceManifest(manifestWithDupId);
+      expect(result.valid).toBe(false);
+      expect(result.errors.some((e) => e.includes('Duplicate evidenceId'))).toBe(true);
+    });
+
+    it('rejects status verified with unmeasured or placeholder results', () => {
+      const manifestWithUnmeasuredVerified = {
+        ...validManifest,
+        items: [
+          {
+            ...validManifest.items[0],
+            status: 'verified' as const,
+            result: 'not measured',
+          },
+        ],
+      };
+
+      const result = validateEvidenceManifest(manifestWithUnmeasuredVerified);
+      expect(result.valid).toBe(false);
+      expect(result.errors.some((e) => e.includes('cannot have unmeasured or empty result'))).toBe(true);
+    });
+
+    it('validates the real research/evidence/phase-3.6/evidence-manifest.json on disk', () => {
+      const manifestPath = path.resolve(__dirname, '../../../../research/evidence/phase-3.6/evidence-manifest.json');
+      expect(fs.existsSync(manifestPath)).toBe(true);
+
+      const rawContent = fs.readFileSync(manifestPath, 'utf-8');
+      const manifest = JSON.parse(rawContent);
+      const result = validateEvidenceManifest(manifest);
+      if (!result.valid) {
+        console.error('Validation errors:', result.errors);
+      }
+      expect(result.errors).toEqual([]);
+      expect(result.valid).toBe(true);
+      expect(manifest.items.length).toBeGreaterThanOrEqual(10);
+    });
   });
 });
+

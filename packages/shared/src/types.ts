@@ -159,6 +159,9 @@ export interface ModelRegistryItem {
   opset: number;
   quantization: 'none' | 'int8' | 'fp16' | 'int4';
   status: ModelLifecycleStatus;
+  license?: string;
+  runtimeCompatibility?: string[];
+  evaluationStatus?: string;
 }
 
 export interface ModelRegistry {
