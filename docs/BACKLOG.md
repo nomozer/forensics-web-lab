@@ -11,7 +11,8 @@ graph TD
   P35 --> P36[Phase 3.6: Evidence Hardening & Claim Correction]
   P36 --> P4A0[Phase 4A.0: License Correction, Track Isolation & Acquisition Dry-Run]
   P4A0 --> P4A1[Phase 4A.1: Acquisition Feasibility & Residual Correction]
-  P4A1 --> P4A[Phase 4A: Data Preparation & Acquisition Approval]
+  P4A1 --> P4A2[Phase 4A.2: Scope Freeze, Continuity & TGIF Audit]
+  P4A2 --> P4A[Phase 4A: Pilot Acquisition & Data Preparation]
   P4A --> P4[Phase 4: Model Training & Evaluation]
   P4 --> P5[Phase 5: ONNX Browser Integration]
   P2 --> P5
@@ -91,12 +92,12 @@ graph TD
 
 ### Phase 3.5: Persistent Memory, Implementation Truth Audit & Model Readiness (Hoàn thành - Commit `cd59136`)
 * [x] **TASK-351**: Create root `AGENTS.md` establishing persistent memory rules and scientific truthfulness.
-* [x] **TASK-352**: Create `docs/PROJECT_STATE.md` with active project status, scope, and blockers.
-* [x] **TASK-353**: Create `docs/CODE_MAP.md` mapping all modules, files, and actual verified statuses.
+* [x] **TASK-352**: Create `docs/PROJECT_STATE.md` (historical, consolidated into `docs/continuity/CURRENT_STATE.md`).
+* [x] **TASK-353**: Create `docs/CODE_MAP.md` (historical, consolidated into `docs/continuity/CODE_INDEX.md`).
 * [x] **TASK-354**: Conduct and document Implementation Truth Audit (`docs/IMPLEMENTATION_TRUTH_AUDIT.md`).
 * [x] **TASK-355**: Audit pretrained candidate checkpoints in `docs/PRETRAINED_MODEL_CANDIDATES.md`.
 * [x] **TASK-356**: Define Model Acquisition Gate in `docs/MODEL_ACQUISITION_GATE.md`.
-* [x] **TASK-357**: Create `docs/SESSION_HANDOFF.md` and update `docs/BACKLOG.md`.
+* [x] **TASK-357**: Create `docs/SESSION_HANDOFF.md` (historical, consolidated into `docs/continuity/STATUS_LEDGER.md`).
 * [x] **TASK-358**: Refactor `FusionCalibrator` and worker to enforce honest no-model state (`uncertain`, `confidence: null`, `probabilities: null`, `modelAvailable: false`).
 * [x] **TASK-359**: Update UI (`ResultVerdictCard`, `HeatmapViewer`, `ForensicsInspector`) to display "Model not installed" and classify heuristics as exploratory.
 * [x] **TASK-360**: Implement automated registry integrity validation in `@forensics/shared` and add unit tests.
@@ -128,7 +129,7 @@ graph TD
 * [x] **TASK-4A08**: Implement dataset acquisition CLI with dry-run mode (`ml/datasets/acquire.py`), rejecting blocked datasets and cross-track violations.
 * [x] **TASK-4A09**: Implement synthetic geometric/noise smoke fixture generator (`ml/tests/fixtures/smoke_generator.py`) without external network downloads or copyright restrictions.
 * [x] **TASK-4A10**: Implement automated contamination guards and unit tests in `@forensics/shared` and `ml/tests/test_contamination_guard.py`.
-* [x] **TASK-4A11**: Correct zero-egress statement to `architecture-supported`, `runtime-network-verification: unverified` in `README.md`, `docs/PRIVACY.md`, `docs/PROJECT_STATE.md`.
+* [x] **TASK-4A11**: Correct zero-egress statement to `architecture-supported`, `runtime-network-verification: unverified` in `README.md`, `docs/PRIVACY.md`, `docs/continuity/CURRENT_STATE.md`.
 * [x] **TASK-4A12**: Record 28.3 MB build WASM asset as engine runtime binary, not model weight.
 * [ ] **TASK-WEB-001**: Measure compressed transfer size (gzip/brotli), lazy loading, cache behavior, WASM initialization time, inference latency and peak memory across browser targets.
 * [ ] **TASK-E2E-001**: Implement browser E2E automated network logging to empirically confirm 0 outbound requests during image analysis.
@@ -149,8 +150,23 @@ graph TD
 
 ---
 
-### Phase 4A: Data Preparation & Smoke Fixtures (Chờ người dùng phê duyệt)
-* [ ] **TASK-4A1**: User decision on Phase 4A dataset pathway (Option 1: Synthetic Smoke Fixture vs Option 2: BigGAN official archive acquisition for Research Track).
+### Phase 4A.2: Research Scope Freeze, Continuity Documents & TGIF Feasibility Audit (Hoàn thành)
+* [x] **TASK-4A201**: Establish unified three-file continuity protocol in `docs/continuity/` (`CODE_INDEX.md`, `CURRENT_STATE.md`, `STATUS_LEDGER.md`) and remove legacy tracking documents (`docs/CODE_MAP.md`, `docs/PROJECT_STATE.md`, `docs/SESSION_HANDOFF.md`).
+* [x] **TASK-4A202**: Update `AGENTS.md` with explicit continuity reading order and maintenance rules.
+* [x] **TASK-4A203**: Freeze three-class training scope (`authentic`, `fully_generated`, `ai_edited`) and define `uncertain` as post-calibration decision state in `docs/RESEARCH_PLAN.md`.
+* [x] **TASK-4A204**: Codify 4 research questions (RQ1-RQ4) and testable hypotheses in `docs/RESEARCH_PLAN.md`.
+* [x] **TASK-4A205**: Codify full multi-tier metric hierarchy (primary Macro-F1/Balanced Accuracy, calibration, localization, robustness, browser) in `docs/EVALUATION.md`.
+* [x] **TASK-4A206**: Audit official TGIF and TGIF2 repository and Nextcloud storage shares (`xEeAzrY7ES9KA8o`, `KG48tLZZzifC5WE`, `GDGewtTFcHccaNj`), recording metadata in `research/evidence/phase-4a.2/tgif-remote-inventory.json`.
+* [x] **TASK-4A207**: Register `tgif` and `tgif2` in `datasets/registry.json` under `research-only` with `CC BY-SA 4.0`.
+* [x] **TASK-4A208**: Formulate research-data matrix, identify dataset-source shortcut risk, and specify anti-leakage controls in `docs/DATASETS.md`.
+* [x] **TASK-4A209**: Clarify BigGAN as "first fully inventoried archive" in `docs/GENIMAGE_ACQUISITION_PROPOSAL.md`.
+* [x] **TASK-4A210**: Formulate 3-tier pilot proposals and select Pilot B (Exploratory Three-Class, ~3,000 samples) as recommended option for thesis.
+* [x] **TASK-4A211**: Record Phase 4A.2 evidence items in `docs/EVIDENCE_REGISTER.md` and `evidence-manifest.json`.
+
+---
+
+### Phase 4A: Pilot Acquisition & Data Preparation (Chờ người dùng phê duyệt)
+* [ ] **TASK-4A1**: User decision on Phase 4A pilot pathway (Recommended: Pilot B ~3,000 samples from TGIF subfolders vs Option 1: synthetic fixture only vs Option 3: full benchmark).
 * [ ] **TASK-4A2**: Prepare authorized dataset/fixture splits with group-based anti-leakage isolation.
 
 ---

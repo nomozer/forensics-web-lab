@@ -1,154 +1,106 @@
-# Research Plan: Forensics Web Lab
+# Research Plan & Scientific Protocol: Forensics Web Lab
 
-## 1. Project Overview & Research Title
-
-* **Tiêu đề nghiên cứu**: *Nghiên cứu và xây dựng công cụ nhẹ phát hiện và định vị hình ảnh do AI tạo sinh và chỉnh sửa trên nền tảng web*
-* **Product Name**: Forensics Web Lab
-* **Focus Area**: Lightweight client-side convolutional neural architectures, frequency-domain digital signal processing, epistemic uncertainty modeling, and explainable multi-modal evidence fusion for in-browser digital image forensics.
+> **Phiên bản**: Phase 4A.2 (Scope Freeze)  
+> **Trạng thái tài liệu**: Đã đóng băng phạm vi khoa học (*Research Scope Frozen*)  
+> **Nguyên tắc cốt lõi**: Trung thực khoa học (*Scientific Honesty*), tách biệt tuyệt đối Research Track và Product Track (ADR-0006), mọi chỉ số chưa đo ghi nhận `not evaluated`.
 
 ---
 
-## 2. Research Questions (RQs)
+## 1. Tiêu đề và Mục tiêu Nghiên cứu
 
-* **RQ1 (Lightweight Capacity & Accuracy)**: Can a lightweight deep neural network ($< 15\text{M}$ parameters, $< 35\text{MB}$ quantized download) achieve comparable in-domain multi-generator discrimination accuracy ($\ge 85\%$ Macro F1) to heavy foundation models when detecting fully generated and locally edited imagery?
-* **RQ2 (Cross-Generator Generalization)**: How effectively does a lightweight dual-stream (spatial + frequency) representation generalize to completely *unseen* image generative architectures (e.g. evaluating on novel Diffusion or Flow-Matching models when trained solely on earlier GAN/Diffusion engines)?
-* **RQ3 (Robustness Under Social Media Degradations)**: To what degree do typical web transmission artifacts (multi-pass JPEG compression at $Q \in \{50, 70, 90\}$, downscaling, aspect cropping, bilateral smoothing, screenshot resampling) degrade detector reliability, and can data augmentation preserve a Macro F1 $\ge 0.70$ under severe JPEG ($Q=50$)?
-* **RQ4 (Patch-Based AI Edit Localization)**: Can overlapping sliding-window patch inference using the same lightweight classification backbone accurately localize inpainting boundaries (achieving Pixel AUROC $\ge 0.80$ and mIoU $\ge 0.55$) without requiring an independent, memory-heavy segmentation model?
-* **RQ5 (Calibrated Evidence Fusion & Uncertainty)**: Does fusing classical DSP signals (2D-DCT spectral spikes, noise residual variance, JPEG block grid misalignment) with temperature-calibrated deep probabilities reliably separate true ambiguous/degraded samples into the `uncertain` class, thereby reducing catastrophic false positives on traditionally edited imagery?
-
----
-
-## 3. Hypotheses
-
-* **Hypothesis 1 ($H_1$)**: Generative model artifacts manifest across both spatial pixel transitions (unnatural blending boundaries, texture repetition) and high-frequency spectral components (periodic checkerboard patterns from upsampling/transposed convolutions). A compact convolutional backbone (e.g. MobileNetV3) augmented with frequency-aware features can capture these signatures within a $< 10\text{MB}$ parameter footprint.
-* **Hypothesis 2 ($H_2$)**: Localized generative inpainting disturbs local noise stationarity and JPEG quantization consistency relative to surrounding authentic regions. Reusing a single multi-class backbone in a batched sliding-window configuration over the Web Worker yields fine-grained localization maps while keeping client memory under 150 MB.
-* **Hypothesis 3 ($H_3$)**: Post-hoc probability calibration (Temperature Scaling) combined with a conflict-aware fusion rule that penalizes contradictory forensic signals will produce well-calibrated confidence scores (ECE $\le 0.10$) and cleanly isolate low-information images into an explicit `uncertain` category rather than forcing a misclassification.
+* **Tên đề tài**: *Nghiên cứu và xây dựng công cụ nhẹ phát hiện và định vị hình ảnh do AI tạo sinh và chỉnh sửa trên nền tảng web*
+* **Tên sản phẩm minh chứng**: `Forensics Web Lab`
+* **Mục tiêu tổng quát**:
+  * Phát triển mô hình mạng nơ-ron tích chập nhẹ phân loại ảnh 3 lớp (`authentic`, `fully_generated`, `ai_edited`).
+  * Xây dựng cơ chế hiệu chuẩn xác suất và từ chối dự đoán khi thiếu độ tin cậy (trạng thái `uncertain`).
+  * Đánh giá độ bền vững (robustness) trước các suy giảm phổ biến trên môi trường mạng.
+  * Hiện thực hóa pipeline suy luận trực tiếp trên trình duyệt web người dùng (In-Browser Inference qua ONNX Runtime Web WASM/WebGPU, Zero Server Egress).
+  * Khảo sát năng lực định vị vùng chỉnh sửa (localization) như một mục tiêu phụ khi có ground-truth mask.
 
 ---
 
-## 4. Expected Novelty & Scientific Contributions
+## 2. Định nghĩa Lớp Dữ liệu và Trạng thái Phân loại
 
-1. **Client-First In-Browser Forensic Pipeline**: A complete, zero-server-egress architecture executing multi-modal forensic analysis (deep CNN inference, 2D FFT/DCT spectral analysis, ELA, and EXIF/C2PA provenance) purely in client Web Workers via ONNX Runtime Web (WASM/WebGPU).
-2. **Dual-Use Shared Backbone**: Demonstrating that a single $< 15\text{M}$ parameter model can perform both whole-image global classification and dense localized patch heatmap generation, eliminating redundant network downloads.
-3. **Four-State Epistemic Verdict Engine**: Replacing binary "Real vs Fake" fallacies with a forensic 4-state taxonomy (`no_ai_evidence`, `fully_generated`, `ai_edited`, `uncertain`), formally incorporating epistemic uncertainty and evidentiary conflict.
-4. **Transparent Explainability Ledger**: Automated extraction of verifiable supporting and refuting evidence lists alongside interactive Gaussian-smoothed heatmap overlays.
+### 2.1. Ba Lớp Huấn luyện Mục tiêu (Three-Class Ground-Truth)
+Hệ thống học máy được huấn luyện trên không gian nhãn 3 lớp duy nhất:
+1. `authentic` (Ảnh thông thường / Chụp từ máy ảnh thật): Ảnh nguyên bản từ máy ảnh hoặc ảnh qua chỉnh sửa truyền thống (Photoshop không dùng generative AI).
+2. `fully_generated` (Ảnh tạo hoàn toàn bởi AI): Ảnh được sinh 100% từ mô hình tạo sinh (GAN, Diffusion, Flow-Matching).
+3. `ai_edited` (Ảnh có vùng chỉnh sửa bằng AI): Ảnh gốc có một hoặc nhiều vùng nội dung bị thay thế, vẽ bù (inpainting), xóa hoặc thêm đối tượng bằng AI.
 
----
-
-## 5. Baselines for Comparison
-
-We design and evaluate five progressive baseline architectures:
-
-1. **Baseline 1: MobileNetV3-Small Spatial Only**:
-   * Architecture: MobileNetV3-Small (~2.5M params).
-   * Input: $224 \times 224 \times 3$ RGB spatial tensor.
-   * Output: 3-class logits.
-2. **Baseline 2: Spatial + Frequency Dual-Stream**:
-   * Architecture: MobileNetV3-Small spatial stream fused with a lightweight 2D-DCT radial frequency energy representation (~3.5M params total).
-   * Evaluates contribution of spectral domain anomalies.
-3. **Baseline 3: Global-Only Evaluation**:
-   * Evaluates whole-image prediction without patch decomposition.
-4. **Baseline 4: Global + Patch-Based Localization**:
-   * Baseline 1/2 applied across both global scale and sliding overlapping patches ($224 \times 224$ px, stride 112 px) to generate localized heatmaps.
-5. **Baseline 5: Full Calibrated Multi-Modal Fusion**:
-   * Integration of Global + Patch scores, Temperature Scaling, 2D-FFT statistics, noise residual variance, and JPEG block consistency with explicit `uncertain` fallback.
+### 2.2. Trạng thái Quyết định Hậu Kiểm chuẩn: `uncertain`
+* `uncertain` **không phải là lớp dữ liệu thứ tư** trong ground-truth hay quá trình huấn luyện mô hình.
+* `uncertain` là **trạng thái quyết định sau calibration và selective abstention**:
+  * Khi xác suất dự đoán sau hiệu chuẩn (calibrated confidence) nằm dưới ngưỡng tin cậy tối thiểu ($P < \tau_{\text{abstain}}$).
+  * Hoặc khi có sự mâu thuẫn đối kháng gay gắt giữa tín hiệu thị giác của mô hình deep learning và các tín hiệu pháp chứng tín hiệu số DSP (FFT/DCT/Noise/JPEG) hoặc siêu dữ liệu C2PA/EXIF.
+* Việc gán `uncertain` giúp hệ thống tránh dự đoán sai nghiêm trọng (catastrophic false certainty) trên dữ liệu bị suy giảm nặng hoặc chưa rõ ràng.
 
 ---
 
-## 6. Datasets & Benchmarks
+## 3. Phân định Mục tiêu Chính và Mục tiêu Phụ
 
-| Dataset | Modality / Purpose | Generators / Content | Mask Provided? | Size Estimate |
-| :--- | :--- | :--- | :--- | :--- |
-| **GenImage** | Fully generated vs authentic | Stable Diffusion v1.4/v1.5, Midjourney, DALL-E, GLIDE, VQDM, BigGAN | N/A | Subsets (~10k-50k samples) |
-| **SAGI-D** | Localized AI inpainting | Stable Diffusion inpainting, brush edits | Yes (Binary masks) | Curated evaluation set |
-| **RealHD** | Diverse local edits | Inpainting, face swap, refinement | Yes (Binary masks) | Curated evaluation set |
-| **RAID** | Robustness & adversarial tests | Multiple generators across severe degradations | Partial | Test benchmark |
-| **Traditional Edits** | Hard negatives (Photoshop) | Splicing, copy-move, color retouching | Yes | Open forensic benchmarks |
-| **RAISE / Open Images** | Authentic pristine baseline | Camera raw photography with verified provenance | N/A | Balanced authentic split |
+### 3.1. Mục tiêu Khoa học Chính (Primary Scientific Objectives)
+1. **Phân loại 3 lớp bằng mô hình nhẹ**: Đánh giá năng lực của kiến trúc gọn nhẹ ($< 15\text{M}$ tham số) trong việc phân biệt `authentic`, `fully_generated`, `ai_edited` trên tập kiểm thử độc lập, không rò rỉ nhóm ảnh gốc (`source_id`).
+2. **Hiệu chuẩn độ tin cậy (Confidence Calibration)**: Ứng dụng Temperature Scaling để đảm bảo xác suất dự báo phản ánh sát xác suất đúng thực tế (tối thiểu hóa Expected Calibration Error - ECE).
+3. **Đánh giá Robustness thực tế**: Kiểm tra độ bền vững của mô hình trước nén JPEG, thay đổi kích thước (resizing), làm mờ (blur), ảnh chụp màn hình (screenshot) và ảnh định dạng WebP.
+4. **Triển khai In-Browser Runtime CPU/WASM**: Thực hiện chuyển đổi sang ONNX, lượng tử hóa INT8 và kiểm chứng hiệu năng suy luận client-side an toàn, không gửi ảnh về máy chủ.
 
-*Data Download Policy*: Datasets are downloaded only via verified official scripts after obtaining explicit user confirmation for large archives. No large media files are ever committed to Git.
-
----
-
-## 7. Protocol Against Data Leakage
-
-To ensure scientific validity and avoid over-optimistic performance claims:
-1. **Source-Group Splitting**:
-   * Splitting between Train, Validation, and Test splits is strictly performed by `source_id` (the parent photograph). An authentic image and its synthetic/inpainted derivatives NEVER cross split boundaries.
-2. **Unseen-Generator Holdout**:
-   * Specific generator families (e.g. Midjourney or a distinct diffusion version) are reserved exclusively for the Unseen-Generator Test set and completely absent from training.
-3. **Deduplication Audit**:
-   * All candidate images undergo perceptual hashing (pHash, dHash) and SHA-256 validation to eliminate identical or near-identical duplicates across splits.
-4. **Mask & Edit Pair Isolation**:
-   * Inpainting mask shapes and edit prompt pairings are held out by group to prevent the network from memorizing specific mask boundary shapes.
+### 3.2. Mục tiêu Khoa học Phụ (Secondary Exploratory Objectives)
+1. **Định vị vùng AI chỉnh sửa khi có ground-truth mask**: Khi dataset có mask nhị phân chính thức (như TGIF/TGIF2), đánh giá khả năng trích xuất bản đồ nhiệt (heatmap) từ các sliding window patches thông qua chỉ số mIoU, Dice Score và Pixel AUROC.
+2. **Khảo sát bản đồ nhiệt suy diễn (Inference Heatmap)**:
+   > **Lưu ý khoa học**: Bản đồ nhiệt sinh ra từ patch scores của mô hình phân loại được phân loại là **khám phá sơ bộ (*exploratory heuristics*)**. Chỉ khi nào được kiểm chứng thực nghiệm bằng chỉ số mIoU/Dice so với ground-truth mask trên dữ liệu thật, năng lực định vị mới được công nhận là tính năng khoa học đã kiểm chứng.
 
 ---
 
-## 8. Experiment Matrix
+## 4. Câu hỏi Nghiên cứu (Research Questions - RQs)
 
-| Experiment ID | Test Condition | Objective | Key Evaluation Metrics |
-| :--- | :--- | :--- | :--- |
-| **EXP-01** | In-Domain Test | Evaluate clean classification on known generators | Macro F1, Per-Class P/R/F1, AUROC |
-| **EXP-02** | Cross-Dataset Test | Evaluate transferability across differing image distributions | Macro F1, Balanced Accuracy |
-| **EXP-03** | Unseen-Generator Test | Test resilience to architectures not present in training | Macro F1, AUROC, ECE |
-| **EXP-04** | AI-Edit Localization Test | Evaluate pixel-level mask localization on SAGI-D / RealHD | Pixel AUROC, mIoU, Dice Score |
-| **EXP-05** | JPEG Degradation ($Q=90, 70, 50$) | Measure performance drop under lossy re-compression | F1 drop ($\Delta \text{F1}$), Calibration error |
-| **EXP-06** | Resize & Crop Degradation | Test downscaling ($0.5\times, 0.25\times$) and aspect cropping | Macro F1, False positive rate |
-| **EXP-07** | Screenshot Degradation | Simulate display capture and re-encoding artifacts | Macro F1, Shift to `uncertain` |
-| **EXP-08** | Hard-Negative Traditional Edits | Measure false positive rate on non-AI Photoshop edits | False AI positive rate ($FPR_{\text{AI}}$) |
-| **EXP-09** | Uncertainty & Calibration Test | Measure calibration error and utility of `uncertain` state | ECE, Brier score, Coverage vs Error |
-| **EXP-10** | Client-Side Browser Latency | Benchmark WASM vs WebGPU runtime across devices | Latency (ms), Peak RAM (MB), FPS |
+Hệ thống nghiên cứu tập trung giải quyết 4 câu hỏi trọng tâm và 1 câu hỏi phụ:
 
----
+* **RQ1 (Three-Class Generalization on Unseen Data)**:  
+  *Mô hình tích chập gọn nhẹ có phân biệt được ba lớp `authentic`, `fully_generated` và `ai_edited` trên dữ liệu chưa thấy (unseen generators / held-out sources) với độ chính xác vượt trội baseline ngẫu nhiên hay không?*
 
-## 9. Ablation Study Matrix
+* **RQ2 (Multi-Modal Evidence Fusion vs Visual-Only Baseline)**:  
+  *Việc kết hợp kết quả mô hình thị giác (visual model) với siêu dữ liệu xuất xứ (provenance) và tín hiệu pháp chứng số (DSP frequency/noise/JPEG) có cải thiện Macro-F1 hoặc độ hiệu chuẩn xác suất (ECE) so với mô hình thị giác đơn lẻ hay không?*
 
-1. **Ablation 1: Spatial Only vs Spatial + Frequency**:
-   * Assess the isolated contribution of the 2D-DCT frequency branch under severe JPEG compression.
-2. **Ablation 2: Global-Only vs Global + Patch Fusion**:
-   * Quantify gain in detecting localized inpainting when combining whole-image and sliding-window patch passes.
-3. **Ablation 3: Effect of Temperature Scaling**:
-   * Compare uncalibrated softmax confidence against temperature-scaled probabilities (measuring ECE reduction).
-4. **Ablation 4: Conflict-Aware Uncertainty Filtering**:
-   * Compare traditional argmax classification against the 4-state rule allowing the model to abstain when evidence conflicts.
+* **RQ3 (ONNX Quantization Trade-Offs)**:  
+  *Quá trình xuất sang ONNX và lượng tử hóa INT8 (post-training quantization) ảnh hưởng như thế nào đến chất lượng phân loại (Macro-F1 drop), dung lượng lưu trữ (model size bytes) và thời gian suy luận (latency)?*
+
+* **RQ4 (Browser CPU/WASM Execution Feasibility)**:  
+  *Mô hình tối ưu hóa có thể vận hành ổn định trong môi trường trình duyệt web thông qua ONNX Runtime Web WASM (đa luồng SIMD) với độ trễ suy luận và mức chiếm dụng bộ nhớ (peak memory) đáp ứng trải nghiệm tương tác của người dùng hay không?*
+
+* **Auxiliary RQ5 (Patch-Based Localization Feasibility)**:  
+  *Khi có ground-truth mask nhị phân, phương pháp nội suy patch scores từ backbone phân loại có đạt được mức độ định vị chấp nhận được (mIoU, Pixel AUROC) so với mask thật mà không cần thêm mô hình phân đoạn độc lập hay không?*
 
 ---
 
-## 10. Evaluation Metrics & Mathematical Definitions
+## 5. Giả thuyết Khoa học (Testable Hypotheses)
 
-* **Macro F1**:
-  $$\text{Macro F1} = \frac{1}{C} \sum_{c=1}^C \frac{2 \cdot P_c \cdot R_c}{P_c + R_c}$$
-* **Expected Calibration Error (ECE)**:
-  $$\text{ECE} = \sum_{m=1}^M \frac{|B_m|}{N} \left| \text{acc}(B_m) - \text{conf}(B_m) \right|$$
-* **Brier Score**:
-  $$\text{BS} = \frac{1}{N} \sum_{i=1}^N \sum_{c=1}^C (p_{ic} - y_{ic})^2$$
-* **Intersection over Union (IoU) for Localization**:
-  $$\text{IoU} = \frac{|M_{\text{pred}} \cap M_{\text{true}}|}{|M_{\text{pred}} \cup M_{\text{true}}|}$$
+Các giả thuyết được thiết lập theo nguyên tắc có thể bác bỏ (*falsifiable*), các ngưỡng cụ thể chưa có cơ sở đo lường được ghi nhận `TBD before confirmatory experiment`:
+
+* **Hypothesis 1 ($H_1$)**: Trên tập kiểm thử held-out cách ly nhóm ảnh gốc (`source_id`), mô hình gọn nhẹ đạt chỉ số Macro-F1 và Balanced Accuracy vượt trội có ý nghĩa thống kê so với stratified dummy baseline.
+* **Hypothesis 2 ($H_2$)**: Cơ chế kết hợp bằng chứng (Evidence Fusion) kết hợp Temperature Scaling làm giảm ECE và giảm tỷ lệ dự đoán sai tự tin (overconfident errors) so với mô hình thị giác thuần túy (visual-only).
+* **Hypothesis 3 ($H_3$)**: Mô hình ONNX INT8 duy trì chất lượng dự đoán trong biên độ không thua kém định trước ($\Delta \text{Macro-F1} \le \epsilon_{\text{margin}}$, với $\epsilon_{\text{margin}}$ được định rõ trước thí nghiệm xác nhận), đồng thời giảm dung lượng ít nhất $60\%$ so với bản FP32.
+* **Hypothesis 4 ($H_4$)**: Trên môi trường trình duyệt chuẩn (Chrome/Firefox trên máy tính thông dụng), runtime WASM SIMD đạt thời gian suy luận trung vị (median latency) và đỉnh RAM trong ngân sách cho phép tương tác (ngân sách trần $\text{Latency} \le T_{\text{max}}$ và $\text{RAM} \le M_{\text{max}}$ được chốt trước benchmark).
 
 ---
 
-## 11. Threats to Validity
+## 6. Ma trận Vai trò Dataset trong Nghiên cứu
 
-1. **Internal Validity**: Variations in image resizing algorithms (bilinear vs bicubic vs lanczos) between PyTorch training and browser canvas decoders. *Mitigation*: Exact bilinear interpolation implementation replicated in browser canvas preprocessing.
-2. **External Validity**: Rapid iteration of generative architectures may alter artifact profiles faster than academic datasets update. *Mitigation*: Systematic holdout testing on unseen generators and prominent use of the `uncertain` state.
-3. **Construct Validity**: Binary inpainting masks may not capture soft edge blending or feathered boundaries. *Mitigation*: Gaussian-weighted heatmaps and multi-threshold evaluation.
-
----
-
-## 12. Success Criteria
-
-* Clean In-Domain Macro F1: $\ge 0.85$
-* Unseen-Generator Macro F1: $\ge 0.70$
-* Degraded (JPEG $Q=50$) Macro F1: $\ge 0.70$
-* Expected Calibration Error (ECE): $\le 0.10$
-* Inpainting Localization Pixel AUROC: $\ge 0.80$
-* Model Download Footprint: $\le 35\text{MB}$ (INT8 quantized), parameter count $< 15\text{M}$
-* In-Browser Execution: Zero UI lockup, WASM CPU latency $\le 120\text{ms}$ per patch, functional WebGPU acceleration.
+| Dataset | Vai trò nghiên cứu | Nhãn đóng góp | Rủi ro chính | Biện pháp kiểm soát | Trạng thái |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Synthetic Smoke** | Fixture kiểm thử kỹ thuật pipeline | authentic, fully_generated, ai_edited (hình học giả lập) | Dữ liệu vẽ bằng code, không có giá trị học máy | Đặt track `fixture-only`, cấm huấn luyện model sản phẩm | `verified` |
+| **GenImage** | Huấn luyện & benchmark ảnh tạo hoàn toàn | `fully_generated` (8 generator), `authentic` (ImageNet val) | Chỉ có ảnh fully generated, không có mask inpainting; archive lớn | Phân luồng Research Track; First fully inventoried archive (BigGAN ~24 GB) | `verified` |
+| **TGIF / TGIF2** | Huấn luyện & benchmark ảnh chỉnh sửa | `ai_edited` (spliced/FR), `authentic` (MS-COCO pairs), masks | Dung lượng lớn (65.4 GB - 110 GB); điều khoản CC BY-SA 4.0 | Nextcloud cho phép tải độc lập thư mục nhỏ; cách ly trong Research Track | `verified` |
+| **RAID** | Đánh giá độ bền vững đối kháng (Adversarial Robustness) | Đa dạng generator và độ suy giảm nặng | Bản quyền dataset card chưa chứng minh quyền phân phối ảnh | Trạng thái `blocked`, chỉ xem xét làm candidate kiểm định sau | `blocked` |
+| **RealHD** | Ứng viên tương lai cho inpainting đa dạng | AI-edited đa dạng | Tác giả chưa phát hành archive và license công khai | Trạng thái `blocked` | `blocked` |
 
 ---
 
-## 13. Inherent Theoretical Limitations
+## 7. Rủi ro Shortcut Nguồn Dữ liệu (Dataset-Source Shortcut Risk)
 
-1. **No Absolute Proof**: Digital forensics cannot definitively prove an image is pristine camera capture; absence of evidence is not evidence of absence.
-2. **Compression Obliteration**: Sufficiently heavy downsampling and multi-generational re-compression irrevocably erase high-frequency generative artifacts.
-3. **Adversarial Vulnerability**: Unconstrained adversarial perturbations crafted against the backbone can induce misclassifications.
+> **Cảnh báo khoa học**: Nếu mỗi lớp nhãn được lấy từ một dataset hoàn toàn tách biệt (ví dụ: `authentic` lấy từ ImageNet, `ai_edited` lấy từ MS-COCO, `fully_generated` lấy từ GenImage), mô hình nơ-ron có xu hướng ghi nhớ các đặc trưng riêng của từng nguồn dữ liệu (độ phân giải gốc, camera color gamut, profile nén JPEG, bộ lọc tiền xử lý) thay vì học bản chất dấu vết thuật toán AI.
+
+### Biện pháp kiểm soát bắt buộc trong giao thức thí nghiệm:
+1. **Group Split theo ảnh gốc**: Đảm bảo toàn bộ biến thể phái sinh từ một ảnh gốc (ảnh authentic, ảnh inpaint, các prompt biến thể) luôn nằm trọn vẹn trong một split duy nhất (Train, Val hoặc Test).
+2. **Dùng Matched Pairs**: Khi dùng TGIF, sử dụng chính các cặp ảnh gốc authentic (MS-COCO) đi kèm với các biến thể inpainting của chính ảnh đó.
+3. **Chuẩn hóa Tiền xử lý (Standardized Preprocessing)**: Toàn bộ ảnh đầu vào đều đi qua pipeline đồng nhất (letterbox padding, resize về $224 \times 224$ px hoặc $512 \times 512$ px, chuẩn hóa kênh màu theo ImageNet mean/std).
+4. **Đánh giá Cross-Dataset & Source-Held-Out**: Báo cáo kết quả chi tiết theo từng nguồn dataset và từng generator cụ thể; không gộp chung số liệu để che giấu hiện tượng sụt giảm độ chính xác trên nguồn ảnh lạ.
