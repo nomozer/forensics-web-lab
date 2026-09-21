@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "pnpm --filter web dev",
     "build": "pnpm -r run build",
-    "test": "pnpm -r run test",
+    "test": "pnpm -r run test && node --test scripts/__tests__/continuity-check.test.mjs",
+    "test:continuity": "node --test scripts/__tests__/continuity-check.test.mjs",
+    "continuity:check": "node scripts/continuity-check.mjs",
     "typecheck": "pnpm -r run typecheck",
     "lint": "pnpm -r run lint",
     "format": "prettier --write \"**/*.{ts,tsx,json,md,html,css}\""

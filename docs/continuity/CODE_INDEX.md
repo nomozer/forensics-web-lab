@@ -89,6 +89,10 @@ graph TD
 | **Paired Bootstrap Guard** | `ml/evaluation/bootstrap_guard.py` (stratified paired bootstrap 95% CI) | `implemented-and-tested` |
 | **TGIF Cardinality Audit** | `research/evidence/phase-4a.4/tgif-cardinality-audit.json` | `audited-and-verified` |
 | **Pilot Protocols & Configs** | `ml/configs/validator.py`, `pilot_tgif_edit.yaml`, `pilot_genimage_generated.yaml` | `implemented-and-tested` |
+| **Continuity Checker CLI** | `scripts/continuity-check.mjs` | `implemented-and-tested` |
+| **Continuity Checker Tests** | `scripts/__tests__/continuity-check.test.mjs` | `implemented-and-tested` |
+| **Continuity Contract** | `AGENTS.md` (Mục 4: Continuity Contract) | `contract-enforced` |
+| **CI Continuity Gate** | `.github/workflows/ci.yml` (Model-Agnostic Continuity Check) | `ci-enforced` |
 
 ---
 
@@ -164,4 +168,9 @@ ml/.venv/Scripts/python -m ml.datasets.acquire --dataset genimage --track resear
 
 # 6. Sinh fixture hình học nội bộ (0 network, 0 external bytes)
 ml/.venv/Scripts/python -m ml.datasets.acquire --dataset synthetic-smoke --track fixture-only --execute
+
+# 7. Kiểm tra tính toàn vẹn và hợp đồng continuity (cross-platform)
+pnpm continuity:check
+pnpm continuity:check -- --staged
+pnpm continuity:check -- --base <PR_BASE_SHA> --head <PR_HEAD_SHA>
 ```

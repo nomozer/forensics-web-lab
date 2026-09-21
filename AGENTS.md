@@ -32,3 +32,39 @@ Trước khi thực hiện bất kỳ sửa đổi nào, tác nhân PHẢI đọ
    - Thêm một mục tóm tắt vào đầu `docs/continuity/STATUS_LEDGER.md`.
    - Cập nhật `docs/continuity/CODE_INDEX.md` khi module, contract hoặc cấu trúc file thay đổi.
 
+## 4. Continuity Contract
+
+### Khi bắt đầu session
+Mọi agent đọc theo thứ tự:
+1. `docs/continuity/CURRENT_STATE.md`
+2. `docs/continuity/CODE_INDEX.md`
+3. `docs/continuity/STATUS_LEDGER.md`
+4. `research/evidence/<latest-phase>/PHASE_REPORT.md`
+
+Agent phải xác nhận:
+* phase hiện tại;
+* model status;
+* dataset status;
+* scientific claims status;
+* blockers;
+* next approved action.
+
+### Trong quá trình làm việc
+Cập nhật file theo ma trận:
+
+| Loại thay đổi | CURRENT_STATE | CODE_INDEX | STATUS_LEDGER |
+| :--- | :--- | :--- | :--- |
+| Model, dataset, metric, test, blocker hoặc next action thay đổi | Bắt buộc | Khi cấu trúc liên quan thay đổi | Khi đóng phase |
+| Thêm/xóa/đổi tên module, package, schema, contract hoặc CLI | Bắt buộc | Bắt buộc | Khi đóng phase |
+| Kết thúc phase | Bắt buộc | Khi cấu trúc thay đổi | Bắt buộc |
+| Sửa typo hoặc format không đổi trạng thái | Không yêu cầu | Không yêu cầu | Không yêu cầu |
+
+### Khi kết thúc phase
+Agent phải:
+1. Chạy test/build liên quan.
+2. Cập nhật `CURRENT_STATE.md`.
+3. Cập nhật `CODE_INDEX.md` nếu cấu trúc hoặc contract thay đổi.
+4. Thêm phase mới ở đầu `STATUS_LEDGER.md`.
+5. Tạo `research/evidence/<phase>/PHASE_REPORT.md`.
+6. Chạy continuity checker (`pnpm continuity:check`).
+7. Commit khi checker PASS.
