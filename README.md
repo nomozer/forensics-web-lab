@@ -6,7 +6,7 @@
 [![License Status](https://img.shields.io/badge/license-pending%20decision-lightgrey)](docs/LICENSING.md)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x%20strict-blue.svg)](https://www.typescriptlang.org/)
 [![Runtime](https://img.shields.io/badge/Runtime-ONNX%20Runtime%20Web-orange.svg)](https://onnxruntime.ai/)
-[![Privacy](https://img.shields.io/badge/Privacy-100%25%20Client--Side%20Zero--Egress-success.svg)](docs/PRIVACY.md)
+[![Privacy](https://img.shields.io/badge/Privacy-Architecture--Supported%20Local-success.svg)](docs/PRIVACY.md)
 
 ---
 
@@ -17,7 +17,7 @@
 ### Tuyên bố quan trọng về bản chất giám định
 * **Công cụ hỗ trợ điều tra, không phải chứng chỉ xác minh tuyệt đối**: Hệ thống này được thiết kế để phát hiện các dấu vết đặc trưng của mô hình tạo sinh (dấu vết tần số, bất thường nhiễu hạt, lưới biến dạng, cấu trúc pixel). Việc không phát hiện thấy dấu vết không đồng nghĩa với việc khẳng định bức ảnh là "ảnh thật 100%".
 * **Không sử dụng từ "ảnh thật" như một kết luận tuyệt đối**: Trạng thái âm tính của hệ thống được định nghĩa chặt chẽ là `no_ai_evidence` (*Chưa tìm thấy bằng chứng AI trong phạm vi nhận biết của bộ phân tích*).
-* **Bảo vệ quyền riêng tư tuyệt đối (Zero Server Egress)**: Mọi thao tác giải mã file, trích xuất EXIF/metadata, suy luận mô hình AI (ONNX Runtime Web), biến đổi Fourier 2D (FFT), và tạo bản đồ nhiệt (Heatmap) đều chạy **100% trực tiếp trong trình duyệt người dùng** thông qua Web Worker (WASM / WebGPU). **Không có bất kỳ byte dữ liệu ảnh nào bị gửi lên máy chủ**.
+* **Bảo vệ quyền riêng tư cục bộ (Zero Server Egress - architecture-supported)**: Mọi thao tác giải mã file, trích xuất EXIF/metadata, suy luận mô hình AI (ONNX Runtime Web), biến đổi Fourier 2D (FFT), và tạo bản đồ nhiệt (Heatmap) được thiết kế chạy trực tiếp trong trình duyệt người dùng thông qua Web Worker (WASM / WebGPU) mà không gửi ảnh lên máy chủ (*xác minh mạng thời gian chạy: unverified, đang có backlog kiểm thử E2E*).
 
 ---
 

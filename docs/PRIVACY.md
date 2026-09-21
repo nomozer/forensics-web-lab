@@ -1,30 +1,43 @@
 # Privacy Specification: Forensics Web Lab
 
-## 1. Core Privacy Manifesto
-
-**Forensics Web Lab** enforces an architectural privacy guarantee:
-> **Zero User Data Transmission**: Digital images, derived tensors, metadata structures, and forensic reports are processed 100% locally on the user's personal device and are NEVER transmitted across the network to any server.
+> **Dự án**: `forensics-web-lab`  
+> **Trạng thái bảo đảm**: `architecture-supported`  
+> **Xác minh mạng thời gian chạy (Runtime Network Verification)**: `unverified` (đang có backlog kiểm thử E2E)
 
 ---
 
-## 2. Privacy-by-Design Technical Mechanisms
+## 1. Tuyên ngôn Quyền riêng tư Kiến trúc (Architectural Privacy Manifesto)
 
-### 2.1 Complete Local Processing
-* **Client-Side Runtime**: Image decoding, EXIF metadata extraction, deep ONNX neural inference, frequency Fourier transforms, and ELA rendering execute exclusively within client Web Workers and Canvas contexts.
-* **No Remote AI APIs**: The system operates independently of external cloud inference APIs (e.g. OpenAI, Google Cloud Vision, AWS Rekognition).
-* **Zero Telemetry**: No tracking pixels, Google Analytics, telemetry pings, or diagnostic beacons are embedded.
+**Forensics Web Lab** được thiết kế từ gốc theo kiến trúc bảo vệ quyền riêng tư cục bộ:
+> **Zero User Data Transmission**: Hình ảnh số, tensor trích xuất, cấu trúc metadata EXIF/XMP và báo cáo giám định được xử lý trực tiếp trên thiết bị cá nhân của người dùng, không phụ thuộc máy chủ phân tích trung gian.
 
-### 2.2 Ephemeral Session Lifecycle
-* **No Persistent Image Storage**: User images are NEVER persisted to browser `localStorage`, `IndexedDB`, or cookies.
-* **Object URL Revocation**: Blob Object URLs created for previewing images are immediately revoked via `URL.revokeObjectURL` once loaded into offscreen canvas buffers.
-* **Purge Session Control**: The user interface provides a prominent **"Clear Session"** button that:
-  1. Wipes all in-memory Canvas pixel buffers.
-  2. Discards all typed float32 tensor arrays.
-  3. Resets Web Worker state.
-  4. Flushes the DOM preview nodes.
-* **Separation of Caches**: If offline model weights are cached via the browser `CacheStorage` or `IndexedDB` API, they are stored under a strictly isolated model namespace that contains only public ONNX model binaries—never user content.
+---
 
-### 2.3 Report Export Privacy
-* **Sanitized JSON Reports**: Exported forensic JSON reports contain only mathematical metrics, signal scores, and SHA-256 hashes.
-* **No Raw Image Embedding**: Raw base64 image data is omitted by default from JSON exports.
-* **No Local Path Leakage**: No local filesystem paths or machine-identifying directory structures are included in exported artifacts.
+## 2. Cơ chế Kỹ thuật Bảo vệ Quyền riêng tư (Privacy-by-Design Technical Mechanisms)
+
+### 2.1 Xử lý Hoàn toàn tại Client (Complete Local Processing)
+* **Client-Side Runtime**: Giải mã ảnh, trích xuất metadata, suy luận mô hình học sâu ONNX, biến đổi Fourier 2D và phân tích khối nén JPEG block grid thực thi hoàn toàn trong Web Worker và OffscreenCanvas.
+* **Không dùng API suy luận đám mây**: Hệ thống không tích hợp bất kỳ API thị giác máy tính bên ngoài nào (OpenAI, Google Cloud Vision, AWS Rekognition).
+* **Không tích hợp Telemetry**: Không chèn mã tracking pixels, Google Analytics hay beacon chẩn đoán gửi ra ngoài.
+
+### 2.2 Vòng đời Dữ liệu Phù du (Ephemeral Session Lifecycle)
+* **Không lưu trữ ảnh vĩnh viễn**: Ảnh của người dùng tuyệt đối không lưu vào `localStorage`, `IndexedDB` hay cookies.
+* **Thu hồi URL Blob (Object URL Revocation)**: Các URL blob tạo ra để hiển thị ảnh preview được giải phóng ngay qua `URL.revokeObjectURL` sau khi nạp vào bộ nhớ đồ họa canvas.
+* **Nút xóa phiên (Clear Session Control)**: Giao diện người dùng cung cấp tính năng xóa sạch phiên làm việc:
+  1. Hủy sạch buffer pixel trong RAM.
+  2. Giải phóng mảng tensor Float32.
+  3. Đặt lại trạng thái Web Worker.
+  4. Xóa preview trên DOM.
+
+### 2.3 Bảo mật khi Xuất Báo cáo (Report Export Privacy)
+* **Báo cáo JSON chuẩn hóa**: Chỉ chứa các chỉ số thống kê toán học, điểm số tín hiệu, hash SHA-256 và danh sách cảnh báo.
+* **Không nhúng base64 ảnh gốc mặc định**: Tránh việc dữ liệu ảnh bị rò rỉ khi người dùng chia sẻ file kết quả.
+* **Không lộ đường dẫn cục bộ**: Báo cáo không chứa bất kỳ đường dẫn filesystem hay định danh cá nhân của máy trạm.
+
+---
+
+## 3. Trạng thái Thẩm định Mạng Thực tế (Empirical Network Verification Status)
+
+* **Tình trạng hiện tại**: `architecture-supported`. Toàn bộ mã nguồn client không có lệnh `fetch` hay `XMLHttpRequest` tải dữ liệu ảnh lên bất kỳ máy chủ nào.
+* **Giới hạn kiểm chứng**: `runtime-network-verification: unverified`. Việc kiểm thử tự động ghi nhận toàn bộ network frames trong suốt chu trình phân tích trên trình duyệt thực tế (thông qua Chrome DevTools Protocol / Playwright Network Interception) chưa được tích hợp vào CI/CD.
+* **Kế hoạch kiểm định**: Đã đưa vào Backlog nhiệm vụ thiết lập kịch bản kiểm thử E2E tự động chặn và khẳng định $0$ outbound network requests ngoài việc nạp các tài nguyên tĩnh (`.wasm`, fonts) ban đầu.

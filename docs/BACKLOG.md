@@ -9,7 +9,9 @@ graph TD
   P1 --> P3[Phase 3: Dataset & Research Pipeline]
   P3 --> P35[Phase 3.5: Persistent Memory, Truth Audit & Model Readiness]
   P35 --> P36[Phase 3.6: Evidence Hardening & Claim Correction]
-  P36 --> P4[Phase 4: Model Training & Evaluation]
+  P36 --> P4A0[Phase 4A.0: License Correction, Track Isolation & Acquisition Dry-Run]
+  P4A0 --> P4A[Phase 4A: Data Preparation & Smoke Fixtures]
+  P4A --> P4[Phase 4: Model Training & Evaluation]
   P4 --> P5[Phase 5: ONNX Browser Integration]
   P2 --> P5
   P5 --> P6[Phase 6: Complete Forensic UX & Reporting]
@@ -111,6 +113,30 @@ graph TD
 * [x] **TASK-368**: Expand `docs/MODEL_ACQUISITION_GATE.md` with 17 mandatory criteria before admitting any model to `ready` status.
 * [x] **TASK-369**: Author `docs/PHASE_4A_DATA_FEASIBILITY.md` with dataset decision matrix and user authorization gate.
 * [x] **TASK-370**: Execute genuine verification runs and capture execution summaries (`environment.json`, `test-summary.json`, `build-summary.json`).
+
+---
+
+### Phase 4A.0: Data License Correction, Track Isolation & Acquisition Dry-Run (Hoàn thành)
+* [x] **TASK-4A01**: Re-audit dataset licenses for GenImage, RealHD, SAGI-D, and RAID against official author sources.
+* [x] **TASK-4A02**: Correct GenImage terms (`CC BY-NC-SA 4.0 with additional dataset terms`, `research-only`, rename smoke samples to `Custom smoke subset sampled from GenImage`).
+* [x] **TASK-4A03**: Set RealHD status to `unavailable-or-pending`, `license: unverified`, `decision: blocked`.
+* [x] **TASK-4A04**: Establish formal Dual-Track Data & Model Isolation Policy in `docs/adr/0006-research-product-data-isolation.md`.
+* [x] **TASK-4A05**: Establish directory conventions (`data/research/`, `data/product/`, `artifacts/research/`, `artifacts/product/`, `models/research/`, `models/product/`) and update `.gitignore`.
+* [x] **TASK-4A06**: Create machine-checkable Dataset Registry (`datasets/registry.json`, `docs/schemas/dataset-registry.v1.schema.json`, `datasets/README.md`) with TypeScript and Python validators.
+* [x] **TASK-4A07**: Create provenance tracking schema (`docs/schemas/dataset-manifest.v1.schema.json`).
+* [x] **TASK-4A08**: Implement dataset acquisition CLI with dry-run mode (`ml/datasets/acquire.py`), rejecting blocked datasets and cross-track violations.
+* [x] **TASK-4A09**: Implement synthetic geometric/noise smoke fixture generator (`ml/tests/fixtures/smoke_generator.py`) without external network downloads or copyright restrictions.
+* [x] **TASK-4A10**: Implement automated contamination guards and unit tests in `@forensics/shared` and `ml/tests/test_contamination_guard.py`.
+* [x] **TASK-4A11**: Correct zero-egress statement to `architecture-supported`, `runtime-network-verification: unverified` in `README.md`, `docs/PRIVACY.md`, `docs/PROJECT_STATE.md`.
+* [x] **TASK-4A12**: Record 28.3 MB build WASM asset as engine runtime binary, not model weight.
+* [ ] **TASK-WEB-001**: Measure compressed transfer size (gzip/brotli), lazy loading, cache behavior, WASM initialization time, inference latency and peak memory across browser targets.
+* [ ] **TASK-E2E-001**: Implement browser E2E automated network logging to empirically confirm 0 outbound requests during image analysis.
+
+---
+
+### Phase 4A: Data Preparation & Smoke Fixtures (Chờ người dùng phê duyệt)
+* [ ] **TASK-4A1**: User decision on Phase 4A dataset pathway (Option 1: Synthetic Smoke Fixture vs Option 2: Custom smoke subset sampled from GenImage).
+* [ ] **TASK-4A2**: Prepare authorized dataset/fixture splits with group-based anti-leakage isolation.
 
 ---
 

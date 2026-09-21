@@ -459,3 +459,40 @@
 - **Responsibility**: Báo cáo chuẩn mực về thông số mô hình, kiến trúc, phạm vi ứng dụng, rủi ro, và bảng chỉ số thực nghiệm (chưa điền kết quả giả mạo, ghi rõ chưa huấn luyện).
 - **Actual status**: `implemented-and-tested`
 - **Known gaps**: Bảng chỉ số thực nghiệm khoa học đang ở trạng thái `not evaluated` chờ kết quả thật từ Phase 4. Kích thước INT8 ghi nhận là `estimated` (~2.6 MB), chưa đo trên artifact thật.
+
+---
+
+## 9. Dataset Registry, Dual-Track & Contamination Guards (`datasets/`, `ml/datasets/`, `packages/shared`)
+
+### Dataset Registry & Schemas
+- **File**: `datasets/registry.json`, `docs/schemas/dataset-registry.v1.schema.json`, `docs/schemas/dataset-manifest.v1.schema.json`
+- **Responsibility**: Sổ bộ quản lý toàn diện các dataset nghiên cứu và sản phẩm, khai báo chính sách bản quyền (commercialUse, redistribution, derivativeWeights), nguồn chính thức, bằng chứng pháp lý và phân luồng (`track: "research-only" | "product-eligible" | "blocked"`).
+- **Schema**: `dataset-registry.v1.schema.json` (JSON Schema Draft 2020-12), `dataset-manifest.v1.schema.json` (14 trường truy vết nguồn gốc chống data leakage).
+- **Tests**: `packages/shared/src/__tests__/dataset-registry.test.ts`, `ml/tests/test_contamination_guard.py`.
+- **Actual status**: `implemented-and-tested`
+- **Known gaps**: Hiện tại chưa có dataset bên ngoài nào được tải về máy; các dataset lớn đang ở trạng thái quy hoạch và dry-run.
+
+### Dataset & Contamination Validator (TypeScript)
+- **File**: `packages/shared/src/dataset-validator.ts`
+- **Responsibility**: Cung cấp hàm `validateDatasetRegistry` (kiểm tra 13 quy tắc toàn vẹn pháp lý của registry) và `validateProductionModelLineage` (ngăn chặn tuyệt đối model sản phẩm tham chiếu dataset phi thương mại hoặc chưa rõ bản quyền).
+- **Public API**: `validateDatasetRegistry(registry)`, `validateProductionModelLineage(modelEntry, datasetRegistry)`
+- **Tests**: `packages/shared/src/__tests__/dataset-registry.test.ts` (10 unit tests).
+- **Actual status**: `implemented-and-tested`
+- **Known gaps**: Không có.
+
+### Dataset Acquisition CLI (Dry-Run Only)
+- **File**: `ml/datasets/acquire.py`
+- **Responsibility**: CLI quản lý tiếp nhận dữ liệu với cờ `--dry-run`, xác thực tính hợp lệ của dataset từ `datasets/registry.json`, kiểm tra track isolation, chặn tuyệt đối việc tải file thật trong Phase 4A.0 (cờ `--execute` bị vô hiệu hóa), từ chối dataset bị block và dataset nghiên cứu đưa vào luồng sản phẩm.
+- **Public API**: `python -m ml.datasets.acquire --dataset <id> --track <research|product> --dry-run`
+- **Tests**: `ml/tests/test_contamination_guard.py` (6 unit tests).
+- **Actual status**: `implemented-and-tested`
+- **Known gaps**: Cờ `--execute` và hàm download file thật được chủ động vô hiệu hóa cho đến khi có phê duyệt tải dữ liệu của người dùng.
+
+### Synthetic Smoke Fixture Generator
+- **File**: `ml/tests/fixtures/smoke_generator.py`
+- **Responsibility**: Bộ sinh dữ liệu thử nghiệm nội bộ thuần túy bằng code (hình học, gradient, noise) kèm binary mask và manifest chuẩn 14 trường. Phục vụ kiểm thử unit test pipeline, parser, split và dataloader mà không phụ thuộc dữ liệu bên ngoài.
+- **Public API**: `generate_smoke_dataset(output_dir, num_samples=8)`
+- **Tests**: `ml/tests/test_contamination_guard.py`.
+- **Actual status**: `implemented-and-tested`
+- **Known gaps**: Không phải dữ liệu thật, không có giá trị đo độ chính xác hay benchmark khoa học.
+

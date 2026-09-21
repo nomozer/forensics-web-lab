@@ -1,0 +1,39 @@
+{
+  "phase": "Phase 4A.0",
+  "commitAudited": "e36cdb6",
+  "timestampUtc": "2026-09-21T08:15:00Z",
+  "command": "pnpm build",
+  "exitCode": 0,
+  "bundler": "vite v6.4.3",
+  "modulesTransformed": 54,
+  "outputDirectory": "apps/web/dist",
+  "artifacts": [
+    {
+      "path": "apps/web/dist/index.html",
+      "sizeBytes": 1080,
+      "sizeFormatted": "1.08 kB"
+    },
+    {
+      "path": "apps/web/dist/assets/forensics.worker.js",
+      "sizeBytes": 437930,
+      "sizeFormatted": "437.93 kB"
+    },
+    {
+      "path": "apps/web/dist/assets/ort-wasm-simd-threaded.jsep.wasm",
+      "sizeBytes": 28312030,
+      "sizeFormatted": "28,312.03 kB",
+      "artifactType": "runtime-webassembly-engine",
+      "note": "Measured ONNX Runtime WebAssembly execution engine binary; this is NOT model weights."
+    },
+    {
+      "path": "apps/web/dist/assets/index.css",
+      "sizeBytes": 3970,
+      "sizeFormatted": "3.97 kB"
+    },
+    {
+      "path": "apps/web/dist/assets/index.js",
+      "sizeBytes": 683690,
+      "sizeFormatted": "683.69 kB"
+    }
+  ]
+}

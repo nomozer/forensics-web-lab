@@ -30,8 +30,12 @@ When determining the open release or distribution terms for Forensics Web Lab, t
 1. **Client-Side Web Dependencies**:
    * All chosen npm libraries (React, Vite, `onnxruntime-web`) are distributed under standard permissive licenses (MIT, Apache 2.0).
 2. **Machine Learning Datasets**:
-   * Academic datasets (e.g. `GenImage`, `RealHD`) are published under non-commercial licenses (`CC-BY-NC 4.0`).
-   * Models trained exclusively on non-commercial academic datasets cannot be licensed or deployed for direct commercial monetization without acquiring commercial rights to underlying training data.
+   * Mỗi tập dữ liệu học thuật sở hữu giấy phép và điều khoản riêng biệt, không dùng một giấy phép chung:
+     * **GenImage**: Được phát hành dưới điều khoản `CC BY-NC-SA 4.0 with additional dataset terms`, cấm sử dụng thương mại đối với cả dataset lẫn các sản phẩm phái sinh (derivative works). Chỉ được sử dụng trong **Research Track**.
+     * **RealHD**: Trạng thái hiện tại là `unavailable-or-pending` ("Coming soon" trên GitHub), giấy phép `unverified`, tình trạng `blocked`. Tuyệt đối không suy diễn giấy phép khi chưa có nguồn chính thức.
+     * **SAGI-D / RAID**: Dành riêng cho nghiên cứu học thuật phi thương mại (`research-only`).
+   * Trọng số mô hình huấn luyện từ các tập dữ liệu phi thương mại trên **tuyệt đối không được đưa vào ứng dụng web sản phẩm (`models/product/`)**.
+   * Mô hình sản phẩm chỉ được huấn luyện từ tập dữ liệu thuộc **Product Track** (dữ liệu tự sở hữu hoặc có quyền thương mại rõ ràng).
 
 ---
 
@@ -40,9 +44,11 @@ When determining the open release or distribution terms for Forensics Web Lab, t
 1. **Current Status**: **`not-applicable`**
    * Trong giai đoạn hiện tại, chưa có trọng số mô hình hoặc file checkpoint nhị phân nào được huấn luyện hay lưu trữ trong repository. Do đó, việc gán bất kỳ giấy phép mở (như MIT, Apache-2.0) cho trọng số mô hình là không có cơ sở thực tế.
 
-2. **Future Distribution Constraints**:
-   * Khi mô hình được huấn luyện trong tương lai, quyền phân phối và cấp phép trọng số phụ thuộc đồng thời vào 3 thành tố pháp lý bắt buộc:
-     * **Mã nguồn dự án**: Theo giấy phép được chủ sở hữu quyết định ở Mục 2.
-     * **Pretrained Backbone**: Giấy phép của checkpoint nền khởi tạo (ví dụ: trọng số ImageNet của torchvision/timm).
-     * **Dữ liệu huấn luyện**: Bản quyền và điều khoản sử dụng của tập dữ liệu huấn luyện (ví dụ: nếu sử dụng dữ liệu học thuật phi thương mại như `CC-BY-NC 4.0`, toàn bộ checkpoint phái sinh chỉ được phát hành dưới điều khoản phi thương mại tương ứng).
+2. **Dual-Track Weight Distribution Governance**:
+   * Khi mô hình được huấn luyện trong tương lai, quy chế phân phối tuân thủ ranh giới hai luồng:
+     * **Research Track Checkpoints (`models/research/`)**: Phục vụ công bố học thuật nội bộ; kế thừa các ràng buộc phi thương mại / chia sẻ tương tự (Share-Alike) của dữ liệu nguồn (ví dụ: GenImage). Tuyệt đối không được đóng gói vào bản phát hành sản phẩm.
+     * **Product Track Checkpoints (`models/product/`)**: Chỉ được nạp vào client web khi đáp ứng đồng thời 3 điều kiện:
+       1. Mã nguồn dự án có giấy phép cho phép phân phối.
+       2. Pretrained backbone (nếu có) có quyền sử dụng thương mại.
+       3. Toàn bộ dữ liệu huấn luyện là `product-eligible` (không chứa bất kỳ mẫu nào mang điều khoản `commercialUse: prohibited`).
    * Tuyệt đối không suy diễn hoặc tự ý gán giấy phép cho mô hình khi chưa thẩm định đầy đủ tính pháp lý của cả 3 thành tố trên.
