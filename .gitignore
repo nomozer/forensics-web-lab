@@ -84,3 +84,5 @@ test-results/
 playwright-report/
 blob-report/
 playwright/.cache/
+ml/tests/fixtures/generated-smoke/
+

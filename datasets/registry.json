@@ -6,8 +6,9 @@
       "name": "GenImage Dataset",
       "version": "1.0.0",
       "track": "research-only",
+      "purpose": "scientific-benchmark",
       "officialSource": "https://github.com/GenImage-Dataset/GenImage",
-      "downloadSource": "https://github.com/GenImage-Dataset/GenImage",
+      "downloadSource": "https://drive.google.com/drive/folders/1jGt10bwTbhEZuGXLyvrCuxOI0cBqQ1FS",
       "codeLicense": "Apache-2.0",
       "datasetLicense": "CC BY-NC-SA 4.0 with additional dataset terms",
       "additionalTerms": [
@@ -17,7 +18,22 @@
       ],
       "commercialUse": "prohibited",
       "redistribution": "prohibited",
-      "derivativeWeights": "prohibited",
+      "derivativeWeights": "unclear",
+      "productionPromotion": "prohibited-by-project-policy",
+      "ownership": "third-party",
+      "licenseStatus": "verified",
+      "acquisitionEnabled": false,
+      "approvalStatus": "pending-user-approval",
+      "sourceTerms": {
+        "datasetDerivativeWorks": "prohibited_for_commercial_use"
+      },
+      "legalInterpretation": {
+        "trainedWeightsStatus": "unclear"
+      },
+      "projectPolicy": {
+        "productionUse": "prohibited",
+        "researchUse": "allowed_subject_to_terms"
+      },
       "availability": "available",
       "expectedDownloadBytes": null,
       "checksumAvailable": false,
@@ -26,13 +42,14 @@
       ],
       "reviewedAt": "2026-09-21T08:00:00Z",
       "status": "verified",
-      "notes": "Academic multi-generator dataset. Quarantined to research track; prohibited from commercial product models."
+      "notes": "GenImage cấm sử dụng thương mại dataset và derivative works. Việc checkpoint có được xem là derivative work hay không chưa được dự án xác lập bằng ý kiến pháp lý. Chính sách bảo thủ của dự án là giữ toàn bộ checkpoint học từ GenImage trong research track."
     },
     {
       "id": "realhd",
       "name": "RealHD Dataset",
       "version": "pending",
       "track": "blocked",
+      "purpose": "scientific-benchmark",
       "officialSource": "https://real-hd.github.io",
       "downloadSource": "https://github.com/Hanzhe-yu/RealHD",
       "codeLicense": "unverified",
@@ -41,6 +58,11 @@
       "commercialUse": "unclear",
       "redistribution": "unclear",
       "derivativeWeights": "unclear",
+      "productionPromotion": "prohibited-by-project-policy",
+      "ownership": "third-party",
+      "licenseStatus": "unverified",
+      "acquisitionEnabled": false,
+      "approvalStatus": "not-applicable",
       "availability": "unavailable",
       "expectedDownloadBytes": null,
       "checksumAvailable": false,
@@ -55,7 +77,8 @@
       "id": "sagi-d",
       "name": "SAGI-D Inpainting Dataset",
       "version": "1.0.0",
-      "track": "research-only",
+      "track": "blocked",
+      "purpose": "scientific-benchmark",
       "officialSource": "https://github.com/mever-team/SAGI",
       "downloadSource": "https://www.kaggle.com/datasets/sagitdataset/sagi-d",
       "codeLicense": "MIT",
@@ -66,6 +89,11 @@
       "commercialUse": "prohibited",
       "redistribution": "unclear",
       "derivativeWeights": "unclear",
+      "productionPromotion": "prohibited-by-project-policy",
+      "ownership": "third-party",
+      "licenseStatus": "unverified",
+      "acquisitionEnabled": false,
+      "approvalStatus": "pending-user-approval",
       "availability": "available",
       "expectedDownloadBytes": null,
       "checksumAvailable": false,
@@ -74,13 +102,14 @@
       ],
       "reviewedAt": "2026-09-21T08:00:00Z",
       "status": "proposed",
-      "notes": "Inpainting benchmark dataset with binary masks. Research track only."
+      "notes": "Inpainting benchmark dataset with binary masks. Blocked until official image license evidence is verified."
     },
     {
       "id": "raid",
       "name": "RAID Benchmark",
       "version": "1.0.0",
-      "track": "research-only",
+      "track": "blocked",
+      "purpose": "scientific-benchmark",
       "officialSource": "https://github.com/raid-benchmark/raid",
       "downloadSource": "https://raid-benchmark.com",
       "codeLicense": "Apache-2.0",
@@ -91,6 +120,11 @@
       "commercialUse": "prohibited",
       "redistribution": "unclear",
       "derivativeWeights": "unclear",
+      "productionPromotion": "prohibited-by-project-policy",
+      "ownership": "third-party",
+      "licenseStatus": "unverified",
+      "acquisitionEnabled": false,
+      "approvalStatus": "pending-user-approval",
       "availability": "available",
       "expectedDownloadBytes": null,
       "checksumAvailable": false,
@@ -99,13 +133,14 @@
       ],
       "reviewedAt": "2026-09-21T08:00:00Z",
       "status": "proposed",
-      "notes": "Robustness evaluation benchmark. Research track only, held-out testing only."
+      "notes": "Robustness evaluation benchmark. Blocked until official image redistribution license evidence is verified."
     },
     {
       "id": "synthetic-smoke",
       "name": "Synthetic Geometric Smoke Fixture",
       "version": "1.0.0",
-      "track": "product-eligible",
+      "track": "fixture-only",
+      "purpose": "fixture",
       "officialSource": "internal://forensics-web-lab/ml/tests/fixtures/generated-smoke",
       "downloadSource": "internal-generation",
       "codeLicense": "Project-Internal",
@@ -114,9 +149,14 @@
         "Purely synthetic geometric/gradient/noise patterns generated by repository code",
         "No external copyrighted image material"
       ],
-      "commercialUse": "allowed",
+      "commercialUse": "internal-testing-only",
       "redistribution": "allowed",
-      "derivativeWeights": "allowed",
+      "derivativeWeights": "unclear",
+      "productionPromotion": "prohibited-by-project-policy",
+      "ownership": "project-generated",
+      "licenseStatus": "pending-project-license-decision",
+      "acquisitionEnabled": true,
+      "approvalStatus": "not-applicable",
       "availability": "available",
       "expectedDownloadBytes": 0,
       "checksumAvailable": true,
@@ -125,7 +165,7 @@
       ],
       "reviewedAt": "2026-09-21T08:00:00Z",
       "status": "verified",
-      "notes": "Internal synthetic smoke fixture for pipeline verification; not real photographic data."
+      "notes": "Dữ liệu hình học, gradient, noise sinh cục bộ bằng code. Dùng để kiểm tra manifest, loader, split, forward/backward kỹ thuật và export contract. Không tham gia huấn luyện checkpoint sản phẩm, không đánh giá accuracy hay khả năng nhận diện AI, không thuộc product model lineage."
     }
   ]
 }

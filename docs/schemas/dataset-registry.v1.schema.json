@@ -20,6 +20,7 @@
           "name",
           "version",
           "track",
+          "purpose",
           "officialSource",
           "downloadSource",
           "codeLicense",
@@ -49,7 +50,17 @@
           },
           "track": {
             "type": "string",
-            "enum": ["research-only", "product-eligible", "blocked"]
+            "enum": ["research-only", "product-eligible", "blocked", "fixture-only"]
+          },
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "fixture",
+              "acquisition-smoke",
+              "exploratory-pilot",
+              "scientific-benchmark",
+              "product-training"
+            ]
           },
           "officialSource": {
             "type": "string"
@@ -69,7 +80,7 @@
           },
           "commercialUse": {
             "type": "string",
-            "enum": ["allowed", "prohibited", "unclear"]
+            "enum": ["allowed", "prohibited", "unclear", "internal-testing-only"]
           },
           "redistribution": {
             "type": "string",
@@ -78,6 +89,43 @@
           "derivativeWeights": {
             "type": "string",
             "enum": ["allowed", "prohibited", "unclear"]
+          },
+          "productionPromotion": {
+            "type": "string",
+            "enum": ["allowed", "prohibited-by-project-policy", "pending-evaluation"]
+          },
+          "ownership": {
+            "type": "string",
+            "enum": ["project-generated", "third-party", "public-domain"]
+          },
+          "licenseStatus": {
+            "type": "string",
+            "enum": ["verified", "unverified", "pending-project-license-decision"]
+          },
+          "acquisitionEnabled": {
+            "type": "boolean"
+          },
+          "approvalStatus": {
+            "type": "string",
+            "enum": ["approved", "pending-user-approval", "not-applicable"]
+          },
+          "sourceTerms": {
+            "type": "object"
+          },
+          "legalInterpretation": {
+            "type": "object"
+          },
+          "projectPolicy": {
+            "type": "object"
+          },
+          "metadataAccess": {
+            "type": "string"
+          },
+          "metadataAccessReason": {
+            "type": "string"
+          },
+          "remoteInventory": {
+            "type": "array"
           },
           "availability": {
             "type": "string",

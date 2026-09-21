@@ -58,8 +58,23 @@ def validate_registry_structure(registry: Dict[str, Any]) -> List[str]:
             errors.append(f"{prefix} Missing officialSource.")
 
         track = item.get("track")
-        if track not in ("research-only", "product-eligible", "blocked"):
+        if track not in ("research-only", "product-eligible", "blocked", "fixture-only"):
             errors.append(f"{prefix} Invalid track: '{track}'.")
+
+        purpose = item.get("purpose")
+        if purpose not in (
+            "fixture",
+            "acquisition-smoke",
+            "exploratory-pilot",
+            "scientific-benchmark",
+            "product-training",
+        ):
+            errors.append(f"{prefix} Invalid purpose: '{purpose}'.")
+
+        if track == "fixture-only" and purpose != "fixture":
+            errors.append(f"{prefix} Track 'fixture-only' must have purpose 'fixture'.")
+        if purpose == "fixture" and track != "fixture-only":
+            errors.append(f"{prefix} Purpose 'fixture' must have track 'fixture-only'.")
 
         if track == "product-eligible":
             if item.get("commercialUse") != "allowed":
@@ -74,16 +89,18 @@ def validate_registry_structure(registry: Dict[str, Any]) -> List[str]:
             if not isinstance(urls, list) or len(urls) == 0:
                 errors.append(f"{prefix} status 'verified' requires licenseEvidenceUrls.")
 
-        if track == "blocked" and item.get("status") != "blocked":
-            errors.append(f"{prefix} track 'blocked' must have status 'blocked'.")
+        if track == "blocked" and item.get("status") not in ("blocked", "proposed"):
+            errors.append(f"{prefix} track 'blocked' must have status 'blocked' or 'proposed'.")
 
     return errors
 
 
-def run_acquisition_dry_run(
+def run_acquisition(
     dataset_id: str,
     track: str,
     repo_root: Path,
+    metadata_only: bool = False,
+    execute: bool = False,
 ) -> int:
     registry = load_dataset_registry(repo_root)
     errors = validate_registry_structure(registry)
@@ -124,6 +141,52 @@ def run_acquisition_dry_run(
         )
         return 1
 
+    # Gate 3: Fixture-only into product track
+    if entry["track"] == "fixture-only" and track == "product":
+        print("[REJECTED] Fixture Guard Violation:", file=sys.stderr)
+        print(
+            f"  Dataset '{dataset_id}' is classified as 'fixture-only'.",
+            file=sys.stderr,
+        )
+        print(
+            "  Fixtures are strictly prohibited from being promoted to or used in the 'product' track.",
+            file=sys.stderr,
+        )
+        return 1
+
+    # Gate 4: Execution Gate
+    if execute:
+        if dataset_id == "synthetic-smoke":
+            # Local deterministic code fixture generation
+            from ml.tests.fixtures.smoke_generator import generate_synthetic_smoke_dataset
+
+            dest_dir = repo_root / "ml" / "tests" / "fixtures" / "generated-smoke"
+            summary = generate_synthetic_smoke_dataset(dest_dir)
+            print("=" * 70)
+            print("LOCAL TEST FIXTURE EXECUTION REPORT")
+            print("=" * 70)
+            print(f"Operation:               local deterministic fixture generation")
+            print(f"Destination:             {dest_dir.as_posix()}")
+            print(f"Samples Generated:       {summary.get('sample_count', 8)}")
+            print(f"Network Requests Made:   0")
+            print(f"External Bytes:          0")
+            print(f"Classification:          local-test-execution")
+            print("=" * 70)
+            return 0
+        else:
+            # External dataset acquisition lock
+            print(
+                f"[BLOCKED] External dataset acquisition is locked "
+                f"(acquisitionEnabled: {entry.get('acquisitionEnabled', False)}, "
+                f"approvalStatus: {entry.get('approvalStatus', 'pending-user-approval')}).",
+                file=sys.stderr,
+            )
+            print(
+                "Acquisition is prepared. User approval with exact archive and byte size is required.",
+                file=sys.stderr,
+            )
+            return 1
+
     # Determine destination directory
     dest_dir = repo_root / "data" / track / dataset_id
 
@@ -136,13 +199,15 @@ def run_acquisition_dry_run(
     else:
         size_display = f"{expected_bytes / (1024 * 1024):.1f} MB"
 
+    mode_title = "METADATA-ONLY" if metadata_only else "DRY-RUN"
     print("=" * 70)
-    print("DATASET ACQUISITION DRY-RUN REPORT (ADR-0006 COMPLIANT)")
+    print(f"DATASET ACQUISITION {mode_title} REPORT (ADR-0006 COMPLIANT)")
     print("=" * 70)
     print(f"Dataset ID:             {entry['id']}")
     print(f"Dataset Name:           {entry['name']}")
     print(f"Version:                {entry['version']}")
     print(f"Registered Track:       {entry['track']}")
+    print(f"Purpose:                {entry.get('purpose', 'N/A')}")
     print(f"Target Track:           {track}")
     print(f"Status:                 {entry['status']}")
     print(f"Official Source:        {entry['officialSource']}")
@@ -152,9 +217,10 @@ def run_acquisition_dry_run(
     print(f"Commercial Use:         {entry['commercialUse']}")
     print(f"Redistribution:         {entry['redistribution']}")
     print(f"Derivative Weights:     {entry['derivativeWeights']}")
+    print(f"Production Promotion:   {entry.get('productionPromotion', 'pending-evaluation')}")
     print(f"Availability:           {entry['availability']}")
     print(f"Expected Size:          {size_display}")
-    print(f"Destination Path:       {dest_dir.as_posix()}")
+    print(f"Proposed Destination:   {dest_dir.as_posix()}")
     print("-" * 70)
     print("Additional Terms:")
     for term in entry.get("additionalTerms", []):
@@ -162,14 +228,30 @@ def run_acquisition_dry_run(
     print("License Evidence:")
     for url in entry.get("licenseEvidenceUrls", []):
         print(f"  * {url}")
+
+    # Display remote inventory summary if available
+    inventory_path = repo_root / "research" / "evidence" / "phase-4a.1" / f"{dataset_id}-remote-inventory.json"
+    if inventory_path.exists():
+        try:
+            with open(inventory_path, "r", encoding="utf-8") as f:
+                inv = json.load(f)
+            print("-" * 70)
+            print("Remote Inventory Summary (Phase 4A.1 Evidence):")
+            print(f"  * Total Remote Items Inspected: {len(inv.get('items', []))}")
+            print(f"  * Subset Feasibility:           {inv.get('subsetFeasibilityConclusion', 'unknown')}")
+            print(f"  * Feasibility Summary:          {inv.get('subsetFeasibilitySummary', 'N/A')}")
+        except Exception:
+            pass
+
     print("-" * 70)
     print("Safety & Network Invariance Confirmation:")
-    print("  * Network requests made: 0")
-    print("  * Bytes downloaded: 0")
-    print("  * Image files created: 0")
-    print("  * Live download execution: DISABLED in Phase 4A.0 dry-run mode")
+    print("  * Network requests made:         0")
+    print("  * External dataset bytes:        0")
+    print("  * Model bytes downloaded:        0")
+    print("  * Image files created:           0")
+    print("  * Content download execution:    DISABLED")
     print("=" * 70)
-    print("[PASS] Acquisition dry-run verified successfully.")
+    print(f"[PASS] Acquisition {mode_title.lower()} verified successfully.")
     return 0
 
 
@@ -184,15 +266,19 @@ def main() -> None:
     )
     parser.add_argument(
         "--track",
-        choices=["research", "product"],
+        choices=["research", "product", "fixture"],
         default="research",
         help="Target track: 'research' (data/research/) or 'product' (data/product/)",
     )
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        default=True,
-        help="Simulate acquisition without making network requests or saving files (Default: True)",
+        help="Simulate acquisition without making network requests or saving files",
+    )
+    parser.add_argument(
+        "--metadata-only",
+        action="store_true",
+        help="Display metadata, legal terms, and remote inventory without content downloading",
     )
     parser.add_argument(
         "--validate-registry",
@@ -202,7 +288,7 @@ def main() -> None:
     parser.add_argument(
         "--execute",
         action="store_true",
-        help="Execute live dataset download (DISALLOWED in Phase 4A.0)",
+        help="Execute dataset acquisition (requires user approval for external datasets)",
     )
     parser.add_argument(
         "--accept-license",
@@ -217,14 +303,6 @@ def main() -> None:
 
     args = parser.parse_args()
     repo_root = find_repo_root()
-
-    if args.execute:
-        print(
-            "[ERROR] Live dataset download (--execute) is strictly PROHIBITED in Phase 4A.0.",
-            file=sys.stderr,
-        )
-        print("Acquisition is strictly restricted to --dry-run mode.", file=sys.stderr)
-        sys.exit(1)
 
     if args.validate_registry:
         try:
@@ -245,12 +323,18 @@ def main() -> None:
         parser.print_help()
         sys.exit(1)
 
-    exit_code = run_acquisition_dry_run(
-        dataset_id=args.dataset.strip().lower(),
+    dataset_id = args.dataset.strip().lower()
+    is_metadata_only = args.metadata_only or (not args.execute and not args.dry_run)
+
+    exit_code = run_acquisition(
+        dataset_id=dataset_id,
         track=args.track,
         repo_root=repo_root,
+        metadata_only=is_metadata_only,
+        execute=args.execute,
     )
     sys.exit(exit_code)
+
 
 
 if __name__ == "__main__":

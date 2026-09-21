@@ -11,7 +11,7 @@ from pathlib import Path
 from ml.datasets.acquire import (
     find_repo_root,
     load_dataset_registry,
-    run_acquisition_dry_run,
+    run_acquisition,
     validate_registry_structure,
 )
 from ml.tests.fixtures.smoke_generator import generate_synthetic_smoke_dataset
@@ -28,28 +28,53 @@ def test_official_dataset_registry_validation() -> None:
 def test_reject_research_dataset_in_product_track() -> None:
     repo_root = find_repo_root()
     # GenImage is research-only; acquiring it into product track must be rejected
-    exit_code = run_acquisition_dry_run("genimage", "product", repo_root)
+    exit_code = run_acquisition("genimage", "product", repo_root)
     assert exit_code == 1, "Expected acquisition into product track to be rejected for research-only dataset"
+
+
+def test_reject_fixture_dataset_in_product_track() -> None:
+    repo_root = find_repo_root()
+    # synthetic-smoke is fixture-only; acquiring it into product track must be rejected
+    exit_code = run_acquisition("synthetic-smoke", "product", repo_root)
+    assert exit_code == 1, "Expected acquisition into product track to be rejected for fixture-only dataset"
 
 
 def test_reject_blocked_dataset() -> None:
     repo_root = find_repo_root()
     # RealHD is blocked; acquisition must be rejected regardless of track
-    exit_code = run_acquisition_dry_run("realhd", "research", repo_root)
+    exit_code = run_acquisition("realhd", "research", repo_root)
     assert exit_code == 1, "Expected acquisition to be rejected for blocked dataset"
 
 
 def test_accept_research_dataset_in_research_track() -> None:
     repo_root = find_repo_root()
     # GenImage dry-run on research track should pass
-    exit_code = run_acquisition_dry_run("genimage", "research", repo_root)
+    exit_code = run_acquisition("genimage", "research", repo_root)
     assert exit_code == 0
 
 
-def test_accept_synthetic_smoke_in_product_track() -> None:
+def test_accept_synthetic_smoke_in_fixture_track() -> None:
     repo_root = find_repo_root()
-    # synthetic-smoke on product track should pass
-    exit_code = run_acquisition_dry_run("synthetic-smoke", "product", repo_root)
+    # synthetic-smoke on fixture track should pass
+    exit_code = run_acquisition("synthetic-smoke", "fixture", repo_root)
+    assert exit_code == 0
+
+
+def test_genimage_metadata_only_run() -> None:
+    repo_root = find_repo_root()
+    exit_code = run_acquisition("genimage", "research", repo_root, metadata_only=True)
+    assert exit_code == 0
+
+
+def test_external_dataset_execute_locked_without_approval() -> None:
+    repo_root = find_repo_root()
+    exit_code = run_acquisition("genimage", "research", repo_root, execute=True)
+    assert exit_code == 1
+
+
+def test_local_fixture_execute_succeeds_with_zero_network() -> None:
+    repo_root = find_repo_root()
+    exit_code = run_acquisition("synthetic-smoke", "fixture", repo_root, execute=True)
     assert exit_code == 0
 
 
@@ -67,7 +92,7 @@ def test_synthetic_smoke_fixture_generation_and_provenance() -> None:
 
         assert manifest["schemaVersion"] == "1.0.0"
         assert manifest["datasetId"] == "synthetic-smoke"
-        assert manifest["licenseTrack"] == "product-eligible"
+        assert manifest["licenseTrack"] == "fixture-only"
         assert len(manifest["samples"]) == 8
 
         # Verify all mandatory provenance fields
@@ -79,10 +104,11 @@ def test_synthetic_smoke_fixture_generation_and_provenance() -> None:
             assert "sha256" in s
             assert len(s["sha256"]) == 64
             assert s["label"] in ("authentic", "fully_generated", "ai_edited")
-            assert s["license_track"] == "product-eligible"
+            assert s["license_track"] == "fixture-only"
 
             # Check mask exists for ai_edited
             if s["label"] == "ai_edited":
                 assert s["mask_path"] != ""
                 full_mask_path = tmp_path / s["mask_path"]
                 assert full_mask_path.exists(), f"Mask file does not exist: {full_mask_path}"
+

@@ -15,7 +15,7 @@
     },
     "licenseTrack": {
       "type": "string",
-      "enum": ["research-only", "product-eligible"]
+      "enum": ["research-only", "product-eligible", "fixture-only"]
     },
     "generatedAt": {
       "type": "string",
@@ -85,7 +85,7 @@
           },
           "license_track": {
             "type": "string",
-            "enum": ["research-only", "product-eligible"]
+            "enum": ["research-only", "product-eligible", "fixture-only"]
           },
           "split_group": {
             "type": "string",

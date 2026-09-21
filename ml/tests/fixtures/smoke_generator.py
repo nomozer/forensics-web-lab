@@ -73,7 +73,7 @@ def generate_synthetic_smoke_dataset(
                 "generator_version": "none",
                 "edit_method": "none",
                 "mask_path": "",
-                "license_track": "product-eligible",
+                "license_track": "fixture-only",
                 "split_group": "train" if i < 2 else "val",
                 "acquired_at": datetime.now(timezone.utc).isoformat(),
             }
@@ -106,7 +106,7 @@ def generate_synthetic_smoke_dataset(
                 "generator_version": "none",
                 "edit_method": "full_synthesis",
                 "mask_path": "",
-                "license_track": "product-eligible",
+                "license_track": "fixture-only",
                 "split_group": "train" if i == 0 else "test_indomain",
                 "acquired_at": datetime.now(timezone.utc).isoformat(),
             }
@@ -150,7 +150,7 @@ def generate_synthetic_smoke_dataset(
                 "generator_version": "none",
                 "edit_method": "inpainting",
                 "mask_path": str(mask_path.relative_to(output_dir)),
-                "license_track": "product-eligible",
+                "license_track": "fixture-only",
                 "split_group": "train" if i < 2 else "val",
                 "acquired_at": datetime.now(timezone.utc).isoformat(),
             }
@@ -160,7 +160,7 @@ def generate_synthetic_smoke_dataset(
     manifest_data = {
         "schemaVersion": "1.0.0",
         "datasetId": "synthetic-smoke",
-        "licenseTrack": "product-eligible",
+        "licenseTrack": "fixture-only",
         "generatedAt": datetime.now(timezone.utc).isoformat(),
         "samples": samples,
     }
