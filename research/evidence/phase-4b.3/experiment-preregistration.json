@@ -1,0 +1,60 @@
+{
+  "schemaVersion": "1.0.0",
+  "timestampUtc": "2026-09-22T06:58:03Z",
+  "experimentId": "pilot-a-binary-preregistered",
+  "targetPhase": "Phase 4C",
+  "preregistrationDocument": "docs/PHASE_4C_PREREGISTRATION.md",
+  "configPath": "ml/configs/pilot_a_binary_preregistered.yaml",
+  "configHash": "839531a700b211e5adc4a145e811c4533dbb45a044b63e816c474a462e88ddd1",
+  "targetTask": "authentic_vs_ai_edited",
+  "statisticalUnit": "source_id",
+  "lockedSplitSeal": "519e7a0e6815e781d1cefa95971e5221ac1f25656837374d8dc4ba41401fded9",
+  "partitions": {
+    "development_train": 250,
+    "inner_validation": 91,
+    "locked_test": 343
+  },
+  "learningCurvePoints": [
+    50,
+    100,
+    250
+  ],
+  "seeds": [
+    42,
+    1337,
+    2025,
+    3407,
+    9001
+  ],
+  "baselines": [
+    "stratified_dummy",
+    "metadata_only",
+    "dsp_only",
+    "frozen_visual_linear",
+    "finetuned_visual",
+    "multimodal_fusion"
+  ],
+  "primaryMetrics": [
+    "macro_f1",
+    "balanced_accuracy",
+    "auroc",
+    "brier_score",
+    "ece",
+    "selective_risk_at_coverage"
+  ],
+  "plannedPretrainedModel": {
+    "backbone": "mobilenet_v3_small",
+    "weightsEnum": "MobileNet_V3_Small_Weights.IMAGENET1K_V1",
+    "expectedParams": 1782648,
+    "expectedDownloadBytes": 10830000,
+    "license": "BSD-3-Clause",
+    "weightsDownloadedIn4B3": 0
+  },
+  "stageGates": {
+    "stage0": "Dummy, Metadata-only and DSP-only development",
+    "stage1": "Frozen MobileNetV3-Small visual head",
+    "stage2": "Limited fine-tuning of features.12 only if Stage 1 passes criteria",
+    "finalEvaluation": "Single sealed evaluation batch on locked_test using frozen experiment-lock"
+  },
+  "status": "preregistered_ready_for_approval"
+}

@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://forensics-web-lab.local/schemas/experiment-lock.v1.schema.json",
+  "title": "ExperimentLock",
+  "description": "Schema for cryptographically bound experiment lock governing access to the locked_test partition in Forensics Web Lab",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "experimentId",
+    "targetPhase",
+    "preregistrationDocument",
+    "lockTimestampUtc",
+    "configHash",
+    "checkpointHash",
+    "preprocessingHash",
+    "thresholdCalibrationHash",
+    "seeds",
+    "lockedSplitSeal",
+    "accessRules",
+    "preregisteredBaselines",
+    "primaryMetricUnit",
+    "experimentLockHash"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "enum": ["1.0.0"]
+    },
+    "experimentId": {
+      "type": "string",
+      "pattern": "^pilot-[a-z0-9_-]+$"
+    },
+    "targetPhase": {
+      "type": "string"
+    },
+    "preregistrationDocument": {
+      "type": "string"
+    },
+    "lockTimestampUtc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "configHash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "checkpointHash": {
+      "type": "string"
+    },
+    "preprocessingHash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "thresholdCalibrationHash": {
+      "type": "string"
+    },
+    "seeds": {
+      "type": "array",
+      "items": { "type": "integer" },
+      "minItems": 1
+    },
+    "lockedSplitSeal": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "accessRules": {
+      "type": "object",
+      "required": [
+        "trainingAccessAllowed",
+        "developmentAccessAllowed",
+        "finalEvaluationAccessAllowed"
+      ],
+      "properties": {
+        "trainingAccessAllowed": {
+          "type": "boolean",
+          "enum": [false]
+        },
+        "developmentAccessAllowed": {
+          "type": "boolean",
+          "enum": [false]
+        },
+        "finalEvaluationAccessAllowed": {
+          "type": "boolean",
+          "enum": [true]
+        },
+        "enforcementMechanism": {
+          "type": "string"
+        }
+      }
+    },
+    "preregisteredBaselines": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "primaryMetricUnit": {
+      "type": "string",
+      "enum": ["source_id"]
+    },
+    "experimentLockHash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  }
+}

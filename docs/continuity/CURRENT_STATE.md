@@ -1,9 +1,9 @@
 # Trạng thái Hiện tại: Forensics Web Lab (Current State)
 
 > **Tài liệu đọc đầu tiên bắt buộc cho mọi phiên làm việc AI mới.**  
-> **Documented through substantive commit**: `82a5266`  
-> **Ending commit Phase 4B.1**: `82a5266`  
-> **Phase hoàn thành gần nhất**: Phase 4B.2 — Controlled Option-P Acquisition, Pairability Verification and Split Freeze  
+> **Documented through substantive commit**: `1ad8151`  
+> **Ending commit Phase 4B.2**: `1ad8151`  
+> **Phase hoàn thành gần nhất**: Phase 4B.3 — Evidence Reconciliation and Binary Experiment Preregistration  
 > **Branch**: `feat/production-ai-image-forensics`  
 > **Base main commit**: `460f6d5` (bảo toàn nguyên vẹn, không commit trực tiếp)  
 > **Working tree**: clean  
@@ -63,7 +63,7 @@
 * **Bốn archive Option P đã tải và kiểm toán toàn vẹn**:
   * `orig_validation.tar.gz`: 859,947,874 bytes, SHA-256 `c9f02a34...` (1,023 ảnh, 861,683,700 bytes).
   * `orig_testing.tar.gz`: 806,962,390 bytes, SHA-256 `8020c2f2...` (1,029 ảnh, 808,321,851 bytes).
-  * `sd2-sp_validation.tar.gz`: 2,172,017,290 bytes, SHA-256 `3b3ba9f0...` (2,046 ảnh, 2,176,267,677 bytes).
+  * `sd2-sp_validation.tar.gz`: 2,172,017,290 bytes, SHA-256 `bd9eb439...` (2,046 ảnh, 2,176,267,677 bytes).
   * `sd2-sp_testing.tar.gz`: 2,040,575,228 bytes, SHA-256 `c346af3c...` (2,058 ảnh, 2,043,822,807 bytes).
   * Tổng giải nén Option P: **6,156 file ảnh (5,890,096,035 bytes)**. 100% decode PIL thành công, 0 lỗi hỏng.
 * **Kiểm toán Ghép cặp (Tripartite Pairability Audit)**: Trạng thái **`verified`** (684 category instances ghép hoàn hảo 100% giữa authentic ↔ ai_edited ↔ masks; 0 missing originals, 0 missing edits, 0 missing masks, 0 dimension mismatches).
@@ -136,12 +136,17 @@
 * `EV-PAIRABILITY-VERIFIED-001`: Chứng minh toán học ghép cặp ba thành phần authentic ↔ edited ↔ mask đạt trạng thái `verified` (684 instances).
 * `EV-SPLIT-FREEZE-001`: Đóng băng phân vùng tất định (250 dev_train, 91 inner_val, 343 locked_test) kèm SHA-256 seal `519e7a0e...`.
 * `EV-CLASS-COVERAGE-GUARD-001`: Guard bảo vệ 2 lớp runnable và 3 lớp `not-runnable-missing-fully-generated-data`.
+* `EV-ETAG-RECONCILIATION-001`: Đối soát chi tiết ETag WebDAV vs HTTP GET cho 4 archive Option P, chứng minh tính toàn vẹn độc lập bằng SHA-256 và byte count.
+* `EV-MANIFEST-AUDIT-001`: Kiểm toán manifest 684 instances, 4,104 variant pairs và giải thích 6,156 ảnh trích xuất.
+* `EV-PAIR-AWARE-LOADER-001`: Giao thức chống pseudoreplication Strategy A (1:1 balance, luân phiên biến thể, tổng hợp xác suất theo source_id).
+* `EV-LOCKED-TEST-GUARD-001`: Phân quyền Role-Based Access Guard cho locked_test kèm ExperimentLockBinding và bảo toàn seal `519e7a0e...`.
+* `EV-PHASE4C-PREREGISTRATION-001`: Đăng ký trước thí nghiệm phân loại nhị phân Phase 4C (N=50,100,250; 6 baselines; 5 seeds; 95% bootstrap CI).
 
 ---
 
 ## 9. Công việc Đang thực hiện & Công việc Tiếp theo
 
-* **Đã hoàn thành (Phase 4B.2)**: Thu nạp 4 archive Option P (5,879,502,782 bytes); an toàn trích xuất 6,156 ảnh (5,890,096,035 bytes); kiểm toán decode PIL 100% PASS; xác minh ghép cặp ba thành phần đạt trạng thái `verified` (684 instances); đóng băng phân vùng `development_train` (250), `inner_validation` (91), `locked_test` (343); khóa locked-test bằng SHA-256 seal; xác lập learning curve $N=50 \subset N=100 \subset N=250$; thiết lập class-coverage guard; vượt qua 66 bài test Python, 70 bài test TS, build production và continuity check đạt chuẩn.
+* **Đã hoàn thành (Phase 4B.3)**: Đối soát toàn diện tính nhất quán bằng chứng Phase 4B.2 và sửa lỗi hiển thị SHA-256; kiểm toán manifest 684 instances và 4,104 variant pairs; phân định rõ 6,156 ảnh trích xuất; ban hành `training-manifest.v1.schema.json` và `experiment-lock.v1.schema.json`; thiết lập `pair_aware_loader.py` chống pseudoreplication và `locked_test_guard.py` bảo vệ locked-test; đăng ký trước giao thức Phase 4C trong `docs/PHASE_4C_PREREGISTRATION.md` và `pilot_a_binary_preregistered.yaml`; vượt qua 79 bài test Python, 70 bài test TS, build production và continuity check đạt chuẩn 100%.
 * **Hiện trạng nghiên cứu**: Dữ liệu ảnh Option P đã sẵn sàng trong `data/research/tgif/`; model weights bằng `0 bytes`; training runs bằng `0`; detection metrics giữ trạng thái `not evaluated`.
-* **Công việc tiếp theo (Phase 4C — Baseline Model Training & Learning Curve Evaluation)**: Huấn luyện baseline binary classifier (`authentic` vs `ai_edited`) trên frozen development train split; đo lường đường cong học tập tại $N=50, 100, 250$; đánh giá trên sealed `locked_test` sau khi đóng băng checkpoint.
+* **Công việc tiếp theo (Phase 4C — Baseline Model Training & Learning Curve Evaluation)**: Người dùng xem xét phê duyệt tải pretrained weights MobileNetV3-Small (~10.3 MB) và chạy Stage 0 & 1 trên `development_train` (250 sources) và `inner_validation` (91 sources).
 

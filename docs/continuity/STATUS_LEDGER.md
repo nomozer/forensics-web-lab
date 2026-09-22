@@ -4,9 +4,23 @@
 > **Mục đích**: Biên niên sử cô đọng từng giai đoạn phát triển và nghiên cứu từ Phase 0 đến nay.  
 > **Quy ước**: Giai đoạn mới nhất nằm ở trên cùng; mỗi giai đoạn không quá 20 dòng; chi tiết kiểm chứng nằm tại `research/evidence/`.
 
+## Phase 4B.3 — Evidence Reconciliation and Binary Experiment Preregistration
+- **Mục tiêu**: Đối soát ETag và tính toàn vẹn archive, kiểm toán manifest 684/4.104/6.156, thiết lập pair-aware loader chống pseudoreplication, phân quyền role-based cho locked-test và preregister Phase 4C.
+- **Starting commit**: `1ad8151`
+- **Thay đổi chính**: Sửa typo sha256 `sd2-sp_val` và commit refs Phase 4B.2; lập `etag-reconciliation.json` phân định ETag WebDAV vs HTTP GET, chứng minh tính toàn vẹn bằng SHA-256; kiểm toán `manifest_pilot_a_option_p.csv` (684 instances) và sinh `manifest_pilot_a_variant_pairs.csv` (4.104 pairs); giải thích 6.156 ảnh (2.052 auth + 4.104 edit); ban hành `training-manifest.v1.schema.json` và `experiment-lock.v1.schema.json`; phát triển `ml/datasets/pair_aware_loader.py` (Strategy A: 1:1 balance, deterministic cycling, source-level aggregation) và `ml/evaluation/locked_test_guard.py` (Role-based: trainingAccessAllowed=false, developmentAccessAllowed=false, finalEvaluationAccessAllowed=true có binding); đăng ký trước `pilot_a_binary_preregistered.yaml` ($N=50,100,250$, 6 baselines, 5 seeds, 95% bootstrap CI) và `docs/PHASE_4C_PREREGISTRATION.md`; bổ sung 13 tests (79/79 Python tests passed).
+- **Kiểm tra kỹ thuật**: `pnpm test` (70/70 passed), `pytest ml/tests` (79/79 passed), `pnpm build` (exit 0), `pnpm continuity:check` (PASS), config validator (4/4 valid), dataset registry (7/7 valid), model weights: 0 bytes, training runs: 0.
+- **Kết quả khoa học**: Hoàn thiện toàn bộ ranh giới khoa học và giao thức thí nghiệm trước khi huấn luyện; khóa hoàn toàn locked-test; pipeline 3 lớp tiếp tục khóa; detection metrics: `not evaluated`.
+- **Evidence**: `research/evidence/phase-4b.3/` (`environment.json`, `git-state.json`, `continuity-reconciliation.json`, `etag-reconciliation.json`, `manifest-audit.json`, `source-balance-audit.json`, `locked-test-access-audit.json`, `experiment-preregistration.json`, `test-summary.json`, `build-summary.json`, `evidence-manifest.json`, `PHASE_REPORT.md`).
+- **Giới hạn**: Chưa tải pretrained weights (0 bytes); chưa thực hiện training runs (0 runs); mô hình chưa huấn luyện; metrics chưa đánh giá.
+- **Quyết định tiếp theo**: Người dùng xem xét phê duyệt tải pretrained weights MobileNetV3-Small (~10.3 MB) và thực thi Stage 0 & 1 cho Phase 4C.
+
+---
+
 ## Phase 4B.2 — Controlled Option-P Acquisition, Pairability Verification and Split Freeze
 - **Mục tiêu**: Thu nạp có kiểm soát Option P (4 archives, 5.88 GB), safe extraction, kiểm toán decode và pairability ba thành phần, đóng băng deterministic splits ($N=50,100,250$) và class-coverage guard.
 - **Starting commit**: `82a5266`
+- **Implementation snapshot commit**: `7d33072`, `6bb088b`
+- **Ending commit**: `1ad8151`
 - **Thay đổi chính**: Ban hành `pilot-a-tgif-option-p.v1.json` và `user-approval.json`; tải an toàn 4 archive Option P (5,879,502,782 bytes) từ duy nhất `cloud.ilabt.imec.be`, khớp 100% SHA-256; safe tar extraction 6,156 ảnh (5,890,096,035 bytes) chống Tar Slip; `verify_option_p.py` kiểm toán PIL decode 100% PASS; pairability status `verified` (684 instances, 0 missing, 0 dimension mismatch); đóng băng tất định seed 42: `development_train` (250 sources), `inner_validation` (91 sources), `locked_test` (343 sources, SHA-256 seal `519e7a0e...`); zero cross-split leakage; learning curve lồng nhau $N=50 \subset N=100 \subset N=250$; sinh `manifest_pilot_a_option_p.csv`; bổ sung 11 unit tests (`test_option_p_protocol.py`, 66/66 Python tests passed).
 - **Kiểm tra kỹ thuật**: `pnpm test` (70/70 passed), `pytest ml/tests` (66/66 passed), `pnpm build` (exit 0), `pnpm continuity:check` (PASS), dataset registry (7/7 valid), model weights: 0 bytes, training runs: 0.
 - **Kết quả khoa học**: Xác minh toàn diện dữ liệu Option P cho bài toán con authentic–AI-edited và localization; khóa hoàn toàn locked-test; class-coverage guard chặn pipeline 3 lớp khi chưa có fully_generated; detection metrics: `not evaluated`.

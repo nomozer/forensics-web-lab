@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1.0.0",
+  "timestampUtc": "2026-09-22T06:58:56Z",
+  "phase": "4B.3",
+  "command": "pnpm build",
+  "exitCode": 0,
+  "bundleDetails": {
+    "modulesTransformed": 55,
+    "buildTimeSeconds": 2.99,
+    "distHtmlBytes": 1080,
+    "distCssBytes": 3970,
+    "distJsBytes": 683690,
+    "distWorkerBytes": 437930,
+    "wasmSimdBytes": 28312030
+  },
+  "status": "success"
+}
