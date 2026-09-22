@@ -1,0 +1,67 @@
+{
+  "schemaVersion": "1.0.0",
+  "documentType": "archive_proof_level_classification",
+  "phase": "4B.4",
+  "evaluatedAtUtc": "2026-09-22T16:00:00Z",
+  "scientificStatementCalibration": {
+    "formerStatement": "Local SHA-256 và byte count cung cấp 100% mathematical proof of archive integrity",
+    "calibratedStatement": "Local artifact integrity và transport completeness đã được xác minh; upstream identity chưa thể kiểm chứng độc lập do nguồn không công bố checksum chuẩn.",
+    "calibrationRationale": "A local SHA-256 proves bit-level immutability of the artifact currently in possession, but cannot prove equivalence to the author's original canonical release without an authoritative, independently published upstream cryptographic hash."
+  },
+  "tiers": {
+    "tierA_local_artifact_integrity": {
+      "status": "verified",
+      "measurementMethod": "Live SHA-256 computation over local tar.gz files and exact byte count matching against download-receipt.json.",
+      "evidence": [
+        {
+          "archiveName": "orig_validation.tar.gz",
+          "actualBytes": 859947874,
+          "actualSha256": "c9f02a343a5ac7590d98418041c2c3102422206778f9f6e522961dc2ce3709b1",
+          "receiptSha256": "c9f02a343a5ac7590d98418041c2c3102422206778f9f6e522961dc2ce3709b1",
+          "matchesReceipt": true
+        },
+        {
+          "archiveName": "orig_testing.tar.gz",
+          "actualBytes": 806962390,
+          "actualSha256": "8020c2f2080b349f42967f607cbbffda3ee2a759e66ffb233989c4728fcaea7f",
+          "receiptSha256": "8020c2f2080b349f42967f607cbbffda3ee2a759e66ffb233989c4728fcaea7f",
+          "matchesReceipt": true
+        },
+        {
+          "archiveName": "sd2-sp_validation.tar.gz",
+          "actualBytes": 2172017290,
+          "actualSha256": "bd9eb4399f60166a09209d8a66a5df2b5eaecfbcc1a9d52f694e6812e24c5ad7",
+          "receiptSha256": "bd9eb4399f60166a09209d8a66a5df2b5eaecfbcc1a9d52f694e6812e24c5ad7",
+          "matchesReceipt": true
+        },
+        {
+          "archiveName": "sd2-sp_testing.tar.gz",
+          "actualBytes": 2040575228,
+          "actualSha256": "c346af3cb85b00ac2b944d2e47e71d0e531652142ea844b63c337f95671b82aa",
+          "receiptSha256": "c346af3cb85b00ac2b944d2e47e71d0e531652142ea844b63c337f95671b82aa",
+          "matchesReceipt": true
+        }
+      ],
+      "conclusion": "No post-acquisition bit rot or modifications detected across all 4 archives."
+    },
+    "tierB_transport_completeness": {
+      "status": "verified",
+      "measurementMethod": "Content-Length header verification, safe extraction without error, and PIL image decoding.",
+      "criteria": {
+        "exactContentLengthMatch": true,
+        "downloadCompletedWithoutTruncation": true,
+        "tarExtractionSuccess": true,
+        "safeExtractionPathTraversalGuard": "Passed (SafeTarExtract enforced in Phase 4B.2)",
+        "imageDecodeRate": "100.0% (6,156 uncompressed images successfully decoded via PIL)",
+        "fileCountAndPairabilityMatch": "684 unique instances match exactly across orig and sd2-sp with 1:1 and 1:6 paired mappings"
+      },
+      "conclusion": "Transport was complete; no corruption occurred during transfer or extraction."
+    },
+    "tierC_upstream_identity": {
+      "status": "independent-verification-unavailable",
+      "measurementMethod": "Review of upstream TGIF paper, project repository, and server share for published authoritative hashes.",
+      "findings": "Upstream TGIF maintainers published files on a Nextcloud public share without publishing an authoritative SHA-256 or MD5 manifest. Therefore, while our local copy is verified complete and unaltered since acquisition, third-party cryptographic proof that our archive is byte-for-byte identical to the original release at t=0 remains unavailable until upstream publishes a signature or hash ledger.",
+      "recommendation": "Maintain persistent acquisition bindings, receipts, and reproduction scripts so any third party can verify against the identical Nextcloud files."
+    }
+  }
+}

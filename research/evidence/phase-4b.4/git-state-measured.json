@@ -1,0 +1,20 @@
+{
+  "headCommit": "054b97fd0adea4bc7dfe405795f3c9eed9cdf09f",
+  "mainCommit": "460f6d5608d45aad3f6a374f8cca19294a2f6a7c",
+  "currentBranch": "feat/production-ai-image-forensics",
+  "workingTreeClean": false,
+  "uncommittedChanges": [
+    "M docs/PHASE_4C_PREREGISTRATION.md",
+    " M ml/configs/pilot_a_binary_preregistered.yaml",
+    " M ml/datasets/pair_aware_loader.py",
+    " M ml/tests/test_pair_aware_loader.py",
+    "?? ml/tests/test_evidence_reproducer.py",
+    "?? research/evidence/phase-4b.4/",
+    "?? scripts/reproduce-phase-4b3-evidence.py"
+  ],
+  "remotes": [
+    "origin\thttps://github.com/nomozer/forensics-web-lab.git (fetch)",
+    "origin\thttps://github.com/nomozer/forensics-web-lab.git (push)"
+  ],
+  "measuredAtUtc": "2026-09-22T16:03:02Z"
+}

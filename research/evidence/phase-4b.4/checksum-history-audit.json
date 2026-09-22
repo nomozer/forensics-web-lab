@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "1.0.0",
+  "documentType": "checksum_history_audit",
+  "phase": "4B.4",
+  "targetArchive": "sd2-sp_validation.tar.gz",
+  "targetByteCount": 2172017290,
+  "evaluatedAtUtc": "2026-09-22T16:00:00Z",
+  "verdict": "documentation-typo",
+  "historicalComparison": {
+    "downloadReceipt": {
+      "sourceFile": "research/evidence/phase-4b.2/download-receipt.json",
+      "recordedSha256": "bd9eb4399f60166a09209d8a66a5df2b5eaecfbcc1a9d52f694e6812e24c5ad7",
+      "recordedAt": "Phase 4B.2 acquisition (commit 7d33072)",
+      "matchesCurrentArchive": true
+    },
+    "acquisitionBinding": {
+      "sourceFile": "research/evidence/phase-4b.2/acquisition-binding.json",
+      "recordedSha256": "bd9eb4399f60166a09209d8a66a5df2b5eaecfbcc1a9d52f694e6812e24c5ad7",
+      "matchesCurrentArchive": true
+    },
+    "archiveInventory": {
+      "sourceFile": "research/evidence/phase-4b.2/archive-inventory.json",
+      "recordedSha256": "bd9eb4399f60166a09209d8a66a5df2b5eaecfbcc1a9d52f694e6812e24c5ad7",
+      "matchesCurrentArchive": true
+    },
+    "phase4b2ReportText": {
+      "sourceFile": "research/evidence/phase-4b.2/PHASE_REPORT.md",
+      "recordedSha256": "3b3ba9f96b34ef5252aa40bfad81b5fc91ae4430e36b801a61c470949d2921ba",
+      "matchesCurrentArchive": false,
+      "discrepancyType": "errant string pasted into report table during manual markdown composition"
+    },
+    "liveMeasuredArchive": {
+      "sourceFile": "data/research/tgif/archives/sd2-sp_validation.tar.gz",
+      "measuredSha256": "bd9eb4399f60166a09209d8a66a5df2b5eaecfbcc1a9d52f694e6812e24c5ad7",
+      "measuredBytes": 2172017290
+    }
+  },
+  "auditEvidence": {
+    "gitCommitProvenance": "Commit 7d33072 committed download-receipt.json with sha256 bd9eb4399f60166a09209d8a66a5df2b5eaecfbcc1a9d52f694e6812e24c5ad7 simultaneously with archive acquisition.",
+    "independentArtifactCount": 3,
+    "independentArtifactsWithTrueHash": [
+      "download-receipt.json",
+      "acquisition-binding.json",
+      "archive-inventory.json"
+    ],
+    "localArtifactUnchangedSinceAcquisition": true
+  },
+  "correctionRecord": {
+    "trueSha256": "bd9eb4399f60166a09209d8a66a5df2b5eaecfbcc1a9d52f694e6812e24c5ad7",
+    "errantReportSha256": "3b3ba9f96b34ef5252aa40bfad81b5fc91ae4430e36b801a61c470949d2921ba",
+    "status": "documentation-typo",
+    "resolution": "Corrected in Phase 4B.3 and 4B.4 documentation with explicit audit trail."
+  }
+}

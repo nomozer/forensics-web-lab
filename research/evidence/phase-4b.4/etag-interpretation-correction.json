@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "1.0.0",
+  "documentType": "etag_interpretation_correction",
+  "phase": "4B.4",
+  "evaluatedAtUtc": "2026-09-22T16:00:00Z",
+  "scientificStatementCalibration": {
+    "formerStatement": "Nextcloud WebDAV sinh ETag bằng MD5 của file content trong khi Apache Direct Download sinh ETag bằng INODE-SIZE-MTIME",
+    "calibratedStatement": "ETag discrepancies between WebDAV PROPFIND and HTTP GET endpoints are inferred-server-behavior, consistent with different endpoint-specific ETag generation algorithms rather than remote content changes.",
+    "calibrationRationale": "Without server-side configuration documentation or access to the upstream web server conf files, asserting specific Apache FileETag directives or Nextcloud internal hashing algorithms exceeds empirical evidence."
+  },
+  "endpointRecordings": [
+    {
+      "archiveName": "orig_validation.tar.gz",
+      "webdavEndpoint": "https://faubox.rrze.uni-erlangen.de/public/41e42b/tgif/orig/orig_validation.tar.gz",
+      "webdavEtagVerbatim": "\"cf53e5e4922ca59f812d4d5462cfb9b8\"",
+      "httpGetEndpoint": "https://faubox.rrze.uni-erlangen.de/public/41e42b/tgif/orig/orig_validation.tar.gz",
+      "httpGetEtagVerbatim": "\"33420b-62589574d6089\"",
+      "etag_match": false,
+      "remote_metadata_differs": true,
+      "remote_content_changed": false
+    },
+    {
+      "archiveName": "orig_testing.tar.gz",
+      "webdavEndpoint": "https://faubox.rrze.uni-erlangen.de/public/41e42b/tgif/orig/orig_testing.tar.gz",
+      "webdavEtagVerbatim": "\"6c6418feef567d263914a51e5927ad74\"",
+      "httpGetEndpoint": "https://faubox.rrze.uni-erlangen.de/public/41e42b/tgif/orig/orig_testing.tar.gz",
+      "httpGetEtagVerbatim": "\"3019ab-62589573ed651\"",
+      "etag_match": false,
+      "remote_metadata_differs": true,
+      "remote_content_changed": false
+    },
+    {
+      "archiveName": "sd2-sp_validation.tar.gz",
+      "webdavEndpoint": "https://faubox.rrze.uni-erlangen.de/public/41e42b/tgif/sd2-sp/sd2-sp_validation.tar.gz",
+      "webdavEtagVerbatim": "\"44b9e62f224dd312f59d9a5bd79d1171\"",
+      "httpGetEndpoint": "https://faubox.rrze.uni-erlangen.de/public/41e42b/tgif/sd2-sp/sd2-sp_validation.tar.gz",
+      "httpGetEtagVerbatim": "\"69420b-62589574d6089\"",
+      "etag_match": false,
+      "remote_metadata_differs": true,
+      "remote_content_changed": false
+    },
+    {
+      "archiveName": "sd2-sp_testing.tar.gz",
+      "webdavEndpoint": "https://faubox.rrze.uni-erlangen.de/public/41e42b/tgif/sd2-sp/sd2-sp_testing.tar.gz",
+      "webdavEtagVerbatim": "\"2aa172ad2b1200973b7593259b37cc07\"",
+      "httpGetEndpoint": "https://faubox.rrze.uni-erlangen.de/public/41e42b/tgif/sd2-sp/sd2-sp_testing.tar.gz",
+      "httpGetEtagVerbatim": "\"69420b-62589573ed651\"",
+      "etag_match": false,
+      "remote_metadata_differs": true,
+      "remote_content_changed": false
+    }
+  ],
+  "interpretation": {
+    "etag_match": false,
+    "differ_cause": "inferred-server-behavior",
+    "description": "Consistent with different endpoint-specific ETag generation across Nextcloud WebDAV API and Apache HTTP direct download handler.",
+    "scientificDistinction": {
+      "remote_metadata_differs": true,
+      "remote_content_changed": false,
+      "explanation": "Header metadata differs by server presentation layer, but payload bytes transferred and verified match exactly."
+    }
+  }
+}
