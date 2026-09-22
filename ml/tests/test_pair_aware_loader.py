@@ -33,22 +33,27 @@ def _create_mock_instance(
         partition=partition,
         upstream_split="validation",
     )
-    # 1 native authentic
-    inst.authentic_variants.append(
-        ImageVariant(
-            path=f"orig/{source_id}_orig.png",
-            sha256="0" * 64,
-            label="authentic",
-            source_id=source_id,
-            instance_id=inst.instance_id,
-            category="cat",
-            partition=partition,
-            variant_type="orig_native",
-            variant_idx=0,
+    # 3 authentic variants (native, 512, 1024)
+    res_buckets = ["native", "512", "1024"]
+    for r_idx, bucket in enumerate(res_buckets):
+        inst.authentic_variants.append(
+            ImageVariant(
+                path=f"orig/{source_id}_orig_{bucket}.png",
+                sha256="0" * 64,
+                label="authentic",
+                source_id=source_id,
+                instance_id=inst.instance_id,
+                category="cat",
+                partition=partition,
+                variant_type=f"orig_{bucket}",
+                variant_idx=r_idx,
+                resolution_bucket=bucket,
+            )
         )
-    )
-    # N edited variants
+    # N edited variants (cycling bbox and segm across native, 512, 1024)
     for i in range(num_edits):
+        edit_type = "bbox" if i < 3 else "segm"
+        bucket = res_buckets[i % 3]
         inst.edited_variants.append(
             ImageVariant(
                 path=f"sd2-sp/{source_id}_edit_{i}.png",
@@ -58,8 +63,10 @@ def _create_mock_instance(
                 instance_id=inst.instance_id,
                 category="cat",
                 partition=partition,
-                variant_type=f"sd2_var_{i}",
+                variant_type=f"sd2_{edit_type}_{i % 3}",
                 variant_idx=i,
+                resolution_bucket=bucket,
+                edit_type=edit_type,
             )
         )
     return inst
@@ -192,3 +199,122 @@ def test_discover_source_instances_on_actual_manifest() -> None:
     for inst in instances[:10]:
         assert len(inst.authentic_variants) >= 1
         assert len(inst.edited_variants) == 6
+
+
+def test_stable_offset_across_pythonhashseeds() -> None:
+    """
+    Verifies that compute_stable_source_offset and PairAwareSampler produce
+    the EXACT same sample sequences across different Python processes with different PYTHONHASHSEED.
+    """
+    import os
+    import subprocess
+    import sys
+
+    sub_code = (
+        "import json, sys\n"
+        "from ml.datasets.pair_aware_loader import ImageVariant, SourcePairInstance, PairAwareSampler\n"
+        "instances = []\n"
+        "for i in range(1, 11):\n"
+        "    sid = f'{i:012d}'\n"
+        "    inst = SourcePairInstance(source_id=sid, instance_id=f'cat_{sid}', category='cat', partition='dev', upstream_split='val')\n"
+        "    for b in ['native', '512', '1024']:\n"
+        "        inst.authentic_variants.append(ImageVariant(path=f'orig/{sid}_{b}.png', sha256='', label='authentic', source_id=sid, instance_id=inst.instance_id, category='cat', partition='dev', variant_type=f'orig_{b}', variant_idx=0, resolution_bucket=b))\n"
+        "    for k in range(6):\n"
+        "        b = ['native', '512', '1024'][k % 3]\n"
+        "        inst.edited_variants.append(ImageVariant(path=f'sd2/{sid}_{k}.png', sha256='', label='ai_edited', source_id=sid, instance_id=inst.instance_id, category='cat', partition='dev', variant_type=f'sd2_{k}', variant_idx=k, resolution_bucket=b, edit_type='bbox' if k < 3 else 'segm'))\n"
+        "    instances.append(inst)\n"
+        "sampler = PairAwareSampler(instances, seed=42, shuffle_epoch=True)\n"
+        "records = []\n"
+        "for ep in range(4):\n"
+        "    samples = sampler.get_epoch_samples(ep)\n"
+        "    records.append([(s.source_id, s.variant_type, s.resolution_bucket) for s in samples])\n"
+        "print(json.dumps(records))\n"
+    )
+
+    env1 = os.environ.copy()
+    env1["PYTHONHASHSEED"] = "0"
+    p1 = subprocess.run(
+        [sys.executable, "-c", sub_code],
+        capture_output=True,
+        text=True,
+        env=env1,
+        check=True,
+    )
+
+    env2 = os.environ.copy()
+    env2["PYTHONHASHSEED"] = "999999"
+    p2 = subprocess.run(
+        [sys.executable, "-c", sub_code],
+        capture_output=True,
+        text=True,
+        env=env2,
+        check=True,
+    )
+
+    assert p1.stdout == p2.stdout, "Sampler sequence must be 100% identical regardless of PYTHONHASHSEED"
+
+
+def test_authentic_and_edited_pairs_share_resolution_bucket() -> None:
+    """Verifies that in every sampled pair, authentic and edited samples share the exact same resolution bucket."""
+    instances = [_create_mock_instance(f"{i:012d}", num_edits=6) for i in range(1, 20)]
+    sampler = PairAwareSampler(instances, seed=42, shuffle_epoch=False)
+
+    for epoch in range(6):
+        pairs = sampler.get_epoch_pairs(epoch)
+        assert len(pairs) == len(instances)
+        for auth_v, edit_v in pairs:
+            assert auth_v.label == "authentic"
+            assert edit_v.label == "ai_edited"
+            assert auth_v.resolution_bucket == edit_v.resolution_bucket, (
+                f"Pair resolution mismatch: authentic={auth_v.resolution_bucket}, edited={edit_v.resolution_bucket}"
+            )
+
+
+def test_balanced_resolution_and_edit_types_over_epochs() -> None:
+    """
+    Verifies that:
+    1. Over 3 epochs, each source's authentic samples cycle through native, 512, 1024 evenly.
+    2. Over 6 epochs, each source's edited samples cycle through bbox and segm evenly (3 bbox, 3 segm).
+    """
+    inst = _create_mock_instance("000000000001", num_edits=6)
+    sampler = PairAwareSampler([inst], seed=42, shuffle_epoch=False)
+
+    auth_buckets = []
+    edit_types = []
+    for epoch in range(6):
+        pairs = sampler.get_epoch_pairs(epoch)
+        auth_v, edit_v = pairs[0]
+        auth_buckets.append(auth_v.resolution_bucket)
+        edit_types.append(edit_v.edit_type)
+
+    # In 6 epochs: 2 native, 2 512, 2 1024
+    assert auth_buckets.count("native") == 2
+    assert auth_buckets.count("512") == 2
+    assert auth_buckets.count("1024") == 2
+
+    # In 6 epochs: 3 bbox, 3 segm
+    assert edit_types.count("bbox") == 3
+    assert edit_types.count("segm") == 3
+
+
+def test_identical_preprocessing_contract() -> None:
+    """
+    Verifies that both classes (authentic and ai_edited) share identical preprocessing contracts:
+    - Same input dimensions
+    - Same normalization constants
+    - No class-conditional transform branching
+    """
+    # Verify contract definition in preregistered configuration
+    import yaml
+    config_p = Path("ml/configs/pilot_a_binary_preregistered.yaml")
+    assert config_p.exists(), "Preregistered config must exist"
+
+    with open(config_p, "r", encoding="utf-8") as f:
+        cfg = yaml.safe_load(f)
+
+    preproc = cfg.get("preprocessing", {})
+    assert "input_size" in preproc
+    assert "normalize_mean" in preproc
+    assert "normalize_std" in preproc
+    assert preproc.get("identical_pipeline_for_both_classes") is True
+

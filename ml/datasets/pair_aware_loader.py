@@ -1,11 +1,17 @@
 """
-Pair-aware data loading and source-level evaluation protocol (ADR-0006, Phase 4B.3).
+Pair-aware data loading and source-level evaluation protocol (ADR-0006, Phase 4B.4).
 
-Implements Strategy A (Pair-aware sampler) to prevent pseudoreplication and variant imbalance:
-- Equal source contribution: exactly 1 authentic and 1 edited sample per unique source_id per epoch.
-- Class balance: exactly 1:1 authentic:ai_edited balance per source per epoch (2N samples/epoch).
-- Deterministic variant cycling across epochs.
-- Source-level prediction aggregation before computing primary metrics.
+Implements Strategy A (Pair-aware sampler) with:
+- Stable cross-process deterministic offset:
+    stable_source_offset = int.from_bytes(
+        hashlib.sha256(source_id.encode("utf-8")).digest()[:8],
+        "big"
+    )
+- Resolution-matched pairing: authentic and edited variants in each pair share the exact
+  same resolution bucket (native, 512, 1024) to eliminate resolution shortcuts.
+- Stratified and balanced cycling of inpainting edit types (bbox vs segm).
+- Equal source contribution: exactly 1 authentic and 1 edited sample per unique source_id per epoch (2N samples/epoch).
+- Source-level prediction aggregation before computing primary scientific metrics.
 """
 
 from __future__ import annotations
@@ -16,6 +22,15 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple
+
+
+def compute_stable_source_offset(source_id: str) -> int:
+    """
+    Computes an invariant, cross-process 64-bit integer offset from source_id.
+    Unlike Python's built-in hash(), this function is 100% deterministic regardless of PYTHONHASHSEED.
+    """
+    digest = hashlib.sha256(source_id.encode("utf-8")).digest()
+    return int.from_bytes(digest[:8], "big")
 
 
 @dataclass(frozen=True)
@@ -30,6 +45,8 @@ class ImageVariant:
     partition: str
     variant_type: str  # e.g., "orig_native", "orig_512", "orig_1024", "sd2_bbox_0", etc.
     variant_idx: int
+    resolution_bucket: str = "native"  # "native", "512", or "1024"
+    edit_type: Optional[str] = None  # "bbox", "segm", or None
     mask_path: Optional[str] = None
 
 
@@ -52,7 +69,7 @@ def discover_source_instances_from_manifest(
 ) -> List[SourcePairInstance]:
     """
     Loads source instances from manifest_pilot_a_option_p.csv, discovering
-    all available authentic and edited variants for each source.
+    all available authentic and edited variants for each source on disk.
     """
     manifest_p = Path(manifest_path)
     root = Path(repo_root) if repo_root else manifest_p.parents[4]
@@ -85,7 +102,7 @@ def discover_source_instances_from_manifest(
             int_id = str(int(source_id))
             orig_dir = root / "data" / "research" / "tgif" / "orig" / upstream_split / category
             if orig_dir.exists():
-                # native
+                # native (bucket: native)
                 p_native = orig_dir / f"{int_id}_orig.png"
                 if p_native.exists():
                     inst.authentic_variants.append(
@@ -99,9 +116,11 @@ def discover_source_instances_from_manifest(
                             partition=partition,
                             variant_type="orig_native",
                             variant_idx=0,
+                            resolution_bucket="native",
+                            edit_type=None,
                         )
                     )
-                # 512
+                # 512 (bucket: 512)
                 p_512 = orig_dir / f"{int_id}_orig_512.png"
                 if p_512.exists():
                     inst.authentic_variants.append(
@@ -115,9 +134,11 @@ def discover_source_instances_from_manifest(
                             partition=partition,
                             variant_type="orig_512",
                             variant_idx=1,
+                            resolution_bucket="512",
+                            edit_type=None,
                         )
                     )
-                # 1024
+                # 1024 (bucket: 1024)
                 p_1024 = orig_dir / f"{int_id}_orig_1024.png"
                 if p_1024.exists():
                     inst.authentic_variants.append(
@@ -131,10 +152,15 @@ def discover_source_instances_from_manifest(
                             partition=partition,
                             variant_type="orig_1024",
                             variant_idx=2,
+                            resolution_bucket="1024",
+                            edit_type=None,
                         )
                     )
 
             # Discover edited variants on disk
+            # 6 variants: bbox (0, 1, 2) and segm (0, 1, 2)
+            # Associated resolution buckets: index 0 -> native, index 1 -> 512, index 2 -> 1024
+            res_buckets = ["native", "512", "1024"]
             sd2_dir = root / "data" / "research" / "tgif" / "sd2-sp" / upstream_split / category
             if sd2_dir.exists():
                 for m_type in ["bbox", "segm"]:
@@ -155,6 +181,8 @@ def discover_source_instances_from_manifest(
                                     partition=partition,
                                     variant_type=f"sd2_{m_type}_{v_idx}",
                                     variant_idx=v_idx if m_type == "bbox" else v_idx + 3,
+                                    resolution_bucket=res_buckets[v_idx],
+                                    edit_type=m_type,
                                     mask_path=str(mask_p.relative_to(root)).replace("\\", "/") if mask_p.exists() else None,
                                 )
                             )
@@ -166,11 +194,17 @@ def discover_source_instances_from_manifest(
 
 class PairAwareSampler:
     """
-    Epoch-based pair-aware sampler implementing Strategy A:
-    - For each unique source_id in the selected subset, yields exactly 1 authentic sample
-      and 1 AI-edited sample per epoch.
-    - Preserves exact 1:1 class balance per source and per epoch (2N total samples/epoch).
-    - Deterministically cycles across the available edited variants using (epoch + source_offset) % num_edits.
+    Epoch-based resolution-matched pair-aware sampler implementing Strategy A:
+    - For each unique source_id in the selected partition, yields exactly 1 authentic sample
+      and 1 AI-edited sample per epoch (exact 1:1 balance, 2N samples/epoch).
+    - Resolution-Matched: Both samples in the pair belong to the identical resolution bucket.
+    - Stable Cross-Process Determinism: Variant selection uses stable 64-bit integer offset
+      derived from SHA-256(source_id), completely immune to PYTHONHASHSEED.
+    - Balanced Cycling:
+        resolution_idx = (epoch + stable_source_offset) % 3  # cycles native, 512, 1024
+        edit_type_idx = ((epoch // 3) + stable_source_offset) % 2  # cycles bbox vs segm
+        edited_variant_idx = edit_type_idx * 3 + resolution_idx
+        authentic_variant_idx = resolution_idx
     """
 
     def __init__(
@@ -182,32 +216,54 @@ class PairAwareSampler:
         self.instances = list(instances)
         self.seed = seed
         self.shuffle_epoch = shuffle_epoch
-        # Precompute deterministic source offsets
-        self._source_offsets: Dict[str, int] = {}
-        for inst in self.instances:
-            digest = hashlib.sha256(f"{seed}:{inst.source_id}".encode("utf-8")).hexdigest()
-            self._source_offsets[inst.source_id] = int(digest[:8], 16)
+        # Precompute stable offsets for each source_id
+        self._source_offsets: Dict[str, int] = {
+            inst.source_id: compute_stable_source_offset(inst.source_id)
+            for inst in self.instances
+        }
 
     def __len__(self) -> int:
         return len(self.instances) * 2
 
-    def get_epoch_samples(self, epoch: int) -> List[ImageVariant]:
-        """Returns the deterministic list of samples for the specified epoch."""
-        samples: List[ImageVariant] = []
+    def get_epoch_pairs(self, epoch: int) -> List[Tuple[ImageVariant, ImageVariant]]:
+        """
+        Returns list of (authentic_variant, edited_variant) pairs for the given epoch.
+        Guarantees:
+        - len(pairs) == len(instances)
+        - auth_v.resolution_bucket == edit_v.resolution_bucket
+        - edit types and resolutions cycle in a balanced, deterministic pattern
+        """
+        pairs: List[Tuple[ImageVariant, ImageVariant]] = []
 
         for inst in self.instances:
-            # 1. Authentic variant (default: native unresized variant 0)
-            if inst.authentic_variants:
-                auth_v = inst.authentic_variants[0]
-                samples.append(auth_v)
+            offset = self._source_offsets[inst.source_id]
+            res_idx = (epoch + offset) % 3
+            edit_type_idx = ((epoch // 3) + offset) % 2
+            edit_idx = edit_type_idx * 3 + res_idx
 
-            # 2. AI-edited variant (cycled deterministically)
+            # Select authentic variant matching resolution
+            if inst.authentic_variants:
+                auth_v = inst.authentic_variants[res_idx % len(inst.authentic_variants)]
+            else:
+                continue
+
+            # Select edited variant matching edit type and resolution
             if inst.edited_variants:
-                num_edits = len(inst.edited_variants)
-                offset = self._source_offsets[inst.source_id]
-                selected_idx = (epoch + offset) % num_edits
-                edit_v = inst.edited_variants[selected_idx]
-                samples.append(edit_v)
+                edit_v = inst.edited_variants[edit_idx % len(inst.edited_variants)]
+            else:
+                continue
+
+            pairs.append((auth_v, edit_v))
+
+        return pairs
+
+    def get_epoch_samples(self, epoch: int) -> List[ImageVariant]:
+        """Returns the flattened list of samples for the specified epoch."""
+        pairs = self.get_epoch_pairs(epoch)
+        samples: List[ImageVariant] = []
+        for auth_v, edit_v in pairs:
+            samples.append(auth_v)
+            samples.append(edit_v)
 
         if self.shuffle_epoch:
             # Deterministic shuffle using epoch-derived seed
@@ -227,22 +283,6 @@ def aggregate_predictions_by_source(
     before computing primary scientific evaluation metrics.
 
     Ensures that unique source_id is the primary statistical unit of analysis.
-
-    Args:
-        predictions: List of dicts, each containing:
-            - source_id: str
-            - label: "authentic" or "ai_edited" (int 0 or 1)
-            - score: float (predicted probability of ai_edited)
-            - variant_type: Optional[str]
-        aggregation_method: "mean", "median", or "max".
-
-    Returns:
-        Dict mapping source_id -> aggregated prediction dict:
-            - source_id: str
-            - ground_truth_label: int (0 or 1)
-            - aggregated_score: float
-            - num_variants: int
-            - individual_scores: List[float]
     """
     grouped: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
     for p in predictions:

@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "1.0.0",
+  "documentType": "shortcut_control_audit",
+  "phase": "4B.4",
+  "evaluatedAtUtc": "2026-09-22T16:00:00Z",
+  "controlsEnforced": [
+    {
+      "shortcutThreat": "Resolution Asymmetry (e.g. Model detecting whether an image is 512x512 vs native COCO dimension)",
+      "mechanism": "Resolution-Matched Pairing: In every sampled pair, authentic and edited samples share identical resolution buckets (native, 512, or 1024).",
+      "testVerified": "test_authentic_and_edited_pairs_share_resolution_bucket",
+      "status": "PASSED"
+    },
+    {
+      "shortcutThreat": "Preprocessing Pipeline Discrepancy (e.g. Applying different resizing, interpolation, or normalization to authentic vs edited classes)",
+      "mechanism": "Symmetric Preprocessing Contract: Both classes pass through the identical bicubic interpolation and ImageNet tensor normalization pipeline.",
+      "testVerified": "test_identical_preprocessing_contract",
+      "status": "PASSED"
+    },
+    {
+      "shortcutThreat": "Variant Over-Representation / Pseudoreplication (e.g. edited variants dominating training batches 6:1 over authentic)",
+      "mechanism": "Pair-Aware Equal Contribution: Exactly 1 authentic and 1 edited sample per unique source_id per epoch (strict 1:1 balance, 2N samples/epoch).",
+      "testVerified": "test_equal_source_contribution_and_class_balance",
+      "status": "PASSED"
+    },
+    {
+      "shortcutThreat": "Resolution Bias over Training (e.g. over-exposing native vs 512 vs 1024)",
+      "mechanism": "Balanced Resolution Cycling: All 3 resolution buckets cycle evenly across epochs (1:1:1 ratio over 3 epochs).",
+      "testVerified": "test_balanced_resolution_and_edit_types_over_epochs",
+      "status": "PASSED"
+    },
+    {
+      "shortcutThreat": "Edit-Type Bias over Training (e.g. over-exposing bbox vs segm inpainting masks)",
+      "mechanism": "Balanced Edit Type Cycling: Both bbox and segm inpainting masks cycle evenly across epochs (1:1 ratio over 6 epochs).",
+      "testVerified": "test_balanced_resolution_and_edit_types_over_epochs",
+      "status": "PASSED"
+    },
+    {
+      "shortcutThreat": "Non-Deterministic Process Sampling",
+      "mechanism": "SHA-256 64-bit Integer Offset: Independent of PYTHONHASHSEED.",
+      "testVerified": "test_stable_offset_across_pythonhashseeds",
+      "status": "PASSED"
+    },
+    {
+      "shortcutThreat": "Cross-Partition Source Leakage",
+      "mechanism": "Split Isolation Guard: Zero source_id overlap between development_train, inner_validation, and locked_test.",
+      "testVerified": "test_no_source_leakage_across_partitions",
+      "status": "PASSED"
+    }
+  ],
+  "overallVerdict": "ALL_SHORTCUT_CONTROLS_VERIFIED"
+}

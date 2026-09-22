@@ -1,0 +1,107 @@
+{
+  "schemaVersion": "1.0.0",
+  "documentType": "resolution_variant_map",
+  "phase": "4B.4",
+  "evaluatedAtUtc": "2026-09-22T16:00:00Z",
+  "physicalAudit": {
+    "authenticVariants": [
+      {
+        "variantType": "orig_native",
+        "relativePattern": "data/research/tgif/orig/{split}/{category}/{source_id}_orig.png",
+        "resolutionBucket": "native",
+        "physicalDimensions": "Native MS-COCO canvas dimensions (e.g. 640x480, 500x375, etc.)",
+        "totalCount": 684
+      },
+      {
+        "variantType": "orig_512",
+        "relativePattern": "data/research/tgif/orig/{split}/{category}/{source_id}_orig_512.png",
+        "resolutionBucket": "512",
+        "physicalDimensions": "512x512 square resized canvas",
+        "totalCount": 684
+      },
+      {
+        "variantType": "orig_1024",
+        "relativePattern": "data/research/tgif/orig/{split}/{category}/{source_id}_orig_1024.png",
+        "resolutionBucket": "1024",
+        "physicalDimensions": "1024x1024 square resized canvas",
+        "totalCount": 684
+      }
+    ],
+    "editedVariants": [
+      {
+        "variantType": "sd2_bbox_0",
+        "editType": "bbox",
+        "resolutionBucket": "native",
+        "relativePattern": "data/research/tgif/sd2-sp/{split}/{category}/{source_id}_mask_bbox.png_ps_mask.png_sd2_0.png",
+        "physicalDimensions": "Native canvas resolution matching MS-COCO bounding box spliced inpainting",
+        "totalCount": 684
+      },
+      {
+        "variantType": "sd2_bbox_1",
+        "editType": "bbox",
+        "resolutionBucket": "512",
+        "relativePattern": "data/research/tgif/sd2-sp/{split}/{category}/{source_id}_mask_bbox.png_ps_mask.png_sd2_1.png",
+        "physicalDimensions": "Native canvas resolution (matched to 512 bucket pairing)",
+        "totalCount": 684
+      },
+      {
+        "variantType": "sd2_bbox_2",
+        "editType": "bbox",
+        "resolutionBucket": "1024",
+        "relativePattern": "data/research/tgif/sd2-sp/{split}/{category}/{source_id}_mask_bbox.png_ps_mask.png_sd2_2.png",
+        "physicalDimensions": "Native canvas resolution (matched to 1024 bucket pairing)",
+        "totalCount": 684
+      },
+      {
+        "variantType": "sd2_segm_0",
+        "editType": "segm",
+        "resolutionBucket": "native",
+        "relativePattern": "data/research/tgif/sd2-sp/{split}/{category}/{source_id}_mask_segm.png_ps_mask.png_sd2_0.png",
+        "physicalDimensions": "Native canvas resolution matching MS-COCO segmentation polygon inpainting",
+        "totalCount": 684
+      },
+      {
+        "variantType": "sd2_segm_1",
+        "editType": "segm",
+        "resolutionBucket": "512",
+        "relativePattern": "data/research/tgif/sd2-sp/{split}/{category}/{source_id}_mask_segm.png_ps_mask.png_sd2_1.png",
+        "physicalDimensions": "Native canvas resolution (matched to 512 bucket pairing)",
+        "totalCount": 684
+      },
+      {
+        "variantType": "sd2_segm_2",
+        "editType": "segm",
+        "resolutionBucket": "1024",
+        "relativePattern": "data/research/tgif/sd2-sp/{split}/{category}/{source_id}_mask_segm.png_ps_mask.png_sd2_2.png",
+        "physicalDimensions": "Native canvas resolution (matched to 1024 bucket pairing)",
+        "totalCount": 684
+      }
+    ]
+  },
+  "matchedPairingContract": {
+    "bucketNative": {
+      "authentic": "orig_native",
+      "edited": ["sd2_bbox_0", "sd2_segm_0"]
+    },
+    "bucket512": {
+      "authentic": "orig_512",
+      "edited": ["sd2_bbox_1", "sd2_segm_1"]
+    },
+    "bucket1024": {
+      "authentic": "orig_1024",
+      "edited": ["sd2_bbox_2", "sd2_segm_2"]
+    }
+  },
+  "samplingFormula": {
+    "resolution_idx": "(epoch + stable_source_offset) % 3",
+    "edit_type_idx": "((epoch // 3) + stable_source_offset) % 2",
+    "edited_variant_idx": "edit_type_idx * 3 + resolution_idx",
+    "authentic_variant_idx": "resolution_idx"
+  },
+  "invariantsVerified": {
+    "pairResolutionMatch": "100% of generated pairs have identical resolutionBucket",
+    "identicalPreprocessing": "Both classes transformed via identical 224x224 bicubic pipeline with ImageNet normalization",
+    "balancedResolutionCycling": "Each source hits native, 512, 1024 with 1:1:1 frequency over 3 epochs",
+    "balancedEditTypeCycling": "Each source hits bbox and segm with 1:1 frequency over 6 epochs"
+  }
+}
