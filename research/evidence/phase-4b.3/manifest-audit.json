@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "1.0.0",
+  "timestampUtc": "2026-09-22T06:58:03Z",
+  "manifestPath": "data/research/tgif/manifests/manifest_pilot_a_option_p.csv",
+  "totalRows": 684,
+  "columnsCount": 14,
+  "columns": [
+    "source_id",
+    "instance_id",
+    "category",
+    "upstream_split",
+    "partition",
+    "lc_n50",
+    "lc_n100",
+    "lc_n250",
+    "authentic_path",
+    "authentic_sha256",
+    "edited_variants_count",
+    "masks_count",
+    "canonical_edit_path",
+    "canonical_edit_sha256"
+  ],
+  "rowSemantics": "One row represents one independent editing task instance (source_id) paired with native authentic image and canonical edited variant (variant 0 of bbox inpainting), with metadata tracking all 6 edited variants and 10 masks.",
+  "pathVerification": {
+    "authenticPathsExisting": 684,
+    "authenticPathsMissing": 0,
+    "canonicalEditPathsExisting": 684,
+    "canonicalEditPathsMissing": 0
+  },
+  "counts": {
+    "uniqueSourceIds": 684,
+    "uniqueInstanceIds": 684,
+    "uniqueAuthenticSha256": 684,
+    "uniqueCanonicalEditSha256": 684,
+    "authenticVariantsPerSource": 3,
+    "editedVariantsPerSource": 6,
+    "totalAuthenticImagesOnDisk": 2052,
+    "totalEditedImagesOnDisk": 4104,
+    "totalUncompressedImagesOnDisk": 6156
+  },
+  "partitions": {
+    "development_train": 250,
+    "inner_validation": 91,
+    "locked_test": 343
+  },
+  "learningCurves": {
+    "lc_n50": 50,
+    "lc_n100": 100,
+    "lc_n250": 250
+  },
+  "invariants": {
+    "duplicateRows": 0,
+    "duplicatePaths": 0,
+    "crossPartitionOverlapDevVal": 0,
+    "crossPartitionOverlapDevTest": 0,
+    "crossPartitionOverlapValTest": 0,
+    "nestedSubsetInvariantPassed": true
+  },
+  "relationship4104vs6156": {
+    "explanation": "6,156 is the total number of uncompressed image files on disk across Option P. It consists of 2,052 authentic images (684 instances x 3 resolutions: native, 512, 1024) and 4,104 AI-edited images (684 instances x 6 variants: 3 bbox inpaintings + 3 segm inpaintings). The manifest_pilot_a_option_p.csv contains 684 paired instance rows. Expanding each instance to its 6 edited variants produces exactly 4,104 paired samples in manifest_pilot_a_variant_pairs.csv."
+  }
+}
