@@ -4,9 +4,22 @@
 > **Mục đích**: Biên niên sử cô đọng từng giai đoạn phát triển và nghiên cứu từ Phase 0 đến nay.  
 > **Quy ước**: Giai đoạn mới nhất nằm ở trên cùng; mỗi giai đoạn không quá 20 dòng; chi tiết kiểm chứng nằm tại `research/evidence/`.
 
+## Phase 4B.4 — Executable Evidence Repair and Shortcut-Control Gate
+- **Mục tiêu**: Chuyển bằng chứng sang quy trình đo thực thi, sửa sampler loại bỏ shortcut độ phân giải, kiểm toán SHA-256 history, hiệu chỉnh ETag và tái niêm phong Phase 4C.
+- **Starting commit**: `054b97f`
+- **Thay đổi chính**: Xây dựng `scripts/reproduce-phase-4b3-evidence.py` và 7 unit tests kiểm toán live Git, runtime, archive bytes/SHA-256 và manifest invariants; phân định 3 tầng bằng chứng lưu trữ (`local_artifact_integrity`, `transport_completeness`, `upstream_identity`); hiệu chỉnh ETag là `inferred-server-behavior` (`remote_metadata_differs: true`); kiểm toán lịch sử `sd2-sp_val` kết luận `documentation-typo`; thay `hash()` bằng SHA-256 64-bit int stable offset; nâng cấp `PairAwareSampler` ghép cặp cùng resolution (`native`, `512`, `1024`) và balanced cycling bbox/segm; chuẩn hóa preprocessing đối xứng; tái niêm phong `docs/PHASE_4C_PREREGISTRATION.md` và `pilot_a_binary_preregistered.yaml` (hash mới `54140d42...`, superseded `839531a7...`); bổ sung 11 unit tests (90/90 Python tests passed).
+- **Kiểm tra kỹ thuật**: `pnpm test` (70/70 passed), `pytest ml/tests` (90/90 passed), `pnpm build` (exit 0), `pnpm continuity:check` (PASS), config validator (4/4 valid), dataset registry (7/7 valid), model weights: 0 bytes, training runs: 0, locked-test: 0.
+- **Kết quả khoa học**: Loại bỏ hoàn toàn shortcut độ phân giải; sampler ổn định đa tiến trình; bằng chứng đo trực tiếp từ filesystem; claims ETag và pseudoreplication được hiệu chỉnh chuẩn xác; detection metrics: `not evaluated`.
+- **Evidence**: `research/evidence/phase-4b.4/` (`environment-measured.json`, `git-state-measured.json`, `evidence-reproduction.json`, `archive-proof-levels.json`, `checksum-history-audit.json`, `etag-interpretation-correction.json`, `manifest-audit-reproduced.json`, `resolution-variant-map.json`, `sampler-determinism-audit.json`, `shortcut-control-audit.json`, `preregistration-reseal.json`, `test-summary.json`, `build-summary.json`, `evidence-manifest.json`, `PHASE_REPORT.md`).
+- **Giới hạn**: Chưa tải pretrained weights (0 bytes); chưa thực hiện training runs (0 runs); mô hình chưa huấn luyện; metrics chưa đánh giá.
+- **Quyết định tiếp theo**: Người dùng xem xét phê duyệt tải pretrained weights MobileNetV3-Small (~10.3 MB) và chạy một smoke training N=50, seed 42 trước khi chạy full 15 runs.
+
+---
+
 ## Phase 4B.3 — Evidence Reconciliation and Binary Experiment Preregistration
 - **Mục tiêu**: Đối soát ETag và tính toàn vẹn archive, kiểm toán manifest 684/4.104/6.156, thiết lập pair-aware loader chống pseudoreplication, phân quyền role-based cho locked-test và preregister Phase 4C.
 - **Starting commit**: `1ad8151`
+- **Ending commit**: `054b97f`
 - **Thay đổi chính**: Sửa typo sha256 `sd2-sp_val` và commit refs Phase 4B.2; lập `etag-reconciliation.json` phân định ETag WebDAV vs HTTP GET, chứng minh tính toàn vẹn bằng SHA-256; kiểm toán `manifest_pilot_a_option_p.csv` (684 instances) và sinh `manifest_pilot_a_variant_pairs.csv` (4.104 pairs); giải thích 6.156 ảnh (2.052 auth + 4.104 edit); ban hành `training-manifest.v1.schema.json` và `experiment-lock.v1.schema.json`; phát triển `ml/datasets/pair_aware_loader.py` (Strategy A: 1:1 balance, deterministic cycling, source-level aggregation) và `ml/evaluation/locked_test_guard.py` (Role-based: trainingAccessAllowed=false, developmentAccessAllowed=false, finalEvaluationAccessAllowed=true có binding); đăng ký trước `pilot_a_binary_preregistered.yaml` ($N=50,100,250$, 6 baselines, 5 seeds, 95% bootstrap CI) và `docs/PHASE_4C_PREREGISTRATION.md`; bổ sung 13 tests (79/79 Python tests passed).
 - **Kiểm tra kỹ thuật**: `pnpm test` (70/70 passed), `pytest ml/tests` (79/79 passed), `pnpm build` (exit 0), `pnpm continuity:check` (PASS), config validator (4/4 valid), dataset registry (7/7 valid), model weights: 0 bytes, training runs: 0.
 - **Kết quả khoa học**: Hoàn thiện toàn bộ ranh giới khoa học và giao thức thí nghiệm trước khi huấn luyện; khóa hoàn toàn locked-test; pipeline 3 lớp tiếp tục khóa; detection metrics: `not evaluated`.

@@ -103,12 +103,14 @@ graph TD
 | **Option P Manifest (Local)** | `data/research/tgif/manifests/manifest_pilot_a_option_p.csv` (outside Git) | `generated-and-verified` |
 | **Option P Split Lock Artifact** | `research/evidence/phase-4b.2/split-lock.json` (343 locked test sources, SHA-256 seal) | `frozen-and-sealed` |
 | **Option P Test Suite** | `ml/tests/test_option_p_protocol.py` (11 targeted tests: Tar Slip, resume, drift, split lock, coverage) | `implemented-and-tested` |
-| **Pair-Aware Sampler & Aggregator** | `ml/datasets/pair_aware_loader.py` (Strategy A: equal source contribution, 1:1 balance, cycling, aggregation) | `implemented-and-tested` |
+| **Pair-Aware Sampler & Aggregator** | `ml/datasets/pair_aware_loader.py` (Strategy A: equal source contribution, 1:1 balance, resolution-matched pairing, balanced bbox/segm cycling, SHA-256 stable offset, source-level aggregation) | `implemented-and-tested` |
 | **Locked-Test Role Access Guard** | `ml/evaluation/locked_test_guard.py` (role-based permissions, ExperimentLockBinding verification) | `implemented-and-tested` |
 | **Training Manifest Schema** | `docs/schemas/training-manifest.v1.schema.json` (source-isolated manifest validation) | `schema-enforced` |
 | **Experiment Lock Schema** | `docs/schemas/experiment-lock.v1.schema.json` (cryptographic evaluation binding schema) | `schema-enforced` |
-| **Phase 4C Preregistered Config** | `ml/configs/pilot_a_binary_preregistered.yaml`, `docs/PHASE_4C_PREREGISTRATION.md` | `preregistered-and-validated` |
-| **Phase 4B.3 Unit Tests** | `ml/tests/test_pair_aware_loader.py`, `ml/tests/test_locked_test_guard.py` (13 tests) | `implemented-and-tested` |
+| **Phase 4C Preregistered Config** | `ml/configs/pilot_a_binary_preregistered.yaml` (hash `54140d42...`, superseded `839531a7...`), `docs/PHASE_4C_PREREGISTRATION.md` | `preregistered-resealed` |
+| **Phase 4B.3 Unit Tests** | `ml/tests/test_pair_aware_loader.py` (10 tests: balance, determinism, cycling, resolution match, balanced epochs, subprocess PYTHONHASHSEED), `ml/tests/test_locked_test_guard.py` (7 tests) | `implemented-and-tested` |
+| **Evidence Reproducer Script** | `scripts/reproduce-phase-4b3-evidence.py` (portable live measurement: Git, runtime, archives SHA-256/bytes, manifest invariants, clean-link audit; `--verify` and `--write-evidence` modes) | `implemented-and-tested` |
+| **Evidence Reproducer Tests** | `ml/tests/test_evidence_reproducer.py` (7 tests: wrong HEAD, archive byte alteration, manifest missing rows, nonexistent paths, cross-partition overlap, machine-local paths, runtime version) | `implemented-and-tested` |
 | **Continuity Checker CLI** | `scripts/continuity-check.mjs` | `implemented-and-tested` |
 | **Continuity Checker Tests** | `scripts/__tests__/continuity-check.test.mjs` | `implemented-and-tested` |
 | **Continuity Contract** | `AGENTS.md` (Mục 4: Continuity Contract) | `contract-enforced` |

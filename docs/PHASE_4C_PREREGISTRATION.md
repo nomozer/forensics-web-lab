@@ -1,7 +1,7 @@
-# Phase 4C Scientific Preregistration: Pilot A Binary Classification Protocol
+# Phase 4C Scientific Preregistration: Pilot A Binary Classification Protocol (Resealed Phase 4B.4)
 
 > **Document Type**: Scientific Protocol Preregistration & Experiment Contract  
-> **Status**: **`PREREGISTERED`** (Phase 4B.3)  
+> **Status**: **`PREREGISTERED_RESEALED`** (Phase 4B.4)  
 > **Target Execution Phase**: Phase 4C  
 > **Repository**: `nomozer/forensics-web-lab`  
 > **Working Branch**: `feat/production-ai-image-forensics`  
@@ -9,7 +9,8 @@
 > **Target Task**: Binary Classification — `authentic` vs `ai_edited`  
 > **Independent Statistical Unit**: **`source_id`** (MS-COCO 12-digit zero-padded ID)  
 > **Locked Split Seal**: `519e7a0e6815e781d1cefa95971e5221ac1f25656837374d8dc4ba41401fded9`  
-> **Preregistered Config**: `ml/configs/pilot_a_binary_preregistered.yaml` (SHA-256: `839531a700b211e5adc4a145e811c4533dbb45a044b63e816c474a462e88ddd1`)  
+> **Current Preregistered Config**: `ml/configs/pilot_a_binary_preregistered.yaml` (SHA-256: `54140d42485384436052befe58ac46775123e1cb009ea3a11d7389470359fd3b`)  
+> **Superseded Config**: `839531a700b211e5adc4a145e811c4533dbb45a044b63e816c474a462e88ddd1` (status: `superseded-by-phase-4b.4`)  
 
 ---
 
@@ -23,22 +24,44 @@
 
 ---
 
-## 2. Sampling Strategy & Anti-Pseudoreplication Protocol
+## 2. Sampling Strategy & Resolution Shortcut Elimination
 
-To prevent pseudoreplication and variant imbalance, Phase 4C adopts **Strategy A: Pair-Aware Sampler**:
+### 2.1 Calibrated Pseudoreplication Principle
+> **Scientific Finding & Refined Claim**:  
+> Pair-aware sampling kiểm soát đóng góp gradient theo source và giảm pseudoreplication; suy luận thống kê tiếp tục sử dụng `source_id` làm đơn vị độc lập.  
+> Các variant cùng `source_id` vẫn là dữ liệu tương quan và không làm tăng cỡ mẫu khoa học. Số lượng mẫu độc lập $N$ luôn là số lượng unique `source_id`.
 
-```text
-Each Epoch (2N samples):
-├── For each source_id in partition (N unique sources):
-│   ├── Sample 1 Authentic Image: Native resolution variant (orig_native)
-│   └── Sample 1 AI-Edited Image: Deterministically cycled variant (sd2_bbox or sd2_segm)
-└── Exact 1:1 Class Balance per Source & Epoch (zero statistical distortion)
+### 2.2 Cross-Process Deterministic Variant Offset
+Python's built-in `hash()` is randomized across processes via `PYTHONHASHSEED`. To guarantee cross-process reproducibility, the stable source offset is computed via SHA-256:
+```python
+stable_source_offset = int.from_bytes(
+    hashlib.sha256(source_id.encode("utf-8")).digest()[:8],
+    "big"
+)
 ```
 
-* **Equal Source Contribution**: Every `source_id` contributes exactly 1 authentic and 1 edited sample per epoch. Sources with multiple variants never receive higher statistical weight.
-* **Variant Cycling**: The edited variant index is cycled deterministically across epochs:
-  $$\text{variant\_idx} = (\text{epoch} + \text{offset}(\text{source\_id})) \pmod 6$$
-* **Source-Level Metric Aggregation**: For evaluation, predicted probabilities across all tested variants of the same `source_id` are averaged to produce a single prediction score $P(\text{ai\_edited} \mid \text{source\_id})$. All primary metrics are calculated on these aggregated scores.
+### 2.3 Matched-Resolution Sampling & Balanced Cycling
+Physical inspection of disk assets reveals:
+* Authentic variants exist in three resolution tiers: native, 512, and 1024.
+* Edited variants (`sd2-sp`) were generated on native canvas for both `bbox` and `segm` masks.
+
+To prevent resolution shortcuts and ensure balanced variant exposure, `PairAwareSampler` enforces:
+1. **Resolution Matching**: In every pair $(x_{\text{auth}}, x_{\text{edit}})$, both samples share the exact same resolution bucket.
+2. **Deterministic Cycling**:
+   $$\text{resolution\_idx} = (\text{epoch} + \text{stable\_source\_offset}) \pmod 3$$
+   $$\text{edit\_type\_idx} = \left(\left\lfloor \frac{\text{epoch}}{3} \right\rfloor + \text{stable\_source\_offset}\right) \pmod 2$$
+   $$\text{edited\_variant\_idx} = \text{edit\_type\_idx} \times 3 + \text{resolution\_idx}$$
+   $$\text{authentic\_variant\_idx} = \text{resolution\_idx}$$
+3. **Balanced Exposure**:
+   * Over 3 epochs, each source's authentic samples cycle through native, 512, and 1024 evenly (1:1:1).
+   * Over 6 epochs, each source's edited samples cycle through `bbox` and `segm` evenly (3 bbox, 3 segm).
+4. **Exact 1:1 Contribution**: Exactly 1 authentic and 1 edited sample per `source_id` per epoch (2N samples/epoch).
+
+### 2.4 Preprocessing Contract
+Both classes undergo an identical preprocessing transform pipeline with no class-conditional branching:
+* Input Size: $224 \times 224$ pixels
+* Interpolation: Bicubic
+* Normalization: Mean `[0.485, 0.456, 0.406]`, Std `[0.229, 0.224, 0.225]`
 
 ---
 
@@ -62,16 +85,29 @@ To evaluate sample efficiency in the low-data regime:
 
 ---
 
-## 4. Preregistered Model Baselines
+## 4. Preregistered Model Baselines & Training Hyperparameters
 
-Six baselines will be evaluated under identical source splits:
-
+### 4.1 Baselines
 1. **Stratified Dummy**: Random uniform / class-frequency dummy classifier (establishes chance performance floor).
 2. **Metadata-Only**: Logistic regression / decision tree on EXIF, XMP, JPEG markers, image dimensions, and format headers (proves visual features capture more than metadata shortcuts).
 3. **DSP-Only**: Linear classifier on handcrafted frequency features (2D FFT radial profile, DCT block energy, noise residual variance, ELA).
 4. **Frozen MobileNetV3-Small**: Pretrained ImageNet-1k backbone frozen; only linear classification head trained.
 5. **Fine-Tuned MobileNetV3-Small**: Last convolutional block (`features.12`) unfrozen; trained with lower learning rate ($5 \times 10^{-5}$).
 6. **Calibrated Multimodal Fusion**: Visual model head fused with DSP features and metadata indicators via logistic calibrator.
+
+### 4.2 Explicit Hyperparameters
+* **Batch Size**: 32
+* **Initial Learning Rate**: $1 \times 10^{-3}$ (Stage 1), $5 \times 10^{-5}$ (Stage 2)
+* **Weight Decay**: $1 \times 10^{-4}$
+* **Optimizer**: AdamW ($\beta_1 = 0.9, \beta_2 = 0.999$)
+* **Loss Function**: Binary Cross Entropy with Logits (`BCEWithLogitsLoss`)
+* **Maximum Epochs**: 25
+* **Early Stopping Patience**: 5 epochs evaluated on `inner_validation`
+* **Primary Checkpoint Selection Metric**: `inner_validation` Macro-F1
+* **Decision Threshold Selection**: Youden's $J$ statistic ($TPR - FPR$) on `inner_validation`
+* **Probability Calibration Protocol**: Post-hoc Temperature Scaling on `inner_validation` logits
+* **Seeds**: `[42, 1337, 2025, 3407, 9001]` (5 seeds)
+* **Deterministic Flags**: `torch.use_deterministic_algorithms(True)`, `cudnn.benchmark = False`, cross-process stable offsets.
 
 ---
 
@@ -86,7 +122,8 @@ All primary metrics are computed on predictions aggregated by unique `source_id`
 * **Expected Calibration Error (ECE)**: 10-bin equal-width ECE
 * **Selective Risk & Coverage**: Accuracy and coverage trade-off under confidence thresholding (abstention / `uncertain` state)
 
-### 5.2 Secondary Metrics (Diagnostic)
+### 5.2 Secondary Metrics (Diagnostic Only)
+Variant-level metrics are strictly diagnostic and do not alter the sample size $N$:
 * Variant-level Macro-F1 and Balanced Accuracy
 * Confusion matrix
 * Per-edit-type performance (bbox inpainting vs segm inpainting)
@@ -97,71 +134,36 @@ All primary metrics are computed on predictions aggregated by unique `source_id`
 ### 5.3 Statistical Significance Protocol
 * **Seeds**: 5 preregistered seeds: `[42, 1337, 2025, 3407, 9001]`.
 * **Reporting**: Report mean $\pm$ standard deviation across 5 seeds.
-* **Paired Stratified Bootstrap**: 1,000 bootstrap iterations resampling by `source_id` to generate 95% Confidence Intervals for $\Delta \text{Macro-F1} = \text{Model} - \text{Baseline}$.
+* **Paired Stratified Bootstrap**: 1,000 bootstrap iterations resampling strictly by `source_id` to generate 95% Confidence Intervals for $\Delta \text{Macro-F1} = \text{Model} - \text{Baseline}$.
 
 ---
 
-## 6. Stage Gates & Transition Rules
+## 6. Pretrained Weights, Licensing & Compute Plan
 
-```mermaid
-graph TD
-  Stage0[Stage 0: Development Baselines] -->|Dummy & Meta Evaluated| Gate0{Surpasses Floor?}
-  Gate0 -->|Yes| Stage1[Stage 1: Frozen MobileNetV3-Small]
-  Gate0 -->|No| Reject[Halt & Debug Shortcut]
-  
-  Stage1 -->|Inner-Val Selection| Gate1{Visual Head > Meta Baseline?}
-  Gate1 -->|Yes| Stage2[Stage 2: Fine-Tune Block 12]
-  Gate1 -->|No| KeepFrozen[Retain Frozen Head Only]
-  
-  Stage2 --> FreezeAll[Freeze Checkpoints, Preprocessing & Thresholds]
-  KeepFrozen --> FreezeAll
-  
-  FreezeAll --> GenLock[Generate ExperimentLockBinding & Lock Hash]
-  GenLock --> FinalEval[Final Evaluation Batch on locked_test]
-```
-
-1. **Stage 0**: Train and evaluate Dummy, Metadata-only, and DSP-only on `development_train` and `inner_validation`.
-2. **Stage 1**: Train MobileNetV3-Small classification head with frozen backbone. Select best epoch by `inner_validation` Macro-F1.
-3. **Stage 2**: Unfreeze `features.12` only if Stage 1 Macro-F1 statistically significantly exceeds Dummy and is not fully explained by Metadata-only.
-4. **Final Sealed Evaluation**:
-   * Freeze all model checkpoints, preprocessing configurations, temperature scaling parameters, and decision thresholds.
-   * Generate `ExperimentLockBinding` with config hash, checkpoint hash, preprocessing hash, and calibration hash.
-   * Run locked test evaluation strictly once under role `final_evaluator`.
-   * Never use locked test results for tuning or model selection.
-
----
-
-## 7. Pretrained Weights Accounting & Resource Plan
-
-### 7.1 Pretrained Weights Specification (Planned)
+### 6.1 Pretrained Weights & License Classification
 * **Model**: MobileNetV3-Small
-* **Library / Source**: `torchvision.models.mobilenet_v3_small`
+* **Library**: `torchvision.models.mobilenet_v3_small`
 * **Weights Enum**: `torchvision.models.MobileNet_V3_Small_Weights.IMAGENET1K_V1`
-* **Weights URL**: `https://download.pytorch.org/models/mobilenet_v3_small-047dcff4.pth`
-* **Download Size**: ~10.3 MB (10,830,000 bytes)
-* **Parameter Count**: 1,782,648 (feature backbone), 2,542,856 (full ImageNet model)
-* **License**: BSD 3-Clause (PyTorch / torchvision)
-* **Integrity Guarantee**: Expected SHA-256 will be measured upon approved download and bound into the receipt.
-* **Phase 4B.3 Status**: **0 bytes downloaded, 0 training runs executed**.
+* **Code License**: `BSD-3-Clause` (verified PyTorch / torchvision official license)
+* **Pretrained Weight Source**: Official torchvision CDN (`https://download.pytorch.org/models/mobilenet_v3_small-047dcff4.pth`)
+* **Pretrained Weight Terms Status**: `unverified` (weights do not have a dedicated standalone license separate from ImageNet non-commercial research use)
+* **Training Dataset Provenance**: ImageNet-1K (ILSVRC 2012)
+* **Research Use Decision**: Approved for non-commercial academic research only; commercial deployment requires training from scratch on verified permissive data.
+* **Phase 4B.4 Accounting**: **0 bytes downloaded, 0 training runs executed, 0 locked-test evaluations**.
 
-### 7.2 Compute Plan
-* **Training Compute**: Local CPU or optional CUDA GPU acceleration for Stage 1/2.
-* **Estimated Compute Time**:
-  * $N=50$ (5 seeds $\times$ 25 epochs $\times$ 100 images): ~3 minutes CPU.
-  * $N=100$ (5 seeds $\times$ 25 epochs $\times$ 200 images): ~7 minutes CPU.
-  * $N=250$ (5 seeds $\times$ 25 epochs $\times$ 500 images): ~18 minutes CPU.
-  * Total Stage 0–2 training time: $< 45$ minutes on CPU.
-* **Web Product Runtime**: Web inference strictly uses browser CPU/WASM SIMD with zero server communication (Zero-Egress).
+### 6.2 Compute Plan & Smoke Gate
+* **Estimated Time Status**: `estimated-not-measured` (CPU compute was estimated at $<45$ minutes but not empirically profiled on current hardware).
+* **Benchmark Smoke Gate**: Before executing the full 15 learning-curve runs (3 sizes $\times$ 5 seeds), Phase 4C will execute a single benchmark smoke run ($N=50$, seed 42) on `development_train` to measure actual epoch execution time, memory footprint, loss convergence, and DataLoader throughput.
 
 ---
 
-## 8. Explicit Phase 4C Approval Requests
+## 7. Explicit Phase 4C Approval Requests
 
-Phase 4B.3 concludes by submitting the following explicit approval requests for user review before Phase 4C begins:
+Phase 4B.4 concludes by submitting the following approval requests before Phase 4C begins:
 
 1. **Pretrained Weights Download Approval**:
    * Permission to download PyTorch official pretrained weights for MobileNetV3-Small (~10.3 MB from `download.pytorch.org`).
-2. **Stage 0 Execution Approval**:
-   * Permission to train and evaluate Dummy, Metadata-only, and DSP-only baselines on `development_train` (250 sources) and `inner_validation` (91 sources).
-3. **Stage 1 Training Approval**:
-   * Permission to train the MobileNetV3-Small frozen backbone visual head across the 3 learning curve points ($N=50, 100, 250$) across 5 seeds.
+2. **Benchmark Smoke Run Approval**:
+   * Permission to run a single smoke run ($N=50$, seed 42) on `development_train` and `inner_validation`.
+3. **Stage 0 & Stage 1 Execution Approval**:
+   * Permission to evaluate baselines and train the frozen backbone across the 3 learning-curve sizes and 5 seeds upon successful smoke gate validation.

@@ -1,4 +1,4 @@
-# Pilot A Binary Experiment Preregistration Configuration (Phase 4C)
+# Pilot A Binary Experiment Preregistration Configuration (Phase 4C - Resealed Phase 4B.4)
 schema_version: "1.0.0"
 config_id: "pilot_a_binary_preregistered"
 pilot_id: "pilot_tgif_edit"
@@ -30,8 +30,57 @@ data_scope:
 sampling_strategy:
   strategy: "pair_aware_sampler"
   description: "Strategy A: Exactly 1 authentic and 1 edited variant per unique source_id per epoch (1:1 class balance, 2N samples/epoch)"
-  variant_cycling: "deterministic_epoch_offset"
+  stable_offset_algorithm: "sha256_64bit_integer"
+  stable_offset_version: "1.0.0"
+  matched_resolution_pairing: true
+  resolution_buckets:
+    - "native"
+    - "512"
+    - "1024"
+  balanced_bbox_segm_cycling: true
+  edit_types:
+    - "bbox"
+    - "segm"
+  formula:
+    resolution_idx: "(epoch + stable_source_offset) % 3"
+    edit_type_idx: "((epoch // 3) + stable_source_offset) % 2"
+    edited_variant_idx: "edit_type_idx * 3 + resolution_idx"
+    authentic_variant_idx: "resolution_idx"
   aggregation_before_primary_metrics: "source_id_mean_probability"
+
+pseudoreplication_control:
+  statement: "Pair-aware sampling kiểm soát đóng góp gradient theo source và giảm pseudoreplication; suy luận thống kê tiếp tục sử dụng source_id làm đơn vị độc lập."
+  correlated_variants_acknowledged: true
+  variant_does_not_increase_scientific_sample_size: true
+  sample_size_definition: "N represents unique source_id count only"
+  bootstrap_resampling_unit: "source_id"
+  primary_metrics_aggregation_level: "source_id"
+  variant_level_metrics_role: "diagnostic_only"
+
+preprocessing:
+  input_size: [224, 224]
+  normalize_mean: [0.485, 0.456, 0.406]
+  normalize_std: [0.229, 0.224, 0.225]
+  interpolation: "bicubic"
+  identical_pipeline_for_both_classes: true
+  no_class_conditional_branching: true
+
+hyperparameters:
+  batch_size: 32
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  optimizer: "AdamW"
+  class_loss: "BinaryCrossEntropyWithLogits"
+  max_epochs: 25
+  early_stopping_patience: 5
+  primary_checkpoint_metric: "inner_val_macro_f1"
+  threshold_selection_rule: "youden_j_statistic_on_inner_val"
+  calibration_protocol: "temperature_scaling_on_inner_val"
+  random_seeds: [42, 1337, 2025, 3407, 9001]
+  deterministic_settings:
+    torch_deterministic: true
+    cudnn_benchmark: false
+    pythonhashseed_independent: true
 
 learning_curve:
   sample_sizes:
@@ -66,7 +115,15 @@ model_pipeline:
   torchvision_weights_enum: "MobileNet_V3_Small_Weights.IMAGENET1K_V1"
   num_parameters: 1782648
   expected_download_bytes: 10830000
-  license: "BSD-3-Clause"
+  codeLicense: "BSD-3-Clause"
+  pretrainedWeightSource: "torchvision"
+  pretrainedWeightTermsStatus: "unverified"
+  trainingDatasetProvenance: "ImageNet-1K (ILSVRC 2012)"
+  researchUseDecision: "Approved for non-commercial academic research only; commercial redistribution unverified."
+  compute_budget:
+    estimated_time: "estimated-not-measured"
+    benchmarkRequired: true
+    benchmark_smoke_plan: "N=50, seed=42 on development_train before forecasting 15 learning-curve runs"
   stages:
     stage_0:
       name: "baselines_development"
@@ -132,3 +189,8 @@ acceptance_criteria:
   require_dummy_superiority: true
   require_metadata_superiority: true
   require_monotonic_learning_trend: true
+
+superseded_preregistration:
+  superseded_hash: "839531a700b211e5adc4a145e811c4533dbb45a044b63e816c474a462e88ddd1"
+  superseded_status: "superseded-by-phase-4b.4"
+  supersession_reason: "Added deterministic stable offset (sha256), resolution-matched pairing, balanced bbox/segm cycling, exact preprocessing specification, and refined statistical claims."

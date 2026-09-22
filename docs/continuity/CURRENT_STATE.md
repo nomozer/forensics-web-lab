@@ -1,9 +1,9 @@
 # Trạng thái Hiện tại: Forensics Web Lab (Current State)
 
 > **Tài liệu đọc đầu tiên bắt buộc cho mọi phiên làm việc AI mới.**  
-> **Documented through substantive commit**: `1ad8151`  
-> **Ending commit Phase 4B.2**: `1ad8151`  
-> **Phase hoàn thành gần nhất**: Phase 4B.3 — Evidence Reconciliation and Binary Experiment Preregistration  
+> **Documented through substantive commit**: `054b97f`  
+> **Ending commit Phase 4B.3**: `054b97f`  
+> **Phase hoàn thành gần nhất**: Phase 4B.4 — Executable Evidence Repair and Shortcut-Control Gate  
 > **Branch**: `feat/production-ai-image-forensics`  
 > **Base main commit**: `460f6d5` (bảo toàn nguyên vẹn, không commit trực tiếp)  
 > **Working tree**: clean  
@@ -85,9 +85,11 @@
 ## 6. Kết quả Kiểm thử & Bản dựng Gần nhất (Latest Verification)
 
 * **TypeScript & Continuity Test Suite (`pnpm test`)**: 70/70 tests passing (57 vitest tests trên 6 packages + 13 continuity checker unit tests).
-* **Python Test Suite (`pytest ml/tests -v`)**: 66/66 tests passing (bao gồm 11 targeted tests cho Option P: Tar Slip, resume, drift detection, split lock, locked test access guard).
+* **Python Test Suite (`pytest ml/tests -v`)**: 90/90 tests passing (bao gồm reproducer tests, stable offset across subprocesses, resolution-matched pairing, balanced cycling).
 * **Dataset Registry Validation**: 7/7 datasets valid.
-* **Production Web Build (`pnpm build`)**: Exit code 0, bundle tối ưu hợp lệ (55 modules, 9.57s).
+* **Pilot Config Validator Gate**: 4/4 pilot configs valid (`pilot_a_binary_preregistered.yaml` hash `54140d42...`).
+* **Live Evidence Reproducer (`scripts/reproduce-phase-4b3-evidence.py --verify`)**: All invariants, byte counts, and SHA-256 digests verified.
+* **Production Web Build (`pnpm build`)**: Exit code 0, bundle tối ưu hợp lệ (55 modules, 2.96s).
 * **Continuity Enforcement Gate (`pnpm continuity:check`)**: `CONTINUITY_CHECK: PASS`.
 * **Clean Link Invariance**: 0 machine-local links (`file:///`, `C:\`, `D:\`) trong toàn bộ markdown và evidence repository.
 
@@ -141,12 +143,20 @@
 * `EV-PAIR-AWARE-LOADER-001`: Giao thức chống pseudoreplication Strategy A (1:1 balance, luân phiên biến thể, tổng hợp xác suất theo source_id).
 * `EV-LOCKED-TEST-GUARD-001`: Phân quyền Role-Based Access Guard cho locked_test kèm ExperimentLockBinding và bảo toàn seal `519e7a0e...`.
 * `EV-PHASE4C-PREREGISTRATION-001`: Đăng ký trước thí nghiệm phân loại nhị phân Phase 4C (N=50,100,250; 6 baselines; 5 seeds; 95% bootstrap CI).
+* `EV-REPRODUCER-001`: Trình tái lập bằng chứng thực thi `scripts/reproduce-phase-4b3-evidence.py` và 7 unit tests.
+* `EV-ARCHIVE-LEVELS-001`: Phân định 3 tầng bằng chứng lưu trữ (`local_artifact_integrity`, `transport_completeness`, `upstream_identity`).
+* `EV-CHECKSUM-TYPO-001`: Kiểm toán lịch sử SHA-256 xác định `documentation-typo` dựa trên receipt commit `7d33072`.
+* `EV-ETAG-INFERRED-001`: Hiệu chỉnh ETag thành `inferred-server-behavior` (`remote_metadata_differs: true`).
+* `EV-STABLE-OFFSET-001`: Thuật toán stable offset SHA-256 64-bit int bất biến qua mọi `PYTHONHASHSEED`.
+* `EV-RESOLUTION-MATCH-001`: Loại bỏ shortcut độ phân giải (matched pairing, balanced cycling 1:1:1 và 1:1, symmetric preprocessing).
+* `EV-PREREG-RESEAL-001`: Tái niêm phong đăng ký trước Phase 4C với mã băm `54140d42...` thay thế `839531a7...`.
 
 ---
 
 ## 9. Công việc Đang thực hiện & Công việc Tiếp theo
 
-* **Đã hoàn thành (Phase 4B.3)**: Đối soát toàn diện tính nhất quán bằng chứng Phase 4B.2 và sửa lỗi hiển thị SHA-256; kiểm toán manifest 684 instances và 4,104 variant pairs; phân định rõ 6,156 ảnh trích xuất; ban hành `training-manifest.v1.schema.json` và `experiment-lock.v1.schema.json`; thiết lập `pair_aware_loader.py` chống pseudoreplication và `locked_test_guard.py` bảo vệ locked-test; đăng ký trước giao thức Phase 4C trong `docs/PHASE_4C_PREREGISTRATION.md` và `pilot_a_binary_preregistered.yaml`; vượt qua 79 bài test Python, 70 bài test TS, build production và continuity check đạt chuẩn 100%.
+* **Đã hoàn thành (Phase 4B.4)**: Chuyển toàn bộ bằng chứng sang quy trình đo thực thi qua `scripts/reproduce-phase-4b3-evidence.py`; phân định 3 tầng bằng chứng lưu trữ; kiểm toán lịch sử SHA-256 xác nhận `documentation-typo`; hiệu chỉnh ETag thành `inferred-server-behavior`; triển khai stable offset SHA-256 loại bỏ phụ thuộc `PYTHONHASHSEED`; nâng cấp `PairAwareSampler` loại bỏ shortcut độ phân giải; tái niêm phong preregistration Phase 4C (`54140d42...`); hoàn tất 90 tests Python, 70 tests TS, build và continuity check 100% PASS.
 * **Hiện trạng nghiên cứu**: Dữ liệu ảnh Option P đã sẵn sàng trong `data/research/tgif/`; model weights bằng `0 bytes`; training runs bằng `0`; detection metrics giữ trạng thái `not evaluated`.
-* **Công việc tiếp theo (Phase 4C — Baseline Model Training & Learning Curve Evaluation)**: Người dùng xem xét phê duyệt tải pretrained weights MobileNetV3-Small (~10.3 MB) và chạy Stage 0 & 1 trên `development_train` (250 sources) và `inner_validation` (91 sources).
+* **Công việc tiếp theo (Phase 4C.0 — Pretrained Weight Download & Smoke Gate)**: Người dùng xem xét phê duyệt tải pretrained weights MobileNetV3-Small (~10.3 MB) và chạy một benchmark smoke N=50, seed=42 để kiểm chuẩn DataLoader, RAM, và thời gian thực thi trước khi chạy 15 learning-curve runs.
+
 
