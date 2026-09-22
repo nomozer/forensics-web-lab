@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "1.0.0",
+  "timestampUtc": "2026-09-22T06:58:03Z",
+  "platform": {
+    "system": "Windows",
+    "release": "11",
+    "version": "10.0.26100",
+    "machine": "AMD64",
+    "processor": "Intel64 Family 6 Model 141 Stepping 1, GenuineIntel"
+  },
+  "runtimes": {
+    "python": "3.12.10",
+    "node": "v24.13.0",
+    "pnpm": "10.33.0",
+    "torch": "2.14.0+cpu",
+    "torchvision": "0.29.0+cpu"
+  }
+}

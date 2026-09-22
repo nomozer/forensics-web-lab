@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "1.0.0",
+  "timestampUtc": "2026-09-22T06:58:03Z",
+  "repository": "nomozer/forensics-web-lab",
+  "branch": "feat/production-ai-image-forensics",
+  "startingHead": "1ad81512645efedf23a32ce8a83b8c500a715ada",
+  "baseMain": "460f6d5608d45aad3f6a374f8cca19294a2f6a7c",
+  "mainPreserved": true,
+  "remoteUrl": "https://github.com/nomozer/forensics-web-lab.git",
+  "remotePushed": false,
+  "workingTreeStatus": "clean-at-start"
+}

@@ -4,6 +4,8 @@
 > **Repository**: `nomozer/forensics-web-lab`  
 > **Branch**: `feat/production-ai-image-forensics`  
 > **Starting Commit**: `82a5266`  
+> **Implementation Snapshots**: `7d33072`, `6bb088b`  
+> **Ending Commit**: `1ad8151`  
 > **Verdict**: **`PASS`**  
 > **Execution Date**: 2026-09-22  
 > **Scope**: Research Track Only — Small-Data Feasibility & Pilot Splitting (TGIF Option P)
@@ -14,7 +16,7 @@
 
 Phase 4B.2 hoàn thành toàn bộ mục tiêu thu nạp có kiểm soát Option P, xác minh tính toàn vẹn và decode cho 100% ảnh, kiểm toán ghép cặp ba thành phần (*authentic ↔ AI-edited ↔ ground-truth mask*), và đóng băng phân vùng split xác định cho nghiên cứu ít dữ liệu của khóa luận:
 
-1. **Thu nạp 4 Archive Phê duyệt**: Tải thành công 4 archive theo phê duyệt (`orig_validation`, `orig_testing`, `sd2-sp_validation`, `sd2-sp_testing`) với tổng cộng **5,879,502,782 bytes (~5.88 GB)** từ duy nhất host `cloud.ilabt.imec.be`. Tất cả checksum SHA-256 cục bộ và ETag khớp tuyệt đối với inventory Phase 4B.1.
+1. **Thu nạp 4 Archive Phê duyệt**: Tải thành công 4 archive theo phê duyệt (`orig_validation`, `orig_testing`, `sd2-sp_validation`, `sd2-sp_testing`) với tổng cộng **5,879,502,782 bytes (~5.88 GB)** từ duy nhất host `cloud.ilabt.imec.be`. 100% dung lượng byte count và SHA-256 cục bộ được xác minh tuyệt đối. ETag trên luồng streaming HTTP GET là định dạng inode/mtime của Apache (`69420b...`), khác với ETag từ WebDAV PROPFIND của Phase 4B.1; tính toàn vẹn nội dung được bảo đảm độc lập bằng SHA-256 và byte count.
 2. **Safe Extraction & Decodability 100%**: Giải nén an toàn với cơ chế chống Tar Slip, path traversal, absolute path và escaping symlinks, trích xuất **6,156 file ảnh (5,890,096,035 bytes)**. Kiểm toán Pillow decode cho 100% ảnh đạt 0 lỗi hỏng, 0 dimension mismatch.
 3. **Pairability Audit `verified`**: Khớp nối thành công 100% (684 category instances) giữa ảnh thật, ảnh AI-edited và mask. Không có ảnh thật bị thiếu, không có ảnh sửa bị thiếu, không có mask bị thiếu.
 4. **Đóng băng Split Nguồn Độc Lập**:
@@ -24,19 +26,19 @@ Phase 4B.2 hoàn thành toàn bộ mục tiêu thu nạp có kiểm soát Option
    * Giao cắt chéo split theo `source_id`: **0 tuyệt đối**.
    * Learning curve lồng nhau: $N=50 \subset N=100 \subset N=250$.
 5. **Class-Coverage Guard**: Pipeline 2 lớp (`authentic` vs `ai_edited`) ở trạng thái `runnable`. Pipeline 3 lớp ở trạng thái `not-runnable-missing-fully-generated-data`.
-6. **Scientific Integrity**: 0 byte trọng số model tải về, 0 training run thực hiện trong Phase 4B.2.
+6. **Scientific Integrity**: 0 byte trọng số model tải về, 0 training run thực hiện trong Phase 4B.2. Phase 4B.2 chưa hỗ trợ bất kỳ tuyên bố nào về hiệu năng mô hình.
 
 ---
 
 ## 2. Archive Inventory & Checksum Accounting
 
-| Component | Archive | Expected Bytes | Actual Bytes | SHA-256 | Expected ETag | Status |
-| :--- | :--- | :---: | :---: | :--- | :--- | :---: |
-| `tgif-orig` | `orig_validation.tar.gz` | 859,947,874 | 859,947,874 | `c9f02a343a5ac759f1e7aae6b62b4d1cd3c2e8f01d6ffe182fd5815674945ade` | `"d95a1202a7445d79872735f60cbeaa95"` | **VERIFIED** |
-| `tgif-orig` | `orig_testing.tar.gz` | 806,962,390 | 806,962,390 | `8020c2f2080b349f68b9c22d4594c0df0d0722255bba981bdf18b47c291df52c` | `"fc2934fed45674aa89479640d0030beb"` | **VERIFIED** |
-| `tgif-sd2-sp` | `sd2-sp_validation.tar.gz` | 2,172,017,290 | 2,172,017,290 | `3b3ba9f0a2ca7b57b9fb6cda8113cf3e8e19e9cae5a5937a0a65664da00f7797` | `"44b9e62f224dd312f59d9a5bd79d1171"` | **VERIFIED** |
-| `tgif-sd2-sp` | `sd2-sp_testing.tar.gz` | 2,040,575,228 | 2,040,575,228 | `c346af3cb85b00ac2b944d2e47e71d0e531652142ea844b63c337f95671b82aa` | `"2aa172ad2b1200973b7593259b37cc07"` | **VERIFIED** |
-| **Tổng** | **4 archives** | **5,879,502,782** | **5,879,502,782** | *(Tất cả archive nguyên vẹn tại `data/research/tgif/archives/`)* | | **PASS** |
+| Component | Archive | Expected Bytes | Actual Bytes | SHA-256 | Inventory ETag (4B.1) | Acquisition ETag (4B.2) | Status |
+| :--- | :--- | :---: | :---: | :--- | :--- | :--- | :---: |
+| `tgif-orig` | `orig_validation.tar.gz` | 859,947,874 | 859,947,874 | `c9f02a343a5ac759f1e7aae6b62b4d1cd3c2e8f01d6ffe182fd5815674945ade` | `"d95a1202a7445d79872735f60cbeaa95"` | `"69420b-62589574d6c41"` | **VERIFIED** |
+| `tgif-orig` | `orig_testing.tar.gz` | 806,962,390 | 806,962,390 | `8020c2f2080b349f68b9c22d4594c0df0d0722255bba981bdf18b47c291df52c` | `"fc2934fed45674aa89479640d0030beb"` | `"69420b-62589573eedc1"` | **VERIFIED** |
+| `tgif-sd2-sp` | `sd2-sp_validation.tar.gz` | 2,172,017,290 | 2,172,017,290 | `bd9eb4399f60166a09209d8a66a5df2b5eaecfbcc1a9d52f694e6812e24c5ad7` | `"44b9e62f224dd312f59d9a5bd79d1171"` | `"69420b-62589574d6089"` | **VERIFIED** |
+| `tgif-sd2-sp` | `sd2-sp_testing.tar.gz` | 2,040,575,228 | 2,040,575,228 | `c346af3cb85b00ac2b944d2e47e71d0e531652142ea844b63c337f95671b82aa` | `"2aa172ad2b1200973b7593259b37cc07"` | `"69420b-62589573ed651"` | **VERIFIED** |
+| **Tổng** | **4 archives** | **5,879,502,782** | **5,879,502,782** | *(Tất cả archive nguyên vẹn tại `data/research/tgif/archives/`)* | | | **PASS** |
 
 ---
 

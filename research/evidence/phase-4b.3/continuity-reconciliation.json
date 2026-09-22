@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "1.0.0",
+  "timestampUtc": "2026-09-22T06:58:03Z",
+  "phaseReconciled": "4B.2",
+  "startingCommit": "82a5266",
+  "implementationSnapshots": [
+    "7d33072",
+    "6bb088b"
+  ],
+  "endingCommit": "1ad8151",
+  "correctionsApplied": [
+    {
+      "targetFile": "research/evidence/phase-4b.2/PHASE_REPORT.md",
+      "issue": "Typo in SHA-256 for sd2-sp_validation.tar.gz (pasted acquisition-binding hash 3b3ba9f0...)",
+      "correction": "Updated to verified disk hash bd9eb4399f60166a09209d8a66a5df2b5eaecfbcc1a9d52f694e6812e24c5ad7"
+    },
+    {
+      "targetFile": "research/evidence/phase-4b.2/PHASE_REPORT.md",
+      "issue": "Missing ending commit and implementation snapshots in metadata header",
+      "correction": "Added Starting Commit 82a5266, Implementation Snapshots 7d33072, 6bb088b, Ending Commit 1ad8151"
+    },
+    {
+      "targetFile": "research/evidence/phase-4b.2/PHASE_REPORT.md",
+      "issue": "Claimed ETag matched Phase 4B.1 WebDAV inventory without distinction",
+      "correction": "Clarified that ETag format differed between WebDAV PROPFIND and HTTP GET, while cryptographic integrity was guaranteed by exact byte count and SHA-256"
+    },
+    {
+      "targetFile": "docs/continuity/CURRENT_STATE.md",
+      "issue": "Documented through commit was still 82a5266 instead of 1ad8151; sd2-sp_val hash typo",
+      "correction": "Updated documented-through to 1ad8151 and corrected sha256 to bd9eb439..."
+    },
+    {
+      "targetFile": "docs/continuity/STATUS_LEDGER.md",
+      "issue": "Phase 4B.2 lacked ending commit and implementation snapshot hashes",
+      "correction": "Added implementation snapshots 7d33072, 6bb088b and ending commit 1ad8151"
+    }
+  ],
+  "modelPerformanceClaimStatus": "No scientific model-performance claim is currently supported (0 training runs in Phase 4B.2)"
+}
