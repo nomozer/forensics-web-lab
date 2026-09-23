@@ -158,9 +158,8 @@ def discover_source_instances_from_manifest(
                     )
 
             # Discover edited variants on disk
-            # 6 variants: bbox (0, 1, 2) and segm (0, 1, 2)
-            # Associated resolution buckets: index 0 -> native, index 1 -> 512, index 2 -> 1024
-            res_buckets = ["native", "512", "1024"]
+            # In TGIF Option P (Case B), all 6 edited variants (3 bbox, 3 segm)
+            # are generated on the native canvas (matching orig_native dimensions exactly).
             sd2_dir = root / "data" / "research" / "tgif" / "sd2-sp" / upstream_split / category
             if sd2_dir.exists():
                 for m_type in ["bbox", "segm"]:
@@ -181,7 +180,7 @@ def discover_source_instances_from_manifest(
                                     partition=partition,
                                     variant_type=f"sd2_{m_type}_{v_idx}",
                                     variant_idx=v_idx if m_type == "bbox" else v_idx + 3,
-                                    resolution_bucket=res_buckets[v_idx],
+                                    resolution_bucket="native",
                                     edit_type=m_type,
                                     mask_path=str(mask_p.relative_to(root)).replace("\\", "/") if mask_p.exists() else None,
                                 )
@@ -194,17 +193,17 @@ def discover_source_instances_from_manifest(
 
 class PairAwareSampler:
     """
-    Epoch-based resolution-matched pair-aware sampler implementing Strategy A:
+    Epoch-based resolution-matched pair-aware sampler implementing Strategy A / Strategy B:
     - For each unique source_id in the selected partition, yields exactly 1 authentic sample
       and 1 AI-edited sample per epoch (exact 1:1 balance, 2N samples/epoch).
     - Resolution-Matched: Both samples in the pair belong to the identical resolution bucket.
+    - Case B (Ground Truth Real Data): All edited variants are native canvas; pairs authentic native
+      with edited native (100% identical pixel geometry on disk), alternating bbox and segm evenly.
     - Stable Cross-Process Determinism: Variant selection uses stable 64-bit integer offset
       derived from SHA-256(source_id), completely immune to PYTHONHASHSEED.
     - Balanced Cycling:
-        resolution_idx = (epoch + stable_source_offset) % 3  # cycles native, 512, 1024
-        edit_type_idx = ((epoch // 3) + stable_source_offset) % 2  # cycles bbox vs segm
-        edited_variant_idx = edit_type_idx * 3 + resolution_idx
-        authentic_variant_idx = resolution_idx
+        edit_type_idx = (epoch + stable_source_offset) % 2  # cycles bbox vs segm (1:1 balance)
+        sub_idx = ((epoch // 2) + stable_source_offset) % 3  # cycles 3 variants per edit type
     """
 
     def __init__(
@@ -237,23 +236,40 @@ class PairAwareSampler:
 
         for inst in self.instances:
             offset = self._source_offsets[inst.source_id]
-            res_idx = (epoch + offset) % 3
-            edit_type_idx = ((epoch // 3) + offset) % 2
-            edit_idx = edit_type_idx * 3 + res_idx
 
-            # Select authentic variant matching resolution
-            if inst.authentic_variants:
-                auth_v = inst.authentic_variants[res_idx % len(inst.authentic_variants)]
+            edited_buckets = {v.resolution_bucket for v in inst.edited_variants}
+            if edited_buckets == {"native"} or len(edited_buckets) <= 1:
+                # Case B (Real Option P dataset or single-bucket fixture):
+                # Pair authentic native with edited native (100% matched geometry)
+                target_bucket = next(iter(edited_buckets)) if edited_buckets else "native"
+                auth_candidates = [v for v in inst.authentic_variants if v.resolution_bucket == target_bucket]
+                auth_v = auth_candidates[0] if auth_candidates else (inst.authentic_variants[0] if inst.authentic_variants else None)
+
+                bbox_edits = [v for v in inst.edited_variants if v.edit_type == "bbox"]
+                segm_edits = [v for v in inst.edited_variants if v.edit_type == "segm"]
+
+                edit_type_idx = (epoch + offset) % 2
+                sub_idx = ((epoch // 2) + offset) % 3
+
+                if edit_type_idx == 0 and bbox_edits:
+                    edit_v = bbox_edits[sub_idx % len(bbox_edits)]
+                elif segm_edits:
+                    edit_v = segm_edits[sub_idx % len(segm_edits)]
+                elif inst.edited_variants:
+                    edit_v = inst.edited_variants[(edit_type_idx * 3 + sub_idx) % len(inst.edited_variants)]
+                else:
+                    edit_v = None
             else:
-                continue
+                # Multi-bucket resolution mode (for synthetic multi-resolution fixtures)
+                res_idx = (epoch + offset) % 3
+                edit_type_idx = ((epoch // 3) + offset) % 2
+                edit_idx = edit_type_idx * 3 + res_idx
 
-            # Select edited variant matching edit type and resolution
-            if inst.edited_variants:
-                edit_v = inst.edited_variants[edit_idx % len(inst.edited_variants)]
-            else:
-                continue
+                auth_v = inst.authentic_variants[res_idx % len(inst.authentic_variants)] if inst.authentic_variants else None
+                edit_v = inst.edited_variants[edit_idx % len(inst.edited_variants)] if inst.edited_variants else None
 
-            pairs.append((auth_v, edit_v))
+            if auth_v and edit_v:
+                pairs.append((auth_v, edit_v))
 
         return pairs
 
