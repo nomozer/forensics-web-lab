@@ -114,6 +114,8 @@ graph TD
 | **Stage 0 Baselines Runner** | `scripts/run_stage0_baselines.py` (Dummy, Metadata-only, DSP-only on N=50,100,250 evaluated on inner_validation) | `implemented-and-tested` |
 | **Smoke Training Runner** | `scripts/run_smoke_training.py` (single-seed N=50 seed 42, frozen backbone, resource profile, metrics, checkpoint) | `implemented-and-tested` |
 | **Phase 4C.0 Gate Tests** | `ml/tests/test_phase4c0_gates.py` (9 targeted tests: Case B audit, real variant map, resolution match, stable sampler, leakage guard, frozen backbone, locked-test denial, network ceiling, checkpoint isolation) | `implemented-and-tested` |
+| **Phase 4C.0a Reconciliation Script** | `scripts/reconcile_phase4c0.py` (checkpoint re-evaluation, Stage 0 prediction hashing, Option A vs B reconciliation, resource accounting) | `implemented-and-tested` |
+| **Phase 4C.0a Reconciliation Tests** | `ml/tests/test_phase4c0a_reconciliation.py` (8 targeted tests: architecture binding, BCEWithLogitsLoss, metric tolerance, paired aggregation, bootstrap grouping, artifact hashes, heap vs RSS, locked-test zero) | `implemented-and-tested` |
 | **Phase 4B.3/4B.4 Unit Tests** | `ml/tests/test_pair_aware_loader.py` (10 tests), `ml/tests/test_locked_test_guard.py` (7 tests), `ml/tests/test_evidence_reproducer.py` (7 tests) | `implemented-and-tested` |
 | **Evidence Reproducer Script** | `scripts/reproduce-phase-4b3-evidence.py` (portable live measurement: Git, runtime, archives SHA-256/bytes, manifest invariants, clean-link audit; `--verify` and `--write-evidence` modes) | `implemented-and-tested` |
 | **Continuity Checker CLI** | `scripts/continuity-check.mjs` | `implemented-and-tested` |

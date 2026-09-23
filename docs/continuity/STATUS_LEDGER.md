@@ -4,9 +4,23 @@
 > **Mục đích**: Biên niên sử cô đọng từng giai đoạn phát triển và nghiên cứu từ Phase 0 đến nay.  
 > **Quy ước**: Giai đoạn mới nhất nằm ở trên cùng; mỗi giai đoạn không quá 20 dòng; chi tiết kiểm chứng nằm tại `research/evidence/`.
 
+## Phase 4C.0a — Smoke Evidence Reconciliation and Main-Readiness Gate
+- **Mục tiêu**: Đối soát cấu hình smoke, thống nhất bảng Stage 0 kèm prediction hashes, tái đánh giá checkpoint trên inner_validation, hiệu chỉnh resource taxonomy và kiểm chứng main readiness.
+- **Starting commit**: `110fef1`
+- **Thay đổi chính**: Xác minh Option A (`Linear(576, 256) -> Hardswish -> Dropout(0.2) -> Linear(256, 1) + BCEWithLogitsLoss`) là thực tế vật lý duy nhất; giải thích Option B là narrative summary typo; tái đánh giá checkpoint không train lại (Macro-F1 0.5035, AUROC 0.5278, Brier 0.2504, ECE 0.0347); thống nhất bảng Stage 0 kèm SHA-256 prediction hashes; phân định 5.29 MB là `python_tracemalloc_peak`, RSS chưa đo; hiệu chỉnh giới hạn tuyên bố khoa học; chứng nhận 13 tiêu chí `MAIN_READY: true`; bổ sung 8 targeted tests (107/107 Python tests passed).
+- **Kiểm tra kỹ thuật**: `pnpm test` (70/70 passed), `pytest ml/tests` (107/107 passed), `pnpm build` (exit 0), `pnpm continuity:check` (PASS), locked-test: 0, new training runs: 0, new downloads: 0 bytes.
+- **Kết quả khoa học**: Xác lập single source of truth cho toàn bộ artifact Phase 4C.0; bảo toàn tính trung thực khoa học; repository sẵn sàng tích hợp vào nhánh main.
+- **Evidence**: `research/evidence/phase-4c.0a/` (8 artifacts: `smoke-configuration-reconciliation.json`, `checkpoint-reevaluation.json`, `stage0-reconciliation.json`, `resource-accounting-reconciliation.json`, `main-readiness.json`, `git-state.json`, `environment.json`, `evidence-manifest.json`, `PHASE_REPORT.md`).
+- **Giới hạn**: Chưa chạy full learning curve 15 runs; locked-test niêm phong; Stage 2 fine-tuning chưa kích hoạt.
+- **Quyết định tiếp theo**: Đề xuất push branch `feat/production-ai-image-forensics`, tạo PR vào main, tag release `v0.1.0-research-foundation`, và tạo branch `research/phase-4c1-learning-curve`.
+
+---
+
 ## Phase 4C.0 — Pixel-Reality Gate, Stage-0 Baselines and Single-Seed Smoke
 - **Mục tiêu**: Kiểm toán pixel geometry dữ liệu thật, chạy Stage 0 baselines, tải trọng số MobileNetV3-Small có kiểm soát và thực thi benchmark smoke training.
 - **Starting commit**: `331724d`
+- **Implementation commits**: `08aa1ef`, `5ca515f`
+- **Ending commit**: `110fef1`
 - **Thay đổi chính**: Pixel-Reality audit 6.156 ảnh xác nhận 100% Case B (edited nằm trên native canvas); cập nhật sampler ghép cặp authentic native ↔ edited native và balanced bbox/segm cycling, hold out 512/1024 cho secondary set; tái niêm phong config `pilot_a_binary_preregistered.yaml` (`727fc316...`, superseded `54140d42...`); chạy Stage 0 baselines (Metadata AUROC 0.51 chứng minh 0 leakage, DSP AUROC 0.60); tải an toàn `mobilenet_v3_small-047dcff4.pth` (10.3 MB <= 12 MiB); chạy 1 smoke run N=50 seed 42 (8 epochs, duration 89.2s, peak RAM 5.29 MB, val macro-F1 0.5035); lưu checkpoint `smoke_mobilenetv3_small_seed42.pt` (5.6 MB) vào Research Track; bổ sung 9 targeted tests (99/99 Python tests passed).
 - **Kiểm tra kỹ thuật**: `pnpm test` (70/70 passed), `pytest ml/tests` (99/99 passed), `pnpm build` (exit 0), `pnpm continuity:check` (PASS), config validator (4/4 valid), dataset registry (7/7 valid), locked-test evaluations = 0.
 - **Kết quả khoa học**: Xác nhận Case B trên dữ liệu thật; loại bỏ shortcut độ phân giải; pipeline ML chạy ổn định và siêu nhẹ (5.29 MB RAM, 8.3s/epoch); frozen visual features đơn lẻ trên N=50 chưa vượt trội baseline nếu không fine-tune; detection metrics dán nhãn exploratory.

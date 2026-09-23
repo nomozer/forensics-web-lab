@@ -1,9 +1,9 @@
 # Trạng thái Hiện tại: Forensics Web Lab (Current State)
 
 > **Tài liệu đọc đầu tiên bắt buộc cho mọi phiên làm việc AI mới.**  
-> **Documented through substantive commit**: `331724d`  
-> **Ending commit Phase 4B.4**: `331724d`  
-> **Phase hoàn thành gần nhất**: Phase 4C.0 — Pixel-Reality Gate, Stage-0 Baselines and Single-Seed Smoke  
+> **Documented through substantive commit**: `110fef1`  
+> **Ending commit Phase 4C.0**: `110fef1`  
+> **Phase hoàn thành gần nhất**: Phase 4C.0a — Smoke Evidence Reconciliation and Main-Readiness Gate  
 > **Branch**: `feat/production-ai-image-forensics`  
 > **Base main commit**: `460f6d5` (bảo toàn nguyên vẹn, không commit trực tiếp)  
 > **Working tree**: clean  
@@ -77,15 +77,15 @@
   * 2-class pipeline (`authentic` vs `ai_edited`): `runnable`.
   * 3-class pipeline: `not-runnable-missing-fully-generated-data`.
 * **Trọng số mô hình đã tải / huấn luyện**: Đã tải `mobilenet_v3_small-047dcff4.pth` (10,306,551 bytes) từ torchvision chính thức; 1 checkpoint smoke `smoke_mobilenetv3_small_seed42.pt` (5,624,201 bytes) tại `models/research/phase-4c.0/` (quarantined trong Research Track).
-* **Số lượt huấn luyện (Training runs)**: `1` (đúng 1 single-seed smoke run N=50, seed 42; 0 full learning-curve runs).
-* **Chỉ số khoa học**: Stage 0 baselines (Dummy Macro-F1 0.5932, Metadata-only 0.5098, DSP-only 0.5653); Single smoke run N=50 (Val Macro-F1 0.5035, AUROC 0.5278). Toàn bộ được gắn nhãn `development-only exploratory baseline` và `research-smoke-only`. Full multi-seed evaluation: `not evaluated`.
+* **Số lượt huấn luyện (Training runs)**: `1` (đúng 1 single-seed smoke run N=50, seed 42; 0 full learning-curve runs; 0 runs mới trong Phase 4C.0a).
+* **Chỉ số khoa học**: Stage 0 baselines (bảng thẩm quyền Phase 4C.0a: Dummy Macro-F1 0.5932, Metadata-only 0.5098, DSP-only 0.5653); Checkpoint smoke tái đánh giá N=50 (Val Macro-F1 0.5035, AUROC 0.5278, Brier 0.2504, ECE 0.0347). Toàn bộ được gắn nhãn `development-only exploratory baseline` và `research-smoke-only`. Full multi-seed evaluation: `not evaluated`.
 
 ---
 
 ## 6. Kết quả Kiểm thử & Bản dựng Gần nhất (Latest Verification)
 
 * **TypeScript & Continuity Test Suite (`pnpm test`)**: 70/70 tests passing (57 vitest tests trên 6 packages + 13 continuity checker unit tests).
-* **Python Test Suite (`pytest ml/tests -v`)**: 99/99 tests passing (bao gồm 9 targeted tests cho Phase 4C.0 gates: pixel reality Case B, real variant map, resolution matching, stable offset across seeds, baseline leakage guard, frozen backbone gradient, locked-test denial, network ceiling, checkpoint isolation).
+* **Python Test Suite (`pytest ml/tests -v`)**: 107/107 tests passing (bao gồm 9 Phase 4C.0 gate tests và 8 Phase 4C.0a reconciliation & main-readiness tests).
 * **Dataset Registry Validation**: 7/7 datasets valid.
 * **Pilot Config Validator Gate**: 4/4 pilot configs valid (`pilot_a_binary_preregistered.yaml` hash `727fc316...`).
 * **Live Evidence Reproducer (`scripts/reproduce-phase-4b3-evidence.py --verify`)**: All invariants, byte counts, and SHA-256 digests verified.
@@ -155,13 +155,15 @@
 * `EV-WEIGHT-DOWNLOAD-001`: Thu nạp có kiểm soát trọng số MobileNetV3-Small (10,306,551 bytes <= 12 MiB).
 * `EV-SMOKE-RUN-001`: Benchmark smoke run N=50 seed 42 (8 epochs, duration 89.2s, peak RAM 5.29 MB, checkpoint 5.6 MB).
 * `EV-PREREG-CASEB-001`: Tái niêm phong đăng ký trước Phase 4C.0 mã băm `727fc316...` (superseded `54140d42...`).
+* `EV-PHASE4C0A-RECONCILIATION-001`: Đối soát cấu hình Option A (BCEWithLogitsLoss, 147k params), tái đánh giá checkpoint inner_val, bảng Stage 0 kèm prediction hashes và hiệu chỉnh resource taxonomy.
+* `EV-MAIN-READINESS-001`: Chứng nhận 13 tiêu chí MAIN_READY đạt chuẩn tích hợp vào nhánh main.
 
 ---
 
 ## 9. Công việc Đang thực hiện & Công việc Tiếp theo
 
-* **Đã hoàn thành (Phase 4C.0)**: Kiểm toán Pixel-Reality Gate xác nhận 100% Case B; điều chỉnh sampler và reseal config `pilot_a_binary_preregistered.yaml` (`727fc316...`); chạy Stage 0 baselines (Metadata AUROC 0.51 chứng minh 0 leakage, DSP AUROC 0.60); tải thành công trọng số MobileNetV3-Small (10.3 MB <= 12 MiB ceiling); thực thi đúng 1 benchmark smoke run N=50 seed 42 (8 epochs, 89.2s, peak RAM 5.29 MB, val macro-F1 0.5035); 99 tests Python, 70 tests TS, build và continuity check 100% PASS.
+* **Đã hoàn thành (Phase 4C.0a)**: Đối soát triệt để cấu hình smoke (Option A là single source of truth); tái đánh giá checkpoint trên inner_validation (Macro-F1 0.5035, AUROC 0.5278, Brier 0.2504, ECE 0.0347); thống nhất bảng Stage 0 kèm SHA-256 prediction hashes; hiệu chỉnh resource profile (5.29 MB heap, RSS chưa đo); hiệu chỉnh các phát biểu khoa học; đạt chứng nhận `MAIN_READY: true`; 107 tests Python, 70 tests TS, build và continuity check 100% PASS.
 * **Hiện trạng nghiên cứu**: Checkpoint smoke đã lưu trong `models/research/phase-4c.0/`; model weights và checkpoint được cách ly trong Research Track; locked-test evaluations = 0; full learning curve (15 runs) chưa thực thi.
-* **Công việc tiếp theo (Phase 4C.1 — Full Binary Learning Curve Execution)**: Người dùng xem xét phê duyệt chạy full learning curve $N \in \{50, 100, 250\} \times 5 \text{ seeds}$ (15 runs, dự kiến ~35-45 phút CPU).
+* **Công việc tiếp theo**: Đề xuất push branch `feat/production-ai-image-forensics`, mở PR vào main, tag release `v0.1.0-research-foundation`, và chuẩn bị branch `research/phase-4c1-learning-curve` cho Phase 4C.1.
 
 
