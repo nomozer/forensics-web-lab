@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "1.0.0",
+  "documentType": "build_summary",
+  "phase": "4C.0",
+  "executedAtUtc": "2026-09-23T17:08:26Z",
+  "command": "pnpm build",
+  "exitCode": 0,
+  "status": "SUCCESS",
+  "scope": "6 of 7 workspace projects",
+  "artifacts": [
+    {
+      "file": "apps/web/dist/index.html",
+      "sizeBytes": 1080,
+      "gzipBytes": 620
+    },
+    {
+      "file": "apps/web/dist/assets/forensics.worker-D3P75d9E.js",
+      "sizeBytes": 448440
+    },
+    {
+      "file": "apps/web/dist/assets/ort-wasm-simd-threaded.jsep-MDYUKy93.wasm",
+      "sizeBytes": 28991518,
+      "gzipBytes": 6889441
+    },
+    {
+      "file": "apps/web/dist/assets/index-CJ6LiDni.css",
+      "sizeBytes": 4065,
+      "gzipBytes": 1484
+    },
+    {
+      "file": "apps/web/dist/assets/index-oqrv6H5y.js",
+      "sizeBytes": 700098,
+      "gzipBytes": 201625
+    }
+  ],
+  "durationSeconds": 4.08
+}

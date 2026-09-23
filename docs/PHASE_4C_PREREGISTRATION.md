@@ -1,7 +1,7 @@
-# Phase 4C Scientific Preregistration: Pilot A Binary Classification Protocol (Resealed Phase 4B.4)
+# Phase 4C Scientific Preregistration: Pilot A Binary Classification Protocol (Resealed Phase 4C.0 - Case B)
 
 > **Document Type**: Scientific Protocol Preregistration & Experiment Contract  
-> **Status**: **`PREREGISTERED_RESEALED`** (Phase 4B.4)  
+> **Status**: **`PREREGISTERED_RESEALED`** (Phase 4C.0)  
 > **Target Execution Phase**: Phase 4C  
 > **Repository**: `nomozer/forensics-web-lab`  
 > **Working Branch**: `feat/production-ai-image-forensics`  
@@ -9,8 +9,8 @@
 > **Target Task**: Binary Classification — `authentic` vs `ai_edited`  
 > **Independent Statistical Unit**: **`source_id`** (MS-COCO 12-digit zero-padded ID)  
 > **Locked Split Seal**: `519e7a0e6815e781d1cefa95971e5221ac1f25656837374d8dc4ba41401fded9`  
-> **Current Preregistered Config**: `ml/configs/pilot_a_binary_preregistered.yaml` (SHA-256: `54140d42485384436052befe58ac46775123e1cb009ea3a11d7389470359fd3b`)  
-> **Superseded Config**: `839531a700b211e5adc4a145e811c4533dbb45a044b63e816c474a462e88ddd1` (status: `superseded-by-phase-4b.4`)  
+> **Current Preregistered Config**: `ml/configs/pilot_a_binary_preregistered.yaml` (SHA-256: `727fc316123b211bc51de99b154220cef068ba1a5ac621bf6a106cc8fb325acc`)  
+> **Superseded Config**: `54140d42485384436052befe58ac46775123e1cb009ea3a11d7389470359fd3b` (status: `superseded-by-phase-4c.0-case-b`), `839531a700b211e5adc4a145e811c4533dbb45a044b63e816c474a462e88ddd1` (status: `superseded-by-phase-4b.4`)  
 
 ---
 
@@ -40,22 +40,22 @@ stable_source_offset = int.from_bytes(
 )
 ```
 
-### 2.3 Matched-Resolution Sampling & Balanced Cycling
-Physical inspection of disk assets reveals:
+### 2.3 Matched-Resolution Sampling & Balanced Cycling (Case B)
+Physical inspection and pixel-reality audit of disk assets reveals:
 * Authentic variants exist in three resolution tiers: native, 512, and 1024.
-* Edited variants (`sd2-sp`) were generated on native canvas for both `bbox` and `segm` masks.
-
-To prevent resolution shortcuts and ensure balanced variant exposure, `PairAwareSampler` enforces:
-1. **Resolution Matching**: In every pair $(x_{\text{auth}}, x_{\text{edit}})$, both samples share the exact same resolution bucket.
-2. **Deterministic Cycling**:
-   $$\text{resolution\_idx} = (\text{epoch} + \text{stable\_source\_offset}) \pmod 3$$
-   $$\text{edit\_type\_idx} = \left(\left\lfloor \frac{\text{epoch}}{3} \right\rfloor + \text{stable\_source\_offset}\right) \pmod 2$$
-   $$\text{edited\_variant\_idx} = \text{edit\_type\_idx} \times 3 + \text{resolution\_idx}$$
-   $$\text{authentic\_variant\_idx} = \text{resolution\_idx}$$
-3. **Balanced Exposure**:
-   * Over 3 epochs, each source's authentic samples cycle through native, 512, and 1024 evenly (1:1:1).
-   * Over 6 epochs, each source's edited samples cycle through `bbox` and `segm` evenly (3 bbox, 3 segm).
-4. **Exact 1:1 Contribution**: Exactly 1 authentic and 1 edited sample per `source_id` per epoch (2N samples/epoch).
+* **100.0% of edited variants (`sd2-sp`, 4,104/4,104 files) were generated on the native canvas** matching `orig_native` pixel dimensions exactly (Case B).
+* To eliminate resolution shortcuts while reflecting true pixel reality:
+  1. **Primary Experiment Pairing**: In every pair $(x_{\text{auth}}, x_{\text{edit}})$, authentic native is paired with edited native (100% identical pixel dimensions on disk).
+  2. **Secondary Robustness Set**: Authentic 512 and authentic 1024 are reserved for secondary resolution degradation robustness evaluation.
+  3. **Deterministic Cycling**:
+     $$\text{edit\_type\_idx} = (\text{epoch} + \text{stable\_source\_offset}) \pmod 2$$
+     $$\text{sub\_variant\_idx} = \left(\left\lfloor \frac{\text{epoch}}{2} \right\rfloor + \text{stable\_source\_offset}\right) \pmod 3$$
+     $$\text{edited\_variant\_idx} = \text{edit\_type\_idx} \times 3 + \text{sub\_variant\_idx}$$
+     $$\text{authentic\_variant} = \text{orig\_native}$$
+  4. **Balanced Exposure**:
+     * Over any 2 epochs, each source alternates between bbox and segm evenly (1:1).
+     * Over 6 epochs, each source cycles through all 6 edited variants evenly (3 bbox, 3 segm).
+  5. **Exact 1:1 Contribution**: Exactly 1 authentic and 1 edited sample per `source_id` per epoch (2N samples/epoch).
 
 ### 2.4 Preprocessing Contract
 Both classes undergo an identical preprocessing transform pipeline with no class-conditional branching:

@@ -103,14 +103,19 @@ graph TD
 | **Option P Manifest (Local)** | `data/research/tgif/manifests/manifest_pilot_a_option_p.csv` (outside Git) | `generated-and-verified` |
 | **Option P Split Lock Artifact** | `research/evidence/phase-4b.2/split-lock.json` (343 locked test sources, SHA-256 seal) | `frozen-and-sealed` |
 | **Option P Test Suite** | `ml/tests/test_option_p_protocol.py` (11 targeted tests: Tar Slip, resume, drift, split lock, coverage) | `implemented-and-tested` |
-| **Pair-Aware Sampler & Aggregator** | `ml/datasets/pair_aware_loader.py` (Strategy A: equal source contribution, 1:1 balance, resolution-matched pairing, balanced bbox/segm cycling, SHA-256 stable offset, source-level aggregation) | `implemented-and-tested` |
+| **Pair-Aware Sampler & Aggregator** | `ml/datasets/pair_aware_loader.py` (Strategy B: authentic native paired with edited native, 100% matched pixel geometry, balanced bbox/segm cycling, SHA-256 stable offset, source-level aggregation) | `implemented-and-tested` |
 | **Locked-Test Role Access Guard** | `ml/evaluation/locked_test_guard.py` (role-based permissions, ExperimentLockBinding verification) | `implemented-and-tested` |
 | **Training Manifest Schema** | `docs/schemas/training-manifest.v1.schema.json` (source-isolated manifest validation) | `schema-enforced` |
 | **Experiment Lock Schema** | `docs/schemas/experiment-lock.v1.schema.json` (cryptographic evaluation binding schema) | `schema-enforced` |
-| **Phase 4C Preregistered Config** | `ml/configs/pilot_a_binary_preregistered.yaml` (hash `54140d42...`, superseded `839531a7...`), `docs/PHASE_4C_PREREGISTRATION.md` | `preregistered-resealed` |
-| **Phase 4B.3 Unit Tests** | `ml/tests/test_pair_aware_loader.py` (10 tests: balance, determinism, cycling, resolution match, balanced epochs, subprocess PYTHONHASHSEED), `ml/tests/test_locked_test_guard.py` (7 tests) | `implemented-and-tested` |
+| **Phase 4C Preregistered Config** | `ml/configs/pilot_a_binary_preregistered.yaml` (hash `727fc316...`, superseded `54140d42...`, `839531a7...`), `docs/PHASE_4C_PREREGISTRATION.md` | `preregistered-resealed` |
+| **Pixel-Reality Gate Auditor** | `scripts/audit_pixel_reality.py` (measure 6,156 images, confirm Case B native canvas, generate `pixel-geometry-audit.json`, `real-variant-map.json`) | `implemented-and-tested` |
+| **Sampler Runtime Auditor** | `scripts/audit_sampler_runtime.py` (verify stable offset across PYTHONHASHSEED, generate `sampler-runtime-audit.json`) | `implemented-and-tested` |
+| **Pretrained Weight Downloader** | `scripts/download_mobilenet_weights.py` (restricted domain, <=12 MiB ceiling, atomic rename, `pretrained-weight-receipt.json`) | `implemented-and-tested` |
+| **Stage 0 Baselines Runner** | `scripts/run_stage0_baselines.py` (Dummy, Metadata-only, DSP-only on N=50,100,250 evaluated on inner_validation) | `implemented-and-tested` |
+| **Smoke Training Runner** | `scripts/run_smoke_training.py` (single-seed N=50 seed 42, frozen backbone, resource profile, metrics, checkpoint) | `implemented-and-tested` |
+| **Phase 4C.0 Gate Tests** | `ml/tests/test_phase4c0_gates.py` (9 targeted tests: Case B audit, real variant map, resolution match, stable sampler, leakage guard, frozen backbone, locked-test denial, network ceiling, checkpoint isolation) | `implemented-and-tested` |
+| **Phase 4B.3/4B.4 Unit Tests** | `ml/tests/test_pair_aware_loader.py` (10 tests), `ml/tests/test_locked_test_guard.py` (7 tests), `ml/tests/test_evidence_reproducer.py` (7 tests) | `implemented-and-tested` |
 | **Evidence Reproducer Script** | `scripts/reproduce-phase-4b3-evidence.py` (portable live measurement: Git, runtime, archives SHA-256/bytes, manifest invariants, clean-link audit; `--verify` and `--write-evidence` modes) | `implemented-and-tested` |
-| **Evidence Reproducer Tests** | `ml/tests/test_evidence_reproducer.py` (7 tests: wrong HEAD, archive byte alteration, manifest missing rows, nonexistent paths, cross-partition overlap, machine-local paths, runtime version) | `implemented-and-tested` |
 | **Continuity Checker CLI** | `scripts/continuity-check.mjs` | `implemented-and-tested` |
 | **Continuity Checker Tests** | `scripts/__tests__/continuity-check.test.mjs` | `implemented-and-tested` |
 | **Continuity Contract** | `AGENTS.md` (Mục 4: Continuity Contract) | `contract-enforced` |

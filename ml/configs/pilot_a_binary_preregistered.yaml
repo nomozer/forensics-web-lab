@@ -28,24 +28,25 @@ data_scope:
   locked_split_seal: "519e7a0e6815e781d1cefa95971e5221ac1f25656837374d8dc4ba41401fded9"
 
 sampling_strategy:
-  strategy: "pair_aware_sampler"
-  description: "Strategy A: Exactly 1 authentic and 1 edited variant per unique source_id per epoch (1:1 class balance, 2N samples/epoch)"
+  strategy: "pair_aware_sampler_case_b"
+  description: "Strategy B (Pixel-Reality Case B): Authentic native canvas matched 1:1 with AI-edited native canvas (100% matched pixel geometry); authentic 512/1024 held out for secondary robustness evaluation; 6 edited variants cycle deterministically with balanced bbox/segm alternation (2N samples/epoch)"
   stable_offset_algorithm: "sha256_64bit_integer"
   stable_offset_version: "1.0.0"
+  geometry_case: "Case B"
+  primary_geometry_bucket: "native"
   matched_resolution_pairing: true
-  resolution_buckets:
-    - "native"
-    - "512"
-    - "1024"
   balanced_bbox_segm_cycling: true
   edit_types:
     - "bbox"
     - "segm"
   formula:
-    resolution_idx: "(epoch + stable_source_offset) % 3"
-    edit_type_idx: "((epoch // 3) + stable_source_offset) % 2"
-    edited_variant_idx: "edit_type_idx * 3 + resolution_idx"
-    authentic_variant_idx: "resolution_idx"
+    edit_type_idx: "(epoch + stable_source_offset) % 2"
+    sub_variant_idx: "((epoch // 2) + stable_source_offset) % 3"
+    edited_variant_idx: "edit_type_idx * 3 + sub_variant_idx"
+    authentic_variant: "orig_native"
+  secondary_robustness_set:
+    authentic_512_held_out: true
+    authentic_1024_held_out: true
   aggregation_before_primary_metrics: "source_id_mean_probability"
 
 pseudoreplication_control:
@@ -191,6 +192,10 @@ acceptance_criteria:
   require_monotonic_learning_trend: true
 
 superseded_preregistration:
-  superseded_hash: "839531a700b211e5adc4a145e811c4533dbb45a044b63e816c474a462e88ddd1"
-  superseded_status: "superseded-by-phase-4b.4"
-  supersession_reason: "Added deterministic stable offset (sha256), resolution-matched pairing, balanced bbox/segm cycling, exact preprocessing specification, and refined statistical claims."
+  superseded_hash: "54140d42485384436052befe58ac46775123e1cb009ea3a11d7389470359fd3b"
+  superseded_status: "superseded-by-phase-4c.0-case-b"
+  supersession_reason: "Pixel-Reality Gate audit demonstrated all 4,104 edited variants are on native canvas (Case B); aligned primary experiment to authentic native <-> edited native pairs (100% matched pixel geometry) and held out 512/1024 for secondary robustness set."
+  previous_superseded_hashes:
+    - hash: "839531a700b211e5adc4a145e811c4533dbb45a044b63e816c474a462e88ddd1"
+      status: "superseded-by-phase-4b.4"
+      reason: "Added deterministic stable offset (sha256), resolution-matched pairing, balanced bbox/segm cycling, exact preprocessing specification, and refined statistical claims."

@@ -1,9 +1,9 @@
 # Trạng thái Hiện tại: Forensics Web Lab (Current State)
 
 > **Tài liệu đọc đầu tiên bắt buộc cho mọi phiên làm việc AI mới.**  
-> **Documented through substantive commit**: `054b97f`  
-> **Ending commit Phase 4B.3**: `054b97f`  
-> **Phase hoàn thành gần nhất**: Phase 4B.4 — Executable Evidence Repair and Shortcut-Control Gate  
+> **Documented through substantive commit**: `331724d`  
+> **Ending commit Phase 4B.4**: `331724d`  
+> **Phase hoàn thành gần nhất**: Phase 4C.0 — Pixel-Reality Gate, Stage-0 Baselines and Single-Seed Smoke  
 > **Branch**: `feat/production-ai-image-forensics`  
 > **Base main commit**: `460f6d5` (bảo toàn nguyên vẹn, không commit trực tiếp)  
 > **Working tree**: clean  
@@ -76,20 +76,20 @@
 * **Class-Coverage Guard**:
   * 2-class pipeline (`authentic` vs `ai_edited`): `runnable`.
   * 3-class pipeline: `not-runnable-missing-fully-generated-data`.
-* **Trọng số mô hình đã tải / huấn luyện**: `0 bytes` (chưa tải checkpoint hay trọng số nào).
-* **Số lượt huấn luyện (Training runs)**: `0`.
-* **Chỉ số khoa học**: `not evaluated` (chưa đo lường thực nghiệm).
+* **Trọng số mô hình đã tải / huấn luyện**: Đã tải `mobilenet_v3_small-047dcff4.pth` (10,306,551 bytes) từ torchvision chính thức; 1 checkpoint smoke `smoke_mobilenetv3_small_seed42.pt` (5,624,201 bytes) tại `models/research/phase-4c.0/` (quarantined trong Research Track).
+* **Số lượt huấn luyện (Training runs)**: `1` (đúng 1 single-seed smoke run N=50, seed 42; 0 full learning-curve runs).
+* **Chỉ số khoa học**: Stage 0 baselines (Dummy Macro-F1 0.5932, Metadata-only 0.5098, DSP-only 0.5653); Single smoke run N=50 (Val Macro-F1 0.5035, AUROC 0.5278). Toàn bộ được gắn nhãn `development-only exploratory baseline` và `research-smoke-only`. Full multi-seed evaluation: `not evaluated`.
 
 ---
 
 ## 6. Kết quả Kiểm thử & Bản dựng Gần nhất (Latest Verification)
 
 * **TypeScript & Continuity Test Suite (`pnpm test`)**: 70/70 tests passing (57 vitest tests trên 6 packages + 13 continuity checker unit tests).
-* **Python Test Suite (`pytest ml/tests -v`)**: 90/90 tests passing (bao gồm reproducer tests, stable offset across subprocesses, resolution-matched pairing, balanced cycling).
+* **Python Test Suite (`pytest ml/tests -v`)**: 99/99 tests passing (bao gồm 9 targeted tests cho Phase 4C.0 gates: pixel reality Case B, real variant map, resolution matching, stable offset across seeds, baseline leakage guard, frozen backbone gradient, locked-test denial, network ceiling, checkpoint isolation).
 * **Dataset Registry Validation**: 7/7 datasets valid.
-* **Pilot Config Validator Gate**: 4/4 pilot configs valid (`pilot_a_binary_preregistered.yaml` hash `54140d42...`).
+* **Pilot Config Validator Gate**: 4/4 pilot configs valid (`pilot_a_binary_preregistered.yaml` hash `727fc316...`).
 * **Live Evidence Reproducer (`scripts/reproduce-phase-4b3-evidence.py --verify`)**: All invariants, byte counts, and SHA-256 digests verified.
-* **Production Web Build (`pnpm build`)**: Exit code 0, bundle tối ưu hợp lệ (55 modules, 2.96s).
+* **Production Web Build (`pnpm build`)**: Exit code 0, bundle tối ưu hợp lệ (55 modules, 4.08s).
 * **Continuity Enforcement Gate (`pnpm continuity:check`)**: `CONTINUITY_CHECK: PASS`.
 * **Clean Link Invariance**: 0 machine-local links (`file:///`, `C:\`, `D:\`) trong toàn bộ markdown và evidence repository.
 
@@ -150,13 +150,18 @@
 * `EV-STABLE-OFFSET-001`: Thuật toán stable offset SHA-256 64-bit int bất biến qua mọi `PYTHONHASHSEED`.
 * `EV-RESOLUTION-MATCH-001`: Loại bỏ shortcut độ phân giải (matched pairing, balanced cycling 1:1:1 và 1:1, symmetric preprocessing).
 * `EV-PREREG-RESEAL-001`: Tái niêm phong đăng ký trước Phase 4C với mã băm `54140d42...` thay thế `839531a7...`.
+* `EV-PIXEL-REALITY-001`: Kiểm toán pixel geometry 6,156 ảnh xác nhận Case B (100% native canvas, 0% 512x512).
+* `EV-STAGE0-BASELINES-001`: Đánh giá Stage 0 baselines (Dummy, Metadata AUROC 0.51, DSP AUROC 0.60) trên inner_validation.
+* `EV-WEIGHT-DOWNLOAD-001`: Thu nạp có kiểm soát trọng số MobileNetV3-Small (10,306,551 bytes <= 12 MiB).
+* `EV-SMOKE-RUN-001`: Benchmark smoke run N=50 seed 42 (8 epochs, duration 89.2s, peak RAM 5.29 MB, checkpoint 5.6 MB).
+* `EV-PREREG-CASEB-001`: Tái niêm phong đăng ký trước Phase 4C.0 mã băm `727fc316...` (superseded `54140d42...`).
 
 ---
 
 ## 9. Công việc Đang thực hiện & Công việc Tiếp theo
 
-* **Đã hoàn thành (Phase 4B.4)**: Chuyển toàn bộ bằng chứng sang quy trình đo thực thi qua `scripts/reproduce-phase-4b3-evidence.py`; phân định 3 tầng bằng chứng lưu trữ; kiểm toán lịch sử SHA-256 xác nhận `documentation-typo`; hiệu chỉnh ETag thành `inferred-server-behavior`; triển khai stable offset SHA-256 loại bỏ phụ thuộc `PYTHONHASHSEED`; nâng cấp `PairAwareSampler` loại bỏ shortcut độ phân giải; tái niêm phong preregistration Phase 4C (`54140d42...`); hoàn tất 90 tests Python, 70 tests TS, build và continuity check 100% PASS.
-* **Hiện trạng nghiên cứu**: Dữ liệu ảnh Option P đã sẵn sàng trong `data/research/tgif/`; model weights bằng `0 bytes`; training runs bằng `0`; detection metrics giữ trạng thái `not evaluated`.
-* **Công việc tiếp theo (Phase 4C.0 — Pretrained Weight Download & Smoke Gate)**: Người dùng xem xét phê duyệt tải pretrained weights MobileNetV3-Small (~10.3 MB) và chạy một benchmark smoke N=50, seed=42 để kiểm chuẩn DataLoader, RAM, và thời gian thực thi trước khi chạy 15 learning-curve runs.
+* **Đã hoàn thành (Phase 4C.0)**: Kiểm toán Pixel-Reality Gate xác nhận 100% Case B; điều chỉnh sampler và reseal config `pilot_a_binary_preregistered.yaml` (`727fc316...`); chạy Stage 0 baselines (Metadata AUROC 0.51 chứng minh 0 leakage, DSP AUROC 0.60); tải thành công trọng số MobileNetV3-Small (10.3 MB <= 12 MiB ceiling); thực thi đúng 1 benchmark smoke run N=50 seed 42 (8 epochs, 89.2s, peak RAM 5.29 MB, val macro-F1 0.5035); 99 tests Python, 70 tests TS, build và continuity check 100% PASS.
+* **Hiện trạng nghiên cứu**: Checkpoint smoke đã lưu trong `models/research/phase-4c.0/`; model weights và checkpoint được cách ly trong Research Track; locked-test evaluations = 0; full learning curve (15 runs) chưa thực thi.
+* **Công việc tiếp theo (Phase 4C.1 — Full Binary Learning Curve Execution)**: Người dùng xem xét phê duyệt chạy full learning curve $N \in \{50, 100, 250\} \times 5 \text{ seeds}$ (15 runs, dự kiến ~35-45 phút CPU).
 
 
