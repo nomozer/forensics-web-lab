@@ -7,7 +7,8 @@
 > **Starting Git HEAD**: `331724d`  
 > **Main Branch**: `460f6d5` (preserved, untouched)  
 > **Verified Invariant**: Zero machine-local absolute links (`D:\`, `C:\`, `file:///`) in committed repository documents.  
-> **Scientific Honesty Rule**: All metrics, durations, byte counts, and memory profiles are measured live from filesystem execution.
+> **Scientific Honesty Rule**: All metrics, durations, byte counts, and memory profiles are measured live from filesystem execution.  
+> **Reconciliation Note (Phase 4C.0a)**: The authoritative single source of truth for smoke architecture (`Linear(576, 256) -> Hardswish -> Dropout(0.2) -> Linear(256, 1)` + `BCEWithLogitsLoss`), checkpoint re-evaluation metrics, Stage 0 prediction hashes, and resource accounting (`5.29 MB` is strictly `python_tracemalloc_peak`, OS process RSS `not measured`) is codified in `research/evidence/phase-4c.0a/`.
 
 ---
 

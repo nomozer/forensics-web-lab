@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.0.0",
+  "timestamp_utc": "2026-09-23T18:03:24.556783+00:00",
+  "phase": "4C.0a",
+  "checkpoint_file": "models/research/phase-4c.0/smoke_mobilenetv3_small_seed42.pt",
+  "checkpoint_sha256": "8e9393e075a192ab8683cd2841de4e0b0fe89c90460bfd9cd9e1e04e4a1a3670",
+  "evaluation_partition": "inner_validation",
+  "data_accounting": {
+    "unique_source_count": 91,
+    "paired_class_units_count": 182,
+    "authentic_native_variants_count": 91,
+    "edited_variants_count": 546,
+    "total_image_variants_evaluated": 637,
+    "aggregation_key": "(source_id, label)",
+    "aggregation_method": "mean_probability_per_source_label_pair"
+  },
+  "statistical_unit_contract": {
+    "independent_unit": "source_id",
+    "paired_units_definition": "Each source_id produces two paired class units: (source_id, authentic) and (source_id, ai_edited)",
+    "bootstrap_resampling_rule": "Resample at source_id level keeping both authentic and edited paired units jointly linked"
+  },
+  "authoritative_metrics_default_threshold_05": {
+    "threshold": 0.5,
+    "macro_f1": 0.5035,
+    "balanced_accuracy": 0.5275,
+    "auroc": 0.5278,
+    "brier_score": 0.2504,
+    "ece": 0.0347,
+    "confusion_matrix": [
+      [
+        68,
+        23
+      ],
+      [
+        63,
+        28
+      ]
+    ],
+    "calibration_state": "uncalibrated_sigmoid_logits"
+  },
+  "authoritative_metrics_optimal_threshold": {
+    "threshold": 0.4194,
+    "criterion": "youden_j_statistic",
+    "macro_f1": 0.4674,
+    "balanced_accuracy": 0.544,
+    "confusion_matrix": [
+      [
+        15,
+        76
+      ],
+      [
+        7,
+        84
+      ]
+    ]
+  },
+  "status": "authoritative_single_source_of_truth"
+}
