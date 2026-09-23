@@ -1,0 +1,248 @@
+{
+  "schema_version": "1.0.0",
+  "timestamp_utc": "2026-09-23T17:04:40.600696+00:00",
+  "phase": "4C.0",
+  "n_sources": 50,
+  "seed": 42,
+  "epochs_completed": 8,
+  "early_stopping_triggered": true,
+  "best_epoch": 2,
+  "best_checkpoint_metrics": {
+    "val_macro_f1": 0.5035,
+    "val_balanced_accuracy": 0.5275,
+    "val_auroc": 0.5278,
+    "val_brier_score": 0.2504,
+    "val_ece": 0.0347,
+    "val_loss": 0.7319,
+    "val_confusion_matrix": [
+      [
+        68,
+        23
+      ],
+      [
+        63,
+        28
+      ]
+    ]
+  },
+  "per_epoch_history": [
+    {
+      "epoch": 0,
+      "train_loss": 0.7329,
+      "val_loss": 0.7146,
+      "val_macro_f1": 0.4922,
+      "val_balanced_accuracy": 0.511,
+      "val_auroc": 0.519,
+      "val_brier_score": 0.2504,
+      "val_ece": 0.0254,
+      "val_confusion_matrix": [
+        [
+          64,
+          27
+        ],
+        [
+          62,
+          29
+        ]
+      ],
+      "gradient_finite": true,
+      "logits_finite": true,
+      "epoch_duration_seconds": 6.969,
+      "dataloader_throughput_samples_per_sec": 28.8,
+      "peak_memory_mb": 4.84,
+      "checkpoint_selected": true,
+      "sample_order_sha256": "98ea23c03ff1389071233041d9aafcfc27271a63c8721e140c7c7f9514c1cc26"
+    },
+    {
+      "epoch": 1,
+      "train_loss": 0.6976,
+      "val_loss": 0.5843,
+      "val_macro_f1": 0.3716,
+      "val_balanced_accuracy": 0.5055,
+      "val_auroc": 0.5201,
+      "val_brier_score": 0.2578,
+      "val_ece": 0.086,
+      "val_confusion_matrix": [
+        [
+          4,
+          87
+        ],
+        [
+          3,
+          88
+        ]
+      ],
+      "gradient_finite": true,
+      "logits_finite": true,
+      "epoch_duration_seconds": 11.612,
+      "dataloader_throughput_samples_per_sec": 13.5,
+      "peak_memory_mb": 5.27,
+      "checkpoint_selected": false,
+      "sample_order_sha256": "c919443ff564862115c31d8006709882f8b1fad0047dc13ee4814022b5aa3ddf"
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.7209,
+      "val_loss": 0.7319,
+      "val_macro_f1": 0.5035,
+      "val_balanced_accuracy": 0.5275,
+      "val_auroc": 0.5278,
+      "val_brier_score": 0.2504,
+      "val_ece": 0.0347,
+      "val_confusion_matrix": [
+        [
+          68,
+          23
+        ],
+        [
+          63,
+          28
+        ]
+      ],
+      "gradient_finite": true,
+      "logits_finite": true,
+      "epoch_duration_seconds": 8.444,
+      "dataloader_throughput_samples_per_sec": 27.3,
+      "peak_memory_mb": 5.27,
+      "checkpoint_selected": true,
+      "sample_order_sha256": "1dc486fe65f3844c76c860bc1cd716240b2686fc49073c00ed14ac4fb9e47834"
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.6814,
+      "val_loss": 0.9232,
+      "val_macro_f1": 0.3333,
+      "val_balanced_accuracy": 0.5,
+      "val_auroc": 0.5259,
+      "val_brier_score": 0.2672,
+      "val_ece": 0.1324,
+      "val_confusion_matrix": [
+        [
+          91,
+          0
+        ],
+        [
+          91,
+          0
+        ]
+      ],
+      "gradient_finite": true,
+      "logits_finite": true,
+      "epoch_duration_seconds": 7.662,
+      "dataloader_throughput_samples_per_sec": 27.8,
+      "peak_memory_mb": 5.29,
+      "checkpoint_selected": false,
+      "sample_order_sha256": "a3e5e1fdea4affa04603f9a0fbc058bf095b518e6e1c66ee701312141beea72d"
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.7179,
+      "val_loss": 0.8011,
+      "val_macro_f1": 0.3687,
+      "val_balanced_accuracy": 0.5,
+      "val_auroc": 0.5282,
+      "val_brier_score": 0.2544,
+      "val_ece": 0.071,
+      "val_confusion_matrix": [
+        [
+          87,
+          4
+        ],
+        [
+          87,
+          4
+        ]
+      ],
+      "gradient_finite": true,
+      "logits_finite": true,
+      "epoch_duration_seconds": 7.779,
+      "dataloader_throughput_samples_per_sec": 29.7,
+      "peak_memory_mb": 5.29,
+      "checkpoint_selected": false,
+      "sample_order_sha256": "909eb096a7a5dd415f8028b26530216f87d4fe7a1f7c38dd5712a72ee717d37a"
+    },
+    {
+      "epoch": 5,
+      "train_loss": 0.6881,
+      "val_loss": 0.586,
+      "val_macro_f1": 0.3605,
+      "val_balanced_accuracy": 0.5,
+      "val_auroc": 0.5338,
+      "val_brier_score": 0.2574,
+      "val_ece": 0.0853,
+      "val_confusion_matrix": [
+        [
+          3,
+          88
+        ],
+        [
+          3,
+          88
+        ]
+      ],
+      "gradient_finite": true,
+      "logits_finite": true,
+      "epoch_duration_seconds": 9.022,
+      "dataloader_throughput_samples_per_sec": 27.2,
+      "peak_memory_mb": 5.29,
+      "checkpoint_selected": false,
+      "sample_order_sha256": "d8c1fd7e636cef4068a7e9e509cbd82b8868494e9074515c92f63df305facd48"
+    },
+    {
+      "epoch": 6,
+      "train_loss": 0.6769,
+      "val_loss": 0.5247,
+      "val_macro_f1": 0.3333,
+      "val_balanced_accuracy": 0.5,
+      "val_auroc": 0.5309,
+      "val_brier_score": 0.2722,
+      "val_ece": 0.1455,
+      "val_confusion_matrix": [
+        [
+          0,
+          91
+        ],
+        [
+          0,
+          91
+        ]
+      ],
+      "gradient_finite": true,
+      "logits_finite": true,
+      "epoch_duration_seconds": 7.338,
+      "dataloader_throughput_samples_per_sec": 28.0,
+      "peak_memory_mb": 5.29,
+      "checkpoint_selected": false,
+      "sample_order_sha256": "90eea7075a901f5624f3ae48374143fa935c2b61444b2860594fbf07fe9394ae"
+    },
+    {
+      "epoch": 7,
+      "train_loss": 0.7151,
+      "val_loss": 0.5759,
+      "val_macro_f1": 0.3687,
+      "val_balanced_accuracy": 0.5,
+      "val_auroc": 0.5322,
+      "val_brier_score": 0.2597,
+      "val_ece": 0.0951,
+      "val_confusion_matrix": [
+        [
+          4,
+          87
+        ],
+        [
+          4,
+          87
+        ]
+      ],
+      "gradient_finite": true,
+      "logits_finite": true,
+      "epoch_duration_seconds": 7.223,
+      "dataloader_throughput_samples_per_sec": 31.0,
+      "peak_memory_mb": 5.29,
+      "checkpoint_selected": false,
+      "sample_order_sha256": "6a4795edeb106b2c31bd6b3a6259d0f9ee63740720fd44f15c51c880c0ccc0cc"
+    }
+  ],
+  "all_gradients_finite": true,
+  "all_logits_finite": true
+}

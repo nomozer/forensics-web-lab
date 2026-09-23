@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0.0",
+  "timestamp_utc": "2026-09-23T17:04:40.600696+00:00",
+  "phase": "4C.0",
+  "experiment_role": "benchmark_smoke_run",
+  "scientific_status": "research-smoke-only",
+  "production_status": "not-production",
+  "evaluation_status": "not-final-evaluated",
+  "task": "binary_classification",
+  "n_sources": 50,
+  "seed": 42,
+  "backbone": "mobilenet_v3_small",
+  "backbone_state": "fully_frozen",
+  "trainable_head": "Linear(576, 256) -> Hardswish -> Dropout(0.2) -> Linear(256, 1)",
+  "trainable_parameters_count": 147969,
+  "frozen_parameters_count": 927008,
+  "total_parameters_count": 1074977,
+  "hashes": {
+    "config_sha256": "727fc316123b211bc51de99b154220cef068ba1a5ac621bf6a106cc8fb325acc",
+    "pretrained_weights_sha256": "047dcff4addef86ea5bc2eff13c9614dc11f47ab1160d0a71a25e7db994f4e1f",
+    "manifest_sha256": "e1e6b6d282002108d6a15000b755c20dd569cc8aa68c4eebbfa2aab3cee3b626",
+    "preprocessing_sha256": "f12d492cf2aea98e3d1439d29e2cf42ed92a32904c2c0fba0b2148e8b10830ff",
+    "training_code_sha256": "ac41a4b73ba870f821a20045b8a98eada55dfc749388f515f19fe466ecf36623",
+    "checkpoint_sha256": "8e9393e075a192ab8683cd2841de4e0b0fe89c90460bfd9cd9e1e04e4a1a3670",
+    "sample_order_epoch0_sha256": "98ea23c03ff1389071233041d9aafcfc27271a63c8721e140c7c7f9514c1cc26",
+    "sample_order_epoch1_sha256": "c919443ff564862115c31d8006709882f8b1fad0047dc13ee4814022b5aa3ddf",
+    "sample_order_epoch2_sha256": "1dc486fe65f3844c76c860bc1cd716240b2686fc49073c00ed14ac4fb9e47834"
+  },
+  "locked_test_sealed": true,
+  "locked_test_evaluations": 0,
+  "localization_head_active": false
+}

@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0.0",
+  "timestamp_utc": "2026-09-23T17:04:40.600696+00:00",
+  "phase": "4C.0",
+  "checkpoint_file": "models/research/phase-4c.0/smoke_mobilenetv3_small_seed42.pt",
+  "file_size_bytes": 5624201,
+  "sha256": "8e9393e075a192ab8683cd2841de4e0b0fe89c90460bfd9cd9e1e04e4a1a3670",
+  "status": "research-smoke-only",
+  "production_ready": false,
+  "final_evaluated": false,
+  "architecture": "mobilenet_v3_small_binary_forensics",
+  "best_epoch": 2,
+  "val_macro_f1": 0.5035,
+  "quarantined_in_research_track": true,
+  "git_tracked": false
+}
