@@ -163,7 +163,7 @@
 
 ## 9. Công việc Đang thực hiện & Công việc Tiếp theo
 
-* **Đã hoàn thành (Phase 4C.0a)**: Đối soát triệt để cấu hình smoke (Option A là single source of truth); tái đánh giá checkpoint trên inner_validation (Macro-F1 0.5035, AUROC 0.5278, Brier 0.2504, ECE 0.0347); thống nhất bảng Stage 0 kèm SHA-256 prediction hashes; hiệu chỉnh resource profile (5.29 MB heap, RSS chưa đo); hiệu chỉnh các phát biểu khoa học; đạt chứng nhận `MAIN_READY: true`; 107 tests Python, 70 tests TS, build và continuity check 100% PASS.
+* **Đã hoàn thành (Phase 4C.0a)**: Đối soát triệt để cấu hình smoke (Option A là single source of truth); tái đánh giá checkpoint trên inner_validation (Macro-F1 0.5035, AUROC 0.5278, Brier 0.2504, ECE 0.0347); thống nhất bảng Stage 0 kèm SHA-256 prediction hashes; hiệu chỉnh resource profile (5.29 MB heap, RSS chưa đo); hiệu chỉnh các phát biểu khoa học; chuẩn hóa metadata evidence-manifest (`artifactCount=9`, `directoryFileCount=10`, `manifestSelfExcluded=true`); đạt chứng nhận `MAIN_READY: true`; 107 tests Python, 70 tests TS, build và continuity check 100% PASS.
 * **Hiện trạng nghiên cứu**: Checkpoint smoke đã lưu trong `models/research/phase-4c.0/`; model weights và checkpoint được cách ly trong Research Track; locked-test evaluations = 0; full learning curve (15 runs) chưa thực thi.
 * **Công việc tiếp theo**: Đề xuất push branch `feat/production-ai-image-forensics`, mở PR vào main, tag release `v0.1.0-research-foundation`, và chuẩn bị branch `research/phase-4c1-learning-curve` cho Phase 4C.1.
 

@@ -1,7 +1,10 @@
 {
   "schemaVersion": "1.0.0",
   "phase": "4C.0a",
-  "fileCount": 10,
+  "artifactCount": 9,
+  "directoryFileCount": 10,
+  "manifestSelfExcluded": true,
+  "manifestGenerationRule": "Manifest does not hash itself to avoid self-reference cycle",
   "artifacts": [
     {
       "file": "research/evidence/phase-4c.0a/checkpoint-reevaluation.json",
@@ -25,13 +28,13 @@
     },
     {
       "file": "research/evidence/phase-4c.0a/merge-candidate-verification.json",
-      "sizeBytes": 4525,
-      "sha256": "450beee9effe6cb9a8b073c8aaef60489d9b63da8e04e2c09cd0d244fa71d2de"
+      "sizeBytes": 4756,
+      "sha256": "1a56aa4c4281829602246c2e40fbd17931fda1b8a3b3ccda67dc93ed7562a6f6"
     },
     {
       "file": "research/evidence/phase-4c.0a/PHASE_REPORT.md",
-      "sizeBytes": 13595,
-      "sha256": "f0841307c08362229758a9a86911d8dcfbf92cecdf33e27ba19b613393a4a1a5"
+      "sizeBytes": 13725,
+      "sha256": "72a5d133e09f51fc920805d264e085ce61add133218296783c51bfe47f80bf15"
     },
     {
       "file": "research/evidence/phase-4c.0a/resource-accounting-reconciliation.json",

@@ -19,7 +19,7 @@ Key accomplishments:
 1. **Smoke Configuration Discrepancy Resolved**:
    Physical inspection of checkpoint state dict tensors, run script, model definitions, preregistered YAML config, and run binding proved that **Option A** (`Linear(576, 256) -> Hardswish -> Dropout(0.2) -> Linear(256, 1) + BCEWithLogitsLoss`, 147,969 trainable parameters) is the sole physical reality. Option B (`Linear(1024, 2) + Focal Loss`) was an errant conversational summary typo with zero presence in code, configuration, or checkpoint weights.
 2. **Deterministic Checkpoint Re-Evaluation on Inner-Validation**:
-   Re-evaluated `models/research/phase-4c.0/smoke_mobilenetv3_small_seed42.pt` without retraining. On 91 sources (182 paired units, 637 image variants), metrics strictly reproduced: **Macro-F1 = 0.5035**, **Balanced Accuracy = 0.5275**, **AUROC = 0.5278**, **Brier Score = 0.2504**, **ECE = 0.0347**.
+   Re-evaluated `models/research/phase-4c.0/smoke_mobilenetv3_small_seed42.pt` without retraining. On 91 sources (182 paired units, 637 image variants), metrics were deterministically reproduced in the recorded software environment using the registered checkpoint, evaluation contract, and prediction artifacts: **Macro-F1 = 0.5035**, **Balanced Accuracy = 0.5275**, **AUROC = 0.5278**, **Brier Score = 0.2504**, **ECE = 0.0347**.
 3. **Stage 0 Authoritative Baseline Table & Artifact Hashes**:
    Re-evaluated Stage 0 across $N \in \{50, 100, 250\}$ and registered deterministic SHA-256 hashes for all prediction vectors. Resolved Brier/ECE discrepancies by reaffirming measured values from `stage0-baselines.json`.
 4. **Memory Profile Taxonomy Calibrated**:

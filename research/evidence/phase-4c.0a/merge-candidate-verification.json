@@ -3,13 +3,13 @@
   "timestamp_utc": "2026-09-24T02:50:00Z",
   "branch": "feat/production-ai-image-forensics",
   "git_state": {
-    "head_before_edits": "5a587073963218ca4c0e2b7b234969abe43543f9",
-    "head_before_edits_short": "5a58707",
-    "head_after_edits_patch": "docs: calibrate phase 4c0a merge claims",
-    "local_main": "460f6d5608d45aad3f6a374f8cca19294a2f6a7c",
-    "origin_main": "460f6d5608d45aad3f6a374f8cca19294a2f6a7c",
-    "ahead_count": 40,
-    "behind_count": 0
+    "verification_base_head": "b13a0b4157cb1f8c7c686e5afb49950cd7513124",
+    "verification_base_head_short": "b13a0b4",
+    "origin_main_at_verification": "460f6d5608d45aad3f6a374f8cca19294a2f6a7c",
+    "ahead_count_at_verification": 41,
+    "behind_count_at_verification": 0,
+    "evidence_recording_strategy": "Base repository state verified at b13a0b4 before metadata sealing commit. Final commit hash is resolved via git log on this artifact.",
+    "recording_commit_resolution_command": "git log -1 --format=%H -- research/evidence/phase-4c.0a/merge-candidate-verification.json"
   },
   "verification_commands": [
     {
