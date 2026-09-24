@@ -21,7 +21,7 @@ Hệ sinh thái nghiên cứu và sản phẩm của **Forensics Web Lab** tuân
 
 | Trạng thái | Định nghĩa chuẩn | Điều kiện công nhận |
 | :--- | :--- | :--- |
-| `verified` | Đã có minh chứng trực tiếp, đo lường thật và có thể tái tạo 100%. | Phải có artifact cụ thể, lệnh chạy tái tạo, kết quả đo thật trong repository. |
+| `verified` | Đã có minh chứng trực tiếp, đo lường thật và deterministically reproduced in the recorded software environment using the registered artifacts and prediction-vector hashes. | Phải có artifact cụ thể, lệnh chạy tái tạo, kết quả đo thật trong repository. |
 | `reported` | Được báo cáo trong y văn/tài liệu tham khảo trước đây nhưng chưa kiểm chứng độc lập. | Có trích dẫn tài liệu gốc, ghi rõ chưa kiểm chứng trên codebase nội bộ. |
 | `estimated` | Giá trị ước lượng lý thuyết (tính toán toán học), chưa đo trên artifact thật. | Công thức tính toán rõ ràng, chỉ rõ sai số biên khả dĩ. |
 | `architecture-only` | Mới tồn tại ở tầng thiết kế kiến trúc hoặc mã nguồn PyTorch/TS, chưa huấn luyện. | Mã nguồn khởi tạo module có thể chạy, không gọi là checkpoint. |

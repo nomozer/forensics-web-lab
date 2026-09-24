@@ -7,7 +7,7 @@
 > **Starting Git HEAD**: `110fef1`  
 > **Main Branch**: `460f6d5` (preserved, untouched)  
 > **Verified Invariant**: Zero machine-local absolute links (`D:\`, `C:\`, `file:///`) in committed repository documents.  
-> **Scientific Honesty Rule**: All metrics, durations, byte counts, and memory profiles are measured live from filesystem execution.
+> **Scientific Honesty Rule**: All reported quantities are classified explicitly as measured, reproduced, projected, estimated, or not measured. Each classification is tied to its evidence artifact and execution environment.
 
 ---
 
@@ -81,7 +81,7 @@ The existing checkpoint was re-evaluated under strict deterministic inference (`
 | **Confusion Matrix** | `[[68, 23], [63, 28]]` | `[[15, 76], [7, 84]]` |
 | **Calibration State** | `uncalibrated_sigmoid_logits` | `uncalibrated_sigmoid_logits` |
 
-*Finding*: Uncalibrated frozen ImageNet features achieve near-random discrimination ($\text{AUROC} \approx 0.53$), confirming that high-level semantic representations alone do not detect subtle diffusion inpainting seams without fine-tuning or multimodal frequency fusion.
+*Finding*: In the registered TGIF SD2-sp smoke configuration with N=50 and seed=42, the frozen MobileNetV3-Small checkpoint produced near-chance discrimination on inner-validation. This single exploratory run does not establish a general limitation of ImageNet representations or of fine-tuned visual models.
 
 ---
 
@@ -106,6 +106,12 @@ Stage 0 was re-evaluated across $N \in \{50, 100, 250\}$ development sources and
 *Recalibrated Metadata Claim*:
 > *"Metadata-only baseline không phát hiện khả năng phân biệt đáng kể trên inner-validation với feature set đã đăng ký; các dạng shortcut chưa được biểu diễn trong feature set vẫn là giới hạn."*
 
+### Stratified Dummy Baseline Nature & Limitations
+* **Implementation Details**: Stratified Dummy sử dụng `random_state=42`.
+* **Stochastic Realization**: Đây là một stochastic reference realization, không phải theoretical chance level.
+* **Vector Invariance**: Cùng prediction vector (`a25f54a4ebc62995dd7e80e0f3b2a74569c07b1fe4c7c61e1225a399650cbb33`) xuất hiện ở $N=50$, $N=100$ và $N=250$ vì class prior vẫn là 1:1, random seed và evaluation length được giữ cố định, còn mô hình dummy không học bất kỳ đặc trưng ảnh nào.
+* **Confirmatory Standard**: Mọi so sánh confirmatory sau này bắt buộc phải sử dụng nhiều seeds hoặc phân phối permutation/bootstrap thích hợp.
+
 ---
 
 ## 5. Resource Accounting Calibration
@@ -126,7 +132,7 @@ Stage 0 was re-evaluated across $N \in \{50, 100, 250\}$ development sources and
 ## 6. Scientific Honesty & Claim Calibration
 
 The conclusions from the single smoke run are constrained as follows:
-> *"Trong Pilot TGIF SD2-sp, với N=50 và seed=42, frozen MobileNetV3-Small không vượt DSP-only baseline trên inner-validation. Kết quả này là exploratory và chưa chứng minh hiệu năng tổng quát của frozen ImageNet features."*
+> *"In the registered TGIF SD2-sp smoke configuration with N=50 and seed=42, the frozen MobileNetV3-Small checkpoint produced near-chance discrimination on inner-validation. This single exploratory run does not establish a general limitation of ImageNet representations or of fine-tuned visual models."*
 
 Explicitly acknowledged scientific constraints:
 1. **Sample Variance**: A single seed (42) cannot characterize metric variance or stability.
@@ -153,7 +159,7 @@ Explicitly acknowledged scientific constraints:
 | No model weights in Git | **PASS** | Quarantined in `models/research/` outside Git |
 | Zero machine-local absolute links | **PASS** | Verified across all repository markdown and evidence |
 | Single source of truth for config | **PASS** | Option A confirmed; Option B retracted |
-| Metrics fully reproducible | **PASS** | Deterministic scripts reproduce metrics and artifact hashes |
+| Metrics deterministically reproduced | **PASS** | Deterministically reproduced in the recorded software environment using the registered artifacts and prediction-vector hashes. |
 | Scientific claims calibrated | **PASS** | Claims strictly bounded by evidence |
 | Locked-test evaluations count | **0** | `LockedTestAccessGuard` sealed |
 | Full learning-curve runs count | **0** | Awaiting user approval |

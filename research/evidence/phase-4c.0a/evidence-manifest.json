@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
   "phase": "4C.0a",
-  "fileCount": 9,
+  "fileCount": 10,
   "artifacts": [
     {
       "file": "research/evidence/phase-4c.0a/checkpoint-reevaluation.json",
@@ -24,9 +24,14 @@
       "sha256": "b3ac31e4d87dd0f127b6999a986f713b3b84ee35b3d430bc2e84cdcd048e086a"
     },
     {
+      "file": "research/evidence/phase-4c.0a/merge-candidate-verification.json",
+      "sizeBytes": 4525,
+      "sha256": "450beee9effe6cb9a8b073c8aaef60489d9b63da8e04e2c09cd0d244fa71d2de"
+    },
+    {
       "file": "research/evidence/phase-4c.0a/PHASE_REPORT.md",
-      "sizeBytes": 12590,
-      "sha256": "acf70b1c1e009038fd5589d1ebc6330ab25069b7f6492c81242b57d7847510bc"
+      "sizeBytes": 13595,
+      "sha256": "f0841307c08362229758a9a86911d8dcfbf92cecdf33e27ba19b613393a4a1a5"
     },
     {
       "file": "research/evidence/phase-4c.0a/resource-accounting-reconciliation.json",

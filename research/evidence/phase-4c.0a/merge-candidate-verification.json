@@ -1,0 +1,123 @@
+{
+  "schema_version": "1.0.0",
+  "timestamp_utc": "2026-09-24T02:50:00Z",
+  "branch": "feat/production-ai-image-forensics",
+  "git_state": {
+    "head_before_edits": "5a587073963218ca4c0e2b7b234969abe43543f9",
+    "head_before_edits_short": "5a58707",
+    "head_after_edits_patch": "docs: calibrate phase 4c0a merge claims",
+    "local_main": "460f6d5608d45aad3f6a374f8cca19294a2f6a7c",
+    "origin_main": "460f6d5608d45aad3f6a374f8cca19294a2f6a7c",
+    "ahead_count": 40,
+    "behind_count": 0
+  },
+  "verification_commands": [
+    {
+      "command": "pnpm continuity:check",
+      "exit_code": 0,
+      "verdict": "PASS"
+    },
+    {
+      "command": "pnpm test",
+      "exit_code": 0,
+      "test_counts": {
+        "vitest": 57,
+        "continuity_checker_units": 13,
+        "total": 70,
+        "passed": 70,
+        "failed": 0
+      },
+      "verdict": "PASS"
+    },
+    {
+      "command": "ml/.venv/Scripts/python -m pytest ml/tests -v",
+      "exit_code": 0,
+      "test_counts": {
+        "pytest": 107,
+        "passed": 107,
+        "failed": 0
+      },
+      "verdict": "PASS"
+    },
+    {
+      "command": "ml/.venv/Scripts/python -m ml.datasets.acquire --validate-registry",
+      "exit_code": 0,
+      "datasets_verified": 7,
+      "verdict": "PASS"
+    },
+    {
+      "command": "ml/.venv/Scripts/python -m ml.configs.validator --validate-all",
+      "exit_code": 0,
+      "configs_verified": 4,
+      "verdict": "PASS"
+    },
+    {
+      "command": "ml/.venv/Scripts/python scripts/reproduce-phase-4b3-evidence.py --verify",
+      "exit_code": 0,
+      "invariants_verified": [
+        "orig_validation.tar.gz checksum",
+        "orig_testing.tar.gz checksum",
+        "sd2-sp_validation.tar.gz checksum",
+        "sd2-sp_testing.tar.gz checksum",
+        "base_manifest_rows_684",
+        "locked_test_seal_519e7a0e",
+        "disk_images_6156",
+        "variant_pairs_4104"
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "command": "pnpm build",
+      "exit_code": 0,
+      "build_result": {
+        "modules_transformed": 55,
+        "duration_seconds": 3.09,
+        "dist_assets": [
+          "dist/index.html",
+          "dist/assets/forensics.worker-D3P75d9E.js",
+          "dist/assets/ort-wasm-simd-threaded.jsep-MDYUKy93.wasm",
+          "dist/assets/index-CJ6LiDni.css",
+          "dist/assets/index-oqrv6H5y.js"
+        ]
+      },
+      "verdict": "PASS"
+    }
+  ],
+  "audits": {
+    "clean_links": {
+      "scanned_directories": ["docs", "research/evidence"],
+      "patterns": [
+        "file:///[a-zA-Z]:",
+        "[a-zA-Z]:\\\\(?:Users|Documents|Program|Windows)",
+        "/Users/[a-zA-Z0-9_-]+",
+        "/home/[a-zA-Z0-9_-]+",
+        "vscode-file://"
+      ],
+      "violations_count": 0,
+      "verdict": "PASS"
+    },
+    "tracked_binaries": {
+      "monitored_extensions": [".pt", ".pth", ".tar.gz", ".tgz", ".zip", ".bin", ".onnx", ".png", ".jpg", ".jpeg", ".webp"],
+      "tracked_binary_count": 0,
+      "verdict": "PASS"
+    },
+    "research_safeguards": {
+      "training_runs_count": 1,
+      "new_training_runs_executed": 0,
+      "locked_test_access_count": 0,
+      "locked_test_status": "SEALED",
+      "locked_test_sha256": "519e7a0e6815e781d1cefa95971e5221ac1f25656837374d8dc4ba41401fded9",
+      "external_dataset_download_bytes": 0,
+      "external_model_download_bytes": 0,
+      "verdict": "PASS"
+    },
+    "scientific_wording_audit": {
+      "scientific_honesty_rule": "All reported quantities are classified explicitly as measured, reproduced, projected, estimated, or not measured. Each classification is tied to its evidence artifact and execution environment.",
+      "checkpoint_conclusion": "In the registered TGIF SD2-sp smoke configuration with N=50 and seed=42, the frozen MobileNetV3-Small checkpoint produced near-chance discrimination on inner-validation. This single exploratory run does not establish a general limitation of ImageNet representations or of fine-tuned visual models.",
+      "dummy_baseline": "Stratified Dummy uses random_state=42 as a stochastic reference realization (not theoretical chance level); identical prediction vector appears at N=50, 100, 250 due to 1:1 class prior and absence of visual feature learning; confirmatory comparisons must employ multi-seed / bootstrap.",
+      "reproducibility_scope": "Deterministically reproduced in the recorded software environment using the registered artifacts and prediction-vector hashes.",
+      "verdict": "CALIBRATED"
+    }
+  },
+  "final_verdict": "MERGE_CANDIDATE_READY"
+}
