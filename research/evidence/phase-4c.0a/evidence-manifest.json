@@ -1,0 +1,55 @@
+{
+  "schemaVersion": "1.0.0",
+  "phase": "4C.0a",
+  "artifactCount": 9,
+  "directoryFileCount": 10,
+  "manifestSelfExcluded": true,
+  "manifestGenerationRule": "Manifest does not hash itself to avoid self-reference cycle",
+  "artifacts": [
+    {
+      "file": "research/evidence/phase-4c.0a/checkpoint-reevaluation.json",
+      "sizeBytes": 1747,
+      "sha256": "54cc3a3eb1476b8204bc7ccba1c05aa7f4893a38f742727a136f61e231ba3991"
+    },
+    {
+      "file": "research/evidence/phase-4c.0a/environment.json",
+      "sizeBytes": 475,
+      "sha256": "397fc33c087432536412df328695a2eaa5a6e65bd2a059f6d7f355b69e329d94"
+    },
+    {
+      "file": "research/evidence/phase-4c.0a/git-state.json",
+      "sizeBytes": 690,
+      "sha256": "b08d269a6e18c21a5035c039655454a777f10579520b6ed7ed698c5abd3a39c2"
+    },
+    {
+      "file": "research/evidence/phase-4c.0a/main-readiness.json",
+      "sizeBytes": 1150,
+      "sha256": "b3ac31e4d87dd0f127b6999a986f713b3b84ee35b3d430bc2e84cdcd048e086a"
+    },
+    {
+      "file": "research/evidence/phase-4c.0a/merge-candidate-verification.json",
+      "sizeBytes": 4756,
+      "sha256": "1a56aa4c4281829602246c2e40fbd17931fda1b8a3b3ccda67dc93ed7562a6f6"
+    },
+    {
+      "file": "research/evidence/phase-4c.0a/PHASE_REPORT.md",
+      "sizeBytes": 13725,
+      "sha256": "72a5d133e09f51fc920805d264e085ce61add133218296783c51bfe47f80bf15"
+    },
+    {
+      "file": "research/evidence/phase-4c.0a/resource-accounting-reconciliation.json",
+      "sizeBytes": 1246,
+      "sha256": "3ae5d438d84f71a98653125cbe53f35c1093e4ee384a6f118c58c40572bc291d"
+    },
+    {
+      "file": "research/evidence/phase-4c.0a/smoke-configuration-reconciliation.json",
+      "sizeBytes": 2855,
+      "sha256": "74d47912cef62c1be16392901bcce70755b23241d084cf28d5fa73310ed509cf"
+    },
+    {
+      "file": "research/evidence/phase-4c.0a/stage0-reconciliation.json",
+      "sizeBytes": 7176,
+      "sha256": "19f1c410fcaed31793a95363ea59296f779b43b9cffbbd872a5d0bca29caa2d1"
+    }
+  ]
+}

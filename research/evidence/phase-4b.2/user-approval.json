@@ -1,0 +1,22 @@
+{
+  "phase": "4B.2",
+  "approvalStatus": "granted",
+  "scope": "option-p",
+  "components": [
+    "orig_validation.tar.gz",
+    "orig_testing.tar.gz",
+    "sd2-sp_validation.tar.gz",
+    "sd2-sp_testing.tar.gz"
+  ],
+  "expectedBytes": 5879502782,
+  "maxDownloadBytes": 6442450944,
+  "prohibitedComponents": [
+    "orig_training.tar.gz",
+    "sd2-sp_training.tar.gz",
+    "genimage"
+  ],
+  "destination": "data/research/tgif/",
+  "purpose": "Controlled Option-P acquisition, pairability verification, and split freeze for Pilot A",
+  "trainingAuthorized": false,
+  "modelDownloadAuthorized": false
+}

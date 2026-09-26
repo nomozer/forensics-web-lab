@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "1.0.0",
+  "phase": "4B.2",
+  "auditDate": "2026-09-21",
+  "datasetId": "tgif",
+  "option": "option-p",
+  "safeExtractionEngine": "tarfile-safe_extract_tar",
+  "securityGuardsEnforced": [
+    "Tar Slip path traversal rejection (..)",
+    "Absolute path rejection (/)",
+    "Escaping symlink rejection",
+    "Destination directory containment"
+  ],
+  "components": {
+    "orig_validation": {
+      "directory": "data/research/tgif/orig/validation",
+      "fileCount": 1023,
+      "totalBytes": 861683700,
+      "status": "extracted-verified"
+    },
+    "orig_testing": {
+      "directory": "data/research/tgif/orig/testing",
+      "fileCount": 1029,
+      "totalBytes": 808321851,
+      "status": "extracted-verified"
+    },
+    "sd2-sp_validation": {
+      "directory": "data/research/tgif/sd2-sp/validation",
+      "fileCount": 2046,
+      "totalBytes": 2176267677,
+      "status": "extracted-verified"
+    },
+    "sd2-sp_testing": {
+      "directory": "data/research/tgif/sd2-sp/testing",
+      "fileCount": 2058,
+      "totalBytes": 2043822807,
+      "status": "extracted-verified"
+    }
+  },
+  "totalExtractedFiles": 6156,
+  "totalExtractedBytes": 5890096035,
+  "status": "safe-extraction-complete"
+}

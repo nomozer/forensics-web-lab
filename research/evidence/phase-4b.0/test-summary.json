@@ -1,0 +1,34 @@
+{
+  "phase": "4B.0",
+  "status": "PASS",
+  "timestamp": "2026-09-21T15:52:00Z",
+  "testSuites": {
+    "vitest": {
+      "packages": ["shared", "provenance", "report", "forensics", "inference", "web"],
+      "total": 57,
+      "passed": 57,
+      "failed": 0
+    },
+    "nodeTest": {
+      "suite": "scripts/__tests__/continuity-check.test.mjs",
+      "total": 13,
+      "passed": 13,
+      "failed": 0
+    },
+    "pytest": {
+      "suite": "ml/tests",
+      "files": [
+        "test_acquisition_safety.py",
+        "test_contamination_guard.py",
+        "test_model_pipeline.py",
+        "test_pilot_protocol.py"
+      ],
+      "total": 46,
+      "passed": 46,
+      "failed": 0
+    }
+  },
+  "totalTests": 116,
+  "totalPassed": 116,
+  "totalFailed": 0
+}

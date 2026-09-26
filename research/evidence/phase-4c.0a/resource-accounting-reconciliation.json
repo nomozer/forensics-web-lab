@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0.0",
+  "timestamp_utc": "2026-09-23T18:08:44.493219+00:00",
+  "phase": "4C.0a",
+  "resource_calibration": {
+    "python_tracemalloc_peak_bytes": 5543004,
+    "python_tracemalloc_peak_mb": 5.29,
+    "python_tracemalloc_measurement_status": "measured",
+    "metric_scope": "Python runtime object allocations tracked by tracemalloc module",
+    "disclaimer_non_representation": [
+      "Does NOT represent OS process Resident Set Size (RSS)",
+      "Does NOT represent PyTorch native C++ / CPU tensor allocations outside Python heap",
+      "Does NOT represent loaded DLL / shared library memory footprints",
+      "Does NOT represent OS working set"
+    ],
+    "total_process_peak_rss": "not measured",
+    "torch_native_cpu_memory": "not measured",
+    "full_run_duration": "projected, not measured (forecast 58.1 min for 15 runs)",
+    "action_for_phase_4c1": "In Phase 4C.1, integrate psutil.Process().memory_info().rss measurement to report true operating-system resident set size alongside python_tracemalloc_peak.",
+    "retracted_phrase": "memory consumption exceptionally small",
+    "calibrated_phrase": "measured Python heap memory peak was 5.29 MB; full process RSS was not measured"
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "phase": "Phase 4A.0",
+  "commitAudited": "e36cdb6",
+  "timestampUtc": "2026-09-21T08:15:00Z",
+  "typescriptTests": {
+    "command": "pnpm test",
+    "exitCode": 0,
+    "packagesCount": 6,
+    "packages": [
+      { "name": "@forensics/shared", "tests": 28, "passed": 28, "failed": 0 },
+      { "name": "@forensics/provenance", "tests": 3, "passed": 3, "failed": 0 },
+      { "name": "@forensics/report", "tests": 4, "passed": 4, "failed": 0 },
+      { "name": "@forensics/forensics", "tests": 5, "passed": 5, "failed": 0 },
+      { "name": "@forensics/inference", "tests": 8, "passed": 8, "failed": 0 },
+      { "name": "web", "tests": 3, "passed": 3, "failed": 0 }
+    ],
+    "totalTests": 51,
+    "totalPassed": 51,
+    "totalFailed": 0
+  },
+  "pythonTests": {
+    "command": "ml/.venv/Scripts/python -m pytest ml/tests -v",
+    "exitCode": 0,
+    "runner": "pytest-9.1.1",
+    "totalTests": 11,
+    "totalPassed": 11,
+    "totalFailed": 0,
+    "tests": [
+      { "nodeId": "ml/tests/test_contamination_guard.py::test_official_dataset_registry_validation", "status": "PASSED" },
+      { "nodeId": "ml/tests/test_contamination_guard.py::test_reject_research_dataset_in_product_track", "status": "PASSED" },
+      { "nodeId": "ml/tests/test_contamination_guard.py::test_reject_blocked_dataset", "status": "PASSED" },
+      { "nodeId": "ml/tests/test_contamination_guard.py::test_accept_research_dataset_in_research_track", "status": "PASSED" },
+      { "nodeId": "ml/tests/test_contamination_guard.py::test_accept_synthetic_smoke_in_product_track", "status": "PASSED" },
+      { "nodeId": "ml/tests/test_contamination_guard.py::test_synthetic_smoke_fixture_generation_and_provenance", "status": "PASSED" },
+      { "nodeId": "ml/tests/test_model_pipeline.py::test_mobilenetv3_forward_shape", "status": "PASSED" },
+      { "nodeId": "ml/tests/test_model_pipeline.py::test_focal_loss_computation", "status": "PASSED" },
+      { "nodeId": "ml/tests/test_model_pipeline.py::test_manifest_csv_roundtrip", "status": "PASSED" },
+      { "nodeId": "ml/tests/test_model_pipeline.py::test_group_split_prevents_leakage", "status": "PASSED" },
+      { "nodeId": "ml/tests/test_model_pipeline.py::test_temperature_scaler_and_ece", "status": "PASSED" }
+    ]
+  },
+  "acquisitionDryRun": {
+    "command": "python -m ml.datasets.acquire --dataset genimage --track research --dry-run",
+    "exitCode": 0,
+    "networkRequestsMade": 0,
+    "bytesDownloaded": 0,
+    "filesCreated": 0
+  }
+}

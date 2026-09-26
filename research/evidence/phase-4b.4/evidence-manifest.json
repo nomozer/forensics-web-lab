@@ -1,0 +1,77 @@
+{
+  "schemaVersion": "1.0.0",
+  "phase": "4B.4",
+  "fileCount": 14,
+  "artifacts": [
+    {
+      "file": "research/evidence/phase-4b.4/archive-proof-levels.json",
+      "sizeBytes": 4058,
+      "sha256": "02e666ca0e99c5b524f81a7f6ec7445ff83c2f27ed94a913ec77162df08b6b4e"
+    },
+    {
+      "file": "research/evidence/phase-4b.4/build-summary.json",
+      "sizeBytes": 881,
+      "sha256": "56e73e5406aa66247a6f2b533215f95ad729153163311a2302a5c4f6c1234c30"
+    },
+    {
+      "file": "research/evidence/phase-4b.4/checksum-history-audit.json",
+      "sizeBytes": 2421,
+      "sha256": "dd39e8488c7be0a47ca99a579f9321cbb4f6cc02ce65bbb1867b2616fb37d70b"
+    },
+    {
+      "file": "research/evidence/phase-4b.4/environment-measured.json",
+      "sizeBytes": 404,
+      "sha256": "fa026de86b7caeab9d8d906aedf663f8578717668fd3f5e95bbc31c32b289068"
+    },
+    {
+      "file": "research/evidence/phase-4b.4/etag-interpretation-correction.json",
+      "sizeBytes": 3387,
+      "sha256": "a6e659b3438308c9100416ff32c282f0e35e1b9d40caaf288cfd1dc7c95b1875"
+    },
+    {
+      "file": "research/evidence/phase-4b.4/evidence-reproduction.json",
+      "sizeBytes": 833,
+      "sha256": "4ae85166e34a244b4e2da72325deabe9fec7aba357d630ed4e822b4f98199304"
+    },
+    {
+      "file": "research/evidence/phase-4b.4/git-state-measured.json",
+      "sizeBytes": 784,
+      "sha256": "0f47b0ca16994d5cc53660c1ce95ad2c47ec4924c3b83d83638278630445ad7d"
+    },
+    {
+      "file": "research/evidence/phase-4b.4/manifest-audit-reproduced.json",
+      "sizeBytes": 1575,
+      "sha256": "7c764fe58c4d93dda7e9a55fd7de9fdb7949cf05a40df3289b71ef2ef914d09a"
+    },
+    {
+      "file": "research/evidence/phase-4b.4/PHASE_REPORT.md",
+      "sizeBytes": 11090,
+      "sha256": "4d6b46a7239f287fe9203890de64424560ba3187c5f28d77f2f192d643258789"
+    },
+    {
+      "file": "research/evidence/phase-4b.4/preregistration-reseal.json",
+      "sizeBytes": 2181,
+      "sha256": "aa45f11eead3286884a08fed3e51ccfe7e7c91a52f9dae32815068d7542183f8"
+    },
+    {
+      "file": "research/evidence/phase-4b.4/resolution-variant-map.json",
+      "sizeBytes": 4325,
+      "sha256": "6d7de82c569edb992fe20af42bf6b00e21006e3f96799cc63b9122eb211e374d"
+    },
+    {
+      "file": "research/evidence/phase-4b.4/sampler-determinism-audit.json",
+      "sizeBytes": 1290,
+      "sha256": "fcc48c20a3ea504ea7e409cffb9ec321dcb816b38e95e6b4c3e23f7057e28f97"
+    },
+    {
+      "file": "research/evidence/phase-4b.4/shortcut-control-audit.json",
+      "sizeBytes": 2721,
+      "sha256": "99c490c99202280b1fbe18b39a046c8193436973613aa374983fc84f4fe334be"
+    },
+    {
+      "file": "research/evidence/phase-4b.4/test-summary.json",
+      "sizeBytes": 2087,
+      "sha256": "406c70bf740610788f3ae48abbbba81039654d0cef5b0182b47d0da9a94fc14d"
+    }
+  ]
+}

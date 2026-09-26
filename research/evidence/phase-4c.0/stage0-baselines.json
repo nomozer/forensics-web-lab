@@ -1,0 +1,206 @@
+{
+  "schema_version": "1.0.0",
+  "scientific_status": "development-only exploratory baseline",
+  "timestamp_utc": "2026-09-23T17:15:00Z",
+  "phase": "4C.0",
+  "evaluation_partition": "inner_validation",
+  "num_validation_sources": 91,
+  "source_level_aggregation_rule": "mean_probability_per_source_id",
+  "locked_test_access_count": 0,
+  "feature_leakage_guard": {
+    "excluded_fields": [
+      "label",
+      "partition",
+      "source_id",
+      "instance_id",
+      "path",
+      "filename",
+      "generator",
+      "edit_type",
+      "variant_idx"
+    ],
+    "metadata_features_used": [
+      "width",
+      "height",
+      "aspect_ratio",
+      "megapixels",
+      "file_size_bytes",
+      "has_exif"
+    ],
+    "dsp_features_used": [
+      "fft_low_band_energy_ratio",
+      "fft_mid_band_energy_ratio",
+      "fft_high_band_energy_ratio",
+      "log1p_laplacian_noise_variance",
+      "ela_recompression_mean_diff_q90"
+    ],
+    "preprocessing_fit": "StandardScaler fit on development_train only, applied without refit to inner_validation"
+  },
+  "results_by_sample_size": {
+    "N_50": {
+      "n_sources": 50,
+      "train_samples": 100,
+      "stratified_dummy": {
+        "macro_f1": 0.5932,
+        "balanced_accuracy": 0.5934,
+        "auroc": 0.562,
+        "brier_score": 0.3643,
+        "ece": 0.4661,
+        "confusion_matrix": [
+          [
+            52,
+            39
+          ],
+          [
+            35,
+            56
+          ]
+        ]
+      },
+      "metadata_only": {
+        "macro_f1": 0.5098,
+        "balanced_accuracy": 0.511,
+        "auroc": 0.5101,
+        "brier_score": 0.2499,
+        "ece": 0.0023,
+        "confusion_matrix": [
+          [
+            51,
+            40
+          ],
+          [
+            49,
+            42
+          ]
+        ]
+      },
+      "dsp_only": {
+        "macro_f1": 0.5653,
+        "balanced_accuracy": 0.5659,
+        "auroc": 0.6022,
+        "brier_score": 0.245,
+        "ece": 0.0277,
+        "confusion_matrix": [
+          [
+            48,
+            43
+          ],
+          [
+            36,
+            55
+          ]
+        ]
+      }
+    },
+    "N_100": {
+      "n_sources": 100,
+      "train_samples": 200,
+      "stratified_dummy": {
+        "macro_f1": 0.5932,
+        "balanced_accuracy": 0.5934,
+        "auroc": 0.562,
+        "brier_score": 0.3643,
+        "ece": 0.4661,
+        "confusion_matrix": [
+          [
+            52,
+            39
+          ],
+          [
+            35,
+            56
+          ]
+        ]
+      },
+      "metadata_only": {
+        "macro_f1": 0.5109,
+        "balanced_accuracy": 0.511,
+        "auroc": 0.5101,
+        "brier_score": 0.2499,
+        "ece": 0.0032,
+        "confusion_matrix": [
+          [
+            45,
+            46
+          ],
+          [
+            43,
+            48
+          ]
+        ]
+      },
+      "dsp_only": {
+        "macro_f1": 0.5653,
+        "balanced_accuracy": 0.5659,
+        "auroc": 0.5997,
+        "brier_score": 0.2445,
+        "ece": 0.0341,
+        "confusion_matrix": [
+          [
+            48,
+            43
+          ],
+          [
+            36,
+            55
+          ]
+        ]
+      }
+    },
+    "N_250": {
+      "n_sources": 250,
+      "train_samples": 500,
+      "stratified_dummy": {
+        "macro_f1": 0.5932,
+        "balanced_accuracy": 0.5934,
+        "auroc": 0.562,
+        "brier_score": 0.3643,
+        "ece": 0.4661,
+        "confusion_matrix": [
+          [
+            52,
+            39
+          ],
+          [
+            35,
+            56
+          ]
+        ]
+      },
+      "metadata_only": {
+        "macro_f1": 0.5053,
+        "balanced_accuracy": 0.5055,
+        "auroc": 0.5104,
+        "brier_score": 0.2499,
+        "ece": 0.0016,
+        "confusion_matrix": [
+          [
+            44,
+            47
+          ],
+          [
+            43,
+            48
+          ]
+        ]
+      },
+      "dsp_only": {
+        "macro_f1": 0.5539,
+        "balanced_accuracy": 0.5549,
+        "auroc": 0.6015,
+        "brier_score": 0.2438,
+        "ece": 0.0354,
+        "confusion_matrix": [
+          [
+            46,
+            45
+          ],
+          [
+            36,
+            55
+          ]
+        ]
+      }
+    }
+  }
+}

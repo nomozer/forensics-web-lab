@@ -1,0 +1,81 @@
+{
+  "schema_version": "1.0.0",
+  "timestamp_utc": "2026-09-23T18:02:55.279479+00:00",
+  "phase": "4C.0a",
+  "reconciliation_type": "smoke_architecture_and_loss_reconciliation",
+  "authoritative_configuration": {
+    "backbone": "mobilenet_v3_small",
+    "backbone_frozen": true,
+    "backbone_parameter_count": 939154,
+    "classification_head_layers": [
+      {
+        "layer": "classifier.0",
+        "type": "Linear",
+        "in_features": 576,
+        "out_features": 256,
+        "weight_shape": [
+          256,
+          576
+        ],
+        "bias_shape": [
+          256
+        ],
+        "parameters": 147712
+      },
+      {
+        "layer": "classifier.1",
+        "type": "Hardswish"
+      },
+      {
+        "layer": "classifier.2",
+        "type": "Dropout",
+        "p": 0.2
+      },
+      {
+        "layer": "classifier.3",
+        "type": "Linear",
+        "in_features": 256,
+        "out_features": 1,
+        "weight_shape": [
+          1,
+          256
+        ],
+        "bias_shape": [
+          1
+        ],
+        "parameters": 257
+      }
+    ],
+    "trainable_parameter_count": 147969,
+    "total_parameter_count": 1087123,
+    "output_dimension": 1,
+    "loss_function": "BCEWithLogitsLoss",
+    "optimizer": "AdamW",
+    "learning_rate": 0.001,
+    "weight_decay": 0.0001,
+    "max_epochs": 25,
+    "early_stopping_patience": 5,
+    "best_checkpoint_metric": "inner_val_macro_f1",
+    "best_epoch_selected": 2
+  },
+  "conflicting_options_analysis": {
+    "option_a": {
+      "description": "Linear(576, 256) -> Hardswish -> Dropout(0.2) -> Linear(256, 1) + BCEWithLogitsLoss",
+      "verdict": "PROVEN_AUTHORITATIVE",
+      "evidence_sources": [
+        "models/research/phase-4c.0/smoke_mobilenetv3_small_seed42.pt (state_dict tensors)",
+        "scripts/run_smoke_training.py (lines 134-165, lines 243-250)",
+        "ml/training/mobilenetv3_forensics.py (lines 38-45)",
+        "ml/configs/pilot_a_binary_preregistered.yaml (lines 73-77, hash 727fc316...)",
+        "research/evidence/phase-4c.0/smoke-run-binding.json (lines 14-17)",
+        "research/evidence/phase-4c.0/checkpoint-receipt.json (line 11)",
+        "research/evidence/phase-4c.0/PHASE_REPORT.md (line 99-100)"
+      ]
+    },
+    "option_b": {
+      "description": "Linear(1024, 2) + Focal Loss",
+      "verdict": "DOCUMENTATION_ERROR_CONVERSATIONAL_STALE_SUMMARY",
+      "root_cause": "In the closing conversational summary of the previous assistant turn, text referred to 'Linear(1024, 2) + Focal Loss' due to cognitive drift from the 3-class prototype design in ml/training/mobilenetv3_forensics.py (which uses num_classes=3 or earlier 2-class prototypes). Option B never existed in the executed code, binding, checkpoint, or configuration of Phase 4C.0."
+    }
+  }
+}

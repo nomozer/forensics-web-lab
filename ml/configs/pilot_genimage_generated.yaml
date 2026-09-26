@@ -1,0 +1,87 @@
+# Pilot B Configuration: Authentic vs Fully-Generated Binary Classification
+schema_version: "1.0.0"
+pilot_id: "pilot_genimage_generated"
+pilot_branch: "Pilot B"
+title: "Pilot B: Authentic vs Fully-Generated Binary Classification"
+scientific_status: "exploratory_pilot"
+license_track: "research-only"
+
+task: "classification"
+accepted_labels:
+  - "authentic"
+  - "fully_generated"
+
+dataset_components:
+  - component_id: "genimage_biggan_val_real"
+    dataset_id: "genimage"
+    remote_folder: "BigGAN/val/nature"
+    assigned_label: "authentic"
+    semantic_role: "camera_authentic_imagenet"
+    image_source: "ImageNet (ILSVRC2012) validation"
+    source_license: "Non-commercial research use"
+    verified_bytes: null
+    expected_image_count: 1000
+
+  - component_id: "genimage_biggan_val_fake"
+    dataset_id: "genimage"
+    remote_folder: "BigGAN/val/ai"
+    assigned_label: "fully_generated"
+    semantic_role: "unconditional_gan_synthesis"
+    generator: "BigGAN"
+    source_license: "CC BY-NC-SA 4.0"
+    verified_bytes: null
+    expected_image_count: 1000
+
+archive:
+  archive_name: "imagenet_ai_0419_biggan.zip (multi-part .z01-.z07 + .zip)"
+  official_archive_bytes: 23516377048
+  download_source: "https://drive.google.com/drive/folders/1ajlTuN34gLyJWxRQ6NyUcnkfrS8QEVKt"
+  partial_download_supported: false
+
+manifest:
+  manifest_path: "data/research/genimage/manifest_pilot_b.csv"
+  schema_version: "1.0.0"
+
+split:
+  group_key: "source_id"
+  split_strategy: "stratified_holdout"
+  train_ratio: 0.70
+  val_ratio: 0.15
+  test_ratio: 0.15
+  seed: 42
+  enforce_zero_leakage: true
+
+preprocessing:
+  target_size: [224, 224]
+  color_space: "RGB"
+  aspect_ratio_handling: "letterbox_neutral_pad"
+  normalization: "imagenet_standard"
+
+evaluation:
+  primary_classification_metrics:
+    - "macro_f1"
+    - "balanced_accuracy"
+  secondary_classification_metrics:
+    - "auroc"
+    - "precision_per_class"
+    - "recall_per_class"
+    - "f1_per_class"
+    - "confusion_matrix"
+  calibration_metrics:
+    - "expected_calibration_error"
+    - "brier_score"
+    - "negative_log_likelihood"
+  generalization_metrics:
+    - "cross_generator_f1_drop"
+
+shortcut_checks:
+  - "source_id_group_isolation"
+  - "sha256_exact_dedup"
+  - "phash_near_dedup"
+  - "class_resolution_profile_audit"
+  - "jpeg_quality_distribution_audit"
+  - "metadata_only_baseline_guard"
+
+rules:
+  fr_component_policy: "not_applicable"
+  notes: "Authentic images originate from ImageNet; fully_generated images originate from BigGAN class-conditional synthesis without authentic parent photo."

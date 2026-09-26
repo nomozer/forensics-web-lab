@@ -1,0 +1,32 @@
+{
+  "phase": "CI.3",
+  "startingHead": "ae89829b51c4966cbeb4fcb76fe3881405c86fff",
+  "workflowFile": ".github/workflows/ci.yml",
+  "job": "python-ml",
+  "oldStep": {
+    "name": "Python Unit Tests",
+    "run": "cd ml\npytest tests/ -v",
+    "workingDirectory": "ml/"
+  },
+  "newStep": {
+    "name": "Verify Python import root",
+    "run": "python -c \"import os, sys; print('cwd=', os.getcwd()); print('python=', sys.executable); import ml; print('ml_import=ok')\"",
+    "workingDirectory": "."
+  },
+  "newTestStep": {
+    "name": "Python Unit Tests",
+    "run": "python -m pytest ml/tests -v",
+    "workingDirectory": "."
+  },
+  "dependencyInstallStepUnchanged": {
+    "name": "Install Python dependencies",
+    "run": "cd ml\npython -m pip install --upgrade pip\npip install -r requirements.txt",
+    "workingDirectory": "ml/"
+  },
+  "productionCodeChanged": false,
+  "pythonSourceChanged": false,
+  "dependenciesChanged": false,
+  "trainingRuns": 0,
+  "lockedTestAccesses": 0,
+  "datasetModelDownloadBytes": 0
+}

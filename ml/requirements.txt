@@ -1,0 +1,11 @@
+torch>=2.2.0
+torchvision>=0.17.0
+onnx>=1.15.0
+onnxruntime>=1.17.0
+numpy>=1.26.0
+pyyaml>=6.0
+pillow>=10.2.0
+scipy>=1.12.0
+scikit-learn>=1.4.0
+pytest>=8.0.0
+ruff>=0.3.0

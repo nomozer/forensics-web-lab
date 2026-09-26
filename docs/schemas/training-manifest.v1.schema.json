@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://forensics-web-lab.local/schemas/training-manifest.v1.schema.json",
+  "title": "TrainingManifest",
+  "description": "Schema for source-isolated, pair-aware training and evaluation manifests in Forensics Web Lab",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "manifestType",
+    "datasetId",
+    "generatedAt",
+    "totalSources",
+    "totalSamples",
+    "partitionsSummary",
+    "records"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "enum": ["1.0.0"]
+    },
+    "manifestType": {
+      "type": "string",
+      "enum": ["instance_paired", "variant_paired", "binary_sample"]
+    },
+    "datasetId": {
+      "type": "string",
+      "enum": ["tgif", "synthetic-smoke"]
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "totalSources": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "totalSamples": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "partitionsSummary": {
+      "type": "object",
+      "required": ["development_train", "inner_validation", "locked_test"],
+      "properties": {
+        "development_train": { "type": "integer", "minimum": 0 },
+        "inner_validation": { "type": "integer", "minimum": 0 },
+        "locked_test": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "csvHeaderColumns": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "source_id",
+          "instance_id",
+          "category",
+          "partition",
+          "authentic_path",
+          "authentic_sha256",
+          "ai_edited_path",
+          "ai_edited_sha256"
+        ],
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "pattern": "^[0-9]{12}$",
+            "description": "Unique parent image identifier (12-digit zero-padded COCO ID)"
+          },
+          "instance_id": {
+            "type": "string",
+            "description": "Category task editing instance identifier"
+          },
+          "category": {
+            "type": "string"
+          },
+          "partition": {
+            "type": "string",
+            "enum": ["development_train", "inner_validation", "locked_test"]
+          },
+          "upstream_split": {
+            "type": "string",
+            "enum": ["training", "validation", "testing"]
+          },
+          "lc_n50": { "type": "boolean" },
+          "lc_n100": { "type": "boolean" },
+          "lc_n250": { "type": "boolean" },
+          "authentic_path": { "type": "string" },
+          "authentic_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "authentic_resolution": {
+            "type": "string",
+            "enum": ["native", "512", "1024"]
+          },
+          "ai_edited_path": { "type": "string" },
+          "ai_edited_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "edit_method": {
+            "type": "string",
+            "enum": ["bbox", "segm", "unknown"]
+          },
+          "variant_idx": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 5
+          },
+          "mask_path": { "type": "string" },
+          "edited_variants_count": { "type": "integer", "minimum": 1 },
+          "masks_count": { "type": "integer", "minimum": 0 }
+        }
+      }
+    }
+  }
+}

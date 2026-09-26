@@ -1,0 +1,264 @@
+{
+  "schemaVersion": "1.0.0",
+  "datasets": [
+    {
+      "id": "genimage",
+      "name": "GenImage Dataset",
+      "version": "1.0.0",
+      "track": "research-only",
+      "purpose": "scientific-benchmark",
+      "officialSource": "https://github.com/GenImage-Dataset/GenImage",
+      "downloadSource": "https://drive.google.com/drive/folders/1jGt10bwTbhEZuGXLyvrCuxOI0cBqQ1FS",
+      "codeLicense": "Apache-2.0",
+      "datasetLicense": "CC BY-NC-SA 4.0 with additional dataset terms",
+      "additionalTerms": [
+        "Non-commercial academic and research purposes only",
+        "Derivative works cannot be used for commercial purposes",
+        "Attribution and share-alike required"
+      ],
+      "commercialUse": "prohibited",
+      "redistribution": "prohibited",
+      "derivativeWeights": "unclear",
+      "productionPromotion": "prohibited-by-project-policy",
+      "ownership": "third-party",
+      "licenseStatus": "verified",
+      "acquisitionEnabled": false,
+      "approvalStatus": "pending-user-approval",
+      "sourceTerms": {
+        "datasetDerivativeWorks": "prohibited_for_commercial_use"
+      },
+      "legalInterpretation": {
+        "trainedWeightsStatus": "unclear"
+      },
+      "projectPolicy": {
+        "productionUse": "prohibited",
+        "researchUse": "allowed_subject_to_terms"
+      },
+      "availability": "available",
+      "expectedDownloadBytes": null,
+      "checksumAvailable": false,
+      "licenseEvidenceUrls": [
+        "https://github.com/GenImage-Dataset/GenImage/blob/main/License"
+      ],
+      "reviewedAt": "2026-09-21T08:00:00Z",
+      "status": "verified",
+      "notes": "GenImage cấm sử dụng thương mại dataset và derivative works. Việc checkpoint có được xem là derivative work hay không chưa được dự án xác lập bằng ý kiến pháp lý. Chính sách bảo thủ của dự án là giữ toàn bộ checkpoint học từ GenImage trong research track."
+    },
+    {
+      "id": "realhd",
+      "name": "RealHD Dataset",
+      "version": "pending",
+      "track": "blocked",
+      "purpose": "scientific-benchmark",
+      "officialSource": "https://real-hd.github.io",
+      "downloadSource": "https://github.com/Hanzhe-yu/RealHD",
+      "codeLicense": "unverified",
+      "datasetLicense": "unverified",
+      "additionalTerms": [],
+      "commercialUse": "unclear",
+      "redistribution": "unclear",
+      "derivativeWeights": "unclear",
+      "productionPromotion": "prohibited-by-project-policy",
+      "ownership": "third-party",
+      "licenseStatus": "unverified",
+      "acquisitionEnabled": false,
+      "approvalStatus": "not-applicable",
+      "availability": "unavailable",
+      "expectedDownloadBytes": null,
+      "checksumAvailable": false,
+      "licenseEvidenceUrls": [
+        "https://github.com/Hanzhe-yu/RealHD"
+      ],
+      "reviewedAt": "2026-09-21T08:00:00Z",
+      "status": "blocked",
+      "notes": "Official repository displays Coming Soon; official license and archives are unreleased."
+    },
+    {
+      "id": "sagi-d",
+      "name": "SAGI-D Inpainting Dataset",
+      "version": "1.0.0",
+      "track": "blocked",
+      "purpose": "scientific-benchmark",
+      "officialSource": "https://github.com/mever-team/SAGI",
+      "downloadSource": "https://www.kaggle.com/datasets/sagitdataset/sagi-d",
+      "codeLicense": "MIT",
+      "datasetLicense": "Research / Academic Non-Commercial",
+      "additionalTerms": [
+        "Academic research and benchmarking only"
+      ],
+      "commercialUse": "prohibited",
+      "redistribution": "unclear",
+      "derivativeWeights": "unclear",
+      "productionPromotion": "prohibited-by-project-policy",
+      "ownership": "third-party",
+      "licenseStatus": "unverified",
+      "acquisitionEnabled": false,
+      "approvalStatus": "pending-user-approval",
+      "availability": "available",
+      "expectedDownloadBytes": null,
+      "checksumAvailable": false,
+      "licenseEvidenceUrls": [
+        "https://github.com/mever-team/SAGI"
+      ],
+      "reviewedAt": "2026-09-21T08:00:00Z",
+      "status": "proposed",
+      "notes": "Inpainting benchmark dataset with binary masks. Blocked until official image license evidence is verified."
+    },
+    {
+      "id": "raid",
+      "name": "RAID Benchmark",
+      "version": "1.0.0",
+      "track": "blocked",
+      "purpose": "scientific-benchmark",
+      "officialSource": "https://github.com/raid-benchmark/raid",
+      "downloadSource": "https://raid-benchmark.com",
+      "codeLicense": "Apache-2.0",
+      "datasetLicense": "Research Evaluation Only",
+      "additionalTerms": [
+        "Evaluation and robustness benchmarking only",
+        "Repository code license Apache-2.0 applies only to source code, not necessarily dataset image contents"
+      ],
+      "commercialUse": "prohibited",
+      "redistribution": "unclear",
+      "derivativeWeights": "unclear",
+      "productionPromotion": "prohibited-by-project-policy",
+      "ownership": "third-party",
+      "licenseStatus": "unverified",
+      "acquisitionEnabled": false,
+      "approvalStatus": "pending-user-approval",
+      "availability": "available",
+      "expectedDownloadBytes": null,
+      "checksumAvailable": false,
+      "licenseEvidenceUrls": [
+        "https://github.com/raid-benchmark/raid"
+      ],
+      "reviewedAt": "2026-09-21T12:00:00Z",
+      "status": "proposed",
+      "notes": "Robustness evaluation benchmark candidate. Repository code has Apache-2.0 license, but image redistribution and dataset licensing remain unverified until official dataset card documents image rights. Status remains blocked."
+    },
+    {
+      "id": "tgif",
+      "name": "TGIF Inpainting Forgery Dataset",
+      "version": "1.0.0",
+      "track": "research-only",
+      "purpose": "scientific-benchmark",
+      "officialSource": "https://github.com/IDLabMedia/tgif-dataset",
+      "downloadSource": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o",
+      "codeLicense": "unverified",
+      "datasetLicense": "CC BY-SA 4.0",
+      "additionalTerms": [
+        "Dataset distributed under CC BY-SA 4.0",
+        "Original authentic images from MS-COCO under CC BY 4.0",
+        "Manipulations generated via text-guided inpainting (SD2, SDXL, Adobe Firefly)",
+        "Nextcloud public share supports downloading individual subdirectories independently"
+      ],
+      "commercialUse": "unclear",
+      "redistribution": "allowed",
+      "derivativeWeights": "unclear",
+      "productionPromotion": "prohibited-by-project-policy",
+      "ownership": "third-party",
+      "licenseStatus": "verified",
+      "acquisitionEnabled": false,
+      "approvalStatus": "pending-user-approval",
+      "sourceTerms": {
+        "datasetLicense": "CC BY-SA 4.0",
+        "originalImages": "CC BY 4.0 (MS-COCO)"
+      },
+      "legalInterpretation": {
+        "trainedWeightsStatus": "unclear"
+      },
+      "projectPolicy": {
+        "productionUse": "prohibited",
+        "researchUse": "allowed_subject_to_terms"
+      },
+      "availability": "available",
+      "expectedDownloadBytes": 70224285880,
+      "checksumAvailable": false,
+      "licenseEvidenceUrls": [
+        "https://github.com/IDLabMedia/tgif-dataset/blob/main/README.md",
+        "https://creativecommons.org/licenses/by-sa/4.0/"
+      ],
+      "reviewedAt": "2026-09-21T12:00:00Z",
+      "status": "verified",
+      "notes": "Text-guided inpainting dataset with authentic pairs and ground-truth segmentation/bounding-box masks (65.4 GB total across 6 subfolders: masks 40.4 MB, orig 6.8 GB, ps-sp 16.8 GB, sd2-fr 7.1 GB, sd2-sp 17.3 GB, sdxl-fr 17.3 GB). Independent subfolder download is supported via Nextcloud. Checkpoints subject to Share-Alike ambiguity and prohibited from production by project policy."
+    },
+    {
+      "id": "tgif2",
+      "name": "TGIF2 Extended Inpainting Forgery Dataset",
+      "version": "2.0.0",
+      "track": "research-only",
+      "purpose": "scientific-benchmark",
+      "officialSource": "https://github.com/IDLabMedia/tgif-dataset",
+      "downloadSource": "https://cloud.ilabt.imec.be/index.php/s/KG48tLZZzifC5WE",
+      "codeLicense": "unverified",
+      "datasetLicense": "CC BY-SA 4.0",
+      "additionalTerms": [
+        "Extended dataset distributed under CC BY-SA 4.0",
+        "Original images from MS-COCO with 16px crop for FLUX divisibility",
+        "Includes FLUX.1 (schnell, dev, filldev) inpaintings and random non-semantic masks",
+        "FLUX.1 dev weights license has non-commercial restrictions"
+      ],
+      "commercialUse": "unclear",
+      "redistribution": "allowed",
+      "derivativeWeights": "unclear",
+      "productionPromotion": "prohibited-by-project-policy",
+      "ownership": "third-party",
+      "licenseStatus": "verified",
+      "acquisitionEnabled": false,
+      "approvalStatus": "pending-user-approval",
+      "sourceTerms": {
+        "datasetLicense": "CC BY-SA 4.0",
+        "originalImages": "CC BY 4.0 (MS-COCO)"
+      },
+      "legalInterpretation": {
+        "trainedWeightsStatus": "unclear"
+      },
+      "projectPolicy": {
+        "productionUse": "prohibited",
+        "researchUse": "allowed_subject_to_terms"
+      },
+      "availability": "available",
+      "expectedDownloadBytes": 118111600640,
+      "checksumAvailable": false,
+      "licenseEvidenceUrls": [
+        "https://github.com/IDLabMedia/tgif-dataset/blob/main/README.md",
+        "https://creativecommons.org/licenses/by-sa/4.0/"
+      ],
+      "reviewedAt": "2026-09-21T12:00:00Z",
+      "status": "verified",
+      "notes": "TGIF extension adding 196k images from FLUX.1 models (110 GB in FLUX share, 73 GB in random mask share). Independent subfolder download supported via Nextcloud. Checkpoints strictly confined to research track."
+    },
+    {
+      "id": "synthetic-smoke",
+      "name": "Synthetic Geometric Smoke Fixture",
+      "version": "1.0.0",
+      "track": "fixture-only",
+      "purpose": "fixture",
+      "officialSource": "internal://forensics-web-lab/ml/tests/fixtures/generated-smoke",
+      "downloadSource": "internal-generation",
+      "codeLicense": "Project-Internal",
+      "datasetLicense": "Project-Internal",
+      "additionalTerms": [
+        "Purely synthetic geometric/gradient/noise patterns generated by repository code",
+        "No external copyrighted image material"
+      ],
+      "commercialUse": "internal-testing-only",
+      "redistribution": "allowed",
+      "derivativeWeights": "unclear",
+      "productionPromotion": "prohibited-by-project-policy",
+      "ownership": "project-generated",
+      "licenseStatus": "pending-project-license-decision",
+      "acquisitionEnabled": true,
+      "approvalStatus": "not-applicable",
+      "availability": "available",
+      "expectedDownloadBytes": 0,
+      "checksumAvailable": true,
+      "licenseEvidenceUrls": [
+        "docs/adr/0006-research-product-data-isolation.md"
+      ],
+      "reviewedAt": "2026-09-21T08:00:00Z",
+      "status": "verified",
+      "notes": "Dữ liệu hình học, gradient, noise sinh cục bộ bằng code. Dùng để kiểm tra manifest, loader, split, forward/backward kỹ thuật và export contract. Không tham gia huấn luyện checkpoint sản phẩm, không đánh giá accuracy hay khả năng nhận diện AI, không thuộc product model lineage."
+    }
+  ]
+}

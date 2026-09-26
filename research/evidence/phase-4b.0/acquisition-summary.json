@@ -1,0 +1,35 @@
+{
+  "phase": "4B.0",
+  "planId": "pilot-a-tgif",
+  "approvedPlanSha256": "7da36f450fe424970e4676fc0c35047ea756385843dd2fb1c656f1fa45deac4e",
+  "componentId": "tgif-masks",
+  "status": "completed_live_smoke",
+  "verdict": "PASS",
+  "archiveSha256": "62c89a65441a35e6bd10d49abec8f2cad9ab028e91edf3d72b344ec29bfa0fe9",
+  "bytesDownloaded": 42327429,
+  "archiveFilesBytes": 42326523,
+  "extractedBytes": 141559934,
+  "totalFiles": 31238,
+  "validFiles": 31238,
+  "invalidFiles": 0,
+  "uniqueSourceIds": 2242,
+  "splits": {
+    "train": 24400,
+    "val": 3410,
+    "test": 3428
+  },
+  "maskTypes": {
+    "bbox": 12495,
+    "segm": 12495,
+    "generic_mask": 6248
+  },
+  "lockedComponents": [
+    "tgif-orig",
+    "tgif-sd2-sp",
+    "genimage"
+  ],
+  "modelBytes": 0,
+  "trainingRuns": 0,
+  "receiptLocation": "data/research/tgif/acquisition-receipt.json",
+  "manifestLocation": "data/research/tgif/manifests/masks-manifest.jsonl"
+}

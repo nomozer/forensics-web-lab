@@ -1,0 +1,74 @@
+{
+  "schema_version": "1.0.0",
+  "audit_timestamp_utc": "2026-09-23T17:00:00Z",
+  "partition": "development_train",
+  "n_sources": 50,
+  "samples_per_epoch": 100,
+  "class_ratio": "1:1 (50 authentic : 50 ai_edited)",
+  "locked_test_present_in_dataloader": false,
+  "pythonhashseed_independent": true,
+  "stable_offset_algorithm": "sha256_64bit_integer",
+  "first_three_epochs_sample_order_sha256": [
+    "98ea23c03ff1389071233041d9aafcfc27271a63c8721e140c7c7f9514c1cc26",
+    "c919443ff564862115c31d8006709882f8b1fad0047dc13ee4814022b5aa3ddf",
+    "1dc486fe65f3844c76c860bc1cd716240b2686fc49073c00ed14ac4fb9e47834"
+  ],
+  "epochs_audited": [
+    {
+      "epoch": 0,
+      "total_samples": 100,
+      "authentic_count": 50,
+      "edited_count": 50,
+      "bbox_count": 19,
+      "segm_count": 31,
+      "sample_order_sha256": "98ea23c03ff1389071233041d9aafcfc27271a63c8721e140c7c7f9514c1cc26"
+    },
+    {
+      "epoch": 1,
+      "total_samples": 100,
+      "authentic_count": 50,
+      "edited_count": 50,
+      "bbox_count": 31,
+      "segm_count": 19,
+      "sample_order_sha256": "c919443ff564862115c31d8006709882f8b1fad0047dc13ee4814022b5aa3ddf"
+    },
+    {
+      "epoch": 2,
+      "total_samples": 100,
+      "authentic_count": 50,
+      "edited_count": 50,
+      "bbox_count": 19,
+      "segm_count": 31,
+      "sample_order_sha256": "1dc486fe65f3844c76c860bc1cd716240b2686fc49073c00ed14ac4fb9e47834"
+    },
+    {
+      "epoch": 3,
+      "total_samples": 100,
+      "authentic_count": 50,
+      "edited_count": 50,
+      "bbox_count": 31,
+      "segm_count": 19,
+      "sample_order_sha256": "a3e5e1fdea4affa04603f9a0fbc058bf095b518e6e1c66ee701312141beea72d"
+    },
+    {
+      "epoch": 4,
+      "total_samples": 100,
+      "authentic_count": 50,
+      "edited_count": 50,
+      "bbox_count": 19,
+      "segm_count": 31,
+      "sample_order_sha256": "909eb096a7a5dd415f8028b26530216f87d4fe7a1f7c38dd5712a72ee717d37a"
+    },
+    {
+      "epoch": 5,
+      "total_samples": 100,
+      "authentic_count": 50,
+      "edited_count": 50,
+      "bbox_count": 31,
+      "segm_count": 19,
+      "sample_order_sha256": "d8c1fd7e636cef4068a7e9e509cbd82b8868494e9074515c92f63df305facd48"
+    }
+  ],
+  "cross_process_reproducibility_status": "PASS",
+  "source_weight_equality": "PASS (every source_id contributes exactly 1 authentic and 1 edited sample per epoch)"
+}

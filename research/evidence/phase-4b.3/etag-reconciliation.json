@@ -1,0 +1,76 @@
+{
+  "schemaVersion": "1.0.0",
+  "timestampUtc": "2026-09-22T06:58:03Z",
+  "auditScope": "Option P Archives ETag and Content Integrity Reconciliation",
+  "totalArchives": 4,
+  "totalArchiveBytes": 5879502782,
+  "archives": [
+    {
+      "archive": "orig_validation.tar.gz",
+      "component": "tgif-orig",
+      "split": "validation",
+      "inventory_etag_phase_4b1": "\"d95a1202a7445d79872735f60cbeaa95\"",
+      "acquisition_etag_phase_4b2": "\"69420b-62589574d6c41\"",
+      "etag_match": false,
+      "expected_bytes": 859947874,
+      "actual_bytes": 859947874,
+      "bytes_match": true,
+      "local_sha256": "c9f02a343a5ac759f1e7aae6b62b4d1cd3c2e8f01d6ffe182fd5815674945ade",
+      "remote_metadata_changed": true,
+      "content_integrity_status": "verified-by-local-sha256-and-byte-count",
+      "interpretation": "WebDAV PROPFIND returns Nextcloud MD5-based ETag, whereas direct HTTP GET download emits Apache inode/mtime hex ETag. Content integrity verified by exact byte count and SHA-256."
+    },
+    {
+      "archive": "orig_testing.tar.gz",
+      "component": "tgif-orig",
+      "split": "testing",
+      "inventory_etag_phase_4b1": "\"fc2934fed45674aa89479640d0030beb\"",
+      "acquisition_etag_phase_4b2": "\"69420b-62589573eedc1\"",
+      "etag_match": false,
+      "expected_bytes": 806962390,
+      "actual_bytes": 806962390,
+      "bytes_match": true,
+      "local_sha256": "8020c2f2080b349f68b9c22d4594c0df0d0722255bba981bdf18b47c291df52c",
+      "remote_metadata_changed": true,
+      "content_integrity_status": "verified-by-local-sha256-and-byte-count",
+      "interpretation": "WebDAV PROPFIND returns Nextcloud MD5-based ETag, whereas direct HTTP GET download emits Apache inode/mtime hex ETag. Content integrity verified by exact byte count and SHA-256."
+    },
+    {
+      "archive": "sd2-sp_validation.tar.gz",
+      "component": "tgif-sd2-sp",
+      "split": "validation",
+      "inventory_etag_phase_4b1": "\"44b9e62f224dd312f59d9a5bd79d1171\"",
+      "acquisition_etag_phase_4b2": "\"69420b-62589574d6089\"",
+      "etag_match": false,
+      "expected_bytes": 2172017290,
+      "actual_bytes": 2172017290,
+      "bytes_match": true,
+      "local_sha256": "bd9eb4399f60166a09209d8a66a5df2b5eaecfbcc1a9d52f694e6812e24c5ad7",
+      "remote_metadata_changed": true,
+      "content_integrity_status": "verified-by-local-sha256-and-byte-count",
+      "interpretation": "WebDAV PROPFIND returns Nextcloud MD5-based ETag, whereas direct HTTP GET download emits Apache inode/mtime hex ETag. Content integrity verified by exact byte count and SHA-256."
+    },
+    {
+      "archive": "sd2-sp_testing.tar.gz",
+      "component": "tgif-sd2-sp",
+      "split": "testing",
+      "inventory_etag_phase_4b1": "\"2aa172ad2b1200973b7593259b37cc07\"",
+      "acquisition_etag_phase_4b2": "\"69420b-62589573ed651\"",
+      "etag_match": false,
+      "expected_bytes": 2040575228,
+      "actual_bytes": 2040575228,
+      "bytes_match": true,
+      "local_sha256": "c346af3cb85b00ac2b944d2e47e71d0e531652142ea844b63c337f95671b82aa",
+      "remote_metadata_changed": true,
+      "content_integrity_status": "verified-by-local-sha256-and-byte-count",
+      "interpretation": "WebDAV PROPFIND returns Nextcloud MD5-based ETag, whereas direct HTTP GET download emits Apache inode/mtime hex ETag. Content integrity verified by exact byte count and SHA-256."
+    }
+  ],
+  "reconciliationSummary": {
+    "remote_metadata_changed": true,
+    "content_integrity": "verified-by-local-sha256-and-byte-count",
+    "etag_match": false,
+    "etagIsCryptographicHash": false,
+    "conclusion": "ETags cannot serve as immutable content hash across heterogeneous server endpoints. Local SHA-256 and byte count provide 100% mathematical proof of archive integrity."
+  }
+}

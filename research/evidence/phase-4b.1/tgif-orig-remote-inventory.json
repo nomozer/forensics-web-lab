@@ -1,0 +1,89 @@
+{
+  "schemaVersion": "1.0.0",
+  "phase": "4B.1",
+  "auditDate": "2026-09-21",
+  "componentId": "tgif-orig",
+  "remoteShareUrl": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o",
+  "remoteDavUrl": "https://cloud.ilabt.imec.be/public.php/dav/files/xEeAzrY7ES9KA8o/orig/",
+  "totalComponentBytes": 7319473337,
+  "fields": {
+    "archive_files": {
+      "value": [
+        {
+          "filename": "orig_training.tar.gz",
+          "bytes": 5652563073,
+          "etag": "db7c6f701d3b5a6c6f375f2fd60a1bd2",
+          "contentType": "application/gzip",
+          "split": "train"
+        },
+        {
+          "filename": "orig_validation.tar.gz",
+          "bytes": 859947874,
+          "etag": "d95a1202a7445d79872735f60cbeaa95",
+          "contentType": "application/gzip",
+          "split": "val"
+        },
+        {
+          "filename": "orig_testing.tar.gz",
+          "bytes": 806962390,
+          "etag": "fc2934fed45674aa89479640d0030beb",
+          "contentType": "application/gzip",
+          "split": "test"
+        }
+      ],
+      "status": "verified",
+      "source_url": "https://cloud.ilabt.imec.be/public.php/dav/files/xEeAzrY7ES9KA8o/orig/",
+      "request_method": "PROPFIND (Depth: 1)",
+      "evidence": "WebDAV PROPFIND Multi-Status 207 response parsed into exact file entries and byte lengths.",
+      "notes": "Component is composed of exactly 3 split tar.gz archives."
+    },
+    "split_structure": {
+      "value": "Independent archives strictly divided by split: training, validation, testing",
+      "status": "verified",
+      "source_url": "https://cloud.ilabt.imec.be/public.php/dav/files/xEeAzrY7ES9KA8o/orig/",
+      "request_method": "PROPFIND",
+      "evidence": "Filenames orig_training.tar.gz, orig_validation.tar.gz, orig_testing.tar.gz match split taxonomy.",
+      "notes": "No monolithic single orig archive exists upstream."
+    },
+    "download_separate_splits": {
+      "value": true,
+      "status": "verified",
+      "source_url": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o/download?path=%2Forig&files=orig_validation.tar.gz",
+      "request_method": "HEAD",
+      "evidence": "HEAD query returned HTTP 200 with Content-Length 859947874 and Content-Type application/gzip.",
+      "notes": "Allows downloading validation split (859.9 MB) or testing split (806.9 MB) without downloading full 7.32 GB."
+    },
+    "download_separate_categories": {
+      "value": false,
+      "status": "verified",
+      "source_url": "https://cloud.ilabt.imec.be/public.php/dav/files/xEeAzrY7ES9KA8o/orig/",
+      "request_method": "PROPFIND",
+      "evidence": "Upstream /orig/ folder contains only the 3 split tar.gz archives; category subdirectories are packed inside.",
+      "notes": "Category filtering must occur post-extraction locally."
+    },
+    "download_individual_images": {
+      "value": false,
+      "status": "verified",
+      "source_url": "https://cloud.ilabt.imec.be/public.php/dav/files/xEeAzrY7ES9KA8o/orig/",
+      "request_method": "PROPFIND",
+      "evidence": "Individual images are encapsulated inside tar.gz archives and are not exposed as discrete WebDAV resources.",
+      "notes": "Selective image access requires extracting the split archive."
+    },
+    "dynamic_zip_mechanism": {
+      "value": "Triggered when requesting folder root /download?path=%2F&files=orig; static gzip returned when targeting specific archive",
+      "status": "verified",
+      "source_url": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o/download?path=%2F&files=orig",
+      "request_method": "HEAD",
+      "evidence": "Folder download returns 303 to /orig?accept=zip with Content-Length: None; single file download returns direct static gzip with exact Content-Length.",
+      "notes": "Static archive download avoids server-side zip recompression delays."
+    },
+    "resume_support": {
+      "value": false,
+      "status": "verified",
+      "source_url": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o/download?path=%2Forig&files=orig_validation.tar.gz",
+      "request_method": "HEAD",
+      "evidence": "Nextcloud returns Accept-Ranges: None on public share direct download.",
+      "notes": "Interrupted downloads cannot resume via Range header and must restart from .part."
+    }
+  }
+}

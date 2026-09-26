@@ -1,0 +1,59 @@
+{
+  "phase": "4B.0",
+  "startingCommit": "8de2151",
+  "implementationSnapshotCommit": "84aa127",
+  "endingCommit": "3be606c",
+  "verdict": "PASS",
+  "artifacts": [
+    {
+      "file": "acquisition-summary.json",
+      "bytes": 927,
+      "sha256": "b974e5a895c479d59357a802ff2711f0ba47b57cb5e45d577bdc16a1d59835c5"
+    },
+    {
+      "file": "build-summary.json",
+      "bytes": 467,
+      "sha256": "91c91e0ce4c6200f792323e66f539bc959117538a45ea9ed0fff63a0dca4aed8"
+    },
+    {
+      "file": "environment.json",
+      "bytes": 394,
+      "sha256": "1d057a4df1aaeab21dfd150fefa929919584ca85978c5b5b7c102d88f967bbe9"
+    },
+    {
+      "file": "mask-manifest-summary.json",
+      "bytes": 1104,
+      "sha256": "0879697bc88634425010af1370f6f894e04fe8c0a3229831b9480c9ec00b751d"
+    },
+    {
+      "file": "network-accounting.json",
+      "bytes": 844,
+      "sha256": "2f6fa6591e4dfc5d2276034a9e6a5fb1071ca41eb1dbb1e0dab62f072ea9bb4a"
+    },
+    {
+      "file": "PHASE_REPORT.md",
+      "bytes": 4761,
+      "sha256": "52ac4d0f9fd9a7e8234965e764cf6204f6141c51665b3bce74585e2939ffcfd3"
+    },
+    {
+      "file": "test-summary.json",
+      "bytes": 754,
+      "sha256": "01c6d3e100a3bafe8805b353c29cf6294335a75826e7e3f76050ace9ffee6cc8"
+    },
+    {
+      "file": "tgif-masks-inventory.json",
+      "bytes": 19774,
+      "sha256": "52ba5a8801f2b695720dcb34d1c876c73f4d9e8c45fa27721cba581639f85a88"
+    },
+    {
+      "file": "tgif-masks-validation.json",
+      "bytes": 1085,
+      "sha256": "b744cf3c3631af7362ab2b2512c8534d0d996c0ab173be2f3b8fc436f50d3d63"
+    },
+    {
+      "file": "user-approval.json",
+      "bytes": 381,
+      "sha256": "43f5ce9a54b5b1fe20425e73103e89deaf31ab393531a676309b830dbdda3fca"
+    }
+  ]
+}

@@ -1,0 +1,108 @@
+{
+  "schemaVersion": "1.0.0",
+  "phase": "Phase 4A.0",
+  "commitAudited": "e36cdb6",
+  "timestampUtc": "2026-09-21T08:15:00Z",
+  "items": [
+    {
+      "evidenceId": "EV-LICENSE-GENIMAGE-001",
+      "claim": "GenImage official license is CC BY-NC-SA 4.0 with additional dataset terms; non-commercial only, commercial derivative works prohibited",
+      "category": "license",
+      "status": "verified",
+      "artifact": "docs/DATA_LICENSES.md",
+      "reproductionCommand": "git log -1 docs/DATA_LICENSES.md",
+      "result": "Official terms verified from https://github.com/GenImage-Dataset/GenImage/blob/main/License; classified as research-only",
+      "limitations": "Applies to research track only; prohibits commercial product model promotion"
+    },
+    {
+      "evidenceId": "EV-LICENSE-REALHD-001",
+      "claim": "RealHD repository displays Coming Soon on GitHub and official license remains unreleased; dataset acquisition is blocked",
+      "category": "license",
+      "status": "blocked",
+      "artifact": "docs/DATA_LICENSES.md",
+      "reproductionCommand": "git log -1 docs/DATA_LICENSES.md",
+      "result": "Status set to unavailable-or-pending, license unverified, track blocked; no speculative license assigned",
+      "limitations": "Blocked until authors publish formal release archive and explicit dataset license"
+    },
+    {
+      "evidenceId": "EV-DATA-REGISTRY-001",
+      "claim": "Machine-checkable dataset registry exists in datasets/registry.json and conforms to JSON Schema v1.0.0",
+      "category": "registry",
+      "status": "verified",
+      "artifact": "datasets/registry.json",
+      "reproductionCommand": "python -m ml.datasets.acquire --validate-registry",
+      "result": "5 datasets registered (genimage, realhd, sagi-d, raid, synthetic-smoke) and verified against schema",
+      "limitations": "Validates metadata and licensing boundaries; does not perform network downloads"
+    },
+    {
+      "evidenceId": "EV-DATA-ISOLATION-001",
+      "claim": "ADR-0006 establishes strict dual-track architecture isolating research-only data from product-eligible data",
+      "category": "dataset",
+      "status": "verified",
+      "artifact": "docs/adr/0006-research-product-data-isolation.md",
+      "reproductionCommand": "git log -1 docs/adr/0006-research-product-data-isolation.md",
+      "result": "Dual-track governance defined with strict folder quarantine (data/research/ vs data/product/) and zero-contamination rules",
+      "limitations": "Architectural policy and folder conventions; enforced via CLI and automated test guards"
+    },
+    {
+      "evidenceId": "EV-ACQUIRE-DRYRUN-001",
+      "claim": "ml.datasets.acquire executes in dry-run mode with 0 network requests, 0 bytes downloaded, and 0 image files created",
+      "category": "dataset",
+      "status": "verified",
+      "artifact": "ml/datasets/acquire.py",
+      "reproductionCommand": "python -m ml.datasets.acquire --dataset genimage --track research --dry-run",
+      "result": "Dry-run report successfully outputted; network requests made: 0; bytes downloaded: 0; live download disallowed",
+      "limitations": "Dry-run simulation only; live downloads require explicit user authorization gate in future phases"
+    },
+    {
+      "evidenceId": "EV-CONTAMINATION-001",
+      "claim": "Automated contamination guards reject research-only datasets from product track and reject blocked datasets",
+      "category": "dataset",
+      "status": "verified",
+      "artifact": "ml/tests/test_contamination_guard.py",
+      "reproductionCommand": "ml/.venv/Scripts/python -m pytest ml/tests/test_contamination_guard.py -v",
+      "result": "6 of 6 contamination guard tests passed; research-to-product cross-track contamination rejected with exit code 1",
+      "limitations": "Guards operate on CLI and registry validators; physical runtime models must also be verified prior to web deployment"
+    },
+    {
+      "evidenceId": "EV-SMOKE-FIXTURE-001",
+      "claim": "Synthetic geometric and noise fixture is generated purely via code without downloading external images or incurring copyright restrictions",
+      "category": "dataset",
+      "status": "verified",
+      "artifact": "ml/tests/fixtures/smoke_generator.py",
+      "reproductionCommand": "ml/.venv/Scripts/python -m pytest ml/tests/test_contamination_guard.py -k test_synthetic_smoke_fixture_generation_and_provenance -v",
+      "result": "8 synthetic samples generated with authentic, fully_generated, and ai_edited labels with valid mask and provenance manifest",
+      "limitations": "Purely synthetic geometric patterns; not real photographs; cannot be used for accuracy or scientific claims"
+    },
+    {
+      "evidenceId": "EV-ZEROEGRESS-001",
+      "claim": "Zero server egress claim is supported by client-side browser architecture while runtime network interception remains unverified",
+      "category": "no-model",
+      "status": "architecture-only",
+      "artifact": "docs/PRIVACY.md",
+      "reproductionCommand": "git log -1 docs/PRIVACY.md",
+      "result": "Architecture eliminates backend analysis APIs; runtime network interception in real browsers is tracked as unverified in backlog",
+      "limitations": "Requires browser E2E automated network logging to empirically confirm 0 outbound requests"
+    },
+    {
+      "evidenceId": "EV-WASM-BUDGET-001",
+      "claim": "Vite production bundle generates measured 28.3 MB ONNX Runtime Web WebAssembly asset, documented as runtime engine not model size",
+      "category": "build",
+      "status": "verified",
+      "artifact": "research/evidence/phase-4a.0/build-summary.json",
+      "reproductionCommand": "pnpm build",
+      "result": "apps/web/dist/assets/ort-wasm-simd-threaded.jsep.wasm measured at 28,312.03 kB; documented as engine asset",
+      "limitations": "Represents uncompressed build asset; transfer compression and lazy-loading measurements are tracked in backlog"
+    },
+    {
+      "evidenceId": "EV-SCIENCE-002",
+      "claim": "Scientific model accuracy, unseen-generator generalization, and inpainting localization metrics remain completely unmeasured",
+      "category": "science",
+      "status": "unverified",
+      "artifact": "docs/EVALUATION.md",
+      "reproductionCommand": "git log -1 docs/EVALUATION.md",
+      "result": "All metrics remain officially recorded as not measured / not evaluated; no performance claims asserted",
+      "limitations": "Evaluation requires trained models on genuine benchmarks in future phases"
+    }
+  ]
+}

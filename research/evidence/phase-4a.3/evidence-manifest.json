@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "1.0.0",
+  "phase": "Phase 4A.3",
+  "commitAudited": "9ab0e67",
+  "timestampUtc": "2026-09-21T12:28:00Z",
+  "items": [
+    {
+      "evidenceId": "EV-LABEL-GATE-001",
+      "claim": "Strict scientific 3-class label taxonomy (authentic, fully_generated, ai_edited) is formally codified and enforced across all pilot configurations and test suites",
+      "category": "science",
+      "status": "verified",
+      "artifact": "docs/PILOT_PROTOCOL.md",
+      "reproductionCommand": "ml/.venv/Scripts/python -m pytest ml/tests/test_pilot_protocol.py -k test_label_taxonomy",
+      "result": "Taxonomy frozen to exactly three classes; invalid classification labels rejected at config validation time",
+      "limitations": "Taxonomy applies to image generation and inpainting forensics; does not cover video deepfakes"
+    },
+    {
+      "evidenceId": "EV-TGIF-SEMANTICS-001",
+      "claim": "TGIF components audited: sp (spliced) verified as ai_edited with ground-truth mask; fr (fully regenerated) canvas verified as conditioned on authentic photo and prohibited from fully_generated",
+      "category": "dataset",
+      "status": "verified",
+      "artifact": "docs/PILOT_PROTOCOL.md",
+      "reproductionCommand": "ml/.venv/Scripts/python -m pytest ml/tests/test_pilot_protocol.py -k test_tgif_fr",
+      "result": "fr components classified as ai_edited (conditional regeneration) and quarantined; validator rejects assignment of fr to fully_generated",
+      "limitations": "Analysis based on official TGIF papers (arXiv:2407.11566, arXiv:2603.28613) and Nextcloud metadata"
+    },
+    {
+      "evidenceId": "EV-PILOT-DESIGN-001",
+      "claim": "Two-branch pilot architecture designed: Pilot A (authentic vs ai_edited + localization on matched MS-COCO pairs) and Pilot B (authentic vs fully_generated on controlled GenImage pairs)",
+      "category": "science",
+      "status": "verified",
+      "artifact": "docs/PILOT_PROTOCOL.md",
+      "reproductionCommand": "ml/.venv/Scripts/python -m ml.configs.validator --validate-all",
+      "result": "Pilot A and Pilot B configured independently to prevent dataset-source shortcuts; Pilot C gated on passing shortcut audit",
+      "limitations": "Pilot configurations define experimental protocol; training requires user approval for data acquisition"
+    },
+    {
+      "evidenceId": "EV-SHORTCUT-PROTOCOL-001",
+      "claim": "Anti-shortcut and anti-leakage protocol codified: deduplication (SHA-256 + pHash), source_id group split, class-level distribution audit, and metadata-only baseline guard",
+      "category": "science",
+      "status": "verified",
+      "artifact": "docs/PILOT_PROTOCOL.md",
+      "reproductionCommand": "ml/.venv/Scripts/python -m pytest ml/tests/test_pilot_protocol.py -k test_manifest_group_isolation",
+      "result": "Zero split overlap enforced; parent and child images guaranteed into identical split; metadata-only baseline required for Pilot C",
+      "limitations": "Full perceptual deduplication and metadata baseline execution to run after data acquisition"
+    },
+    {
+      "evidenceId": "EV-PILOT-CONFIGS-001",
+      "claim": "Machine-readable YAML configurations and automated validator implemented for Pilot A (pilot_tgif_edit.yaml) and Pilot B (pilot_genimage_generated.yaml)",
+      "category": "pipeline",
+      "status": "verified",
+      "artifact": "ml/configs/validator.py",
+      "reproductionCommand": "ml/.venv/Scripts/python -m ml.configs.validator --validate-all",
+      "result": "All 13 required fields validated; schema, labels, group_key, and semantics rules automatically verified",
+      "limitations": "Configs ready for DataLoader instantiation once dataset manifests are populated"
+    },
+    {
+      "evidenceId": "EV-ACQUISITION-DRYRUN-001",
+      "claim": "Dataset acquisition dry-run supports Pilot A and Pilot B with exact verified sizes, components, licenses, and zero external content bytes downloaded",
+      "category": "pipeline",
+      "status": "verified",
+      "artifact": "ml/datasets/acquire.py",
+      "reproductionCommand": "ml/.venv/Scripts/python -m ml.datasets.acquire --pilot pilot-a",
+      "result": "Dry-run prints all 12 required audit fields and exits cleanly with 0 bytes downloaded and content download disabled",
+      "limitations": "External download locked until explicit user approval"
+    }
+  ]
+}

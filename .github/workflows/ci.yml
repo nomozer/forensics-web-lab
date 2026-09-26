@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [main, feat/*]
+  pull_request:
+    branches: [main]
+
+jobs:
+  web-and-packages:
+    name: TypeScript & Web Verification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Model-Agnostic Continuity Check
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            pnpm continuity:check -- --base ${{ github.event.pull_request.base.sha }} --head ${{ github.event.pull_request.head.sha }}
+          else
+            MERGE_BASE=$(git merge-base HEAD origin/main 2>/dev/null || echo "HEAD~1")
+            pnpm continuity:check -- --base "$MERGE_BASE" --head HEAD
+          fi
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Unit tests
+        run: pnpm test
+
+      - name: Build Web Production
+        run: pnpm build
+
+  python-ml:
+    name: Python ML Verification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Python dependencies
+        run: |
+          cd ml
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Verify Python import root
+        run: |
+          python -c "import os, sys; print('cwd=', os.getcwd()); print('python=', sys.executable); import ml; print('ml_import=ok')"
+
+      - name: Python Unit Tests (Hermetic Gate)
+        run: python -m pytest ml/tests -v -m "not requires_research_artifact"
+
+      - name: Collect Research Artifact Tests (Deselected from Generic CI)
+        run: python -m pytest ml/tests -q -m "requires_research_artifact" --collect-only

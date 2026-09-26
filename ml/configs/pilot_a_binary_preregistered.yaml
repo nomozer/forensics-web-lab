@@ -1,0 +1,201 @@
+# Pilot A Binary Experiment Preregistration Configuration (Phase 4C - Resealed Phase 4B.4)
+schema_version: "1.0.0"
+config_id: "pilot_a_binary_preregistered"
+pilot_id: "pilot_tgif_edit"
+pilot_branch: "Pilot A"
+title: "Phase 4C Preregistered Binary Classification Protocol: Authentic vs AI-Edited (Option P)"
+scientific_status: "preregistered_protocol"
+license_track: "research-only"
+
+independent_statistical_unit: "source_id"
+enforce_source_isolation: true
+forbid_masks_as_independent_samples: true
+no_fr_to_fully_generated: true
+
+data_scope:
+  selected_option: "option_p_small_data_pilot"
+  target_task: "authentic_vs_ai_edited"
+  labels:
+    - "authentic"
+    - "ai_edited"
+  total_available_sources: 684
+  train_pool_split: "val"
+  train_pool_sources: 341
+  development_train_sources: 250
+  inner_validation_sources: 91
+  fixed_test_split: "test"
+  fixed_test_sources: 343
+  locked_split_seal: "519e7a0e6815e781d1cefa95971e5221ac1f25656837374d8dc4ba41401fded9"
+
+sampling_strategy:
+  strategy: "pair_aware_sampler_case_b"
+  description: "Strategy B (Pixel-Reality Case B): Authentic native canvas matched 1:1 with AI-edited native canvas (100% matched pixel geometry); authentic 512/1024 held out for secondary robustness evaluation; 6 edited variants cycle deterministically with balanced bbox/segm alternation (2N samples/epoch)"
+  stable_offset_algorithm: "sha256_64bit_integer"
+  stable_offset_version: "1.0.0"
+  geometry_case: "Case B"
+  primary_geometry_bucket: "native"
+  matched_resolution_pairing: true
+  balanced_bbox_segm_cycling: true
+  edit_types:
+    - "bbox"
+    - "segm"
+  formula:
+    edit_type_idx: "(epoch + stable_source_offset) % 2"
+    sub_variant_idx: "((epoch // 2) + stable_source_offset) % 3"
+    edited_variant_idx: "edit_type_idx * 3 + sub_variant_idx"
+    authentic_variant: "orig_native"
+  secondary_robustness_set:
+    authentic_512_held_out: true
+    authentic_1024_held_out: true
+  aggregation_before_primary_metrics: "source_id_mean_probability"
+
+pseudoreplication_control:
+  statement: "Pair-aware sampling kiểm soát đóng góp gradient theo source và giảm pseudoreplication; suy luận thống kê tiếp tục sử dụng source_id làm đơn vị độc lập."
+  correlated_variants_acknowledged: true
+  variant_does_not_increase_scientific_sample_size: true
+  sample_size_definition: "N represents unique source_id count only"
+  bootstrap_resampling_unit: "source_id"
+  primary_metrics_aggregation_level: "source_id"
+  variant_level_metrics_role: "diagnostic_only"
+
+preprocessing:
+  input_size: [224, 224]
+  normalize_mean: [0.485, 0.456, 0.406]
+  normalize_std: [0.229, 0.224, 0.225]
+  interpolation: "bicubic"
+  identical_pipeline_for_both_classes: true
+  no_class_conditional_branching: true
+
+hyperparameters:
+  batch_size: 32
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  optimizer: "AdamW"
+  class_loss: "BinaryCrossEntropyWithLogits"
+  max_epochs: 25
+  early_stopping_patience: 5
+  primary_checkpoint_metric: "inner_val_macro_f1"
+  threshold_selection_rule: "youden_j_statistic_on_inner_val"
+  calibration_protocol: "temperature_scaling_on_inner_val"
+  random_seeds: [42, 1337, 2025, 3407, 9001]
+  deterministic_settings:
+    torch_deterministic: true
+    cudnn_benchmark: false
+    pythonhashseed_independent: true
+
+learning_curve:
+  sample_sizes:
+    - n_sources: 50
+      status: "runnable"
+      description: "Low-data regime (50 authentic : 50 edited, 100 samples/epoch)"
+    - n_sources: 100
+      status: "runnable"
+      description: "Medium-low data regime (100 authentic : 100 edited, 200 samples/epoch)"
+    - n_sources: 250
+      status: "runnable"
+      description: "Full pilot development regime (250 authentic : 250 edited, 500 samples/epoch)"
+    - n_sources: 500
+      status: "not_runnable"
+      description: "Over-capacity guard: exceeds Option P training pool of 341 sources (requires Option F)"
+    - n_sources: 1000
+      status: "not_runnable"
+      description: "Over-capacity guard: exceeds Option P training pool of 341 sources (requires Option F)"
+
+experimental_protocol:
+  exploratory_seeds: [42, 1337, 2025]
+  final_evaluation_seeds: [42, 1337, 2025, 3407, 9001]
+  variant_sampling: "pair_aware_epoch_cycle"
+  fixed_test_evaluation: true
+  bootstrap_iterations: 1000
+  bootstrap_confidence_level: 0.95
+  resampling_unit: "source_id"
+
+model_pipeline:
+  backbone: "mobilenet_v3_small"
+  pretrained_source: "imagenet_1k"
+  torchvision_weights_enum: "MobileNet_V3_Small_Weights.IMAGENET1K_V1"
+  num_parameters: 1782648
+  expected_download_bytes: 10830000
+  codeLicense: "BSD-3-Clause"
+  pretrainedWeightSource: "torchvision"
+  pretrainedWeightTermsStatus: "unverified"
+  trainingDatasetProvenance: "ImageNet-1K (ILSVRC 2012)"
+  researchUseDecision: "Approved for non-commercial academic research only; commercial redistribution unverified."
+  compute_budget:
+    estimated_time: "estimated-not-measured"
+    benchmarkRequired: true
+    benchmark_smoke_plan: "N=50, seed=42 on development_train before forecasting 15 learning-curve runs"
+  stages:
+    stage_0:
+      name: "baselines_development"
+      description: "Evaluate Dummy, Metadata-only, and DSP-only on development_train and inner_validation"
+    stage_1:
+      name: "frozen_transfer_learning"
+      description: "Train classification head with frozen backbone; select preprocessing & checkpoint by inner_validation"
+      freeze_backbone: true
+      train_head_only: true
+      optimizer: "AdamW"
+      learning_rate: 0.001
+      weight_decay: 0.0001
+      max_epochs: 25
+      early_stopping_patience: 5
+      metric: "inner_val_macro_f1"
+    stage_2:
+      name: "limited_fine_tuning"
+      description: "Unfreeze features.12 only if Stage 1 surpasses Dummy and is not fully explained by Metadata-only"
+      unfreeze_block: "features.12"
+      learning_rate: 0.00005
+      max_epochs: 15
+    final_evaluation:
+      name: "sealed_locked_test_evaluation"
+      description: "Execute frozen checkpoints on locked_test using verified ExperimentLockBinding"
+      access_role: "final_evaluator"
+
+baselines:
+  - id: "stratified_dummy"
+    name: "Stratified Random Dummy Classifier"
+  - id: "metadata_only"
+    name: "EXIF/C2PA Metadata-Only Logistic Regression"
+  - id: "dsp_only"
+    name: "2D FFT / DCT / Noise Residual DSP Classifier"
+  - id: "frozen_visual_linear"
+    name: "MobileNetV3 Frozen Backbone + Linear Head"
+  - id: "finetuned_visual"
+    name: "MobileNetV3 Fine-Tuned Block 12 Head"
+  - id: "multimodal_fusion"
+    name: "Calibrated Multimodal Fusion (Visual + DSP + Meta)"
+
+evaluation_metrics:
+  primary_source_level:
+    - "macro_f1"
+    - "balanced_accuracy"
+    - "auroc"
+    - "brier_score"
+    - "ece"
+    - "selective_risk_at_coverage"
+  secondary_variant_level:
+    - "variant_macro_f1"
+    - "confusion_matrix"
+    - "per_edit_type_f1"
+    - "per_resolution_f1"
+    - "jpeg_degradation_sensitivity"
+  auxiliary_localization:
+    - "miou"
+    - "dice"
+    - "pixel_auroc"
+
+acceptance_criteria:
+  min_bootstrap_ci_delta_macro_f1: 0.0
+  max_seed_standard_deviation: 0.03
+  require_dummy_superiority: true
+  require_metadata_superiority: true
+  require_monotonic_learning_trend: true
+
+superseded_preregistration:
+  superseded_hash: "54140d42485384436052befe58ac46775123e1cb009ea3a11d7389470359fd3b"
+  superseded_status: "superseded-by-phase-4c.0-case-b"
+  supersession_reason: "Pixel-Reality Gate audit demonstrated all 4,104 edited variants are on native canvas (Case B); aligned primary experiment to authentic native <-> edited native pairs (100% matched pixel geometry) and held out 512/1024 for secondary robustness set."
+  previous_superseded_hashes:
+    - hash: "839531a700b211e5adc4a145e811c4533dbb45a044b63e816c474a462e88ddd1"
+      status: "superseded-by-phase-4b.4"
+      reason: "Added deterministic stable offset (sha256), resolution-matched pairing, balanced bbox/segm cycling, exact preprocessing specification, and refined statistical claims."

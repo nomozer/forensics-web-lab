@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "1.0.0",
+  "documentType": "preregistration_reseal",
+  "phase": "4B.4",
+  "evaluatedAtUtc": "2026-09-22T16:00:00Z",
+  "currentPreregistration": {
+    "configFile": "ml/configs/pilot_a_binary_preregistered.yaml",
+    "documentFile": "docs/PHASE_4C_PREREGISTRATION.md",
+    "configSha256": "54140d42485384436052befe58ac46775123e1cb009ea3a11d7389470359fd3b",
+    "lockedSplitSeal": "519e7a0e6815e781d1cefa95971e5221ac1f25656837374d8dc4ba41401fded9",
+    "status": "preregistered_resealed"
+  },
+  "supersededHistory": [
+    {
+      "phase": "4B.3",
+      "configSha256": "839531a700b211e5adc4a145e811c4533dbb45a044b63e816c474a462e88ddd1",
+      "status": "superseded-by-phase-4b.4",
+      "supersessionReason": "Replaced Python hash() with cross-process deterministic SHA-256 offset; enforced resolution-matched pairing; added balanced bbox/segm cycling; specified explicit hyperparameters and preprocessing pipeline; calibrated pseudoreplication claims."
+    }
+  ],
+  "hyperparameterContract": {
+    "batchSize": 32,
+    "learningRateStage1": 0.001,
+    "learningRateStage2": 0.00005,
+    "weightDecay": 0.0001,
+    "optimizer": "AdamW",
+    "classLoss": "BinaryCrossEntropyWithLogits",
+    "maxEpochs": 25,
+    "earlyStoppingPatience": 5,
+    "primaryCheckpointMetric": "inner_val_macro_f1",
+    "thresholdSelectionRule": "youden_j_statistic_on_inner_val",
+    "calibrationProtocol": "temperature_scaling_on_inner_val",
+    "randomSeeds": [42, 1337, 2025, 3407, 9001],
+    "deterministicSettings": {
+      "torchDeterministic": true,
+      "cudnnBenchmark": false,
+      "pythonhashseedIndependent": true
+    }
+  },
+  "modelAndLicensingAccounting": {
+    "backbone": "mobilenet_v3_small",
+    "codeLicense": "BSD-3-Clause",
+    "pretrainedWeightSource": "torchvision official CDN",
+    "pretrainedWeightTermsStatus": "unverified",
+    "trainingDatasetProvenance": "ImageNet-1K (ILSVRC 2012)",
+    "researchUseDecision": "Approved for academic research only",
+    "computeTimeEstimateStatus": "estimated-not-measured",
+    "benchmarkRequired": true,
+    "benchmarkSmokeGate": "N=50, seed=42 on development_train before forecasting full learning curve runs"
+  }
+}

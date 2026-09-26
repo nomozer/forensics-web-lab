@@ -1,0 +1,160 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://forensics-web-lab.local/schemas/dataset-registry.v1.schema.json",
+  "title": "DatasetRegistry",
+  "description": "Schema for machine-checkable dataset registration, intellectual property audit, and track isolation in Forensics Web Lab",
+  "type": "object",
+  "required": ["schemaVersion", "datasets"],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "enum": ["1.0.0"]
+    },
+    "datasets": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "version",
+          "track",
+          "purpose",
+          "officialSource",
+          "downloadSource",
+          "codeLicense",
+          "datasetLicense",
+          "additionalTerms",
+          "commercialUse",
+          "redistribution",
+          "derivativeWeights",
+          "availability",
+          "expectedDownloadBytes",
+          "checksumAvailable",
+          "licenseEvidenceUrls",
+          "reviewedAt",
+          "status",
+          "notes"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "track": {
+            "type": "string",
+            "enum": ["research-only", "product-eligible", "blocked", "fixture-only"]
+          },
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "fixture",
+              "acquisition-smoke",
+              "exploratory-pilot",
+              "scientific-benchmark",
+              "product-training"
+            ]
+          },
+          "officialSource": {
+            "type": "string"
+          },
+          "downloadSource": {
+            "type": "string"
+          },
+          "codeLicense": {
+            "type": "string"
+          },
+          "datasetLicense": {
+            "type": "string"
+          },
+          "additionalTerms": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "commercialUse": {
+            "type": "string",
+            "enum": ["allowed", "prohibited", "unclear", "internal-testing-only"]
+          },
+          "redistribution": {
+            "type": "string",
+            "enum": ["allowed", "prohibited", "unclear"]
+          },
+          "derivativeWeights": {
+            "type": "string",
+            "enum": ["allowed", "prohibited", "unclear"]
+          },
+          "productionPromotion": {
+            "type": "string",
+            "enum": ["allowed", "prohibited-by-project-policy", "pending-evaluation"]
+          },
+          "ownership": {
+            "type": "string",
+            "enum": ["project-generated", "third-party", "public-domain"]
+          },
+          "licenseStatus": {
+            "type": "string",
+            "enum": ["verified", "unverified", "pending-project-license-decision"]
+          },
+          "acquisitionEnabled": {
+            "type": "boolean"
+          },
+          "approvalStatus": {
+            "type": "string",
+            "enum": ["approved", "pending-user-approval", "not-applicable"]
+          },
+          "sourceTerms": {
+            "type": "object"
+          },
+          "legalInterpretation": {
+            "type": "object"
+          },
+          "projectPolicy": {
+            "type": "object"
+          },
+          "metadataAccess": {
+            "type": "string"
+          },
+          "metadataAccessReason": {
+            "type": "string"
+          },
+          "remoteInventory": {
+            "type": "array"
+          },
+          "availability": {
+            "type": "string",
+            "enum": ["available", "pending", "unavailable"]
+          },
+          "expectedDownloadBytes": {
+            "type": ["integer", "null"],
+            "minimum": 0
+          },
+          "checksumAvailable": {
+            "type": "boolean"
+          },
+          "licenseEvidenceUrls": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "reviewedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["proposed", "verified", "blocked", "rejected"]
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

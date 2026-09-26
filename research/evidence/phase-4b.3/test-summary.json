@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "1.0.0",
+  "timestampUtc": "2026-09-22T06:58:56Z",
+  "phase": "4B.3",
+  "totalTests": 149,
+  "passedTests": 149,
+  "failedTests": 0,
+  "suites": [
+    {
+      "name": "pytest ml/tests",
+      "command": "ml/.venv/Scripts/python -m pytest ml/tests -v",
+      "total": 79,
+      "passed": 79,
+      "failed": 0,
+      "exitCode": 0,
+      "description": "Includes 6 pair-aware loader tests and 7 locked-test guard role-permission tests"
+    },
+    {
+      "name": "vitest packages",
+      "command": "pnpm -r run test",
+      "total": 57,
+      "passed": 57,
+      "failed": 0,
+      "exitCode": 0,
+      "description": "Tests across packages/shared, packages/forensics, packages/provenance, packages/inference, packages/report, apps/web"
+    },
+    {
+      "name": "continuity unit test suite",
+      "command": "node --test scripts/__tests__/continuity-check.test.mjs",
+      "total": 13,
+      "passed": 13,
+      "failed": 0,
+      "exitCode": 0,
+      "description": "Tests for token parsing, diff rules evaluation, and isolated git repository scenarios"
+    }
+  ],
+  "validationCommands": [
+    {
+      "name": "dataset registry validation",
+      "command": "ml/.venv/Scripts/python -m ml.datasets.acquire --validate-registry",
+      "result": "PASS (7 datasets verified)",
+      "exitCode": 0
+    },
+    {
+      "name": "config validator",
+      "command": "ml/.venv/Scripts/python -m ml.configs.validator --validate-all",
+      "result": "PASS (4 pilot configs verified)",
+      "exitCode": 0
+    }
+  ]
+}

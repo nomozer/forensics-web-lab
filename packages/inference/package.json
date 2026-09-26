@@ -1,0 +1,21 @@
+{
+  "name": "@forensics/inference",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@forensics/shared": "workspace:*",
+    "@forensics/provenance": "workspace:*",
+    "@forensics/forensics": "workspace:*",
+    "onnxruntime-web": "^1.21.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.7"
+  }
+}

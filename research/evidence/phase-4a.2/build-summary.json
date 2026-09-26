@@ -1,0 +1,14 @@
+{
+  "phase": "Phase 4A.2",
+  "buildTimestampUtc": "2026-09-21T12:07:00Z",
+  "exitCode": 0,
+  "bundleTool": "Vite v6.4.3",
+  "buildDurationSeconds": 3.03,
+  "artifacts": [
+    { "file": "dist/index.html", "sizeBytes": 1080, "gzipBytes": 620 },
+    { "file": "dist/assets/forensics.worker.js", "sizeBytes": 448440, "role": "Web Worker Pipeline" },
+    { "file": "dist/assets/ort-wasm-simd-threaded.jsep.wasm", "sizeBytes": 28991519, "gzipBytes": 6889441, "role": "ONNX Runtime WebAssembly Engine Binary (Not Model Weights)" },
+    { "file": "dist/assets/index.css", "sizeBytes": 4065, "gzipBytes": 1484 },
+    { "file": "dist/assets/index.js", "sizeBytes": 700098, "gzipBytes": 201625 }
+  ]
+}

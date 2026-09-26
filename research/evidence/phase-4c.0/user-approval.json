@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0.0",
+  "timestamp_utc": "2026-09-23T17:00:00Z",
+  "phase": "Phase 4C.0 \u2014 Pixel-Reality Gate, Stage-0 Baselines and Single-Seed Smoke",
+  "approved_actions": [
+    "Ki\u1ec3m to\u00e1n k\u00edch th\u01b0\u1edbc pixel v\u00e0 mapping variant tr\u00ean d\u1eef li\u1ec7u th\u1eadt",
+    "Ch\u1ea1y Stage 0 g\u1ed3m Dummy, Metadata-only v\u00e0 DSP-only",
+    "T\u1ea3i tr\u1ecdng s\u1ed1 MobileNetV3-Small t\u1eeb ngu\u1ed3n torchvision ch\u00ednh th\u1ee9c v\u1edbi gi\u1edbi h\u1ea1n t\u1ed1i \u0111a 12 MiB",
+    "Ch\u1ea1y \u0111\u00fang m\u1ed9t smoke training: N=50, seed=42, frozen backbone, binary classification head",
+    "\u0110\u00e1nh gi\u00e1 tr\u00ean inner_validation",
+    "Ghi checkpoint v\u00e0o Research Track"
+  ],
+  "download_url": "https://download.pytorch.org/models/mobilenet_v3_small-047dcff4.pth",
+  "max_download_bytes": 12582912,
+  "max_training_runs": 1,
+  "smoke_configuration": {
+    "task": "binary_classification",
+    "labels": [
+      "authentic",
+      "ai_edited"
+    ],
+    "n_sources": 50,
+    "seed": 42,
+    "backbone": "mobilenet_v3_small",
+    "backbone_state": "frozen",
+    "training_partition": "development_train",
+    "validation_partition": "inner_validation",
+    "locked_test_status": "sealed_zero_access",
+    "localization_head": "inactive",
+    "checkpoint_dir": "models/research/phase-4c.0/"
+  },
+  "preserved_boundaries": [
+    "Full learning curve N=50/100/250 x 5 seeds: awaiting later approval",
+    "Fine-tuning Stage 2: awaiting smoke results",
+    "Locked-test: strictly sealed, 0 evaluations",
+    "Localization training: moved to separate phase",
+    "Product registry and web production model: preserved in no-model state"
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "validationPhase": "4B.0",
+  "timestamp": "2026-09-21T15:47:45.741391+00:00",
+  "totalFilesInspected": 31238,
+  "validFilesCount": 31238,
+  "invalidFilesCount": 0,
+  "allPngValid": true,
+  "zeroZipSlipViolations": true,
+  "zeroUnsafeSymlinks": true,
+  "filenameConvention": {
+    "pattern": "^<source_id>_mask_<type>[_<resolution>][.png_ps_mask].png$",
+    "status": "verified",
+    "examples": [
+      "134886_mask_1024.png",
+      "134886_mask_512.png",
+      "134886_mask_bbox.png",
+      "134886_mask_bbox.png_ps_mask.png",
+      "134886_mask_bbox_1024.png"
+    ]
+  },
+  "sourceIdMapping": {
+    "method": "zero_padded_ms_coco_12_digits",
+    "status": "verified",
+    "cardinalityMatchedAuthentic": {
+      "train_source_ids": 1558,
+      "val_source_ids": 341,
+      "test_source_ids": 343
+    }
+  },
+  "binaryMaskProperties": {
+    "predominantModes": {
+      "L": 24990,
+      "RGB": 6248
+    },
+    "pixelRange": {
+      "min=255_max=255": 1448,
+      "min=0_max=255": 23542,
+      "multichannel_0-255_0-255_0-255": 6248
+    }
+  }
+}

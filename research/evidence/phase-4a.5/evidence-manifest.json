@@ -1,0 +1,60 @@
+{
+  "schemaVersion": "1.0.0",
+  "phase": "Phase 4A.5",
+  "startingCommit": "a480776",
+  "implementationSnapshotCommit": "311cfd3",
+  "endingCommit": "8de2151",
+  "timestampUtc": "2026-09-21T14:48:00Z",
+  "items": [
+    {
+      "evidenceId": "EV-PHASE4A4-CLOSURE-001",
+      "claim": "Phase 4A.4 closed accurately with ending commit a480776, main 460f6d5, clean working tree; replaced Zero-Leakage Invariant with group-isolation invariant; validated plan SHA-256 (7da36f450fe424970e4676fc0c35047ea756385843dd2fb1c656f1fa45deac4e)",
+      "category": "continuity",
+      "status": "verified",
+      "artifact": "research/evidence/phase-4a.4/PHASE_REPORT.md",
+      "reproductionCommand": "git log -1 a480776",
+      "result": "Phase 4A.4 ending commit confirmed at a480776; terminology updated; acquisition plan SHA-256 matches exactly",
+      "limitations": "Live download remains locked until user explicit approval token is submitted"
+    },
+    {
+      "evidenceId": "EV-CONTINUITY-CONTRACT-001",
+      "claim": "Continuity Contract codified in AGENTS.md specifying mandatory session start read order, during-work change matrix, and phase closure protocol",
+      "category": "governance",
+      "status": "verified",
+      "artifact": "AGENTS.md",
+      "reproductionCommand": "node scripts/continuity-check.mjs",
+      "result": "Contract established; agent read order and file change matrix enforced",
+      "limitations": "Applies to all coding assistants working in the repository"
+    },
+    {
+      "evidenceId": "EV-CONTINUITY-CHECKER-001",
+      "claim": "Cross-platform continuity checker implemented in scripts/continuity-check.mjs supporting default, --staged, and --base/--head git diff modes",
+      "category": "tooling",
+      "status": "verified",
+      "artifact": "scripts/continuity-check.mjs",
+      "reproductionCommand": "pnpm continuity:check",
+      "result": "Checker exits with 0 and prints CONTINUITY_CHECK: PASS when invariants hold; exits with 1 and lists missing updates on violation",
+      "limitations": "Enforces file presence, consistency, and structural updates; scientific truth still requires empirical artifacts"
+    },
+    {
+      "evidenceId": "EV-CONTINUITY-TESTS-001",
+      "claim": "13 unit and contract tests authored in scripts/__tests__/continuity-check.test.mjs covering all 10 required scenarios in isolated temporary git fixtures",
+      "category": "testing",
+      "status": "verified",
+      "artifact": "scripts/__tests__/continuity-check.test.mjs",
+      "reproductionCommand": "node --test scripts/__tests__/continuity-check.test.mjs",
+      "result": "All 13 test cases passing (typo pass, model state check, module addition, phase report creation, duplicate rejection, placeholder rejection, local link rejection)",
+      "limitations": "Tested using isolated temporary git repositories without modifying active repository"
+    },
+    {
+      "evidenceId": "EV-CI-CONTINUITY-001",
+      "claim": "GitHub Actions CI (.github/workflows/ci.yml) updated to enforce pnpm continuity:check with fetch-depth: 0 on pull requests and branch pushes",
+      "category": "ci",
+      "status": "verified",
+      "artifact": ".github/workflows/ci.yml",
+      "reproductionCommand": "git diff HEAD~1 .github/workflows/ci.yml",
+      "result": "CI workflow step configured to block PRs and pushes with broken continuity contracts",
+      "limitations": "Runs on GitHub Actions runner"
+    }
+  ]
+}

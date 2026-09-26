@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0.0",
+  "documentType": "test_summary",
+  "phase": "4C.0",
+  "executedAtUtc": "2026-09-23T17:08:15Z",
+  "overallStatus": "ALL_TESTS_PASSING",
+  "suites": [
+    {
+      "name": "Vitest Workspace Suites",
+      "command": "pnpm -r run test",
+      "exitCode": 0,
+      "passed": 57,
+      "failed": 0,
+      "skipped": 0,
+      "packages": {
+        "packages/shared": 34,
+        "packages/provenance": 3,
+        "packages/forensics": 5,
+        "packages/report": 4,
+        "packages/inference": 8,
+        "apps/web": 3
+      }
+    },
+    {
+      "name": "Continuity Checker Test Suite",
+      "command": "node --test scripts/__tests__/continuity-check.test.mjs",
+      "exitCode": 0,
+      "passed": 13,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "Python ML Pytest Suite",
+      "command": "ml/.venv/Scripts/python -m pytest ml/tests -v",
+      "exitCode": 0,
+      "passed": 99,
+      "failed": 0,
+      "skipped": 0,
+      "durationSeconds": 14.95,
+      "targetedGatesPhase4C0": 9
+    },
+    {
+      "name": "Pilot Config Validator Gate",
+      "command": "ml/.venv/Scripts/python -m ml.configs.validator --validate-all",
+      "exitCode": 0,
+      "configsValidated": 4,
+      "errors": 0
+    },
+    {
+      "name": "Dataset Registry Validator",
+      "command": "ml/.venv/Scripts/python -m ml.datasets.acquire --validate-registry",
+      "exitCode": 0,
+      "datasetsVerified": 7,
+      "status": "PASS"
+    },
+    {
+      "name": "Phase 4B.4 Evidence Reproducer & Invariant Verifier",
+      "command": "ml/.venv/Scripts/python scripts/reproduce-phase-4b3-evidence.py --verify",
+      "exitCode": 0,
+      "status": "PASS"
+    }
+  ],
+  "totals": {
+    "totalTestsPassed": 169,
+    "totalTestsFailed": 0,
+    "pythonTests": 99,
+    "nodeAndVitestTests": 70
+  }
+}

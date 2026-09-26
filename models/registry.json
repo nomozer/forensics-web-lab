@@ -1,0 +1,22 @@
+{
+  "$schema": "../docs/schemas/model-registry.v1.schema.json",
+  "version": "1.0.0",
+  "models": [
+    {
+      "id": "global-local-v1",
+      "version": "0.1.0",
+      "path": "",
+      "sha256": "",
+      "sizeBytes": 0,
+      "inputShape": [1, 3, 224, 224],
+      "classes": [
+        "authentic",
+        "fully_generated",
+        "ai_edited"
+      ],
+      "opset": 17,
+      "quantization": "none",
+      "status": "not-trained"
+    }
+  ]
+}

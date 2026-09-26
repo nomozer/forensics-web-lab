@@ -1,0 +1,34 @@
+{
+  "phase": "CI.4",
+  "simulation": "git worktree add at HEAD after CI.4 commit",
+  "expectedResults": {
+    "hermeticGate": {
+      "command": "python -m pytest ml/tests -v -m \"not requires_research_artifact\"",
+      "exitCode": 0,
+      "passed": 102,
+      "failed": 0,
+      "skipped": 0,
+      "deselected": 6,
+      "passedAll": true,
+      "notes": [
+        "Artifact-dependent tests correctly deselected: test_discover_source_instances_on_actual_manifest, test_real_data_resolution_matched_pairing, test_checkpoint_receipt_and_research_isolation, test_checkpoint_architecture_matches_binding, test_zero_cross_split_source_id_collision, test_variant_grouping_and_instance_count",
+        "test_stable_sampler_across_subprocesses uses synthetic fixture (no research manifest needed)",
+        "test_option_p_dry_run_zero_network uses mocked disk space fixture",
+        "test_checkpoint_metadata_contract_hermetic runs in hermetic gate (uses only Git-tracked JSONs)"
+      ]
+    },
+    "artifactGate": {
+      "command": "python -m pytest ml/tests -v -m \"requires_research_artifact\"",
+      "exitCode": 0,
+      "passed": 6,
+      "failed": 0,
+      "notes": "All artifact tests PASS on local environment with artifacts present. Generic CI does not run these."
+    },
+    "trackedFilesOnly": true,
+    "researchManifestPresent": false,
+    "researchCheckpointPresent": false,
+    "machineLocalPaths": 0
+  },
+  "status": "PROJECTED_NOT_MEASURED",
+  "note": "This projection is based on local evidence. Actual clean checkout verification will be provided by GitHub Actions runner on PR #1 CI run."
+}

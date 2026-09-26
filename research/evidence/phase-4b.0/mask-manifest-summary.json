@@ -1,0 +1,37 @@
+{
+  "manifestPath": "data/research/tgif/manifests/masks-manifest.jsonl",
+  "totalRecords": 31238,
+  "datasetId": "tgif",
+  "licenseTrack": "research-only",
+  "splitCounts": {
+    "test": 3428,
+    "train": 24400,
+    "val": 3410
+  },
+  "maskTypeCounts": {
+    "generic_mask": 6248,
+    "bbox": 12495,
+    "segm": 12495
+  },
+  "uniqueSourceIds": 2242,
+  "sanitizedSampleRecord": {
+    "mask_id": "tgif_mask_test_134886_mask_1024",
+    "source_id": "000000134886",
+    "raw_source_id": "134886",
+    "mask_type": "generic_mask",
+    "resolution": "1024",
+    "is_ps_mask": false,
+    "split": "test",
+    "relative_path": "data/research/tgif/masks/testing/airplane/134886_mask_1024.png",
+    "sha256": "6977a22873d8a7564da5de73c0174aa25007b19439e19133114fb26417c832b5",
+    "width": 1024,
+    "height": 768,
+    "mode": "L",
+    "pixel_profile": "min=255_max=255",
+    "validation_status": "valid",
+    "dataset_id": "tgif",
+    "license_track": "research-only",
+    "acquired_at": "2026-09-21T15:47:45.741391+00:00",
+    "receipt_id": "pilot-a-tgif-masks-receipt"
+  }
+}

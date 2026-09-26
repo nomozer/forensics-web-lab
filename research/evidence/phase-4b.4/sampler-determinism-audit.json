@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "1.0.0",
+  "documentType": "sampler_determinism_audit",
+  "phase": "4B.4",
+  "evaluatedAtUtc": "2026-09-22T16:00:00Z",
+  "algorithm": {
+    "name": "sha256_64bit_integer",
+    "version": "1.0.0",
+    "implementation": "int.from_bytes(hashlib.sha256(source_id.encode('utf-8')).digest()[:8], 'big')",
+    "variantIndexFormula": "(epoch + stable_offset) % variant_count"
+  },
+  "rationale": "Python built-in hash() function introduces SipHash randomization keyed by PYTHONHASHSEED, which causes different processes or execution runs to produce non-reproducible sample sequences. Deriving the 64-bit integer directly from the SHA-256 digest of the canonical 12-digit source_id string guarantees 100% deterministic offsets across all operating systems, Python runtimes, and worker processes.",
+  "subprocessVerification": {
+    "testName": "test_stable_offset_across_pythonhashseeds",
+    "environmentA": "PYTHONHASHSEED=0",
+    "environmentB": "PYTHONHASHSEED=999999",
+    "instancesTested": 10,
+    "epochsTested": 4,
+    "matchStatus": "exact_character_match",
+    "result": "PASSED"
+  },
+  "preregistrationLock": {
+    "lockedConfig": "ml/configs/pilot_a_binary_preregistered.yaml",
+    "field": "sampling_strategy.stable_offset_algorithm",
+    "status": "locked"
+  }
+}

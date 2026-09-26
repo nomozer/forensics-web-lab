@@ -1,0 +1,89 @@
+{
+  "schemaVersion": "1.0.0",
+  "phase": "4B.1",
+  "auditDate": "2026-09-21",
+  "componentId": "tgif-sd2-sp",
+  "remoteShareUrl": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o",
+  "remoteDavUrl": "https://cloud.ilabt.imec.be/public.php/dav/files/xEeAzrY7ES9KA8o/sd2-sp/",
+  "totalComponentBytes": 18572494800,
+  "fields": {
+    "archive_files": {
+      "value": [
+        {
+          "filename": "sd2-sp_training.tar.gz",
+          "bytes": 14359902282,
+          "etag": "bbe41aac348ddd4d9f4d687a94390d77",
+          "contentType": "application/gzip",
+          "split": "train"
+        },
+        {
+          "filename": "sd2-sp_validation.tar.gz",
+          "bytes": 2172017290,
+          "etag": "44b9e62f224dd312f59d9a5bd79d1171",
+          "contentType": "application/gzip",
+          "split": "val"
+        },
+        {
+          "filename": "sd2-sp_testing.tar.gz",
+          "bytes": 2040575228,
+          "etag": "2aa172ad2b1200973b7593259b37cc07",
+          "contentType": "application/gzip",
+          "split": "test"
+        }
+      ],
+      "status": "verified",
+      "source_url": "https://cloud.ilabt.imec.be/public.php/dav/files/xEeAzrY7ES9KA8o/sd2-sp/",
+      "request_method": "PROPFIND (Depth: 1)",
+      "evidence": "WebDAV PROPFIND Multi-Status 207 response parsed into exact file entries and byte lengths.",
+      "notes": "Component is composed of exactly 3 split tar.gz archives totaling 18.57 GB."
+    },
+    "split_structure": {
+      "value": "Independent archives divided by split: sd2-sp_training.tar.gz, sd2-sp_validation.tar.gz, sd2-sp_testing.tar.gz",
+      "status": "verified",
+      "source_url": "https://cloud.ilabt.imec.be/public.php/dav/files/xEeAzrY7ES9KA8o/sd2-sp/",
+      "request_method": "PROPFIND",
+      "evidence": "Directory listing confirms split-partitioned archives.",
+      "notes": "Matches TGIF split architecture."
+    },
+    "download_separate_splits": {
+      "value": true,
+      "status": "verified",
+      "source_url": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o/download?path=%2Fsd2-sp&files=sd2-sp_validation.tar.gz",
+      "request_method": "HEAD",
+      "evidence": "HEAD query returned HTTP 200 with Content-Length 2172017290 and Content-Type application/gzip.",
+      "notes": "Enables acquiring small split subsets (e.g., validation 2.17 GB or testing 2.04 GB) without downloading full 18.57 GB."
+    },
+    "download_separate_categories": {
+      "value": false,
+      "status": "verified",
+      "source_url": "https://cloud.ilabt.imec.be/public.php/dav/files/xEeAzrY7ES9KA8o/sd2-sp/",
+      "request_method": "PROPFIND",
+      "evidence": "Categories are bundled inside split tar.gz archives.",
+      "notes": "Category isolation must be performed locally post-extraction."
+    },
+    "batch_variant_organization": {
+      "value": "6 edited variants per inpainting task instance (2 masks: segm and bbox * 3 batch variations each)",
+      "status": "verified",
+      "source_url": "https://github.com/IDLabMedia/tgif-dataset",
+      "request_method": "Official specification cross-referenced with paper arXiv:2407.11566 Table 1",
+      "evidence": "18,744 total SD2-sp images / 3,124 instances = 6 variants per instance; 2,046 in val, 2,058 in test, 14,640 in train.",
+      "notes": "All 6 edited variants share the same authentic source image background."
+    },
+    "select_one_variant_per_source": {
+      "value": "Supported via post-extraction filtering and manifest selection",
+      "status": "verified",
+      "source_url": "Local manifest adapter design",
+      "request_method": "Static analysis of TGIF filename structure",
+      "evidence": "Filename contains mask type (segm/bbox) and variation index (_0.png, _1.png, _2.png).",
+      "notes": "The data loader can deterministically pick variation 0 of segm mask to ensure 1:1 pairing with authentic image."
+    },
+    "resume_support": {
+      "value": false,
+      "status": "verified",
+      "source_url": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o/download?path=%2Fsd2-sp&files=sd2-sp_validation.tar.gz",
+      "request_method": "HEAD",
+      "evidence": "Nextcloud server returns Accept-Ranges: None.",
+      "notes": "Downloader must use atomic .part file pattern with integrity verification."
+    }
+  }
+}

@@ -1,0 +1,111 @@
+# Pilot A Learning Curve and Sample-Efficiency Configuration (Phase 4B.1)
+schema_version: "1.0.0"
+config_id: "pilot_a_learning_curve"
+pilot_id: "pilot_tgif_edit"
+pilot_branch: "Pilot A"
+title: "Pilot A: Few-Data Learning Curve and Sample Efficiency Protocol"
+scientific_status: "preregistered_protocol"
+license_track: "research-only"
+
+independent_statistical_unit: "source_id"
+enforce_source_isolation: true
+forbid_masks_as_independent_samples: true
+no_fr_to_fully_generated: true
+
+data_scope:
+  selected_option: "option_p_small_data_pilot"
+  target_task: "authentic_vs_ai_edited"
+  labels:
+    - "authentic"
+    - "ai_edited"
+  total_available_sources: 684
+  train_pool_split: "val"
+  train_pool_sources: 341
+  fixed_test_split: "test"
+  fixed_test_sources: 343
+
+learning_curve:
+  sample_sizes:
+    - n_sources: 50
+      status: "runnable"
+      description: "Extreme low-data regime (50 authentic : 50 edited)"
+    - n_sources: 100
+      status: "runnable"
+      description: "Low-data regime (100 authentic : 100 edited)"
+    - n_sources: 250
+      status: "runnable"
+      description: "Target thesis pilot regime (250 authentic : 250 edited)"
+    - n_sources: 500
+      status: "not_runnable"
+      description: "Requires Option F (exceeds Option P training pool of 341 sources)"
+    - n_sources: 1000
+      status: "not_runnable"
+      description: "Requires Option F (exceeds Option P training pool of 341 sources)"
+
+experimental_protocol:
+  exploratory_seeds: [42, 1337, 2026]
+  final_evaluation_seeds: [42, 100, 1337, 2024, 2026]
+  variant_sampling: "random_cycle_one_per_epoch"
+  fixed_test_evaluation: true
+  bootstrap_iterations: 1000
+  bootstrap_confidence_level: 0.95
+
+model_pipeline:
+  backbone: "mobilenet_v3_small"
+  pretrained_source: "imagenet_1k"
+  stages:
+    stage_1:
+      name: "frozen_transfer_learning"
+      freeze_backbone: true
+      train_head_only: true
+      optimizer: "AdamW"
+      learning_rate: 0.001
+      weight_decay: 0.0001
+      max_epochs: 25
+      early_stopping_patience: 5
+      metric: "val_macro_f1"
+    stage_2:
+      name: "limited_fine_tuning"
+      gated_by_stage_1_shortcut_audit: true
+      unfreeze_block: "features.12"
+      learning_rate: 0.00005
+      max_epochs: 15
+
+baselines:
+  - id: "stratified_dummy"
+    name: "Stratified Random Dummy Classifier"
+  - id: "metadata_only"
+    name: "EXIF/C2PA Metadata-Only Logistic Regression"
+  - id: "dsp_only"
+    name: "2D FFT / DCT / Noise Residual DSP Classifier"
+  - id: "frozen_visual_linear"
+    name: "MobileNetV3 Frozen Backbone + Linear Head"
+  - id: "finetuned_visual"
+    name: "MobileNetV3 Fine-Tuned Block 12 Head"
+  - id: "multimodal_fusion"
+    name: "Calibrated Multimodal Fusion (Visual + DSP + Meta)"
+
+evaluation_metrics:
+  classification:
+    - "macro_f1"
+    - "balanced_accuracy"
+    - "precision"
+    - "recall"
+    - "auroc"
+    - "confusion_matrix"
+  calibration:
+    - "ece_10_bin"
+    - "brier_score"
+    - "nll"
+    - "abstention_rate"
+  localization:
+    - "dice"
+    - "miou"
+    - "pixel_auroc"
+
+acceptance_criteria:
+  min_bootstrap_ci_delta_macro_f1: 0.0
+  max_seed_standard_deviation: 0.03
+  require_dummy_superiority: true
+  require_metadata_superiority: true
+  require_monotonic_learning_trend: true

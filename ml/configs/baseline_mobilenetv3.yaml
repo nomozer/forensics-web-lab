@@ -1,0 +1,31 @@
+experiment_name: "baseline_mobilenetv3_small"
+seed: 42
+
+model:
+  backbone: "mobilenet_v3_small"
+  num_classes: 3 # authentic, fully_generated, ai_edited
+  pretrained: true
+  input_size: [3, 224, 224]
+  dual_stream_freq: false
+
+data:
+  manifest_path: "datasets/manifest.csv"
+  train_split: "train"
+  val_split: "val"
+  batch_size: 64
+  num_workers: 4
+  patch_size: 224
+
+training:
+  epochs: 30
+  lr: 0.0005
+  weight_decay: 0.0001
+  focal_loss_gamma: 2.0
+  label_smoothing: 0.05
+  lr_scheduler: "cosine"
+  warmup_epochs: 5
+  mixed_precision: true
+
+calibration:
+  method: "temperature_scaling"
+  val_ratio: 0.15

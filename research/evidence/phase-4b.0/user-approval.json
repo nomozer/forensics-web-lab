@@ -1,0 +1,15 @@
+{
+  "phase": "4B.0",
+  "approvalStatus": "granted",
+  "scope": "tgif-masks-only",
+  "componentId": "tgif-masks",
+  "expectedBytes": 42362470,
+  "maxDownloadBytes": 67108864,
+  "prohibitedComponents": [
+    "tgif-orig",
+    "tgif-sd2-sp"
+  ],
+  "purpose": "live acquisition smoke and mask inventory verification",
+  "trainingAuthorized": false,
+  "modelDownloadAuthorized": false
+}

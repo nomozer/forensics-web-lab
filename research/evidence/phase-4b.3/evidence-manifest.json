@@ -1,0 +1,64 @@
+{
+  "schemaVersion": "1.0.0",
+  "phase": "4B.3",
+  "startingCommit": "1ad8151",
+  "verdict": "PASS",
+  "artifactsCount": 11,
+  "artifacts": [
+    {
+      "file": "build-summary.json",
+      "bytes": 401,
+      "sha256": "864f7c98a24d6d64b42dd94b09b4b859bc3c4d9920837f0cc1b98c7665e2a195"
+    },
+    {
+      "file": "continuity-reconciliation.json",
+      "bytes": 1876,
+      "sha256": "ca6cd0ffd29fc0e05190dc8130bd0c9848f6d0cfc6580456263b551fa5568735"
+    },
+    {
+      "file": "environment.json",
+      "bytes": 432,
+      "sha256": "e80d562a2c71b27c955ac8bdf53ce44bb6183ea22b702c253f9a8254c072cffd"
+    },
+    {
+      "file": "etag-reconciliation.json",
+      "bytes": 3840,
+      "sha256": "ef5f9bf014fdd4c37edbf7d653847d52f0b85eb5b63b6ec703284d3aefe8c4fd"
+    },
+    {
+      "file": "experiment-preregistration.json",
+      "bytes": 1758,
+      "sha256": "a12200f178aa7a23f6784003ebe83adcee802a6d01469df4df1f4a1770be0ad7"
+    },
+    {
+      "file": "git-state.json",
+      "bytes": 456,
+      "sha256": "1fd9dfd3ee9f3252cedc0f28531fbaa426976a08c30b0b89eab46d818e92972a"
+    },
+    {
+      "file": "locked-test-access-audit.json",
+      "bytes": 664,
+      "sha256": "c5dd77a067eac0e7e3c9cfaa829b02894683f0bcc8b7e2d9639159fb5efaac5f"
+    },
+    {
+      "file": "manifest-audit.json",
+      "bytes": 2246,
+      "sha256": "d0f3d0c9d7b126405f7c3550543feaee8689fd49e7412d7d6eb055a5eba15bb6"
+    },
+    {
+      "file": "PHASE_REPORT.md",
+      "bytes": 18958,
+      "sha256": "be48d6906b6626c65ce0501ba2810319a0d22c4e1e48b0c20ea4646c3738ffb8"
+    },
+    {
+      "file": "source-balance-audit.json",
+      "bytes": 1239,
+      "sha256": "0d35b9ef9f9d92086db09445ff5118aabc07ab5af283c1c3c80bdc1e31167736"
+    },
+    {
+      "file": "test-summary.json",
+      "bytes": 1582,
+      "sha256": "27033bdd30e28e4e659efeb77bf8b5b7f083d37f4703bfcb5f026738df093f5b"
+    }
+  ]
+}

@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://forensics-web-lab.local/schemas/acquisition-plan.v1.schema.json",
+  "title": "DatasetAcquisitionPlan",
+  "description": "Schema for machine-verifiable, auditable dataset acquisition plans in Forensics Web Lab",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "planId",
+    "datasetId",
+    "pilotId",
+    "approvalStatus",
+    "researchPurpose",
+    "destination",
+    "license",
+    "requiredFreeDiskBytes",
+    "downloadMethod",
+    "resumeCapability",
+    "checksumPolicy",
+    "extractionPolicy",
+    "manifestOutput",
+    "components"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "enum": ["1.0.0"]
+    },
+    "planId": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "datasetId": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "pilotId": {
+      "type": "string"
+    },
+    "approvalStatus": {
+      "type": "string",
+      "enum": ["pending-user-approval", "approved", "rejected"]
+    },
+    "researchPurpose": {
+      "type": "string"
+    },
+    "destination": {
+      "type": "string"
+    },
+    "license": {
+      "type": "object",
+      "required": ["datasetLicense", "track", "derivativeWeightsPolicy"],
+      "properties": {
+        "datasetLicense": { "type": "string" },
+        "originalImagesLicense": { "type": "string" },
+        "track": { "type": "string", "enum": ["research-only", "product-eligible"] },
+        "derivativeWeightsPolicy": { "type": "string" }
+      }
+    },
+    "requiredFreeDiskBytes": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "downloadMethod": {
+      "type": "string",
+      "enum": ["nextcloud-dynamic-zip", "google-drive-multipart", "direct-http"]
+    },
+    "resumeCapability": {
+      "type": "object",
+      "required": ["resumeSupported", "notes"],
+      "properties": {
+        "resumeSupported": { "type": "boolean" },
+        "notes": { "type": "string" }
+      }
+    },
+    "checksumPolicy": {
+      "type": "object",
+      "required": ["upstreamChecksumAvailable", "postDownloadVerification"],
+      "properties": {
+        "upstreamChecksumAvailable": { "type": "boolean" },
+        "postDownloadVerification": { "type": "string" }
+      }
+    },
+    "extractionPolicy": {
+      "type": "object",
+      "required": ["stagingDirectory", "safeZipExtraction", "enforceDiskCheck"],
+      "properties": {
+        "stagingDirectory": { "type": "string" },
+        "safeZipExtraction": { "type": "boolean" },
+        "enforceDiskCheck": { "type": "boolean" }
+      }
+    },
+    "manifestOutput": {
+      "type": "object",
+      "required": ["path", "groupKey", "variantKey"],
+      "properties": {
+        "path": { "type": "string" },
+        "groupKey": { "type": "string", "enum": ["source_id"] },
+        "variantKey": { "type": "string" },
+        "maskKey": { "type": "string" }
+      }
+    },
+    "components": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "componentId",
+          "remoteFolder",
+          "remoteUrl",
+          "assignedLabel",
+          "semanticRole",
+          "verifiedSizeBytes",
+          "estimatedExtractedBytes",
+          "expectedCardinality",
+          "status"
+        ],
+        "properties": {
+          "componentId": { "type": "string" },
+          "remoteFolder": { "type": "string" },
+          "remoteUrl": { "type": "string", "format": "uri" },
+          "assignedLabel": {
+            "type": "string",
+            "enum": ["authentic", "fully_generated", "ai_edited", "ground_truth_mask"]
+          },
+          "semanticRole": { "type": "string" },
+          "verifiedSizeBytes": { "type": ["integer", "null"] },
+          "estimatedExtractedBytes": { "type": ["integer", "null"] },
+          "expectedCardinality": {
+            "type": "object",
+            "required": ["count", "status"],
+            "properties": {
+              "count": { "type": ["integer", "null"] },
+              "status": { "type": "string", "enum": ["verified", "estimated", "unverified"] },
+              "notes": { "type": "string" }
+            }
+          },
+          "status": { "type": "string", "enum": ["verified", "estimated", "unverified"] }
+        }
+      }
+    }
+  }
+}

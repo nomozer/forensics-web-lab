@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0.0",
+  "timestamp_utc": "2026-09-23T17:04:40.600696+00:00",
+  "phase": "4C.0",
+  "hardware_profile": {
+    "device": "cpu",
+    "processor": "Intel64 Family 6 Model 141 Stepping 1, GenuineIntel",
+    "num_cpus": 12
+  },
+  "memory_profile": {
+    "peak_ram_bytes": 5543004,
+    "peak_ram_mb": 5.29,
+    "measurement_method": "tracemalloc_python_runtime"
+  },
+  "execution_time_profile": {
+    "total_execution_seconds": 89.231,
+    "mean_epoch_seconds": 8.256,
+    "min_epoch_seconds": 6.969,
+    "max_epoch_seconds": 11.612,
+    "dataloader_mean_throughput_samples_per_sec": 26.7
+  },
+  "projected_full_experiment_budget": {
+    "note": "Forecast for 15 runs (3 sizes x 5 seeds) based on measured single-seed N=50 throughput",
+    "measured_mean_epoch_time_sec": 8.256,
+    "estimated_n50_run_seconds": 99.1,
+    "estimated_n100_run_seconds": 185.8,
+    "estimated_n250_run_seconds": 412.8,
+    "total_estimated_15_runs_minutes": 58.1
+  }
+}

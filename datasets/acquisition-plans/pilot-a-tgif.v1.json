@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "1.0.0",
+  "planId": "pilot-a-tgif",
+  "datasetId": "tgif",
+  "pilotId": "pilot_tgif_edit",
+  "approvalStatus": "pending-user-approval",
+  "researchPurpose": "Pilot A: Binary classification (authentic vs ai_edited) and inpainting localization on matched MS-COCO pairs",
+  "destination": "data/research/tgif",
+  "license": {
+    "datasetLicense": "CC BY-SA 4.0",
+    "originalImagesLicense": "CC BY 4.0 (MS-COCO 2017)",
+    "track": "research-only",
+    "derivativeWeightsPolicy": "quarantined-to-research-track-prohibited-from-production"
+  },
+  "requiredFreeDiskBytes": 59055800320,
+  "downloadMethod": "nextcloud-dynamic-zip",
+  "resumeCapability": {
+    "resumeSupported": false,
+    "notes": "Nextcloud dynamic zip endpoints generate archives on-the-fly and do not support HTTP Range requests. Each subfolder must be fetched atomically."
+  },
+  "checksumPolicy": {
+    "upstreamChecksumAvailable": false,
+    "postDownloadVerification": "sha256-hash-generation-and-zip-integrity-test"
+  },
+  "extractionPolicy": {
+    "stagingDirectory": "data/research/tgif/.staging",
+    "safeZipExtraction": true,
+    "enforceDiskCheck": true
+  },
+  "manifestOutput": {
+    "path": "data/research/tgif/manifest_pilot_a.csv",
+    "groupKey": "source_id",
+    "variantKey": "variant_id",
+    "maskKey": "mask_id"
+  },
+  "components": [
+    {
+      "componentId": "tgif-orig",
+      "remoteFolder": "orig",
+      "remoteUrl": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o/download?path=%2F&files=orig",
+      "assignedLabel": "authentic",
+      "semanticRole": "authentic_camera_source",
+      "verifiedSizeBytes": 7301444403,
+      "estimatedExtractedBytes": 7500000000,
+      "expectedCardinality": {
+        "count": 3124,
+        "status": "verified",
+        "notes": "3,124 authentic MS-COCO images (2,440 train, 341 val, 343 test)"
+      },
+      "status": "verified"
+    },
+    {
+      "componentId": "tgif-masks",
+      "remoteFolder": "masks",
+      "remoteUrl": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o/download?path=%2F&files=masks",
+      "assignedLabel": "ground_truth_mask",
+      "semanticRole": "localization_ground_truth",
+      "verifiedSizeBytes": 42362470,
+      "estimatedExtractedBytes": 50000000,
+      "expectedCardinality": {
+        "count": null,
+        "status": "estimated",
+        "notes": "Estimated ~6,248 masks (2 per authentic image: segm and bbox); exact count to be verified upon receipt"
+      },
+      "status": "verified"
+    },
+    {
+      "componentId": "tgif-sd2-sp",
+      "remoteFolder": "sd2-sp",
+      "remoteUrl": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o/download?path=%2F&files=sd2-sp",
+      "assignedLabel": "ai_edited",
+      "semanticRole": "spliced_inpainting_sd2",
+      "verifiedSizeBytes": 18575836774,
+      "estimatedExtractedBytes": 19500000000,
+      "expectedCardinality": {
+        "count": 18744,
+        "status": "verified",
+        "notes": "18,744 spliced inpaintings (14,640 train, 2,046 val, 2,058 test; 6 variants per authentic source image)"
+      },
+      "status": "verified"
+    }
+  ]
+}

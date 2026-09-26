@@ -1,0 +1,20 @@
+{
+  "phase": "CI.3",
+  "error": "ModuleNotFoundError: No module named 'ml'",
+  "affectedEvents": ["push", "pull_request"],
+  "failingCommand": "cd ml && pytest tests/ -v",
+  "failingWorkingDirectory": "ml/",
+  "failingExitCode": 2,
+  "collectionErrorCount": 9,
+  "confirmedCause": "Running pytest from ml/ directory causes repository root to not be in sys.path, breaking absolute imports like 'from ml.configs.validator import ...'",
+  "repairedCommand": "python -m pytest ml/tests -v",
+  "repairedWorkingDirectory": ".",
+  "localFailReproduced": true,
+  "localPassReproduced": true,
+  "productionCodeChanged": false,
+  "pythonSourceChanged": false,
+  "dependenciesChanged": false,
+  "trainingRuns": 0,
+  "lockedTestAccesses": 0,
+  "datasetModelDownloadBytes": 0
+}

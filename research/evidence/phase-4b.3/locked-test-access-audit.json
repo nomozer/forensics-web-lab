@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "1.0.0",
+  "timestampUtc": "2026-09-22T06:58:03Z",
+  "targetPartition": "locked_test",
+  "totalSources": 343,
+  "canonicalSeal": "519e7a0e6815e781d1cefa95971e5221ac1f25656837374d8dc4ba41401fded9",
+  "sealVerified": true,
+  "rolePermissions": {
+    "trainingAccessAllowed": false,
+    "developmentAccessAllowed": false,
+    "finalEvaluationAccessAllowed": true
+  },
+  "finalEvaluationRequirements": [
+    "experiment_lock_hash",
+    "config_hash",
+    "checkpoint_hash",
+    "preprocessing_hash",
+    "threshold_calibration_hash",
+    "seeds_list",
+    "timestamp_utc"
+  ],
+  "auditStatus": "verified-by-automated-tests"
+}

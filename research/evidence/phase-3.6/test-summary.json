@@ -1,0 +1,37 @@
+{
+  "phase": "Phase 3.6",
+  "commitAudited": "cd59136",
+  "timestampUtc": "2026-09-21T07:45:00Z",
+  "typescriptTests": {
+    "command": "pnpm test",
+    "exitCode": 0,
+    "packagesCount": 6,
+    "packages": [
+      { "name": "@forensics/shared", "tests": 17, "passed": 17, "failed": 0 },
+      { "name": "@forensics/provenance", "tests": 3, "passed": 3, "failed": 0 },
+      { "name": "@forensics/report", "tests": 4, "passed": 4, "failed": 0 },
+      { "name": "@forensics/forensics", "tests": 5, "passed": 5, "failed": 0 },
+      { "name": "@forensics/inference", "tests": 8, "passed": 8, "failed": 0 },
+      { "name": "web", "tests": 3, "passed": 3, "failed": 0 }
+    ],
+    "totalTests": 40,
+    "totalPassed": 40,
+    "totalFailed": 0
+  },
+  "pythonTests": {
+    "command": "ml/.venv/Scripts/python -m pytest ml/tests -v",
+    "exitCode": 0,
+    "runner": "pytest-9.1.1",
+    "totalTests": 5,
+    "totalPassed": 5,
+    "totalFailed": 0,
+    "durationSeconds": 5.73,
+    "tests": [
+      { "nodeId": "ml/tests/test_model_pipeline.py::test_mobilenetv3_forward_shape", "status": "PASSED" },
+      { "nodeId": "ml/tests/test_model_pipeline.py::test_focal_loss_computation", "status": "PASSED" },
+      { "nodeId": "ml/tests/test_model_pipeline.py::test_manifest_csv_roundtrip", "status": "PASSED" },
+      { "nodeId": "ml/tests/test_model_pipeline.py::test_group_split_prevents_leakage", "status": "PASSED" },
+      { "nodeId": "ml/tests/test_model_pipeline.py::test_temperature_scaler_and_ece", "status": "PASSED" }
+    ]
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "phase": "CI.2",
+  "startingHead": "79caece18530d9666361c9cec8d6bc5434c4a542",
+  "confirmedRootCause": "TS18047: 'result.probabilities' is possibly 'null' at packages/inference/src/__tests__/fusion.test.ts:83",
+  "changedFile": "packages/inference/src/__tests__/fusion.test.ts",
+  "changedTest": "calibrates logits and maps to fully_generated when generative confidence is high",
+  "previousCommand": "pnpm typecheck",
+  "previousExitCode": 2,
+  "repairedCommand": "pnpm typecheck",
+  "repairedExitCode": 0,
+  "semanticImpact": "Test now explicitly guards nullable probabilities when hasModel is true. Production inference logic unchanged. Type signature ClassProbabilities | null preserved.",
+  "productionCodeChanged": false,
+  "pythonCodeChanged": false,
+  "workflowChanged": false,
+  "trainingRuns": 0,
+  "lockedTestAccesses": 0,
+  "datasetModelDownloadBytes": 0,
+  "dependencyDownloadBytes": {
+    "torchPartial": 52428800,
+    "note": "Previous local Torch download attempt (52 MB of 124 MB) timed out. Not counted as dataset/model acquisition."
+  }
+}

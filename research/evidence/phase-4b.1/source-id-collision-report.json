@@ -1,0 +1,35 @@
+{
+  "phase": "4B.1",
+  "previous_parser": "parse_mask_filename (leading numeric token -> 12-digit COCO ID)",
+  "candidate_parsers": [
+    "parser_1_raw_coco_id",
+    "parser_2_category_instance_id",
+    "parser_3_canonical_dual_key"
+  ],
+  "exact_unique_ids_by_parser": {
+    "parser_1": 2242,
+    "parser_2": 3124,
+    "parser_3_source_units": 2242,
+    "parser_3_task_instances": 3124
+  },
+  "collision_count": {
+    "cross_split_source_id_collisions": 0,
+    "cross_split_instance_id_collisions": 0,
+    "within_train_coco_multi_category_sharing": 571
+  },
+  "failure_count": {
+    "parser_1_failures": 0,
+    "parser_2_failures": 0
+  },
+  "cross_split_collision_count": 0,
+  "expected_variant_distribution": {
+    "per_instance": 10,
+    "breakdown": "2 native (bbox, segm) + 2 ps_mask + 2 x 512 + 2 x 1024 + 2 generic"
+  },
+  "observed_variant_distribution": {
+    "10": 3123,
+    "8": 1
+  },
+  "recommended_canonical_parser": "parser_3_canonical_dual_key",
+  "status": "verified"
+}

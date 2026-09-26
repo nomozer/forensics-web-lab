@@ -1,0 +1,22 @@
+{
+  "phase": "4B.0",
+  "status": "PASS",
+  "timestamp": "2026-09-21T15:52:00Z",
+  "command": "pnpm build",
+  "packages": [
+    "packages/shared",
+    "packages/provenance",
+    "packages/report",
+    "packages/forensics",
+    "packages/inference",
+    "apps/web"
+  ],
+  "webApp": {
+    "bundler": "vite v6.4.3",
+    "modulesTransformed": 55,
+    "distHtmlBytes": 1080,
+    "distForensicsWorkerBytes": 437930,
+    "distJsBytes": 683690,
+    "distCssBytes": 3970
+  }
+}

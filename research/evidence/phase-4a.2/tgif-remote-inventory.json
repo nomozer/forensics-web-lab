@@ -1,0 +1,235 @@
+{
+  "schemaVersion": "1.0.0",
+  "auditDate": "2026-09-21",
+  "auditor": "AI Assistant (Scientific Honesty Audit)",
+  "sourceRepository": "https://github.com/IDLabMedia/tgif-dataset",
+  "primaryPaper": "https://arxiv.org/abs/2407.11566",
+  "extendedPaper": "https://arxiv.org/abs/2603.28613",
+  "datasetLicenses": {
+    "dataset": "CC BY-SA 4.0",
+    "originalImages": "CC BY 4.0 (MS-COCO)",
+    "generatorOutputs": "Varies by generator terms (SD2 OpenRAIL, SDXL OpenRAIL, Adobe Terms of Service, FLUX.1 dev non-commercial / schnell Apache-2.0)",
+    "code": "Not explicitly licensed in root repo (assumed all rights reserved by authors until LICENSE file added)",
+    "trainedWeightsPolicy": "CC BY-SA 4.0 share-alike condition may attach to derivative works depending on legal jurisdiction; project policy classifies derivativeWeights as unclear and prohibits production promotion"
+  },
+  "overallStatistics": {
+    "authenticImages": {
+      "training": 2440,
+      "validation": 341,
+      "testing": 343,
+      "total": 3124
+    },
+    "manipulatedImagesTGIF": {
+      "training": 58560,
+      "validation": 8184,
+      "testing": 8232,
+      "total": 74976
+    },
+    "manipulatedImagesTGIF2": {
+      "training": 153720,
+      "validation": 21483,
+      "testing": 21609,
+      "total": 196812
+    },
+    "manipulatedImagesTotal": 271788
+  },
+  "nextcloudShares": [
+    {
+      "shareName": "TGIF (Original)",
+      "token": "xEeAzrY7ES9KA8o",
+      "officialUrl": "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o",
+      "totalReportedSize": "65.4 GB",
+      "components": [
+        {
+          "name": "masks",
+          "type": "directory",
+          "sizeReported": "40.4 MB",
+          "sizeBytes": 42362470,
+          "generator": "Ground-truth human / COCO annotation (segmentation & bounding box)",
+          "editType": "ground_truth_mask",
+          "hasGroundTruthMask": true,
+          "independentDownloadSupported": true,
+          "checksum": null
+        },
+        {
+          "name": "orig",
+          "type": "directory",
+          "sizeReported": "6.8 GB",
+          "sizeBytes": 7301444403,
+          "generator": "Camera authentic (MS-COCO)",
+          "editType": "authentic_source",
+          "hasGroundTruthMask": false,
+          "independentDownloadSupported": true,
+          "checksum": null
+        },
+        {
+          "name": "ps-sp",
+          "type": "directory",
+          "sizeReported": "16.8 GB",
+          "sizeBytes": 18038862643,
+          "generator": "Adobe Photoshop / Firefly",
+          "editType": "spliced_inpainting (ai_edited)",
+          "hasGroundTruthMask": true,
+          "independentDownloadSupported": true,
+          "checksum": null
+        },
+        {
+          "name": "sd2-fr",
+          "type": "directory",
+          "sizeReported": "7.1 GB",
+          "sizeBytes": 7623566950,
+          "generator": "Stable Diffusion 2 (512x512)",
+          "editType": "fully_regenerated (fully_generated)",
+          "hasGroundTruthMask": true,
+          "independentDownloadSupported": true,
+          "checksum": null
+        },
+        {
+          "name": "sd2-sp",
+          "type": "directory",
+          "sizeReported": "17.3 GB",
+          "sizeBytes": 18575836774,
+          "generator": "Stable Diffusion 2 (1024x1024 / 512x512)",
+          "editType": "spliced_inpainting (ai_edited)",
+          "hasGroundTruthMask": true,
+          "independentDownloadSupported": true,
+          "checksum": null
+        },
+        {
+          "name": "sdxl-fr",
+          "type": "directory",
+          "sizeReported": "17.3 GB",
+          "sizeBytes": 18575836774,
+          "generator": "SDXL (1024x1024)",
+          "editType": "fully_regenerated (fully_generated)",
+          "hasGroundTruthMask": true,
+          "independentDownloadSupported": true,
+          "checksum": null
+        }
+      ]
+    },
+    {
+      "shareName": "TGIF2 FLUX",
+      "token": "KG48tLZZzifC5WE",
+      "officialUrl": "https://cloud.ilabt.imec.be/index.php/s/KG48tLZZzifC5WE",
+      "totalReportedSize": "110 GB",
+      "components": [
+        {
+          "name": "masks-flux",
+          "type": "directory",
+          "sizeReported": "7.7 MB",
+          "sizeBytes": 8074035,
+          "generator": "Ground-truth masks adjusted for FLUX 16px divisibility",
+          "editType": "ground_truth_mask",
+          "hasGroundTruthMask": true,
+          "independentDownloadSupported": true,
+          "checksum": null
+        },
+        {
+          "name": "orig-flux",
+          "type": "directory",
+          "sizeReported": "5.7 GB",
+          "sizeBytes": 6120328396,
+          "generator": "Camera authentic (MS-COCO 16px cropped)",
+          "editType": "authentic_source",
+          "hasGroundTruthMask": false,
+          "independentDownloadSupported": true,
+          "checksum": null
+        },
+        {
+          "name": "flux1dev-fr",
+          "type": "directory",
+          "sizeReported": "18.2 GB",
+          "sizeBytes": 19542101196,
+          "generator": "FLUX.1 dev",
+          "editType": "fully_regenerated (fully_generated)",
+          "hasGroundTruthMask": true,
+          "independentDownloadSupported": true,
+          "checksum": null
+        },
+        {
+          "name": "flux1dev-sp",
+          "type": "directory",
+          "sizeReported": "17.2 GB",
+          "sizeBytes": 18468457676,
+          "generator": "FLUX.1 dev",
+          "editType": "spliced_inpainting (ai_edited)",
+          "hasGroundTruthMask": true,
+          "independentDownloadSupported": true,
+          "checksum": null
+        },
+        {
+          "name": "flux1filldev-fr",
+          "type": "directory",
+          "sizeReported": "16.3 GB",
+          "sizeBytes": 17502045798,
+          "generator": "FLUX.1 Fill dev",
+          "editType": "fully_regenerated (fully_generated)",
+          "hasGroundTruthMask": true,
+          "independentDownloadSupported": true,
+          "checksum": null
+        },
+        {
+          "name": "flux1filldev-sp",
+          "type": "directory",
+          "sizeReported": "17.0 GB",
+          "sizeBytes": 18253611008,
+          "generator": "FLUX.1 Fill dev",
+          "editType": "spliced_inpainting (ai_edited)",
+          "hasGroundTruthMask": true,
+          "independentDownloadSupported": true,
+          "checksum": null
+        },
+        {
+          "name": "flux1schnell-fr",
+          "type": "directory",
+          "sizeReported": "18.3 GB",
+          "sizeBytes": 19649480294,
+          "generator": "FLUX.1 schnell",
+          "editType": "fully_regenerated (fully_generated)",
+          "hasGroundTruthMask": true,
+          "independentDownloadSupported": true,
+          "checksum": null
+        },
+        {
+          "name": "flux1schnell-sp",
+          "type": "directory",
+          "sizeReported": "17.3 GB",
+          "sizeBytes": 18575836774,
+          "generator": "FLUX.1 schnell",
+          "editType": "spliced_inpainting (ai_edited)",
+          "hasGroundTruthMask": true,
+          "independentDownloadSupported": true,
+          "checksum": null
+        }
+      ]
+    },
+    {
+      "shareName": "TGIF2 Random Masks",
+      "token": "GDGewtTFcHccaNj",
+      "officialUrl": "https://cloud.ilabt.imec.be/index.php/s/GDGewtTFcHccaNj",
+      "totalReportedSize": "73 GB",
+      "components": [
+        { "name": "masks-flux", "sizeReported": "904 KB", "sizeBytes": 925696, "independentDownloadSupported": true },
+        { "name": "masks-sd2", "sizeReported": "923 KB", "sizeBytes": 945152, "independentDownloadSupported": true },
+        { "name": "masks-sdxl", "sizeReported": "889 KB", "sizeBytes": 910336, "independentDownloadSupported": true },
+        { "name": "metadata", "sizeReported": "1.8 MB", "sizeBytes": 1887436, "independentDownloadSupported": true },
+        { "name": "sd2-fr", "sizeReported": "3.6 GB", "sizeBytes": 3865470566, "independentDownloadSupported": true },
+        { "name": "sd2-sp", "sizeReported": "8.7 GB", "sizeBytes": 9341517824, "independentDownloadSupported": true },
+        { "name": "sdxl-fr", "sizeReported": "8.8 GB", "sizeBytes": 9448896921, "independentDownloadSupported": true },
+        { "name": "flux1dev-fr", "sizeReported": "9.2 GB", "sizeBytes": 9878413312, "independentDownloadSupported": true },
+        { "name": "flux1dev-sp", "sizeReported": "8.7 GB", "sizeBytes": 9341517824, "independentDownloadSupported": true },
+        { "name": "flux1filldev-fr", "sizeReported": "7.6 GB", "sizeBytes": 8160437862, "independentDownloadSupported": true },
+        { "name": "flux1filldev-sp", "sizeReported": "8.5 GB", "sizeBytes": 9126759628, "independentDownloadSupported": true },
+        { "name": "flux1schnell-fr", "sizeReported": "9.2 GB", "sizeBytes": 9878413312, "independentDownloadSupported": true },
+        { "name": "flux1schnell-sp", "sizeReported": "8.8 GB", "sizeBytes": 9448896921, "independentDownloadSupported": true }
+      ]
+    }
+  ],
+  "feasibilityConclusion": {
+    "conclusion": "A_WITH_SUBFOLDER_ARCHIVE",
+    "summary": "Nextcloud public shares allow downloading individual subdirectories independently as on-the-fly zip archives. Unlike GenImage Google Drive (which requires downloading a multi-part split volume sequence totaling ~24 GB before any image can be read), TGIF enables targeted downloading of specific directories (e.g. masks at 40.4 MB, or orig at 6.8 GB, or sd2-sp at 17.3 GB).",
+    "smallestDownloadableComponent": "masks directory (40.4 MB in TGIF share, 7.7 MB in TGIF2 FLUX share, 904 KB in TGIF2 Random share)",
+    "smallestVisualPairSubset": "orig (6.8 GB) + masks (40.4 MB) + ps-sp (16.8 GB) or sd2-sp (17.3 GB)"
+  }
+}

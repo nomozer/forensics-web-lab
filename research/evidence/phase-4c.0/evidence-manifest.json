@@ -1,0 +1,87 @@
+{
+  "schemaVersion": "1.0.0",
+  "phase": "4C.0",
+  "fileCount": 17,
+  "artifacts": [
+    {
+      "file": "research/evidence/phase-4c.0/build-summary.json",
+      "sizeBytes": 882,
+      "sha256": "cd629f2421c924ebe4e4605e9464d96166e5c48804cd57800399fdfb5b0335c5"
+    },
+    {
+      "file": "research/evidence/phase-4c.0/checkpoint-receipt.json",
+      "sizeBytes": 574,
+      "sha256": "f17f2594a730e6f4163f6b4f15be946b2d3671fdfa31a67ede9efc6d6759cb5d"
+    },
+    {
+      "file": "research/evidence/phase-4c.0/environment.json",
+      "sizeBytes": 527,
+      "sha256": "f9f569ea46545a1fd37efb9eeed5347ef144d9333e2226cbd57f76f54d21c8c2"
+    },
+    {
+      "file": "research/evidence/phase-4c.0/git-state.json",
+      "sizeBytes": 473,
+      "sha256": "ea5c351a1bbb5cf3d5c9bf3806e6cc59f81b7bb93fdb4e963e980461b116b06b"
+    },
+    {
+      "file": "research/evidence/phase-4c.0/network-accounting.json",
+      "sizeBytes": 639,
+      "sha256": "19b1173b8e0d873f15db13228d2d954edeeb56238bac494f826e2557bc5c0b35"
+    },
+    {
+      "file": "research/evidence/phase-4c.0/PHASE_REPORT.md",
+      "sizeBytes": 12316,
+      "sha256": "960141fdf2c9defbf30bc7d218b970c90fd4b5a80153c1f26425ffd2a6ea11c6"
+    },
+    {
+      "file": "research/evidence/phase-4c.0/pixel-geometry-audit.json",
+      "sizeBytes": 1755,
+      "sha256": "b25290d2d8f3fb344096f147108deb953fc97ae940ddafd578660a8d3a120fa0"
+    },
+    {
+      "file": "research/evidence/phase-4c.0/pretrained-weight-receipt.json",
+      "sizeBytes": 1263,
+      "sha256": "ddf713768b223b1f69929ba157a096a811d00fdf560d775aca51ef0b59a0d11f"
+    },
+    {
+      "file": "research/evidence/phase-4c.0/real-variant-map.json",
+      "sizeBytes": 4285915,
+      "sha256": "1db96681b300a0034f5f461ef196f0c92d9d4d0c45e6c05b26a053c5619c64fb"
+    },
+    {
+      "file": "research/evidence/phase-4c.0/resource-profile.json",
+      "sizeBytes": 995,
+      "sha256": "d75af330f569e5085a887a744c07f8ffaabfa398d0044269552144611c78de58"
+    },
+    {
+      "file": "research/evidence/phase-4c.0/sampler-runtime-audit.json",
+      "sizeBytes": 2433,
+      "sha256": "6062fe663f2ceee36589199e232431507aed28db750da30b2a5e8d91a4824de7"
+    },
+    {
+      "file": "research/evidence/phase-4c.0/smoke-run-binding.json",
+      "sizeBytes": 1643,
+      "sha256": "78c99cdb2cbcb8e61956683cec14e759081e6dc92d6600084bce2e6faaf8ffc7"
+    },
+    {
+      "file": "research/evidence/phase-4c.0/smoke-training-metrics.json",
+      "sizeBytes": 6353,
+      "sha256": "a68b64c7cf34e7c31051357d6a7dd4fb7f8f1fe5efeca4f92475885400f52278"
+    },
+    {
+      "file": "research/evidence/phase-4c.0/stage0-baselines.json",
+      "sizeBytes": 4461,
+      "sha256": "18901d8bbbecb75a77537ac887ec417f49becc2c8fb48445fc88b2253a23fe70"
+    },
+    {
+      "file": "research/evidence/phase-4c.0/test-summary.json",
+      "sizeBytes": 1818,
+      "sha256": "e83b79a9e0726385193a7871cb42994edf291a81e51703587e2ae7e9bfa142c2"
+    },
+    {
+      "file": "research/evidence/phase-4c.0/user-approval.json",
+      "sizeBytes": 1760,
+      "sha256": "2eac54e26d025127528d5a4c7a48faa0b498767aa148f65a2008b5ec06bcd853"
+    }
+  ]
+}

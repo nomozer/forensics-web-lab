@@ -1,0 +1,221 @@
+{
+  "schema_version": "1.0.0",
+  "timestamp_utc": "2026-09-23T18:08:44.391207+00:00",
+  "phase": "4C.0a",
+  "scientific_status": "development-only exploratory baseline",
+  "reconciliation_note": "Resolves numerical discrepancy between conversational chat summary and official evidence artifacts. The numbers below are derived live from reproducible deterministic scripts.",
+  "recalibrated_scientific_statements": {
+    "metadata_only_statement": "Metadata-only baseline kh\u00f4ng ph\u00e1t hi\u1ec7n kh\u1ea3 n\u0103ng ph\u00e2n bi\u1ec7t \u0111\u00e1ng k\u1ec3 tr\u00ean inner-validation v\u1edbi feature set \u0111\u00e3 \u0111\u0103ng k\u00fd; c\u00e1c d\u1ea1ng shortcut ch\u01b0a \u0111\u01b0\u1ee3c bi\u1ec3u di\u1ec5n trong feature set v\u1eabn l\u00e0 gi\u1edbi h\u1ea1n.",
+    "dsp_only_statement": "DSP-only baseline \u0111\u1ea1t AUROC ~0.60, x\u00e1c nh\u1eadn t\u00edn hi\u1ec7u ph\u00e2n t\u00edch t\u1ea7n s\u1ed1 2D v\u00e0 nhi\u1ec5u Laplacian b\u1eaft \u0111\u01b0\u1ee3c m\u1ed9t ph\u1ea7n seam inpainting tr\u00ean native canvas nh\u01b0ng ch\u01b0a \u0111\u1ee7 l\u00e0m b\u1ed9 ph\u00e2n lo\u1ea1i \u0111\u1ed9c l\u1eadp.",
+    "stratified_dummy_statement": "Stratified Dummy s\u1eed d\u1ee5ng random_state=42 v\u00e0 class prior 1:1 c\u00e2n b\u1eb1ng, \u0111\u1ea1i di\u1ec7n cho ng\u01b0\u1ee1ng ph\u00e2n l\u1edbp ng\u1eabu nhi\u00ean."
+  },
+  "stage0_authoritative_table": {
+    "N_50": {
+      "n_sources": 50,
+      "train_samples": 100,
+      "val_sources": 91,
+      "seed": 42,
+      "threshold": 0.5,
+      "stratified_dummy": {
+        "macro_f1": 0.5932,
+        "balanced_accuracy": 0.5934,
+        "auroc": 0.562,
+        "brier_score": 0.3643,
+        "ece": 0.4661,
+        "confusion_matrix": [
+          [
+            52,
+            39
+          ],
+          [
+            35,
+            56
+          ]
+        ],
+        "prediction_artifact_sha256": "a25f54a4ebc62995dd7e80e0f3b2a74569c07b1fe4c7c61e1225a399650cbb33",
+        "strategy": "stratified",
+        "random_state": 42,
+        "class_prior": "empirical_training_1:1",
+        "run_type": "single_registered_seed"
+      },
+      "metadata_only": {
+        "macro_f1": 0.5098,
+        "balanced_accuracy": 0.511,
+        "auroc": 0.5101,
+        "brier_score": 0.2499,
+        "ece": 0.0023,
+        "confusion_matrix": [
+          [
+            51,
+            40
+          ],
+          [
+            49,
+            42
+          ]
+        ],
+        "prediction_artifact_sha256": "12833b680f9811cafce96e0288c2c300f1530a8ea6b3b2e1476b9f9339ddb3b1",
+        "model": "LogisticRegression(C=1.0, random_state=42)",
+        "feature_scaling": "StandardScaler fit on train only"
+      },
+      "dsp_only": {
+        "macro_f1": 0.5653,
+        "balanced_accuracy": 0.5659,
+        "auroc": 0.6022,
+        "brier_score": 0.245,
+        "ece": 0.0277,
+        "confusion_matrix": [
+          [
+            48,
+            43
+          ],
+          [
+            36,
+            55
+          ]
+        ],
+        "prediction_artifact_sha256": "2f1325d7a9fee51eb6b315f204e379179627206f3d3b83749ec172d7afb0dea1",
+        "model": "LogisticRegression(C=1.0, random_state=42)",
+        "feature_scaling": "StandardScaler fit on train only"
+      }
+    },
+    "N_100": {
+      "n_sources": 100,
+      "train_samples": 200,
+      "val_sources": 91,
+      "seed": 42,
+      "threshold": 0.5,
+      "stratified_dummy": {
+        "macro_f1": 0.5932,
+        "balanced_accuracy": 0.5934,
+        "auroc": 0.562,
+        "brier_score": 0.3643,
+        "ece": 0.4661,
+        "confusion_matrix": [
+          [
+            52,
+            39
+          ],
+          [
+            35,
+            56
+          ]
+        ],
+        "prediction_artifact_sha256": "a25f54a4ebc62995dd7e80e0f3b2a74569c07b1fe4c7c61e1225a399650cbb33",
+        "strategy": "stratified",
+        "random_state": 42,
+        "class_prior": "empirical_training_1:1",
+        "run_type": "single_registered_seed"
+      },
+      "metadata_only": {
+        "macro_f1": 0.5109,
+        "balanced_accuracy": 0.511,
+        "auroc": 0.5101,
+        "brier_score": 0.2499,
+        "ece": 0.0032,
+        "confusion_matrix": [
+          [
+            45,
+            46
+          ],
+          [
+            43,
+            48
+          ]
+        ],
+        "prediction_artifact_sha256": "4d7a104e366338387ba842b45d1a20be5e55f55d48bbbba0c0a1e3ee3b776d94",
+        "model": "LogisticRegression(C=1.0, random_state=42)",
+        "feature_scaling": "StandardScaler fit on train only"
+      },
+      "dsp_only": {
+        "macro_f1": 0.5653,
+        "balanced_accuracy": 0.5659,
+        "auroc": 0.5997,
+        "brier_score": 0.2445,
+        "ece": 0.0341,
+        "confusion_matrix": [
+          [
+            48,
+            43
+          ],
+          [
+            36,
+            55
+          ]
+        ],
+        "prediction_artifact_sha256": "c2758a38aace03b4c72c7437e0a8c15b6555415621188ff7bad80b6b46c0b0c7",
+        "model": "LogisticRegression(C=1.0, random_state=42)",
+        "feature_scaling": "StandardScaler fit on train only"
+      }
+    },
+    "N_250": {
+      "n_sources": 250,
+      "train_samples": 500,
+      "val_sources": 91,
+      "seed": 42,
+      "threshold": 0.5,
+      "stratified_dummy": {
+        "macro_f1": 0.5932,
+        "balanced_accuracy": 0.5934,
+        "auroc": 0.562,
+        "brier_score": 0.3643,
+        "ece": 0.4661,
+        "confusion_matrix": [
+          [
+            52,
+            39
+          ],
+          [
+            35,
+            56
+          ]
+        ],
+        "prediction_artifact_sha256": "a25f54a4ebc62995dd7e80e0f3b2a74569c07b1fe4c7c61e1225a399650cbb33",
+        "strategy": "stratified",
+        "random_state": 42,
+        "class_prior": "empirical_training_1:1",
+        "run_type": "single_registered_seed"
+      },
+      "metadata_only": {
+        "macro_f1": 0.5053,
+        "balanced_accuracy": 0.5055,
+        "auroc": 0.5104,
+        "brier_score": 0.2499,
+        "ece": 0.0016,
+        "confusion_matrix": [
+          [
+            44,
+            47
+          ],
+          [
+            43,
+            48
+          ]
+        ],
+        "prediction_artifact_sha256": "f9c314ec3d510f16d4f2fd2d862ed23ec0def46485d6031e2c8d7ddba9762c44",
+        "model": "LogisticRegression(C=1.0, random_state=42)",
+        "feature_scaling": "StandardScaler fit on train only"
+      },
+      "dsp_only": {
+        "macro_f1": 0.5539,
+        "balanced_accuracy": 0.5549,
+        "auroc": 0.6015,
+        "brier_score": 0.2438,
+        "ece": 0.0354,
+        "confusion_matrix": [
+          [
+            46,
+            45
+          ],
+          [
+            36,
+            55
+          ]
+        ],
+        "prediction_artifact_sha256": "0809b51da912e653ad98afa728990005f0e6c057c1fb4a2390da53ba3a046a88",
+        "model": "LogisticRegression(C=1.0, random_state=42)",
+        "feature_scaling": "StandardScaler fit on train only"
+      }
+    }
+  }
+}

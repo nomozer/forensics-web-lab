@@ -1,0 +1,39 @@
+{
+  "phase": "CI.3",
+  "manifestVersion": "1.0.0",
+  "generatedAt": "2026-09-26T23:57:00Z",
+  "artifacts": [
+    {
+      "name": "environment.json",
+      "path": "research/evidence/phase-ci.3/environment.json",
+      "description": "Execution environment metadata"
+    },
+    {
+      "name": "test-summary.json",
+      "path": "research/evidence/phase-ci.3/test-summary.json",
+      "description": "Complete test results for TypeScript and Python, including CI failure reproduction"
+    },
+    {
+      "name": "ci-root-cause.json",
+      "path": "research/evidence/phase-ci.3/ci-root-cause.json",
+      "description": "Confirmed root cause analysis for Python CI failure"
+    },
+    {
+      "name": "repair-summary.json",
+      "path": "research/evidence/phase-ci.3/repair-summary.json",
+      "description": "Minimal workflow repair details"
+    },
+    {
+      "name": "PHASE_REPORT.md",
+      "path": "research/evidence/phase-ci.3/PHASE_REPORT.md",
+      "description": "Human-readable phase report"
+    }
+  ],
+  "artifactCount": 5,
+  "directoryFileCount": 6,
+  "manifestSelfExcluded": true,
+  "continuityFilesUpdated": [
+    "docs/continuity/CURRENT_STATE.md",
+    "docs/continuity/STATUS_LEDGER.md"
+  ]
+}

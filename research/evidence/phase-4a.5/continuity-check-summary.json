@@ -1,0 +1,27 @@
+{
+  "phase": "Phase 4A.5",
+  "tool": "scripts/continuity-check.mjs",
+  "scriptEntry": "pnpm continuity:check",
+  "timestampUtc": "2026-09-21T14:48:00Z",
+  "status": "passed",
+  "verdict": "PASS",
+  "modesSupported": [
+    "working-tree (default)",
+    "--staged",
+    "--base <commit> --head <commit>"
+  ],
+  "invariantsVerified": [
+    "Exactly three canonical continuity files exist (CURRENT_STATE.md, CODE_INDEX.md, STATUS_LEDGER.md)",
+    "No duplicate, numbered, or backup continuity files anywhere in repository",
+    "Latest phase in STATUS_LEDGER.md matches latest evidence directory",
+    "CURRENT_STATE.md references the latest phase",
+    "Latest PHASE_REPORT.md exists and is non-empty",
+    "0 machine-local paths or links (file:///, C:\\, D:\\)",
+    "0 unresolved placeholders ('See repository HEAD', unfilled commit fields)",
+    "Every phase section in STATUS_LEDGER.md is <= 20 lines"
+  ],
+  "ciIntegration": {
+    "workflow": ".github/workflows/ci.yml",
+    "command": "pnpm continuity:check -- --base <PR_BASE_SHA> --head <PR_HEAD_SHA>"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "1.0.0",
+  "phase": "4B.2",
+  "auditDate": "2026-09-21",
+  "pairabilityStatus": "verified",
+  "eligibleSourceCount": 684,
+  "accounting": {
+    "matchedPairs": 684,
+    "missingOriginals": 0,
+    "missingEditedImages": 0,
+    "missingMasks": 0,
+    "ambiguousMappings": 0,
+    "corruptImages": 0,
+    "dimensionMismatches": 0,
+    "duplicateSha256Collisions": 234
+  },
+  "verificationDetails": {
+    "canonicalSourceIdFormat": "12-digit zero-padded string",
+    "canonicalInstanceIdFormat": "{category}_{source_id}",
+    "bijectiveMappingConfirmed": true,
+    "crossSplitSourceIntersection": 0
+  }
+}

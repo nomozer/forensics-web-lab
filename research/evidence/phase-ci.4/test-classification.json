@@ -1,0 +1,451 @@
+{
+  "phase": "CI.4",
+  "classification": [
+    {
+      "test": "test_safe_extract_tar_prevents_tar_slip",
+      "file": "ml/tests/test_option_p_protocol.py",
+      "purpose": "Verify tar slip protection",
+      "inputs": ["tempfile", "tarfile (synthetic)"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "HERMETIC_UNIT"
+    },
+    {
+      "test": "test_safe_extract_tar_prevents_absolute_path",
+      "file": "ml/tests/test_option_p_protocol.py",
+      "purpose": "Verify absolute path rejection",
+      "inputs": ["tempfile", "tarfile (synthetic)"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "HERMETIC_UNIT"
+    },
+    {
+      "test": "test_safe_extract_tar_prevents_escaping_symlink",
+      "file": "ml/tests/test_option_p_protocol.py",
+      "purpose": "Verify symlink escape protection",
+      "inputs": ["tempfile", "tarfile (synthetic)"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "HERMETIC_UNIT"
+    },
+    {
+      "test": "test_safe_extract_tar_valid_extraction",
+      "file": "ml/tests/test_option_p_protocol.py",
+      "purpose": "Verify benign tar extraction",
+      "inputs": ["tempfile", "tarfile (synthetic)"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "HERMETIC_UNIT"
+    },
+    {
+      "test": "test_deterministic_nested_split_invariants",
+      "file": "ml/tests/test_option_p_protocol.py",
+      "purpose": "Verify split determinism and nested invariants",
+      "inputs": ["synthetic source IDs"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "HERMETIC_UNIT"
+    },
+    {
+      "test": "test_class_coverage_guard_rejects_three_class",
+      "file": "ml/tests/test_option_p_protocol.py",
+      "purpose": "Verify two-class runnable, three-class blocked",
+      "inputs": ["in-memory class dict"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "HERMETIC_UNIT"
+    },
+    {
+      "test": "test_option_p_dry_run_zero_network",
+      "file": "ml/tests/test_option_p_protocol.py",
+      "purpose": "Verify zero network in dry-run mode",
+      "inputs": ["mocked check_free_disk_space fixture"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "HERMETIC_INTEGRATION",
+      "note": "Mocked disk space to 100GB > 15.728GB required"
+    },
+    {
+      "test": "test_remote_metadata_drift_detection",
+      "file": "ml/tests/test_option_p_protocol.py",
+      "purpose": "Verify Content-Length drift detection",
+      "inputs": ["mocked opener", "tempfile"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "HERMETIC_INTEGRATION"
+    },
+    {
+      "test": "test_locked_test_access_guard",
+      "file": "ml/tests/test_option_p_protocol.py",
+      "purpose": "Verify locked_test partition isolation",
+      "inputs": ["in-memory manifest sample"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "HERMETIC_UNIT"
+    },
+    {
+      "test": "test_pairability_canonical_matching_parsers",
+      "file": "ml/tests/test_option_p_protocol.py",
+      "purpose": "Verify filename parser correctness",
+      "inputs": ["synthetic filenames"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "HERMETIC_UNIT"
+    },
+    {
+      "test": "test_resume_and_idempotency_behavior",
+      "file": "ml/tests/test_option_p_protocol.py",
+      "purpose": "Verify idempotent archive reuse",
+      "inputs": ["tempfile", "synthetic archive"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "HERMETIC_INTEGRATION"
+    },
+    {
+      "test": "test_real_pixel_geometry_audit",
+      "file": "ml/tests/test_phase4c0_gates.py",
+      "purpose": "Verify pixel geometry audit (Case B)",
+      "inputs": ["research/evidence/phase-4c.0/pixel-geometry-audit.json"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "METADATA_CONTRACT"
+    },
+    {
+      "test": "test_real_variant_mapping_structure",
+      "file": "ml/tests/test_phase4c0_gates.py",
+      "purpose": "Verify real-variant-map.json structure",
+      "inputs": ["research/evidence/phase-4c.0/real-variant-map.json"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "METADATA_CONTRACT"
+    },
+    {
+      "test": "test_real_data_resolution_matched_pairing",
+      "file": "ml/tests/test_phase4c0_gates.py",
+      "purpose": "Verify resolution-matched pairing on real assets",
+      "inputs": ["data/research/tgif/manifests/manifest_pilot_a_option_p.csv", "disk images"],
+      "gitTracked": false,
+      "hermetic": false,
+      "gate": "LOCAL_RESEARCH_ARTIFACT",
+      "marker": "requires_research_artifact"
+    },
+    {
+      "test": "test_stable_sampler_across_subprocesses",
+      "file": "ml/tests/test_phase4c0_gates.py",
+      "purpose": "Verify sampler determinism across PYTHONHASHSEED",
+      "inputs": ["synthetic SourcePairInstance fixture (programmatic)"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "HERMETIC_INTEGRATION",
+      "note": "Converted from research manifest to synthetic fixture"
+    },
+    {
+      "test": "test_baseline_feature_leakage_guard",
+      "file": "ml/tests/test_phase4c0_gates.py",
+      "purpose": "Verify stage0 baselines feature leakage guard",
+      "inputs": ["research/evidence/phase-4c.0/stage0-baselines.json"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "METADATA_CONTRACT"
+    },
+    {
+      "test": "test_frozen_backbone_gradient_isolation",
+      "file": "ml/tests/test_phase4c0_gates.py",
+      "purpose": "Verify frozen backbone has zero gradients",
+      "inputs": ["PyTorch model (synthetic weights)"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "HERMETIC_UNIT"
+    },
+    {
+      "test": "test_locked_test_guard_denial",
+      "file": "ml/tests/test_phase4c0_gates.py",
+      "purpose": "Verify LockedTestAccessGuard denies training/dev",
+      "inputs": ["AccessRole enum"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "HERMETIC_UNIT"
+    },
+    {
+      "test": "test_network_byte_ceiling_enforcement",
+      "file": "ml/tests/test_phase4c0_gates.py",
+      "purpose": "Verify pretrained weight ceiling compliance",
+      "inputs": ["research/evidence/phase-4c.0/pretrained-weight-receipt.json"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "METADATA_CONTRACT"
+    },
+    {
+      "test": "test_checkpoint_receipt_and_research_isolation",
+      "file": "ml/tests/test_phase4c0_gates.py",
+      "purpose": "Verify checkpoint receipt SHA-256 and git ignore",
+      "inputs": ["research/evidence/phase-4c.0/checkpoint-receipt.json", "models/research/phase-4c.0/smoke_mobilenetv3_small_seed42.pt"],
+      "gitTracked": false,
+      "hermetic": false,
+      "gate": "LOCAL_RESEARCH_ARTIFACT",
+      "marker": "requires_research_artifact"
+    },
+    {
+      "test": "test_checkpoint_metadata_contract_hermetic",
+      "file": "ml/tests/test_phase4c0_gates.py",
+      "purpose": "Hermetic verification of checkpoint metadata contracts",
+      "inputs": ["research/evidence/phase-4c.0/checkpoint-receipt.json", "research/evidence/phase-4c.0a/smoke-configuration-reconciliation.json", "models/registry.json"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "METADATA_CONTRACT"
+    },
+    {
+      "test": "test_checkpoint_architecture_matches_binding",
+      "file": "ml/tests/test_phase4c0a_reconciliation.py",
+      "purpose": "Verify checkpoint tensors match authoritative binding",
+      "inputs": ["models/research/phase-4c.0/smoke_mobilenetv3_small_seed42.pt", "research/evidence/phase-4c.0a/smoke-configuration-reconciliation.json"],
+      "gitTracked": false,
+      "hermetic": false,
+      "gate": "LOCAL_RESEARCH_ARTIFACT",
+      "marker": "requires_research_artifact"
+    },
+    {
+      "test": "test_loss_name_matches_training_implementation",
+      "file": "ml/tests/test_phase4c0a_reconciliation.py",
+      "purpose": "Verify loss function name consistency",
+      "inputs": ["research/evidence/phase-4c.0a/smoke-configuration-reconciliation.json", "ml/configs/pilot_a_binary_preregistered.yaml"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "METADATA_CONTRACT"
+    },
+    {
+      "test": "test_metric_reproduction_tolerance",
+      "file": "ml/tests/test_phase4c0a_reconciliation.py",
+      "purpose": "Verify checkpoint re-evaluation matches smoke metrics",
+      "inputs": ["research/evidence/phase-4c.0a/checkpoint-reevaluation.json", "research/evidence/phase-4c.0/smoke-training-metrics.json"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "METADATA_CONTRACT"
+    },
+    {
+      "test": "test_paired_aggregation_by_source_and_label",
+      "file": "ml/tests/test_phase4c0a_reconciliation.py",
+      "purpose": "Verify inner_validation paired evaluation structure",
+      "inputs": ["research/evidence/phase-4c.0a/checkpoint-reevaluation.json"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "METADATA_CONTRACT"
+    },
+    {
+      "test": "test_bootstrap_grouping_by_source_id",
+      "file": "ml/tests/test_phase4c0a_reconciliation.py",
+      "purpose": "Verify source-level bootstrap preserves pair linkage",
+      "inputs": ["synthetic source IDs"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "HERMETIC_UNIT"
+    },
+    {
+      "test": "test_stage0_prediction_artifact_hashes",
+      "file": "ml/tests/test_phase4c0a_reconciliation.py",
+      "purpose": "Verify Stage 0 prediction artifact SHA-256 hashes",
+      "inputs": ["research/evidence/phase-4c.0a/stage0-reconciliation.json"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "METADATA_CONTRACT"
+    },
+    {
+      "test": "test_resource_labels_distinguish_heap_and_rss",
+      "file": "ml/tests/test_phase4c0a_reconciliation.py",
+      "purpose": "Verify memory profile distinguishes heap vs RSS",
+      "inputs": ["research/evidence/phase-4c.0a/resource-accounting-reconciliation.json"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "METADATA_CONTRACT"
+    },
+    {
+      "test": "test_locked_test_access_remains_zero",
+      "file": "ml/tests/test_phase4c0a_reconciliation.py",
+      "purpose": "Verify locked-test evaluations count is zero",
+      "inputs": ["research/evidence/phase-4c.0a/main-readiness.json"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "METADATA_CONTRACT"
+    },
+    {
+      "test": "test_equal_source_contribution_and_class_balance",
+      "file": "ml/tests/test_pair_aware_loader.py",
+      "purpose": "Verify 1:1 balance and source contribution",
+      "inputs": ["synthetic SourcePairInstance fixture"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "HERMETIC_UNIT"
+    },
+    {
+      "test": "test_deterministic_variant_selection_with_same_seed",
+      "file": "ml/tests/test_pair_aware_loader.py",
+      "purpose": "Verify deterministic variant selection",
+      "inputs": ["synthetic SourcePairInstance fixture"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "HERMETIC_UNIT"
+    },
+    {
+      "test": "test_variant_cycling_across_epochs",
+      "file": "ml/tests/test_pair_aware_loader.py",
+      "purpose": "Verify variant cycling across epochs",
+      "inputs": ["synthetic SourcePairInstance fixture"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "HERMETIC_UNIT"
+    },
+    {
+      "test": "test_no_source_leakage_across_partitions",
+      "file": "ml/tests/test_pair_aware_loader.py",
+      "purpose": "Verify zero source leakage across partitions",
+      "inputs": ["synthetic SourcePairInstance fixture"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "HERMETIC_UNIT"
+    },
+    {
+      "test": "test_metric_aggregation_by_source_id",
+      "file": "ml/tests/test_pair_aware_loader.py",
+      "purpose": "Verify source-level prediction aggregation",
+      "inputs": ["synthetic predictions"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "HERMETIC_UNIT"
+    },
+    {
+      "test": "test_discover_source_instances_on_actual_manifest",
+      "file": "ml/tests/test_pair_aware_loader.py",
+      "purpose": "Verify manifest reading on actual Option P data",
+      "inputs": ["data/research/tgif/manifests/manifest_pilot_a_option_p.csv"],
+      "gitTracked": false,
+      "hermetic": false,
+      "gate": "LOCAL_RESEARCH_ARTIFACT",
+      "marker": "requires_research_artifact"
+    },
+    {
+      "test": "test_stable_offset_across_pythonhashseeds",
+      "file": "ml/tests/test_pair_aware_loader.py",
+      "purpose": "Verify stable offset across PYTHONHASHSEED",
+      "inputs": ["synthetic SourcePairInstance fixture"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "HERMETIC_INTEGRATION"
+    },
+    {
+      "test": "test_authentic_and_edited_pairs_share_resolution_bucket",
+      "file": "ml/tests/test_pair_aware_loader.py",
+      "purpose": "Verify resolution-matched pairing",
+      "inputs": ["synthetic SourcePairInstance fixture"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "HERMETIC_UNIT"
+    },
+    {
+      "test": "test_balanced_resolution_and_edit_types_over_epochs",
+      "file": "ml/tests/test_pair_aware_loader.py",
+      "purpose": "Verify balanced resolution and edit type cycling",
+      "inputs": ["synthetic SourcePairInstance fixture"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "HERMETIC_UNIT"
+    },
+    {
+      "test": "test_identical_preprocessing_contract",
+      "file": "ml/tests/test_pair_aware_loader.py",
+      "purpose": "Verify identical preprocessing contract",
+      "inputs": ["ml/configs/pilot_a_binary_preregistered.yaml"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "METADATA_CONTRACT"
+    },
+    {
+      "test": "test_previous_parser_within_train_category_collision",
+      "file": "ml/tests/test_small_data_protocol.py",
+      "purpose": "Verify parser collision detection",
+      "inputs": ["synthetic paths"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "HERMETIC_UNIT"
+    },
+    {
+      "test": "test_canonical_dual_key_parser_integrity",
+      "file": "ml/tests/test_small_data_protocol.py",
+      "purpose": "Verify dual-key parser integrity",
+      "inputs": ["synthetic path"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "HERMETIC_UNIT"
+    },
+    {
+      "test": "test_zero_cross_split_source_id_collision",
+      "file": "ml/tests/test_small_data_protocol.py",
+      "purpose": "Verify train/val/test source disjointness",
+      "inputs": ["data/research/tgif/manifests/masks-manifest.jsonl"],
+      "gitTracked": false,
+      "hermetic": false,
+      "gate": "LOCAL_RESEARCH_ARTIFACT",
+      "marker": "requires_research_artifact"
+    },
+    {
+      "test": "test_variant_grouping_and_instance_count",
+      "file": "ml/tests/test_small_data_protocol.py",
+      "purpose": "Verify 31,238 masks map to 3,124 instances",
+      "inputs": ["data/research/tgif/manifests/masks-manifest.jsonl"],
+      "gitTracked": false,
+      "hermetic": false,
+      "gate": "LOCAL_RESEARCH_ARTIFACT",
+      "marker": "requires_research_artifact"
+    },
+    {
+      "test": "test_small_data_options_selection",
+      "file": "ml/tests/test_small_data_protocol.py",
+      "purpose": "Verify small-data-options.json schema",
+      "inputs": ["research/evidence/phase-4b.1/small-data-options.json"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "METADATA_CONTRACT"
+    },
+    {
+      "test": "test_learning_curve_config_validates",
+      "file": "ml/tests/test_small_data_protocol.py",
+      "purpose": "Verify learning curve config validation",
+      "inputs": ["ml/configs/pilot_a_learning_curve.yaml"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "METADATA_CONTRACT"
+    },
+    {
+      "test": "test_learning_curve_capacity_overflow_rejected",
+      "file": "ml/tests/test_small_data_protocol.py",
+      "purpose": "Enforce capacity overflow gate",
+      "inputs": ["synthetic overflow config"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "HERMETIC_UNIT"
+    },
+    {
+      "test": "test_unsupported_three_class_activation_rejected",
+      "file": "ml/tests/test_small_data_protocol.py",
+      "purpose": "Enforce three-class rejection for Pilot A",
+      "inputs": ["synthetic invalid config"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "HERMETIC_UNIT"
+    },
+    {
+      "test": "test_independent_unit_declaration_enforced",
+      "file": "ml/tests/test_small_data_protocol.py",
+      "purpose": "Enforce independent_statistical_unit = source_id",
+      "inputs": ["synthetic invalid config"],
+      "gitTracked": true,
+      "hermetic": true,
+      "gate": "HERMETIC_UNIT"
+    }
+  ],
+  "summary": {
+    "HERMETIC_UNIT": 20,
+    "HERMETIC_INTEGRATION": 4,
+    "METADATA_CONTRACT": 12,
+    "LOCAL_RESEARCH_ARTIFACT": 6
+  }
+}

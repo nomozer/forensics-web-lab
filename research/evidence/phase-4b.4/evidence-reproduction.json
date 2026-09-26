@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "1.0.0",
+  "timestampUtc": "2026-09-22T16:02:58Z",
+  "runner": "scripts/reproduce-phase-4b3-evidence.py",
+  "repoRoot": ".",
+  "status": "all-invariants-measured-and-verified",
+  "archiveIntegritySummary": {
+    "totalArchives": 4,
+    "allBytesMatch": true,
+    "allSha256Match": true
+  },
+  "manifestSummary": {
+    "baseRows": 684,
+    "uniqueSources": 684,
+    "partitions": {
+      "development_train": 250,
+      "inner_validation": 91,
+      "locked_test": 343
+    },
+    "learningCurves": {
+      "lc_n50": 50,
+      "lc_n100": 100,
+      "lc_n250": 250
+    },
+    "zeroOverlap": true,
+    "sealMatch": true,
+    "variantPairsCount": 4104,
+    "diskFiles": {
+      "authenticPngFiles": 2052,
+      "editedPngFiles": 4104,
+      "totalUncompressedImages": 6156
+    }
+  }
+}

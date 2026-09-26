@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "4C.0",
+  "timestamp_utc": "2026-09-23T17:01:04.032897+00:00",
+  "operations": [
+    {
+      "operation_type": "pretrained_weight_download",
+      "resource": "mobilenet_v3_small-047dcff4.pth",
+      "url": "https://download.pytorch.org/models/mobilenet_v3_small-047dcff4.pth",
+      "bytes_transferred": 10306551,
+      "max_ceiling": 12582912,
+      "duration_seconds": 4.178,
+      "transfer_rate_mb_s": 2.47,
+      "status": "COMPLETED"
+    }
+  ],
+  "total_bytes_received": 10306551,
+  "total_requests": 1,
+  "ceiling_violations": 0,
+  "non_whitelisted_hosts_accessed": 0
+}

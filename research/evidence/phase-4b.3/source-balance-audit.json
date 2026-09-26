@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "1.0.0",
+  "timestampUtc": "2026-09-22T06:58:03Z",
+  "strategySelected": "Strategy A: Pair-Aware Sampler",
+  "rational": "Guarantees equal source contribution (1:1 authentic:edited balance per source in every epoch) and prevents sources with multiple variants from artificially inflating sample size or skewing gradient updates in low-data pilots.",
+  "protocol": {
+    "samplesPerEpochForN": {
+      "n50": {
+        "sources": 50,
+        "authentic": 50,
+        "ai_edited": 50,
+        "total_samples_per_epoch": 100
+      },
+      "n100": {
+        "sources": 100,
+        "authentic": 100,
+        "ai_edited": 100,
+        "total_samples_per_epoch": 200
+      },
+      "n250": {
+        "sources": 250,
+        "authentic": 250,
+        "ai_edited": 250,
+        "total_samples_per_epoch": 500
+      }
+    },
+    "variantCycling": "Deterministic rotation across 6 edited variants by epoch: variant_idx = (epoch + hash(source_id)) % 6",
+    "aggregationUnitForPrimaryMetrics": "source_id",
+    "aggregationMethod": "mean_probability",
+    "bootstrapResamplingUnit": "source_id",
+    "bootstrapIterations": 1000,
+    "confidenceInterval": 0.95
+  },
+  "auditStatus": "verified"
+}

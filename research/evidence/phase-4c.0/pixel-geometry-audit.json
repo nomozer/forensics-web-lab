@@ -1,0 +1,71 @@
+{
+  "schema_version": "1.0.0",
+  "audit_timestamp_utc": "2026-09-23T17:00:00Z",
+  "phase": "4C.0",
+  "total_images_audited": 6156,
+  "total_authentic_audited": 2052,
+  "total_authentic_native": 684,
+  "total_authentic_512": 684,
+  "total_authentic_1024": 684,
+  "total_edited_audited": 4104,
+  "total_sources_audited": 684,
+  "pixel_reality_verdict": "Case B",
+  "verdict_description": "Case B \u2014 All edited variants generated on native canvas",
+  "case_b_native_match_count": 4104,
+  "case_b_native_match_rate": 1.0,
+  "mismatches_count": 0,
+  "mismatches": [],
+  "primary_experiment_pairing_rule": "authentic native <-> edited native (100% matched native canvas resolution)",
+  "secondary_robustness_set": "authentic 512 and authentic 1024 held out for resolution degradation robustness evaluation",
+  "pixel_reality_gate_status": "PASS",
+  "recalibrated_scientific_statement": "D\u1ef1 \u00e1n ki\u1ec3m so\u00e1t shortcut \u0111\u1ed9 ph\u00e2n gi\u1ea3i \u0111\u00e3 nh\u1eadn di\u1ec7n; c\u00e1c shortcut codec, generator v\u00e0 preprocessing kh\u00e1c ti\u1ebfp t\u1ee5c \u0111\u01b0\u1ee3c \u0111o b\u1eb1ng baseline.",
+  "color_modes_found": [
+    "RGB"
+  ],
+  "file_formats_found": [
+    "PNG"
+  ],
+  "unique_dimension_count": 302,
+  "top_10_dimensions": [
+    [
+      "1024x768",
+      1111
+    ],
+    [
+      "1024x683",
+      714
+    ],
+    [
+      "512x512",
+      684
+    ],
+    [
+      "1024x680",
+      241
+    ],
+    [
+      "683x1024",
+      238
+    ],
+    [
+      "768x1024",
+      219
+    ],
+    [
+      "800x600",
+      144
+    ],
+    [
+      "1023x685",
+      119
+    ],
+    [
+      "1024x576",
+      108
+    ],
+    [
+      "1024x681",
+      105
+    ]
+  ]
+}
