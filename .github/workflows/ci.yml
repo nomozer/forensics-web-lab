@@ -65,7 +65,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Python Unit Tests
+      - name: Verify Python import root
         run: |
-          cd ml
-          pytest tests/ -v
+          python -c "import os, sys; print('cwd=', os.getcwd()); print('python=', sys.executable); import ml; print('ml_import=ok')"
+
+      - name: Python Unit Tests
+        run: python -m pytest ml/tests -v

@@ -4,6 +4,19 @@
 > **Mục đích**: Biên niên sử cô đọng từng giai đoạn phát triển và nghiên cứu từ Phase 0 đến nay.  
 > **Quy ước**: Giai đoạn mới nhất nằm ở trên cùng; mỗi giai đoạn không quá 20 dòng; chi tiết kiểm chứng nằm tại `research/evidence/`.
 
+## Phase CI.3 — CI Python Import Root Repair
+
+- **Mục tiêu**: Căn chỉnh GitHub Actions Python job để chạy test từ repository root, khắc phục `ModuleNotFoundError: No module named 'ml'` do working-directory mismatch.
+- **Starting commit**: `ae89829b51c4966cbeb4fcb76fe3881405c86fff`
+- **Thay đổi chính**: Sửa `.github/workflows/ci.yml` job `python-ml`: thêm step diagnostic `Verify Python import root`, đổi step `Python Unit Tests` từ `cd ml && pytest tests/ -v` thành `python -m pytest ml/tests -v` chạy từ repository root. Dependency installation vẫn chạy trong `ml/`.
+- **Kiểm tra kỹ thuật**: `pnpm test` (70/70 passed), `pnpm typecheck` (0 errors), `pnpm build` (exit 0), `pytest ml/tests` (107/107 passed), config validator (4/4 valid), dataset registry (7/7 valid), continuity check PASS. Local reproduction: CI working-directory failure REPRODUCED (9 collection errors, exit 2); local standard command PASS (107/107).
+- **Kết quả khoa học**: Python CI root cause đã được xác nhận và sửa. Python source, tests, dependencies, dataset/model artifacts giữ nguyên. TypeScript CI đã PASS.
+- **Evidence**: `research/evidence/phase-ci.3/` (`environment.json`, `test-summary.json`, `ci-root-cause.json`, `repair-summary.json`, `evidence-manifest.json`, `PHASE_REPORT.md`).
+- **Giới hạn**: GitHub Actions CI re-run pending. Workflow deduplication (push + pull_request trigger trùng) giữ lại cho phase cải tiến độc lập.
+- **Quyết định tiếp theo**: Push commit, theo dõi CI mới trên PR #1. Kỳ vọng cả 4 checks PASS.
+
+---
+
 ## Phase CI.2 — CI TypeScript Repair and PR Verification
 
 - **Mục tiêu**: Sửa TypeScript CI failure (TS18047) đã được tái hiện, xác minh toàn bộ hệ thống, commit và push lên feature branch để PR #1 chạy lại CI.

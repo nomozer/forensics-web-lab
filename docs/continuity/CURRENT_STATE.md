@@ -95,6 +95,7 @@
 * **Clean Link Invariance**: 0 machine-local links (`file:///`, `C:\`, `D:\`) trong toàn bộ markdown và evidence repository.
 
 * **Phase CI.2 — CI TypeScript Repair**: TypeScript CI root cause (TS18047) đã được tái hiện và sửa bằng explicit guard trong test. PR #1 đang mở, Python local 107/107 PASS, Python CI root cause vẫn UNVERIFIED cho đến khi có log trực tiếp. Scientific model-performance claims giữ nguyên trạng thái trước đó.
+* **Phase CI.3 — CI Python Import Root Repair**: Python CI failure root cause đã được xác nhận là working-directory/import-root mismatch (running `pytest tests/` from `ml/` directory causes `ModuleNotFoundError: No module named 'ml'`). Workflow được căn chỉnh để chạy `python -m pytest ml/tests -v` từ repository root. Local verification: 107/107 PASS. Python source, tests, dependencies giữ nguyên.
 
 ---
 

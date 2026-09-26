@@ -1,0 +1,66 @@
+{
+  "phase": "CI.3",
+  "typescript": {
+    "typecheck": {
+      "command": "pnpm typecheck",
+      "exitCode": 0,
+      "errors": 0,
+      "passed": true
+    },
+    "test": {
+      "command": "pnpm test",
+      "exitCode": 0,
+      "passed": 70,
+      "failed": 0,
+      "total": 70,
+      "passedAll": true
+    },
+    "build": {
+      "command": "pnpm build",
+      "exitCode": 0,
+      "passed": true
+    }
+  },
+  "python": {
+    "test": {
+      "command": ".\\ml\\.venv\\Scripts\\python.exe -m pytest ml\\tests -v",
+      "exitCode": 0,
+      "passed": 107,
+      "failed": 0,
+      "total": 107,
+      "passedAll": true,
+      "durationSeconds": 12.59
+    },
+    "configValidator": {
+      "command": ".\\ml\\.venv\\Scripts\\python.exe -m ml.configs.validator --validate-all",
+      "exitCode": 0,
+      "configsValidated": 4,
+      "allValid": true
+    },
+    "datasetRegistry": {
+      "command": ".\\ml\\.venv\\Scripts\\python.exe -m ml.datasets.acquire --validate-registry",
+      "exitCode": 0,
+      "datasetsVerified": 7,
+      "allValid": true
+    },
+    "importRootVerification": {
+      "command": ".\\ml\\.venv\\Scripts\\python.exe -c \"import ml; print('ml_import=ok')\"",
+      "exitCode": 0,
+      "passed": true
+    },
+    "ciWorkingDirectoryFailureReproduction": {
+      "command": "Push-Location ml; .\\.venv\\Scripts\\python.exe -m pytest tests -v; Pop-Location",
+      "exitCode": 2,
+      "collectionErrors": 9,
+      "error": "ModuleNotFoundError: No module named 'ml'",
+      "reproduced": true
+    }
+  },
+  "continuity": {
+    "check": {
+      "command": "pnpm continuity:check",
+      "exitCode": 0,
+      "passed": true
+    }
+  }
+}
