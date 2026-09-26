@@ -4,6 +4,19 @@
 > **Mục đích**: Biên niên sử cô đọng từng giai đoạn phát triển và nghiên cứu từ Phase 0 đến nay.  
 > **Quy ước**: Giai đoạn mới nhất nằm ở trên cùng; mỗi giai đoạn không quá 20 dòng; chi tiết kiểm chứng nằm tại `research/evidence/`.
 
+## Phase CI.2 — CI TypeScript Repair and PR Verification
+
+- **Mục tiêu**: Sửa TypeScript CI failure (TS18047) đã được tái hiện, xác minh toàn bộ hệ thống, commit và push lên feature branch để PR #1 chạy lại CI.
+- **Starting commit**: `79caece18530d9666361c9cec8d6bc5434c4a542`
+- **Thay đổi chính**: Sửa `packages/inference/src/__tests__/fusion.test.ts` dòng 83 thêm explicit guard cho `result.probabilities` khi `hasModel: true`. Thay đổi tối thiểu, không ảnh hưởng production code. Cập nhật 3 continuity files.
+- **Kiểm tra kỹ thuật**: `pnpm test` (70/70 passed), `pnpm typecheck` (0 errors), `pnpm build` (exit 0), `pytest ml/tests` (107/107 passed), config validator (4/4 valid), dataset registry (7/7 valid), evidence reproducer PASS, continuity check PASS.
+- **Kết quả khoa học**: TypeScript CI root cause đã được giải quyết. Python local 107/107 PASS. Python CI root cause vẫn UNVERIFIED (chưa có log GitHub trực tiếp). Scientific model-performance claims giữ nguyên trạng thái.
+- **Evidence**: `research/evidence/phase-ci.2/` (`environment.json`, `test-summary.json`, `repair-summary.json`, `evidence-manifest.json`, `PHASE_REPORT.md`).
+- **Giới hạn**: Python CI failure chưa xác minh nguyên nhân. Workflow deduplication (push + pull_request trigger trùng) giữ lại cho phase cải tiến độc lập.
+- **Quyết định tiếp theo**: Theo dõi CI mới trên PR #1. Nếu TypeScript PASS, tiến hành review PR.
+
+---
+
 ## Phase 4C.0a — Smoke Evidence Reconciliation and Main-Readiness Gate
 - **Mục tiêu**: Đối soát cấu hình smoke, thống nhất bảng Stage 0 kèm prediction hashes, tái đánh giá checkpoint trên inner_validation, hiệu chỉnh resource taxonomy và kiểm chứng main readiness.
 - **Starting commit**: `110fef1`

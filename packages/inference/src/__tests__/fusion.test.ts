@@ -80,7 +80,13 @@ describe('@forensics/inference components', () => {
 
     expect(result.label).toBe('fully_generated');
     expect(result.confidence).toBeGreaterThan(0.9);
-    expect(result.probabilities.fully_generated).toBeGreaterThan(0.9);
+
+    const probabilities = result.probabilities;
+    expect(probabilities).not.toBeNull();
+    if (probabilities === null) {
+      throw new Error('Expected calibrated probabilities when hasModel is true');
+    }
+    expect(probabilities.fully_generated).toBeGreaterThan(0.9);
   });
 
   it('maps to uncertain when confidence is below threshold or conflicting', () => {

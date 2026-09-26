@@ -1,0 +1,35 @@
+{
+  "phase": "CI.2",
+  "manifestVersion": "1.0.0",
+  "generatedAt": "2026-09-26T23:45:00Z",
+  "artifacts": [
+    {
+      "name": "environment.json",
+      "path": "research/evidence/phase-ci.2/environment.json",
+      "description": "Execution environment metadata"
+    },
+    {
+      "name": "test-summary.json",
+      "path": "research/evidence/phase-ci.2/test-summary.json",
+      "description": "Complete test results for TypeScript and Python"
+    },
+    {
+      "name": "repair-summary.json",
+      "path": "research/evidence/phase-ci.2/repair-summary.json",
+      "description": "Minimal repair details for TypeScript CI failure"
+    },
+    {
+      "name": "PHASE_REPORT.md",
+      "path": "research/evidence/phase-ci.2/PHASE_REPORT.md",
+      "description": "Human-readable phase report"
+    }
+  ],
+  "artifactCount": 4,
+  "directoryFileCount": 5,
+  "manifestSelfExcluded": true,
+  "continuityFilesUpdated": [
+    "docs/continuity/CURRENT_STATE.md",
+    "docs/continuity/CODE_INDEX.md",
+    "docs/continuity/STATUS_LEDGER.md"
+  ]
+}
