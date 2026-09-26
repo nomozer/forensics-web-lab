@@ -4,6 +4,25 @@
 > **Mục đích**: Biên niên sử cô đọng từng giai đoạn phát triển và nghiên cứu từ Phase 0 đến nay.  
 > **Quy ước**: Giai đoạn mới nhất nằm ở trên cùng; mỗi giai đoạn không quá 20 dòng; chi tiết kiểm chứng nằm tại `research/evidence/`.
 
+## Phase CI.4 — Hermetic CI & Research Artifact Gate Separation
+
+- **Mục tiêu**: Tách biệt Python CI thành Hermetic Gate (clean runner, Git-tracked source/metadata/fixture) và Local Research Artifact Gate (yêu cầu manifest, dataset metadata, checkpoint bị cách ly ngoài Git).
+- **Starting commit**: `bca0767f09d34fec000a8f708c481dc3155e8ddb`
+- **Thay đổi chính**:
+  1. Test zero-network (`test_option_p_dry_run_zero_network`): mock `check_free_disk_space` bằng fixture, giữ disk guard test riêng.
+  2. Sampler subprocess test (`test_stable_sampler_across_subprocesses`): chuyển sang synthetic fixture, không cần research manifest.
+  3. Checkpoint tests (`test_checkpoint_receipt_and_research_isolation`, `test_checkpoint_architecture_matches_binding`, `test_real_data_resolution_matched_pairing`, `test_discover_source_instances_on_actual_manifest`, `test_zero_cross_split_source_id_collision`, `test_variant_grouping_and_instance_count`): gắn marker `requires_research_artifact`.
+  4. Thêm metadata-only contract test hermetic: `test_checkpoint_metadata_contract_hermetic`.
+  5. `ml/pyproject.toml`: đăng ký marker `requires_research_artifact`.
+  6. `.github/workflows/ci.yml`: chạy hermetic gate mặc định `-m "not requires_research_artifact"`, collect-only cho artifact tests.
+- **Kiểm tra kỹ thuật**: `pnpm test` (70/70 passed), `pnpm typecheck` (0 errors), `pnpm build` (exit 0), `pytest ml/tests -v -m "not requires_research_artifact"` (hermetic PASS), `pytest ml/tests -v -m "requires_research_artifact"` (artifact PASS local), `pnpm continuity:check` (PASS).
+- **Kết quả khoa học**: CI runner sạch không còn fail do thiếu artifact nghiên cứu. Local artifact gate vẫn kiểm tra checkpoint thật khi artifact tồn tại. Scientific claims giữ nguyên.
+- **Evidence**: `research/evidence/phase-ci.4/` (`environment.json`, `test-classification.json`, `hermetic-test-summary.json`, `artifact-gate-summary.json`, `clean-checkout-summary.json`, `repair-summary.json`, `evidence-manifest.json`, `PHASE_REPORT.md`).
+- **Giới hạn**: GitHub Actions CI re-run pending. Workflow deduplication (push + pull_request trigger trùng) giữ lại cho phase cải tiến độc lập.
+- **Quyết định tiếp theo**: Push commit, theo dõi CI mới trên PR #1. Kỳ vọng cả 4 checks PASS.
+
+---
+
 ## Phase CI.3 — CI Python Import Root Repair
 
 - **Mục tiêu**: Căn chỉnh GitHub Actions Python job để chạy test từ repository root, khắc phục `ModuleNotFoundError: No module named 'ml'` do working-directory mismatch.

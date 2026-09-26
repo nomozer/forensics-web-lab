@@ -52,8 +52,11 @@ def test_canonical_dual_key_parser_integrity() -> None:
     assert parsed["split"] == "testing"
 
 
+@pytest.mark.requires_research_artifact
 def test_zero_cross_split_source_id_collision() -> None:
-    """Verifies that across local masks manifest, train/val/test are strictly disjoint."""
+    """Verifies that across local masks manifest, train/val/test are strictly disjoint.
+    Requires local mask manifest (excluded from Git).
+    """
     manifest_path = Path("data/research/tgif/manifests/masks-manifest.jsonl")
     if not manifest_path.exists():
         pytest.skip("Local mask manifest not found on disk")
@@ -76,8 +79,11 @@ def test_zero_cross_split_source_id_collision() -> None:
     assert len(split_sources["train"] | split_sources["val"] | split_sources["test"]) == 2242
 
 
+@pytest.mark.requires_research_artifact
 def test_variant_grouping_and_instance_count() -> None:
-    """Verifies that 31,238 masks map to exactly 3,124 category inpainting task instances."""
+    """Verifies that 31,238 masks map to exactly 3,124 category inpainting task instances.
+    Requires local mask manifest (excluded from Git).
+    """
     manifest_path = Path("data/research/tgif/manifests/masks-manifest.jsonl")
     if not manifest_path.exists():
         pytest.skip("Local mask manifest not found on disk")

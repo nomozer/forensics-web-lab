@@ -96,6 +96,7 @@
 
 * **Phase CI.2 — CI TypeScript Repair**: TypeScript CI root cause (TS18047) đã được tái hiện và sửa bằng explicit guard trong test. PR #1 đang mở, Python local 107/107 PASS, Python CI root cause vẫn UNVERIFIED cho đến khi có log trực tiếp. Scientific model-performance claims giữ nguyên trạng thái trước đó.
 * **Phase CI.3 — CI Python Import Root Repair**: Python CI failure root cause đã được xác nhận là working-directory/import-root mismatch (running `pytest tests/` from `ml/` directory causes `ModuleNotFoundError: No module named 'ml'`). Workflow được căn chỉnh để chạy `python -m pytest ml/tests -v` từ repository root. Local verification: 107/107 PASS. Python source, tests, dependencies giữ nguyên.
+* **Phase CI.4 — Hermetic CI & Research Artifact Gate Separation**: Python tests được phân loại thành Hermetic CI Gate (chạy trên clean runner, không phụ thuộc artifact nghiên cứu) và Local Research Artifact Gate (yêu cầu manifest, dataset metadata, checkpoint bị cách ly ngoài Git). 4 test yêu cầu checkpoint/manifest được gắn marker `requires_research_artifact`. Test zero-network được mock disk space. Sampler subprocess test chuyển sang synthetic fixture. Metadata-only contract test thêm mới. CI workflow chạy hermetic gate mặc định (`-m "not requires_research_artifact"`), collect-only cho artifact tests.
 
 ---
 

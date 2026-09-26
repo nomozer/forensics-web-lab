@@ -1,0 +1,54 @@
+{
+  "phase": "CI.4",
+  "summary": {
+    "hermetic": {
+      "command": ".\\ml\\.venv\\Scripts\\python.exe -m pytest ml\\tests -v -m \"not requires_research_artifact\"",
+      "exitCode": 0,
+      "passed": 101,
+      "failed": 0,
+      "deselected": 7,
+      "totalSelected": 101,
+      "passedAll": true
+    },
+    "artifact": {
+      "command": ".\\ml\\.venv\\Scripts\\python.exe -m pytest ml\\tests -v -m \"requires_research_artifact\"",
+      "exitCode": 0,
+      "passed": 7,
+      "failed": 0,
+      "deselected": 101,
+      "totalSelected": 7,
+      "passedAll": true
+    },
+    "full": {
+      "command": ".\\ml\\.venv\\Scripts\\python.exe -m pytest ml\\tests -v",
+      "exitCode": 0,
+      "passed": 108,
+      "failed": 0,
+      "total": 108,
+      "passedAll": true,
+      "durationSeconds": 11.34
+    },
+    "validators": {
+      "configValidator": {
+        "command": ".\\ml\\.venv\\Scripts\\python.exe -m ml.configs.validator --validate-all",
+        "exitCode": 0,
+        "configsValidated": 4,
+        "allValid": true
+      },
+      "datasetRegistry": {
+        "command": ".\\ml\\.venv\\Scripts\\python.exe -m ml.datasets.acquire --validate-registry",
+        "exitCode": 0,
+        "datasetsVerified": 7,
+        "allValid": true
+      }
+    }
+  },
+  "typescript": {
+    "typecheck": { "exitCode": 0, "passed": true },
+    "test": { "exitCode": 0, "passed": 70, "total": 70, "passedAll": true },
+    "build": { "exitCode": 0, "passed": true }
+  },
+  "continuity": {
+    "check": { "exitCode": 0, "passed": true }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "phase": "CI.4",
+  "timestamp": "2026-09-27T00:20:00Z",
+  "repository": "nomozer/forensics-web-lab",
+  "branch": "feat/production-ai-image-forensics",
+  "startingHead": "bca0767f09d34fec000a8f708c481dc3155e8ddb",
+  "baseMain": "460f6d5608d45aad3f6a374f8cca19294a2f6a7c",
+  "nodeVersion": "22.x",
+  "pnpmVersion": "9.x",
+  "pythonVersion": "3.12.10",
+  "torchVersion": "2.14.0+cpu",
+  "pytestVersion": "9.1.1",
+  "os": "Windows_NT",
+  "workingTreeClean": true,
+  "gitStatusShort": ""
+}

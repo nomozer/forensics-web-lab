@@ -1,0 +1,82 @@
+{
+  "phase": "CI.4",
+  "startingHead": "bca0767f09d34fec000a8f708c481dc3155e8ddb",
+  "changes": [
+    {
+      "file": "ml/tests/test_option_p_protocol.py",
+      "test": "test_option_p_dry_run_zero_network",
+      "change": "Added unittest.mock.patch for check_free_disk_space to return 100GB available space. Keeps test hermetic by fixture-controlling disk probe.",
+      "impact": "HERMETIC_INTEGRATION - test no longer depends on runner disk capacity"
+    },
+    {
+      "file": "ml/tests/test_phase4c0_gates.py",
+      "test": "test_stable_sampler_across_subprocesses",
+      "change": "Converted from research manifest dependency to synthetic SourcePairInstance fixture built programmatically. Subprocess code now builds instances inline.",
+      "impact": "HERMETIC_INTEGRATION - test no longer requires data/research/manifest"
+    },
+    {
+      "file": "ml/tests/test_phase4c0_gates.py",
+      "test": "test_checkpoint_receipt_and_research_isolation",
+      "change": "Added @pytest.mark.requires_research_artifact marker",
+      "impact": "LOCAL_RESEARCH_ARTIFACT - deselected from generic CI, runs in local artifact gate"
+    },
+    {
+      "file": "ml/tests/test_phase4c0_gates.py",
+      "test": "test_real_data_resolution_matched_pairing",
+      "change": "Added @pytest.mark.requires_research_artifact marker",
+      "impact": "LOCAL_RESEARCH_ARTIFACT - deselected from generic CI"
+    },
+    {
+      "file": "ml/tests/test_phase4c0_gates.py",
+      "test": "test_checkpoint_metadata_contract_hermetic",
+      "change": "NEW TEST - Hermetic verification of checkpoint receipt/binding JSON structure without requiring binary checkpoint. Checks phase, status, quarantined flag, git_tracked, SHA-256 format, binding authoritative config, product registry isolation.",
+      "impact": "METADATA_CONTRACT - runs in hermetic CI gate"
+    },
+    {
+      "file": "ml/tests/test_phase4c0a_reconciliation.py",
+      "test": "test_checkpoint_architecture_matches_binding",
+      "change": "Added @pytest.mark.requires_research_artifact marker",
+      "impact": "LOCAL_RESEARCH_ARTIFACT - deselected from generic CI"
+    },
+    {
+      "file": "ml/tests/test_pair_aware_loader.py",
+      "test": "test_discover_source_instances_on_actual_manifest",
+      "change": "Added @pytest.mark.requires_research_artifact marker",
+      "impact": "LOCAL_RESEARCH_ARTIFACT - deselected from generic CI"
+    },
+    {
+      "file": "ml/tests/test_small_data_protocol.py",
+      "test": "test_zero_cross_split_source_id_collision",
+      "change": "Added @pytest.mark.requires_research_artifact marker",
+      "impact": "LOCAL_RESEARCH_ARTIFACT - deselected from generic CI"
+    },
+    {
+      "file": "ml/tests/test_small_data_protocol.py",
+      "test": "test_variant_grouping_and_instance_count",
+      "change": "Added @pytest.mark.requires_research_artifact marker",
+      "impact": "LOCAL_RESEARCH_ARTIFACT - deselected from generic CI"
+    },
+    {
+      "file": "ml/pyproject.toml",
+      "change": "Registered pytest marker: requires_research_artifact",
+      "impact": "Configuration - enables gate separation"
+    },
+    {
+      "file": ".github/workflows/ci.yml",
+      "change": "Python job now runs: (1) Verify Python import root, (2) Hermetic gate: python -m pytest ml/tests -v -m \"not requires_research_artifact\", (3) Collect-only for artifact tests: python -m pytest ml/tests -q -m \"requires_research_artifact\" --collect-only",
+      "impact": "CI Configuration - Generic runner runs hermetic gate only; artifact tests collected but not executed"
+    }
+  ],
+  "testClassification": {
+    "HERMETIC_UNIT": 20,
+    "HERMETIC_INTEGRATION": 4,
+    "METADATA_CONTRACT": 11,
+    "LOCAL_RESEARCH_ARTIFACT": 7
+  },
+  "productionCodeChanged": false,
+  "pythonSourceChanged": false,
+  "dependenciesChanged": false,
+  "trainingRuns": 0,
+  "lockedTestAccesses": 0,
+  "datasetModelDownloadBytes": 0
+}

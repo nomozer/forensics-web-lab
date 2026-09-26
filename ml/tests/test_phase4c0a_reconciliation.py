@@ -13,8 +13,13 @@ import yaml
 repo_root = Path(__file__).resolve().parents[2]
 
 
+import pytest
+
+@pytest.mark.requires_research_artifact
 def test_checkpoint_architecture_matches_binding():
-    """Verify that checkpoint physical tensors match authoritative smoke binding."""
+    """Verify that checkpoint physical tensors match authoritative smoke binding.
+    Requires local research checkpoint artifact (excluded from Git).
+    """
     ckpt_path = repo_root / "models/research/phase-4c.0/smoke_mobilenetv3_small_seed42.pt"
     binding_path = repo_root / "research/evidence/phase-4c.0a/smoke-configuration-reconciliation.json"
 

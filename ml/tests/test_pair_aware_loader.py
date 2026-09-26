@@ -178,8 +178,11 @@ def test_metric_aggregation_by_source_id() -> None:
     assert s2["num_variants"] == 1
 
 
+@pytest.mark.requires_research_artifact
 def test_discover_source_instances_on_actual_manifest() -> None:
-    """Verifies that discover_source_instances_from_manifest correctly reads option-p manifest."""
+    """Verifies that discover_source_instances_from_manifest correctly reads option-p manifest.
+    Requires local Option P manifest (excluded from Git).
+    """
     manifest_path = Path("data/research/tgif/manifests/manifest_pilot_a_option_p.csv")
     if not manifest_path.exists():
         pytest.skip("Local manifest not present in test environment")

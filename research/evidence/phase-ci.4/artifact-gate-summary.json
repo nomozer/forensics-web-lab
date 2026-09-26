@@ -1,0 +1,57 @@
+{
+  "phase": "CI.4",
+  "gate": "LOCAL_RESEARCH_ARTIFACT",
+  "command": ".\\ml\\.venv\\Scripts\\python.exe -m pytest ml\\tests -v -m \"requires_research_artifact\"",
+  "results": {
+    "exitCode": 0,
+    "passed": 7,
+    "failed": 0,
+    "deselected": 101,
+    "durationSeconds": 9.10,
+    "tests": [
+      {
+        "name": "test_discover_source_instances_on_actual_manifest",
+        "file": "ml/tests/test_pair_aware_loader.py",
+        "artifact": "data/research/tgif/manifests/manifest_pilot_a_option_p.csv",
+        "purpose": "Verify manifest reading on actual Option P data"
+      },
+      {
+        "name": "test_real_data_resolution_matched_pairing",
+        "file": "ml/tests/test_phase4c0_gates.py",
+        "artifact": "data/research/tgif/manifests/manifest_pilot_a_option_p.csv + disk images",
+        "purpose": "Verify resolution-matched pairing on real disk assets"
+      },
+      {
+        "name": "test_checkpoint_metadata_contract_hermetic",
+        "file": "ml/tests/test_phase4c0_gates.py",
+        "artifact": "research/evidence/phase-4c.0/checkpoint-receipt.json + smoke-configuration-reconciliation.json + models/registry.json",
+        "purpose": "Hermetic verification of checkpoint metadata contracts (requires receipt JSONs which are Git-tracked, but marked artifact for gate completeness)"
+      },
+      {
+        "name": "test_checkpoint_receipt_and_research_isolation",
+        "file": "ml/tests/test_phase4c0_gates.py",
+        "artifact": "models/research/phase-4c.0/smoke_mobilenetv3_small_seed42.pt + checkpoint-receipt.json",
+        "purpose": "Verify checkpoint SHA-256 and git ignore"
+      },
+      {
+        "name": "test_checkpoint_architecture_matches_binding",
+        "file": "ml/tests/test_phase4c0a_reconciliation.py",
+        "artifact": "models/research/phase-4c.0/smoke_mobilenetv3_small_seed42.pt + smoke-configuration-reconciliation.json",
+        "purpose": "Verify checkpoint tensors match authoritative binding"
+      },
+      {
+        "name": "test_zero_cross_split_source_id_collision",
+        "file": "ml/tests/test_small_data_protocol.py",
+        "artifact": "data/research/tgif/manifests/masks-manifest.jsonl",
+        "purpose": "Verify train/val/test source disjointness on real masks"
+      },
+      {
+        "name": "test_variant_grouping_and_instance_count",
+        "file": "ml/tests/test_small_data_protocol.py",
+        "artifact": "data/research/tgif/manifests/masks-manifest.jsonl",
+        "purpose": "Verify 31,238 masks map to 3,124 instances"
+      }
+    ]
+  },
+  "note": "All artifact tests PASS on local environment with artifacts present. On GitHub clean runner, these are deselected via -m 'not requires_research_artifact'."
+}

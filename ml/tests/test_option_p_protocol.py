@@ -19,6 +19,7 @@ import tarfile
 import tempfile
 from pathlib import Path
 from typing import Any, Dict, List
+from unittest.mock import patch
 
 import pytest
 
@@ -198,8 +199,14 @@ def test_option_p_dry_run_zero_network() -> None:
         (repo_root / "data" / "research" / "tgif").mkdir(parents=True, exist_ok=True)
         (repo_root / "research" / "evidence" / "phase-4b.2").mkdir(parents=True, exist_ok=True)
 
-        exit_code = run_option_p_acquisition(repo_root=repo_root, execute=False)
+        # Mock disk space check to return sufficient space (fixture-controlled)
+        with patch("ml.datasets.acquire.check_free_disk_space") as mock_disk:
+            # Fixture provides 100 GB available > 15.728 GB required
+            mock_disk.return_value = (True, 100_000_000_000, 15_728_000_000)
+            exit_code = run_option_p_acquisition(repo_root=repo_root, execute=False)
+
         assert exit_code == 0
+        mock_disk.assert_called_once()
 
 
 def test_remote_metadata_drift_detection() -> None:

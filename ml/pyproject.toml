@@ -33,3 +33,6 @@ target-version = "py312"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+markers = [
+    "requires_research_artifact: Requires quarantined local research data or checkpoint artifacts that are intentionally excluded from Git.",
+]

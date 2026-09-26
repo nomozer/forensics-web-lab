@@ -69,5 +69,8 @@ jobs:
         run: |
           python -c "import os, sys; print('cwd=', os.getcwd()); print('python=', sys.executable); import ml; print('ml_import=ok')"
 
-      - name: Python Unit Tests
-        run: python -m pytest ml/tests -v
+      - name: Python Unit Tests (Hermetic Gate)
+        run: python -m pytest ml/tests -v -m "not requires_research_artifact"
+
+      - name: Collect Research Artifact Tests (Deselected from Generic CI)
+        run: python -m pytest ml/tests -q -m "requires_research_artifact" --collect-only

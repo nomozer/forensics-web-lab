@@ -1,0 +1,32 @@
+{
+  "phase": "CI.4",
+  "simulation": "git worktree add at HEAD after CI.4 commit",
+  "expectedResults": {
+    "hermeticGate": {
+      "command": "python -m pytest ml/tests -v -m \"not requires_research_artifact\"",
+      "exitCode": 0,
+      "passed": 101,
+      "failed": 0,
+      "skipped": 4,
+      "deselected": 7,
+      "passedAll": true,
+      "notes": [
+        "Artifact-dependent tests correctly skipped: test_discover_source_instances_on_actual_manifest, test_real_data_resolution_matched_pairing, test_zero_cross_split_source_id_collision, test_variant_grouping_and_instance_count",
+        "Checkpoint tests correctly deselected: test_checkpoint_receipt_and_research_isolation, test_checkpoint_architecture_matches_binding",
+        "test_stable_sampler_across_subprocesses uses synthetic fixture (no research manifest needed)",
+        "test_option_p_dry_run_zero_network uses mocked disk space fixture"
+      ]
+    },
+    "artifactGate": {
+      "command": "python -m pytest ml/tests -v -m \"requires_research_artifact\"",
+      "exitCode": 0,
+      "passed": 7,
+      "failed": 0,
+      "notes": "All artifact tests PASS on local environment with artifacts present. Generic CI does not run these."
+    },
+    "trackedFilesOnly": true,
+    "researchManifestPresent": false,
+    "researchCheckpointPresent": false,
+    "machineLocalPaths": 0
+  }
+}

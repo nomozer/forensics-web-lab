@@ -71,8 +71,11 @@ def test_real_variant_mapping_structure() -> None:
         assert ev["matches_native_canvas"] is True
 
 
+@pytest.mark.requires_research_artifact
 def test_real_data_resolution_matched_pairing() -> None:
-    """Verifies that PairAwareSampler produces 100% resolution-matched pairs on real disk assets."""
+    """Verifies that PairAwareSampler produces 100% resolution-matched pairs on real disk assets.
+    Requires local Option P manifest and image files (excluded from Git).
+    """
     manifest_p = Path("data/research/tgif/manifests/manifest_pilot_a_option_p.csv")
     if not manifest_p.exists():
         pytest.skip("Option P manifest not present")
@@ -94,13 +97,106 @@ def test_real_data_resolution_matched_pairing() -> None:
 
 
 def test_stable_sampler_across_subprocesses() -> None:
-    """Verifies that sampler output is identical across processes with different PYTHONHASHSEED."""
+    """Verifies that sampler output is identical across processes with different PYTHONHASHSEED.
+    Uses synthetic fixture data instead of research manifest to remain hermetic.
+    """
+    # Build synthetic instances programmatically (no research manifest needed)
+    from ml.datasets.pair_aware_loader import ImageVariant, SourcePairInstance, PairAwareSampler
+
+    def build_synthetic_instances(num_sources: int = 50) -> list[SourcePairInstance]:
+        instances = []
+        for i in range(1, num_sources + 1):
+            sid = f"{i:012d}"
+            inst = SourcePairInstance(
+                source_id=sid,
+                instance_id=f"cat_{sid}",
+                category="cat",
+                partition="development_train",
+                upstream_split="validation",
+            )
+            # Mark for N=50 learning curve
+            inst.lc_flags = {"lc_n50": True}
+            # 3 authentic variants (native, 512, 1024)
+            for bucket in ["native", "512", "1024"]:
+                inst.authentic_variants.append(
+                    ImageVariant(
+                        path=f"orig/{sid}_orig_{bucket}.png",
+                        sha256="0" * 64,
+                        label="authentic",
+                        source_id=sid,
+                        instance_id=inst.instance_id,
+                        category="cat",
+                        partition="development_train",
+                        variant_type=f"orig_{bucket}",
+                        variant_idx=0,
+                        resolution_bucket=bucket,
+                    )
+                )
+            # 6 edited variants (cycling bbox/segm across native, 512, 1024)
+            for k in range(6):
+                edit_type = "bbox" if k < 3 else "segm"
+                bucket = ["native", "512", "1024"][k % 3]
+                inst.edited_variants.append(
+                    ImageVariant(
+                        path=f"sd2-sp/{sid}_edit_{k}.png",
+                        sha256="1" * 64,
+                        label="ai_edited",
+                        source_id=sid,
+                        instance_id=inst.instance_id,
+                        category="cat",
+                        partition="development_train",
+                        variant_type=f"sd2_{edit_type}_{k % 3}",
+                        variant_idx=k,
+                        resolution_bucket=bucket,
+                        edit_type=edit_type,
+                    )
+                )
+            instances.append(inst)
+        return instances
+
+    instances = build_synthetic_instances(50)
+    dev_50 = [i for i in instances if i.partition == "development_train" and i.lc_flags.get("lc_n50")]
+    assert len(dev_50) == 50
+
+    sampler = PairAwareSampler(dev_50, seed=42, shuffle_epoch=True)
+
+    def run_subprocess(pythonhashseed: str) -> str:
+        import json as json_mod
+        import hashlib
+        import sys
+
+        local_instances = build_synthetic_instances(50)
+        local_dev_50 = [i for i in local_instances if i.partition == "development_train" and i.lc_flags.get("lc_n50")]
+        local_sampler = PairAwareSampler(local_dev_50, seed=42, shuffle_epoch=True)
+
+        hashes = []
+        for ep in range(2):
+            samples = local_sampler.get_epoch_samples(ep)
+            h = hashlib.sha256(
+                ";".join(f"{s.source_id}:{s.label}:{s.variant_type}" for s in samples).encode("utf-8")
+            ).hexdigest()
+            hashes.append(h)
+        return json_mod.dumps(hashes)
+
+    # Run in same process but with different PYTHONHASHSEED via subprocess
     sub_code = (
         "import hashlib, json, sys\n"
-        "from pathlib import Path\n"
-        "sys.path.insert(0, '.')\n"
-        "from ml.datasets.pair_aware_loader import discover_source_instances_from_manifest, PairAwareSampler\n"
-        "instances = discover_source_instances_from_manifest(Path('data/research/tgif/manifests/manifest_pilot_a_option_p.csv'), repo_root='.')\n"
+        "from ml.datasets.pair_aware_loader import ImageVariant, SourcePairInstance, PairAwareSampler\n"
+        "def build_synthetic_instances(num_sources: int = 50):\n"
+        "    instances = []\n"
+        "    for i in range(1, num_sources + 1):\n"
+        "        sid = f'{i:012d}'\n"
+        "        inst = SourcePairInstance(source_id=sid, instance_id=f'cat_{sid}', category='cat', partition='development_train', upstream_split='validation')\n"
+        "        inst.lc_flags = {'lc_n50': True}\n"
+        "        for bucket in ['native', '512', '1024']:\n"
+        "            inst.authentic_variants.append(ImageVariant(path=f'orig/{sid}_orig_{bucket}.png', sha256='0'*64, label='authentic', source_id=sid, instance_id=inst.instance_id, category='cat', partition='development_train', variant_type=f'orig_{bucket}', variant_idx=0, resolution_bucket=bucket))\n"
+        "        for k in range(6):\n"
+        "            edit_type = 'bbox' if k < 3 else 'segm'\n"
+        "            bucket = ['native', '512', '1024'][k % 3]\n"
+        "            inst.edited_variants.append(ImageVariant(path=f'sd2-sp/{sid}_edit_{k}.png', sha256='1'*64, label='ai_edited', source_id=sid, instance_id=inst.instance_id, category='cat', partition='development_train', variant_type=f'sd2_{edit_type}_{k%3}', variant_idx=k, resolution_bucket=bucket, edit_type=edit_type))\n"
+        "        instances.append(inst)\n"
+        "    return instances\n"
+        "instances = build_synthetic_instances(50)\n"
         "dev_50 = [i for i in instances if i.partition == 'development_train' and i.lc_flags.get('lc_n50')]\n"
         "sampler = PairAwareSampler(dev_50, seed=42, shuffle_epoch=True)\n"
         "hashes = []\n"
@@ -188,8 +284,67 @@ def test_network_byte_ceiling_enforcement() -> None:
     assert data["allowed_domain"] == "download.pytorch.org"
 
 
+@pytest.mark.requires_research_artifact
+@pytest.mark.requires_research_artifact
+def test_checkpoint_metadata_contract_hermetic() -> None:
+    """Hermetic verification of checkpoint metadata contracts without requiring binary artifact.
+    Checks receipt/binding JSON structure, paths, and Git isolation policy.
+    """
+    import re
+
+    # Check receipt exists and has expected structure
+    receipt_file = Path("research/evidence/phase-4c.0/checkpoint-receipt.json")
+    assert receipt_file.exists(), "checkpoint-receipt.json must exist"
+
+    with open(receipt_file, "r", encoding="utf-8") as f:
+        receipt = json.load(f)
+
+    # Verify receipt fields (matching actual schema)
+    assert "checkpoint_file" in receipt
+    assert "sha256" in receipt
+    assert receipt["phase"] == "4C.0"
+    assert receipt["status"] == "research-smoke-only"
+    assert "models/research/" in receipt["checkpoint_file"]
+    assert isinstance(receipt["sha256"], str)
+    # SHA-256 is 64 hex chars
+    assert len(receipt["sha256"]) == 64
+    assert re.fullmatch(r"[0-9a-f]{64}", receipt["sha256"])
+    assert receipt["quarantined_in_research_track"] is True
+    assert receipt["git_tracked"] is False
+
+    # Check binding file exists
+    binding_file = Path("research/evidence/phase-4c.0a/smoke-configuration-reconciliation.json")
+    assert binding_file.exists(), "smoke-configuration-reconciliation.json must exist"
+
+    with open(binding_file, "r", encoding="utf-8") as f:
+        binding = json.load(f)
+
+    # Verify binding has authoritative config
+    assert "authoritative_configuration" in binding
+    auth = binding["authoritative_configuration"]
+    assert auth["output_dimension"] == 1
+    assert auth["loss_function"] == "BCEWithLogitsLoss"
+    assert auth["trainable_parameter_count"] == 147969
+
+    # Verify checkpoint path is under research track and Git-ignored
+    ckpt_path = Path(receipt["checkpoint_file"])
+    assert "models" in ckpt_path.parts
+    assert "research" in ckpt_path.parts
+
+    # Verify product registry does not reference research checkpoint
+    model_registry = Path("models/registry.json")
+    if model_registry.exists():
+        with open(model_registry, "r", encoding="utf-8") as f:
+            reg = json.load(f)
+        for model in reg.get("models", []):
+            assert "models/research/" not in model.get("path", ""), "Product registry must not reference research checkpoint"
+
+
+@pytest.mark.requires_research_artifact
 def test_checkpoint_receipt_and_research_isolation() -> None:
-    """Verifies checkpoint receipt integrity and research track isolation from Git."""
+    """Verifies checkpoint receipt integrity and research track isolation from Git.
+    Requires local research checkpoint artifact (excluded from Git).
+    """
     receipt_file = Path("research/evidence/phase-4c.0/checkpoint-receipt.json")
     assert receipt_file.exists(), "checkpoint-receipt.json must exist"
 

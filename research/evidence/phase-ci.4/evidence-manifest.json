@@ -1,0 +1,49 @@
+{
+  "phase": "CI.4",
+  "manifestVersion": "1.0.0",
+  "generatedAt": "2026-09-27T00:45:00Z",
+  "artifacts": [
+    {
+      "name": "environment.json",
+      "path": "research/evidence/phase-ci.4/environment.json",
+      "description": "Execution environment metadata"
+    },
+    {
+      "name": "test-classification.json",
+      "path": "research/evidence/phase-ci.4/test-classification.json",
+      "description": "Complete test classification with gate assignment"
+    },
+    {
+      "name": "hermetic-test-summary.json",
+      "path": "research/evidence/phase-ci.4/hermetic-test-summary.json",
+      "description": "Hermetic gate test results"
+    },
+    {
+      "name": "artifact-gate-summary.json",
+      "path": "research/evidence/phase-ci.4/artifact-gate-summary.json",
+      "description": "Local research artifact gate test results"
+    },
+    {
+      "name": "clean-checkout-summary.json",
+      "path": "research/evidence/phase-ci.4/clean-checkout-summary.json",
+      "description": "Clean checkout simulation results (expected)"
+    },
+    {
+      "name": "repair-summary.json",
+      "path": "research/evidence/phase-ci.4/repair-summary.json",
+      "description": "Minimal repair details for each changed test"
+    },
+    {
+      "name": "PHASE_REPORT.md",
+      "path": "research/evidence/phase-ci.4/PHASE_REPORT.md",
+      "description": "Human-readable phase report"
+    }
+  ],
+  "artifactCount": 7,
+  "directoryFileCount": 8,
+  "manifestSelfExcluded": true,
+  "continuityFilesUpdated": [
+    "docs/continuity/CURRENT_STATE.md",
+    "docs/continuity/STATUS_LEDGER.md"
+  ]
+}
