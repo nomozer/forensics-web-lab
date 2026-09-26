@@ -1,7 +1,7 @@
 {
   "phase": "CI.4",
   "manifestVersion": "1.0.0",
-  "generatedAt": "2026-09-27T00:45:00Z",
+  "generatedAt": "2026-09-27T01:30:00Z",
   "artifacts": [
     {
       "name": "environment.json",
@@ -26,7 +26,7 @@
     {
       "name": "clean-checkout-summary.json",
       "path": "research/evidence/phase-ci.4/clean-checkout-summary.json",
-      "description": "Clean checkout simulation results (expected)"
+      "description": "Clean checkout simulation results (projected)"
     },
     {
       "name": "repair-summary.json",

@@ -4,14 +4,14 @@
   "command": ".\\ml\\.venv\\Scripts\\python.exe -m pytest ml\\tests -v -m \"not requires_research_artifact\"",
   "results": {
     "exitCode": 0,
-    "passed": 101,
+    "passed": 102,
     "failed": 0,
-    "deselected": 7,
-    "durationSeconds": 11.63,
+    "deselected": 6,
+    "durationSeconds": 8.45,
     "categories": {
       "HERMETIC_UNIT": 20,
       "HERMETIC_INTEGRATION": 4,
-      "METADATA_CONTRACT": 11
+      "METADATA_CONTRACT": 12
     }
   },
   "testDetails": [

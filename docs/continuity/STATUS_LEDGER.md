@@ -15,7 +15,7 @@
   4. Thêm metadata-only contract test hermetic: `test_checkpoint_metadata_contract_hermetic`.
   5. `ml/pyproject.toml`: đăng ký marker `requires_research_artifact`.
   6. `.github/workflows/ci.yml`: chạy hermetic gate mặc định `-m "not requires_research_artifact"`, collect-only cho artifact tests.
-- **Kiểm tra kỹ thuật**: `pnpm test` (70/70 passed), `pnpm typecheck` (0 errors), `pnpm build` (exit 0), `pytest ml/tests -v -m "not requires_research_artifact"` (hermetic PASS), `pytest ml/tests -v -m "requires_research_artifact"` (artifact PASS local), `pnpm continuity:check` (PASS).
+- **Kiểm tra kỹ thuật**: `pnpm test` (70/70 passed), `pnpm typecheck` (0 errors), `pnpm build` (exit 0), `pytest ml/tests -v -m "not requires_research_artifact"` (hermetic 102 passed, 6 deselected), `pytest ml/tests -v -m "requires_research_artifact"` (artifact 6 passed local), `pnpm continuity:check` (PASS). Full suite: 108/108 passed.
 - **Kết quả khoa học**: CI runner sạch không còn fail do thiếu artifact nghiên cứu. Local artifact gate vẫn kiểm tra checkpoint thật khi artifact tồn tại. Scientific claims giữ nguyên.
 - **Evidence**: `research/evidence/phase-ci.4/` (`environment.json`, `test-classification.json`, `hermetic-test-summary.json`, `artifact-gate-summary.json`, `clean-checkout-summary.json`, `repair-summary.json`, `evidence-manifest.json`, `PHASE_REPORT.md`).
 - **Giới hạn**: GitHub Actions CI re-run pending. Workflow deduplication (push + pull_request trigger trùng) giữ lại cho phase cải tiến độc lập.

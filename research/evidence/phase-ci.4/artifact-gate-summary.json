@@ -4,10 +4,10 @@
   "command": ".\\ml\\.venv\\Scripts\\python.exe -m pytest ml\\tests -v -m \"requires_research_artifact\"",
   "results": {
     "exitCode": 0,
-    "passed": 7,
+    "passed": 6,
     "failed": 0,
-    "deselected": 101,
-    "durationSeconds": 9.10,
+    "deselected": 102,
+    "durationSeconds": 8.48,
     "tests": [
       {
         "name": "test_discover_source_instances_on_actual_manifest",
@@ -20,12 +20,6 @@
         "file": "ml/tests/test_phase4c0_gates.py",
         "artifact": "data/research/tgif/manifests/manifest_pilot_a_option_p.csv + disk images",
         "purpose": "Verify resolution-matched pairing on real disk assets"
-      },
-      {
-        "name": "test_checkpoint_metadata_contract_hermetic",
-        "file": "ml/tests/test_phase4c0_gates.py",
-        "artifact": "research/evidence/phase-4c.0/checkpoint-receipt.json + smoke-configuration-reconciliation.json + models/registry.json",
-        "purpose": "Hermetic verification of checkpoint metadata contracts (requires receipt JSONs which are Git-tracked, but marked artifact for gate completeness)"
       },
       {
         "name": "test_checkpoint_receipt_and_research_isolation",
@@ -53,5 +47,5 @@
       }
     ]
   },
-  "note": "All artifact tests PASS on local environment with artifacts present. On GitHub clean runner, these are deselected via -m 'not requires_research_artifact'."
+  "note": "All artifact tests PASS on local environment with artifacts present. On GitHub clean runner, these are deselected via -m 'not requires_research_artifact'. Generic CI does not run these tests."
 }

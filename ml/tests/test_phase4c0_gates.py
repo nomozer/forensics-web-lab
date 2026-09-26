@@ -284,8 +284,6 @@ def test_network_byte_ceiling_enforcement() -> None:
     assert data["allowed_domain"] == "download.pytorch.org"
 
 
-@pytest.mark.requires_research_artifact
-@pytest.mark.requires_research_artifact
 def test_checkpoint_metadata_contract_hermetic() -> None:
     """Hermetic verification of checkpoint metadata contracts without requiring binary artifact.
     Checks receipt/binding JSON structure, paths, and Git isolation policy.

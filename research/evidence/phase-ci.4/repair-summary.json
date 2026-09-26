@@ -29,7 +29,7 @@
     {
       "file": "ml/tests/test_phase4c0_gates.py",
       "test": "test_checkpoint_metadata_contract_hermetic",
-      "change": "NEW TEST - Hermetic verification of checkpoint receipt/binding JSON structure without requiring binary checkpoint. Checks phase, status, quarantined flag, git_tracked, SHA-256 format, binding authoritative config, product registry isolation.",
+      "change": "NEW TEST - Hermetic verification of checkpoint receipt/binding JSON structure without requiring binary checkpoint. Checks phase, status, quarantined flag, git_tracked, SHA-256 format, binding authoritative config, product registry isolation. NO requires_research_artifact marker.",
       "impact": "METADATA_CONTRACT - runs in hermetic CI gate"
     },
     {
@@ -70,8 +70,8 @@
   "testClassification": {
     "HERMETIC_UNIT": 20,
     "HERMETIC_INTEGRATION": 4,
-    "METADATA_CONTRACT": 11,
-    "LOCAL_RESEARCH_ARTIFACT": 7
+    "METADATA_CONTRACT": 12,
+    "LOCAL_RESEARCH_ARTIFACT": 6
   },
   "productionCodeChanged": false,
   "pythonSourceChanged": false,
