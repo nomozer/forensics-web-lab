@@ -4,19 +4,19 @@
     "hermetic": {
       "command": ".\\ml\\.venv\\Scripts\\python.exe -m pytest ml\\tests -v -m \"not requires_research_artifact\"",
       "exitCode": 0,
-      "passed": 101,
+      "passed": 102,
       "failed": 0,
-      "deselected": 7,
-      "totalSelected": 101,
+      "deselected": 6,
+      "totalSelected": 102,
       "passedAll": true
     },
     "artifact": {
       "command": ".\\ml\\.venv\\Scripts\\python.exe -m pytest ml\\tests -v -m \"requires_research_artifact\"",
       "exitCode": 0,
-      "passed": 7,
+      "passed": 6,
       "failed": 0,
-      "deselected": 101,
-      "totalSelected": 7,
+      "deselected": 102,
+      "totalSelected": 6,
       "passedAll": true
     },
     "full": {
