@@ -1,0 +1,29 @@
+{
+  "branch": "research/phase-4c1-learning-curve",
+  "files": [
+    {
+      "type": "metadata",
+      "name": "environment.json"
+    },
+    {
+      "type": "test-report",
+      "name": "test-summary.json"
+    },
+    {
+      "type": "verification",
+      "name": "bundle-verification.json"
+    },
+    {
+      "type": "archive-receipt",
+      "name": "archive-receipt.json"
+    },
+    {
+      "type": "phase-report",
+      "name": "PHASE_REPORT.md"
+    }
+  ],
+  "createdAtUtc": "2026-09-27T10:19:04Z",
+  "gitHead": "2e6ce2e0fedaead45dec23b24e9d9c5a5fcf777e",
+  "description": "Reconcile smoke bundle evidence before Colab transfer",
+  "phase": "4C.1B.0"
+}

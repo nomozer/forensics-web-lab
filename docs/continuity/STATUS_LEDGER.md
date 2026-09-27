@@ -4,6 +4,19 @@
 > **Mục đích**: Biên niên sử cô đọng từng giai đoạn phát triển và nghiên cứu từ Phase 0 đến nay.  
 > **Quy ước**: Giai đoạn mới nhất nằm ở trên cùng; mỗi giai đoạn không quá 20 dòng; chi tiết kiểm chứng nằm tại `research/evidence/`.
 
+## Phase 4C.1B.0 — Reconcile Bundle Evidence Before Colab Transfer
+
+- **Mục tiêu**: Đối chiếu evidence với live state, xác minh archive, chuẩn bị bundle cho Google Drive.
+- **Starting commit**: `2e6ce2e0fedaead45dec23b24e9d9c5a5fcf777e` (Phase 4C.1A.3 ending)
+- **Branch**: `research/phase-4c1-learning-curve`
+- **Thay đổi chính**: (1) Archive verified: 303 MB, SHA-256 B57D626D... MATCHES. (2) Extracted bundle validated: ALL VALIDATIONS PASSED, locked-test=0. (3) Test arithmetic: 146 collected, 130 passed, 15 skipped, 1 failed (unrelated). (4) Evidence package created at `research/evidence/phase-4c.1b.0/`. (5) Continuity docs updated.
+- **Kiểm tra kỹ thuật**: Archive SHA-256 MATCHES. Extracted: 286 files, manifest/receipt hashes match. Python: 130/130 passed (1 failed unrelated, 15 skipped). TS: 70/70. Continuity: PASS.
+- **Kết quả khoa học**: Bundle ready for upload. Training runs = 0. Locked-test accesses = 0.
+- **Evidence**: `research/evidence/phase-4c.1b.0/` (environment.json, test-summary.json, bundle-verification.json, archive-receipt.json, evidence-manifest.json, PHASE_REPORT.md).
+- **Quyết định tiếp theo**: Upload bundle to Google Drive, execute Colab N=50 seed=42.
+
+---
+
 ## Phase 4C.1A.3 — Verified Colab Pipeline Repair
 
 - **Mục tiêu**: Sửa lỗi thực thi notebook, exporter, validator, runner; hoàn thiện test suite; pipeline tái lập.
