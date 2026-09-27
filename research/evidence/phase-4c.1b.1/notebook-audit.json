@@ -1,0 +1,48 @@
+{
+  "notebookAudit": {
+    "jsonLoad": "PASS",
+    "nbformatRead": "PASS",
+    "nbformatVersion": "4.5",
+    "totalCells": 15,
+    "codeCells": 14,
+    "markdownCells": 1,
+    "codeCellCompilation": {
+      "total": 14,
+      "passed": 14,
+      "failed": 0,
+      "transformer": "IPython TransformerManager"
+    },
+    "executeVariable": {
+      "assignments": 1,
+      "defaultValue": false,
+      "singleLocation": true,
+      "cell": 8
+    },
+    "outputs": {
+      "outputCells": 0,
+      "executionCountNonNull": 0,
+      "cleanNotebook": true
+    },
+    "stage1TrainingInvocations": 1,
+    "stage2TrainingInvocations": 0,
+    "stage2EligibilityOnly": true,
+    "lockedTestInvocations": 1,
+    "lockedTestAccess": "counter_check_only",
+    "credentialScan": {
+      "findings": 0,
+      "note": "GITHUB_TOKEN used only during clone, remote URL reset to clean URL immediately after, verified by assertion"
+    },
+    "repositoryCheckout": {
+      "targetCommit": "b9f7a8a4205554f65fd7773fc74600bb4ffd944e",
+      "branch": "research/phase-4c1-learning-curve",
+      "credentialSafe": true,
+      "remoteUrlVerifiedClean": true
+    },
+    "bundlePath": "/content/bundle",
+    "artifactOutputPath": "/content/phase_4c1_artifacts/n50_seed42",
+    "googleDrivePaths": {
+      "bundleSource": "/content/drive/MyDrive/forensics-web-lab/phase_4c1_bundle",
+      "artifactDest": "/content/drive/MyDrive/forensics-web-lab/phase_4c1_artifacts"
+    }
+  }
+}

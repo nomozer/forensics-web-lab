@@ -4,6 +4,19 @@
 > **Mục đích**: Biên niên sử cô đọng từng giai đoạn phát triển và nghiên cứu từ Phase 0 đến nay.  
 > **Quy ước**: Giai đoạn mới nhất nằm ở trên cùng; mỗi giai đoạn không quá 20 dòng; chi tiết kiểm chứng nằm tại `research/evidence/`.
 
+## Phase 4C.1B.1 — Pre-upload Integrity Closure
+
+- **Mục tiêu**: Khép kín trạng thái Git và evidence trước khi upload bundle lên Google Drive.
+- **Starting commit**: `c8fc4f851506dc2b5f3202a9fb7501a09c4a90e4` (Phase 4C.1B.0 ending)
+- **Branch**: `research/phase-4c1-learning-curve`
+- **Thay đổi chính**: (1) Acquisition safety test fixed: golden hash updated for intentional plan change (INTENTIONAL_PLAN_CHANGE_WITH_STALE_GOLDEN_HASH). (2) Bundle compatibility verified: BUNDLE_STILL_VALID (no payload/manifest/runner/notebook/protocol changes since 2e6ce2e). (3) Archive integrity: 303 MB, SHA-256 B57D626D... MATCHES (extracted ALL VALIDATIONS PASSED, locked-test=0). (4) Notebook audit: 14/14 cells compile, EXECUTE=False, 0 credentials, Stage 2 eligibility only. (5) Model init: torchvision pretrained IMAGENET1K_V1 (~10.8 MB planned on Colab). (5) Full validation: 131/131 Python passed (15 skipped runner), 70/70 TS, typecheck 0, build OK, continuity PASS. (6) Acquisition safety: 23/23 PASS (golden hash updated). (7) Evidence package at `research/evidence/phase-4c.1b.1/`. (8) Transfer artifacts moved outside repo.
+- **Kiểm tra kỹ thuật**: Archive SHA-256 MATCHES. Extracted: 286 files, manifest/receipt hashes match. Python: 131/131 passed (15 skipped runner). TS: 70/70, typecheck 0, build OK. Continuity: PASS.
+- **Kết quả khoa học**: Bundle verified ready for upload. Training runs = 0. Locked-test accesses = 0. Colab executions = 0.
+- **Evidence**: `research/evidence/phase-4c.1b.1/` (environment.json, pre-upload-verification.json, test-summary.json, archive-verification.json, model-initialization-audit.json, notebook-audit.json, evidence-manifest.json, PHASE_REPORT.md).
+- **Quyết định tiếp theo**: Upload bundle to Google Drive, execute Colab N=50 seed=42.
+
+---
+
 ## Phase 4C.1B.0 — Reconcile Bundle Evidence Before Colab Transfer
 
 - **Mục tiêu**: Đối chiếu evidence với live state, xác minh archive, chuẩn bị bundle cho Google Drive.

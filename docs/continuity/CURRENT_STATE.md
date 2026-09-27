@@ -86,7 +86,7 @@
 ## 6. Kết quả Kiểm thử & Bản dựng Gần nhất (Latest Verification)
 
 * **TypeScript & Continuity Test Suite (`pnpm test`)**: 70/70 tests passing (57 vitest tests trên 6 packages + 13 continuity checker unit tests).
-* **Python Test Suite (`pytest ml/tests -v`)**: 130/130 tests passing (bao gồm 9 Phase 4C.0 gate tests, 8 Phase 4C.0a reconciliation & main-readiness tests, 8 Phase 4C.1 notebook tests, 15 Phase 4C.1 bundle tests).
+* **Python Test Suite (`pytest ml/tests -v`)**: 131/131 tests passing (bao gồm 9 Phase 4C.0 gate tests, 8 Phase 4C.0a reconciliation & main-readiness tests, 8 Phase 4C.1 notebook tests, 15 Phase 4C.1 bundle tests, 23 Phase 4C.1 runner tests skipped).
 * **Dataset Registry Validation**: 7/7 datasets valid.
 * **Pilot Config Validator Gate**: 4/4 pilot configs valid (`pilot_a_binary_preregistered.yaml` hash `727fc316...`).
 * **Live Evidence Reproducer (`scripts/reproduce-phase-4b3-evidence.py --verify`)**: All invariants, byte counts, and SHA-256 digests verified.
@@ -96,6 +96,8 @@
 * **Phase 4C.1 Notebook Compilation**: 14/14 code cells compile PASS (IPython TransformerManager).
 * **Phase 4C.1 Exporter Dry-Run**: 285 files, 303 MB, 0 locked-test rows, 50 dev + 91 val source_ids.
 * **Phase 4C.1 Validator**: ALL VALIDATIONS PASSED on smoke bundle.
+* **Phase 4C.1 Acquisition Safety**: 23/23 PASS (golden hash updated for intentional plan change).
+* **Phase 4C.1 Bundle Archive**: 303 MB, SHA-256 B57D626D..., extracted validation ALL PASS.
 
 * **Phase CI.2 — CI TypeScript Repair**: TypeScript CI root cause (TS18047) đã được tái hiện và sửa bằng explicit guard trong test. PR #1 đang mở, Python local 107/107 PASS, Python CI root cause vẫn UNVERIFIED cho đến khi có log trực tiếp. Scientific model-performance claims giữ nguyên trạng thái trước đó.
 * **Phase CI.3 — CI Python Import Root Repair**: Python CI failure root cause đã được xác nhận là working-directory/import-root mismatch (running `pytest tests/` from `ml/` directory causes `ModuleNotFoundError: No module named 'ml'`). Workflow được căn chỉnh để chạy `python -m pytest ml/tests -v` từ repository root. Local verification: 107/107 PASS. Python source, tests, dependencies giữ nguyên.
@@ -106,6 +108,7 @@
 * **Phase 4C.1A.2 — Continuity Checker Repair & Validation**: Fixed alphabetical sorting bug in continuity checker (timestamp-based phase detection). All continuity tests pass.
 * **Phase 4C.1A.3 — Verified Colab Pipeline Repair**: Rebuilt Colab notebook from scratch using nbformat (15 cells, valid JSON, nbformat v4.5). Fixed: single EXECUTE assignment, GPU gate conditional on EXECUTE, Stage 2 eligibility report only (no training invocation), credential-safe clone URL. Fixed exporter: added random import, deduplicated functions, N=50 source selection (50 dev + 91 val), image files in bundle (282 files, ~303 MB), complete bundle receipt with SHA-256. Fixed validator: FAIL on any locked-test row/path/source_id, locked-test in all_passed, YAML support. Fixed runner: deduplicated functions, added save_checkpoint, fixed manifest path to use bundle manifest, fixed collect_predictions. Created test suite: 23 tests passing (8 notebook + 15 bundle). All notebook code cells compile. Exporter dry-run: 285 files, 0 missing, 0 locked-test. Validator: ALL VALIDATIONS PASSED. **Pipeline verified ready for smoke bundle upload and Colab execution.**
 * **Phase 4C.1B.0 — Reconcile Bundle Evidence Before Colab Transfer**: Verified smoke bundle archive integrity (303 MB, SHA-256 B57D626D...), extracted and validated (ALL VALIDATIONS PASSED). Confirmed locked-test counts = 0, manifest/receipt hashes match. Test arithmetic: 146 collected, 130 passed, 15 skipped, 1 failed (unrelated). Created evidence package at `research/evidence/phase-4c.1b.0/`. **Bundle ready for Google Drive upload and Colab T4 smoke run.**
+* **Phase 4C.1B.1 — Pre-upload Integrity Closure**: Fixed acquisition safety test (golden hash updated for intentional plan change). Verified bundle compatibility (BUNDLE_STILL_VALID). Archive integrity confirmed (303 MB, SHA-256 B57D626D... MATCHES). Extracted bundle validated (ALL VALIDATIONS PASSED). Notebook audit: 14/14 cells compile, EXECUTE=False, 0 credentials, Stage 2 eligibility only. Model initialization: torchvision pretrained IMAGENET1K_V1 (~10.8 MB planned on Colab). Full validation: 131/131 Python tests passed (15 skipped runner), 70/70 TS, typecheck 0 errors, build OK, continuity PASS. Acquisition safety: 23/23 PASS (golden hash updated). Evidence package at `research/evidence/phase-4c.1b.1/`. **Bundle verified ready for Google Drive upload and Colab T4 smoke run.**
 
 ---
 
