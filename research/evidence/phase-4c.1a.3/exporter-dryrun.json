@@ -1,0 +1,33 @@
+{
+  "exporter_dryrun": {
+    "command": "python ml/datasets/export_phase_4c1_bundle.py --smoke-only --sample-size 50 --seed 42 --dry-run --output ./phase_4c1_bundle_smoke",
+    "repo_root": "D:\\Documents\\forensics-web-lab",
+    "mode": "DRY-RUN",
+    "smoke_only": true,
+    "sample_size": 50,
+    "seed": 42,
+    "source_selection": {
+      "available_development_train_n50": 50,
+      "available_inner_validation": 91,
+      "selected_development_train": 50,
+      "overlap_dev_val": 0
+    },
+    "manifest": {
+      "total_rows": 141,
+      "development_train_rows": 50,
+      "inner_validation_rows": 91,
+      "locked_test_rows": 0
+    },
+    "bundle_files": {
+      "config_files": 3,
+      "image_files": 282,
+      "total_files": 285
+    },
+    "bundle_size": {
+      "total_bytes": 303243808,
+      "total_gb": 0.28
+    },
+    "locked_test_excluded": true,
+    "status": "PASS"
+  }
+}

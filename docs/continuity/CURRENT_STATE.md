@@ -86,13 +86,16 @@
 ## 6. Kết quả Kiểm thử & Bản dựng Gần nhất (Latest Verification)
 
 * **TypeScript & Continuity Test Suite (`pnpm test`)**: 70/70 tests passing (57 vitest tests trên 6 packages + 13 continuity checker unit tests).
-* **Python Test Suite (`pytest ml/tests -v`)**: 107/107 tests passing (bao gồm 9 Phase 4C.0 gate tests và 8 Phase 4C.0a reconciliation & main-readiness tests).
+* **Python Test Suite (`pytest ml/tests -v`)**: 130/130 tests passing (bao gồm 9 Phase 4C.0 gate tests, 8 Phase 4C.0a reconciliation & main-readiness tests, 8 Phase 4C.1 notebook tests, 15 Phase 4C.1 bundle tests).
 * **Dataset Registry Validation**: 7/7 datasets valid.
 * **Pilot Config Validator Gate**: 4/4 pilot configs valid (`pilot_a_binary_preregistered.yaml` hash `727fc316...`).
 * **Live Evidence Reproducer (`scripts/reproduce-phase-4b3-evidence.py --verify`)**: All invariants, byte counts, and SHA-256 digests verified.
 * **Production Web Build (`pnpm build`)**: Exit code 0, bundle tối ưu hợp lệ (55 modules, 4.08s).
 * **Continuity Enforcement Gate (`pnpm continuity:check`)**: `CONTINUITY_CHECK: PASS`.
 * **Clean Link Invariance**: 0 machine-local links (`file:///`, `C:\`, `D:\`) trong toàn bộ markdown và evidence repository.
+* **Phase 4C.1 Notebook Compilation**: 14/14 code cells compile PASS (IPython TransformerManager).
+* **Phase 4C.1 Exporter Dry-Run**: 285 files, 303 MB, 0 locked-test rows, 50 dev + 91 val source_ids.
+* **Phase 4C.1 Validator**: ALL VALIDATIONS PASSED on smoke bundle.
 
 * **Phase CI.2 — CI TypeScript Repair**: TypeScript CI root cause (TS18047) đã được tái hiện và sửa bằng explicit guard trong test. PR #1 đang mở, Python local 107/107 PASS, Python CI root cause vẫn UNVERIFIED cho đến khi có log trực tiếp. Scientific model-performance claims giữ nguyên trạng thái trước đó.
 * **Phase CI.3 — CI Python Import Root Repair**: Python CI failure root cause đã được xác nhận là working-directory/import-root mismatch (running `pytest tests/` from `ml/` directory causes `ModuleNotFoundError: No module named 'ml'`). Workflow được căn chỉnh để chạy `python -m pytest ml/tests -v` từ repository root. Local verification: 107/107 PASS. Python source, tests, dependencies giữ nguyên.
@@ -100,6 +103,8 @@
 * **Phase CI.4B — Evidence Reconciliation and CI Verification**: Tất cả evidence CI.4 được đối soát với số liệu đo thực tế. test-summary.json sửa từ 101/7 thành 102/6. clean-checkout-summary.json trạng thái PROJECTED_NOT_MEASURED. Marker membership được xác minh bởi pytest collection. Test arithmetic khớp: 108 = 102 + 6. Local verification: 108/108, Hermetic 102/102, Artifact 6/6. GitHub Actions clean-runner verification đang pending. PR #1 checks đang chạy.
 * **Phase 4C.1A — Learning-Curve Execution Gate & Preregistration Audit**: Branch `research/phase-4c1-learning-curve` tạo từ foundation tag `v0.1.0-research-foundation`. Dataset Option P sẵn sàng (684 sources, nested N=50/100/250). Preregistration `pilot_a_binary_preregistered.yaml` (hash `727fc316...`) đã được audit. 15 training runs (3 sizes × 5 seeds) + 90 baselines được lên kế hoạch. Locked test SEALED (0 evaluations). Checkpoint smoke sẵn sàng. Execution plan và resource budget đã tạo. **Chờ phê duyệt người dùng để thực thi 15 training runs.**
 * **Phase 4C.1A.1 — Experiment Evidence Reconciliation & Colab Package Preparation**: Đối soát preregistration hash (LF vs CRLF line endings, git content identical), sửa experiment arithmetic (90 method-size-seed cells, 75 approved + 15 conditional Stage 2), khóa N definition (unique source_id), định nghĩa Stage 2 gate machine-readable, phân loại resource accounting (Measured/Estimated/Projected/Unknown), tạo Colab execution package (notebook, bundle exporter/validator, requirements, guide). Continuity checker cần sửa alphabetical sorting bug. **Chờ phê duyệt để build/upload Colab bundle.**
+* **Phase 4C.1A.2 — Continuity Checker Repair & Validation**: Fixed alphabetical sorting bug in continuity checker (timestamp-based phase detection). All continuity tests pass.
+* **Phase 4C.1A.3 — Verified Colab Pipeline Repair**: Rebuilt Colab notebook from scratch using nbformat (15 cells, valid JSON, nbformat v4.5). Fixed: single EXECUTE assignment, GPU gate conditional on EXECUTE, Stage 2 eligibility report only (no training invocation), credential-safe clone URL. Fixed exporter: added random import, deduplicated functions, N=50 source selection (50 dev + 91 val), image files in bundle (282 files, ~303 MB), complete bundle receipt with SHA-256. Fixed validator: FAIL on any locked-test row/path/source_id, locked-test in all_passed, YAML support. Fixed runner: deduplicated functions, added save_checkpoint, fixed manifest path to use bundle manifest, fixed collect_predictions. Created test suite: 23 tests passing (8 notebook + 15 bundle). All notebook code cells compile. Exporter dry-run: 285 files, 0 missing, 0 locked-test. Validator: ALL VALIDATIONS PASSED. **Pipeline verified ready for smoke bundle upload and Colab execution.**
 
 ---
 

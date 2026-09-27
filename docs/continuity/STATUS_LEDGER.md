@@ -4,6 +4,19 @@
 > **Mục đích**: Biên niên sử cô đọng từng giai đoạn phát triển và nghiên cứu từ Phase 0 đến nay.  
 > **Quy ước**: Giai đoạn mới nhất nằm ở trên cùng; mỗi giai đoạn không quá 20 dòng; chi tiết kiểm chứng nằm tại `research/evidence/`.
 
+## Phase 4C.1A.3 — Verified Colab Pipeline Repair
+
+- **Mục tiêu**: Sửa lỗi thực thi notebook, exporter, validator, runner; hoàn thiện test suite; pipeline tái lập.
+- **Starting commit**: `b9f7a8a4205554f65fd7773fc74600bb4ffd944e` (Phase 4C.1A.2 ending)
+- **Branch**: `research/phase-4c1-learning-curve`
+- **Thay đổi chính**: (1) Notebook rebuilt from scratch using nbformat (15 cells, valid JSON, v4.5). Single EXECUTE, GPU gate conditional, Stage 2 report only, credential-safe clone. (2) Exporter: random import, dedup functions, N=50 (50 dev + 91 val), 282 images (~303 MB), bundle receipt with SHA-256, locked-test=0. (3) Validator: FAIL on locked-test row/path/source_id, locked-test in all_passed, YAML support. (4) Runner: dedup functions, save_checkpoint, bundle manifest path, collect_predictions fix. (5) Test suite: 23 tests (8 notebook + 15 bundle). (6) Continuity docs updated.
+- **Kiểm tra kỹ thuật**: Notebook 14/14 cells compile PASS. Exporter: 285 files, 303 MB, 0 locked-test. Validator: ALL PASS. Python: 130/130 passed. TS: 70/70, typecheck 0, build OK. Continuity checker fixed.
+- **Kết quả khoa học**: Pipeline verified. Training runs = 0. Locked-test accesses = 0. Bundle chưa upload (chờ approval).
+- **Evidence**: `research/evidence/phase-4c.1a.3/` (pre-repair-audit.json, notebook-compile-results.json, exporter-dryrun.json, validator-results.json, test-results.json, PHASE_REPORT.md).
+- **Quyết định tiếp theo**: Phê duyệt build/upload smoke bundle, chạy Colab N=50 seed=42.
+
+---
+
 ## Phase 4C.1A.1 — Experiment Evidence Reconciliation & Colab Package Preparation
 
 - **Mục tiêu**: Đồng bộ evidence Phase 4C.1A, sửa experiment arithmetic, khóa Stage 2 gate, chuẩn bị Colab execution package.

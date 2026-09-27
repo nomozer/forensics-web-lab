@@ -1,0 +1,26 @@
+{
+  "validator_results": {
+    "command": "python ml/datasets/validate_phase_4c1_bundle.py --bundle ./phase_4c1_bundle_smoke --smoke-only",
+    "bundle_directory": "./phase_4c1_bundle_smoke",
+    "smoke_only": true,
+    "file_validations": {
+      "manifest_pilot_a_option_p.csv": "PASS",
+      "checkpoint-receipt.json": "PASS",
+      "pilot_a_binary_preregistered.yaml": "PASS"
+    },
+    "locked_test_exclusion": {
+      "passed": true,
+      "locked_test_rows": 0,
+      "locked_test_source_ids": 0,
+      "locked_test_files_exist": 0
+    },
+    "bundle_receipt": {
+      "passed": true,
+      "file_hashes_verified": true,
+      "bundle_sha256_verified": true,
+      "locked_test_counts_zero": true
+    },
+    "overall": "ALL VALIDATIONS PASSED",
+    "status": "PASS"
+  }
+}

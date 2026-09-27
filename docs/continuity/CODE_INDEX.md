@@ -109,7 +109,9 @@ graph TD
 | **Experiment Lock Schema** | `docs/schemas/experiment-lock.v1.schema.json` (cryptographic evaluation binding schema) | `schema-enforced` |
 | **Phase 4C Preregistered Config** | `ml/configs/pilot_a_binary_preregistered.yaml` (hash `727fc316...`, superseded `54140d42...`, `839531a7...`), `docs/PHASE_4C_PREREGISTRATION.md` | `preregistered-resealed` |
 | **Phase 4C.1 Learning Curve Config** | `ml/configs/phase_4c1_learning_curve.yaml` (derived from `pilot_a_binary_preregistered.yaml`), `docs/PHASE_4C1_EXECUTION_PLAN.md` | `planned-awaiting-approval` |
-| **Phase 4C.1 Colab Bundle Scripts** | `ml/datasets/export_phase_4c1_bundle.py`, `ml/datasets/validate_phase_4c1_bundle.py`, `ml/requirements-colab.txt`, `notebooks/phase_4c1_learning_curve_colab.ipynb`, `docs/PHASE_4C1_COLAB_GUIDE.md` | `created-awaiting-execution` |
+| **Phase 4C.1 Colab Bundle Scripts** | `ml/datasets/export_phase_4c1_bundle.py`, `ml/datasets/validate_phase_4c1_bundle.py`, `ml/requirements-colab.txt`, `notebooks/phase_4c1_learning_curve_colab.ipynb`, `docs/PHASE_4C1_COLAB_GUIDE.md` | `implemented-and-tested` |
+| **Phase 4C.1 Training Runner** | `ml/training/run_phase_4c1.py` (CLI for N=50 seed=42 frozen Stage 1, baselines, receipts, checkpoints) | `implemented-and-tested` |
+| **Phase 4C.1 Test Suite** | `ml/tests/test_phase_4c1_notebook.py`, `test_phase_4c1_bundle.py`, `test_phase_4c1_runner.py` (notebook compile, bundle exporter/validator, runner fault injection) | `implemented-and-tested` |
 | **Pixel-Reality Gate Auditor** | `scripts/audit_pixel_reality.py` (measure 6,156 images, confirm Case B native canvas, generate `pixel-geometry-audit.json`, `real-variant-map.json`) | `implemented-and-tested` |
 | **Sampler Runtime Auditor** | `scripts/audit_sampler_runtime.py` (verify stable offset across PYTHONHASHSEED, generate `sampler-runtime-audit.json`) | `implemented-and-tested` |
 | **Pretrained Weight Downloader** | `scripts/download_mobilenet_weights.py` (restricted domain, <=12 MiB ceiling, atomic rename, `pretrained-weight-receipt.json`) | `implemented-and-tested` |

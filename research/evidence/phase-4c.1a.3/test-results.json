@@ -1,0 +1,67 @@
+{
+  "test_results": {
+    "total_tests": 130,
+    "passed": 130,
+    "failed": 0,
+    "skipped": 15,
+    "breakdown": {
+      "existing_tests": 107,
+      "phase_4c1_notebook_tests": 8,
+      "phase_4c1_bundle_tests": 15,
+      "phase_4c1_runner_tests": 15
+    },
+    "phase_4c1_notebook": {
+      "test_notebook_loads": "PASS",
+      "test_notebook_cell_count": "PASS",
+      "test_single_execute_assignment": "PASS",
+      "test_no_stage2_training_invocation": "PASS",
+      "test_no_credentials_in_clone_url": "PASS",
+      "test_gpu_gate_conditional_on_execute": "PASS",
+      "test_required_cells_present": "PASS",
+      "test_code_cells_compile": "PASS"
+    },
+    "phase_4c1_bundle": {
+      "TestSmokeBundleCreation.test_select_smoke_source_ids": "PASS",
+      "TestSmokeBundleCreation.test_create_smoke_bundle_structure": "PASS",
+      "TestSmokeBundleCreation.test_smoke_manifest_content": "PASS",
+      "TestBundleReceipt.test_create_bundle_receipt": "PASS",
+      "TestValidator.test_validate_locked_test_exclusion_passes": "PASS",
+      "TestValidator.test_validate_locked_test_exclusion_fails_on_row": "PASS",
+      "TestValidator.test_validate_bundle_receipt": "PASS",
+      "TestValidator.test_validate_bundle_receipt_fails_on_hash_mismatch": "PASS",
+      "TestFaultInjection.test_missing_image_file": "PASS",
+      "TestFaultInjection.test_modified_image_byte": "PASS",
+      "TestFaultInjection.test_cross_partition_source_overlap": "PASS",
+      "TestFaultInjection.test_invalid_yaml": "PASS",
+      "TestExporterCLI.test_exporter_dry_run": "PASS",
+      "TestExporterCLI.test_exporter_execute": "PASS",
+      "TestExporterCLI.test_validator_on_smoke_bundle": "PASS"
+    },
+    "phase_4c1_runner": {
+      "all_tests": "SKIPPED (torch not available)",
+      "reason": "Training runner tests require PyTorch which is not installed in test environment"
+    },
+    "typescript_tests": {
+      "total": 70,
+      "passed": 70,
+      "packages": {
+        "shared": 34,
+        "provenance": 3,
+        "forensics": 5,
+        "report": 4,
+        "inference": 8,
+        "web": 3,
+        "continuity_checker": 13
+      }
+    },
+    "typecheck": {
+      "errors": 0,
+      "packages": 6
+    },
+    "build": {
+      "exit_code": 0,
+      "modules": 55,
+      "duration_seconds": 4.08
+    }
+  }
+}

@@ -6,12 +6,13 @@ Validates the Colab bundle after extraction:
 - File presence
 - SHA-256 integrity
 - Manifest row counts
-- Locked-test exclusion
+- Locked-test exclusion (must be zero)
 """
 
 from __future__ import annotations
 
 import argparse
+import csv
 import hashlib
 import json
 import sys
@@ -38,6 +39,38 @@ EXPECTED_FILES = {
     },
     "manifest_pilot_a_option_p.csv": {
         "rows": 685,  # header + 684 sources
+        "required_columns": [
+            "source_id",
+            "instance_id",
+            "category",
+            "upstream_split",
+            "partition",
+            "lc_n50",
+            "lc_n100",
+            "lc_n250",
+        ],
+    },
+    "checkpoint-receipt.json": {
+        "required_keys": [
+            "checkpoint_file",
+            "sha256",
+            "phase",
+            "val_macro_f1",
+        ],
+    },
+    "pilot_a_binary_preregistered.yaml": {
+        "required_keys": [
+            "schema_version",
+            "config_id",
+            "learning_curve",
+            "hyperparameters",
+        ],
+    },
+}
+
+
+SMOKE_EXPECTED_FILES = {
+    "manifest_pilot_a_option_p.csv": {
         "required_columns": [
             "source_id",
             "instance_id",
@@ -108,7 +141,6 @@ def validate_file(bundle_dir: Path, name: str, spec: Dict[str, Any]) -> Dict[str
     # CSV row/column validation
     if "rows" in spec:
         try:
-            import csv
             with open(path, "r", encoding="utf-8") as f:
                 reader = csv.reader(f)
                 rows = list(reader)
@@ -122,47 +154,126 @@ def validate_file(bundle_dir: Path, name: str, spec: Dict[str, Any]) -> Dict[str
         except Exception as e:
             result["errors"].append(f"CSV validation error: {e}")
 
-    # JSON key validation
+    # JSON/YAML key validation
     if "required_keys" in spec:
         try:
             with open(path, "r", encoding="utf-8") as f:
-                data = json.load(f)
+                if path.suffix in [".yaml", ".yml"]:
+                    import yaml
+                    data = yaml.safe_load(f)
+                else:
+                    data = json.load(f)
             missing = [k for k in spec["required_keys"] if k not in data]
             if missing:
-                result["errors"].append(f"Missing JSON keys: {missing}")
+                result["errors"].append(f"Missing keys: {missing}")
         except Exception as e:
-            result["errors"].append(f"JSON validation error: {e}")
+            result["errors"].append(f"Validation error: {e}")
 
     result["passed"] = len(result["errors"]) == 0
     return result
 
 
 def validate_locked_test_exclusion(bundle_dir: Path) -> Dict[str, Any]:
-    """Verify locked_test partition is excluded from training manifests"""
+    """Verify locked_test partition is completely excluded from training manifests.
+
+    Returns FAIL if ANY locked-test row, path, or source_id is found.
+    """
     manifest_path = bundle_dir / "manifest_pilot_a_option_p.csv"
     if not manifest_path.exists():
         return {"passed": False, "errors": ["Manifest not found"]}
 
-    import csv
-    locked_test_count = 0
+    locked_test_rows = 0
+    locked_test_source_ids = set()
+    locked_test_paths = []
+
     with open(manifest_path, "r", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
             if row.get("partition") == "locked_test":
-                locked_test_count += 1
+                locked_test_rows += 1
+                locked_test_source_ids.add(row.get("source_id", ""))
+                # Check if any locked-test image paths are in bundle
+                if row.get("authentic_path"):
+                    locked_test_paths.append(row["authentic_path"])
+                if row.get("canonical_edit_path"):
+                    locked_test_paths.append(row["canonical_edit_path"])
 
-    # The manifest SHOULD contain locked_test rows for reference, but training should filter them
-    # The bundle includes the full manifest; the training script filters out locked_test
+    # Check if any locked-test image files exist in bundle
+    locked_test_files_exist = 0
+    for path in locked_test_paths:
+        if (bundle_dir / Path(path).name).exists():
+            locked_test_files_exist += 1
+
+    passed = (locked_test_rows == 0 and locked_test_files_exist == 0)
+
+    errors = []
+    if locked_test_rows > 0:
+        errors.append(f"Locked-test rows in manifest: {locked_test_rows}")
+    if locked_test_source_ids:
+        errors.append(f"Locked-test source_ids in manifest: {len(locked_test_source_ids)}")
+    if locked_test_files_exist > 0:
+        errors.append(f"Locked-test image files present in bundle: {locked_test_files_exist}")
+
     return {
-        "passed": True,
-        "locked_test_sources_in_manifest": locked_test_count,
-        "note": "Full manifest included; training script must filter partition != 'locked_test'",
+        "passed": passed,
+        "locked_test_rows": locked_test_rows,
+        "locked_test_source_ids": len(locked_test_source_ids),
+        "locked_test_files_exist": locked_test_files_exist,
+        "errors": errors,
+    }
+
+
+def validate_bundle_receipt(bundle_dir: Path, smoke_only: bool) -> Dict[str, Any]:
+    """Validate bundle receipt against manifest and file hashes."""
+    receipt_path = bundle_dir / "bundle_receipt.json"
+    if not receipt_path.exists():
+        return {"passed": False, "errors": ["Bundle receipt not found"]}
+
+    try:
+        with open(receipt_path, "r", encoding="utf-8") as f:
+            receipt = json.load(f)
+    except Exception as e:
+        return {"passed": False, "errors": [f"Receipt JSON error: {e}"]}
+
+    errors = []
+
+    # Verify locked-test counts in receipt
+    if receipt.get("locked_test_rows", -1) != 0:
+        errors.append(f"Receipt locked_test_rows != 0: {receipt.get('locked_test_rows')}")
+    if receipt.get("locked_test_files", -1) != 0:
+        errors.append(f"Receipt locked_test_files != 0: {receipt.get('locked_test_files')}")
+    if receipt.get("locked_test_source_ids", -1) != 0:
+        errors.append(f"Receipt locked_test_source_ids != 0: {receipt.get('locked_test_source_ids')}")
+
+    # Verify file hashes match
+    if "file_hashes" in receipt:
+        for name, expected_hash in receipt["file_hashes"].items():
+            file_path = bundle_dir / name
+            if file_path.exists():
+                actual_hash = compute_sha256(file_path)
+                if actual_hash != expected_hash:
+                    errors.append(f"SHA256 mismatch for {name}: expected {expected_hash}, got {actual_hash}")
+            else:
+                errors.append(f"File in receipt not found in bundle: {name}")
+
+    # Verify bundle digest
+    if "bundle_sha256" in receipt and "file_hashes" in receipt:
+        bundle_hash = hashlib.sha256()
+        for f in sorted(receipt["file_hashes"].keys()):
+            bundle_hash.update(receipt["file_hashes"][f].encode())
+        if bundle_hash.hexdigest() != receipt["bundle_sha256"]:
+            errors.append(f"Bundle SHA256 mismatch: expected {receipt['bundle_sha256']}, got {bundle_hash.hexdigest()}")
+
+    return {
+        "passed": len(errors) == 0,
+        "errors": errors,
     }
 
 
 def main():
     parser = argparse.ArgumentParser(description="Phase 4C.1 Bundle Validator")
     parser.add_argument("--bundle", type=Path, default=Path("/content/bundle"), help="Bundle directory")
+    parser.add_argument("--smoke-only", action="store_true", help="Validate smoke bundle (N=50 only)")
     args = parser.parse_args()
 
     bundle_dir = args.bundle
@@ -174,14 +285,17 @@ def main():
     print("PHASE 4C.1 BUNDLE VALIDATOR")
     print("=" * 70)
     print(f"Bundle directory: {bundle_dir}")
+    print(f"Smoke-only mode: {args.smoke_only}")
     print()
+
+    expected_files = SMOKE_EXPECTED_FILES if args.smoke_only else EXPECTED_FILES
 
     all_passed = True
     results = []
 
     # Validate each expected file
-    for name, spec in EXPECTED_FILES.items():
-        result = validate_file(Path(args.bundle), name, spec)
+    for name, spec in expected_files.items():
+        result = validate_file(bundle_dir, name, spec)
         results.append(result)
         status = "PASS" if result["passed"] else "FAIL"
         print(f"  {name}: {status}")
@@ -190,14 +304,30 @@ def main():
         if not result["passed"]:
             all_passed = False
 
-    # Validate locked-test exclusion
+    # Validate locked-test exclusion (MUST PASS for overall PASS)
     print()
-    lt_result = validate_locked_test_exclusion(Path(args.bundle))
-    print(f"  Locked-test exclusion: {'PASS' if lt_result['passed'] else 'FAIL'}")
-    print(f"    Locked-test sources in manifest: {lt_result['locked_test_sources_in_manifest']}")
-    if "errors" in lt_result:
+    lt_result = validate_locked_test_exclusion(bundle_dir)
+    lt_status = "PASS" if lt_result["passed"] else "FAIL"
+    print(f"  Locked-test exclusion: {lt_status}")
+    print(f"    Locked-test rows: {lt_result['locked_test_rows']}")
+    print(f"    Locked-test source_ids: {lt_result['locked_test_source_ids']}")
+    print(f"    Locked-test files in bundle: {lt_result['locked_test_files_exist']}")
+    if lt_result["errors"]:
         for err in lt_result["errors"]:
             print(f"    ERROR: {err}")
+    if not lt_result["passed"]:
+        all_passed = False
+
+    # Validate bundle receipt
+    print()
+    receipt_result = validate_bundle_receipt(bundle_dir, args.smoke_only)
+    receipt_status = "PASS" if receipt_result["passed"] else "FAIL"
+    print(f"  Bundle receipt: {receipt_status}")
+    if receipt_result["errors"]:
+        for err in receipt_result["errors"]:
+            print(f"    ERROR: {err}")
+    if not receipt_result["passed"]:
+        all_passed = False
 
     print()
     print("=" * 70)

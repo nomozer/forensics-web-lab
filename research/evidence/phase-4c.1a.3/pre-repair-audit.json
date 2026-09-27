@@ -1,0 +1,59 @@
+{
+  "phase": "4C.1A.3",
+  "timestamp": "2026-09-27T05:00:00Z",
+  "repository": "nomozer/forensics-web-lab",
+  "branch": "research/phase-4c1-learning-curve",
+  "head_commit": "b9f7a8a4205554f65fd7773fc74600bb4ffd944e",
+  "base_main": "575a786ca4888352d60eef60df9595b57fc9f713",
+  "audit_findings": {
+    "notebook_issues": {
+      "cell_9_stage1_training": {
+        "status": "PLACEHOLDER",
+        "issue": "Cell 9 (Stage 1 Training Loop) is a placeholder with print statements only",
+        "current_code": "if EXECUTE:\n    print(\"Stage 1 training would execute here...\")\n    print(\"This cell is a placeholder for the actual training loop\")\n    print(\"Implementation would:\")\n    print(\"  1. Load dataset with PairAwareSampler\")\n    print(\"  2. Initialize Frozen MobileNetV3-Small + Linear Head\")\n    print(\"  3. Train with AdamW, lr=1e-3, early stopping on inner_val_macro_f1\")\n    print(\"  4. Save checkpoint to artifact dir\")\n    print(\"  6. Save to Google Drive artifact dir\")",
+        "required": "Actual training implementation using ml.training.train module"
+      },
+      "cell_10_stage2_gate": {
+        "status": "PLACEHOLDER",
+        "issue": "Cell 10 (Stage 2 Gate Evaluation) is a placeholder",
+        "current_code": "if EXECUTE:\n    print(\"Stage 2 gate evaluation would execute here...\")\n    print(\"Condition: Stage 1 Macro-F1 > Dummy AND > Metadata-only on inner_validation\")\n    print(\"If PASSED: Run fine-tuning (unfreeze features.12, lr=5e-5, 15 epochs)\")\n    print(\"If FAILED: Skip Stage 2, document rationale\")",
+        "required": "Actual Stage 2 gate evaluation with baseline comparison"
+      },
+      "cell_11_artifact_persistence": {
+        "status": "PLACEHOLDER",
+        "issue": "Cell 11 (Artifact Persistence) is a placeholder",
+        "current_code": "if EXECUTE:\n    print(\"Artifacts would be saved to:\")\n    print(f\"  {ARTIFACT_DIR}\")\n    print(\"Including:\")\n    print(\"  - Checkpoints (.pt)\")\n    print(\"  - Metrics (JSON/CSV)\")\n    print(\"  - Logs (TensorBoard/CSV)\")\n    print(\"  - Bootstrap CI results (JSON)\")",
+        "required": "Actual artifact persistence with run receipt generation"
+      },
+      "cell_12_final_summary": {
+        "status": "PLACEHOLDER",
+        "issue": "Cell 12 (Final Summary) can claim completion without real training",
+        "current_code": "if not EXECUTE:\n    print(\"Mode: DRY-RUN\")\n    print(\"No training executed\")\n    print(\"To run: Set EXECUTE = True in Cell 8 and re-run\")\nelse:\n    print(\"Mode: EXECUTION\")\n    print(\"Training artifacts saved to Google Drive\")\n    print(\"Next: Statistical analysis + Locked-test evaluation (separate approval)\")",
+        "required": "Conditional summary based on actual run receipt verification"
+      }
+    },
+    "notebook_issues": {
+      "target_commit": {
+        "current": "dc7c0c4d082ad2c3127752da306f3447aee49248",
+        "issue": "TARGET_COMMIT points to dc7c0c4 (Phase 4C.1A.1 HEAD) but needs to be updated to orchestration commit after fixes"
+      },
+      "gpu_preflight": {
+        "status": "MISSING_HARD_ASSERTION",
+        "issue": "GPU preflight only prints info, no hard assertion that CUDA is available",
+        "required": "Hard assertion: assert torch.cuda.is_available(), 'COLAB_GPU_REQUIRED'"
+      },
+      "bundle_copy": {
+        "issue": "shutil.copy2 on os.listdir() doesn't handle nested directories",
+        "required": "Use shutil.copytree() for recursive directory copy"
+      },
+      "bundle_manifest": {
+        "issue": "Bundle manifest includes locked_test rows in CSV",
+        "required": "Bundle must have 0 locked_test rows and 0 locked_test paths"
+      },
+      "EXECUTE_gate": {
+        "issue": "EXECUTE flag only controls printing, no actual execution gating",
+        "required": "EXECUTE=True should trigger actual training execution"
+      }
+    }
+  }
+}
