@@ -1,0 +1,50 @@
+{
+  "phase": "4C.1A.1",
+  "manifestVersion": "1.0.0",
+  "generatedAt": "2026-09-27T04:30:00Z",
+  "artifacts": [
+    {
+      "name": "environment.json",
+      "path": "research/evidence/phase-4c.1a.1/environment.json",
+      "description": "Execution environment metadata"
+    },
+    {
+      "name": "preregistration-hash-audit.json",
+      "path": "research/evidence/phase-4c.1a.1/preregistration-hash-audit.json",
+      "description": "Preregistration config hash audit"
+    },
+    {
+      "name": "experiment-arithmetic.json",
+      "path": "research/evidence/phase-4c.1a.1/experiment-arithmetic.json",
+      "description": "Corrected experiment matrix arithmetic"
+    },
+    {
+      "name": "stage2-gate.json",
+      "path": "research/evidence/phase-4c.1a.1/stage2-gate.json",
+      "description": "Stage 2 conditional gate definition"
+    },
+    {
+      "name": "resource-accounting.json",
+      "path": "research/evidence/phase-4c.1a.1/resource-accounting.json",
+      "description": "Resource accounting with measurement classifications"
+    },
+    {
+      "name": "validation-summary.json",
+      "path": "research/evidence/phase-4c.1a.1/validation-summary.json",
+      "description": "Complete validation summary"
+    },
+    {
+      "name": "PHASE_REPORT.md",
+      "path": "research/evidence/phase-4c.1a.1/PHASE_REPORT.md",
+      "description": "Human-readable phase report"
+    }
+  ],
+  "artifactCount": 7,
+  "directoryFileCount": 8,
+  "manifestSelfExcluded": true,
+  "continuityFilesUpdated": [
+    "docs/continuity/CURRENT_STATE.md",
+    "docs/continuity/CODE_INDEX.md",
+    "docs/continuity/STATUS_LEDGER.md"
+  ]
+}

@@ -1,0 +1,104 @@
+{
+  "phase": "4C.1A",
+  "preregistration_hash": "727fc316123b211bc51de99b154220cef068ba1a5ac621bf6a106cc8fb325acc",
+  "matrix": {
+    "sample_sizes": [
+      {
+        "n_sources": 50,
+        "status": "runnable",
+        "description": "Extreme low-data regime (50 authentic : 50 edited, 100 samples/epoch)",
+        "samples_per_epoch": 100
+      },
+      {
+        "n_sources": 100,
+        "status": "runnable",
+        "description": "Low-data regime (100 authentic : 100 edited, 200 samples/epoch)",
+        "samples_per_epoch": 200
+      },
+      {
+        "n_sources": 250,
+        "status": "runnable",
+        "description": "Target thesis pilot regime (250 authentic : 250 edited, 500 samples/epoch)",
+        "samples_per_epoch": 500
+      }
+    ],
+    "seeds": {
+      "exploratory": [42, 1337, 2025],
+      "final_evaluation": [42, 1337, 2025, 3407, 9001],
+      "count": 5,
+      "justification": "Preregistered in PHASE_4C_PREREGISTRATION.md Section 4.2"
+    },
+    "model_variants": [
+      {
+        "id": "frozen_visual_linear",
+        "name": "Frozen MobileNetV3-Small + Linear Head",
+        "backbone": "mobilenet_v3_small",
+        "pretrained": "imagenet_1k",
+        "freeze_backbone": true,
+        "train_head_only": true,
+        "stage": 1,
+        "hyperparameters": {
+          "optimizer": "AdamW",
+          "learning_rate": 0.001,
+          "weight_decay": 0.0001,
+          "max_epochs": 25,
+          "early_stopping_patience": 5,
+          "metric": "inner_val_macro_f1",
+          "loss": "BCEWithLogitsLoss"
+        }
+      },
+      {
+        "id": "finetuned_visual",
+        "name": "Fine-Tuned MobileNetV3-Small (Block 12)",
+        "backbone": "mobilenet_v3_small",
+        "pretrained": "imagenet_1k",
+        "freeze_backbone": false,
+        "unfreeze_block": "features.12",
+        "stage": 2,
+        "gating_condition": "Stage 1 Macro-F1 surpasses Dummy AND Metadata-only baselines on inner_validation",
+        "hyperparameters": {
+          "optimizer": "AdamW",
+          "learning_rate": 0.00005,
+          "weight_decay": 0.0001,
+          "max_epochs": 15,
+          "early_stopping_patience": 5,
+          "metric": "inner_val_macro_f1",
+          "loss": "BCEWithLogitsLoss"
+        }
+      }
+    ],
+    "baselines": [
+      { "id": "stratified_dummy", "name": "Stratified Random Dummy Classifier" },
+      { "id": "metadata_only", "name": "EXIF/C2PA Metadata-Only Logistic Regression" },
+      { "id": "dsp_only", "name": "2D FFT / DCT / Noise Residual DSP Classifier" },
+      { "id": "frozen_visual_linear", "name": "Frozen MobileNetV3-Small + Linear Head" },
+      { "id": "finetuned_visual", "name": "Fine-Tuned MobileNetV3-Small (Block 12)" },
+      { "id": "multimodal_fusion", "name": "Calibrated Multimodal Fusion (Visual + DSP + Meta)" }
+    ],
+    "total_training_runs": 15,
+    "nested_invariance": "N=50 subset N=100 subset N=250",
+    "evaluation_partition": "inner_validation",
+    "locked_test_access": "SEALED (0 evaluations, seal: 519e7a0e...)",
+    "deterministic_flags": {
+      "torch_deterministic": true,
+      "cudnn_benchmark": false,
+      "pythonhashseed_independent": true,
+      "stable_offset": "sha256_64bit_integer"
+    }
+  },
+  "sampling_strategy": {
+    "strategy": "pair_aware_sampler_case_b",
+    "geometry_case": "Case B",
+    "primary_pairing": "authentic_native <-> edited_native (100% matched pixel geometry)",
+    "secondary_robustness": "authentic_512, authentic_1024 held out",
+    "balanced_cycling": "bbox/segm 1:1 over 2 epochs, 3 bbox + 3 segm over 6 epochs"
+  },
+  "preprocessing_contract": {
+    "input_size": [224, 224],
+    "normalize_mean": [0.485, 0.456, 0.406],
+    "normalize_std": [0.229, 0.224, 0.225],
+    "interpolation": "bicubic",
+    "identical_pipeline_for_both_classes": true,
+    "no_class_conditional_branching": true
+  }
+}

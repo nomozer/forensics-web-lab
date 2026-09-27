@@ -1,0 +1,86 @@
+{
+  "phase": "4C.1A",
+  "dataset": "TGIF Option P (SD2-sp)",
+  "task": "authentic_vs_ai_edited",
+  "manifest_path": "data/research/tgif/manifests/manifest_pilot_a_option_p.csv",
+  "manifest_sha256": "TO_BE_COMPUTED",
+  "total_sources": 684,
+  "partitions": {
+    "development_train": {
+      "source_count": 250,
+      "nested_learning_curves": {
+        "N50": 50,
+        "N100": 100,
+        "N250": 250
+      },
+      "class_balance": {
+        "authentic": 250,
+        "ai_edited": 250
+      }
+    },
+    "inner_validation": {
+      "source_count": 91,
+      "class_balance": {
+        "authentic": 91,
+        "ai_edited": 91
+      }
+    },
+    "locked_test": {
+      "source_count": 343,
+      "seal_sha256": "519e7a0e6815e781d1cefa95971e5221ac1f25656837374d8dc4ba41401fded9",
+      "access_allowed": false
+    }
+  },
+  "class_coverage": {
+    "authentic": true,
+    "ai_edited": true,
+    "fully_generated": false
+  },
+  "three_class_pipeline": "not-runnable-missing-fully-generated-data",
+  "resolution_matching": {
+    "case": "Case B",
+    "native_match_rate": 1.0,
+    "edited_on_native_canvas": 4104,
+    "total_edited": 4104
+  },
+  "archive_verification": {
+    "orig_validation": {
+      "bytes": 859947874,
+      "sha256": "c9f02a343a5ac759...",
+      "images": 1023
+    },
+    "orig_testing": {
+      "bytes": 806962390,
+      "sha256": "8020c2f2080b349f...",
+      "images": 1029
+    },
+    "sd2_sp_validation": {
+      "bytes": 2172017290,
+      "sha256": "bd9eb4399f60166a...",
+      "images": 2046
+    },
+    "sd2_sp_testing": {
+      "bytes": 2040575228,
+      "sha256": "c346af3cb85b00ac...",
+      "images": 2058
+    }
+  },
+  "manifest_verification": {
+    "total_rows": 684,
+    "dev_train_count": 250,
+    "inner_val_count": 91,
+    "locked_test_count": 343,
+    "nested_invariance": "N=50 subset N=100 subset N=250 VERIFIED",
+    "lc_n50_sources": 50,
+    "lc_n100_sources": 100,
+    "lc_n250_sources": 250
+  },
+  "checkpoint_verification": {
+    "path": "models/research/phase-4c.0/smoke_mobilenetv3_small_seed42.pt",
+    "bytes": 5624201,
+    "sha256": "8e9393e075a192ab8683cd2841de4e0b0fe89c90460bfd9cd9e1e04e4a1a3670",
+    "matches_receipt": true
+  },
+  "locked_test_status": "SEALED",
+  "research_track_isolation": "VERIFIED"
+}

@@ -361,10 +361,48 @@ export function checkRepositoryIntegrity(rootDir) {
   if (fs.existsSync(evidenceDir)) {
     const dirs = fs.readdirSync(evidenceDir, { withFileTypes: true })
       .filter(d => d.isDirectory() && d.name.startsWith('phase-'))
-      .map(d => d.name);
+      .map(d => {
+        const dirPath = path.join(evidenceDir, d.name);
+        let timestamp = 0;
+        try {
+          const envPath = path.join(dirPath, 'environment.json');
+          if (fs.existsSync(envPath)) {
+            const envContent = fs.readFileSync(envPath, 'utf-8');
+            const env = JSON.parse(envContent);
+            if (env.timestamp) {
+              timestamp = new Date(env.timestamp).getTime();
+            }
+          }
+        } catch {}
+        // Fallback: use git log for the directory
+        if (timestamp === 0) {
+          try {
+            const { execFileSync } = require('node:child_process');
+            const gitLog = execFileSync('git', ['log', '-1', '--format=%ct', '--', dirPath], { cwd: rootDir, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }).trim();
+            if (gitLog) timestamp = parseInt(gitLog, 10) * 1000;
+          } catch {}
+        }
+        // Fallback: use phase token parsing for deterministic ordering
+        let phaseOrder = 0;
+        try {
+          const phaseToken = parsePhaseTokens(d.name).tokens;
+          // Convert to a single number for sorting: major*10000 + minor*100 + patch
+          if (phaseToken.length >= 1) phaseOrder += phaseToken[0] * 10000;
+          if (phaseToken.length >= 2) phaseOrder += (typeof phaseToken[1] === 'number' ? phaseToken[1] : (phaseToken[1].charCodeAt(0) - 96)) * 100;
+          if (phaseToken.length >= 3) phaseOrder += phaseToken[2];
+        } catch {}
+        return { name: d.name, timestamp, phaseOrder };
+      })
+      .filter(d => d.timestamp > 0 || d.phaseOrder > 0)
+      .sort((a, b) => {
+        // Primary sort: timestamp (newer first)
+        if (a.timestamp !== b.timestamp) return b.timestamp - a.timestamp;
+        // Secondary sort: phaseOrder (higher version first)
+        return b.phaseOrder - a.phaseOrder;
+      });
     if (dirs.length > 0) {
-      dirs.sort(comparePhaseTokens);
-      latestEvidenceFolder = dirs[dirs.length - 1];
+      // Sorted descending (newest first), so first element is latest
+      latestEvidenceFolder = dirs[0].name;
       latestEvidencePhase = latestEvidenceFolder.replace(/^phase-/, '');
     }
   }

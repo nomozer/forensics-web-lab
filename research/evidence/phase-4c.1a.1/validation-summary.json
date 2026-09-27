@@ -1,0 +1,95 @@
+{
+  "phase": "4C.1A.1",
+  "audit_timestamp": "2026-09-27T04:00:00Z",
+  "validation_results": {
+    "preregistration_hash": {
+      "foundation_tag": "v0.1.0-research-foundation",
+      "foundation_hash_lf": "D25C994A5A51352757D3C445B6C248E267660853A29CE4D6F9CCFE9E53641E64",
+      "foundation_hash_truncated": "727fc316...",
+      "current_branch_hash": "1667968859267FAE9A17778797FEFB6B52D609F0594970AB145FDD59E23E804F",
+      "match_status": "LINE_ENDING_DIFFERENCE_ONLY",
+      "git_diff": "NO_DIFFERENCE_IN_GIT_CONTENT",
+      "documented_hash": "727fc316... (matches foundation tag LF version)"
+    },
+    "experiment_arithmetic": {
+      "definition_of_N": "unique source_id count only",
+      "sample_sizes": [50, 100, 250],
+      "seeds": 5,
+      "methods": 6,
+      "total_method_size_seed_cells": 90,
+      "breakdown": {
+        "stage1_model_runs": 15,
+        "stage2_conditional_runs": 15,
+        "baseline_runs": 45,
+        "fusion_evaluation_runs": 15,
+        "total_cells": 90
+      },
+      "approved_for_execution": {
+        "stage1_model_runs": 15,
+        "baseline_runs": 45,
+        "fusion_evaluation_runs": 15,
+        "stage2_conditional_runs": 0,
+        "stage2_gate": "Conditional - requires Stage 1 > Dummy AND > Metadata-only on inner_validation"
+      }
+    },
+    "n_definition": {
+      "unit": "unique source_id",
+      "not_pair": true,
+      "not_image": true,
+      "nested_invariant": "N=50 ⊂ N=100 ⊂ N=250 verified by source_id inclusion"
+    },
+    "stage2_gate": {
+      "primary_metric": "inner_val_macro_f1",
+      "baselines_to_beat": ["stratified_dummy", "metadata_only"],
+      "gate_logic": "Stage 2 runs ONLY IF Stage 1 best Macro-F1 > Dummy AND > Metadata-Only on inner_validation",
+      "min_margin": 0.0,
+      "statistical_test": "Paired Stratified Bootstrap 95% CI on ΔMacro-F1",
+      "ci_lower_bound_requirement": "> 0.0",
+      "seed_aggregation": "Mean ± std across 5 seeds",
+      "metric_conflict_resolution": "Macro-F1 is primary. Both Macro-F1 and Balanced Accuracy must pass for gate pass.",
+      "stage2_conditional": true,
+      "included_in_approved_runs": false
+    },
+    "resource_accounting": {
+      "memory": {
+        "python_tracemalloc_peak_mb": 5.29,
+        "classification": "Measured",
+        "rss": "Unknown",
+        "cuda_vram": "Unknown (CPU-only env)"
+      },
+      "timing": {
+        "smoke_run_measured": "89.2s total, 8.26s/epoch",
+        "full_stage1_projection_minutes": 65,
+        "baseline_projection_minutes": 7.5,
+        "stage2_projection_minutes": 45
+      },
+      "storage": {
+        "dataset_gb": 5.89,
+        "checkpoints_stage1_mb": 84,
+        "checkpoints_stage2_mb": 84,
+        "total_estimated_gb": 7.5
+      },
+      "compute_plan": {
+        "primary_compute": "Google Colab GPU",
+        "preferred_accelerator": "NVIDIA T4",
+        "artifact_storage": "Private Google Drive",
+        "local_fallback": "GTX 1650 (4GB VRAM) - fallback only"
+      }
+    }
+  },
+  "colab_preparation": {
+    "notebook_created": "notebooks/phase_4c1_learning_curve_colab.ipynb",
+    "requirements_colab": "ml/requirements-colab.txt",
+    "export_script": "ml/datasets/export_phase_4c1_bundle.py",
+    "validate_script": "ml/datasets/validate_phase_4c1_bundle.py",
+    "colab_guide": "docs/PHASE_4C1_COLAB_GUIDE.md",
+    "bundle_exporter_dry_run": "NOT_EXECUTED (dependency install timeout)",
+    "bundle_validator_dry_run": "NOT_EXECUTED (dependency install timeout)"
+  },
+  "continuity_checker": {
+    "status": "NEEDS_FIX",
+    "issue": "Alphabetical directory sorting places 'phase-ci.4' after 'phase-4c.1a'",
+    "proposed_fix": "Use metadata timestamp or commit date for phase ordering instead of alphabetical directory name sorting",
+    "test_coverage": "Need to add tests for phase-ci.4, phase-4c.1a, phase-4c.1a.1"
+  }
+}

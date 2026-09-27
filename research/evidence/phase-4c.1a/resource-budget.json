@@ -1,0 +1,61 @@
+{
+  "phase": "4C.1A",
+  "environment": {
+    "cpu": "UNKNOWN",
+    "ram_gb": "UNKNOWN",
+    "gpu": "NONE (CPU-only)",
+    "disk_free_gb": "UNKNOWN"
+  },
+  "dataset": {
+    "total_images": 6156,
+    "total_bytes": 5890096035,
+    "manifest_bytes": 249233,
+    "archive_total_bytes": 5879502782
+  },
+  "checkpoint": {
+    "smoke_checkpoint_bytes": 5624201,
+    "expected_checkpoint_size_mb": 5.6
+  },
+  "training_estimate": {
+    "smoke_run": {
+      "n_sources": 50,
+      "seed": 42,
+      "epochs": 25,
+      "samples_per_epoch": 100,
+      "estimated_duration_minutes": "ESTIMATED",
+      "peak_ram_mb": "UNKNOWN (python_tracemalloc_peak 5.29 MB in smoke run)",
+      "basis": "Single seed 42 run measured 89.2s total, 8.26s/epoch in Phase 4C.0"
+    },
+    "full_matrix": {
+      "total_training_runs": 15,
+      "sample_sizes": [50, 100, 250],
+      "seeds_per_size": 5,
+      "estimated_epochs_per_run": 25,
+      "estimated_total_epochs": 375,
+      "estimated_cpu_hours": "ESTIMATED (projected ~35-45 min for full 15 runs on CPU)",
+      "checkpoint_storage_mb": "ESTIMATED ~84 MB (15 runs × 5.6 MB)",
+      "notes": "Stage 2 fine-tuning (15 epochs × 5 seeds × 3 sizes = 225 epochs) gated by Stage 1 results"
+    }
+  },
+  "compute_plan": {
+    "smoke_gate_required": true,
+    "smoke_plan": "N=50, seed=42 on development_train before forecasting 15 learning-curve runs",
+    "cpu_only": true,
+    "gpu_required": false,
+    "colab_fallback": "NOT_PLANNED",
+    "local_cpu_only": true
+  },
+  "storage_estimate": {
+    "dataset_gb": 5.89,
+    "checkpoints_mb": 84,
+    "logs_mb": "ESTIMATED ~500 MB",
+    "total_estimated_gb": "ESTIMATED ~7 GB"
+  },
+  "notes": {
+    "smoke_time_measured": "89.2s total (8 epochs), 8.26s/epoch (Phase 4C.0)",
+    "ram_tracemalloc_peak": "5.29 MB (python heap only, RSS not measured)",
+    "rss_not_measured": true,
+    "gpu_unavailable": true,
+    "all_estimates_based_on": "Phase 4C.0 smoke run on CPU"
+  }
+}

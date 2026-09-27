@@ -1,0 +1,154 @@
+{
+  "phase": "4C.1A.1",
+  "audit_timestamp": "2026-09-27T03:00:00Z",
+  "definition_of_N": {
+    "N": "N represents unique source_id count only",
+    "unit": "source_id",
+    "justification": "Pseudoreplication control: correlated variants from same source_id do not increase scientific sample size. See pilot_a_binary_preregistered.yaml pseudoreplication_control section.",
+    "source_id_counts": {
+      "N50": 50,
+      "N100": 100,
+      "N250": 250
+    },
+    "nested_invariant": "N50 ⊂ N100 ⊂ N250 (verified by source_id inclusion)"
+  },
+  "sample_breakdown": {
+    "N50": {
+      "source_id": 50,
+      "authentic_source_id": 25,
+      "ai_edited_source_id": 25,
+      "authentic_edited_pairs": 50,
+      "total_images_per_epoch": 100,
+      "authentic_images_per_epoch": 50,
+      "ai_edited_images_per_epoch": 50,
+      "inner_validation_source_id": 91,
+      "inner_validation_pairs": 91
+    },
+    "N100": {
+      "source_id": 100,
+      "authentic_source_id": 50,
+      "ai_edited_source_id": 50,
+      "authentic_edited_pairs": 100,
+      "total_images_per_epoch": 200,
+      "authentic_images_per_epoch": 100,
+      "ai_edited_images_per_epoch": 100,
+      "inner_validation_source_id": 91,
+      "inner_validation_pairs": 91
+    },
+    "N250": {
+      "source_id": 250,
+      "authentic_source_id": 125,
+      "ai_edited_source_id": 125,
+      "authentic_edited_pairs": 250,
+      "total_images_per_epoch": 500,
+      "authentic_images_per_epoch": 250,
+      "ai_edited_images_per_epoch": 250,
+      "inner_validation_source_id": 91,
+      "inner_validation_pairs": 91
+    }
+  },
+  "nested_invariant_verification": {
+    "N50_source_ids": "Subset of N100 source_ids",
+    "N100_source_ids": "Subset of N250 source_ids",
+    "verified": true
+  },
+  "method_classification": [
+    {
+      "id": "stratified_dummy",
+      "name": "Stratified Random Dummy Classifier",
+      "type": "baseline",
+      "trains_parameters": false,
+      "produces_checkpoint": false,
+      "depends_on_stage1": false,
+      "stage2_gated": false,
+      "runs_per_size_seed": 1,
+      "cells_per_size_seed": 1
+    },
+    {
+      "id": "metadata_only",
+      "name": "EXIF/C2PA Metadata-Only Logistic Regression",
+      "type": "baseline",
+      "trains_parameters": true,
+      "produces_checkpoint": true,
+      "depends_on_stage1": false,
+      "stage2_gated": false,
+      "runs_per_size_seed": 1,
+      "cells_per_size_seed": 1
+    },
+    {
+      "id": "dsp_only",
+      "name": "2D FFT / DCT / Noise Residual DSP Classifier",
+      "type": "baseline",
+      "trains_parameters": true,
+      "produces_checkpoint": true,
+      "depends_on_stage1": false,
+      "stage2_gated": false,
+      "runs_per_size_seed": 1,
+      "cells_per_size_seed": 1
+    },
+    {
+      "id": "frozen_visual_linear",
+      "name": "Frozen MobileNetV3-Small + Linear Head",
+      "type": "model_stage1",
+      "trains_parameters": true,
+      "produces_checkpoint": true,
+      "depends_on_stage1": false,
+      "stage2_gated": false,
+      "runs_per_size_seed": 1,
+      "cells_per_size_seed": 1
+    },
+    {
+      "id": "finetuned_visual",
+      "name": "MobileNetV3 Fine-Tuned Block 12 Head",
+      "type": "model_stage2",
+      "trains_parameters": true,
+      "produces_checkpoint": true,
+      "depends_on_stage1": true,
+      "stage2_gated": true,
+      "gating_condition": "Stage 1 Macro-F1 surpasses Dummy AND Metadata-only baselines on inner_validation",
+      "cells_per_size_seed": 1,
+      "conditional": true
+    },
+    {
+      "id": "multimodal_fusion",
+      "name": "Calibrated Multimodal Fusion (Visual + DSP + Meta)",
+      "type": "fusion",
+      "trains_parameters": false,
+      "produces_checkpoint": false,
+      "depends_on_stage1": true,
+      "stage2_gated": false,
+      "runs_per_size_seed": 1,
+      "cells_per_size_seed": 1
+    }
+  ],
+  "matrix_cells": {
+    "sample_sizes": 3,
+    "seeds": 5,
+    "methods": 6,
+    "total_method_size_seed_cells": 90,
+    "breakdown": {
+      "stage1_model_cells": 15,
+      "stage2_conditional_cells": 15,
+      "baseline_cells": 45,
+      "fusion_cells": 15,
+      "total_cells": 90
+    },
+    "approved_for_execution": {
+      "stage1_model_runs": 15,
+      "baseline_runs": 45,
+      "fusion_evaluation_runs": 15,
+      "stage2_conditional_runs": 0,
+      "stage2_gate": "Conditional - requires Stage 1 > Dummy AND > Metadata-only on inner_validation"
+    },
+    "corrected_reporting": {
+      "previous_report": "15 model + 90 baseline runs (ambiguous double-counting)",
+      "corrected": "Stage 1: 15 model runs + 45 baseline runs = 60 runs. Stage 2: up to 15 conditional runs (gated). Fusion: 15 evaluations. Total method-size-seed cells: 90."
+    }
+  },
+  "definition_of_N": {
+    "unit": "source_id",
+    "not_pair": true,
+    "not_image": true,
+    "justification": "Pseudoreplication control: correlated variants from same source_id do not increase scientific sample size"
+  }
+}

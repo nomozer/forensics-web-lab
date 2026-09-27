@@ -4,6 +4,49 @@
 > **Mục đích**: Biên niên sử cô đọng từng giai đoạn phát triển và nghiên cứu từ Phase 0 đến nay.  
 > **Quy ước**: Giai đoạn mới nhất nằm ở trên cùng; mỗi giai đoạn không quá 20 dòng; chi tiết kiểm chứng nằm tại `research/evidence/`.
 
+## Phase 4C.1A.1 — Experiment Evidence Reconciliation & Colab Package Preparation
+
+- **Mục tiêu**: Đồng bộ evidence Phase 4C.1A, sửa experiment arithmetic, khóa Stage 2 gate, chuẩn bị Colab execution package.
+- **Starting commit**: `575a786ca4888352d60eef60df9595b57fc9f713` (foundation tag `v0.1.0-research-foundation`)
+- **Branch**: `research/phase-4c1-learning-curve`
+- **Thay đổi chính**:
+  1. Audit preregistration hash: LF vs CRLF line endings, git content identical, documented hash `727fc316...` đúng với foundation tag.
+  2. Sửa experiment arithmetic: 90 method-size-seed cells (15 Stage 1 + 45 baselines + 15 fusion + 15 conditional Stage 2), 75 approved, 15 conditional.
+  3. Khóa N definition: unique source_id count only, nested N=50⊂N=100⊂N=250 verified.
+  4. Stage 2 gate: machine-readable conditional gate (Macro-F1 > Dummy AND > Metadata-Only, CI lower > 0).
+  5. Resource accounting: phân loại Measured/Estimated/Projected/Unknown, tracemalloc ≠ RSS, Colab GPU unverified.
+  6. Tạo Colab package: notebook, bundle exporter/validator, requirements, guide.
+  7. Continuity checker bug: alphabetical directory sorting puts `phase-ci.4` after `phase-4c.1a`.
+- **Kiểm tra kỹ thuật**: `pnpm test` (70/70 passed), `pnpm typecheck` (0 errors), `pnpm build` (exit 0), hermetic gate 102/102, artifact gate 6/6, full suite 108/108. Config validator 4/4, registry 7/7. Evidence Phase 4C.1A.1 tạo mới.
+- **Kết quả khoa học**: Dataset sẵn sàng, preregistration audit hoàn tất, experiment arithmetic đã sửa, Stage 2 gate đã khóa, Colab package sẵn sàng. **Chờ phê duyệt để build/upload Colab bundle.**
+- **Evidence**: `research/evidence/phase-4c.1a.1/` (`environment.json`, `preregistration-hash-audit.json`, `experiment-arithmetic.json`, `stage2-gate.json`, `resource-accounting.json`, `validation-summary.json`, `evidence-manifest.json`, `PHASE_REPORT.md`).
+- **Giới hạn**: Continuity checker alphabetical sorting bug; bundle dry-run chưa chạy do dependency timeout; Colab bundle chưa upload.
+- **Quyết định tiếp theo**: Sửa continuity checker, build/upload Colab bundle, phê duyệt 15 training runs.
+
+---
+
+## Phase 4C.1A — Learning-Curve Execution Gate & Preregistration Audit
+
+- **Mục tiêu**: Tạo branch nghiên cứu Phase 4C.1, audit preregistration, khóa ma trận learning curve và lập ngân sách tài nguyên trước khi thực hiện huấn luyện.
+- **Starting commit**: `575a786ca4888352d60eef60df9595b57fc9f713` (foundation tag `v0.1.0-research-foundation`)
+- **Branch**: `research/phase-4c1-learning-curve`
+- **Thay đổi chính**:
+  1. Tạo branch `research/phase-4c1-learning-curve` từ `origin/main` (tag `v0.1.0-research-foundation`).
+  2. Audit dataset Option P: 684 sources, phân vùng 250/91/343, nested N=50⊂100⊂250 VERIFIED.
+  3. Audit preregistration `pilot_a_binary_preregistered.yaml` (hash `727fc316...`): 15 training runs (N=50,100,250 × 5 seeds), 6 baselines, locked test SEALED.
+  4. Kiểm tra checkpoint smoke `smoke_mobilenetv3_small_seed42.pt` (5.6 MB, SHA-256 match receipt).
+  7. Locked test SEALED (seal `519e7a0e...`, 0 evaluations).
+  8. Tạo execution plan (`docs/PHASE_4C1_EXECUTION_PLAN.md`), config Phase 4C.1 (`ml/configs/phase_4c1_learning_curve.yaml`).
+  9. Tạo evidence Phase 4C.1A: environment, dataset-readiness, experiment-matrix, resource-budget, PHASE_REPORT.
+  10. Cập nhật 3 continuity files.
+- **Kiểm tra kỹ thuật**: `pnpm test` (70/70 passed), `pnpm typecheck` (0 errors), `pnpm build` (exit 0), hermetic gate 102/102, artifact gate 6/6, full suite 108/108. Config validator 4/4, registry 7/7.
+- **Kết quả khoa học**: Dataset sẵn sàng, preregistration audit hoàn tất, 15 training runs + 90 baselines đã lên kế hoạch. Locked test SEALED (0 evaluations). **Chờ phê duyệt người dùng để thực thi 15 training runs.**
+- **Evidence**: `research/evidence/phase-4c.1a/` (`environment.json`, `dataset-readiness.json`, `experiment-matrix.json`, `resource-budget.json`, `evidence-manifest.json`, `PHASE_REPORT.md`).
+- **Giới hạn**: Chưa thực thi training runs (0). Locked test SEALED (0). Chờ phê duyệt người dùng.
+- **Quyết định tiếp theo**: Phê duyệt thực thi 15 training runs (smoke run N=50 seed=42 trước).
+
+---
+
 ## Phase CI.4 — Hermetic CI & Research Artifact Gate Separation (Evidence Reconciliation)
 
 - **Mục tiêu**: Tách biệt Python CI thành Hermetic Gate (clean runner, Git-tracked source/metadata/fixture) và Local Research Artifact Gate (yêu cầu manifest, dataset metadata, checkpoint bị cách ly ngoài Git), sau đó đối soát evidence với số liệu đo thực tế.

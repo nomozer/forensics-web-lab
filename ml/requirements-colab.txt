@@ -1,0 +1,25 @@
+# Phase 4C.1 Colab Requirements
+# CUDA-enabled PyTorch (installed via --index-url)
+torch>=2.2.0
+torchvision>=0.17.0
+
+# Core ML dependencies
+onnx>=1.15.0
+onnxruntime>=1.17.0
+numpy>=1.26.0
+pyyaml>=6.0
+pillow>=10.2.0
+scipy>=1.12.0
+scikit-learn>=1.4.0
+pytest>=8.0.0
+ruff>=0.3.0
+
+# Colab-specific
+psutil>=5.9.0
+google-colab>=1.0.0
+
+# Progress tracking
+tqdm>=4.66.0
+
+# Optional: TensorBoard
+tensorboard>=2.15.0
