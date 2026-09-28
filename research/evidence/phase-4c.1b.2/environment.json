@@ -1,0 +1,14 @@
+{
+  "pipPath": "D:\\Documents\\forensics-web-lab\\ml\\.venv\\Scripts\\pip.exe",
+  "torchVersion": "2.14.0+cpu",
+  "torchvisionVersion": "0.29.0+cpu",
+  "pythonVersion": "3.12.10",
+  "branch": "research/phase-4c1-learning-curve",
+  "timestamp": "2026-09-28T02:33:47Z",
+  "virtualEnvironment": true,
+  "git_head": "e537b3e674066f34de8b7d050f8bbd13bcfcc3c1",
+  "phase": "4C.1B.2",
+  "pythonExecutable": "D:\\Documents\\forensics-web-lab\\ml\\.venv\\Scripts\\python.exe",
+  "cudaAvailable": false,
+  "description": "Final Colab Execution Contract Repair"
+}

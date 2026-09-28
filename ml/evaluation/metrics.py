@@ -70,3 +70,34 @@ def compute_localization_metrics(
         "mIoU": iou,
         "dice": dice,
     }
+
+
+def compute_ece(y_true: np.ndarray, y_prob: np.ndarray, n_bins: int = 10) -> float:
+    """Compute Expected Calibration Error for binary classification.
+
+    Args:
+        y_true: True binary labels (0 or 1)
+        y_prob: Predicted probabilities for the positive class
+        n_bins: Number of bins for calibration
+
+    Returns:
+        ECE value
+    """
+    bin_boundaries = np.linspace(0, 1, n_bins + 1)
+    ece = 0.0
+
+    for i in range(n_bins):
+        bin_lower = bin_boundaries[i]
+        bin_upper = bin_boundaries[i + 1]
+
+        in_bin = (y_prob >= bin_lower) & (y_prob < bin_upper)
+        if i == n_bins - 1:
+            in_bin = (y_prob >= bin_lower) & (y_prob <= bin_upper)
+
+        prop_in_bin = np.mean(in_bin)
+        if prop_in_bin > 0:
+            acc_in_bin = np.mean(y_true[in_bin])
+            avg_conf_in_bin = np.mean(y_prob[in_bin])
+            ece += np.abs(acc_in_bin - avg_conf_in_bin) * prop_in_bin
+
+    return float(ece)

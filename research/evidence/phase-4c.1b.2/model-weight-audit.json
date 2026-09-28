@@ -1,0 +1,48 @@
+{
+  "modelWeightAudit": {
+    "modelClass": "MobileNetV3Forensics",
+    "backbone": "mobilenet_v3_small",
+    "weightsSource": "torchvision.models.MobileNet_V3_Small_Weights.IMAGENET1K_V1",
+    "weightEnum": "MobileNet_V3_Small_Weights.IMAGENET1K_V1",
+    "downloadUrl": "https://download.pytorch.org/models/mobilenet_v3_small-047dcff4.pth",
+    "cacheLocation": "C:\\Users\\Bunny\\.cache\\torch\\hub\\checkpoints\\mobilenet_v3_small-047dcff4.pth",
+    "fileExists": true,
+    "modelBytes": 10306551,
+    "modelSha256": "047DCFF4ADDEF86EA5BC2EFF13C9614DC11F47AB1160D0A71A25E7DB994F4E1F",
+    "license": {
+      "torchvisionCodeLicense": "BSD-3-Clause",
+      "pretrainedWeightProvenance": "ImageNet-1K (ILSVRC 2012)",
+      "pretrainedWeightTermsStatus": "unverified",
+      "researchUseDecision": "Approved for non-commercial academic research only; commercial redistribution unverified."
+    },
+    "initializationType": "torchvision_pretrained",
+    "freezeBackboneStage1": true,
+    "trainHeadOnlyStage1": true,
+    "numClasses": 2,
+    "trainableParamsStage1": 148226,
+    "totalParams": 1075234
+  },
+  "checkpointReceipt": {
+    "file": "models/research/phase-4c.0/smoke_mobilenetv3_small_seed42.pt",
+    "bytes": 5624201,
+    "sha256": "8e9393e075a192ab8683cd2841de4e0b0fe89c90460bfd9cd9e1e04e4a1a3670",
+    "status": "research-smoke-only",
+    "productionReady": false,
+    "quarantinedInResearchTrack": true,
+    "gitTracked": false
+  },
+  "colabPlannedDownload": {
+    "willDownloadPretrainedWeights": true,
+    "source": "torchvision official URL",
+    "expectedBytes": 10306551,
+    "plannedDownloadBytes": 0,
+    "actualDownloadedBytesPhase4C1B2": 0
+  },
+  "artifactAvailability": {
+    "inBundle": false,
+    "inDriveArtifacts": false,
+    "torchvisionCache": "external_model_artifact",
+    "researchCheckpoint": "research-only artifact at models/research/phase-4c.0/",
+    "productModel": "not applicable (research-only phase)"
+  }
+}

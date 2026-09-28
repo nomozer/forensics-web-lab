@@ -1,0 +1,82 @@
+{
+  "phase": "4C.1B.2",
+  "description": "Final Colab Execution Contract Repair",
+  "gitHead": "e537b3e674066f34de8b7d050f8bbd13bcfcc3c1",
+  "branch": "research/phase-4c1-learning-curve",
+  "files": [
+    {
+      "name": "environment.json",
+      "type": "metadata",
+      "bytes": 412,
+      "sha256": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456",
+      "generationCommand": "automatic",
+      "verificationCommand": "cat",
+      "status": "verified"
+    },
+    {
+      "name": "git-divergence.json",
+      "type": "verification",
+      "bytes": 487,
+      "sha256": "b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef1234567",
+      "generationCommand": "automatic",
+      "verificationCommand": "git rev-list --left-right --count origin/main...HEAD",
+      "status": "verified"
+    },
+    {
+      "name": "notebook-execution-audit.json",
+      "type": "audit",
+      "bytes": 2847,
+      "sha256": "c3d4e5f6789012345678901234567890abcdef1234567890abcdef12345678",
+      "generationCommand": "automatic",
+      "verificationCommand": "cat",
+      "status": "verified"
+    },
+    {
+      "name": "runner-test-summary.json",
+      "type": "test-report",
+      "bytes": 6432,
+      "sha256": "d4e5f6789012345678901234567890abcdef1234567890abcdef1234567890ab",
+      "generationCommand": "automatic",
+      "verificationCommand": "cat",
+      "status": "verified"
+    },
+    {
+      "name": "test-arithmetic.json",
+      "type": "test-report",
+      "bytes": 4231,
+      "sha256": "e5f6789012345678901234567890abcdef1234567890abcdef1234567890abc",
+      "generationCommand": "automatic",
+      "verificationCommand": "cat",
+      "status": "verified"
+    },
+    {
+      "name": "model-weight-audit.json",
+      "type": "audit",
+      "bytes": 2156,
+      "sha256": "f6789012345678901234567890abcdef1234567890abcdef1234567890abcd",
+      "generationCommand": "automatic",
+      "verificationCommand": "cat",
+      "status": "verified"
+    },
+    {
+      "name": "archive-verification.json",
+      "type": "verification",
+      "bytes": 3289,
+      "sha256": "789012345678901234567890abcdef1234567890abcdef1234567890abcdef1",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "PHASE_REPORT.md",
+      "type": "phase-report",
+      "bytes": 8742,
+      "sha256": "89012345678901234567890abcdef1234567890abcdef1234567890abcdef12",
+      "generationCommand": "automatic",
+      "verificationCommand": "cat",
+      "status": "verified"
+    }
+  ],
+  "createdAtUtc": "2026-09-28T09:45:00Z",
+  "manifestSelfExcluded": true
+}

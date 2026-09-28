@@ -4,6 +4,19 @@
 > **Mục đích**: Biên niên sử cô đọng từng giai đoạn phát triển và nghiên cứu từ Phase 0 đến nay.  
 > **Quy ước**: Giai đoạn mới nhất nằm ở trên cùng; mỗi giai đoạn không quá 20 dòng; chi tiết kiểm chứng nằm tại `research/evidence/`.
 
+## Phase 4C.1B.2 — Final Colab Execution Contract Repair
+
+- **Mục tiêu**: Khắc phục sai lệch notebook, runner, Drive path, test arithmetic, evidence manifest trước upload.
+- **Starting commit**: `e537b3e674066f34de8b7d050f8bbd13bcfcc3c1` (Phase 4C.1B.1 ending)
+- **Branch**: `research/phase-4c1-learning-curve`
+- **Thay đổi chính**: (1) Runner ECE fix: added `compute_ece` to `ml/evaluation/metrics.py`, all 14 runner tests pass. (2) Notebook: EXECUTION_CODE_REF = 2e6ce2e, Drive paths unified to `phase_4c1/smoke_n50_seed42`, archive SHA-256 verification, tarfile extraction. (3) Phase 4C.1B.0 evidence restored to commit c8fc4f8. (4) Full validation: 145/145 Python pass, 70/70 TS, typecheck 0, build OK, continuity PASS. (5) Evidence at `research/evidence/phase-4c.1b.2/`.
+- **Kiểm tra kỹ thuật**: 145/145 Python pass, 70/70 TS, typecheck 0, build OK, continuity PASS. Runner 14/14 pass. Archive SHA-256 MATCHES.
+- **Kết quả khoa học**: Bundle ready for upload. Training runs = 0. Locked-test = 0. Colab = 0.
+- **Evidence**: `research/evidence/phase-4c.1b.2/` (8 files including git-divergence, notebook-audit, runner-tests, test-arithmetic, model-audit, archive-verification, PHASE_REPORT).
+- **Quyết định tiếp theo**: Upload bundle to Google Drive, execute Colab N=50 seed=42.
+
+---
+
 ## Phase 4C.1B.1 — Pre-upload Integrity Closure
 
 - **Mục tiêu**: Khép kín trạng thái Git và evidence trước khi upload bundle lên Google Drive.

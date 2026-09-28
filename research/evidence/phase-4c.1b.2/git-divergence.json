@@ -1,0 +1,11 @@
+{
+  "remoteFeatureHead": "e537b3e674066f34de8b7d050f8bbd13bcfcc3c1",
+  "behind": 0,
+  "ancestorRelationship": "origin/main is ancestor of HEAD",
+  "ahead": 5,
+  "aheadCount": 5,
+  "localHead": "e537b3e674066f34de8b7d050f8bbd13bcfcc3c1",
+  "originMain": "575a786ca4888352d60eef60df9595b57fc9f713",
+  "behindCount": 0,
+  "rawOutput": "0\t5"
+}
