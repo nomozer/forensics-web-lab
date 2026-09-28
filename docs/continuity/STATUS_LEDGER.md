@@ -4,6 +4,19 @@
 > **Mục đích**: Biên niên sử cô đọng từng giai đoạn phát triển và nghiên cứu từ Phase 0 đến nay.  
 > **Quy ước**: Giai đoạn mới nhất nằm ở trên cùng; mỗi giai đoạn không quá 20 dòng; chi tiết kiểm chứng nằm tại `research/evidence/`.
 
+## Phase 4C.1B.4 — Independent Smoke Result Verification
+
+- **Mục tiêu**: Xác minh độc lập toàn bộ kết quả smoke run từ artifact, tái tính metric từ predictions, giải quyết sai lệch sample-count/checksum trước khi quyết định Stage 2 eligibility.
+- **Starting commit**: `c9a3bb22b5c75526dedd68cb999192caa00c9308` (Phase 4C.1B.3 ending)
+- **Branch**: `research/phase-4c1-learning-curve`
+- **Thay đổi chính**: (1) Artifact inventory & checksum verification: 7/7 files MATCH. (2) Partition audit: 50 dev / 91 val / 0 locked-test, 0 overlap. (3) Metric reproduction: ALL MATCH (Macro-F1 0.5668, BA 0.5674, AUROC 0.6095, Brier 0.2406, ECE 0.0285). (4) Dummy baseline discrepancy documented (different sampling strategy). (5) Stage 2 gate: ELIGIBLE_VERIFIED (conditionally, single-seed). (6) Evidence manifest with measured hashes (7 artifacts, 0 mismatches). (6) Evidence at `research/evidence/phase-4c.1b.4/`.
+- **Kiểm tra kỹ thuật**: 145/145 Python pass, 70/70 TS, typecheck 0, build OK, continuity PASS. Runner 14/14 pass. Archive SHA-256 MATCHES. Metrics reproduced: Macro-F1 0.5668, BA 0.5674, AUROC 0.6095, Brier 0.2406, ECE 0.0285. Dummy baseline discrepancy documented.
+- **Kết quả khoa học**: Bundle verified ready for upload. Training runs = 0. Locked-test = 0. Colab = 0.
+- **Evidence**: `research/evidence/phase-4c.1b.4/` (8 files: environment, artifact-inventory, checksum-verification, partition-audit, metric-reproduction, baseline-reproduction, stage2-gate-audit, evidence-manifest, PHASE_REPORT).
+- **Quyết định tiếp theo**: Upload bundle to Google Drive, execute Colab N=50 seed=42.
+
+---
+
 ## Phase 4C.1B.3 — Measured Evidence Seal and Execution Ref Closure
 
 - **Mục tiêu**: Khóa execution code ref chứa compute_ece, tạo evidence manifest bằng hash đo thật, sửa số học test.

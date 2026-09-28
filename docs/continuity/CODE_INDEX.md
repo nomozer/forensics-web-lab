@@ -112,6 +112,8 @@ graph TD
 | **Phase 4C.1 Colab Bundle Scripts** | `ml/datasets/export_phase_4c1_bundle.py`, `ml/datasets/validate_phase_4c1_bundle.py`, `ml/requirements-colab.txt`, `notebooks/phase_4c1_learning_curve_colab.ipynb`, `docs/PHASE_4C1_COLAB_GUIDE.md` | `implemented-and-tested` |
 | **Phase 4C.1 Training Runner** | `ml/training/run_phase_4c1.py` (CLI for N=50 seed=42 frozen Stage 1, baselines, receipts, checkpoints) | `implemented-and-tested` |
 | **Phase 4C.1 Test Suite** | `ml/tests/test_phase_4c1_notebook.py`, `test_phase_4c1_bundle.py`, `test_phase_4c1_runner.py` (notebook compile, bundle exporter/validator, runner fault injection) | `implemented-and-tested` |
+| **Phase 4C.1B.4 Verification Scripts** | `run_smoke_local.py` (standalone local GPU smoke runner), `ml/evaluation/metrics.py` (added `compute_ece`), `ml/training/run_phase_4c1.py` (fixed config access) | `implemented-and-tested` |
+| **Phase 4C.1B.4 Verification Evidence** | `research/evidence/phase-4c.1b.4/` (artifact-inventory, checksum-verification, partition-audit, metric-reproduction, baseline-reproduction, stage2-gate-audit, evidence-manifest, PHASE_REPORT) | `implemented-and-tested` |
 | **Pixel-Reality Gate Auditor** | `scripts/audit_pixel_reality.py` (measure 6,156 images, confirm Case B native canvas, generate `pixel-geometry-audit.json`, `real-variant-map.json`) | `implemented-and-tested` |
 | **Sampler Runtime Auditor** | `scripts/audit_sampler_runtime.py` (verify stable offset across PYTHONHASHSEED, generate `sampler-runtime-audit.json`) | `implemented-and-tested` |
 | **Pretrained Weight Downloader** | `scripts/download_mobilenet_weights.py` (restricted domain, <=12 MiB ceiling, atomic rename, `pretrained-weight-receipt.json`) | `implemented-and-tested` |

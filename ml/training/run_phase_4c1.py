@@ -117,7 +117,7 @@ class ForensicsDataset(Dataset):
 
     def __getitem__(self, idx: int):
         sample = self.samples[idx]
-        img_path = self.repo_root / sample.path
+        img_path = self.repo_root / Path(sample.path).name
 
         # Load image
         img = Image.open(img_path).convert("RGB")
@@ -171,7 +171,7 @@ def create_data_loaders(
     instances: List[SourcePairInstance],
     batch_size: int,
     device: torch.device,
-    repo_root: str = "/content/forensics-web-lab",
+    repo_root: str = r"D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\extract_temp",
 ) -> tuple:
     """Create train and eval data loaders from instances."""
     sampler = PairAwareSampler(
@@ -413,8 +413,8 @@ def run_smoke_training(args) -> Dict[str, Any]:
 
     # Build model
     model = MobileNetV3Forensics(
-        num_classes=config["model"]["num_classes"],
-        pretrained=config["model"].get("pretrained", True),
+        num_classes=2,
+        pretrained=True,
         freeze_backbone=True,  # Stage 1: frozen backbone
     ).to("cuda")
 
@@ -422,7 +422,7 @@ def run_smoke_training(args) -> Dict[str, Any]:
 
     # Loss and optimizer
     criterion = FocalLoss(
-        gamma=config["training"].get("focal_loss_gamma", 2.0),
+        gamma=2.0,
     )
     optimizer = AdamW(
         model.parameters(),
@@ -431,7 +431,7 @@ def run_smoke_training(args) -> Dict[str, Any]:
     )
     scheduler = CosineAnnealingLR(
         optimizer,
-        T_max=config["training"]["max_epochs"],
+        T_max=config["hyperparameters"]["max_epochs"],
     )
 
     # Training loop
@@ -442,7 +442,7 @@ def run_smoke_training(args) -> Dict[str, Any]:
     print("\n[START] Training Stage 1 (Frozen Backbone)...")
     start_time = time.time()
 
-    for epoch in range(config["training"]["max_epochs"]):
+    for epoch in range(config["hyperparameters"]["max_epochs"]):
         epoch_start = time.time()
 
         train_metrics = train_one_epoch(model, train_loader, criterion, optimizer, torch.device("cuda"), epoch)

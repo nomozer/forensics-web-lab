@@ -1,0 +1,58 @@
+[
+  {
+    "name": "run_receipt.json",
+    "path": "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\runs\\n50_seed42\\run_receipt.json",
+    "bytes": 10808,
+    "sha256": "2658ceac7407da088fec7bd867021c98a084bf8d6437e24df14eb3cde6a9a60d",
+    "modified_utc": "2026-09-28T05:12:33.951835Z"
+  },
+  {
+    "name": "epoch_history.json",
+    "path": "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\runs\\n50_seed42\\epoch_history.json",
+    "bytes": 9055,
+    "sha256": "8d2c3b3f3cd920c95914d8cbe2f29e20ffce09cb3c8b1f4c86608f5007e69330",
+    "modified_utc": "2026-09-28T05:12:33.952835Z"
+  },
+  {
+    "name": "predictions.json",
+    "path": "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\runs\\n50_seed42\\predictions.json",
+    "bytes": 17616,
+    "sha256": "18fa91261b6acca62737a7512b9d3741dde0bdbe68c19e05c4b9eff5f8209fbb",
+    "modified_utc": "2026-09-28T05:12:41.178446Z"
+  },
+  {
+    "name": "training_history.csv",
+    "path": "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\runs\\n50_seed42\\training_history.csv",
+    "bytes": 4178,
+    "sha256": "d9e3260299eedc88118099a84e9958d6286fb4b576d358a482639cacdf797e3c",
+    "modified_utc": "2026-09-28T05:12:41.179447Z"
+  },
+  {
+    "name": "metrics.json",
+    "path": "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\runs\\n50_seed42\\metrics.json",
+    "bytes": 214,
+    "sha256": "76eca7a997528d4564209ac47d056578ccfafcb74c6cfa9ab4f4345c131818c8",
+    "modified_utc": "2026-09-28T05:12:41.179447Z"
+  },
+  {
+    "name": "environment.json",
+    "path": "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\runs\\n50_seed42\\environment.json",
+    "bytes": 312,
+    "sha256": "f18566151a8d5bd0a4635b93792d0c04d94a6c90cf9848c3f17a86a4faad1d5a",
+    "modified_utc": "2026-09-28T05:12:41.180446Z"
+  },
+  {
+    "name": "best_checkpoint.pt",
+    "path": "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\runs\\n50_seed42\\best_checkpoint.pt",
+    "bytes": 6238510,
+    "sha256": "c3cf390a5855611cbf50c21b157d68ed6c39885ea452e31b88162e37d56e3f90",
+    "modified_utc": "2026-09-28T05:12:05.033823Z"
+  },
+  {
+    "name": "checksums.json",
+    "path": "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\runs\\n50_seed42\\checksums.json",
+    "bytes": 644,
+    "sha256": "be0cfe5b36a96711d93f49a31a571dc749435b29aa2e409247fc9f531ba26ce7",
+    "modified_utc": "2026-09-28T05:12:41.234366Z"
+  }
+]
