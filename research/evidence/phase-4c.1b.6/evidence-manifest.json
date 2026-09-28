@@ -1,91 +1,110 @@
 {
-  "phase": "4C.1B.6",
-  "description": "Statistical Gate and Runner Regression Closure",
-  "git_head": "24adfce1cf5a5333852373681b0045e06e2ea3e5",
+  "phase": "4C.1B.6R",
+  "description": "Evidence Integrity, Statistical Contract and Repository Cleanup - Phase 4C.1B.6R",
+  "git_head": "24a6b1169a029d616ead92ac9d2c7312c17c3351",
   "branch": "research/phase-4c1-learning-curve",
   "files": [
     {
-      "name": "environment.json",
-      "type": "metadata",
-      "bytes": 487,
-      "sha256": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456",
+      "name": "confidence-intervals.json",
+      "type": "phase-report",
+      "bytes": 835,
+      "sha256": "a737ac8654e2db838e5d5aaae3fe63c339b0cf0aa5fe5677e49903272796b1dc",
       "generationCommand": "automatic",
-      "verificationCommand": "cat",
-      "status": "verified"
-    },
-    {
-      "name": "source-repair-audit.json",
-      "type": "audit",
-      "bytes": 1245,
-      "sha256": "b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef1234567",
-      "generationCommand": "automatic",
-      "verificationCommand": "cat",
-      "status": "verified"
-    },
-    {
-      "name": "regression-test-summary.json",
-      "type": "test-report",
-      "bytes": 1847,
-      "sha256": "c3d4e5f6789012345678901234567890abcdef1234567890abcdef12345678",
-      "generationCommand": "automatic",
-      "verificationCommand": "cat",
-      "status": "verified"
-    },
-    {
-      "name": "corrected-confidence-intervals.json",
-      "type": "verification",
-      "bytes": 852,
-      "sha256": "d4e5f6789012345678901234567890abcdef1234567890abcdef1234567890ab",
-      "generationCommand": "automatic",
-      "verificationCommand": "cat",
+      "verificationCommand": "Get-FileHash",
       "status": "verified"
     },
     {
       "name": "dummy-baseline-contract.json",
-      "type": "contract",
-      "bytes": 1256,
-      "sha256": "e5f6789012345678901234567890abcdef1234567890abcdef1234567890abc",
+      "type": "phase-report",
+      "bytes": 1519,
+      "sha256": "c3ce3e142a82ba1739fe97973d1aaa57a480db9480280f3e8a60b2afe711b927",
       "generationCommand": "automatic",
-      "verificationCommand": "cat",
+      "verificationCommand": "Get-FileHash",
       "status": "verified"
     },
     {
       "name": "metadata-baseline-status.json",
-      "type": "status",
-      "bytes": 854,
-      "sha256": "f6789012345678901234567890abcdef1234567890abcdef1234567890abcd",
+      "type": "phase-report",
+      "bytes": 888,
+      "sha256": "36ac075cab0f85bb82015b465f097d06d60cdf49bd71d46866777684d7c2ff4a",
       "generationCommand": "automatic",
-      "verificationCommand": "cat",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "regression-test-summary.json",
+      "type": "phase-report",
+      "bytes": 1591,
+      "sha256": "70dd0bd5b3e55097126bbfc0cb5ab3c76bebc37fb8e261865e21b72796fff621",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "source-repair-audit.json",
+      "type": "phase-report",
+      "bytes": 1573,
+      "sha256": "0b390c01ab567a573f3ce9c90326982418f3485b4ca2bd936c62a9acd15c0b1c",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
       "status": "verified"
     },
     {
       "name": "stage2-gate-status.json",
-      "type": "audit",
-      "bytes": 1138,
-      "sha256": "789012345678901234567890abcdef1234567890abcdef1234567890abcd",
+      "type": "phase-report",
+      "bytes": 2432,
+      "sha256": "9aff55a79b0101e1e997f861dfb12cbb3c6e27a9aa663133e7485bb74d1919e3",
       "generationCommand": "automatic",
-      "verificationCommand": "cat",
+      "verificationCommand": "Get-FileHash",
       "status": "verified"
     },
     {
       "name": "test-summary.json",
-      "type": "test-report",
-      "bytes": 3250,
-      "sha256": "89012345678901234567890abcdef1234567890abcdef1234567890abcdef1",
+      "type": "phase-report",
+      "bytes": 3578,
+      "sha256": "269ca1a74d372beff5223a4cf91e90645d6cdf9d698e3be0d34bcb37c8543234",
       "generationCommand": "automatic",
-      "verificationCommand": "cat",
+      "verificationCommand": "Get-FileHash",
       "status": "verified"
     },
     {
-      "name": "PHASE_REPORT.md",
+      "name": "transfer-artifact-verification.json",
       "type": "phase-report",
-      "bytes": 9344,
-      "sha256": "e924812ebe570b49",
+      "bytes": 2012,
+      "sha256": "1f8e5c6530d37325e681cdcb396dd640b8c430aee30d253cc6d87ecfe99dba87",
       "generationCommand": "automatic",
-      "verificationCommand": "cat",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "pytest-collection.txt",
+      "type": "test-report",
+      "bytes": 12280,
+      "sha256": "d33cf45e6a72039552ca01211b2f0883aa8ca770cd8cc17a33929202cfbe3486",
+      "generationCommand": "pytest --collect-only ml/tests -v",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "pytest-full-output.txt",
+      "type": "test-report",
+      "bytes": 17005,
+      "sha256": "96834953224df18654c75ff49354d884b9a30fa657abcf0156656f50860c97c9",
+      "generationCommand": "pytest ml/tests -v",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "corrected-metric-reproduction.json",
+      "type": "test-report",
+      "bytes": 1449,
+      "sha256": "c947263e1ba629525751a446cd90f440f9110af1520fdb6ed266481f49631a02",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
       "status": "verified"
     }
   ],
   "createdAtUtc": "2026-09-28T06:30:00Z",
-  "manifestSelfExcluded": true
+  "manifestSelfExcluded": true,
+  "artifactCount": 11
 }

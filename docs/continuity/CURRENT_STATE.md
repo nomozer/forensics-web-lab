@@ -124,6 +124,11 @@
 ---
 
 
+* **Phase 4C.1B.6R - Evidence Integrity, Statistical Contract and Repository Cleanup**: Evidence integrity verified, statistical contracts closed, repository cleaned. EVAL-LEAK-001 fixed in notebook, runner verified correct. Corrected validation-only metrics: Macro-F1 0.565816, AUROC 0.611762. Bootstrap CI (source_id, 1000 iter): Macro-F1 0.5658 [0.522, 0.609], CI lower bounds > 0. Dummy baseline: 0.411718 (validation-only). Metadata baseline: NOT_MEASURED. Stage 2 gate: INSUFFICIENT_EVIDENCE (metadata baseline NOT_MEASURED, single-seed). Evidence package at research/evidence/phase-4c.1b.6/. 7 new regression tests added. All gates pass: continuity, typecheck, test, build, configs, registry. Bundle verified ready for Google Drive upload and Colab T4 smoke run. Statistical gate closed pending metadata baseline and multi-seed.
+---
+
+
+
 ## 7. Giới hạn Kỹ thuật và Nguy cơ Ảnh hưởng Độ tin cậy
 
 1. **Nguy cơ Shortcut Nguồn Dữ liệu**: Thiết kế matched-pair làm giảm đáng kể nguy cơ mô hình học đặc trưng nguồn dữ liệu vì ảnh gốc và ảnh chỉnh sửa chia sẻ cùng source image. Các nguy cơ shortcut từ codec, quy trình sinh ảnh, preprocessing, số lượng biến thể và artifacts của mô hình tạo sinh vẫn phải được đo bằng baseline và source-held-out evaluation.
@@ -193,7 +198,8 @@
 
 * **Đã hoàn thành (Phase 4C.0a)**: Đối soát triệt để cấu hình smoke (Option A là single source of truth); tái đánh giá checkpoint trên inner_validation (Macro-F1 0.5035, AUROC 0.5278, Brier 0.2504, ECE 0.0347); thống nhất bảng Stage 0 kèm SHA-256 prediction hashes; hiệu chỉnh resource profile (5.29 MB heap, RSS chưa đo); hiệu chỉnh các phát biểu khoa học; chuẩn hóa metadata evidence-manifest (`artifactCount=9`, `directoryFileCount=10`, `manifestSelfExcluded=true`); đạt chứng nhận `MAIN_READY: true`; 107 tests Python, 70 tests TS, build và continuity check 100% PASS.
 * **Đã hoàn thành (Phase CI.2)**: Sửa TypeScript CI failure (TS18047 tại `packages/inference/src/__tests__/fusion.test.ts:83`) bằng explicit guard. Toàn bộ verification local PASS: `pnpm test` 70/70, `pnpm typecheck` 0 errors, `pnpm build` success, `pytest ml/tests` 107/107, validators 4/4, registry 7/7, evidence reproducer PASS. Commit pushed lên feature branch, PR #1 tự động cập nhật.
+* **Đã hoàn thành (Phase 4C.1B.6R - Evidence Integrity, Statistical Contract and Repository Cleanup)**: Evidence integrity verified, statistical contracts closed, repository cleaned. EVAL-LEAK-001 fixed in notebook, runner verified correct. Corrected validation-only metrics: Macro-F1 0.565816, AUROC 0.611762. Bootstrap CI (source_id, 1000 iter): Macro-F1 0.5658 [0.522, 0.609], CI lower bounds > 0. Dummy baseline: 0.411718 (validation-only). Metadata baseline: NOT_MEASURED. Stage 2 gate: INSUFFICIENT_EVIDENCE (metadata baseline NOT_MEASURED, single-seed). Evidence package at research/evidence/phase-4c.1b.6/. 7 new regression tests added in ml/tests/test_eval_leakage_regression.py. All gates pass: continuity, typecheck, test, build, configs, registry. Bundle verified ready for Google Drive upload and Colab T4 smoke run. Statistical gate closed pending metadata baseline and multi-seed.
 * **Hiện trạng nghiên cứu**: Checkpoint smoke đã lưu trong `models/research/phase-4c.0/`; model weights và checkpoint được cách ly trong Research Track; locked-test evaluations = 0; full learning curve (15 runs) chưa thực thi.
-* **Công việc tiếp theo**: Theo dõi CI mới trên PR #1. Python CI root cause vẫn UNVERIFIED cho đến khi có log trực tiếp. Sau khi CI ổn định, tag release `v0.1.0-research-foundation` và chuẩn bị branch `research/phase-4c1-learning-curve` cho Phase 4C.1.
+* **Công việc tiếp theo**: Upload smoke bundle (303 MB, SHA-256 B57D626D...) to Google Drive MyDrive/forensics-web-lab/phase_4c1/smoke_n50_seed42/, execute Colab T4 N=50 seed=42 smoke run. Sau khi có kết quả Colab, kiểm tra Stage 2 eligibility và quyết định multi-seed execution plan.
 
 

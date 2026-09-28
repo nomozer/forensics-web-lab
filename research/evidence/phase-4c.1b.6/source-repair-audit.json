@@ -1,6 +1,6 @@
 {
   "source_repair_audit": {
-    "evaluation_leak_root_cause": "Evaluation loader in run_smoke_local.py (notebook script) had incorrect partition filter. The filter condition `row['partition'] == partition and (partition != 'inner_validation' or row['lc_n50'] == 'True')` incorrectly included development_train samples because the logic was inverted.",
+    "evaluation_leak_root_cause": "Evaluation loader in run_smoke_local.py (notebook script) had incorrect partition filter. The filter condition used an OR logic that incorrectly included development_train samples.",
     "root_cause_file": "run_smoke_local.py (notebook script)",
     "root_cause_line": "if row['partition'] == partition and (partition != 'inner_validation' or row['lc_n50'] == 'True'):",
     "root_cause_explanation": "The condition evaluated to True for development_train because partition != 'inner_validation' is True for development_train, making the entire OR condition True regardless of lc_n50 value.",

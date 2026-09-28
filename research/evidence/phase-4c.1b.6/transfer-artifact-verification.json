@@ -1,0 +1,44 @@
+{
+  "sourceArchive": {
+    "path": "D:\\Documents\\forensics-web-lab\\phase_4c1_smoke_n50_seed42.tar",
+    "bytes": 303497728,
+    "sha256": "B57D626D46A08427F6F1E4E1649565BD9D914E2D6F835E109E0391242AF5D0A6",
+    "expectedSha256": "B57D626D46A08427F6F1E4E1649565BD9D914E2D6F835E109E0391242AF5D0A6",
+    "sha256Match": true
+  },
+  "destinationArchive": {
+    "path": "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\smoke_n50_seed42\\phase_4c1_smoke_n50_seed42.tar",
+    "bytes": 303497728,
+    "sha256": "B57D626D46A08427F6F1E4E1649565BD9D914E2D6F835E109E0391242AF5D0A6",
+    "sha256Match": true
+  },
+  "sha256File": {
+    "path": "D:\\Documents\\forensics-web-lab\\phase_4c1_smoke_n50_seed42.tar.sha256",
+    "content": "B57D626D46A08427F6F1E4E1649565BD9D914E2D6F835E109E0391242AF5D0A6",
+    "matches": true
+  },
+  "extractedBundleVerification": {
+    "extractedPath": "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\smoke_n50_seed42\\extracted_bundle",
+    "validatorCommand": "& .\\ml\\.venv\\Scripts\\python.exe ml\\datasets\\validate_phase_4c1_bundle.py --bundle \"D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\smoke_n50_seed42\\extracted_bundle\" --smoke-only",
+    "validatorExitCode": 0,
+    "validatorOutput": "ALL VALIDATIONS PASSED",
+    "payloadConfigFiles": 3,
+    "payloadImageFiles": 282,
+    "payloadFileCount": 285,
+    "bundleReceiptFiles": 1,
+    "archiveRegularFileCount": 286,
+    "archiveDirectoryEntryCount": 0,
+    "missingImages": 0,
+    "duplicatePaths": 0,
+    "shaFailures": 0,
+    "developmentSourceIds": 50,
+    "innerValidationSourceIds": 91,
+    "crossPartitionSourceOverlap": 0,
+    "lockedTestRows": 0,
+    "lockedTestPaths": 0,
+    "lockedTestSourceIds": 0,
+    "manifestSha256": "D9B601C2DD2958499762DE7E96445FBF54303BBDE672CD18AF5F83790B1B3111",
+    "bundleReceiptSha256": "C1E99A773E60A8393D557B0DA419C00B4218D747E728B1BB16D66E6570F96C78",
+    "bundleDigest": "21791E67B66D6A1587943D1F51E7F7B801105CCB872FB04ACDF50C6242236BDB"
+  }
+}

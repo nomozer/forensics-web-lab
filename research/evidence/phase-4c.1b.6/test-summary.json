@@ -1,6 +1,7 @@
 {
   "hermetic_gate": {
     "command": "& .\\ml\\.venv\\Scripts\\python.exe -m pytest ml/tests -v -m \"not requires_research_artifact\"",
+    "interpreter": "D:\\Documents\\forensics-web-lab\\ml\\.venv\\Scripts\\python.exe",
     "exit_code": 0,
     "collected": 146,
     "deselected": 6,
@@ -24,6 +25,7 @@
   },
   "research_artifact_gate": {
     "command": "& .\\ml\\.venv\\Scripts\\python.exe -m pytest ml/tests -v -m \"requires_research_artifact\"",
+    "interpreter": "D:\\Documents\\forensics-web-lab\\ml\\.venv\\Scripts\\python.exe",
     "exit_code": 0,
     "collected": 146,
     "deselected": 140,
@@ -54,14 +56,12 @@
     "command": "& .\\ml\\.venv\\Scripts\\python.exe -m pytest ml/tests -v",
     "exit_code": 0,
     "collected": 146,
-    "passed": 145,
+    "passed": 152,
     "failed": 0,
     "skipped": 1,
     "errors": 0,
     "duration": "39.86s",
-    "runner_tests_status": "14 passed, 1 skipped (integration)",
-    "new_regression_tests": 7,
-    "new_tests_passed": 7
+    "runner_tests_status": "14 passed, 1 skipped (integration)"
   },
   "typescript_tests": {
     "test_command": "pnpm test",
