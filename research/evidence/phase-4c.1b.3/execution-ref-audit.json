@@ -1,0 +1,20 @@
+{
+  "executionRefAudit": {
+    "candidateCommit": "c4df74b5180091507be624d19b27ad8614107a8d",
+    "gitHead": "c4df74b5180091507be624d19b27ad8614107a8d",
+    "branch": "research/phase-4c1-learning-curve",
+    "filesVerified": {
+      "ml/training/run_phase_4c1.py": true,
+      "ml/evaluation/metrics.py": true,
+      "ml/datasets/validate_phase_4c1_bundle.py": true,
+      "ml/configs/phase_4c1_learning_curve.yaml": true
+    },
+    "computeEceVerified": true,
+    "computeEceDefinition": "def compute_ece(y_true: np.ndarray, y_prob: np.ndarray, n_bins: int = 10) -> float",
+    "notebookExecutionRef": "c4df74b5180091507be624d19b27ad8614107a8d",
+    "notebookCommitVerification": true,
+    "notebookTargetCommit": "EXECUTION_CODE_REF",
+    "previousExecutionRef": "2e6ce2e0fedaead45dec23b24e9d9c5a5fcf777e",
+    "refChangeReason": "Updated to commit containing compute_ece function in ml/evaluation/metrics.py"
+  }
+}

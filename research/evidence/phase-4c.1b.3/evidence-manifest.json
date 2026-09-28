@@ -1,0 +1,74 @@
+{
+  "phase": "4C.1B.3",
+  "description": "Measured Evidence Seal and Execution Ref Closure",
+  "gitHead": "c4df74b5180091507be624d19b27ad8614107a8d",
+  "branch": "research/phase-4c1-learning-curve",
+  "files": [
+    {
+      "name": "environment.json",
+      "type": "phase-report",
+      "bytes": 578,
+      "sha256": "972dc7bfd9a1adc3a996495157f36652d44a39a7c6b8d8f433d5301c5e13b964",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "execution-ref-audit.json",
+      "type": "audit",
+      "bytes": 917,
+      "sha256": "396366ee981afd6335c3648a32566e949f7e746f21d138e7984ebd809fe951dd",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "notebook-audit.json",
+      "type": "audit",
+      "bytes": 2243,
+      "sha256": "6d1991ca4d1ef1233e975215b61ee5207e3d6a57e4e31782b11b17c5a40a872a",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "test-arithmetic.json",
+      "type": "test-report",
+      "bytes": 4708,
+      "sha256": "b0e6d97b8ebd5926ddb5078bcd174f1ed5398510ea7f922581b17e48945c17c6",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "transfer-artifact-verification.json",
+      "type": "verification",
+      "bytes": 2281,
+      "sha256": "8a5adf4b675a0a1aff63f2ee121352a8fceb7ad3889b6968115270f79a4fc34d",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "model-weight-audit.json",
+      "type": "audit",
+      "bytes": 1948,
+      "sha256": "8fa22f01eb062cbed9aaca17b250169e46d718de82e90bb0e572057d85086390",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "PHASE_REPORT.md",
+      "type": "phase-report",
+      "bytes": 6231,
+      "sha256": "e09529c80da1f6c84e3507da47c69d89d434a7e0454c8a33467008ff5150cd73",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    }
+  ],
+  "createdAtUtc": "2026-09-28T10:00:00Z",
+  "manifestSelfExcluded": true,
+  "artifactCount": 7
+}
