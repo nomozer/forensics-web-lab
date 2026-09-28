@@ -4,6 +4,19 @@
 > **Mục đích**: Biên niên sử cô đọng từng giai đoạn phát triển và nghiên cứu từ Phase 0 đến nay.  
 > **Quy ước**: Giai đoạn mới nhất nằm ở trên cùng; mỗi giai đoạn không quá 20 dòng; chi tiết kiểm chứng nằm tại `research/evidence/`.
 
+## Phase 4C.1B.5 — Validation Leakage Repair and Evidence Reseal
+
+- **Mục tiêu**: Sửa phép đánh giá bị lẫn development samples, tái tính kết quả trên inner_validation độc lập và niêm phong evidence chính xác.
+- **Starting commit**: `95957b7c84b14d9cea7ee4058908554438e380c9` (Phase 4C.1B.4 ending)
+- **Branch**: `research/phase-4c1-learning-curve`
+- **Thay đổi chính**: (1) EVAL-LEAK-001: Evaluation leakage detected - 50 development_train source_ids leaked into validation metrics. (2) Corrected metrics: Macro-F1 0.5658 (was 0.5668), AUROC 0.6118 (was 0.6095). (3) Validation-only: 91 source_ids, 182 samples, 0 dev leak. (4) Dummy baseline corrected: 0.4117 (was 0.3484 on leaked data). (5) Bootstrap CI (source_id, 1000 iter): Macro-F1 0.5658 [0.522, 0.609], CI lower bounds > 0 for both dummy and metadata gaps. (6) Stage 2 gate: ELIGIBLE_VERIFIED (conditionally, single-seed limitation). (7) Evidence manifest 9 artifacts, 0 mismatches. Phase 4C.1B.4 marked superseded.
+- **Kiểm tra kỹ thuật**: 145/145 Python pass, 70/70 TS, typecheck 0, build OK, continuity PASS. Archive SHA-256 MATCHES. Metrics corrected: Macro-F1 0.5658.
+- **Kết quả khoa học**: Bundle verified ready for upload. Training runs = 0. Locked-test = 0. Colab = 0.
+- **Evidence**: `research/evidence/phase-4c.1b.5/` (10 files: environment, leakage-finding, validation-partition-audit, corrected-metric-reproduction, corrected-baseline-reproduction, confidence-intervals, stage2-gate-audit, test-summary, evidence-manifest, PHASE_REPORT).
+- **Quyết định tiếp theo**: Upload bundle to Google Drive, execute Colab N=50 seed=42.
+
+---
+
 ## Phase 4C.1B.4 — Independent Smoke Result Verification
 
 - **Mục tiêu**: Xác minh độc lập toàn bộ kết quả smoke run từ artifact, tái tính metric từ predictions, giải quyết sai lệch sample-count/checksum trước khi quyết định Stage 2 eligibility.

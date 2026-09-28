@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-09-28T05:54:19.183591Z",
+  "phase": "4C.1B.5",
+  "description": "Validation Leakage Repair and Evidence Reseal",
+  "git_head": "95957b7c84b14d9cea7ee4058908554438e380c9",
+  "branch": "research/phase-4c1-learning-curve",
+  "python_executable": "D:\\Documents\\forensics-web-lab\\ml\\.venv\\Scripts\\python.exe",
+  "python_version": "3.12.10",
+  "torch_version": "2.5.1+cu121",
+  "torchvision_version": "0.20.1+cu121",
+  "cuda_version": "12.1",
+  "gpu": "NVIDIA GeForce GTX 1650",
+  "gpu_vram_gb": 3.99969482421875,
+  "previous_phase": "4C.1B.4",
+  "leakage_finding": "EVAL-LEAK-001: Evaluation loader included development_train samples (50 source_ids, 100 samples) in validation metrics"
+}

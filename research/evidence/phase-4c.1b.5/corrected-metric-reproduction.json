@@ -1,0 +1,57 @@
+{
+  "macro_f1": {
+    "recomputed": 0.565816095425034,
+    "reported": 0.566831184528606,
+    "match": false
+  },
+  "balanced_accuracy": {
+    "recomputed": 0.5659340659340659,
+    "reported": 0.5673758865248226,
+    "match": false
+  },
+  "auroc": {
+    "recomputed": 0.6117618645091173,
+    "reported": 0.6094763844877018,
+    "match": false
+  },
+  "brier_score": {
+    "recomputed": 0.23929494918089605,
+    "reported": 0.2406275521823904,
+    "match": false
+  },
+  "ece": {
+    "recomputed": 0.027281322322048954,
+    "reported": 0.028542773837738844,
+    "match": false
+  },
+  "confusion_matrix": [
+    [
+      53,
+      38
+    ],
+    [
+      41,
+      50
+    ]
+  ],
+  "class_distribution": [
+    91,
+    91
+  ],
+  "total_samples": 182,
+  "original_metrics": {
+    "macro_f1": 0.566831184528606,
+    "balanced_accuracy": 0.5673758865248226,
+    "auroc": 0.6094763844877018,
+    "brier_score": 0.2406275521823904,
+    "ece": 0.028542773837738844
+  },
+  "corrected_metrics": {
+    "macro_f1": 0.565816095425034,
+    "balanced_accuracy": 0.5659340659340659,
+    "auroc": 0.6117618645091173,
+    "brier_score": 0.23929494918089605,
+    "ece": 0.027281322322048954
+  },
+  "status": "METRICS_RECOMPUTED_ON_VALIDATION_ONLY"
+}
