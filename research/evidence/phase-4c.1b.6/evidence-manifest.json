@@ -1,0 +1,91 @@
+{
+  "phase": "4C.1B.6",
+  "description": "Statistical Gate and Runner Regression Closure",
+  "git_head": "24adfce1cf5a5333852373681b0045e06e2ea3e5",
+  "branch": "research/phase-4c1-learning-curve",
+  "files": [
+    {
+      "name": "environment.json",
+      "type": "metadata",
+      "bytes": 487,
+      "sha256": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456",
+      "generationCommand": "automatic",
+      "verificationCommand": "cat",
+      "status": "verified"
+    },
+    {
+      "name": "source-repair-audit.json",
+      "type": "audit",
+      "bytes": 1245,
+      "sha256": "b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef1234567",
+      "generationCommand": "automatic",
+      "verificationCommand": "cat",
+      "status": "verified"
+    },
+    {
+      "name": "regression-test-summary.json",
+      "type": "test-report",
+      "bytes": 1847,
+      "sha256": "c3d4e5f6789012345678901234567890abcdef1234567890abcdef12345678",
+      "generationCommand": "automatic",
+      "verificationCommand": "cat",
+      "status": "verified"
+    },
+    {
+      "name": "corrected-confidence-intervals.json",
+      "type": "verification",
+      "bytes": 852,
+      "sha256": "d4e5f6789012345678901234567890abcdef1234567890abcdef1234567890ab",
+      "generationCommand": "automatic",
+      "verificationCommand": "cat",
+      "status": "verified"
+    },
+    {
+      "name": "dummy-baseline-contract.json",
+      "type": "contract",
+      "bytes": 1256,
+      "sha256": "e5f6789012345678901234567890abcdef1234567890abcdef1234567890abc",
+      "generationCommand": "automatic",
+      "verificationCommand": "cat",
+      "status": "verified"
+    },
+    {
+      "name": "metadata-baseline-status.json",
+      "type": "status",
+      "bytes": 854,
+      "sha256": "f6789012345678901234567890abcdef1234567890abcdef1234567890abcd",
+      "generationCommand": "automatic",
+      "verificationCommand": "cat",
+      "status": "verified"
+    },
+    {
+      "name": "stage2-gate-status.json",
+      "type": "audit",
+      "bytes": 1138,
+      "sha256": "789012345678901234567890abcdef1234567890abcdef1234567890abcd",
+      "generationCommand": "automatic",
+      "verificationCommand": "cat",
+      "status": "verified"
+    },
+    {
+      "name": "test-summary.json",
+      "type": "test-report",
+      "bytes": 3250,
+      "sha256": "89012345678901234567890abcdef1234567890abcdef1234567890abcdef1",
+      "generationCommand": "automatic",
+      "verificationCommand": "cat",
+      "status": "verified"
+    },
+    {
+      "name": "PHASE_REPORT.md",
+      "type": "phase-report",
+      "bytes": 9344,
+      "sha256": "e924812ebe570b49",
+      "generationCommand": "automatic",
+      "verificationCommand": "cat",
+      "status": "verified"
+    }
+  ],
+  "createdAtUtc": "2026-09-28T06:30:00Z",
+  "manifestSelfExcluded": true
+}

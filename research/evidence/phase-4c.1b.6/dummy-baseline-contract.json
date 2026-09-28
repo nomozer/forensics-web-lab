@@ -1,0 +1,43 @@
+{
+  "dummy_baseline": {
+    "method": "StratifiedDummyClassifier",
+    "strategy": "stratified",
+    "random_state": 42,
+    "cv_folds": 5,
+    "scoring": "f1_macro",
+    "validation_set": {
+      "source_ids": 91,
+      "samples": 182,
+      "class_distribution": {
+        "authentic": 91,
+        "ai_edited": 91
+      }
+    },
+    "results": {
+      "mean": 0.411718,
+      "std": 0.005509,
+      "ci_95": [0.4008, 0.4226]
+    },
+    "source_level": true,
+    "resampling_unit": "source_id",
+    "cv_folds": 5,
+    "status": "MEASURED",
+    "note": "Original runner used all 6 edited variants per source (546 samples); this verification uses 1 canonical variant per source (91 validation source_ids x 2 = 182 samples)"
+  },
+  "metadata_baseline": {
+    "status": "NOT_MEASURED",
+    "reason": "No metadata-only model implementation available. Placeholder value 0.5 used in original run_receipt.",
+    "placeholder_value": 0.5,
+    "label": "PLACEHOLDER",
+    "gate_participation": false,
+    "note": "When a metadata-only model is implemented, it must be trained on development_train and evaluated on inner_validation with the same protocol."
+  },
+  "gate_conditions": {
+    "stage1_gt_dummy": true,
+    "stage1_gt_dummy_ci_lower": 0.110,
+    "stage1_gt_metadata": true,
+    "stage1_gt_metadata_ci_lower": 0.022
+  },
+  "gate_verdict": "INSUFFICIENT_EVIDENCE",
+  "reason": "Metadata baseline is NOT_MEASURED (placeholder). Stage 2 gate cannot be fully verified until metadata baseline is measured with real model."
+}

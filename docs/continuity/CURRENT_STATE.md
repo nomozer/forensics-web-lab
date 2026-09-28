@@ -118,6 +118,12 @@
 
 ---
 
+
+
+* **Phase 4C.1B.6 — Statistical Gate and Runner Regression Closure**: Source-code evaluation loader verified correct (runner already filters for inner_validation). Added 7 regression tests in \ml/tests/test_eval_leakage_regression.py\ for EVAL-LEAK-001 prevention. Corrected AUROC CI from validation-only: 0.611762 [0.568, 0.656]. Dummy baseline: 0.411718 (validation-only, 1 variant). Metadata baseline: NOT_MEASURED (placeholder). Stage 2 gate: INSUFFICIENT_EVIDENCE (metadata baseline NOT_MEASURED, single-seed). Evidence package at esearch/evidence/phase-4c.1b.6/\. 7 new regression tests added. All gates pass: continuity, typecheck, test, build, configs, registry. **Bundle verified ready for Google Drive upload and Colab T4 smoke run. Statistical gate closed pending metadata baseline and multi-seed.**
+---
+
+
 ## 7. Giới hạn Kỹ thuật và Nguy cơ Ảnh hưởng Độ tin cậy
 
 1. **Nguy cơ Shortcut Nguồn Dữ liệu**: Thiết kế matched-pair làm giảm đáng kể nguy cơ mô hình học đặc trưng nguồn dữ liệu vì ảnh gốc và ảnh chỉnh sửa chia sẻ cùng source image. Các nguy cơ shortcut từ codec, quy trình sinh ảnh, preprocessing, số lượng biến thể và artifacts của mô hình tạo sinh vẫn phải được đo bằng baseline và source-held-out evaluation.
