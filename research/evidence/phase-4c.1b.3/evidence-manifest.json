@@ -6,7 +6,7 @@
   "files": [
     {
       "name": "environment.json",
-      "type": "phase-report",
+      "type": "metadata",
       "bytes": 578,
       "sha256": "972dc7bfd9a1adc3a996495157f36652d44a39a7c6b8d8f433d5301c5e13b964",
       "generationCommand": "automatic",
@@ -68,7 +68,7 @@
       "status": "verified"
     }
   ],
-  "createdAtUtc": "2026-09-28T10:00:00Z",
+  "createdAtUtc": "2026-09-28T03:27:41.004816Z",
   "manifestSelfExcluded": true,
   "artifactCount": 7
 }
