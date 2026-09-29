@@ -1,7 +1,7 @@
 {
   "phase": "4C.1B.6R.3",
   "description": "Final Evidence Provenance and Test-Seal Reconciliation",
-  "git_head": "0781325517ebb14fcc8114aac25ee073629bdf12",
+  "git_head": "5611b87980eddbe47915281c5c546fe12c3a2359",
   "branch": "research/phase-4c1-learning-curve",
   "files": [
     {
@@ -23,19 +23,19 @@
       "status": "verified"
     },
     {
-      "name": "historical-root-cause-audit.json",
+      "name": "fault-injection-results.json",
       "type": "phase-report",
-      "bytes": 2102,
-      "sha256": "a6588f583ffaa999b8fe630ce606ff206040620436bc91ec15d03f2a7b2777f8",
+      "bytes": 2061,
+      "sha256": "792b1e5fa9479204f82b3d7e2e73603f46406c11cdb421463f4e16de3e75a468",
       "generationCommand": "automatic",
       "verificationCommand": "Get-FileHash",
       "status": "verified"
     },
     {
-      "name": "fault-injection-results.json",
+      "name": "historical-root-cause-audit.json",
       "type": "phase-report",
-      "bytes": 2061,
-      "sha256": "792b1e5fa9479204f82b3d7e2e73603f46406c11cdb421463f4e16de3e75a468",
+      "bytes": 2102,
+      "sha256": "a6588f583ffaa999b8fe630ce606ff206040620436bc91ec15d03f2a7b2777f8",
       "generationCommand": "automatic",
       "verificationCommand": "Get-FileHash",
       "status": "verified"
@@ -129,19 +129,10 @@
       "generationCommand": "automatic",
       "verificationCommand": "Get-FileHash",
       "status": "verified"
-    },
-    {
-      "name": "fault-injection-results.json",
-      "type": "phase-report",
-      "bytes": 2061,
-      "sha256": "792b1e5fa9479204f82b3d7e2e73603f46406c11cdb421463f4e16de3e75a468",
-      "generationCommand": "automatic",
-      "verificationCommand": "Get-FileHash",
-      "status": "verified"
     }
   ],
-  "createdAtUtc": "2026-09-29T12:50:00Z",
+  "createdAtUtc": "2026-09-29T06:06:12Z",
   "manifestSelfExcluded": true,
-  "artifactCount": 15,
-  "directoryFileCount": 16
+  "artifactCount": 14,
+  "directoryFileCount": 15
 }

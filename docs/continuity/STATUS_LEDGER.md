@@ -1,3 +1,15 @@
+## Phase 4C.1B.6R.3.1 - Evidence Metadata, Dependency and T4 Execution Contract Closure
+
+- **Muc tieu**: Manifest correction, notebook hash audit, root cause wording, dependency audit, T4 contract.
+- **Starting commit**: 5611b87 (Phase 4C.1B.6R.3 ending)
+- **Branch**: research/phase-4c1-learning-curve
+- **Thay đổi chính**: (1) Manifest duplicate removed (14→13 artifacts). (2) Notebook hash: file_sha256 + git_blob_oid. (3) Root cause: HISTORICAL_EXECUTION_PATH_UNAVAILABLE, synthetic fault injection. (4) Dependency audit: all satisfied, pip check clean. (5) T4 contract: 5 seeds (42, 1337, 2025, 3407, 9001), seed 42 re-run on T4.
+- **Kiểm tra**: 156/155/1 Python, 70/70 TS, typecheck 0, build OK, continuity PASS.
+- **Kết quả**: Evidence manifest 9 artifacts. Training runs = 0. Locked-test = 0.
+- **Evidence**: research/evidence/phase-4c.1b.6r.3.1/ (9 artifacts).
+- **Quyết định tiếp theo**: Gate A.3.1 commit, then Gate B Colab T4 multi-seed (42, 1337, 2025, 3407, 9001).
+
+---
 ## Phase 4C.1B.6R.3 - Final Evidence Provenance and Test-Seal Reconciliation
 
 - **Muc tieu**: Measured paired bootstrap provenance, root cause audit, 8 regression tests, evidence seal.

@@ -1,13 +1,13 @@
 # Phase 4C.1B.6R.3 - Final Evidence Provenance and Test-Seal Reconciliation
 
 ## Phase Summary
-Statistical evidence sealed with measured paired bootstrap, historical root cause documented, 8 regression tests added and verified, evidence manifest with 17 artifacts. All placeholders replaced with measured values. Stage 2 gate remains INSUFFICIENT_EVIDENCE (paired CI includes 0, metadata NOT_MEASURED).
+Statistical evidence sealed with measured paired bootstrap, historical root cause documented, 8 regression tests added and verified, evidence manifest with 14 artifacts. All placeholders replaced with measured values. Stage 2 gate remains INSUFFICIENT_EVIDENCE (paired CI includes 0, metadata NOT_MEASURED).
 
 ## Starting Commit
 0781325 (Phase 4C.1B.6R.2 ending)
 
 ## Ending Commit
-TBD (after validation)
+5611b87980eddbe47915281c5c546fe12c3a2359 (research: seal measured paired evidence provenance - Phase 4C.1B.6R.3)
 
 ## Branch
 research/phase-4c1-learning-curve
@@ -16,7 +16,7 @@ research/phase-4c1-learning-curve
 1. **Historical Root Cause Audit**: EVAL-LEAK-001 documented as HISTORICAL_EXECUTION_PATH_UNAVAILABLE (run_smoke_local.py never in git). Fault injection reproduces 141/282 symptom.
 2. **Measured Paired Bootstrap**: 91 clusters, 1000 iterations, seed=42. Delta Macro-F1 = 0.07186058285250016, CI [-0.011494, 0.150825] includes 0 → condition NOT met.
 3. **8 New Regression Tests**: All 10 tests pass (8 new + 2 existing). All node IDs verified in raw pytest logs.
-4. **Evidence Manifest**: 17 artifacts with verified SHA-256 hashes.
+4. **Evidence Manifest**: 14 artifacts with verified SHA-256 hashes.
 5. **Placeholder Removal**: Historical placeholder CI [0.110, 0.198] and dummy point 0.346199 removed from active evidence.
 6. **Metadata Contract**: NOT_MEASURED, gate_participation=false, label=HISTORICAL_PLACEHOLDER_EXCLUDED_FROM_GATE.
 7. **Stage 2 Gate**: INSUFFICIENT_EVIDENCE (paired CI includes 0, metadata NOT_MEASURED, single-seed).
