@@ -1,10 +1,10 @@
 {
   "pre_execution_verdict": {
     "schema_version": "1.0.0",
-    "phase": "Phase 4C.1C.0D.2",
+    "phase": "Phase 4C.1C.1",
     "verdict": "GO",
-    "verdict_rationale": "All pre-execution gates pass without exception: receipt cardinality is reconciled with physical assets, operator static assertion count is 18/18 PASS, execution snapshot binding 79bb115 is intact with zero executable code changes, single canonical notebook compiles and fails closed, duplicate notebook is removed, training runs remain 0, and locked-test accesses remain 0.",
-    "timestamp_utc": "2026-09-29T17:55:00.000000+00:00",
+    "verdict_rationale": "All pre-execution gates pass without exception: receipt cardinality is reconciled with physical assets, operator static assertion count is 18/18 PASS, execution snapshot binding 79bb115 is intact with zero executable code changes, single canonical notebook with persistent Drive architecture compiles and passes all 14 tests, duplicate notebook is removed, training runs remain 0, and locked-test accesses remain 0.",
+    "timestamp_utc": "2026-09-29T18:55:00.000000+00:00",
     "gates": {
       "cardinality_reconciliation": {
         "status": "PASS",
@@ -54,8 +54,11 @@
       "canonical_colab_notebook": {
         "status": "PASS",
         "path": "notebooks/phase_4c1_learning_curve_colab.ipynb",
-        "bytes": 6427,
-        "sha256": "681a57af8b11a377ab4bece4ca80ff0f707ee79a01f4c5acc1502c9db66d6902",
+        "bytes": 15213,
+        "sha256": "afcd9261af6b8049020f8e734d4367ebbfb470d3db62d562e67b2107b1f713a6",
+        "drive_persistence_architecture": true,
+        "drive_input_dir": "/content/drive/MyDrive/forensics-web-lab/phase_4c1/inputs",
+        "drive_output_dir": "/content/drive/MyDrive/forensics-web-lab/phase_4c1/runs/execution_79bb115",
         "duplicate_notebook_removed": true,
         "all_code_cells_compiled": true,
         "default_execute_false": true,
@@ -80,10 +83,11 @@
         "phase_4c1_binary_n250_reusable.tar",
         "phase_4c1_t4_execute_all_stage1.sh"
       ],
-      "target_directory": "/content/forensics-transfer",
+      "target_drive_directory": "/content/drive/MyDrive/forensics-web-lab/phase_4c1/inputs",
+      "target_staging_directory": "/content/forensics-transfer",
       "execution_options": {
         "cli_option": "bash /content/forensics-transfer/phase_4c1_t4_execute_all_stage1.sh",
-        "notebook_option": "Open notebooks/phase_4c1_learning_curve_colab.ipynb in Google Colab T4 and set EXECUTE = True"
+        "notebook_option": "Upload 3 artifacts to Google Drive (/content/drive/MyDrive/forensics-web-lab/phase_4c1/inputs), open notebooks/phase_4c1_learning_curve_colab.ipynb in Google Colab T4, and set EXECUTE = True"
       }
     }
   }
