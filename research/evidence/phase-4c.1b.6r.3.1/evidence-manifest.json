@@ -1,0 +1,93 @@
+{
+  "phase": "4C.1B.6R.3.1",
+  "description": "Evidence Metadata, Dependency and T4 Execution Contract Closure",
+  "git_head": "5611b87980eddbe47915281c5c546fe12c3a2359",
+  "branch": "research/phase-4c1-learning-curve",
+  "files": [
+    {
+      "name": "timestamp-audit.json",
+      "type": "phase-report",
+      "bytes": 315,
+      "sha256": "cf86a3d3946a07d87527814aaf7ce0e57d2ba96958e9a6bf32d10fc21b0459b6",
+      "generationCommand": "python scripts/timestamp_audit.py",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "prior-manifest-correction.json",
+      "type": "phase-report",
+      "bytes": 352,
+      "sha256": "93f742ddead9475b5f5d51732b8c1fd83839c4cafa454eac42bdad65fdc82809",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "notebook-hash-audit.json",
+      "type": "phase-report",
+      "bytes": 402,
+      "sha256": "52cb17d838d11970188b4a6c0a091fead281f532544d4693f9f9585e8bdede6c",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "historical-root-cause-wording-audit.json",
+      "type": "phase-report",
+      "bytes": 1691,
+      "sha256": "78d76756ba867e93c470e657abf0dc0a2318655cf3483f6f68f99f76746e068e",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "dependency-audit.json",
+      "type": "phase-report",
+      "bytes": 3968,
+      "sha256": "f691d159ea4549b7378a60fbb9162da19b0f2eacd82418910bbed6e4ac245c3b",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "clean-environment-verification.json",
+      "type": "phase-report",
+      "bytes": 1338,
+      "sha256": "60f40b8ef337ab521fada49dcd97278a315cd35be7fcf9a505509bb938d8afeb",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "multiseed-execution-contract.json",
+      "type": "phase-report",
+      "bytes": 2156,
+      "sha256": "adbfb3235d5e44431259b1625ad84dec0ccda24595298fa02e68ec5c3feecd9e",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "test-summary.json",
+      "type": "test-report",
+      "bytes": 4010,
+      "sha256": "97c8be5b7aa1fbc78b340c747643298a0182d465f22e7cc01bcf68b440bfe10a",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "PHASE_REPORT.md",
+      "type": "phase-report",
+      "bytes": 2174,
+      "sha256": "d97f6b850f4a248ed0a738ecddcf78ed02d06e533af482b1a4067688f6a55edb",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    }
+  ],
+  "createdAtUtc": "2026-09-29T06:06:12Z",
+  "manifestSelfExcluded": true,
+  "artifactCount": 9,
+  "directoryFileCount": 10
+}

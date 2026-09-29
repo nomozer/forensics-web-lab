@@ -1,0 +1,12 @@
+{
+  "prior_manifest_correction": {
+    "previous_phase": "4C.1B.6R.3",
+    "previous_artifactCount": 15,
+    "previous_directoryFileCount": 16,
+    "duplicate_entry": "fault-injection-results.json",
+    "duplicate_count": 1,
+    "corrected_artifactCount": 14,
+    "corrected_directoryFileCount": 15,
+    "corrected_at_utc": "2026-09-29T06:06:12Z"
+  }
+}

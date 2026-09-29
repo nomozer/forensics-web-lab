@@ -1,0 +1,21 @@
+{
+  "historical_root_cause_wording_audit": {
+    "rootCauseStatus": "HISTORICAL_EXECUTION_PATH_UNAVAILABLE",
+    "observedSymptomStatus": "VERIFIED",
+    "faultInjectionStatus": "SYNTHETIC_SYMPTOM_REPRODUCTION",
+    "description": "The historical script run_smoke_local.py was never committed to git. The fault injection test uses a synthetic faulty selector that deliberately combines: development_train with lc_n50=true AND all inner_validation rows. This produces 141 source_ids, 282 samples (buggy) vs 91 source_ids, 182 samples (correct).",
+    "note": "This is a synthetic symptom reproduction, NOT proof of the exact historical code path. The historical script run_smoke_local.py does not exist in git. The documented buggy expression 'if row[partition] == partition and (partition != inner_validation or row[lc_n50] == True)' when partition=inner_validation evaluates to True for inner_validation rows (since partition == inner_validation is True and partition != inner_validation is False, but lc_n50 == True for all inner_validation rows). When partition=development_train, the condition partition != inner_validation is True making the OR True. The documented buggy filter is equivalent to: (partition == development_train and lc_n50 == True) OR (partition == inner_validation).",
+    "fault_injection_method": "Synthetic union of development_train (lc_n50=true) and all inner_validation rows",
+    "buggy_counts": {
+      "source_ids": 141,
+      "samples": 282
+    },
+    "correct_counts": {
+      "source_ids": 91,
+      "samples": 182
+    },
+    "removed_claims": [
+      "The buggy filter automatically selects development rows when partition == inner_validation"
+    ]
+  }
+}

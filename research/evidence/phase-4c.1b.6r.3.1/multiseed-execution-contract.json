@@ -1,0 +1,58 @@
+{
+  "multiseed_execution_contract": {
+    "seed_semantics": "A. FIXED_N50_COHORT_ACROSS_SEEDS",
+    "description": "The N=50 cohort is fixed across all seeds. Bundle contains union of N=50 source_ids needed for all seeds.",
+    "cohort_selection_seed": 42,
+    "training_seeds": [42, 1337, 2025, 3407, 9001],
+    "seed_42_inclusion": {
+      "hardware": "GTX 1650 (local exploratory)",
+      "execution_path": "local",
+      "label": "EXPLORATORY_LOCAL_SMOKE",
+      "inclusion_in_t4_five_seed_aggregate": false,
+      "reason": "Different hardware and execution path. Will re-run seed 42 on T4."
+    },
+    "t4_execution_plan": {
+      "seeds_to_run": [42, 1337, 2025, 3407, 9001],
+      "total_runs": 5,
+      "stage": "Stage 1 (frozen backbone)",
+      "bundle_reuse": true,
+      "bundle_path": "/content/bundle",
+      "output_base": "/content/phase_4c1_outputs",
+      "canonical_runner": "ml/training/run_phase_4c1.py"
+    },
+    "contract_terms": {
+      "same_n50_cohort": true,
+      "same_sample_ids": true,
+      "same_development_validation_partitions": true,
+      "same_pretrained_backbone_weights": true,
+      "same_preprocessing": true,
+      "same_hyperparameters": true,
+      "same_epoch_budget": 25,
+      "same_early_stopping_rule": 5,
+      "only_training_seed_changes": true,
+      "locked_test_partition_untouched": true,
+      "locked_test_access_count": 0
+    },
+    "output_per_seed": [
+      "best_checkpoint.pt",
+      "run_receipt.json",
+      "epoch_history.json",
+      "predictions.json",
+      "training_history.csv",
+      "metrics.json",
+      "environment.json",
+      "checksums.json"
+    ],
+    "artifact_retrieval": {
+      "method": "VS Code Colab Contents download",
+      "local_destination": "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\runs\\colab_t4\\n50_seed_<SEED>\\",
+      "sha256_verification": true
+    },
+    "multi_seed_aggregation": {
+      "seeds": [42, 1337, 2025, 3407, 9001],
+      "metrics": ["Macro-F1", "Balanced Accuracy", "AUROC", "ECE"],
+      "statistics": ["mean", "std", "median", "min", "max", "95% CI"],
+      "label": "EXPLORATORY_DEVELOPMENT_MULTI_SEED"
+    }
+  }
+}

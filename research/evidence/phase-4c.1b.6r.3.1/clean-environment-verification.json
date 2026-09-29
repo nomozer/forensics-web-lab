@@ -1,0 +1,49 @@
+{
+  "clean_environment_verification": {
+    "python_version": "3.12.10",
+    "venv_path": "D:\\Documents\\forensics-web-lab\\ml\\.venv",
+    "pip_check": "No broken requirements found",
+    "imports": {
+      "torch": "2.5.1+cu121",
+      "torchvision": "0.20.1+cu121",
+      "numpy": "2.5.3",
+      "PIL": "12.3.0",
+      "sklearn": "1.9.1",
+      "yaml": "6.0.3",
+      "onnx": "1.23.0",
+      "onnxruntime": "1.30.0",
+      "psutil": "7.2.2",
+      "tqdm": "4.70.1"
+    },
+    "test_arithmetic": {
+      "collected": 156,
+      "passed": 155,
+      "skipped": 1,
+      "failed": 0,
+      "errors": 0
+    },
+    "runner_dry_run": {
+      "command": ".\ml\.venv\Scripts\python.exe -m ml.training.run_phase_4c1 --help",
+      "exit_code": 0,
+      "help_displayed": true
+    },
+    "config_validator": {
+      "command": ".\ml\.venv\Scripts\python.exe -m ml.configs.validator --validate-all",
+      "exit_code": 0,
+      "passed": 4
+    },
+    "dataset_registry": {
+      "command": ".\ml\.venv\Scripts\python.exe -m ml.datasets.acquire --validate-registry",
+      "exit_code": 0,
+      "passed": 7
+    },
+    "regression_tests": {
+      "file": "ml/tests/test_eval_leakage_regression.py",
+      "tests": 10,
+      "passed": 10,
+      "failed": 0
+    },
+    "verification_timestamp_utc": "2026-09-29T06:06:12Z",
+    "status": "PASS"
+  }
+}
