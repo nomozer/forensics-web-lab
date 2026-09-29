@@ -1,0 +1,34 @@
+{
+  "colab_requirements_audit": {
+    "file": "ml/requirements-colab.txt",
+    "cuda_torch_bootstrap": {
+      "torch": "torch>=2.2.0",
+      "torchvision": "torchvision>=0.17.0",
+      "index_url": "https://download.pytorch.org/whl/cu121",
+      "notes": "CUDA 12.1 enabled PyTorch for T4"
+    },
+    "core_ml_dependencies": [
+      "onnx>=1.15.0",
+      "onnxruntime>=1.17.0",
+      "numpy>=1.26.0",
+      "pyyaml>=6.0",
+      "pillow>=10.2.0",
+      "scipy>=1.12.0",
+      "scikit-learn>=1.4.0"
+    ],
+    "colab_specific": {
+      "psutil": "psutil>=5.9.0",
+      "google-colab": "google-colab>=1.0.0 (RUNTIME_PROVIDED)",
+      "tqdm": "tqdm>=4.66.0"
+    },
+    "optional": {
+      "tensorboard": "tensorboard>=2.15.0 (OPTIONAL_NOT_EXECUTED)"
+    },
+    "testing": [
+      "pytest>=8.0.0",
+      "ruff>=0.3.0"
+    ],
+    "notes": "CUDA-enabled torch is installed via --index-url https://download.pytorch.org/whl/cu121 in Colab. google.colab is provided by the Colab runtime. Colab T4 runtime verification will run at the start of Gate B.",
+    "audit_timestamp_utc": "2026-09-29T06:15:00Z"
+  }
+}

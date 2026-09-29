@@ -1,0 +1,111 @@
+{
+  "phase": "4C.1B.6R.3.2",
+  "description": "True Clean Environment and Dependency Seal",
+  "git_head": "13dfa8274ac1e5390c1fda97738bcb97ea285379",
+  "branch": "research/phase-4c1-learning-curve",
+  "files": [
+    {
+      "name": "environment.json",
+      "type": "metadata",
+      "bytes": 626,
+      "sha256": "8ad677304d88091816fa9dd9ce223c55d453e84f7a20a9bf1605f46b0b0e8e56",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "json-validation.json",
+      "type": "phase-report",
+      "bytes": 396,
+      "sha256": "4a160b02574786ff451a0ae8cc93e7f7e31b462a115d1655413eabbf316216fe",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "dependency-declaration-audit.json",
+      "type": "phase-report",
+      "bytes": 5288,
+      "sha256": "688c390e7d54aba05d1fb836fe12b684ad581dc1f5cda939cffe7e113fa65a56",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "clean-venv-creation.json",
+      "type": "phase-report",
+      "bytes": 1269,
+      "sha256": "99099793934979580493434219317c61003769a8ba7403a06805f8e18cc101a3",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "clean-install-log.txt",
+      "type": "phase-report",
+      "bytes": 7303,
+      "sha256": "6439a71454e70201271cd4398bbf48d3955275324018951d490c90ad59cd21d6",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "clean-pip-check.txt",
+      "type": "phase-report",
+      "bytes": 29,
+      "sha256": "9bc9eff87ccde9a897a86ea3cf9096facadba3cc998bc2b74cc3d856cf1cc971",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "clean-import-check.json",
+      "type": "phase-report",
+      "bytes": 663,
+      "sha256": "60ad67dcf94cb520f688a88f1c5c180f433af17ad83b98aebf6b665a6f82127b",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "clean-test-summary.json",
+      "type": "test-report",
+      "bytes": 1419,
+      "sha256": "a34418676d70cbeb2ae341cfdef4c4bb54db2d427006f841788845e0f347e91f",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "colab-requirements-audit.json",
+      "type": "phase-report",
+      "bytes": 1099,
+      "sha256": "570a729bdb145638ef750b0a433632ebfee339ae80ffbd7e6143744cc58cfc50",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "prior-evidence-corrections.json",
+      "type": "phase-report",
+      "bytes": 1789,
+      "sha256": "e17e585ad6feea1974bffa6e65273ba96f855abc3be3856725d1285e89909823",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "PHASE_REPORT.md",
+      "type": "phase-report",
+      "bytes": 2793,
+      "sha256": "984c43b7f9214f717e21933ef7d48405aebf63aa1eeb0894b6b63bf7d59740e2",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    }
+  ],
+  "createdAtUtc": "2026-09-29T06:15:00Z",
+  "manifestSelfExcluded": true,
+  "artifactCount": 11,
+  "directoryFileCount": 12
+}
