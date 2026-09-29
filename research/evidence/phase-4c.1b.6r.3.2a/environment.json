@@ -1,8 +1,8 @@
 {
-  "timestamp": "2026-09-29T07:15:00.000000Z",
+  "timestamp": "2026-09-29T13:00:00.000000Z",
   "phase": "4C.1B.6R.3.2a",
   "description": "Dependency Declaration Amendment and Clean Venv Recreation",
-  "git_head": "6a70e8c261c5a62363dab24d07cd01087634529a",
+  "git_head": "99b6824",
   "branch": "research/phase-4c1-learning-curve",
   "python_executable": "C:\\\\Users\\\\Bunny\\\\AppData\\\\Local\\\\Temp\\\\forensics-clean-verify\\\\Scripts\\\\python.exe",
   "python_version": "3.12.10",

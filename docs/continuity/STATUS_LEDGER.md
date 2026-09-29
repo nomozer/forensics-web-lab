@@ -1,3 +1,15 @@
+## Phase 4C.1B.6R.3.2a - Dependency Declaration Amendment and Clean Venv Recreation
+
+- **Muc tieu**: requirements-dev.txt, clean venv from scratch, lint debt seal, T4 policy.
+- **Starting commit**: 6a70e8c (Phase 4C.1B.6R.3.2 ending)
+- **Branch**: research/phase-4c1-learning-curve
+- **Thay đổi chính**: (1) requirements-dev.txt created (nbformat, ipython). (2) Clean venv from requirements-dev.txt: pip check clean, all imports OK. (3) Tests: hermetic 149/150, full 155/156. (4) Lint debt: 483 errors, 352 fixable, classified KNOWN_PREEXISTING_NONBLOCKING_LINT_DEBT. (4) T4 contract: 5 seeds (42, 1337, 2025, 3407, 9001), FIXED_N50_COHORT.
+- **Kiểm tra**: 156/155/1 Python, 70/70 TS, typecheck 0, build OK, continuity PASS.
+- **Kết quả**: Evidence manifest 12 artifacts. Training runs = 0. Locked-test = 0.
+- **Evidence**: research/evidence/phase-4c.1b.6r.3.2a/ (12 artifacts).
+- **Quyết định tiếp theo**: Gate A.3.2a complete, Gate B Colab T4 multi-seed (42, 1337, 2025, 3407, 9001).
+
+---
 ## Phase 4C.1B.6R.3.2 - True Clean Environment and Dependency Seal
 
 - **Muc tieu**: True clean venv from declarations, JSON validity, dependency audit, T4 contract seal.

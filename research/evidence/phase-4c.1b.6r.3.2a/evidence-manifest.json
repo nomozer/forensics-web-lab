@@ -7,8 +7,8 @@
     {
       "name": "environment.json",
       "type": "metadata",
-      "bytes": 643,
-      "sha256": "03623239b7f8916c15eb0955f346ffaec0dee34e4dd58e9e27ccea261357f53d",
+      "bytes": 610,
+      "sha256": "9c8e41db386ad4ce0db5cc44b0f3d254d08254ee037dc2b4ad01c17d2727db1c",
       "generationCommand": "automatic",
       "verificationCommand": "Get-FileHash",
       "status": "verified"
