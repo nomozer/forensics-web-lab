@@ -54,8 +54,8 @@
       "canonical_colab_notebook": {
         "status": "PASS",
         "path": "notebooks/phase_4c1_learning_curve_colab.ipynb",
-        "bytes": 15213,
-        "sha256": "afcd9261af6b8049020f8e734d4367ebbfb470d3db62d562e67b2107b1f713a6",
+        "bytes": 12826,
+        "sha256": "463ae56390f93f50e246d0a1703f42f5effb3bc51fdee4cc90b5cc2d7697e7cc",
         "drive_persistence_architecture": true,
         "drive_input_dir": "/content/drive/MyDrive/forensics-web-lab/phase_4c1/inputs",
         "drive_output_dir": "/content/drive/MyDrive/forensics-web-lab/phase_4c1/runs/execution_79bb115",

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Canonical Colab Notebook tests for Phase 4C.1 (Persistent Drive Architecture).
-Verifies structure, safety invariants, single Drive mount, Drive->/content staging,
+Verifies 6-section structure, safety invariants, single Drive mount, Drive->/content staging,
 persistent output symlink binding, streaming SHA-256 verification,
 conditional GPU gate, and execution cell compilation.
 """
@@ -40,21 +40,43 @@ def test_notebook_loads_and_schema_valid():
     nbformat.validate(nb)
     assert nb.nbformat == 4
     assert nb.nbformat_minor == 5
-    assert len(nb.cells) == 6, f"Expected 6 cells (1 md + 5 code), got {len(nb.cells)}"
+    assert len(nb.cells) == 11, f"Expected 11 cells (6 md + 5 code), got {len(nb.cells)}"
 
 
 @pytest.mark.skipif(not IPYTHON_AVAILABLE, reason="IPython not installed")
 def test_notebook_cell_count_and_types():
-    """Test exact cell count: 1 markdown cell + 5 code cells."""
+    """Test exact cell count: 6 markdown cells + 5 code cells = 11 cells."""
     with open(CANONICAL_NOTEBOOK_PATH, "r", encoding="utf-8") as f:
         nb = nbformat.read(f, as_version=4)
 
     markdown_cells = [c for c in nb.cells if c.cell_type == "markdown"]
     code_cells = [c for c in nb.cells if c.cell_type == "code"]
 
-    assert len(markdown_cells) == 1, f"Expected 1 markdown cell, got {len(markdown_cells)}"
+    assert len(markdown_cells) == 6, f"Expected 6 markdown cells, got {len(markdown_cells)}"
     assert len(code_cells) == 5, f"Expected 5 code cells, got {len(code_cells)}"
-    assert len(nb.cells) == 6, f"Expected 6 total cells, got {len(nb.cells)}"
+    assert len(nb.cells) == 11, f"Expected 11 total cells, got {len(nb.cells)}"
+
+
+@pytest.mark.skipif(not IPYTHON_AVAILABLE, reason="IPython not installed")
+def test_notebook_six_section_headers():
+    """Test exact 6 section headers in markdown cells."""
+    with open(CANONICAL_NOTEBOOK_PATH, "r", encoding="utf-8") as f:
+        nb = nbformat.read(f, as_version=4)
+
+    markdown_cells = [c for c in nb.cells if c.cell_type == "markdown"]
+    expected_headers = [
+        "# Phase 4C.1 — Learning Curve",
+        "## Thiết lập",
+        "## Kiểm tra môi trường và dữ liệu",
+        "## Chuẩn bị phiên huấn luyện",
+        "## Huấn luyện",
+        "## Kết quả"
+    ]
+
+    for idx, (md, expected_h) in enumerate(zip(markdown_cells, expected_headers)):
+        src = "".join(md.source) if isinstance(md.source, list) else md.source
+        first_line = src.splitlines()[0].strip()
+        assert first_line == expected_h, f"Header mismatch at section {idx+1}: expected '{expected_h}', got '{first_line}'"
 
 
 @pytest.mark.skipif(not IPYTHON_AVAILABLE, reason="IPython not installed")
@@ -82,8 +104,8 @@ def test_single_execute_assignment_and_defaults():
 
 
 @pytest.mark.skipif(not IPYTHON_AVAILABLE, reason="IPython not installed")
-def test_single_drive_mount_in_cell_2():
-    """Test Google Drive is mounted exactly once in Cell 2."""
+def test_single_drive_mount_in_preflight_cell():
+    """Test Google Drive is mounted exactly once in preflight code cell."""
     with open(CANONICAL_NOTEBOOK_PATH, "r", encoding="utf-8") as f:
         nb = nbformat.read(f, as_version=4)
 
@@ -93,7 +115,7 @@ def test_single_drive_mount_in_cell_2():
             src = "".join(cell.source) if isinstance(cell.source, list) else cell.source
             if "drive.mount" in src:
                 mount_count += 1
-                assert i == 2, f"drive.mount must be located in Cell 2 (preflight), found in cell {i}"
+                assert i == 4, f"drive.mount must be located in cell index 4 (preflight), found in cell {i}"
                 assert "force_remount=False" in src, "drive.mount should use force_remount=False"
 
     assert mount_count == 1, f"Expected exactly 1 drive.mount call, found {mount_count}"
@@ -101,7 +123,7 @@ def test_single_drive_mount_in_cell_2():
 
 @pytest.mark.skipif(not IPYTHON_AVAILABLE, reason="IPython not installed")
 def test_safety_invariants():
-    """Test notebook forbids Windows paths, tokens, git clone, PyTorch reinstall, Stage 2, or locked-test."""
+    """Test notebook forbids Windows paths, tokens, git clone, PyTorch reinstall, Stage 2, or locked-test invocation."""
     with open(CANONICAL_NOTEBOOK_PATH, "r", encoding="utf-8") as f:
         nb = nbformat.read(f, as_version=4)
 
@@ -120,8 +142,22 @@ def test_safety_invariants():
 
     for i, cell in enumerate(nb.cells):
         src = "".join(cell.source) if isinstance(cell.source, list) else cell.source
+        # Allow checking locked_test_access == 0 in audit receipt assertion
+        cleaned_src = src.replace("locked_test_access", "").replace("locked-test access", "").replace("Locked-test access", "")
         for pattern in forbidden_patterns:
-            assert pattern not in src, f"Forbidden pattern '{pattern}' found in cell {i}"
+            assert pattern not in cleaned_src, f"Forbidden pattern '{pattern}' found in cell {i}"
+
+
+@pytest.mark.skipif(not IPYTHON_AVAILABLE, reason="IPython not installed")
+def test_no_cell_number_comments():
+    """Test code cells do not contain # Cell X comments."""
+    with open(CANONICAL_NOTEBOOK_PATH, "r", encoding="utf-8") as f:
+        nb = nbformat.read(f, as_version=4)
+
+    for i, cell in enumerate(nb.cells):
+        if cell.cell_type == "code":
+            src = "".join(cell.source) if isinstance(cell.source, list) else cell.source
+            assert "# Cell" not in src, f"# Cell comment found in cell {i}"
 
 
 @pytest.mark.skipif(not IPYTHON_AVAILABLE, reason="IPython not installed")
@@ -130,7 +166,7 @@ def test_gpu_gate_conditional_on_execute():
     with open(CANONICAL_NOTEBOOK_PATH, "r", encoding="utf-8") as f:
         nb = nbformat.read(f, as_version=4)
 
-    preflight_cell = nb.cells[2]
+    preflight_cell = nb.cells[4]
     assert preflight_cell.cell_type == "code"
     src = "".join(preflight_cell.source) if isinstance(preflight_cell.source, list) else preflight_cell.source
 
@@ -145,7 +181,7 @@ def test_streaming_sha256_verification():
     with open(CANONICAL_NOTEBOOK_PATH, "r", encoding="utf-8") as f:
         nb = nbformat.read(f, as_version=4)
 
-    preflight_cell = nb.cells[2]
+    preflight_cell = nb.cells[4]
     src = "".join(preflight_cell.source) if isinstance(preflight_cell.source, list) else preflight_cell.source
 
     assert "chunk_size" in src or "1024 * 1024" in src
@@ -155,11 +191,11 @@ def test_streaming_sha256_verification():
 
 @pytest.mark.skipif(not IPYTHON_AVAILABLE, reason="IPython not installed")
 def test_sealed_artifacts_and_drive_paths_configured():
-    """Test Cell 1 configures the three sealed artifacts and standard Drive paths."""
+    """Test config cell configures the three sealed artifacts and standard Drive paths."""
     with open(CANONICAL_NOTEBOOK_PATH, "r", encoding="utf-8") as f:
         nb = nbformat.read(f, as_version=4)
 
-    config_cell = nb.cells[1]
+    config_cell = nb.cells[2]
     src = "".join(config_cell.source) if isinstance(config_cell.source, list) else config_cell.source
 
     # Standard paths
@@ -180,11 +216,11 @@ def test_sealed_artifacts_and_drive_paths_configured():
 
 @pytest.mark.skipif(not IPYTHON_AVAILABLE, reason="IPython not installed")
 def test_staging_and_persistent_output_binding():
-    """Test Cell 3 copies via .part and binds /content/phase_4c1_outputs to Drive output symlink."""
+    """Test staging cell copies via .part and binds /content/phase_4c1_outputs to Drive output symlink."""
     with open(CANONICAL_NOTEBOOK_PATH, "r", encoding="utf-8") as f:
         nb = nbformat.read(f, as_version=4)
 
-    staging_cell = nb.cells[3]
+    staging_cell = nb.cells[6]
     src = "".join(staging_cell.source) if isinstance(staging_cell.source, list) else staging_cell.source
 
     assert ".part" in src, "Must copy to temporary .part file"
@@ -195,34 +231,46 @@ def test_staging_and_persistent_output_binding():
 
 @pytest.mark.skipif(not IPYTHON_AVAILABLE, reason="IPython not installed")
 def test_execution_cell_invokes_operator_once():
-    """Test Cell 4 calls the operator script exactly once with check=True when EXECUTE=True."""
+    """Test execution cell calls the operator script exactly once with check=True when EXECUTE=True."""
     with open(CANONICAL_NOTEBOOK_PATH, "r", encoding="utf-8") as f:
         nb = nbformat.read(f, as_version=4)
 
-    exec_cell = nb.cells[4]
+    exec_cell = nb.cells[8]
     src = "".join(exec_cell.source) if isinstance(exec_cell.source, list) else exec_cell.source
 
     assert "subprocess.run" in src
     assert "phase_4c1_t4_execute_all_stage1.sh" in src
     assert "check=True" in src
-    assert "DRY-RUN" in src
+    assert "[SKIP]" in src
 
 
 @pytest.mark.skipif(not IPYTHON_AVAILABLE, reason="IPython not installed")
 def test_audit_cell_validates_15_runs_and_archives():
-    """Test Cell 5 checks all 5 archives, sidecars, 15 completed runs, and conditional single download."""
+    """Test audit cell checks all 5 archives, sidecars, 15 completed runs, and receipt schema fields."""
     with open(CANONICAL_NOTEBOOK_PATH, "r", encoding="utf-8") as f:
         nb = nbformat.read(f, as_version=4)
 
-    audit_cell = nb.cells[5]
+    audit_cell = nb.cells[10]
     src = "".join(audit_cell.source) if isinstance(audit_cell.source, list) else audit_cell.source
 
+    # 5 archives
     assert "n50_results.tar.gz" in src
     assert "n100_results.tar.gz" in src
     assert "n250_results.tar.gz" in src
     assert "phase_4c1_all_15_runs_results.tar.gz" in src
     assert "phase_4c1_t4_execution_logs.tar.gz" in src
     assert ".sha256" in src
+
+    # Receipt fields
+    assert "status" in src
+    assert "sample_size" in src
+    assert "seed" in src
+    assert "stage" in src
+    assert "locked_test_access" in src
+    assert "stage2_invocations" in src
+    assert "validation_source_count" in src
+
+    # Download
     assert "DOWNLOAD_FINAL_ARCHIVE" in src
     assert "files.download" in src
 
