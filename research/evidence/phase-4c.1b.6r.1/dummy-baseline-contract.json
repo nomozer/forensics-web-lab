@@ -1,0 +1,42 @@
+{
+  "dummy_baseline": {
+    "method": "StratifiedDummyClassifier",
+    "strategy": "stratified",
+    "random_state": 42,
+    "evaluation_protocol": "fit_on_development_train_predict_on_inner_validation",
+    "training_source_ids": 50,
+    "training_samples": 100,
+    "validation_source_ids": 91,
+    "validation_samples": 182,
+    "validation_class_distribution": {
+      "authentic": 91,
+      "ai_edited": 91
+    },
+    "results": {
+      "mean": 0.493956,
+      "std": 0.0,
+      "note": "Direct evaluation on validation set (no CV). StratifiedDummy learns class prior from training (0.5) and predicts randomly. Original contract value 0.411718 used 5-fold CV on training data with all 6 variants per source."
+    },
+    "source_level": true,
+    "resampling_unit": "source_id",
+    "status": "MEASURED",
+    "historical_contract_value": 0.411718,
+    "historical_contract_note": "5-fold CV on development_train with 6 variants per source (546 samples)"
+  },
+  "metadata_baseline": {
+    "status": "NOT_MEASURED",
+    "reason": "No metadata-only model implementation available. Placeholder value 0.5 used in original run_receipt.",
+    "placeholder_value": 0.5,
+    "label": "PLACEHOLDER",
+    "gate_participation": false,
+    "note": "When a metadata-only model is implemented, it must be trained on development_train and evaluated on inner_validation with the same protocol."
+  },
+  "gate_conditions": {
+    "stage1_gt_dummy": true,
+    "stage1_gt_dummy_ci_lower": 0.110,
+    "stage1_gt_metadata": true,
+    "stage1_gt_metadata_ci_lower": 0.022
+  },
+  "gate_verdict": "INSUFFICIENT_EVIDENCE",
+  "reason": "Metadata baseline is NOT_MEASURED (placeholder). Stage 2 gate cannot be fully verified until metadata baseline is measured with real model."
+}

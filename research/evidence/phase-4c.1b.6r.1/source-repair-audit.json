@@ -1,0 +1,22 @@
+{
+  "source_repair_audit": {
+    "evaluation_leak_root_cause": "Evaluation loader in run_smoke_local.py (notebook script) had incorrect partition filter. The filter condition used an OR logic that incorrectly included development_train samples.",
+    "root_cause_file": "run_smoke_local.py (notebook script)",
+    "root_cause_line": "if row['partition'] == partition and (partition != 'inner_validation' or row['lc_n50'] == 'True'):",
+    "root_cause_explanation": "The condition evaluated to True for development_train because partition != 'inner_validation' is True for development_train, making the entire OR condition True regardless of lc_n50 value.",
+    "fixed_in_notebook": true,
+    "fixed_in_runner": false,
+    "fixed_in_notebook_commit": "24adfce1",
+    "source_code_status": "RUNNER_UNCHANGED",
+    "runner_file": "ml/training/run_phase_4c1.py",
+    "runner_status": "CORRECT_ALREADY",
+    "runner_reason": "The runner's create_data_loaders function correctly filters for inner_validation partition. The bug was only in the notebook script (run_smoke_local.py) used for local testing.",
+    "runner_code_location": "ml/training/run_phase_4c1.py create_data_loaders function",
+    "runner_filter_logic": "val_instances = [inst for inst in instances if inst.partition == 'inner_validation']",
+    "runner_status": "CORRECT - no source code changes needed",
+    "notebook_script": "run_smoke_local.py",
+    "notebook_status": "FIXED in commit 24adfce1",
+    "notebook_fix": "Fixed dataset filter to correctly exclude development_train from inner_validation",
+    "fault_injection_verification": "fault-injection-results.json"
+  }
+}

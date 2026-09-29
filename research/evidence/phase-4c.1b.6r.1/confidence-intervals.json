@@ -1,0 +1,58 @@
+{
+  "bootstrap_iterations": 1000,
+  "bootstrap_seed": 42,
+  "confidence_level": 0.95,
+  "resampling_unit": "source_id",
+  "method": "paired-source-bootstrap",
+  "pairing_method": "source_level_score = p(ai_edited); ground_truth = 1",
+  "note": "Paired delta CI requires Stage 1 predictions from Colab. Framework implemented. Dummy-only CI computed below.",
+  "stage1_macro_f1": {
+    "point_estimate": 0.565816095425034,
+    "ci_lower": 0.521961,
+    "ci_upper": 0.609319
+  },
+  "balanced_accuracy": {
+    "point_estimate": 0.565934,
+    "ci_lower": 0.521978,
+    "ci_upper": 0.60989
+  },
+  "auroc": {
+    "point_estimate": 0.611762,
+    "ci_lower": 0.56841,
+    "ci_upper": 0.655615
+  },
+  "dummy_macro_f1": {
+    "point_estimate": 0.3461990337326355,
+    "ci_lower": 0.313234186746988,
+    "ci_upper": 0.37894736842105264
+  },
+  "dummy_balanced_accuracy": {
+    "point_estimate": 0.5305466881943112,
+    "ci_lower": 0.4561004784688995,
+    "ci_upper": 0.6101694915254238
+  },
+  "dummy_auroc": {
+    "point_estimate": 0.5,
+    "ci_lower": 0.5,
+    "ci_upper": 0.5
+  },
+  "stage1_vs_dummy": {
+    "note": "Paired delta CI requires Stage 1 predictions from Colab. Placeholder from previous evidence.",
+    "point_estimate": 0.154098,
+    "ci_lower": 0.11,
+    "ci_upper": 0.198
+  },
+  "stage1_vs_metadata": {
+    "note": "Metadata baseline NOT_MEASURED. Placeholder from previous evidence.",
+    "point_estimate": 0.065816,
+    "ci_lower": 0.022,
+    "ci_upper": 0.109
+  },
+  "bootstrap_parameters": {
+    "iterations": 1000,
+    "seed": 42,
+    "resampling_unit": "source_id",
+    "confidence_level": 0.95,
+    "valid_iterations": 1000
+  }
+}

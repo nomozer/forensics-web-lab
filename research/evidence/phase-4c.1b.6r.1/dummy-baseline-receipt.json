@@ -1,0 +1,17 @@
+{
+  "implementation_path": "scripts/research/create_dummy_baseline_artifact.py",
+  "reproduction_command": "python scripts/research/create_dummy_baseline_artifact.py",
+  "random_seed": 42,
+  "input_manifest": "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\smoke_n50_seed42\\extracted_bundle\\manifest_pilot_a_option_p.csv",
+  "input_manifest_sha256": "d9b601c2dd2958499762de7e96445fbf54303bbde672cd18af5f83790b1b3111",
+  "output_predictions_sha256": "3096f6263ec0e9500157cfa03e5310fdaec9400d5ff850cd7f093e12db87f37e",
+  "output_metrics_sha256": "2160e971b3b3497122d5d93a12da28a4fdbd3f4c0892493366e64aec953a5f32",
+  "source_count": 91,
+  "sample_count": 182,
+  "class_distribution": {
+    "authentic": 91,
+    "ai_edited": 91
+  },
+  "macro_f1": 0.49395551257253384,
+  "balanced_accuracy": 0.4945054945054945
+}

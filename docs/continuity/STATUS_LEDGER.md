@@ -1,12 +1,12 @@
-## Phase 4C.1B.6R - Evidence Integrity, Statistical Contract and Repository Cleanup
+## Phase 4C.1B.6R.1 - Final Evidence Closure
 
-- **Muc tieu**: Khép kín Phase 4C.1B.6 bằng evidence đo thực, sửa hợp đồng thống kê, dọn dẹp repo.
-- **Starting commit**: 24adfce1 (Phase 4C.1B.6 ending)
+- **Muc tieu**: Test arithmetic, leakage root cause, dummy artifact, paired bootstrap, metadata contract.
+- **Starting commit**: f30bb4f (Phase 4C.1B.6R ending)
 - **Branch**: research/phase-4c1-learning-curve
-- **Thay đổi chính**: (1) EVAL-LEAK-001 fixed. (2) 7 regression tests. (3) AUROC CI: 0.6118 [0.568, 0.656]. (4) Dummy: 0.4117 (val-only). (5) Meta baseline: NOT_MEASURED. (6) Stage 2: INSUFFICIENT_EVIDENCE (meta NOT_MEASURED, single-seed). (7) Evidence at research/evidence/phase-4c.1b.6/.
-- **Kiểm tra**: 145/145 Python pass, 70/70 TS, typecheck 0, build OK, continuity PASS. Archive SHA-256 MATCHES.
-- **Kết quả**: Bundle ready for upload. Training runs = 0. Locked-test = 0. Colab = 0.
-- **Evidence**: research/evidence/phase-4c.1b.6/ (10 files).
-- **Quyết định tiếp theo**: Upload bundle, execute Colab N=50 seed=42.
+- **Thay đổi chính**: (1) Test arithmetic: 153/152/1. (2) EVAL-LEAK-001 fault injection reproduced (141 vs 91 source_ids). (3) Dummy artifact: 182 predictions, Macro-F1 0.494. (4) Paired bootstrap framework ready. (5) Metadata: NOT_MEASURED, gate=false. (6) Stage 2: INSUFFICIENT_EVIDENCE.
+- **Kiểm tra**: 153/152/1 Python, 70/70 TS, typecheck 0, build OK, continuity PASS.
+- **Kết quả**: Evidence manifest 17 artifacts verified. Training runs = 0. Locked-test = 0.
+- **Evidence**: research/evidence/phase-4c.1b.6r.1/ (17 artifacts).
+- **Quyết định tiếp theo**: Gate A commit, then Gate B Colab T4 multi-seed (1337, 2025, 3407, 9001).
 
 ---

@@ -1,0 +1,1822 @@
+[
+  {
+    "sample_id": "000000007281_authentic",
+    "source_id": "000000007281",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000007281_ai_edited",
+    "source_id": "000000007281",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000033114_authentic",
+    "source_id": "000000033114",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000033114_ai_edited",
+    "source_id": "000000033114",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000033707_authentic",
+    "source_id": "000000033707",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000033707_ai_edited",
+    "source_id": "000000033707",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000036678_authentic",
+    "source_id": "000000036678",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000036678_ai_edited",
+    "source_id": "000000036678",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000036861_authentic",
+    "source_id": "000000036861",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000036861_ai_edited",
+    "source_id": "000000036861",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000046497_authentic",
+    "source_id": "000000046497",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000046497_ai_edited",
+    "source_id": "000000046497",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000050006_authentic",
+    "source_id": "000000050006",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000050006_ai_edited",
+    "source_id": "000000050006",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000054931_authentic",
+    "source_id": "000000054931",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000054931_ai_edited",
+    "source_id": "000000054931",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000063154_authentic",
+    "source_id": "000000063154",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000063154_ai_edited",
+    "source_id": "000000063154",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000065455_authentic",
+    "source_id": "000000065455",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000065455_ai_edited",
+    "source_id": "000000065455",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000066926_authentic",
+    "source_id": "000000066926",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000066926_ai_edited",
+    "source_id": "000000066926",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000074457_authentic",
+    "source_id": "000000074457",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000074457_ai_edited",
+    "source_id": "000000074457",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000079837_authentic",
+    "source_id": "000000079837",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000079837_ai_edited",
+    "source_id": "000000079837",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000088265_authentic",
+    "source_id": "000000088265",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000088265_ai_edited",
+    "source_id": "000000088265",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000092177_authentic",
+    "source_id": "000000092177",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000092177_ai_edited",
+    "source_id": "000000092177",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000099810_authentic",
+    "source_id": "000000099810",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000099810_ai_edited",
+    "source_id": "000000099810",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000100274_authentic",
+    "source_id": "000000100274",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000100274_ai_edited",
+    "source_id": "000000100274",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000115898_authentic",
+    "source_id": "000000115898",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000115898_ai_edited",
+    "source_id": "000000115898",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000125472_authentic",
+    "source_id": "000000125472",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000125472_ai_edited",
+    "source_id": "000000125472",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000138550_authentic",
+    "source_id": "000000138550",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000138550_ai_edited",
+    "source_id": "000000138550",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000153797_authentic",
+    "source_id": "000000153797",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000153797_ai_edited",
+    "source_id": "000000153797",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000157365_authentic",
+    "source_id": "000000157365",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000157365_ai_edited",
+    "source_id": "000000157365",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000161879_authentic",
+    "source_id": "000000161879",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000161879_ai_edited",
+    "source_id": "000000161879",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000170613_authentic",
+    "source_id": "000000170613",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000170613_ai_edited",
+    "source_id": "000000170613",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000191672_authentic",
+    "source_id": "000000191672",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000191672_ai_edited",
+    "source_id": "000000191672",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000199442_authentic",
+    "source_id": "000000199442",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000199442_ai_edited",
+    "source_id": "000000199442",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000214753_authentic",
+    "source_id": "000000214753",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000214753_ai_edited",
+    "source_id": "000000214753",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000217614_authentic",
+    "source_id": "000000217614",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000217614_ai_edited",
+    "source_id": "000000217614",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000219440_authentic",
+    "source_id": "000000219440",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000219440_ai_edited",
+    "source_id": "000000219440",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000226883_authentic",
+    "source_id": "000000226883",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000226883_ai_edited",
+    "source_id": "000000226883",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000229753_authentic",
+    "source_id": "000000229753",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000229753_ai_edited",
+    "source_id": "000000229753",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000230450_authentic",
+    "source_id": "000000230450",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000230450_ai_edited",
+    "source_id": "000000230450",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000231125_authentic",
+    "source_id": "000000231125",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000231125_ai_edited",
+    "source_id": "000000231125",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000232692_authentic",
+    "source_id": "000000232692",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000232692_ai_edited",
+    "source_id": "000000232692",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000234807_authentic",
+    "source_id": "000000234807",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000234807_ai_edited",
+    "source_id": "000000234807",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000240754_authentic",
+    "source_id": "000000240754",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000240754_ai_edited",
+    "source_id": "000000240754",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000257478_authentic",
+    "source_id": "000000257478",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000257478_ai_edited",
+    "source_id": "000000257478",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000257566_authentic",
+    "source_id": "000000257566",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000257566_ai_edited",
+    "source_id": "000000257566",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000258793_authentic",
+    "source_id": "000000258793",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000258793_ai_edited",
+    "source_id": "000000258793",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000259382_authentic",
+    "source_id": "000000259382",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000259382_ai_edited",
+    "source_id": "000000259382",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000268000_authentic",
+    "source_id": "000000268000",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000268000_ai_edited",
+    "source_id": "000000268000",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000272212_authentic",
+    "source_id": "000000272212",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000272212_ai_edited",
+    "source_id": "000000272212",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000275058_authentic",
+    "source_id": "000000275058",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000275058_ai_edited",
+    "source_id": "000000275058",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000283412_authentic",
+    "source_id": "000000283412",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000283412_ai_edited",
+    "source_id": "000000283412",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000286849_authentic",
+    "source_id": "000000286849",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000286849_ai_edited",
+    "source_id": "000000286849",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000303653_authentic",
+    "source_id": "000000303653",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000303653_ai_edited",
+    "source_id": "000000303653",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000306582_authentic",
+    "source_id": "000000306582",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000306582_ai_edited",
+    "source_id": "000000306582",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000320425_authentic",
+    "source_id": "000000320425",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000320425_ai_edited",
+    "source_id": "000000320425",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000322211_authentic",
+    "source_id": "000000322211",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000322211_ai_edited",
+    "source_id": "000000322211",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000327306_authentic",
+    "source_id": "000000327306",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000327306_ai_edited",
+    "source_id": "000000327306",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000338986_authentic",
+    "source_id": "000000338986",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000338986_ai_edited",
+    "source_id": "000000338986",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000342006_authentic",
+    "source_id": "000000342006",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000342006_ai_edited",
+    "source_id": "000000342006",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000344059_authentic",
+    "source_id": "000000344059",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000344059_ai_edited",
+    "source_id": "000000344059",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000344888_authentic",
+    "source_id": "000000344888",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000344888_ai_edited",
+    "source_id": "000000344888",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000347693_authentic",
+    "source_id": "000000347693",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000347693_ai_edited",
+    "source_id": "000000347693",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000349860_authentic",
+    "source_id": "000000349860",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000349860_ai_edited",
+    "source_id": "000000349860",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000353051_authentic",
+    "source_id": "000000353051",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000353051_ai_edited",
+    "source_id": "000000353051",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000373705_authentic",
+    "source_id": "000000373705",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000373705_ai_edited",
+    "source_id": "000000373705",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000384616_authentic",
+    "source_id": "000000384616",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000384616_ai_edited",
+    "source_id": "000000384616",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000389197_authentic",
+    "source_id": "000000389197",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000389197_ai_edited",
+    "source_id": "000000389197",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000396580_authentic",
+    "source_id": "000000396580",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000396580_ai_edited",
+    "source_id": "000000396580",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000404249_authentic",
+    "source_id": "000000404249",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000404249_ai_edited",
+    "source_id": "000000404249",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000415990_authentic",
+    "source_id": "000000415990",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000415990_ai_edited",
+    "source_id": "000000415990",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000416837_authentic",
+    "source_id": "000000416837",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000416837_ai_edited",
+    "source_id": "000000416837",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000417876_authentic",
+    "source_id": "000000417876",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000417876_ai_edited",
+    "source_id": "000000417876",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000418281_authentic",
+    "source_id": "000000418281",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000418281_ai_edited",
+    "source_id": "000000418281",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000420472_authentic",
+    "source_id": "000000420472",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000420472_ai_edited",
+    "source_id": "000000420472",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000450488_authentic",
+    "source_id": "000000450488",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000450488_ai_edited",
+    "source_id": "000000450488",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000464824_authentic",
+    "source_id": "000000464824",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000464824_ai_edited",
+    "source_id": "000000464824",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000466567_authentic",
+    "source_id": "000000466567",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000466567_ai_edited",
+    "source_id": "000000466567",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000471756_authentic",
+    "source_id": "000000471756",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000471756_ai_edited",
+    "source_id": "000000471756",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000475904_authentic",
+    "source_id": "000000475904",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000475904_ai_edited",
+    "source_id": "000000475904",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000476258_authentic",
+    "source_id": "000000476258",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000476258_ai_edited",
+    "source_id": "000000476258",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000490470_authentic",
+    "source_id": "000000490470",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000490470_ai_edited",
+    "source_id": "000000490470",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000502168_authentic",
+    "source_id": "000000502168",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000502168_ai_edited",
+    "source_id": "000000502168",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000515350_authentic",
+    "source_id": "000000515350",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000515350_ai_edited",
+    "source_id": "000000515350",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000515982_authentic",
+    "source_id": "000000515982",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000515982_ai_edited",
+    "source_id": "000000515982",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000521601_authentic",
+    "source_id": "000000521601",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000521601_ai_edited",
+    "source_id": "000000521601",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000528862_authentic",
+    "source_id": "000000528862",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000528862_ai_edited",
+    "source_id": "000000528862",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000539445_authentic",
+    "source_id": "000000539445",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000539445_ai_edited",
+    "source_id": "000000539445",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000545958_authentic",
+    "source_id": "000000545958",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000545958_ai_edited",
+    "source_id": "000000545958",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000559099_authentic",
+    "source_id": "000000559099",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000559099_ai_edited",
+    "source_id": "000000559099",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000561223_authentic",
+    "source_id": "000000561223",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000561223_ai_edited",
+    "source_id": "000000561223",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000563603_authentic",
+    "source_id": "000000563603",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000563603_ai_edited",
+    "source_id": "000000563603",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000566042_authentic",
+    "source_id": "000000566042",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000566042_ai_edited",
+    "source_id": "000000566042",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000566524_authentic",
+    "source_id": "000000566524",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000566524_ai_edited",
+    "source_id": "000000566524",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000567011_authentic",
+    "source_id": "000000567011",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000567011_ai_edited",
+    "source_id": "000000567011",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000569972_authentic",
+    "source_id": "000000569972",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000569972_ai_edited",
+    "source_id": "000000569972",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000572388_authentic",
+    "source_id": "000000572388",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000572388_ai_edited",
+    "source_id": "000000572388",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000572620_authentic",
+    "source_id": "000000572620",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 0,
+    "probability": 0.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000572620_ai_edited",
+    "source_id": "000000572620",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000576052_authentic",
+    "source_id": "000000576052",
+    "partition": "inner_validation",
+    "y_true": 0,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  },
+  {
+    "sample_id": "000000576052_ai_edited",
+    "source_id": "000000576052",
+    "partition": "inner_validation",
+    "y_true": 1,
+    "y_pred": 1,
+    "probability": 1.0,
+    "method": "StratifiedDummyClassifier",
+    "random_seed": 42
+  }
+]
