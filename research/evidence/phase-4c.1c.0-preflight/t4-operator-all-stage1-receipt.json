@@ -1,0 +1,106 @@
+{
+  "operator_script_receipt": {
+    "schema_version": "1.0.0",
+    "phase": "Phase 4C.1C.0D",
+    "script_name": "phase_4c1_t4_execute_all_stage1.sh",
+    "script_path": "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\t4_transfer\\phase_4c1_t4_execute_all_stage1.sh",
+    "bytes": 20005,
+    "sha256": "deb3f04dd7c1039c4f3248f98a27f4eaf8e11f206a218125e949e5869da8ce05",
+    "timestamp_utc": "2026-09-29T16:30:00Z",
+    "execution_code_sha": "79bb11527d900fd387de1f41f2010c4152b7fea7",
+    "code_archive": {
+      "name": "phase_4c1_code_79bb115.tar.gz",
+      "path": "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\t4_transfer\\phase_4c1_code_79bb115.tar.gz",
+      "bytes": 758350,
+      "sha256": "5e775a7708d1555bf22f56dceb5358e26e07dd224c4b6186f575aff4d2b590d5"
+    },
+    "dataset_bundle": {
+      "name": "phase_4c1_binary_n250_reusable.tar",
+      "path": "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\t4_transfer\\phase_4c1_binary_n250_reusable.tar",
+      "bytes": 724633600,
+      "sha256": "d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27"
+    },
+    "matrix": {
+      "sample_sizes": [
+        50,
+        100,
+        250
+      ],
+      "seeds": [
+        42,
+        1337,
+        2025,
+        3407,
+        9001
+      ],
+      "total_runs": 15,
+      "stage": "frozen",
+      "device": "cuda",
+      "train_partition": "development_train",
+      "eval_partition": "inner_validation"
+    },
+    "canonical_runner_command_template": "python -m ml.training.run_phase_4c1 --config ml/configs/phase_4c1_learning_curve.yaml --bundle /content/bundle --sample-size <SIZE> --seed <SEED> --stage frozen --device cuda --train-partition development_train --eval-partition inner_validation --output /content/phase_4c1_outputs/n<SIZE>_seed_<SEED>",
+    "static_validation_results": {
+      "bash_n_syntax": "PASS",
+      "lf_endings": "PASS",
+      "utf8_no_bom": "PASS",
+      "zero_credentials": "PASS",
+      "zero_google_drive": "PASS",
+      "zero_windows_paths_in_remote": "PASS",
+      "zero_torch_reinstall": "PASS",
+      "zero_stage_2_invocation": "PASS",
+      "zero_locked_test_invocation": "PASS",
+      "three_size_contract": "PASS",
+      "five_seed_contract": "PASS",
+      "fifteen_run_matrix": "PASS",
+      "runner_flags_match_real_cli": "PASS",
+      "fault_injection_valid_run_passes": "PASS",
+      "fault_injection_missing_checkpoint_fails": "PASS",
+      "fault_injection_corrupted_checksum_fails": "PASS",
+      "fault_injection_locked_test_access_fails": "PASS",
+      "all_passed": true
+    },
+    "resume_contract": {
+      "fail_closed_on_missing_artifacts": true,
+      "skip_only_on_full_checksum_and_completed_receipt": true,
+      "partial_output_overwrite_prevention": true,
+      "required_artifacts_per_run": [
+        "best_checkpoint.pt",
+        "run_receipt.json",
+        "epoch_history.json",
+        "predictions.json",
+        "training_history.csv",
+        "metrics.json",
+        "environment.json",
+        "environment-binding.json",
+        "checksums.json"
+      ]
+    },
+    "packaging": {
+      "group_archives": [
+        "n50_results.tar.gz",
+        "n100_results.tar.gz",
+        "n250_results.tar.gz"
+      ],
+      "final_archive": "phase_4c1_all_15_runs_results.tar.gz",
+      "logs_archive": "phase_4c1_t4_execution_logs.tar.gz"
+    },
+    "notebook_status": {
+      "status": "SUPERSEDED_NOT_EXECUTABLE",
+      "sha256": "f26576cb70b6c892faaade7b225872d4bafbcfe1424b64df29564dd9e1cd28b9",
+      "historical_preservation": true
+    },
+    "training_runs_local": 0,
+    "locked_test_accesses": 0,
+    "status": "READY_FOR_REMOTE_EXECUTION",
+    "required_user_actions": {
+      "files_to_upload": [
+        "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\t4_transfer\\phase_4c1_code_79bb115.tar.gz",
+        "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\t4_transfer\\phase_4c1_binary_n250_reusable.tar",
+        "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\t4_transfer\\phase_4c1_t4_execute_all_stage1.sh"
+      ],
+      "target_directory": "/content/forensics-transfer",
+      "execution_command": "bash /content/forensics-transfer/phase_4c1_t4_execute_all_stage1.sh"
+    }
+  }
+}

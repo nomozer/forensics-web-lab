@@ -7,7 +7,7 @@
 - **Kiểm tra**: 156/155/1 Python, 70/70 TS, typecheck 0, build OK, continuity PASS.
 - **Kết quả**: Evidence manifest 12 artifacts. Training runs = 0. Locked-test = 0.
 - **Evidence**: research/evidence/phase-4c.1b.6r.3.2a/ (12 artifacts).
-- **Quyết định tiếp theo**: Phase 4C.1C.0c operator script phase_4c1_t4_execute.sh READY_FOR_REMOTE_EXECUTION. Old notebook SUPERSEDED_NOT_EXECUTABLE. Training chưa bắt đầu (runs=0, locked-test=0). Người dùng upload 3 files lên /content/forensics-transfer/ và chạy 1 command.
+- **Quyết định tiếp theo**: Phase 4C.1C.0d reusable N250 bundle (724,633,600 bytes, SHA-256 `d49a106f...`) và resumable 15-run operator `phase_4c1_t4_execute_all_stage1.sh` (20,005 bytes, SHA-256 `deb3f04d...`) READY_FOR_REMOTE_EXECUTION. Old notebook SUPERSEDED_NOT_EXECUTABLE. Bundle N=50 cũ lưu làm historical preflight artifact. Training runs mới = 0, locked-test accesses = 0. Người dùng upload 3 files lên /content/forensics-transfer/ và chạy 1 command duy nhất.
 
 ---
 ## Phase 4C.1B.6R.3.2 - True Clean Environment and Dependency Seal

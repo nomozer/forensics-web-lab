@@ -1,0 +1,13 @@
+{
+  "executionHead": "79bb11527d900fd387de1f41f2010c4152b7fea7",
+  "shortHead": "79bb115",
+  "archiveName": "phase_4c1_code_79bb115.tar.gz",
+  "archiveBytes": 758350,
+  "archiveSha256": "5e775a7708d1555bf22f56dceb5358e26e07dd224c4b6186f575aff4d2b590d5",
+  "branch": "research/phase-4c1-learning-curve",
+  "createdAtUtc": "2026-09-29T16:30:00Z",
+  "notebookSha256": "f26576cb70b6c892faaade7b225872d4bafbcfe1424b64df29564dd9e1cd28b9",
+  "reusableBundleSha256": "d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27",
+  "operatorSha256": "deb3f04dd7c1039c4f3248f98a27f4eaf8e11f206a218125e949e5869da8ce05",
+  "notes": "Execution snapshot containing reusable N250 bundle exporter, fail-closed validator, and 15-run canonical runner."
+}
