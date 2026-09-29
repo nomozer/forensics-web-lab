@@ -7,7 +7,7 @@ Created requirements-dev.txt with nbformat and ipython dependencies. Recreated c
 6a70e8c (Phase 4C.1B.6R.3.2 ending)
 
 ## Ending Commit
-git log -1 --format=%H -- research/evidence/phase-4c.1b.6r.3.2a/PHASE_REPORT.md
+99b68248b9e735547bc03f9e3b7333fba63940c4
 
 ## Branch
 research/phase-4c1-learning-curve
@@ -21,6 +21,16 @@ research/phase-4c1-learning-curve
 6. **T4 environment policy**: 5 seeds (42, 1337, 2025, 3407, 9001) with environment lock. Seed 42 re-run on T4 (EXPLORATORY_LOCAL_SMOKE excluded from T4 aggregate).
 7. **JSON validation**: 277 files, 0 parse errors.
 
+## Install Provenance
+- clean_install_log_status: SECOND_INSTALL_VERIFICATION_LOG
+- first_install_log_status: NOT_CAPTURED
+- clean_environment_status: ISOLATION_AND_FINAL_STATE_VERIFIED
+- Notes:
+  - Venv isolation verified.
+  - Final dependency state verified.
+  - Output of first install not captured.
+  - "Already satisfied" log entries are not first-install logs.
+
 ## Evidence Files
 - environment.json
 - dependency-amendment.json
@@ -33,6 +43,7 @@ research/phase-4c1-learning-curve
 - lint-debt.json
 - t4-environment-policy.json
 - json-validation.json
+- PHASE_REPORT.md
 - evidence-manifest.json
 
 ## Test Results

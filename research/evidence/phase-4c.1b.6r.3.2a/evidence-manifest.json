@@ -1,14 +1,14 @@
 {
   "phase": "4C.1B.6R.3.2a",
   "description": "Dependency Declaration Amendment and Clean Venv Recreation",
-  "git_head": "6a70e8c261c5a62363dab24d07cd01087634529a",
+  "git_head": "8c3f5600042d5f6e5293c20591bc48e196c8ab15",
   "branch": "research/phase-4c1-learning-curve",
   "files": [
     {
       "name": "environment.json",
       "type": "metadata",
-      "bytes": 610,
-      "sha256": "9c8e41db386ad4ce0db5cc44b0f3d254d08254ee037dc2b4ad01c17d2727db1c",
+      "bytes": 643,
+      "sha256": "749a938a2f90887972c5f81b7e70d929fc31dc3f624e6ef55fa5c8f41532f532",
       "generationCommand": "automatic",
       "verificationCommand": "Get-FileHash",
       "status": "verified"
@@ -88,8 +88,8 @@
     {
       "name": "t4-environment-policy.json",
       "type": "phase-report",
-      "bytes": 1145,
-      "sha256": "b270ace7d43917620592f1cb0fdb746418eb14dc788cfc7591dfd6b300fe7f59",
+      "bytes": 1128,
+      "sha256": "98eb1aaf554d0423dc959096d953658a7dd2d3dba3a42280861cef5e787e7ee1",
       "generationCommand": "automatic",
       "verificationCommand": "Get-FileHash",
       "status": "verified"
@@ -102,9 +102,18 @@
       "generationCommand": "automatic",
       "verificationCommand": "Get-FileHash",
       "status": "verified"
+    },
+    {
+      "name": "PHASE_REPORT.md",
+      "type": "phase-report",
+      "bytes": 2429,
+      "sha256": "8773d3167c9ec538582eed6976c6bc27901f325a576630736f1ef56828667137",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
     }
   ],
-  "createdAtUtc": "2026-09-29T07:15:00Z",
+  "createdAtUtc": "2026-09-29T13:20:00.000000Z",
   "manifestSelfExcluded": true,
   "artifactCount": 12,
   "directoryFileCount": 13
