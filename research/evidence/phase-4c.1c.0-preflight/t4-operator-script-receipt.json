@@ -1,0 +1,60 @@
+{
+  "operator_script_receipt": {
+    "script_path": "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\t4_transfer\\phase_4c1_t4_execute.sh",
+    "bytes": 19280,
+    "sha256": "aae92f01e889ba0f5688c5e85c1809b8644f90ac24aac9a1884e0cd8aa174529",
+    "timestamp_utc": "2026-09-29T15:09:00Z",
+    "execution_code_sha": "8d00f5a6064a70d93afc1468b300cd3b9234de2b",
+    "code_archive_sha256": "5ed90db104e9c0ce0fd220b52650ef936f298737530d3674403951748e2647ea",
+    "dataset_bundle_sha256": "b57d626d46a08427f6f1e4e1649565bd9d914e2d6f835e109e0391242af5d0a6",
+    "seeds": [
+      42,
+      1337,
+      2025,
+      3407,
+      9001
+    ],
+    "canonical_runner_command": "python -m ml.training.run_phase_4c1 --config ml/configs/phase_4c1_learning_curve.yaml --bundle /content/bundle --sample-size 50 --seed <SEED> --stage frozen --device cuda --train-partition development_train --eval-partition inner_validation --output /content/phase_4c1_outputs/n50_seed_<SEED>",
+    "static_validation_results": {
+      "bash_n_syntax": "PASS",
+      "lf_endings": "PASS",
+      "utf8_no_bom": "PASS",
+      "zero_credentials": "PASS",
+      "zero_google_drive": "PASS",
+      "zero_windows_paths_in_remote": "PASS",
+      "zero_torch_reinstall": "PASS",
+      "zero_stage_2_invocation": "PASS",
+      "zero_locked_test_invocation": "PASS",
+      "five_seeds_contract": "PASS",
+      "runner_flags_match_real_cli": "PASS",
+      "hashes_non_placeholder": "PASS",
+      "all_passed": true
+    },
+    "notebook_status": {
+      "status": "SUPERSEDED_NOT_EXECUTABLE",
+      "sha256": "f26576cb70b6c892faaade7b225872d4bafbcfe1424b64df29564dd9e1cd28b9",
+      "reasons": [
+        "Cell clone repository bi don thanh mot dong comment.",
+        "Execution ref cu la c4df74b.",
+        "Co bien chua dinh nghia: BUNDLE_DEST, ARTIFACT_DIR, BUNDLE_SOURCE.",
+        "Phu thuoc Google Drive.",
+        "Co kha nang ghi de PyTorch CUDA.",
+        "Chi chay seed 42.",
+        "Metadata baseline mac dinh 0 co the tao Stage 2 verdict sai.",
+        "Khong co five-seed aggregation hoac environment lock."
+      ]
+    },
+    "training_runs_local": 0,
+    "locked_test_accesses": 0,
+    "status": "READY_FOR_REMOTE_EXECUTION",
+    "required_user_actions": {
+      "files_to_upload": [
+        "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\t4_transfer\\phase_4c1_code_8d00f5a.tar.gz",
+        "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\smoke_n50_seed42\\phase_4c1_smoke_n50_seed42.tar",
+        "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\t4_transfer\\phase_4c1_t4_execute.sh"
+      ],
+      "target_directory": "/content/forensics-transfer",
+      "execution_command": "bash /content/forensics-transfer/phase_4c1_t4_execute.sh"
+    }
+  }
+}

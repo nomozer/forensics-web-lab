@@ -7,7 +7,7 @@
 - **Kiểm tra**: 156/155/1 Python, 70/70 TS, typecheck 0, build OK, continuity PASS.
 - **Kết quả**: Evidence manifest 12 artifacts. Training runs = 0. Locked-test = 0.
 - **Evidence**: research/evidence/phase-4c.1b.6r.3.2a/ (12 artifacts).
-- **Quyết định tiếp theo**: Gate A.3.2a complete, Gate B Colab T4 multi-seed (42, 1337, 2025, 3407, 9001).
+- **Quyết định tiếp theo**: Phase 4C.1C.0c operator script phase_4c1_t4_execute.sh READY_FOR_REMOTE_EXECUTION. Old notebook SUPERSEDED_NOT_EXECUTABLE. Training chưa bắt đầu (runs=0, locked-test=0). Người dùng upload 3 files lên /content/forensics-transfer/ và chạy 1 command.
 
 ---
 ## Phase 4C.1B.6R.3.2 - True Clean Environment and Dependency Seal
