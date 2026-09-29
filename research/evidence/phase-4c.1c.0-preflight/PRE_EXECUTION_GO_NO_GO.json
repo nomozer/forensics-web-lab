@@ -1,0 +1,89 @@
+{
+  "pre_execution_verdict": {
+    "schema_version": "1.0.0",
+    "phase": "Phase 4C.1C.0D.1",
+    "verdict": "GO",
+    "verdict_rationale": "All pre-execution gates pass without exception: receipt cardinality is reconciled with physical assets, operator static assertion count is 18/18 PASS, execution snapshot binding 79bb115 is intact with zero executable code changes, notebook V2 compiles and fails closed, training runs remain 0, and locked-test accesses remain 0.",
+    "timestamp_utc": "2026-09-29T17:34:52.289146+00:00",
+    "gates": {
+      "cardinality_reconciliation": {
+        "status": "PASS",
+        "manifest_type": "source_level",
+        "unique_source_ids": {
+          "development": 250,
+          "validation": 91,
+          "total": 341
+        },
+        "manifest_source_rows": {
+          "development": 250,
+          "validation": 91,
+          "total": 341
+        },
+        "image_samples": {
+          "development": 500,
+          "validation": 182,
+          "total": 682
+        },
+        "image_assets": {
+          "development": 500,
+          "validation": 182,
+          "total": 682
+        },
+        "ratio_authentic_to_ai_edited": "1:1 (341 authentic : 341 ai_edited)",
+        "cross_split_source_overlap": 0
+      },
+      "operator_static_assertions": {
+        "status": "PASS",
+        "script_name": "phase_4c1_t4_execute_all_stage1.sh",
+        "bytes": 20005,
+        "sha256": "deb3f04dd7c1039c4f3248f98a27f4eaf8e11f206a218125e949e5869da8ce05",
+        "assertions_total": 18,
+        "assertions_passed": 18,
+        "assertions_failed": 0,
+        "all_passed": true
+      },
+      "execution_snapshot_binding": {
+        "status": "PASS",
+        "snapshot_head": "79bb11527d900fd387de1f41f2010c4152b7fea7",
+        "code_archive": "phase_4c1_code_79bb115.tar.gz",
+        "code_archive_bytes": 758350,
+        "code_archive_sha256": "5e775a7708d1555bf22f56dceb5358e26e07dd224c4b6186f575aff4d2b590d5",
+        "executable_code_changes_since_snapshot": 0,
+        "code_archive_stale": false
+      },
+      "colab_notebook_v2": {
+        "status": "PASS",
+        "path": "notebooks/phase_4c1_learning_curve_colab_v2.ipynb",
+        "bytes": 10775,
+        "sha256": "b3f05513987ed265a38229d8b62350b584eeb1038728bae7d442a31132e97b48",
+        "all_code_cells_compiled": true,
+        "default_execute_false": true,
+        "dry_run_training_runs": 0,
+        "fail_closed_on_missing_file": true,
+        "fail_closed_on_sha_mismatch": true,
+        "historical_notebook_untouched": true,
+        "historical_notebook_sha256": "f26576cb70b6c892faaade7b225872d4bafbcfe1424b64df29564dd9e1cd28b9"
+      },
+      "scientific_honesty": {
+        "status": "PASS",
+        "training_runs_in_wave": 0,
+        "locked_test_accesses": 0,
+        "stage_2_invocations": 0,
+        "unsupported_model_performance_claim": false
+      }
+    },
+    "execution_readiness": {
+      "status": "READY_FOR_REMOTE_EXECUTION",
+      "files_to_upload": [
+        "phase_4c1_code_79bb115.tar.gz",
+        "phase_4c1_binary_n250_reusable.tar",
+        "phase_4c1_t4_execute_all_stage1.sh"
+      ],
+      "target_directory": "/content/forensics-transfer",
+      "execution_options": {
+        "cli_option": "bash /content/forensics-transfer/phase_4c1_t4_execute_all_stage1.sh",
+        "notebook_option": "Open notebooks/phase_4c1_learning_curve_colab_v2.ipynb in Google Colab T4 and set EXECUTE = True"
+      }
+    }
+  }
+}

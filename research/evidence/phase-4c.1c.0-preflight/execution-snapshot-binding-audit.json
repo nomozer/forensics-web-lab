@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.1C.0D.1",
+  "audit_name": "execution_snapshot_binding_audit",
+  "timestamp_utc": "2026-09-29T17:33:15.945338+00:00",
+  "execution_snapshot_commit": "79bb11527d900fd387de1f41f2010c4152b7fea7",
+  "audited_head_commit": "a55623ca3bff6f1b986a34d7f452f400f39e5f1c",
+  "code_archive": {
+    "name": "phase_4c1_code_79bb115.tar.gz",
+    "bytes": 758350,
+    "sha256": "5e775a7708d1555bf22f56dceb5358e26e07dd224c4b6186f575aff4d2b590d5",
+    "status": "VERIFIED_CURRENT_AND_IMMUTABLE"
+  },
+  "diff_summary": {
+    "total_files_changed": 5,
+    "files": [
+      {
+        "status": "M",
+        "path": "docs/continuity/CODE_INDEX.md"
+      },
+      {
+        "status": "M",
+        "path": "docs/continuity/STATUS_LEDGER.md"
+      },
+      {
+        "status": "A",
+        "path": "research/evidence/phase-4c.1c.0-preflight/execution-code-n250-receipt.json"
+      },
+      {
+        "status": "A",
+        "path": "research/evidence/phase-4c.1c.0-preflight/reusable-bundle-receipt.json"
+      },
+      {
+        "status": "A",
+        "path": "research/evidence/phase-4c.1c.0-preflight/t4-operator-all-stage1-receipt.json"
+      }
+    ],
+    "executable_code_changes_count": 0,
+    "contains_only_continuity_and_evidence": true
+  },
+  "verdict": "SNAPSHOT_BINDING_VALID_AND_INTACT",
+  "verdict_rationale": "All commits between execution snapshot 79bb115 and HEAD a55623c contain solely documentation and evidence receipts. Zero lines of executable code, configurations, or dependencies have been modified."
+}

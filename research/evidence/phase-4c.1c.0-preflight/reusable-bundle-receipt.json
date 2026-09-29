@@ -8,10 +8,31 @@
     "archive_sha256": "d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27",
     "manifest_sha256": "411e35da80843a10f7bb22e33efac8a4d1db70110dbda91cadbbf39532c9312d",
     "cardinality": {
+      "manifest_type": "source_level",
+      "unique_source_ids": {
+        "development": 250,
+        "validation": 91,
+        "total": 341
+      },
+      "manifest_source_rows": {
+        "development": 250,
+        "validation": 91,
+        "total": 341
+      },
+      "image_samples": {
+        "development": 500,
+        "validation": 182,
+        "total": 682
+      },
+      "image_assets": {
+        "development": 500,
+        "validation": 182,
+        "total": 682
+      },
       "development_sources": 250,
-      "development_samples": 250,
+      "development_samples": 500,
       "validation_sources": 91,
-      "validation_samples": 91,
+      "validation_samples": 182,
       "total_sources": 341,
       "total_samples": 682,
       "total_image_files": 682
