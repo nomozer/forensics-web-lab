@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """
-Notebook compilation tests for Phase 4C.1 Colab notebook.
-Uses IPython TransformerManager to convert shell magics and compile each code cell.
+Canonical Colab Notebook tests for Phase 4C.1.
+Verifies structure, safety invariants, streaming verification,
+conditional GPU gate, and execution cell compilation.
 """
 
+from pathlib import Path
 import pytest
 import nbformat
-from pathlib import Path
 
 try:
     from IPython.core.interactiveshell import InteractiveShell
@@ -16,162 +17,177 @@ except ImportError:
     IPYTHON_AVAILABLE = False
 
 
-NOTEBOOK_PATH = Path(__file__).parents[2] / "notebooks" / "phase_4c1_learning_curve_colab.ipynb"
+NOTEBOOKS_DIR = Path(__file__).parents[2] / "notebooks"
+CANONICAL_NOTEBOOK_PATH = NOTEBOOKS_DIR / "phase_4c1_learning_curve_colab.ipynb"
+V2_NOTEBOOK_PATH = NOTEBOOKS_DIR / "phase_4c1_learning_curve_colab_v2.ipynb"
+
+
+def test_only_canonical_notebook_exists():
+    """Test that only canonical notebook exists in notebooks/ and v2 is removed."""
+    assert CANONICAL_NOTEBOOK_PATH.exists(), f"Canonical notebook missing: {CANONICAL_NOTEBOOK_PATH}"
+    assert not V2_NOTEBOOK_PATH.exists(), f"Duplicate/v2 notebook must be removed: {V2_NOTEBOOK_PATH}"
+    all_notebooks = list(NOTEBOOKS_DIR.glob("*.ipynb"))
+    assert len(all_notebooks) == 1, f"Expected exactly 1 notebook, found: {[p.name for p in all_notebooks]}"
+    assert all_notebooks[0].name == "phase_4c1_learning_curve_colab.ipynb"
 
 
 @pytest.mark.skipif(not IPYTHON_AVAILABLE, reason="IPython not installed")
-def test_notebook_loads():
-    """Test that notebook loads without JSON errors."""
-    with open(NOTEBOOK_PATH, "r", encoding="utf-8") as f:
+def test_notebook_loads_and_schema_valid():
+    """Test that notebook loads without errors and satisfies nbformat 4.5."""
+    with open(CANONICAL_NOTEBOOK_PATH, "r", encoding="utf-8") as f:
         nb = nbformat.read(f, as_version=4)
+    nbformat.validate(nb)
     assert nb.nbformat == 4
     assert nb.nbformat_minor == 5
-    assert len(nb.cells) == 15  # 1 markdown + 14 code
+    assert len(nb.cells) == 5
 
 
 @pytest.mark.skipif(not IPYTHON_AVAILABLE, reason="IPython not installed")
-def test_notebook_cell_count():
-    """Test exact cell count and types."""
-    with open(NOTEBOOK_PATH, "r", encoding="utf-8") as f:
+def test_notebook_cell_count_and_types():
+    """Test exact cell count: 1 markdown cell + 4 code cells."""
+    with open(CANONICAL_NOTEBOOK_PATH, "r", encoding="utf-8") as f:
         nb = nbformat.read(f, as_version=4)
 
-    code_cells = [c for c in nb.cells if c.cell_type == "code"]
     markdown_cells = [c for c in nb.cells if c.cell_type == "markdown"]
+    code_cells = [c for c in nb.cells if c.cell_type == "code"]
 
-    assert len(markdown_cells) == 1
-    assert len(code_cells) == 14
-    assert len(nb.cells) == 15
+    assert len(markdown_cells) == 1, f"Expected 1 markdown cell, got {len(markdown_cells)}"
+    assert len(code_cells) == 4, f"Expected 4 code cells, got {len(code_cells)}"
+    assert len(nb.cells) == 5, f"Expected 5 total cells, got {len(nb.cells)}"
 
 
 @pytest.mark.skipif(not IPYTHON_AVAILABLE, reason="IPython not installed")
 def test_single_execute_assignment():
     """Test EXECUTE = False appears exactly once as assignment."""
-    with open(NOTEBOOK_PATH, "r", encoding="utf-8") as f:
+    with open(CANONICAL_NOTEBOOK_PATH, "r", encoding="utf-8") as f:
         nb = nbformat.read(f, as_version=4)
 
     execute_assignments = 0
     for cell in nb.cells:
         if cell.cell_type == "code":
             src = "".join(cell.source) if isinstance(cell.source, list) else cell.source
-            # Count actual assignments, not string literals
             lines = src.split("\n")
             for line in lines:
                 stripped = line.strip()
                 if stripped.startswith("EXECUTE = "):
                     execute_assignments += 1
+                    assert stripped == "EXECUTE = False", f"Expected default False, got {stripped}"
 
     assert execute_assignments == 1, f"Expected 1 EXECUTE assignment, got {execute_assignments}"
 
 
 @pytest.mark.skipif(not IPYTHON_AVAILABLE, reason="IPython not installed")
-def test_no_stage2_training_invocation():
-    """Test Stage 2 cell does not invoke training runner."""
-    with open(NOTEBOOK_PATH, "r", encoding="utf-8") as f:
+def test_safety_invariants_no_unwanted_egress_or_drive():
+    """Test notebook does not use Google Drive, tokens, git clone, PyTorch reinstall, Stage 2, or locked-test."""
+    with open(CANONICAL_NOTEBOOK_PATH, "r", encoding="utf-8") as f:
         nb = nbformat.read(f, as_version=4)
 
-    for cell in nb.cells:
-        if cell.cell_type == "code":
-            src = "".join(cell.source) if isinstance(cell.source, list) else cell.source
-            if "Stage 2" in src or "stage2" in src.lower() or "stage_2" in src.lower():
-                # Should not call run_training or similar
-                assert "run_training" not in src, "Stage 2 cell must not invoke run_training"
-                assert "run_phase_4c1" not in src, "Stage 2 cell must not invoke training CLI"
-                assert "fine-tuning" not in src.lower() or "may proceed" in src.lower() or "blocked" in src.lower()
+    forbidden_patterns = [
+        "drive.mount",
+        "google.colab",
+        "git clone",
+        "GITHUB_TOKEN",
+        "pip install torch",
+        "pip install --upgrade torch",
+        "locked_test",
+        "locked-test",
+        "run_stage2",
+        "stage_2_fine_tuning"
+    ]
 
-
-@pytest.mark.skipif(not IPYTHON_AVAILABLE, reason="IPython not installed")
-def test_no_credentials_in_clone_url():
-    """Test git clone URL doesn't contain credentials after reset."""
-    with open(NOTEBOOK_PATH, "r", encoding="utf-8") as f:
-        nb = nbformat.read(f, as_version=4)
-
-    for cell in nb.cells:
-        if cell.cell_type == "code":
-            src = "".join(cell.source) if isinstance(cell.source, list) else cell.source
-            if "git clone" in src and "GITHUB_TOKEN" in src:
-                # Should have set-url to clean URL
-                assert "set-url" in src, "Must reset remote URL after authenticated clone"
-                assert "remote_url" in src or "get-url" in src, "Must verify clean remote URL"
+    for i, cell in enumerate(nb.cells):
+        src = "".join(cell.source) if isinstance(cell.source, list) else cell.source
+        for pattern in forbidden_patterns:
+            assert pattern not in src, f"Forbidden pattern '{pattern}' found in cell {i}"
 
 
 @pytest.mark.skipif(not IPYTHON_AVAILABLE, reason="IPython not installed")
 def test_gpu_gate_conditional_on_execute():
-    """Test GPU gate only runs when EXECUTE=True."""
-    with open(NOTEBOOK_PATH, "r", encoding="utf-8") as f:
+    """Test GPU/T4 assertion only fails when EXECUTE=True."""
+    with open(CANONICAL_NOTEBOOK_PATH, "r", encoding="utf-8") as f:
         nb = nbformat.read(f, as_version=4)
 
-    gpu_gate_found = False
-    for cell in nb.cells:
-        if cell.cell_type == "code":
-            src = "".join(cell.source) if isinstance(cell.source, list) else cell.source
-            if "GPU Gate" in src or "GPU Preflight" in src:
-                gpu_gate_found = True
-                assert "if EXECUTE:" in src, "GPU gate must be conditional on EXECUTE"
-                assert "torch.cuda.is_available()" in src
-                assert "COLAB_GPU_REQUIRED" in src
+    preflight_cell = nb.cells[2]
+    assert preflight_cell.cell_type == "code"
+    src = "".join(preflight_cell.source) if isinstance(preflight_cell.source, list) else preflight_cell.source
 
-    assert gpu_gate_found, "GPU gate cell not found"
+    assert "if EXECUTE:" in src, "GPU check must be guarded by if EXECUTE:"
+    assert "torch.cuda.is_available()" in src
+    assert "T4" in src
 
 
 @pytest.mark.skipif(not IPYTHON_AVAILABLE, reason="IPython not installed")
-def test_required_cells_present():
-    """Test all 14 required cells are present."""
-    with open(NOTEBOOK_PATH, "r", encoding="utf-8") as f:
+def test_streaming_sha256_verification():
+    """Test bundle SHA-256 verification uses streaming chunk reading, not f.read()."""
+    with open(CANONICAL_NOTEBOOK_PATH, "r", encoding="utf-8") as f:
         nb = nbformat.read(f, as_version=4)
 
-    required_keywords = [
-        "Runtime Environment Verification",
-        "Google Drive Mount",
-        "Clone Repository",
-        "Install Dependencies",
-        "Mount Private Google Drive",
-        "Verify Bundle Integrity",
-        "Dry-Run Experiment Matrix",
-        "EXECUTION GATE",
-        "GPU Gate",
-        "Stage 1 Training Loop",
-        "Artifact Verification",
-        "Stage 2 Eligibility",
-        "Final Summary",
-        "GPU Environment Info",
-    ]
+    preflight_cell = nb.cells[2]
+    src = "".join(preflight_cell.source) if isinstance(preflight_cell.source, list) else preflight_cell.source
 
-    for keyword in required_keywords:
-        found = False
-        for cell in nb.cells:
-            if cell.cell_type == "code":
-                src = "".join(cell.source) if isinstance(cell.source, list) else cell.source
-                if keyword in src:
-                    found = True
-                    break
-        assert found, f"Required cell '{keyword}' not found"
+    assert "chunk_size" in src or "1024 * 1024" in src
+    assert "f.read(chunk_size)" in src or "read(chunk_size)" in src
+    # Must not do unchunked f.read() on the whole file
+    assert "f.read()" not in src
+
+
+@pytest.mark.skipif(not IPYTHON_AVAILABLE, reason="IPython not installed")
+def test_sealed_artifacts_configured():
+    """Test Cell 1 configures the three sealed artifacts with correct hashes."""
+    with open(CANONICAL_NOTEBOOK_PATH, "r", encoding="utf-8") as f:
+        nb = nbformat.read(f, as_version=4)
+
+    config_cell = nb.cells[1]
+    src = "".join(config_cell.source) if isinstance(config_cell.source, list) else config_cell.source
+
+    assert "phase_4c1_code_79bb115.tar.gz" in src
+    assert "5e775a7708d1555bf22f56dceb5358e26e07dd224c4b6186f575aff4d2b590d5" in src
+    assert "phase_4c1_binary_n250_reusable.tar" in src
+    assert "d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27" in src
+    assert "phase_4c1_t4_execute_all_stage1.sh" in src
+    assert "deb3f04dd7c1039c4f3248f98a27f4eaf8e11f206a218125e949e5869da8ce05" in src
+
+
+@pytest.mark.skipif(not IPYTHON_AVAILABLE, reason="IPython not installed")
+def test_execution_cell_invokes_operator():
+    """Test Cell 3 calls the operator script with check=True when EXECUTE=True."""
+    with open(CANONICAL_NOTEBOOK_PATH, "r", encoding="utf-8") as f:
+        nb = nbformat.read(f, as_version=4)
+
+    exec_cell = nb.cells[3]
+    src = "".join(exec_cell.source) if isinstance(exec_cell.source, list) else exec_cell.source
+
+    assert "subprocess.run" in src
+    assert "phase_4c1_t4_execute_all_stage1.sh" in src
+    assert "check=True" in src
+    assert "DRY-RUN" in src
+
+
+@pytest.mark.skipif(not IPYTHON_AVAILABLE, reason="IPython not installed")
+def test_clean_cells_no_outputs_or_exec_counts():
+    """Test all code cells have execution_count None and outputs empty."""
+    with open(CANONICAL_NOTEBOOK_PATH, "r", encoding="utf-8") as f:
+        nb = nbformat.read(f, as_version=4)
+
+    for i, cell in enumerate(nb.cells):
+        if cell.cell_type == "code":
+            assert cell.execution_count is None, f"Cell {i} execution_count must be None"
+            assert cell.outputs == [], f"Cell {i} outputs must be empty list"
 
 
 @pytest.mark.skipif(not IPYTHON_AVAILABLE, reason="IPython not installed")
 def test_code_cells_compile():
-    """Test each code cell compiles after IPython magic transformation."""
-    with open(NOTEBOOK_PATH, "r", encoding="utf-8") as f:
+    """Test each code cell compiles without syntax errors."""
+    with open(CANONICAL_NOTEBOOK_PATH, "r", encoding="utf-8") as f:
         nb = nbformat.read(f, as_version=4)
-
-    shell = InteractiveShell.instance()
-    transformer = TransformerManager()
 
     for i, cell in enumerate(nb.cells):
         if cell.cell_type == "code":
             src = "".join(cell.source) if isinstance(cell.source, list) else cell.source
-            # Transform IPython magics to valid Python
-            transformed = transformer.transform_cell(src)
-            # Remove shell commands (!pip, !cmd)
-            lines = []
-            for line in transformed.split("\n"):
-                if not line.strip().startswith("!"):
-                    lines.append(line)
-            clean_src = "\n".join(lines)
-
             try:
-                compile(clean_src, f"<cell {i}>", "exec")
+                compile(src, f"<cell {i}>", "exec")
             except SyntaxError as e:
-                pytest.fail(f"Cell {i} syntax error: {e}\nSource:\n{clean_src[:500]}")
+                pytest.fail(f"Cell {i} syntax error: {e}\nSource:\n{src[:500]}")
 
 
 if __name__ == "__main__":

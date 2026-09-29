@@ -1,10 +1,10 @@
 {
   "pre_execution_verdict": {
     "schema_version": "1.0.0",
-    "phase": "Phase 4C.1C.0D.1",
+    "phase": "Phase 4C.1C.0D.2",
     "verdict": "GO",
-    "verdict_rationale": "All pre-execution gates pass without exception: receipt cardinality is reconciled with physical assets, operator static assertion count is 18/18 PASS, execution snapshot binding 79bb115 is intact with zero executable code changes, notebook V2 compiles and fails closed, training runs remain 0, and locked-test accesses remain 0.",
-    "timestamp_utc": "2026-09-29T17:34:52.289146+00:00",
+    "verdict_rationale": "All pre-execution gates pass without exception: receipt cardinality is reconciled with physical assets, operator static assertion count is 18/18 PASS, execution snapshot binding 79bb115 is intact with zero executable code changes, single canonical notebook compiles and fails closed, duplicate notebook is removed, training runs remain 0, and locked-test accesses remain 0.",
+    "timestamp_utc": "2026-09-29T17:55:00.000000+00:00",
     "gates": {
       "cardinality_reconciliation": {
         "status": "PASS",
@@ -51,17 +51,18 @@
         "executable_code_changes_since_snapshot": 0,
         "code_archive_stale": false
       },
-      "colab_notebook_v2": {
+      "canonical_colab_notebook": {
         "status": "PASS",
-        "path": "notebooks/phase_4c1_learning_curve_colab_v2.ipynb",
-        "bytes": 10775,
-        "sha256": "b3f05513987ed265a38229d8b62350b584eeb1038728bae7d442a31132e97b48",
+        "path": "notebooks/phase_4c1_learning_curve_colab.ipynb",
+        "bytes": 6427,
+        "sha256": "681a57af8b11a377ab4bece4ca80ff0f707ee79a01f4c5acc1502c9db66d6902",
+        "duplicate_notebook_removed": true,
         "all_code_cells_compiled": true,
         "default_execute_false": true,
         "dry_run_training_runs": 0,
+        "locked_test_accesses": 0,
         "fail_closed_on_missing_file": true,
         "fail_closed_on_sha_mismatch": true,
-        "historical_notebook_untouched": true,
         "historical_notebook_sha256": "f26576cb70b6c892faaade7b225872d4bafbcfe1424b64df29564dd9e1cd28b9"
       },
       "scientific_honesty": {
@@ -82,7 +83,7 @@
       "target_directory": "/content/forensics-transfer",
       "execution_options": {
         "cli_option": "bash /content/forensics-transfer/phase_4c1_t4_execute_all_stage1.sh",
-        "notebook_option": "Open notebooks/phase_4c1_learning_curve_colab_v2.ipynb in Google Colab T4 and set EXECUTE = True"
+        "notebook_option": "Open notebooks/phase_4c1_learning_curve_colab.ipynb in Google Colab T4 and set EXECUTE = True"
       }
     }
   }
