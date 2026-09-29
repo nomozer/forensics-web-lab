@@ -19,9 +19,10 @@ from __future__ import annotations
 import csv
 import hashlib
 from collections import defaultdict
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple
+from typing import Any
 
 
 def compute_stable_source_offset(source_id: str) -> int:
@@ -46,8 +47,8 @@ class ImageVariant:
     variant_type: str  # e.g., "orig_native", "orig_512", "orig_1024", "sd2_bbox_0", etc.
     variant_idx: int
     resolution_bucket: str = "native"  # "native", "512", or "1024"
-    edit_type: Optional[str] = None  # "bbox", "segm", or None
-    mask_path: Optional[str] = None
+    edit_type: str | None = None  # "bbox", "segm", or None
+    mask_path: str | None = None
 
 
 @dataclass
@@ -58,15 +59,15 @@ class SourcePairInstance:
     category: str
     partition: str
     upstream_split: str
-    authentic_variants: List[ImageVariant] = field(default_factory=list)
-    edited_variants: List[ImageVariant] = field(default_factory=list)
-    lc_flags: Dict[str, bool] = field(default_factory=dict)
+    authentic_variants: list[ImageVariant] = field(default_factory=list)
+    edited_variants: list[ImageVariant] = field(default_factory=list)
+    lc_flags: dict[str, bool] = field(default_factory=dict)
 
 
 def discover_source_instances_from_manifest(
     manifest_path: str | Path,
-    repo_root: Optional[str | Path] = None,
-) -> List[SourcePairInstance]:
+    repo_root: str | Path | None = None,
+) -> list[SourcePairInstance]:
     """
     Loads source instances from manifest_pilot_a_option_p.csv, discovering
     all available authentic and edited variants for each source on disk.
@@ -74,7 +75,7 @@ def discover_source_instances_from_manifest(
     manifest_p = Path(manifest_path)
     root = Path(repo_root) if repo_root else manifest_p.parents[4]
 
-    instances: List[SourcePairInstance] = []
+    instances: list[SourcePairInstance] = []
 
     with open(manifest_p, "r", encoding="utf-8") as f:
         reader = csv.DictReader(f)
@@ -156,6 +157,26 @@ def discover_source_instances_from_manifest(
                             edit_type=None,
                         )
                     )
+            else:
+                # Flat bundle root fallback
+                auth_fn = Path(row["authentic_path"]).name if row.get("authentic_path") else f"{int_id}_orig.png"
+                p_flat = root / auth_fn
+                if p_flat.exists():
+                    inst.authentic_variants.append(
+                        ImageVariant(
+                            path=str(p_flat.relative_to(root)).replace("\\", "/"),
+                            sha256=row.get("authentic_sha256", ""),
+                            label="authentic",
+                            source_id=source_id,
+                            instance_id=instance_id,
+                            category=category,
+                            partition=partition,
+                            variant_type="orig_native",
+                            variant_idx=0,
+                            resolution_bucket="native",
+                            edit_type=None,
+                        )
+                    )
 
             # Discover edited variants on disk
             # In TGIF Option P (Case B), all 6 edited variants (3 bbox, 3 segm)
@@ -185,6 +206,26 @@ def discover_source_instances_from_manifest(
                                     mask_path=str(mask_p.relative_to(root)).replace("\\", "/") if mask_p.exists() else None,
                                 )
                             )
+            else:
+                # Flat bundle root fallback
+                edit_fn = Path(row["canonical_edit_path"]).name if row.get("canonical_edit_path") else None
+                if edit_fn and (root / edit_fn).exists():
+                    p_flat_edit = root / edit_fn
+                    inst.edited_variants.append(
+                        ImageVariant(
+                            path=str(p_flat_edit.relative_to(root)).replace("\\", "/"),
+                            sha256=row.get("canonical_edit_sha256", ""),
+                            label="ai_edited",
+                            source_id=source_id,
+                            instance_id=instance_id,
+                            category=category,
+                            partition=partition,
+                            variant_type="sd2_canonical",
+                            variant_idx=0,
+                            resolution_bucket="native",
+                            edit_type="canonical",
+                        )
+                    )
 
             instances.append(inst)
 
@@ -216,7 +257,7 @@ class PairAwareSampler:
         self.seed = seed
         self.shuffle_epoch = shuffle_epoch
         # Precompute stable offsets for each source_id
-        self._source_offsets: Dict[str, int] = {
+        self._source_offsets: dict[str, int] = {
             inst.source_id: compute_stable_source_offset(inst.source_id)
             for inst in self.instances
         }
@@ -224,7 +265,7 @@ class PairAwareSampler:
     def __len__(self) -> int:
         return len(self.instances) * 2
 
-    def get_epoch_pairs(self, epoch: int) -> List[Tuple[ImageVariant, ImageVariant]]:
+    def get_epoch_pairs(self, epoch: int) -> list[tuple[ImageVariant, ImageVariant]]:
         """
         Returns list of (authentic_variant, edited_variant) pairs for the given epoch.
         Guarantees:
@@ -232,7 +273,7 @@ class PairAwareSampler:
         - auth_v.resolution_bucket == edit_v.resolution_bucket
         - edit types and resolutions cycle in a balanced, deterministic pattern
         """
-        pairs: List[Tuple[ImageVariant, ImageVariant]] = []
+        pairs: list[tuple[ImageVariant, ImageVariant]] = []
 
         for inst in self.instances:
             offset = self._source_offsets[inst.source_id]
@@ -273,10 +314,10 @@ class PairAwareSampler:
 
         return pairs
 
-    def get_epoch_samples(self, epoch: int) -> List[ImageVariant]:
+    def get_epoch_samples(self, epoch: int) -> list[ImageVariant]:
         """Returns the flattened list of samples for the specified epoch."""
         pairs = self.get_epoch_pairs(epoch)
-        samples: List[ImageVariant] = []
+        samples: list[ImageVariant] = []
         for auth_v, edit_v in pairs:
             samples.append(auth_v)
             samples.append(edit_v)
@@ -291,20 +332,20 @@ class PairAwareSampler:
 
 
 def aggregate_predictions_by_source(
-    predictions: Sequence[Dict[str, Any]],
+    predictions: Sequence[dict[str, Any]],
     aggregation_method: str = "mean",
-) -> Dict[str, Dict[str, Any]]:
+) -> dict[str, dict[str, Any]]:
     """
     Aggregates model predictions across multiple variants of the same source_id
     before computing primary scientific evaluation metrics.
 
     Ensures that unique source_id is the primary statistical unit of analysis.
     """
-    grouped: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+    grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for p in predictions:
         grouped[p["source_id"]].append(p)
 
-    aggregated: Dict[str, Dict[str, Any]] = {}
+    aggregated: dict[str, dict[str, Any]] = {}
     for sid, items in grouped.items():
         scores = [float(item["score"]) for item in items]
 

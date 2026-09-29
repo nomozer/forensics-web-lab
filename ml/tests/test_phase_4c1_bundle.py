@@ -9,6 +9,7 @@ import tempfile
 import shutil
 import json
 import csv
+import hashlib
 from pathlib import Path
 import sys
 
@@ -18,15 +19,23 @@ sys.path.insert(0, str(REPO_ROOT))
 
 from ml.datasets.export_phase_4c1_bundle import (
     create_smoke_bundle,
+    create_reusable_n250_bundle,
     select_smoke_source_ids,
     create_bundle_receipt,
     compute_sha256,
     verify_file,
+    package_tar_archive,
 )
 from ml.datasets.validate_phase_4c1_bundle import (
     validate_file,
     validate_locked_test_exclusion,
     validate_bundle_receipt,
+    validate_cohort_invariance,
+    validate_class_pairs_and_files,
+    validate_inventory_containment,
+    validate_clean_paths_in_bundle,
+    validate_bundle_archive,
+    validate_full_bundle,
     compute_sha256 as validator_compute_sha256,
 )
 
@@ -416,6 +425,231 @@ class TestExporterCLI:
 
             assert result.returncode == 0, f"Validator failed: {result.stderr}"
             assert "ALL VALIDATIONS PASSED" in result.stdout
+
+
+class TestFailClosedReusableValidator:
+    """Fail-closed validation and fault injection tests for the reusable N250 bundle."""
+
+    @pytest.fixture
+    def reusable_bundle_dir(self, tmp_path):
+        """Fixture that creates a synthetic minimal reusable bundle with valid structure."""
+        bundle_dir = tmp_path / "n250_bundle"
+        bundle_dir.mkdir()
+
+        # Build 250 dev rows and 91 val rows
+        fieldnames = [
+            "source_id", "instance_id", "category", "upstream_split",
+            "partition", "lc_n50", "lc_n100", "lc_n250",
+            "authentic_path", "canonical_edit_path",
+        ]
+
+        rows = []
+        # 250 dev rows
+        for i in range(1, 251):
+            sid = f"{i:012d}"
+            rows.append({
+                "source_id": sid,
+                "instance_id": f"cat_{sid}",
+                "category": "cat",
+                "upstream_split": "validation",
+                "partition": "development_train",
+                "lc_n50": "True" if i <= 50 else "False",
+                "lc_n100": "True" if i <= 100 else "False",
+                "lc_n250": "True",
+                "authentic_path": f"data/orig/{i}_orig.png",
+                "canonical_edit_path": f"data/sd2/{i}_mask_bbox.png",
+            })
+            # Create dummy images
+            (bundle_dir / f"{i}_orig.png").write_bytes(f"auth_{i}".encode())
+            (bundle_dir / f"{i}_mask_bbox.png").write_bytes(f"edit_{i}".encode())
+
+        # 91 val rows
+        for i in range(251, 342):
+            sid = f"{i:012d}"
+            rows.append({
+                "source_id": sid,
+                "instance_id": f"cat_{sid}",
+                "category": "cat",
+                "upstream_split": "validation",
+                "partition": "inner_validation",
+                "lc_n50": "False",
+                "lc_n100": "False",
+                "lc_n250": "False",
+                "authentic_path": f"data/orig/{i}_orig.png",
+                "canonical_edit_path": f"data/sd2/{i}_mask_bbox.png",
+            })
+            (bundle_dir / f"{i}_orig.png").write_bytes(f"auth_{i}".encode())
+            (bundle_dir / f"{i}_mask_bbox.png").write_bytes(f"edit_{i}".encode())
+
+        manifest_path = bundle_dir / "manifest_pilot_a_option_p.csv"
+        with open(manifest_path, "w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(rows)
+
+        # Config
+        (bundle_dir / "pilot_a_binary_preregistered.yaml").write_text(
+            "schema_version: '1.0.0'\nconfig_id: 'pilot_a'\nlearning_curve: {}\nhyperparameters: {}\n"
+        )
+
+        # Receipt
+        file_hashes = {}
+        for f in bundle_dir.iterdir():
+            if f.is_file():
+                file_hashes[f.name] = compute_sha256(f)
+
+        bundle_hash = hashlib.sha256()
+        for fn in sorted(file_hashes.keys()):
+            bundle_hash.update(file_hashes[fn].encode())
+
+        receipt = {
+            "schema_version": "1.0.0",
+            "phase": "4C.1",
+            "bundle_type": "reusable_n250",
+            "bundle_name": "phase_4c1_binary_n250_reusable.tar",
+            "total_files": len(file_hashes),
+            "total_bytes": sum(f.stat().st_size for f in bundle_dir.glob("*") if f.is_file()),
+            "bundle_sha256": bundle_hash.hexdigest(),
+            "manifest_sha256": file_hashes["manifest_pilot_a_option_p.csv"],
+            "locked_test_rows": 0,
+            "locked_test_files": 0,
+            "locked_test_source_ids": 0,
+            "file_hashes": file_hashes,
+        }
+        with open(bundle_dir / "bundle_receipt.json", "w", encoding="utf-8") as rf:
+            json.dump(receipt, rf, indent=2)
+
+        return bundle_dir
+
+    def test_reusable_bundle_passes_all_validations(self, reusable_bundle_dir):
+        """Test valid reusable bundle passes all fail-closed validations."""
+        passed, errors = validate_full_bundle(reusable_bundle_dir, is_reusable=True)
+        assert passed is True, f"Validation failed unexpectedly: {errors}"
+        assert len(errors) == 0
+
+    def test_fail_closed_on_locked_test_row_injection(self, reusable_bundle_dir):
+        """Fault injection: injecting locked_test row must fail validator."""
+        manifest_path = reusable_bundle_dir / "manifest_pilot_a_option_p.csv"
+        with open(manifest_path, "a", newline="", encoding="utf-8") as f:
+            w = csv.writer(f)
+            w.writerow(["000000000999", "cat_999", "cat", "test", "locked_test", "False", "False", "False", "a.png", "b.png"])
+
+        passed, errors = validate_full_bundle(reusable_bundle_dir, is_reusable=True)
+        assert passed is False
+        assert any("locked_test" in e.lower() for e in errors)
+
+    def test_fail_closed_on_dev_val_overlap(self, reusable_bundle_dir):
+        """Fault injection: overlapping dev and val source ID must fail."""
+        ci_res = validate_cohort_invariance(reusable_bundle_dir, is_reusable=True)
+        assert ci_res["passed"] is True
+
+        # Overwrite manifest to make source 000000000001 appear in both dev and val
+        manifest_path = reusable_bundle_dir / "manifest_pilot_a_option_p.csv"
+        lines = manifest_path.read_text(encoding="utf-8").splitlines()
+        # Change row 252 (first val row) to have source_id 000000000001
+        new_lines = [lines[0]]
+        for idx, line in enumerate(lines[1:], 1):
+            if idx == 251:  # first inner_val row
+                parts = line.split(",")
+                parts[0] = "000000000001"
+                new_lines.append(",".join(parts))
+            else:
+                new_lines.append(line)
+        manifest_path.write_text("\n".join(new_lines), encoding="utf-8")
+
+        ci_res = validate_cohort_invariance(reusable_bundle_dir, is_reusable=True)
+        assert ci_res["passed"] is False
+        assert any("overlap" in e.lower() for e in ci_res["errors"])
+
+    def test_fail_closed_on_nesting_violation(self, reusable_bundle_dir):
+        """Fault injection: N50 having an element not in N100 must fail."""
+        manifest_path = reusable_bundle_dir / "manifest_pilot_a_option_p.csv"
+        with open(manifest_path, "r", encoding="utf-8") as f:
+            rows = list(csv.DictReader(f))
+        # Turn off lc_n100 for row 0 (which has lc_n50=True)
+        rows[0]["lc_n100"] = "False"
+
+        with open(manifest_path, "w", newline="", encoding="utf-8") as f:
+            w = csv.DictWriter(f, fieldnames=rows[0].keys())
+            w.writeheader()
+            w.writerows(rows)
+
+        ci_res = validate_cohort_invariance(reusable_bundle_dir, is_reusable=True)
+        assert ci_res["passed"] is False
+        assert any("nesting" in e.lower() or "subset" in e.lower() for e in ci_res["errors"])
+
+    def test_fail_closed_on_missing_image_file(self, reusable_bundle_dir):
+        """Fault injection: missing image file referenced in manifest must fail."""
+        img = reusable_bundle_dir / "1_orig.png"
+        img.unlink()
+
+        passed, errors = validate_full_bundle(reusable_bundle_dir, is_reusable=True)
+        assert passed is False
+        assert any("missing" in e.lower() for e in errors)
+
+    def test_fail_closed_on_untracked_inventory_file(self, reusable_bundle_dir):
+        """Fault injection: untracked file in bundle directory must fail inventory check."""
+        rogue_file = reusable_bundle_dir / "untracked_payload.bin"
+        rogue_file.write_bytes(b"malicious or accidental content")
+
+        ic_res = validate_inventory_containment(reusable_bundle_dir, is_reusable=True)
+        assert ic_res["passed"] is False
+        assert any("untracked" in e.lower() for e in ic_res["errors"])
+
+    def test_fail_closed_on_source_id_filename_mismatch(self, reusable_bundle_dir):
+        """Fault injection: image filename with wrong source_id prefix must fail."""
+        manifest_path = reusable_bundle_dir / "manifest_pilot_a_option_p.csv"
+        with open(manifest_path, "r", encoding="utf-8") as f:
+            rows = list(csv.DictReader(f))
+        # Set row 0 authentic_path to point to image of source 2
+        rows[0]["authentic_path"] = "data/orig/2_orig.png"
+
+        with open(manifest_path, "w", newline="", encoding="utf-8") as f:
+            w = csv.DictWriter(f, fieldnames=rows[0].keys())
+            w.writeheader()
+            w.writerows(rows)
+
+        cp_res = validate_class_pairs_and_files(reusable_bundle_dir)
+        assert cp_res["passed"] is False
+        assert any("mismatch" in e.lower() or "inconsistent" in e.lower() for e in cp_res["errors"])
+
+    def test_fail_closed_on_windows_path_injection(self, reusable_bundle_dir):
+        """Fault injection: absolute Windows path in manifest must fail."""
+        manifest_path = reusable_bundle_dir / "manifest_pilot_a_option_p.csv"
+        content = manifest_path.read_text(encoding="utf-8")
+        manifest_path.write_text(content.replace("data/orig/1_orig.png", "C:\\Users\\admin\\1_orig.png"), encoding="utf-8")
+
+        p_res = validate_clean_paths_in_bundle(reusable_bundle_dir)
+        assert p_res["passed"] is False
+        assert any("windows" in e.lower() for e in p_res["errors"])
+
+    def test_fail_closed_on_manifest_hash_mismatch(self, reusable_bundle_dir):
+        """Fault injection: modifying manifest without updating receipt hash must fail."""
+        manifest_path = reusable_bundle_dir / "manifest_pilot_a_option_p.csv"
+        with open(manifest_path, "a", encoding="utf-8") as f:
+            f.write("# comment\n")
+
+        rc_res = validate_bundle_receipt(reusable_bundle_dir)
+        assert rc_res["passed"] is False
+        assert any("mismatch" in e.lower() for e in rc_res["errors"])
+
+    def test_validate_bundle_archive(self, tmp_path, reusable_bundle_dir):
+        """Test packaging tar archive and validating its hash and members."""
+        tar_path = tmp_path / "test_reusable_bundle.tar"
+        tar_bytes, tar_sha = package_tar_archive(reusable_bundle_dir, tar_path)
+
+        assert tar_path.exists()
+        assert tar_bytes > 0
+        assert len(tar_sha) == 64
+
+        # Validate archive
+        ar_res = validate_bundle_archive(tar_path, expected_sha256=tar_sha)
+        assert ar_res["passed"] is True
+        assert len(ar_res["errors"]) == 0
+
+        # Mismatch test
+        ar_bad = validate_bundle_archive(tar_path, expected_sha256="0" * 64)
+        assert ar_bad["passed"] is False
 
 
 if __name__ == "__main__":

@@ -193,6 +193,86 @@ class TestDataLoading:
             assert val_loader is not None
             assert len(train_loader) > 0
 
+    def test_reusable_bundle_three_sizes_and_frozen_cohorts(self):
+        """Test runner supports N=50, 100, 250 with frozen cohort invariance across seeds."""
+        from ml.datasets.export_phase_4c1_bundle import create_reusable_n250_bundle
+        from ml.training.run_phase_4c1 import build_instances_for_training, build_instances_for_validation
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir) / "reusable_bundle"
+            bundle = create_reusable_n250_bundle(REPO_ROOT, output_dir)
+
+            output_dir.mkdir(parents=True, exist_ok=True)
+            for f in bundle["files"]:
+                src = Path(f["source_path"])
+                dst = output_dir / f["name"]
+                shutil.copy2(src, dst)
+
+            # Test 3 sizes for seed 42
+            insts_50 = build_instances_for_training(output_dir, sample_size=50, seed=42)
+            insts_100 = build_instances_for_training(output_dir, sample_size=100, seed=42)
+            insts_250 = build_instances_for_training(output_dir, sample_size=250, seed=42)
+
+            assert len(insts_50) == 50
+            assert len(insts_100) == 100
+            assert len(insts_250) == 250
+
+            s50 = [inst.source_id for inst in insts_50]
+            s100 = [inst.source_id for inst in insts_100]
+            s250 = [inst.source_id for inst in insts_250]
+
+            # Invariance across seeds: cohort sources MUST be identical regardless of seed
+            for seed in [1337, 2025, 3407, 9001]:
+                insts_50_seed = build_instances_for_training(output_dir, sample_size=50, seed=seed)
+                insts_100_seed = build_instances_for_training(output_dir, sample_size=100, seed=seed)
+                insts_250_seed = build_instances_for_training(output_dir, sample_size=250, seed=seed)
+
+                assert [inst.source_id for inst in insts_50_seed] == s50
+                assert [inst.source_id for inst in insts_100_seed] == s100
+                assert [inst.source_id for inst in insts_250_seed] == s250
+
+            # Nested cohort invariance
+            set50 = set(s50)
+            set100 = set(s100)
+            set250 = set(s250)
+            assert set50.issubset(set100), "N50 must be subset of N100"
+            assert set100.issubset(set250), "N100 must be subset of N250"
+
+            # Validation instances
+            val_insts = build_instances_for_validation(output_dir)
+            assert len(val_insts) == 91
+            val_sids = {inst.source_id for inst in val_insts}
+            assert len(set250 & val_sids) == 0, "Development and validation must have 0 overlap"
+
+    def test_create_data_loaders_for_reusable_bundle(self):
+        """Test data loader sample counts for reusable bundle across all sizes."""
+        from ml.datasets.export_phase_4c1_bundle import create_reusable_n250_bundle
+        from ml.training.run_phase_4c1 import (
+            build_instances_for_training,
+            build_instances_for_validation,
+            create_data_loaders,
+        )
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir) / "reusable_bundle"
+            bundle = create_reusable_n250_bundle(REPO_ROOT, output_dir)
+            output_dir.mkdir(parents=True, exist_ok=True)
+            for f in bundle["files"]:
+                shutil.copy2(f["source_path"], output_dir / f["name"])
+
+            val_insts = build_instances_for_validation(output_dir)
+
+            for size, expected_train_samples in [(50, 100), (100, 200), (250, 500)]:
+                train_insts = build_instances_for_training(output_dir, sample_size=size)
+                train_loader, val_loader = create_data_loaders(
+                    train_instances=train_insts,
+                    val_instances=val_insts,
+                    batch_size=32,
+                    repo_root=str(output_dir),
+                )
+                assert len(train_loader.dataset) == expected_train_samples
+                assert len(val_loader.dataset) == 182
+
 
 @pytest.mark.skipif(not RUNNER_AVAILABLE, reason="Training runner dependencies not available")
 class TestBaselines:

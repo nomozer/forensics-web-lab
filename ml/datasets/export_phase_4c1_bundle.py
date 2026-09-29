@@ -2,17 +2,23 @@
 """
 Phase 4C.1 Learning Curve Bundle Exporter
 
-Exports the complete dataset bundle required for Colab execution:
-- Option P archives (4 archives)
-- Manifest CSV
-- Checkpoint receipt
-- Preregistration config
-- Locked-test seal (excluded from bundle)
+Exports the dataset bundle required for Colab execution:
+1. Reusable N=250 bundle (default / --reusable-n250):
+   - Exactly 250 unique development_train sources
+   - Exactly 91 unique inner_validation sources
+   - 0 locked_test sources/rows/files
+   - Exactly 682 image files (341 authentic + 341 canonical edited)
+   - Manifest with frozen lc_n50, lc_n100, lc_n250 cohort flags
+   - Nested cohort invariance: N50 subset of N100 subset of N250
+   - Preregistration config
+   - Detailed bundle receipt with audits
+2. Smoke bundle (--smoke-only):
+   - N=50 development_train sources + 91 inner_validation sources
 
 Usage:
-    python export_phase_4c1_bundle.py --dry-run
-    python export_phase_4c1_bundle.py --execute --output /content/bundle
-    python export_phase_4c1_bundle.py --execute --output ./phase_4c1_bundle --sample-size 50
+    python -m ml.datasets.export_phase_4c1_bundle --reusable-n250 --execute --output ./phase_4c1_n250_bundle
+    python -m ml.datasets.export_phase_4c1_bundle --reusable-n250 --execute --output ./phase_4c1_n250_bundle --archive ./phase_4c1_binary_n250_reusable.tar
+    python -m ml.datasets.export_phase_4c1_bundle --smoke-only --sample-size 50 --execute --output ./phase_4c1_smoke_bundle
 """
 
 from __future__ import annotations
@@ -21,61 +27,23 @@ import argparse
 import csv
 import hashlib
 import json
-import os
 import random
 import shutil
 import sys
-from datetime import datetime
+import tarfile
+import tempfile
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
-# Full Option P archives
-FULL_ARCHIVES = [
-    {
-        "name": "orig_validation.tar.gz",
-        "path": "data/research/tgif/orig/validation.tar.gz",
-        "expected_bytes": 859947874,
-        "expected_sha256": "c9f02a343a5ac759...",
-    },
-    {
-        "name": "orig_testing.tar.gz",
-        "path": "data/research/tgif/orig/testing.tar.gz",
-        "expected_bytes": 806962390,
-        "expected_sha256": "8020c2f2080b349f...",
-    },
-    {
-        "name": "sd2-sp_validation.tar.gz",
-        "path": "data/research/tgif/sd2-sp/validation.tar.gz",
-        "expected_bytes": 2172017290,
-        "expected_sha256": "bd9eb4399f60166a...",
-    },
-    {
-        "name": "sd2-sp_testing.tar.gz",
-        "path": "data/research/tgif/sd2-sp/testing.tar.gz",
-        "expected_bytes": 2040575228,
-        "expected_sha256": "c346af3cb85b00ac...",
-    },
-]
-
-MANIFEST = {
-    "path": "data/research/tgif/manifests/manifest_pilot_a_option_p.csv",
-    "name": "manifest_pilot_a_option_p.csv",
-}
-
-CHECKPOINT_RECEIPT = {
-    "path": "research/evidence/phase-4c.0/checkpoint-receipt.json",
-    "name": "checkpoint-receipt.json",
-}
-
-PREREGISTRATION = {
-    "path": "ml/configs/pilot_a_binary_preregistered.yaml",
-    "name": "pilot_a_binary_preregistered.yaml",
-}
+MANIFEST_REL_PATH = "data/research/tgif/manifests/manifest_pilot_a_option_p.csv"
+PREREG_REL_PATH = "ml/configs/pilot_a_binary_preregistered.yaml"
 
 
 def compute_sha256(file_path: Path) -> str:
+    """Compute SHA-256 hash of a file."""
     h = hashlib.sha256()
     with open(file_path, "rb") as f:
         while chunk := f.read(65536):
@@ -83,14 +51,15 @@ def compute_sha256(file_path: Path) -> str:
     return h.hexdigest()
 
 
-def verify_file(file_info: Dict[str, Any], repo_root: Path) -> Dict[str, Any]:
+def verify_file(file_info: dict[str, Any], repo_root: Path) -> dict[str, Any]:
+    """Verify file existence, size, and hash."""
     if "source_path" in file_info:
         path = Path(file_info["source_path"])
     else:
         path = repo_root / file_info["path"]
     result = {
         "name": file_info["name"],
-        "path": str(file_info["path"]),
+        "path": str(file_info.get("path", path)),
         "exists": path.exists(),
         "size_bytes": 0,
         "sha256": "",
@@ -100,9 +69,9 @@ def verify_file(file_info: Dict[str, Any], repo_root: Path) -> Dict[str, Any]:
     if path.exists():
         result["size_bytes"] = path.stat().st_size
         result["sha256"] = compute_sha256(path)
-        if "expected_bytes" in file_info:
+        if "expected_bytes" in file_info and file_info["expected_bytes"] is not None:
             result["size_match"] = result["size_bytes"] == file_info["expected_bytes"]
-        if "expected_sha256" in file_info:
+        if "expected_sha256" in file_info and file_info["expected_sha256"] is not None:
             expected = file_info["expected_sha256"]
             if len(expected) == 64:
                 result["sha256_match"] = result["sha256"] == expected
@@ -115,21 +84,21 @@ def select_smoke_source_ids(
     repo_root: Path,
     sample_size: int = 50,
     seed: int = 42,
-) -> tuple[Set[str], Set[str]]:
+) -> tuple[set[str], set[str]]:
     """Select N development_train source_ids and return all inner_validation source_ids.
 
     Returns:
         (selected_dev_source_ids, inner_val_source_ids)
     """
-    manifest_path = repo_root / "data" / "research" / "tgif" / "manifests" / "manifest_pilot_a_option_p.csv"
+    manifest_path = repo_root / MANIFEST_REL_PATH
 
-    dev_source_ids: Set[str] = set()
-    inner_val_source_ids: Set[str] = set()
+    dev_source_ids: set[str] = set()
+    inner_val_source_ids: set[str] = set()
 
     with open(manifest_path, "r", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
-            if row["partition"] == "development_train" and row["lc_n50"] == "True":
+            if row["partition"] == "development_train" and row.get("lc_n50") == "True":
                 dev_source_ids.add(row["source_id"])
             elif row["partition"] == "inner_validation":
                 inner_val_source_ids.add(row["source_id"])
@@ -137,10 +106,6 @@ def select_smoke_source_ids(
     dev_source_ids_list = sorted(dev_source_ids)
     rng = random.Random(seed)
     selected_dev = set(rng.sample(dev_source_ids_list, min(sample_size, len(dev_source_ids_list))))
-
-    print(f"[INFO] Available development_train (N=50): {len(dev_source_ids)} source_ids")
-    print(f"[INFO] Available inner_validation: {len(inner_val_source_ids)} source_ids")
-    print(f"[INFO] Selected {len(selected_dev)} source_ids for N={sample_size} (seed={seed})")
 
     # Verify no overlap
     overlap = selected_dev & inner_val_source_ids
@@ -155,20 +120,16 @@ def create_smoke_bundle(
     output_dir: Path,
     sample_size: int = 50,
     seed: int = 42,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Create a smoke-only bundle with N=50 training data + all inner_validation."""
-    print(f"[INFO] Creating smoke bundle for N={sample_size}, seed={seed}")
-
     selected_dev_ids, inner_val_ids = select_smoke_source_ids(repo_root, sample_size, seed)
 
-    # Load full manifest
-    manifest_path = repo_root / "data" / "research" / "tgif" / "manifests" / "manifest_pilot_a_option_p.csv"
+    manifest_path = repo_root / MANIFEST_REL_PATH
     with open(manifest_path, "r", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         all_rows = list(reader)
         fieldnames = reader.fieldnames
 
-    # Filter rows for selected development_train + all inner_validation
     filtered_rows = []
     dev_rows_count = 0
     val_rows_count = 0
@@ -180,30 +141,21 @@ def create_smoke_bundle(
             filtered_rows.append(row)
             val_rows_count += 1
 
-    print(f"[INFO] Development train rows: {dev_rows_count}")
-    print(f"[INFO] Inner validation rows: {val_rows_count}")
-    print(f"[INFO] Total filtered rows: {len(filtered_rows)}")
-
-    # Write smoke manifest
-    smoke_manifest_path = Path("/tmp") / f"manifest_smoke_n{sample_size}_seed{seed}.csv"
+    temp_dir = Path(tempfile.gettempdir())
+    smoke_manifest_path = temp_dir / f"manifest_smoke_n{sample_size}_seed{seed}.csv"
     with open(smoke_manifest_path, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(filtered_rows)
 
-    print(f"[INFO] Created smoke manifest: {smoke_manifest_path}")
-
-    # Collect image files for selected sources
     image_files = []
     for row in filtered_rows:
-        # Authentic image
         if row.get("authentic_path"):
             image_files.append({
                 "name": Path(row["authentic_path"]).name,
                 "path": row["authentic_path"],
                 "source_path": str(repo_root / row["authentic_path"]),
             })
-        # Canonical edited image
         if row.get("canonical_edit_path"):
             image_files.append({
                 "name": Path(row["canonical_edit_path"]).name,
@@ -211,7 +163,6 @@ def create_smoke_bundle(
                 "source_path": str(repo_root / row["canonical_edit_path"]),
             })
 
-    # Deduplicate by path
     seen = set()
     unique_images = []
     for img in image_files:
@@ -219,9 +170,6 @@ def create_smoke_bundle(
             seen.add(img["path"])
             unique_images.append(img)
 
-    print(f"[INFO] Unique image files to bundle: {len(unique_images)}")
-
-    # Return file list for bundle
     bundle_files = [
         {
             "path": "data/research/tgif/manifests/manifest_pilot_a_option_p.csv",
@@ -236,7 +184,7 @@ def create_smoke_bundle(
         {
             "path": "ml/configs/pilot_a_binary_preregistered.yaml",
             "name": "pilot_a_binary_preregistered.yaml",
-            "source_path": str(repo_root / "ml/configs/pilot_a_binary_preregistered.yaml"),
+            "source_path": str(repo_root / PREREG_REL_PATH if (repo_root / PREREG_REL_PATH).exists() else PREREG_REL_PATH),
         },
     ] + unique_images
 
@@ -251,222 +199,418 @@ def create_smoke_bundle(
     }
 
 
+def create_reusable_n250_bundle(
+    repo_root: Path,
+    output_dir: Path | None = None,
+) -> dict[str, Any]:
+    """Create the reusable N=250 dataset bundle for Phase 4C.1 learning curve.
+
+    Contains:
+    - 250 unique development_train sources (with lc_n50, lc_n100, lc_n250 flags intact)
+    - 91 unique inner_validation sources
+    - Exactly 0 locked_test sources/rows/paths
+    - Exactly 682 image files (341 authentic + 341 canonical edited)
+    - Nested cohort invariance: N50 subset of N100 subset of N250
+    - Zero development/validation source overlap
+    - Clean relative manifest and preregistration yaml
+    """
+    manifest_path = repo_root / MANIFEST_REL_PATH
+    if not manifest_path.exists():
+        raise FileNotFoundError(f"Manifest not found: {manifest_path}")
+
+    with open(manifest_path, "r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        all_rows = list(reader)
+        fieldnames = reader.fieldnames
+
+    dev_rows = [r for r in all_rows if r["partition"] == "development_train"]
+    val_rows = [r for r in all_rows if r["partition"] == "inner_validation"]
+    locked_rows = [r for r in all_rows if r["partition"] == "locked_test"]
+
+    # Verify partition cardinalities
+    if len(dev_rows) != 250:
+        raise ValueError(f"Expected exactly 250 development_train rows, got {len(dev_rows)}")
+    if len(val_rows) != 91:
+        raise ValueError(f"Expected exactly 91 inner_validation rows, got {len(val_rows)}")
+    if len(locked_rows) != 343:
+        raise ValueError(f"Expected exactly 343 locked_test rows in Option P, got {len(locked_rows)}")
+
+    dev_sources = {r["source_id"] for r in dev_rows}
+    val_sources = {r["source_id"] for r in val_rows}
+    locked_sources = {r["source_id"] for r in locked_rows}
+
+    if len(dev_sources) != 250:
+        raise ValueError(f"Expected 250 unique dev sources, got {len(dev_sources)}")
+    if len(val_sources) != 91:
+        raise ValueError(f"Expected 91 unique val sources, got {len(val_sources)}")
+
+    # Zero overlap check
+    overlap_dev_val = dev_sources & val_sources
+    if overlap_dev_val:
+        raise ValueError(f"Cross-partition source overlap detected: {overlap_dev_val}")
+    overlap_dev_locked = dev_sources & locked_sources
+    if overlap_dev_locked:
+        raise ValueError(f"Locked-test leakage into dev detected: {overlap_dev_locked}")
+    overlap_val_locked = val_sources & locked_sources
+    if overlap_val_locked:
+        raise ValueError(f"Locked-test leakage into val detected: {overlap_val_locked}")
+
+    # Nested cohort check
+    s50 = {r["source_id"] for r in dev_rows if r.get("lc_n50") == "True"}
+    s100 = {r["source_id"] for r in dev_rows if r.get("lc_n100") == "True"}
+    s250 = {r["source_id"] for r in dev_rows if r.get("lc_n250") == "True"}
+
+    if len(s50) != 50:
+        raise ValueError(f"Expected 50 sources in lc_n50, got {len(s50)}")
+    if len(s100) != 100:
+        raise ValueError(f"Expected 100 sources in lc_n100, got {len(s100)}")
+    if len(s250) != 250:
+        raise ValueError(f"Expected 250 sources in lc_n250, got {len(s250)}")
+
+    if not s50.issubset(s100):
+        raise ValueError("Cohort invariance violated: N50 is not a subset of N100")
+    if not s100.issubset(s250):
+        raise ValueError("Cohort invariance violated: N100 is not a subset of N250")
+
+    # Combine development_train and inner_validation (341 rows total)
+    bundle_rows = dev_rows + val_rows
+    if len(bundle_rows) != 341:
+        raise ValueError(f"Expected 341 bundle rows, got {len(bundle_rows)}")
+
+    # Write bundle manifest to temporary file
+    temp_dir = Path(tempfile.gettempdir())
+    bundle_manifest_path = temp_dir / "manifest_pilot_a_option_p_reusable_n250.csv"
+    with open(bundle_manifest_path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(bundle_rows)
+
+    # Collect image files
+    image_files = []
+    auth_count = 0
+    edit_count = 0
+
+    for r in bundle_rows:
+        auth_rel = r.get("authentic_path")
+        if not auth_rel:
+            raise ValueError(f"Missing authentic_path for source_id {r['source_id']}")
+        src_auth = repo_root / auth_rel
+        if not src_auth.exists():
+            raise FileNotFoundError(f"Authentic image file missing on disk: {src_auth}")
+
+        image_files.append({
+            "name": src_auth.name,
+            "path": auth_rel,
+            "source_path": str(src_auth),
+            "source_id": r["source_id"],
+            "label": "authentic",
+            "expected_sha256": r.get("authentic_sha256"),
+        })
+        auth_count += 1
+
+        edit_rel = r.get("canonical_edit_path")
+        if not edit_rel:
+            raise ValueError(f"Missing canonical_edit_path for source_id {r['source_id']}")
+        src_edit = repo_root / edit_rel
+        if not src_edit.exists():
+            raise FileNotFoundError(f"Canonical edit image file missing on disk: {src_edit}")
+
+        image_files.append({
+            "name": src_edit.name,
+            "path": edit_rel,
+            "source_path": str(src_edit),
+            "source_id": r["source_id"],
+            "label": "ai_edited",
+            "expected_sha256": r.get("canonical_edit_sha256"),
+        })
+        edit_count += 1
+
+    # Verify image count and uniqueness
+    seen_names = set()
+    unique_images = []
+    for img in image_files:
+        if img["name"] in seen_names:
+            raise ValueError(f"Duplicate image basename detected: {img['name']}")
+        seen_names.add(img["name"])
+        unique_images.append(img)
+
+    if len(unique_images) != 682:
+        raise ValueError(f"Expected 682 unique images, got {len(unique_images)}")
+
+    prereg_src = repo_root / PREREG_REL_PATH
+    if not prereg_src.exists():
+        raise FileNotFoundError(f"Preregistration config missing: {prereg_src}")
+
+    bundle_files = [
+        {
+            "path": "data/research/tgif/manifests/manifest_pilot_a_option_p.csv",
+            "name": "manifest_pilot_a_option_p.csv",
+            "source_path": str(bundle_manifest_path),
+        },
+        {
+            "path": "ml/configs/pilot_a_binary_preregistered.yaml",
+            "name": "pilot_a_binary_preregistered.yaml",
+            "source_path": str(prereg_src),
+        },
+    ] + unique_images
+
+    return {
+        "files": bundle_files,
+        "dev_source_ids": sorted(dev_sources),
+        "inner_val_source_ids": sorted(val_sources),
+        "manifest_path": str(bundle_manifest_path),
+        "dev_rows_count": 250,
+        "val_rows_count": 91,
+        "image_count": 682,
+        "auth_image_count": auth_count,
+        "edit_image_count": edit_count,
+        "n50_source_ids": sorted(s50),
+        "n100_source_ids": sorted(s100),
+        "n250_source_ids": sorted(s250),
+    }
+
+
 def create_bundle_receipt(
     bundle_dir: Path,
-    file_results: List[Dict],
-    metadata: Dict[str, Any],
-) -> Dict[str, Any]:
-    """Create bundle receipt with SHA-256 of all files."""
-    file_hashes = {}
+    file_results: list[dict[str, Any]],
+    metadata: dict[str, Any],
+) -> dict[str, Any]:
+    """Create comprehensive bundle receipt with SHA-256 and audits."""
+    file_hashes: dict[str, str] = {}
     total_bytes = 0
+    manifest_sha256 = ""
+
     for r in file_results:
         if r["exists"]:
             file_hashes[r["name"]] = r["sha256"]
             total_bytes += r["size_bytes"]
+            if r["name"] == "manifest_pilot_a_option_p.csv":
+                manifest_sha256 = r["sha256"]
 
-    # Compute bundle SHA-256
+    # Compute deterministic bundle digest
     bundle_hash = hashlib.sha256()
     for f in sorted(file_hashes.keys()):
         bundle_hash.update(file_hashes[f].encode())
     bundle_sha256 = bundle_hash.hexdigest()
 
-    return {
+    if "bundle_type" in metadata:
+        b_type = metadata["bundle_type"]
+    elif "sample_size" in metadata:
+        b_type = f"smoke_n{metadata['sample_size']}"
+    else:
+        b_type = "reusable_n250"
+
+    is_reusable = (b_type == "reusable_n250")
+
+    receipt = {
+        "schema_version": "1.0.0",
         "phase": "4C.1",
-        "bundle_type": f"smoke_n{metadata.get('sample_size', 50)}",
-        "created_at": datetime.utcnow().isoformat() + "Z",
-        "total_files": len([r for r in file_results if r["exists"]]),
+        "bundle_type": b_type,
+        "bundle_name": metadata.get("bundle_name", "phase_4c1_binary_n250_reusable.tar"),
+        "created_at_utc": datetime.now(UTC).isoformat(),
+        "total_files": len(file_hashes),
         "total_bytes": total_bytes,
         "bundle_sha256": bundle_sha256,
-        "file_hashes": file_hashes,
-        "metadata": metadata,
+        "manifest_sha256": manifest_sha256,
         "locked_test_rows": 0,
         "locked_test_files": 0,
         "locked_test_source_ids": 0,
-        "dev_source_count": metadata.get("dev_source_count", 0),
-        "val_source_count": metadata.get("val_source_count", 0),
-        "dev_rows_count": metadata.get("dev_rows_count", 0),
-        "val_rows_count": metadata.get("val_rows_count", 0),
+        "dev_source_count": metadata.get("dev_source_count", 250 if is_reusable else 50),
+        "val_source_count": metadata.get("val_source_count", 91),
+        "dev_rows_count": metadata.get("dev_rows_count", 250 if is_reusable else 50),
+        "val_rows_count": metadata.get("val_rows_count", 91),
         "image_count": metadata.get("image_count", 0),
+        "partition_audit": {
+            "development_train_sources": metadata.get("dev_source_count", 250),
+            "inner_validation_sources": metadata.get("val_source_count", 91),
+            "locked_test_sources": 0,
+            "development_train_rows": metadata.get("dev_rows_count", 250),
+            "inner_validation_rows": metadata.get("val_rows_count", 91),
+            "locked_test_rows": 0,
+            "cross_split_source_overlap": 0,
+        },
+        "cohort_invariance_audit": {
+            "n50_sources_count": len(metadata.get("n50_source_ids", [])) if is_reusable else metadata.get("sample_size", 50),
+            "n100_sources_count": len(metadata.get("n100_source_ids", [])) if is_reusable else 0,
+            "n250_sources_count": len(metadata.get("n250_source_ids", [])) if is_reusable else 0,
+            "n50_subset_of_n100": True if is_reusable else None,
+            "n100_subset_of_n250": True if is_reusable else None,
+            "validation_set_invariant": True,
+        },
+        "file_existence_audit": {
+            "total_images_in_bundle": metadata.get("image_count", 0),
+            "authentic_images_count": metadata.get("auth_image_count", metadata.get("image_count", 0) // 2),
+            "canonical_edit_images_count": metadata.get("edit_image_count", metadata.get("image_count", 0) // 2),
+            "missing_files_count": 0,
+        },
+        "class_balance_audit": {
+            "authentic_samples": metadata.get("auth_image_count", metadata.get("image_count", 0) // 2),
+            "ai_edited_samples": metadata.get("edit_image_count", metadata.get("image_count", 0) // 2),
+            "class_ratio": "1:1",
+        },
+        "license_track_declaration": {
+            "track": "Research Track",
+            "license": "TGIF CC BY-SA 4.0 / MS-COCO CC BY 4.0",
+            "commercial_use": False,
+            "product_track_clean": True,
+        },
+        "file_hashes": file_hashes,
     }
+
+    return receipt
+
+
+def package_tar_archive(source_dir: Path, tar_path: Path) -> tuple[int, str]:
+    """Package bundle directory into tar file with deterministic ordering."""
+    tar_path.parent.mkdir(parents=True, exist_ok=True)
+    all_files = sorted(source_dir.glob("*"))
+
+    with tarfile.open(tar_path, "w") as tar:
+        for f in all_files:
+            if f.is_file():
+                tar.add(f, arcname=f.name)
+
+    tar_bytes = tar_path.stat().st_size
+    tar_sha256 = compute_sha256(tar_path)
+
+    # Write .sha256 file
+    sha_file = tar_path.parent / f"{tar_path.name}.sha256"
+    with open(sha_file, "w", encoding="utf-8") as sf:
+        sf.write(f"{tar_sha256}  {tar_path.name}\n")
+
+    return tar_bytes, tar_sha256
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Phase 4C.1 Bundle Exporter")
+    parser = argparse.ArgumentParser(description="Phase 4C.1 Dataset Bundle Exporter")
     parser.add_argument("--dry-run", action="store_true", help="Only verify and report, no copy")
     parser.add_argument("--execute", action="store_true", help="Copy bundle to output directory")
     parser.add_argument("--output", type=Path, default=Path("/content/bundle"), help="Output directory")
-    parser.add_argument("--manifest", action="store_true", help="Generate manifest only")
-    parser.add_argument("--sample-sizes", nargs="+", type=int, default=[50, 100, 250])
-    parser.add_argument("--sample-size", type=int, default=50, help="Sample size for smoke bundle")
-    parser.add_argument("--seed", type=int, default=42, help="Random seed for sampling")
+    parser.add_argument("--archive", type=Path, default=None, help="Output path for .tar archive")
     parser.add_argument("--smoke-only", action="store_true", help="Create smoke-only bundle (N=50 only)")
+    parser.add_argument("--reusable-n250", action="store_true", default=False, help="Create reusable N=250 bundle")
+    parser.add_argument("--sample-size", type=int, default=50, help="Sample size for smoke bundle")
+    parser.add_argument("--seed", type=int, default=42, help="Random seed for smoke bundle sampling")
     args = parser.parse_args()
 
-    if not args.dry_run and not args.execute and not args.manifest:
-        print("Must specify --dry-run, --execute, or --manifest")
+    if not args.dry_run and not args.execute:
+        print("Must specify --dry-run or --execute")
         sys.exit(1)
 
+    # If smoke-only not specified, default is reusable-n250
+    mode_reusable = args.reusable_n250 or not args.smoke_only
+
     print("=" * 70)
-    print("PHASE 4C.1 BUNDLE EXPORTER")
+    print("PHASE 4C.1 DATASET BUNDLE EXPORTER")
     print("=" * 70)
     print(f"Repo root: {REPO_ROOT}")
-    print(f"Mode: {'DRY-RUN' if args.dry_run else 'EXECUTE' if args.execute else 'MANIFEST'}")
-    if args.smoke_only:
-        print(f"Smoke-only mode: N={args.sample_size}, seed={args.seed}")
+    print(f"Mode: {'REUSABLE N=250' if mode_reusable else f'SMOKE N={args.sample_size}'}")
+    print(f"Action: {'DRY-RUN' if args.dry_run else 'EXECUTE'}")
+    print(f"Output dir: {args.output}")
+    if args.archive:
+        print(f"Archive destination: {args.archive}")
     print()
 
-    if args.smoke_only:
-        # Create smoke-only bundle
-        smoke_bundle = create_smoke_bundle(REPO_ROOT, args.output, args.sample_size, args.seed)
-
-        # Verify files
-        all_files = [
-            {
-                "path": f["source_path"],
-                "name": f["name"],
-                "expected_bytes": None,
-            }
-            for f in smoke_bundle["files"]
-        ]
-
-        results = []
-        total_bytes = 0
-        missing = []
-
-        for f in all_files:
-            r = verify_file(f, REPO_ROOT)
-            if r["exists"]:
-                total_bytes += r["size_bytes"]
-                print(f"  {r['name']}: {r['size_bytes']:,} bytes - OK")
-            else:
-                missing.append(r["name"])
-                print(f"  {r['name']}: MISSING")
-            results.append(r)
-
-        print()
-        print("=" * 70)
-        print("SMOKE BUNDLE SUMMARY")
-        print("=" * 70)
-        print(f"Total files: {len([r for r in results if r['exists']])}")
-        print(f"Total bytes: {total_bytes:,} ({total_bytes / (1024**3):.2f} GB)")
-        print(f"Missing files: {len(missing)}")
-        print(f"Locked-test excluded: Yes (0 rows)")
-        print(f"Sample size: N={args.sample_size}, seed={args.seed}")
-        print(f"Development source_ids: {len(smoke_bundle['selected_dev_source_ids'])}")
-        print(f"Inner validation source_ids: {len(smoke_bundle['inner_val_source_ids'])}")
-        print(f"Development rows: {smoke_bundle['dev_rows_count']}")
-        print(f"Validation rows: {smoke_bundle['val_rows_count']}")
-        print(f"Image files: {smoke_bundle['image_count']}")
-
-        if args.dry_run:
-            print()
-            print("DRY-RUN COMPLETE - No files copied")
-            return 0
-
-        if args.execute:
-            output_dir = args.output
-            output_dir.mkdir(parents=True, exist_ok=True)
-            print(f"Copying to {output_dir}...")
-            for f in smoke_bundle["files"]:
-                src = Path(f["source_path"])
-                dst = output_dir / f["name"]
-                shutil.copy2(src, dst)
-                print(f"  Copied {f['name']}")
-
-            # Create receipt
-            metadata = {
-                "sample_size": args.sample_size,
-                "seed": args.seed,
-                "dev_source_count": len(smoke_bundle["selected_dev_source_ids"]),
-                "val_source_count": len(smoke_bundle["inner_val_source_ids"]),
-                "dev_rows_count": smoke_bundle["dev_rows_count"],
-                "val_rows_count": smoke_bundle["val_rows_count"],
-                "image_count": smoke_bundle["image_count"],
-            }
-            receipt = create_bundle_receipt(
-                args.output,
-                [r for r in results if r["exists"]],
-                metadata
-            )
-            with open(output_dir / "bundle_receipt.json", "w") as f:
-                json.dump(receipt, f, indent=2)
-
-            print("Bundle export complete")
-            return 0
-
+    if not mode_reusable:
+        # Smoke bundle mode (preserved for backward compatibility)
+        bundle_info = create_smoke_bundle(REPO_ROOT, args.output, args.sample_size, args.seed)
+        bundle_type = f"smoke_n{args.sample_size}"
+        bundle_name = f"phase_4c1_smoke_n{args.sample_size}_seed{args.seed}.tar"
     else:
-        # Full bundle logic
-        print("=" * 70)
-        print("PHASE 4C.1 BUNDLE EXPORTER")
-        print("=" * 70)
-        print(f"Repo root: {REPO_ROOT}")
-        print(f"Mode: {'DRY-RUN' if args.dry_run else 'EXECUTE' if args.execute else 'MANIFEST'}")
+        # Reusable N=250 bundle mode
+        bundle_info = create_reusable_n250_bundle(REPO_ROOT, args.output)
+        bundle_type = "reusable_n250"
+        bundle_name = "phase_4c1_binary_n250_reusable.tar"
+
+    # Verify all files exist
+    results = []
+    total_bytes = 0
+    missing = []
+
+    for f in bundle_info["files"]:
+        r = verify_file(f, REPO_ROOT)
+        results.append(r)
+        if r["exists"]:
+            total_bytes += r["size_bytes"]
+        else:
+            missing.append(r["name"])
+
+    print("=" * 70)
+    print("BUNDLE INVENTORY SUMMARY")
+    print("=" * 70)
+    print(f"Total files: {len([r for r in results if r['exists']])}")
+    print(f"Total bytes: {total_bytes:,} ({total_bytes / (1024**2):.2f} MB, {total_bytes / (1024**3):.2f} GB)")
+    print(f"Missing files: {len(missing)}")
+    print(f"Development sources: {bundle_info.get('dev_rows_count', 0)}")
+    print(f"Inner validation sources: {bundle_info.get('val_rows_count', 0)}")
+    print(f"Total sources: {bundle_info.get('dev_rows_count', 0) + bundle_info.get('val_rows_count', 0)}")
+    print(f"Image files count: {bundle_info.get('image_count', 0)}")
+    print("Locked-test rows: 0 (strictly excluded)")
+    print("Locked-test sources: 0 (strictly excluded)")
+    print("Locked-test excluded: Yes (0 rows)")
+
+    if missing:
+        print(f"ERROR: Missing files in bundle: {missing}")
+        return 1
+
+    if args.dry_run:
         print()
+        print("DRY-RUN COMPLETE - All checks passed, no files copied.")
+        return 0
 
-        # Verify all files
-        all_files = FULL_ARCHIVES + [MANIFEST, CHECKPOINT_RECEIPT, PREREGISTRATION]
-        results = []
-        total_bytes = 0
-        missing = []
+    if args.execute:
+        output_dir = args.output
+        output_dir.mkdir(parents=True, exist_ok=True)
+        print(f"\nCopying {len(bundle_info['files'])} files to {output_dir}...")
 
-        for f in all_files:
-            r = verify_file(f, REPO_ROOT)
-            results.append(r)
-            if r["exists"]:
-                total_bytes += r["size_bytes"]
-                status = "OK"
-                if "size_match" in r and r["size_match"] is False:
-                    status = "SIZE_MISMATCH"
-                elif "sha256_match" in r and r["sha256_match"] is False:
-                    status = "SHA256_MISMATCH"
-                print(f"  {r['name']}: {r['size_bytes']:,} bytes - {status}")
-            else:
-                missing.append(r["name"])
-                print(f"  {r['name']}: MISSING")
+        copied_results = []
+        for f in bundle_info["files"]:
+            src = Path(f["source_path"])
+            dst = output_dir / f["name"]
+            shutil.copy2(src, dst)
+            copied_results.append({
+                "name": f["name"],
+                "path": str(dst),
+                "exists": True,
+                "size_bytes": dst.stat().st_size,
+                "sha256": compute_sha256(dst),
+            })
 
-        # Check locked test exclusion
-        print()
-        print("Locked-test exclusion: manifest filtered to exclude 'locked_test' partition")
+        # Create bundle receipt
+        metadata = {
+            "bundle_type": bundle_type,
+            "bundle_name": bundle_name,
+            "dev_source_count": bundle_info.get("dev_rows_count", 250),
+            "val_source_count": bundle_info.get("val_rows_count", 91),
+            "dev_rows_count": bundle_info.get("dev_rows_count", 250),
+            "val_rows_count": bundle_info.get("val_rows_count", 91),
+            "image_count": bundle_info.get("image_count", 0),
+            "auth_image_count": bundle_info.get("auth_image_count", bundle_info.get("image_count", 0) // 2),
+            "edit_image_count": bundle_info.get("edit_image_count", bundle_info.get("image_count", 0) // 2),
+            "sample_size": args.sample_size,
+            "n50_source_ids": bundle_info.get("n50_source_ids", []),
+            "n100_source_ids": bundle_info.get("n100_source_ids", []),
+            "n250_source_ids": bundle_info.get("n250_source_ids", []),
+        }
 
-        # Summary
-        print()
-        print("=" * 70)
-        print("BUNDLE SUMMARY")
-        print("=" * 70)
-        print(f"Total files: {len(all_files)}")
-        print(f"Total bytes: {total_bytes:,} ({total_bytes / (1024**3):.2f} GB)")
-        print(f"Missing files: {len(missing)}")
-        print(f"Locked-test files excluded: 343 source_ids (partition=locked_test)")
-        print(f"Expected archive size: 5,879,502,782 bytes (5.88 GB)")
+        receipt = create_bundle_receipt(output_dir, copied_results, metadata)
+        receipt_path = output_dir / "bundle_receipt.json"
+        with open(receipt_path, "w", encoding="utf-8") as rf:
+            json.dump(receipt, rf, indent=2)
+        print(f"Created bundle receipt: {receipt_path}")
 
-        if args.dry_run:
-            print()
-            print("DRY-RUN COMPLETE - No files copied")
-            return 0
+        # Optional tar archive packaging
+        if args.archive:
+            archive_path = args.archive
+            print(f"\nPackaging tar archive to {archive_path}...")
+            tar_bytes, tar_sha = package_tar_archive(output_dir, archive_path)
+            print(f"Archive created: {archive_path}")
+            print(f"Archive bytes: {tar_bytes:,}")
+            print(f"Archive SHA-256: {tar_sha}")
 
-        if args.execute:
-            output_dir = args.output
-            output_dir.mkdir(parents=True, exist_ok=True)
-            print(f"Copying to {output_dir}...")
-            for f in all_files:
-                src = REPO_ROOT / f["path"]
-                dst = output_dir / f["name"]
-                shutil.copy2(src, dst)
-                print(f"  Copied {f['name']}")
-            print("Bundle export complete")
-            return 0
-
-        if args.manifest:
-            manifest = {
-                "phase": "4C.1",
-                "created_at": "2026-09-27",
-                "files": [r for r in results if r["exists"]],
-                "total_bytes": total_bytes,
-                "locked_test_excluded": True,
-                "locked_test_source_count": 343,
-            }
-            print(json.dumps(manifest, indent=2))
-            return 0
+        print("Bundle export complete")
+        print("\nBUNDLE EXPORT COMPLETE - SUCCESS")
+        return 0
 
     return 0
 
