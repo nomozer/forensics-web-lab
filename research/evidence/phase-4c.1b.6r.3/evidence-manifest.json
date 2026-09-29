@@ -1,0 +1,147 @@
+{
+  "phase": "4C.1B.6R.3",
+  "description": "Final Evidence Provenance and Test-Seal Reconciliation",
+  "git_head": "0781325517ebb14fcc8114aac25ee073629bdf12",
+  "branch": "research/phase-4c1-learning-curve",
+  "files": [
+    {
+      "name": "confidence-intervals.json",
+      "type": "phase-report",
+      "bytes": 2008,
+      "sha256": "be8334fa2e44e414d695820bef51ff8b7b25dbd89d26ef4c0817ddc640d7b746",
+      "generationCommand": "python scripts/research/reproduce_phase_4c1b6r2_statistics.py --verify",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "environment.json",
+      "type": "metadata",
+      "bytes": 619,
+      "sha256": "1cfd628f281c661d150e007025c7763306d513811bf0e7c403efa3758d6158ef",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "historical-root-cause-audit.json",
+      "type": "phase-report",
+      "bytes": 2102,
+      "sha256": "a6588f583ffaa999b8fe630ce606ff206040620436bc91ec15d03f2a7b2777f8",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "fault-injection-results.json",
+      "type": "phase-report",
+      "bytes": 2061,
+      "sha256": "792b1e5fa9479204f82b3d7e2e73603f46406c11cdb421463f4e16de3e75a468",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "paired-bootstrap-verification.json",
+      "type": "phase-report",
+      "bytes": 2221,
+      "sha256": "01bd9c9be3a4ed4da86d8376f3dcc92a9e0bf1678627088da71cca35847185a1",
+      "generationCommand": "python scripts/research/reproduce_phase_4c1b6r2_statistics.py --verify",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "prediction-key-audit.json",
+      "type": "phase-report",
+      "bytes": 865,
+      "sha256": "2dd985d5d37b1cf3b53facf40da8e4f6134995f6b0d30d0b778f5a58a2bccb71",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "metadata-baseline-status.json",
+      "type": "phase-report",
+      "bytes": 918,
+      "sha256": "49968eea7a41fe5572a1007615ae1742b054fc0d8ca3f0a40cbe6556ee3c8f2f",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "stage2-gate-status.json",
+      "type": "phase-report",
+      "bytes": 1557,
+      "sha256": "8771fcd607cab5fe108fef8458ec6c17435b9675f6170fc979d2724f3b124362",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "regression-test-summary.json",
+      "type": "phase-report",
+      "bytes": 2172,
+      "sha256": "d25e313894dab56441b3accd4ffec4edfe757b1bba7b7278cecbb8f56b2e0384",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "test-summary.json",
+      "type": "test-report",
+      "bytes": 4010,
+      "sha256": "5929d2a66d447432cff903f683a3700b76e4cce01a34c26b06bfbc8d919723c7",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "pytest-collection.txt",
+      "type": "test-report",
+      "bytes": 28628,
+      "sha256": "4f3d6a444a80a855c73648ddda1e1c6ef7a47381003251b610c752d87ddbd321",
+      "generationCommand": "pytest --collect-only ml/tests -v",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "pytest-full-output.txt",
+      "type": "test-report",
+      "bytes": 17284,
+      "sha256": "37b95d2d5762ef367a3045087601b3cde514c480271073906af70ba88d915a9a",
+      "generationCommand": "pytest ml/tests -v",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "notebook-hash-audit.json",
+      "type": "phase-report",
+      "bytes": 337,
+      "sha256": "ef634733b67477eb9ee05918773306e9780a1f47cee4ae23fa5ced4f922cb9c0",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "PHASE_REPORT.md",
+      "type": "phase-report",
+      "bytes": 2350,
+      "sha256": "7e895e2d6e11b04c96d0efb71860171237eff3918c1272b88086f499705c1d1e",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "fault-injection-results.json",
+      "type": "phase-report",
+      "bytes": 2061,
+      "sha256": "792b1e5fa9479204f82b3d7e2e73603f46406c11cdb421463f4e16de3e75a468",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    }
+  ],
+  "createdAtUtc": "2026-09-29T12:50:00Z",
+  "manifestSelfExcluded": true,
+  "artifactCount": 15,
+  "directoryFileCount": 16
+}

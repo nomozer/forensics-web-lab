@@ -1,0 +1,10 @@
+{
+  "notebook_hash_audit": {
+    "notebook_path": "notebooks/phase_4c1_learning_curve_colab.ipynb",
+    "sha256_before": "17c913e4b8589d86de89b39ba15c4f77f1b2624a",
+    "sha256_after": "17c913e4b8589d86de89b39ba15c4f77f1b2624a",
+    "hash_unchanged": true,
+    "git_diff_exit_code": 0,
+    "verified_at_utc": "2026-09-29T12:50:00Z"
+  }
+}

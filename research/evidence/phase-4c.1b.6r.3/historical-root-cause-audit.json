@@ -1,0 +1,37 @@
+{
+  "historical_root_cause_audit": {
+    "leak_id": "EVAL-LEAK-001",
+    "description": "Evaluation loader included development_train samples in validation metrics",
+    "root_cause_status": "HISTORICAL_EXECUTION_PATH_UNAVAILABLE",
+    "observed_symptom_status": "VERIFIED",
+    "fault_injection_status": "SYNTHETIC_SYMPTOM_REPRODUCTION",
+    "historical_commit_with_leak": "95957b7c84b14d9cea7ee4058908554438e380c9 (Phase 4C.1B.4 ending)",
+    "historical_commit_fix": "24adfce1cf5a5333852373681b0045e06e2ea3e5 (Phase 4C.1B.5: repair validation leakage)",
+    "historical_script": "run_smoke_local.py (local notebook script, never committed to git)",
+    "root_cause_explanation": "Evaluation dataset filter incorrectly included development_train samples. The buggy filter condition was: if row['partition'] == partition and (partition != 'inner_validation' or row['lc_n50'] == 'True'). When partition='development_train', the condition partition != 'inner_validation' evaluates to True, making the entire OR condition True regardless of lc_n50 value. This caused 50 development_train sources (100 samples) to be included in validation metrics.",
+    "buggy_counts": {
+      "total_source_ids": 141,
+      "development_train": 50,
+      "inner_validation": 91,
+      "locked_test": 0,
+      "total_samples": 282,
+      "development_train_samples": 100,
+      "inner_validation_samples": 182
+    },
+    "corrected_counts": {
+      "total_source_ids": 91,
+      "development_train": 0,
+      "inner_validation": 91,
+      "locked_test": 0,
+      "total_samples": 182,
+      "development_train_samples": 0,
+      "inner_validation_samples": 182
+    },
+    "runner_status": "CORRECT_ALREADY",
+    "runner_file": "ml/training/run_phase_4c1.py",
+    "runner_filter_logic": "val_instances = [inst for inst in instances if inst.partition == 'inner_validation']",
+    "notebook_script_status": "NOT_IN_GIT",
+    "notebook_fix_commit": "24adfce1 (documented fix in notebook, but run_smoke_local.py was never in git)",
+    "leakage_finding_reference": "research/evidence/phase-4c.1b.5/leakage-finding.json"
+  }
+}

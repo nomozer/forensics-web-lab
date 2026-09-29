@@ -1,0 +1,27 @@
+{
+  "prediction_key_audit": {
+    "description": "Verification that Stage 1 and Dummy prediction keys match 100%",
+    "stage1_artifact": "research/evidence/phase-4c.1b.6r.2/predictions-stage1-seed42-validation-only.json",
+    "dummy_artifact": "research/evidence/phase-4c.1b.6r.2/predictions-dummy-seed42.json",
+    "verification": {
+      "stage1_record_count": 182,
+      "dummy_record_count": 182,
+      "stage1_unique_source_ids": 91,
+      "dummy_unique_source_ids": 91,
+      "sample_id_match": true,
+      "source_id_match": true,
+      "y_true_match": true,
+      "partition_match": true,
+      "partitions": ["inner_validation"],
+      "development_records": 0,
+      "locked_test_records": 0
+    },
+    "key_set_equality": true,
+    "matching_keys": [
+      "sample_id",
+      "source_id",
+      "y_true"
+    ],
+    "status": "VERIFIED_100_PERCENT"
+  }
+}

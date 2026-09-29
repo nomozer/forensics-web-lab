@@ -1,3 +1,15 @@
+## Phase 4C.1B.6R.3 - Final Evidence Provenance and Test-Seal Reconciliation
+
+- **Muc tieu**: Measured paired bootstrap provenance, root cause audit, 8 regression tests, evidence seal.
+- **Starting commit**: 0781325 (Phase 4C.1B.6R.2 ending)
+- **Branch**: research/phase-4c1-learning-curve
+- **Thay đổi chính**: (1) Historical root cause audit: HISTORICAL_EXECUTION_PATH_UNAVAILABLE. (2) Measured paired bootstrap: 91 clusters, Delta Macro-F1 0.07186, CI [-0.0115, 0.1508] includes 0. (3) 8 new regression tests added (10 total). (4) Placeholder CI/dummy removed. (5) Metadata: NOT_MEASURED. (6) Stage 2: INSUFFICIENT_EVIDENCE.
+- **Kiểm tra**: 156/155/1 Python, 70/70 TS, typecheck 0, build OK, continuity PASS.
+- **Kết quả**: Evidence manifest 15 artifacts verified. Training runs = 0. Locked-test = 0.
+- **Evidence**: research/evidence/phase-4c.1b.6r.3/ (15 artifacts).
+- **Quyết định tiếp theo**: Gate A.3 commit, then Gate B Colab T4 multi-seed (1337, 2025, 3407, 9001).
+
+---
 ## Phase 4C.1B.6R.2 - Measured Paired Bootstrap Closure
 
 - **Muc tieu**: Measured paired bootstrap, Stage 1/Dummy on 182 samples, metadata contract.
