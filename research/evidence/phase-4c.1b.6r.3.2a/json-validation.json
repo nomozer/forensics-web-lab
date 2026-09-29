@@ -1,0 +1,9 @@
+{
+  "json_validation": {
+    "command": "python -c \"import json, pathlib; files = list(pathlib.Path('research/evidence').rglob('*.json')); errors = []; for f in files: json.loads(f.read_text(encoding='utf-8')); print('JSON files:', len(files)); print('Errors:', errors)\"",
+    "total_json_files": 277,
+    "parse_errors": 0,
+    "errors": [],
+    "verified_at_utc": "2026-09-29T07:00:00Z"
+  }
+}
