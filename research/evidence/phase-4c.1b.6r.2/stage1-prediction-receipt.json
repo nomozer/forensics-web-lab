@@ -1,0 +1,14 @@
+{
+  "source_artifact": "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\runs\\n50_seed42\\predictions.json",
+  "source_sha256": "18fa91261b6acca62737a7512b9d3741dde0bdbe68c19e05c4b9eff5f8209fbb",
+  "source_total_records": 282,
+  "source_unique_source_ids": 141,
+  "filter_criterion": "partition == inner_validation",
+  "manifest_used": "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\smoke_n50_seed42\\extracted_bundle\\manifest_pilot_a_option_p.csv",
+  "output_artifact": "D:\\Documents\\forensics-web-lab\\research\\evidence\\phase-4c.1b.6r.2\\predictions-stage1-seed42-validation-only.json",
+  "output_sha256": "646434c548eef228836c578503390cbded8c4c1c4a5d56ff3e7abc88f72be35c",
+  "output_records": 182,
+  "output_unique_source_ids": 91,
+  "output_authentic_count": 91,
+  "output_ai_edited_count": 91
+}

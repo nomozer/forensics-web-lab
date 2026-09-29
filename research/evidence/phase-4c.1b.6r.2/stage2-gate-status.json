@@ -1,0 +1,28 @@
+{
+  "stage1_macro_f1": 0.565816095425034,
+  "dummy_baseline_macro_f1": 0.49395551257253384,
+  "stage1_minus_dummy_point": 0.07186058285250016,
+  "stage1_minus_dummy_ci": [-0.011493546030347107, 0.1508245562573932],
+  "stage1_gt_dummy_ci_lower_gt_0": false,
+  "metadata_baseline_macro_f1": null,
+  "stage1_gt_metadata_point": null,
+  "stage1_gt_metadata_ci_lower": null,
+  "stage1_minus_metadata_point": null,
+  "stage1_minus_metadata_ci": null,
+  "metadata_condition": "NOT_EVALUATED",
+  "gate_passed_point_estimates": null,
+  "gate_passed_ci": null,
+  "verdict": "INSUFFICIENT_EVIDENCE",
+  "reasoning": "Stage 1 Macro-F1 (0.5658) exceeds Dummy baseline (0.494) on validation set. However, paired bootstrap CI for Stage 1 vs Dummy includes 0: [-0.0115, 0.1508]. CI lower bound is NOT > 0, so the superiority condition is not statistically verified. Metadata baseline is NOT_MEASURED (HISTORICAL_PLACEHOLDER_EXCLUDED_FROM_GATE). Stage 2 gate cannot be fully verified. Also single-seed limitation: no training-seed variance measured.",
+  "confidence_intervals": {
+    "stage1_macro_f1_ci": "[0.521608, 0.609921]",
+    "stage1_minus_dummy_ci": "[-0.011494, 0.150825]",
+    "stage1_minus_dummy_balanced_acc_ci": "[-0.010989, 0.148489]",
+    "stage1_minus_dummy_auroc_ci": "[0.035849, 0.200495]"
+  },
+  "next_actions": [
+    "Run multi-seed Stage 1 (5 seeds per protocol) to estimate training-seed variance",
+    "Implement and measure metadata baseline on inner_validation (Phase 4C.2)",
+    "Only then evaluate Stage 2 eligibility with complete evidence"
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "regression_tests": {
+    "new_tests_added": [
+      "test_eval_leak_001_fault_injection",
+      "test_validation_only_stage1_predictions",
+      "test_dummy_and_stage1_prediction_keys_match",
+      "test_paired_bootstrap_keeps_two_samples_per_source",
+      "test_paired_bootstrap_delta_point_identity",
+      "test_shifted_stage1_ci_is_rejected",
+      "test_metadata_comparison_is_not_evaluated",
+      "test_dummy_metric_reproduction"
+    ],
+    "test_file": "ml/tests/test_eval_leakage_regression.py",
+    "total_tests": 8,
+    "passed": 8,
+    "failed": 0,
+    "node_ids": [
+      "ml/tests/test_eval_leakage_regression.py::test_eval_leak_001_fault_injection",
+      "ml/tests/test_eval_leakage_regression.py::test_validation_only_stage1_predictions",
+      "ml/tests/test_eval_leakage_regression.py::test_dummy_and_stage1_prediction_keys_match",
+      "ml/tests/test_eval_leakage_regression.py::test_paired_bootstrap_keeps_two_samples_per_source",
+      "ml/tests/test_eval_leakage_regression.py::test_paired_bootstrap_delta_point_identity",
+      "ml/tests/test_eval_leakage_regression.py::test_shifted_stage1_ci_is_rejected",
+      "ml/tests/test_eval_leakage_regression.py::test_metadata_comparison_is_not_evaluated",
+      "ml/tests/test_eval_leakage_regression.py::test_dummy_metric_reproduction"
+    ],
+    "test_purpose": "Verify evaluation loader correctly filters partitions, prevents EVAL-LEAK-001 regression, and validates paired bootstrap evidence",
+    "coverage": [
+      "Fault injection reproducing EVAL-LEAK-001 (141 vs 91 source_ids)",
+      "Validation-only Stage 1 predictions (182 samples, 91 source_ids)",
+      "Dummy and Stage 1 prediction key matching (100% sample_id, source_id, y_true)",
+      "Paired bootstrap cluster integrity (2 samples per source_id)",
+      "Paired bootstrap delta point identity (0.07186058285250016)",
+      "Shifted Stage 1 CI rejection (validator rejects wrong CI)",
+      "Metadata comparison NOT_EVALUATED",
+      "Dummy metric exact reproduction (Macro-F1 = 0.49395551257253384)"
+    ],
+    "root_cause_status": "HISTORICAL_EXECUTION_PATH_UNAVAILABLE",
+    "observed_symptom_status": "VERIFIED",
+    "fault_injection_status": "REPRODUCED"
+  }
+}

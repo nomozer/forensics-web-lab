@@ -1,0 +1,55 @@
+{
+  "fault_injection": {
+    "description": "Fault injection test reproducing EVAL-LEAK-001 root cause",
+    "root_cause": "Notebook script run_smoke_local.py used incorrect OR logic in partition filter: (partition != 'inner_validation' or row['lc_n50'] == 'True') evaluated to True for development_train because partition != 'inner_validation' is True for development_train",
+    "buggy_filter_logic": "if row['partition'] == partition and (partition != 'inner_validation' or row['lc_n50'] == 'True'):",
+    "correct_filter_logic": "if row['partition'] == 'inner_validation':",
+    "buggy_counts": {
+      "source_ids": 141,
+      "samples": 282,
+      "development_train_sources": 50,
+      "inner_validation_sources": 91,
+      "overlap": 0
+    },
+    "correct_counts": {
+      "source_ids": 91,
+      "samples": 182,
+      "authentic_samples": 91,
+      "ai_edited_samples": 91,
+      "development_train_sources": 50,
+      "inner_validation_sources": 91,
+      "overlap": 0,
+      "locked_test_sources": 0
+    },
+    "fault_injection_test": {
+      "name": "test_eval_leak_001_fault_injection",
+      "purpose": "Reproduce the exact leakage counts: 141 source_ids, 282 samples",
+      "method": "Apply buggy filter logic to manifest and verify it produces 141 source_ids / 282 samples",
+      "result": "REPRODUCED",
+      "details": {
+        "manifest_rows": 141,
+        "buggy_filter_selects_all_rows": true,
+        "buggy_source_ids": 141,
+        "buggy_samples": 282,
+        "correct_filter_source_ids": 91,
+        "correct_filter_samples": 182
+      }
+    },
+    "verification": {
+      "development_validation_overlap": 0,
+      "locked_test_count": 0,
+      "inner_validation_authentic": 91,
+      "inner_validation_ai_edited": 91,
+      "development_train_lc_n50": 50
+    },
+    "root_cause_commit": "95957b7 (phase 4C.1B.5 end)",
+    "fixed_commit": "24adfce1 (notebook fix)",
+    "runner_status": "CORRECT_ALREADY",
+    "runner_file": "ml/training/run_phase_4c1.py",
+    "runner_filter_logic": "val_instances = [inst for inst in instances if inst.partition == 'inner_validation']",
+    "runner_status": "CORRECT - no source code changes needed",
+    "notebook_script": "run_smoke_local.py",
+    "notebook_status": "FIXED in commit 24adfce1",
+    "notebook_fix": "Fixed dataset filter to correctly exclude development_train from inner_validation"
+  }
+}
