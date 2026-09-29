@@ -1,0 +1,20 @@
+{
+  "currentHead": "8d00f5a6064a70d93afc1468b300cd3b9234de2b",
+  "remoteHead": "8d00f5a6064a70d93afc1468b300cd3b9234de2b",
+  "branch": "research/phase-4c1-learning-curve",
+  "foundationMain": "575a786ca4888352d60eef60df9595b57fc9f713",
+  "sourceCommitUsedForTraining": "8d00f5a6064a70d93afc1468b300cd3b9234de2b",
+  "bundleSha256": "b57d626d46a08427f6f1e4e1649565bd9d914e2d6f835e109e0391242af5d0a6",
+  "runnerPath": "ml/training/run_phase_4c1.py",
+  "configPath": "ml/configs/phase_4c1_learning_curve.yaml",
+  "notebookPath": "notebooks/phase_4c1_learning_curve_colab.ipynb",
+  "timestampUtc": "2026-09-29T14:01:12.552008Z",
+  "workingTreeClean": true,
+  "lockedTestAccessCount": 0,
+  "historicalCommits": {
+    "8c3f560": "commit recorded by old environment/manifest",
+    "99b6824": "commit recorded by old PHASE_REPORT",
+    "8d00f5a": "current commit after evidence corrections"
+  },
+  "note": "sourceCommitUsedForTraining = actual HEAD at code packaging time. All run receipts for 5 seeds must use this exact SHA."
+}
