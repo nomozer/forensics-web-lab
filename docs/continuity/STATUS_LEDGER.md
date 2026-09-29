@@ -1,3 +1,15 @@
+## Phase 4C.1B.6R.3.2 - True Clean Environment and Dependency Seal
+
+- **Muc tieu**: True clean venv from declarations, JSON validity, dependency audit, T4 contract seal.
+- **Starting commit**: 13dfa82 (Phase 4C.1B.6R.3.1 ending)
+- **Branch**: research/phase-4c1-learning-curve
+- **Thay đổi chính**: (1) JSON validation: 258 files, 0 errors. (2) Clean venv from requirements.txt: isolated, pip check clean, all imports OK. (3) Dependency audit: 17 deps, 12 verified, 1 runtime-provided, 3 optional, 2 missing-blocking. (4) T4 contract: 5 seeds (42, 1337, 2025, 3407, 9001), FIXED_N50_COHORT. (4) Colab requirements audit: CUDA torch via --index-url, google.colab runtime-provided.
+- **Kiểm tra**: 156/155/1 Python, 70/70 TS, typecheck 0, build OK, continuity PASS.
+- **Kết quả**: Evidence manifest 11 artifacts. Training runs = 0. Locked-test = 0.
+- **Evidence**: research/evidence/phase-4c.1b.6r.3.2/ (11 artifacts).
+- **Quyết định tiếp theo**: Gate A.3.2 complete, Gate B Colab T4 multi-seed (42, 1337, 2025, 3407, 9001).
+
+---
 ## Phase 4C.1B.6R.3.1 - Evidence Metadata, Dependency and T4 Execution Contract Closure
 
 - **Muc tieu**: Manifest correction, notebook hash audit, root cause wording, dependency audit, T4 contract.

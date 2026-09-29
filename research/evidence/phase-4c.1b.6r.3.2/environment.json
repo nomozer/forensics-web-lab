@@ -1,8 +1,8 @@
 {
-  "timestamp": "2026-09-29T06:15:00.000000Z",
+  "timestamp": "2026-09-29T12:30:00.000000Z",
   "phase": "4C.1B.6R.3.2",
   "description": "True Clean Environment and Dependency Seal",
-  "git_head": "13dfa8274ac1e5390c1fda97738bcb97ea285379",
+  "git_head": "941fdb6",
   "branch": "research/phase-4c1-learning-curve",
   "python_executable": "C:\\\\Users\\\\Bunny\\\\AppData\\\\Local\\\\Temp\\\\forensics-clean-verify\\\\Scripts\\\\python.exe",
   "python_version": "3.12.10",

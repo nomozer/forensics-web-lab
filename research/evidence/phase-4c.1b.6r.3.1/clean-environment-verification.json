@@ -1,7 +1,7 @@
 {
   "clean_environment_verification": {
     "python_version": "3.12.10",
-    "venv_path": "D:\\Documents\\forensics-web-lab\\ml\\.venv",
+    "venv_path": "D:\\\\Documents\\\\forensics-web-lab\\\\ml\\\\.venv",
     "pip_check": "No broken requirements found",
     "imports": {
       "torch": "2.5.1+cu121",
@@ -23,17 +23,17 @@
       "errors": 0
     },
     "runner_dry_run": {
-      "command": ".\ml\.venv\Scripts\python.exe -m ml.training.run_phase_4c1 --help",
+      "command": ".\\\\ml\\\\.venv\\\\Scripts\\\\python.exe -m ml.training.run_phase_4c1 --help",
       "exit_code": 0,
       "help_displayed": true
     },
     "config_validator": {
-      "command": ".\ml\.venv\Scripts\python.exe -m ml.configs.validator --validate-all",
+      "command": ".\\\\ml\\\\.venv\\\\Scripts\\\\python.exe -m ml.configs.validator --validate-all",
       "exit_code": 0,
       "passed": 4
     },
     "dataset_registry": {
-      "command": ".\ml\.venv\Scripts\python.exe -m ml.datasets.acquire --validate-registry",
+      "command": ".\\\\ml\\\\.venv\\\\Scripts\\\\python.exe -m ml.datasets.acquire --validate-registry",
       "exit_code": 0,
       "passed": 7
     },
