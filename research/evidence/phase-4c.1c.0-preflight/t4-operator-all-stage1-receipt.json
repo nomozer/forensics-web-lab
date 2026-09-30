@@ -1,12 +1,12 @@
 {
   "operator_script_receipt": {
     "schema_version": "1.0.0",
-    "phase": "Phase 4C.1C.8",
+    "phase": "Phase 4C.1C.9",
     "script_name": "phase_4c1_t4_execute_all_stage1.sh",
     "script_path": "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\t4_transfer\\phase_4c1_t4_execute_all_stage1.sh",
-    "bytes": 25470,
-    "sha256": "16cc4655c77ca5931290d5dd3c2612e40af1084cd0f0c1320e8fc68260e63daa",
-    "timestamp_utc": "2026-09-30T05:21:47.951805+00:00",
+    "bytes": 29794,
+    "sha256": "e105441ed20a40da55cc8db4fd7f83440182cae8f951d46f03939b08504efc14",
+    "timestamp_utc": "2026-09-30T08:28:50.064788+00:00",
     "execution_code_sha": "79bb11527d900fd387de1f41f2010c4152b7fea7",
     "execution_code_binding_source": "phase4c1_environment_lock.json",
     "code_archive": {
@@ -19,7 +19,9 @@
       "name": "phase_4c1_binary_n250_reusable.tar",
       "path": "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\t4_transfer\\phase_4c1_binary_n250_reusable.tar",
       "bytes": 724633600,
-      "sha256": "d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27"
+      "sha256": "d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27",
+      "archive_sha256": "d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27",
+      "content_sha256": "c365c812cc814097f11b9e5ed5c82e672015e2ba093f09f975df0a2a01229e9b"
     },
     "matrix": {
       "sample_sizes": [
@@ -102,30 +104,30 @@
     "notebook_status": {
       "status": "CANONICAL_LAUNCHER_ACTIVE",
       "canonical_path": "notebooks/phase_4c1_learning_curve_colab.ipynb",
-      "canonical_bytes": 10395,
-      "canonical_sha256": "3cd2dc4c2d69cf40aa4a117eb8be4bcefcca5fc39da98ebe26a27677f08a90f7",
+      "canonical_bytes": 11705,
+      "canonical_sha256": "e8e17a48120e83ecfd26ff49a07a3ad5126df3a103e384c21a3f84348b673792",
       "historical_superseded_notebook_sha256": "f26576cb70b6c892faaade7b225872d4bafbcfe1424b64df29564dd9e1cd28b9",
       "cells_total": 5,
       "default_execute": true
     },
     "training_runs_local": 0,
     "locked_test_accesses": 0,
-    "status": "READY_FOR_USER_COLAB_EXECUTION",
+    "status": "READY_FOR_USER_COLAB_RESUME",
     "required_user_actions": {
       "action_summary": "Only upload the refactored operator script and canonical notebook. Code archive and dataset bundle are unchanged and do not need re-uploading.",
       "reupload_required_files": [
         {
           "file_name": "phase_4c1_t4_execute_all_stage1.sh",
           "local_path": "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\t4_transfer\\phase_4c1_t4_execute_all_stage1.sh",
-          "bytes": 25470,
-          "sha256": "16cc4655c77ca5931290d5dd3c2612e40af1084cd0f0c1320e8fc68260e63daa",
+          "bytes": 29794,
+          "sha256": "e105441ed20a40da55cc8db4fd7f83440182cae8f951d46f03939b08504efc14",
           "target_drive_directory": "My Drive/Colab Notebooks/forensics-web-lab/phase_4c1/inputs/"
         },
         {
           "file_name": "phase_4c1_learning_curve_colab.ipynb",
           "local_path": "notebooks/phase_4c1_learning_curve_colab.ipynb",
-          "bytes": 10395,
-          "sha256": "3cd2dc4c2d69cf40aa4a117eb8be4bcefcca5fc39da98ebe26a27677f08a90f7",
+          "bytes": 11705,
+          "sha256": "e8e17a48120e83ecfd26ff49a07a3ad5126df3a103e384c21a3f84348b673792",
           "target_drive_directory": "My Drive/Colab Notebooks/forensics-web-lab/phase_4c1/"
         }
       ],
@@ -145,6 +147,36 @@
       ],
       "execution_procedure": "Open phase_4c1_learning_curve_colab.ipynb in Google Colab (T4 GPU runtime), verify EXECUTE = True, and select Runtime -> Run all."
     },
-    "runtime_strategy": "Colab system Python direct execution (zero venv, zero torch/cuda reinstall, auxiliary deps preflight)"
+    "runtime_strategy": "Colab system Python direct execution (zero venv, zero torch/cuda reinstall, auxiliary deps preflight)",
+    "remote_completed_runs": 1,
+    "completed_run_details": {
+      "run_id": "phase4c1-stage1-n50-seed42",
+      "sample_size": 50,
+      "seed": 42,
+      "status": "completed",
+      "verification_verdict": "COMPLETED_VALID",
+      "resume_action": "SKIP",
+      "epochs_completed": 23,
+      "best_epoch": 18,
+      "validation_sources": 91,
+      "validation_samples": 182,
+      "locked_test_access": 0,
+      "stage2_invocations": 0,
+      "training_time_seconds": 222.859547,
+      "checkpoint_sha256": "b5fa53bfc3d31f239841800e258d122217e0541130ddde4ecec0b78f1bda8f9b",
+      "preliminary_metrics": {
+        "macro_f1": 0.5414772029003319,
+        "balanced_accuracy": 0.5494505494505495,
+        "auroc": 0.5606810771645936,
+        "brier_score": 0.24779019881389366,
+        "ece": 0.026530933576625775
+      }
+    },
+    "remaining_runs": 14,
+    "next_target_run": {
+      "sample_size": 50,
+      "seed": 1337
+    },
+    "stage2_invocations": 0
   }
 }

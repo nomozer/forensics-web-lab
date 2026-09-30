@@ -200,8 +200,8 @@ def test_sealed_artifacts_and_drive_paths_configured():
     assert 724633600 in eval(src.split("EXPECTED_ARTIFACTS = ")[1].split("\n\n")[0])["reusable_bundle"].values()
     assert "d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27" in src
     assert "phase_4c1_t4_execute_all_stage1.sh" in src
-    assert 25470 in eval(src.split("EXPECTED_ARTIFACTS = ")[1].split("\n\n")[0])["operator_script"].values()
-    assert "16cc4655c77ca5931290d5dd3c2612e40af1084cd0f0c1320e8fc68260e63daa" in src
+    assert 29794 in eval(src.split("EXPECTED_ARTIFACTS = ")[1].split("\n\n")[0])["operator_script"].values()
+    assert "e105441ed20a40da55cc8db4fd7f83440182cae8f951d46f03939b08504efc14" in src
 
 
 @pytest.mark.skipif(not IPYTHON_AVAILABLE, reason="IPython not installed")
@@ -258,7 +258,7 @@ def test_staging_and_persistent_output_binding():
 
 @pytest.mark.skipif(not IPYTHON_AVAILABLE, reason="IPython not installed")
 def test_execution_cell_invokes_operator_once():
-    """Test execution cell calls the operator script exactly once with check=True when EXECUTE=True."""
+    """Test execution cell calls the operator script exactly once with check=True when EXECUTE=True and handles failures."""
     with open(CANONICAL_NOTEBOOK_PATH, "r", encoding="utf-8") as f:
         nb = nbformat.read(f, as_version=4)
 
@@ -270,6 +270,9 @@ def test_execution_cell_invokes_operator_once():
     assert "check=True" in src
     assert "[RUN]" in src
     assert "[SKIP]" in src
+    assert "operator_console.log" in src
+    assert "OPERATOR_FAILURE.json" in src
+    assert "tail_lines" in src or "[-100:]" in src
 
 
 @pytest.mark.skipif(not IPYTHON_AVAILABLE, reason="IPython not installed")

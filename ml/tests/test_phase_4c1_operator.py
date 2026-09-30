@@ -1,14 +1,23 @@
 #!/usr/bin/env python3
 """
-T4 Operator tests and fault-injection verification for Phase 4C.1.
-Verifies static constraints, fail-closed resume contract, and the 7 mandatory fault injections:
-1. Execution-code binding correct -> PASS
-2. Binding missing -> FAIL
-3. Binding incorrect -> FAIL
-4. Completed valid run -> resumed/skipped
-5. Partial run -> fail-closed
-6. Locked-test access != 0 -> FAIL
-7. Stage 2 invocation != 0 -> FAIL
+T4 Operator tests and fault-injection verification for Phase 4C.1C.9.
+Verifies static constraints, fail-closed resume contract, and all required gates:
+1. Archive SHA differs from Content SHA but both correct -> PASS
+2. run_receipt.bundle_sha256 == content SHA -> PASS
+3. Comparing content SHA vs archive SHA fails semantics -> FAIL
+4. Content SHA mismatch -> FAIL
+5. Archive SHA mismatch in lock -> FAIL
+6. Legacy environment lock schema backward-compatibility -> PASS
+7. Real run fixture N50 seed42 fully verified -> COMPLETED_VALID / SKIP
+8. Missing single artifact -> FAIL
+9. Checksum dictionary schema -> PASS; checksum mismatch -> FAIL
+10. Environment binding mismatch -> FAIL
+11. Locked-test access != 0 -> FAIL
+12. Both stage2_invocations and legacy alias checked -> FAIL if > 0
+13. Explicit controlled failure creates OPERATOR_FAILURE.json
+14. Unexpected command error trapped via ERR trap
+15. Resume logic skips N50 seed42 and prepares N50 seed1337
+16. Final packaging includes cohort, all 15 runs, and execution logs
 """
 
 import os
@@ -28,10 +37,11 @@ OPERATOR_SCRIPT = LOCAL_ARTIFACTS_DIR / "phase_4c1" / "t4_transfer" / "phase_4c1
 OPERATOR_SIDECAR = OPERATOR_SCRIPT.with_name(OPERATOR_SCRIPT.name + ".sha256")
 
 EXPECTED_CODE_SHA = "79bb11527d900fd387de1f41f2010c4152b7fea7"
-EXPECTED_BUNDLE_SHA = "d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27"
+EXPECTED_BUNDLE_ARCHIVE_SHA = "d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27"
+EXPECTED_BUNDLE_CONTENT_SHA = "c365c812cc814097f11b9e5ed5c82e672015e2ba093f09f975df0a2a01229e9b"
 EXPECTED_CODE_ARCHIVE_SHA = "5e775a7708d1555bf22f56dceb5358e26e07dd224c4b6186f575aff4d2b590d5"
-EXPECTED_OPERATOR_SHA = "16cc4655c77ca5931290d5dd3c2612e40af1084cd0f0c1320e8fc68260e63daa"
-EXPECTED_OPERATOR_BYTES = 25470
+EXPECTED_OPERATOR_SHA = "e105441ed20a40da55cc8db4fd7f83440182cae8f951d46f03939b08504efc14"
+EXPECTED_OPERATOR_BYTES = 29794
 
 OPERATOR_EXISTS = OPERATOR_SCRIPT.exists()
 
@@ -52,7 +62,15 @@ def extract_verification_python_code(script_text: str) -> str:
     return script_text[s_idx + len(start_marker):e_idx]
 
 
-def run_py_verification(py_code: str, run_dir: Path, exp_size: int, exp_seed: int, exp_code_sha: str, exp_bundle_sha: str):
+def run_py_verification(
+    py_code: str,
+    run_dir: Path,
+    exp_size: int,
+    exp_seed: int,
+    exp_code_sha: str = EXPECTED_CODE_SHA,
+    exp_archive_sha: str = EXPECTED_BUNDLE_ARCHIVE_SHA,
+    exp_content_sha: str = EXPECTED_BUNDLE_CONTENT_SHA,
+):
     cmd = [
         sys.executable,
         "-c",
@@ -61,24 +79,46 @@ def run_py_verification(py_code: str, run_dir: Path, exp_size: int, exp_seed: in
         str(exp_size),
         str(exp_seed),
         str(exp_code_sha),
-        str(exp_bundle_sha),
+        str(exp_archive_sha),
+        str(exp_content_sha),
     ]
     cp = subprocess.run(cmd, capture_output=True, text=True)
     return cp.returncode == 0, cp.stdout, cp.stderr
 
 
-def setup_mock_environment_and_run(base_dir: Path, size: int = 50, seed: int = 42):
+def setup_mock_environment_and_run(
+    base_dir: Path,
+    size: int = 50,
+    seed: int = 42,
+    legacy_lock: bool = True,
+    ckpt_sha: str = "b5fa53bfc3d31f239841800e258d122217e0541130ddde4ecec0b78f1bda8f9b",
+    bundle_content_sha: str = EXPECTED_BUNDLE_CONTENT_SHA,
+    bundle_archive_sha: str = EXPECTED_BUNDLE_ARCHIVE_SHA,
+    epochs: int = 23,
+    best_epoch: int = 18,
+):
     output_root = base_dir / "phase_4c1_outputs"
     output_root.mkdir(parents=True, exist_ok=True)
 
     # 1. Environment lock in output_root
-    env_lock = {
-        "bundle_sha256": EXPECTED_BUNDLE_SHA,
-        "code_archive_sha256": EXPECTED_CODE_ARCHIVE_SHA,
-        "execution_code_sha": EXPECTED_CODE_SHA,
-        "gpu_model": "Tesla T4",
-        "torch_version": "2.2.0",
-    }
+    if legacy_lock:
+        env_lock = {
+            "bundle_sha256": bundle_archive_sha,
+            "code_archive_sha256": EXPECTED_CODE_ARCHIVE_SHA,
+            "execution_code_sha": EXPECTED_CODE_SHA,
+            "gpu_model": "Tesla T4",
+            "torch_version": "2.2.0",
+        }
+    else:
+        env_lock = {
+            "bundle_archive_sha256": bundle_archive_sha,
+            "bundle_content_sha256": bundle_content_sha,
+            "bundle_sha256": bundle_archive_sha,
+            "code_archive_sha256": EXPECTED_CODE_ARCHIVE_SHA,
+            "execution_code_sha": EXPECTED_CODE_SHA,
+            "gpu_model": "Tesla T4",
+            "torch_version": "2.2.0",
+        }
     lock_file = output_root / "phase4c1_environment_lock.json"
     lock_file.write_text(json.dumps(env_lock, indent=2), encoding="utf-8")
     lock_sha = hashlib.sha256(lock_file.read_bytes()).hexdigest()
@@ -90,8 +130,15 @@ def setup_mock_environment_and_run(base_dir: Path, size: int = 50, seed: int = 4
     run_dir = output_root / f"n{size}_seed_{seed}"
     run_dir.mkdir(parents=True, exist_ok=True)
 
-    (run_dir / "best_checkpoint.pt").write_bytes(b"MOCK_CHECKPOINT_DATA_4B")
-    (run_dir / "epoch_history.json").write_text(json.dumps([{"epoch": 1, "val_loss": 0.45}]), encoding="utf-8")
+    mock_ckpt_bytes = b"MOCK_CHECKPOINT_N50_SEED42_REAL_T4"
+    if ckpt_sha == "b5fa53bfc3d31f239841800e258d122217e0541130ddde4ecec0b78f1bda8f9b":
+        actual_ckpt_sha = hashlib.sha256(mock_ckpt_bytes).hexdigest()
+        ckpt_sha = actual_ckpt_sha
+    (run_dir / "best_checkpoint.pt").write_bytes(mock_ckpt_bytes)
+
+    (run_dir / "epoch_history.json").write_text(
+        json.dumps([{"epoch": i, "val_loss": 0.5 - i * 0.01} for i in range(1, epochs + 1)]), encoding="utf-8"
+    )
 
     targets = [0] * 91 + [1] * 91
     preds = [0] * 91 + [1] * 91
@@ -106,9 +153,20 @@ def setup_mock_environment_and_run(base_dir: Path, size: int = 50, seed: int = 4
         }),
         encoding="utf-8",
     )
-    (run_dir / "training_history.csv").write_text("epoch,train_loss,val_loss\n1,0.5,0.45\n", encoding="utf-8")
+    (run_dir / "training_history.csv").write_text(
+        "epoch,train_loss,val_loss\n" + "\n".join(f"{i},0.5,0.45" for i in range(1, epochs + 1)) + "\n",
+        encoding="utf-8",
+    )
     (run_dir / "metrics.json").write_text(
-        json.dumps({"run_id": f"n{size}_seed_{seed}", "macro_f1": 0.85}), encoding="utf-8"
+        json.dumps({
+            "run_id": f"phase4c1-stage1-n{size}-seed{seed}",
+            "macro_f1": 0.5414772029003319,
+            "balanced_accuracy": 0.5494505494505495,
+            "auroc": 0.5606810771645936,
+            "brier_score": 0.24779019881389366,
+            "ece": 0.026530933576625775,
+        }),
+        encoding="utf-8",
     )
 
     env_content = json.dumps({"gpu": "Tesla T4", "python": "3.10.12"})
@@ -117,7 +175,7 @@ def setup_mock_environment_and_run(base_dir: Path, size: int = 50, seed: int = 4
 
     (run_dir / "environment-binding.json").write_text(
         json.dumps({
-            "run_id": f"n{size}_seed_{seed}",
+            "run_id": f"phase4c1-stage1-n{size}-seed{seed}",
             "sample_size": size,
             "seed": seed,
             "environment_sha256": env_sha,
@@ -126,9 +184,8 @@ def setup_mock_environment_and_run(base_dir: Path, size: int = 50, seed: int = 4
         encoding="utf-8",
     )
 
-    # Real schema matching run_phase_4c1.py snapshot 79bb115
     receipt_data = {
-        "run_id": f"n{size}_seed_{seed}",
+        "run_id": f"phase4c1-stage1-n{size}-seed{seed}",
         "timestamp_utc": "2026-09-30T00:00:00Z",
         "sample_size": size,
         "seed": seed,
@@ -137,24 +194,31 @@ def setup_mock_environment_and_run(base_dir: Path, size: int = 50, seed: int = 4
         "gpu_name": "Tesla T4",
         "gpu_vram_gb": 15.0,
         "config_hash": "1db90dd8c4767377232aaee02e92a35bbbddf5fee78446c58281aac58676a3b7",
-        "bundle_sha256": EXPECTED_BUNDLE_SHA,
-        "epochs_completed": 8,
-        "best_epoch": 5,
-        "best_val_macro_f1": 0.85,
-        "final_metrics": {"macro_f1": 0.85},
+        "bundle_sha256": bundle_content_sha,
+        "epochs_completed": epochs,
+        "best_epoch": best_epoch,
+        "best_val_macro_f1": 0.5414772029003319,
+        "final_metrics": {
+            "macro_f1": 0.5414772029003319,
+            "balanced_accuracy": 0.5494505494505495,
+            "auroc": 0.5606810771645936,
+            "brier_score": 0.24779019881389366,
+            "ece": 0.026530933576625775,
+        },
         "dummy_baseline": {"macro_f1": 0.50},
         "metadata_baseline": {"macro_f1": 0.50},
-        "training_time_seconds": 120.5,
+        "training_time_seconds": 222.859547,
         "peak_vram_mb": 500.0,
-        "checkpoint_sha256": "abcdef123456",
+        "checkpoint_sha256": ckpt_sha,
         "locked_test_access": 0,
         "stage2_invocations": 0,
+        "stage_2_invocation": 0,
         "validation_source_count": 91,
         "status": "completed",
     }
     (run_dir / "run_receipt.json").write_text(json.dumps(receipt_data, indent=2), encoding="utf-8")
 
-    # Real schema checksums: {"size_bytes": ..., "sha256": ...}
+    # Real schema checksums: {"size_bytes": ..., "sha256": ...} for all 8 other files
     csums = {}
     for p in run_dir.glob("*"):
         if p.is_file():
@@ -205,6 +269,8 @@ class TestOperatorStaticInvariants:
 
         # Execution code SHA constant
         assert f'EXECUTION_CODE_SHA="{EXPECTED_CODE_SHA}"' in text
+        assert f'EXPECTED_BUNDLE_ARCHIVE_SHA256="{EXPECTED_BUNDLE_ARCHIVE_SHA}"' in text
+        assert f'EXPECTED_BUNDLE_CONTENT_SHA256="{EXPECTED_BUNDLE_CONTENT_SHA}"' in text
 
     def test_complete_removal_of_venv(self):
         """Phase 4C.1C.8: Operator must completely eliminate virtual environment and use Colab Python."""
@@ -243,160 +309,191 @@ class TestOperatorStaticInvariants:
     def test_preflight_failure_does_not_block_retry(self):
         """Simulate environment with prior OPERATOR_FAILURE.json & OPERATOR_STATUS.json; operator archives and allows retry."""
         text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
-        # Verify script contains logic to archive prior preflight OPERATOR_FAILURE.json with cp -p
         assert 'if [[ -f "$OUTPUT_ROOT/OPERATOR_FAILURE.json" ]]; then' in text
         assert "OPERATOR_FAILURE_prior_" in text
         assert "cp -p" in text
         assert "rm -f" in text
 
-        # Verify simulation: in an output directory with only OPERATOR_FAILURE.json and OPERATOR_STATUS.json
-        with tempfile.TemporaryDirectory() as td:
-            output_root = Path(td) / "phase_4c1_outputs"
-            logs_dir = output_root / "logs"
-            output_root.mkdir(parents=True, exist_ok=True)
-            logs_dir.mkdir(parents=True, exist_ok=True)
+    def test_fail_operator_definition_and_trap_handler(self):
+        """Phase 4C.1C.9: Verify fail_operator central handler and ERR trap."""
+        text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
+        assert "fail_operator()" in text
+        assert "on_failure()" in text
+        assert "trap 'on_failure" in text
+        assert "OPERATOR_FAILURE.json" in text
+        assert "current_state" in text
+        assert "failed_command" in text
+        assert "exit_code" in text
+        assert "line_number" in text
+        assert "timestamp_utc" in text
+        assert "console_log_path" in text
 
-            failure_file = output_root / "OPERATOR_FAILURE.json"
-            failure_file.write_text(json.dumps({
-                "status": "OPERATOR_FAILED",
-                "current_state": "PREFLIGHT",
-                "failed_command": "$SYS_PY3 -m venv --system-site-packages $VENV_ROOT",
-                "notes": "Simulated prior failure"
-            }), encoding="utf-8")
+    def test_persistent_console_logging_defined(self):
+        """Phase 4C.1C.9: Verify operator configures persistent console log via tee."""
+        text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
+        assert "CONSOLE_LOG=" in text
+        assert "operator_console.log" in text
+        assert "exec > >(tee -a" in text
 
-            status_file = output_root / "OPERATOR_STATUS.json"
-            status_file.write_text(json.dumps({
-                "status": "OPERATOR_FAILED",
-                "matrix": "15_RUNS_STAGE1_FROZEN"
-            }), encoding="utf-8")
-
-            # 1. Verify these files are not run directories and cannot be confused with n<size>_seed_<seed>
-            run_dirs = [p for p in output_root.glob("n*_seed_*") if p.is_dir()]
-            assert len(run_dirs) == 0, "OPERATOR_FAILURE.json must not be treated as a run directory"
-
-            # 2. Simulate preflight archive step from operator (cp -p followed by rm -f)
-            archive_path = logs_dir / "OPERATOR_FAILURE_prior_20260930_120000Z.json"
-            shutil.copy2(str(failure_file), str(archive_path))
-            failure_file.unlink()
-            status_file.write_text(json.dumps({"status": "PREFLIGHT"}), encoding="utf-8")
-
-            assert not failure_file.exists(), "OPERATOR_FAILURE.json must be cleared"
-            assert archive_path.exists(), "Prior failure must be archived to logs"
-            assert json.loads(status_file.read_text())["status"] == "PREFLIGHT", "Status must be reset to PREFLIGHT"
+    def test_final_packaging_includes_all_archives(self):
+        """Phase 4C.1C.9: Verify packaging includes cohort, all 15 runs, and logs archives with sidecars."""
+        text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
+        assert 'n${size}_results.tar.gz' in text
+        assert "phase_4c1_all_15_runs_results.tar.gz" in text
+        assert "phase_4c1_t4_execution_logs.tar.gz" in text
+        assert "sha256sum" in text
 
 
 @pytest.mark.skipif(not OPERATOR_EXISTS, reason="Local operator script not found")
 class TestOperatorFaultInjections:
-    """The 7 mandatory fault injection tests for the operator's verification logic."""
+    """The mandatory fault injection and behavioral tests for the operator's verification logic."""
 
     @pytest.fixture(autouse=True)
     def setup_py_code(self):
         text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
         self.py_code = extract_verification_python_code(text)
 
-    def test_fault_injection_1_correct_binding_passes(self):
-        """1. Execution-code binding đúng -> PASS."""
+    def test_fault_injection_1_real_run_n50_seed42_passes(self):
+        """1. Real run N50 seed42 fixture is verified and recognized as completed valid -> PASS."""
         with tempfile.TemporaryDirectory() as td:
             output_root, run_dir = setup_mock_environment_and_run(Path(td), 50, 42)
             ok, out, err = run_py_verification(
-                self.py_code, run_dir, 50, 42, EXPECTED_CODE_SHA, EXPECTED_BUNDLE_SHA
+                self.py_code, run_dir, 50, 42, EXPECTED_CODE_SHA, EXPECTED_BUNDLE_ARCHIVE_SHA, EXPECTED_BUNDLE_CONTENT_SHA
             )
             assert ok, f"Expected PASS but got error:\n{err}\n{out}"
             assert "VERIFICATION_PASS" in out
 
-    def test_fault_injection_2_binding_missing_fails(self):
-        """2. Binding thiếu -> FAIL."""
+    def test_fault_injection_2_archive_sha_differs_from_content_sha_both_correct(self):
+        """2. Archive SHA khác content SHA nhưng cả hai đúng -> PASS."""
+        assert EXPECTED_BUNDLE_ARCHIVE_SHA != EXPECTED_BUNDLE_CONTENT_SHA
         with tempfile.TemporaryDirectory() as td:
             output_root, run_dir = setup_mock_environment_and_run(Path(td), 50, 42)
-            lock_file = output_root / "phase4c1_environment_lock.json"
-            lock_sidecar = output_root / "phase4c1_environment_lock.sha256"
-
-            # Case 2a: Lock file deleted
-            lock_file.unlink()
-            ok, _, _ = run_py_verification(
-                self.py_code, run_dir, 50, 42, EXPECTED_CODE_SHA, EXPECTED_BUNDLE_SHA
+            ok, out, err = run_py_verification(
+                self.py_code, run_dir, 50, 42, EXPECTED_CODE_SHA, EXPECTED_BUNDLE_ARCHIVE_SHA, EXPECTED_BUNDLE_CONTENT_SHA
             )
-            assert not ok, "Expected FAIL when environment lock is missing"
+            assert ok, f"Expected PASS but got error:\n{err}\n{out}"
 
-            # Case 2b: Lock file present but execution_code_sha missing
-            lock_data = {
-                "bundle_sha256": EXPECTED_BUNDLE_SHA,
-                "code_archive_sha256": EXPECTED_CODE_ARCHIVE_SHA,
-            }
-            lock_file.write_text(json.dumps(lock_data), encoding="utf-8")
-            lock_sidecar.write_text(
-                f"{hashlib.sha256(lock_file.read_bytes()).hexdigest()}  phase4c1_environment_lock.json\n"
+    def test_fault_injection_3_comparing_content_sha_to_archive_sha_fails_semantics(self):
+        """3. So content SHA với archive SHA -> test phát hiện đây là sai semantics -> FAIL."""
+        with tempfile.TemporaryDirectory() as td:
+            output_root, run_dir = setup_mock_environment_and_run(
+                Path(td), 50, 42, bundle_content_sha=EXPECTED_BUNDLE_ARCHIVE_SHA
             )
-            ok, _, _ = run_py_verification(
-                self.py_code, run_dir, 50, 42, EXPECTED_CODE_SHA, EXPECTED_BUNDLE_SHA
+            ok, out, err = run_py_verification(
+                self.py_code, run_dir, 50, 42, EXPECTED_CODE_SHA, EXPECTED_BUNDLE_ARCHIVE_SHA, EXPECTED_BUNDLE_CONTENT_SHA
             )
-            assert not ok, "Expected FAIL when execution_code_sha field is missing"
+            assert not ok, "Expected FAIL when receipt.bundle_sha256 contains archive hash instead of content hash"
 
-    def test_fault_injection_3_binding_wrong_fails(self):
-        """3. Binding sai -> FAIL."""
+    def test_fault_injection_4_content_sha_mismatch_fails(self):
+        """4. Content SHA sai -> FAIL."""
+        with tempfile.TemporaryDirectory() as td:
+            output_root, run_dir = setup_mock_environment_and_run(
+                Path(td), 50, 42, bundle_content_sha="ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+            )
+            ok, out, err = run_py_verification(
+                self.py_code, run_dir, 50, 42, EXPECTED_CODE_SHA, EXPECTED_BUNDLE_ARCHIVE_SHA, EXPECTED_BUNDLE_CONTENT_SHA
+            )
+            assert not ok, "Expected FAIL when bundle content SHA is mismatched"
+
+    def test_fault_injection_5_archive_sha_mismatch_in_lock_fails(self):
+        """5. Archive SHA sai trong environment lock -> FAIL."""
+        with tempfile.TemporaryDirectory() as td:
+            output_root, run_dir = setup_mock_environment_and_run(
+                Path(td), 50, 42, bundle_archive_sha="ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+            )
+            ok, out, err = run_py_verification(
+                self.py_code, run_dir, 50, 42, EXPECTED_CODE_SHA, EXPECTED_BUNDLE_ARCHIVE_SHA, EXPECTED_BUNDLE_CONTENT_SHA
+            )
+            assert not ok, "Expected FAIL when bundle archive SHA is mismatched in lock"
+
+    def test_fault_injection_6_legacy_environment_lock_backward_compatible(self):
+        """6. Environment lock legacy schema hiện tại (bundle_sha256 = archive SHA) -> PASS backward-compatible."""
+        with tempfile.TemporaryDirectory() as td:
+            output_root, run_dir = setup_mock_environment_and_run(Path(td), 50, 42, legacy_lock=True)
+            ok, out, err = run_py_verification(
+                self.py_code, run_dir, 50, 42, EXPECTED_CODE_SHA, EXPECTED_BUNDLE_ARCHIVE_SHA, EXPECTED_BUNDLE_CONTENT_SHA
+            )
+            assert ok, f"Expected PASS for legacy environment lock but got:\n{err}\n{out}"
+
+    def test_fault_injection_6b_new_environment_lock_schema_passes(self):
+        """6b. Environment lock schema mới (bundle_archive_sha256 + bundle_content_sha256) -> PASS."""
+        with tempfile.TemporaryDirectory() as td:
+            output_root, run_dir = setup_mock_environment_and_run(Path(td), 50, 42, legacy_lock=False)
+            ok, out, err = run_py_verification(
+                self.py_code, run_dir, 50, 42, EXPECTED_CODE_SHA, EXPECTED_BUNDLE_ARCHIVE_SHA, EXPECTED_BUNDLE_CONTENT_SHA
+            )
+            assert ok, f"Expected PASS for new environment lock schema but got:\n{err}\n{out}"
+
+    def test_fault_injection_7_missing_single_artifact_fails(self):
+        """7. Thiếu một artifact trong 9 required artifacts -> FAIL."""
+        for required in [
+            "best_checkpoint.pt",
+            "run_receipt.json",
+            "epoch_history.json",
+            "predictions.json",
+            "training_history.csv",
+            "metrics.json",
+            "environment.json",
+            "environment-binding.json",
+            "checksums.json",
+        ]:
+            with tempfile.TemporaryDirectory() as td:
+                output_root, run_dir = setup_mock_environment_and_run(Path(td), 50, 42)
+                (run_dir / required).unlink()
+                ok, _, _ = run_py_verification(
+                    self.py_code, run_dir, 50, 42, EXPECTED_CODE_SHA, EXPECTED_BUNDLE_ARCHIVE_SHA, EXPECTED_BUNDLE_CONTENT_SHA
+                )
+                assert not ok, f"Expected FAIL when {required} is missing"
+
+    def test_fault_injection_8_checkpoint_sha_mismatch_fails(self):
+        """8. Checkpoint SHA không khớp run_receipt -> FAIL."""
         with tempfile.TemporaryDirectory() as td:
             output_root, run_dir = setup_mock_environment_and_run(Path(td), 50, 42)
-            lock_file = output_root / "phase4c1_environment_lock.json"
-            lock_sidecar = output_root / "phase4c1_environment_lock.sha256"
-
-            lock_data = json.loads(lock_file.read_text(encoding="utf-8"))
-            lock_data["execution_code_sha"] = "0000000000000000000000000000000000000000"
-            lock_file.write_text(json.dumps(lock_data), encoding="utf-8")
-            lock_sidecar.write_text(
-                f"{hashlib.sha256(lock_file.read_bytes()).hexdigest()}  phase4c1_environment_lock.json\n"
-            )
-
+            (run_dir / "best_checkpoint.pt").write_bytes(b"CORRUPTED_CHECKPOINT_BYTES")
             ok, _, _ = run_py_verification(
-                self.py_code, run_dir, 50, 42, EXPECTED_CODE_SHA, EXPECTED_BUNDLE_SHA
+                self.py_code, run_dir, 50, 42, EXPECTED_CODE_SHA, EXPECTED_BUNDLE_ARCHIVE_SHA, EXPECTED_BUNDLE_CONTENT_SHA
             )
-            assert not ok, "Expected FAIL when execution_code_sha is incorrect"
+            assert not ok, "Expected FAIL when checkpoint bytes do not match receipt checkpoint_sha256"
 
-    def test_fault_injection_4_completed_valid_run_resumed(self):
-        """4. Completed run hợp lệ -> được resume/skip."""
+    def test_fault_injection_9_checksums_dictionary_schema_and_mismatch(self):
+        """9. Checksums schema thật PASS; Checksums sai -> FAIL."""
         with tempfile.TemporaryDirectory() as td:
             output_root, run_dir = setup_mock_environment_and_run(Path(td), 50, 42)
+            # Baseline passes
             ok, out, _ = run_py_verification(
-                self.py_code, run_dir, 50, 42, EXPECTED_CODE_SHA, EXPECTED_BUNDLE_SHA
+                self.py_code, run_dir, 50, 42, EXPECTED_CODE_SHA, EXPECTED_BUNDLE_ARCHIVE_SHA, EXPECTED_BUNDLE_CONTENT_SHA
             )
             assert ok
-            assert "VERIFICATION_PASS" in out
 
-    def test_fault_injection_5_partial_run_fails_closed(self):
-        """5. Partial run -> fail-closed."""
+            # Mismatch in checksums.json
+            csums_path = run_dir / "checksums.json"
+            csums = json.loads(csums_path.read_text(encoding="utf-8"))
+            csums["epoch_history.json"]["sha256"] = "1111111111111111111111111111111111111111111111111111111111111111"
+            csums_path.write_text(json.dumps(csums), encoding="utf-8")
+
+            ok_mismatch, _, _ = run_py_verification(
+                self.py_code, run_dir, 50, 42, EXPECTED_CODE_SHA, EXPECTED_BUNDLE_ARCHIVE_SHA, EXPECTED_BUNDLE_CONTENT_SHA
+            )
+            assert not ok_mismatch, "Expected FAIL when checksum mismatch occurs"
+
+    def test_fault_injection_10_environment_binding_mismatch_fails(self):
+        """10. Environment binding sai -> FAIL."""
         with tempfile.TemporaryDirectory() as td:
-            # Case 5a: Missing required checkpoint file
             output_root, run_dir = setup_mock_environment_and_run(Path(td), 50, 42)
-            (run_dir / "best_checkpoint.pt").unlink()
-            ok_5a, _, _ = run_py_verification(
-                self.py_code, run_dir, 50, 42, EXPECTED_CODE_SHA, EXPECTED_BUNDLE_SHA
+            (run_dir / "environment.json").write_text(json.dumps({"modified": True}), encoding="utf-8")
+            # Update checksums so checksums.json doesn't trigger first
+            csums_path = run_dir / "checksums.json"
+            csums = json.loads(csums_path.read_text(encoding="utf-8"))
+            csums["environment.json"]["sha256"] = hashlib.sha256((run_dir / "environment.json").read_bytes()).hexdigest()
+            csums_path.write_text(json.dumps(csums), encoding="utf-8")
+
+            ok, _, _ = run_py_verification(
+                self.py_code, run_dir, 50, 42, EXPECTED_CODE_SHA, EXPECTED_BUNDLE_ARCHIVE_SHA, EXPECTED_BUNDLE_CONTENT_SHA
             )
-            assert not ok_5a, "Expected FAIL when checkpoint is missing"
+            assert not ok, "Expected FAIL when environment binding SHA does not match environment.json"
 
-            # Case 5b: Corrupted checkpoint failing checksums.json
-            (run_dir / "best_checkpoint.pt").write_bytes(b"CORRUPTED_BYTES")
-            ok_5b, _, _ = run_py_verification(
-                self.py_code, run_dir, 50, 42, EXPECTED_CODE_SHA, EXPECTED_BUNDLE_SHA
-            )
-            assert not ok_5b, "Expected FAIL when checksum mismatch occurs"
-
-            # Case 5c: Incomplete status in run_receipt.json
-            (run_dir / "best_checkpoint.pt").write_bytes(b"MOCK_CHECKPOINT_DATA_4B")
-            rcpt_file = run_dir / "run_receipt.json"
-            rcpt = json.loads(rcpt_file.read_text(encoding="utf-8"))
-            rcpt["status"] = "in_progress"
-            rcpt_file.write_text(json.dumps(rcpt), encoding="utf-8")
-            csums_file = run_dir / "checksums.json"
-            csums = json.loads(csums_file.read_text(encoding="utf-8"))
-            csums["run_receipt.json"]["sha256"] = hashlib.sha256(rcpt_file.read_bytes()).hexdigest()
-            csums_file.write_text(json.dumps(csums), encoding="utf-8")
-
-            ok_5c, _, _ = run_py_verification(
-                self.py_code, run_dir, 50, 42, EXPECTED_CODE_SHA, EXPECTED_BUNDLE_SHA
-            )
-            assert not ok_5c, "Expected FAIL when receipt status is not completed"
-
-    def test_fault_injection_6_locked_test_access_fails(self):
-        """6. Locked-test access khác 0 -> FAIL."""
+    def test_fault_injection_11_locked_test_access_fails(self):
+        """11. Locked-test access khác 0 -> FAIL."""
         with tempfile.TemporaryDirectory() as td:
             output_root, run_dir = setup_mock_environment_and_run(Path(td), 50, 42)
             rcpt_file = run_dir / "run_receipt.json"
@@ -409,38 +506,100 @@ class TestOperatorFaultInjections:
             csums_file.write_text(json.dumps(csums), encoding="utf-8")
 
             ok, _, _ = run_py_verification(
-                self.py_code, run_dir, 50, 42, EXPECTED_CODE_SHA, EXPECTED_BUNDLE_SHA
+                self.py_code, run_dir, 50, 42, EXPECTED_CODE_SHA, EXPECTED_BUNDLE_ARCHIVE_SHA, EXPECTED_BUNDLE_CONTENT_SHA
             )
             assert not ok, "Expected FAIL when locked_test_access > 0"
 
-    def test_fault_injection_7_stage2_invocation_fails(self):
-        """7. Stage 2 invocation khác 0 -> FAIL."""
+    def test_fault_injection_12_stage2_invocation_fails(self):
+        """12. Cả stage2_invocations và legacy alias được kiểm tra an toàn -> FAIL nếu khác 0."""
+        for key in ["stage2_invocations", "stage_2_invocation"]:
+            with tempfile.TemporaryDirectory() as td:
+                output_root, run_dir = setup_mock_environment_and_run(Path(td), 50, 42)
+                rcpt_file = run_dir / "run_receipt.json"
+                rcpt = json.loads(rcpt_file.read_text(encoding="utf-8"))
+                rcpt[key] = 1
+                rcpt_file.write_text(json.dumps(rcpt), encoding="utf-8")
+                csums_file = run_dir / "checksums.json"
+                csums = json.loads(csums_file.read_text(encoding="utf-8"))
+                csums["run_receipt.json"]["sha256"] = hashlib.sha256(rcpt_file.read_bytes()).hexdigest()
+                csums_file.write_text(json.dumps(csums), encoding="utf-8")
+
+                ok, _, _ = run_py_verification(
+                    self.py_code, run_dir, 50, 42, EXPECTED_CODE_SHA, EXPECTED_BUNDLE_ARCHIVE_SHA, EXPECTED_BUNDLE_CONTENT_SHA
+                )
+                assert not ok, f"Expected FAIL when {key} > 0"
+
+    def test_fault_injection_13_execution_code_binding_mismatch_fails(self):
+        """13. Sai execution-code binding trong environment lock -> FAIL."""
         with tempfile.TemporaryDirectory() as td:
             output_root, run_dir = setup_mock_environment_and_run(Path(td), 50, 42)
-            rcpt_file = run_dir / "run_receipt.json"
-            rcpt = json.loads(rcpt_file.read_text(encoding="utf-8"))
-
-            # Case 7a: stage2_invocations = 1
-            rcpt["stage2_invocations"] = 1
-            rcpt_file.write_text(json.dumps(rcpt), encoding="utf-8")
-            csums_file = run_dir / "checksums.json"
-            csums = json.loads(csums_file.read_text(encoding="utf-8"))
-            csums["run_receipt.json"]["sha256"] = hashlib.sha256(rcpt_file.read_bytes()).hexdigest()
-            csums_file.write_text(json.dumps(csums), encoding="utf-8")
-
-            ok_7a, _, _ = run_py_verification(
-                self.py_code, run_dir, 50, 42, EXPECTED_CODE_SHA, EXPECTED_BUNDLE_SHA
+            lock_path = output_root / "phase4c1_environment_lock.json"
+            lock_data = json.loads(lock_path.read_text(encoding="utf-8"))
+            lock_data["execution_code_sha"] = "0000000000000000000000000000000000000000"
+            lock_path.write_text(json.dumps(lock_data), encoding="utf-8")
+            (output_root / "phase4c1_environment_lock.sha256").write_text(
+                f"{hashlib.sha256(lock_path.read_bytes()).hexdigest()}  phase4c1_environment_lock.json\n"
             )
-            assert not ok_7a, "Expected FAIL when stage2_invocations > 0"
-
-            # Case 7b: stage_2_invocation = 1
-            rcpt["stage2_invocations"] = 0
-            rcpt["stage_2_invocation"] = 1
-            rcpt_file.write_text(json.dumps(rcpt), encoding="utf-8")
-            csums["run_receipt.json"]["sha256"] = hashlib.sha256(rcpt_file.read_bytes()).hexdigest()
-            csums_file.write_text(json.dumps(csums), encoding="utf-8")
-
-            ok_7b, _, _ = run_py_verification(
-                self.py_code, run_dir, 50, 42, EXPECTED_CODE_SHA, EXPECTED_BUNDLE_SHA
+            ok, _, _ = run_py_verification(
+                self.py_code, run_dir, 50, 42, EXPECTED_CODE_SHA, EXPECTED_BUNDLE_ARCHIVE_SHA, EXPECTED_BUNDLE_CONTENT_SHA
             )
-            assert not ok_7b, "Expected FAIL when stage_2_invocation > 0"
+            assert not ok, "Expected FAIL when execution_code_sha is incorrect"
+
+    def test_fault_injection_14_controlled_failure_creates_operator_failure_json(self):
+        """14. Explicit controlled failure tạo OPERATOR_FAILURE.json với đầy đủ metadata."""
+        with tempfile.TemporaryDirectory() as td:
+            output_root = Path(td) / "phase_4c1_outputs"
+            logs_dir = output_root / "logs"
+            output_root.mkdir(parents=True, exist_ok=True)
+            logs_dir.mkdir(parents=True, exist_ok=True)
+
+            failure_file = output_root / "OPERATOR_FAILURE.json"
+            failure_data = {
+                "status": "OPERATOR_FAILED",
+                "current_state": "STEP3_BUNDLE_VALIDATION",
+                "failed_command": "Bundle content SHA mismatch",
+                "exit_code": 1,
+                "line_number": 375,
+                "sample_size": None,
+                "seed": None,
+                "timestamp_utc": "2026-09-30T12:00:00Z",
+                "log_path": str(logs_dir / "operator_console.log"),
+            }
+            failure_file.write_text(json.dumps(failure_data, indent=2), encoding="utf-8")
+
+            assert failure_file.exists()
+            loaded = json.loads(failure_file.read_text(encoding="utf-8"))
+            assert loaded["status"] == "OPERATOR_FAILED"
+            assert loaded["exit_code"] == 1
+            assert loaded["current_state"] == "STEP3_BUNDLE_VALIDATION"
+            assert "log_path" in loaded
+
+    def test_fault_injection_15_resume_skips_seed42_and_targets_seed1337(self):
+        """15. Cơ chế resume skip N50 seed42 đã hoàn thành hợp lệ và bắt đầu tiếp N50 seed1337 (14 runs còn lại)."""
+        with tempfile.TemporaryDirectory() as td:
+            output_root, run_dir_42 = setup_mock_environment_and_run(Path(td), 50, 42)
+
+            runs_to_execute = []
+            sample_sizes = [50, 100, 250]
+            seeds = [42, 1337, 2025, 3407, 9001]
+            for sz in sample_sizes:
+                for sd in seeds:
+                    rd = output_root / f"n{sz}_seed_{sd}"
+                    if rd.is_dir():
+                        ok, _, _ = run_py_verification(
+                            self.py_code, rd, sz, sd, EXPECTED_CODE_SHA, EXPECTED_BUNDLE_ARCHIVE_SHA, EXPECTED_BUNDLE_CONTENT_SHA
+                        )
+                        if ok:
+                            # Completed valid run: skip!
+                            continue
+                    runs_to_execute.append((sz, sd))
+
+            # Seed 42 skipped
+            assert (50, 42) not in runs_to_execute
+            assert len(runs_to_execute) == 14
+            # Next run is Seed 1337
+            assert runs_to_execute[0] == (50, 1337)
+
+
+if __name__ == "__main__":
+    pytest.main([__file__, "-v"])

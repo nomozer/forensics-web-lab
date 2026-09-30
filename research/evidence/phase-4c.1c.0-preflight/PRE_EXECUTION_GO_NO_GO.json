@@ -1,10 +1,10 @@
 {
   "pre_execution_verdict": {
     "schema_version": "1.0.0",
-    "phase": "Phase 4C.1",
+    "phase": "Phase 4C.1C.9",
     "verdict": "GO",
-    "verdict_rationale": "All pre-execution gates pass without exception: operator refactored to eliminate virtual environments completely and directly utilize Colab system Python, PyTorch (CUDA-enabled), and auxiliary dependencies; preflight failure retry allowed without blocking; operator static assertions and 7 mandatory fault injections 13/13 PASS; execution snapshot binding 79bb115 is intact with zero executable code changes; single canonical notebook refactored into a concise 5-cell launcher (1 markdown + 4 code, 10,395 bytes, SHA-256 3cd2dc4c..., EXECUTE=True ready) with read-only fail-closed inputs preflight and persistent Drive architecture; all 17 notebook tests PASS; duplicate notebook is removed; training runs remain 0; locked-test accesses remain 0; and stage 2 invocations remain 0.",
-    "timestamp_utc": "2026-09-30T05:21:47.951805+00:00",
+    "verdict_rationale": "All gates pass without exception: bundle hash contract reconciled with clear semantic distinction between BUNDLE_ARCHIVE_SHA256 (d49a106f...) and BUNDLE_CONTENT_SHA256 (c365c812...); legacy environment lock verified backward-compatibly; operator error handling centralized with fail_operator and persistent console logging; canonical Colab notebook hardened with process error log tail streaming; real completed run N50 seed42 verified as COMPLETED_VALID and skipped by resume logic; remote completed runs = 1/15, remaining = 14, locked-test = 0, stage 2 = 0.",
+    "timestamp_utc": "2026-09-30T08:28:50.064788+00:00",
     "gates": {
       "cardinality_reconciliation": {
         "status": "PASS",
@@ -51,8 +51,8 @@
       "operator_static_assertions": {
         "status": "PASS",
         "script_name": "phase_4c1_t4_execute_all_stage1.sh",
-        "bytes": 25470,
-        "sha256": "16cc4655c77ca5931290d5dd3c2612e40af1084cd0f0c1320e8fc68260e63daa",
+        "bytes": 29794,
+        "sha256": "e105441ed20a40da55cc8db4fd7f83440182cae8f951d46f03939b08504efc14",
         "assertions_total": 25,
         "assertions_passed": 25,
         "assertions_failed": 0,
@@ -70,8 +70,8 @@
       "canonical_colab_notebook": {
         "status": "PASS",
         "path": "notebooks/phase_4c1_learning_curve_colab.ipynb",
-        "bytes": 10395,
-        "sha256": "3cd2dc4c2d69cf40aa4a117eb8be4bcefcca5fc39da98ebe26a27677f08a90f7",
+        "bytes": 11705,
+        "sha256": "e8e17a48120e83ecfd26ff49a07a3ad5126df3a103e384c21a3f84348b673792",
         "cells_total": 5,
         "markdown_cells": 1,
         "code_cells": 4,
@@ -94,26 +94,51 @@
       },
       "scientific_honesty": {
         "status": "PASS",
-        "training_runs_in_wave": 0,
+        "training_runs_in_wave": 1,
         "locked_test_accesses": 0,
         "stage_2_invocations": 0,
-        "unsupported_model_performance_claim": false
+        "unsupported_model_performance_claim": false,
+        "remote_completed_runs": 1,
+        "remaining_runs": 14,
+        "completed_run_details": {
+          "run_id": "phase4c1-stage1-n50-seed42",
+          "sample_size": 50,
+          "seed": 42,
+          "status": "completed",
+          "verification_verdict": "COMPLETED_VALID",
+          "resume_action": "SKIP",
+          "epochs_completed": 23,
+          "best_epoch": 18,
+          "validation_sources": 91,
+          "validation_samples": 182,
+          "locked_test_access": 0,
+          "stage2_invocations": 0,
+          "training_time_seconds": 222.859547,
+          "checkpoint_sha256": "b5fa53bfc3d31f239841800e258d122217e0541130ddde4ecec0b78f1bda8f9b",
+          "preliminary_metrics": {
+            "macro_f1": 0.5414772029003319,
+            "balanced_accuracy": 0.5494505494505495,
+            "auroc": 0.5606810771645936,
+            "brier_score": 0.24779019881389366,
+            "ece": 0.026530933576625775
+          }
+        }
       }
     },
     "execution_readiness": {
-      "status": "READY_FOR_USER_COLAB_EXECUTION",
+      "status": "READY_FOR_USER_COLAB_RESUME",
       "action_summary": "Only upload the refactored operator script and canonical notebook. Code archive and dataset bundle are unchanged and do not need re-uploading.",
       "reupload_required_files": [
         {
           "file_name": "phase_4c1_t4_execute_all_stage1.sh",
-          "bytes": 25470,
-          "sha256": "16cc4655c77ca5931290d5dd3c2612e40af1084cd0f0c1320e8fc68260e63daa",
+          "bytes": 29794,
+          "sha256": "e105441ed20a40da55cc8db4fd7f83440182cae8f951d46f03939b08504efc14",
           "target_drive_directory": "My Drive/Colab Notebooks/forensics-web-lab/phase_4c1/inputs/"
         },
         {
           "file_name": "phase_4c1_learning_curve_colab.ipynb",
-          "bytes": 10395,
-          "sha256": "3cd2dc4c2d69cf40aa4a117eb8be4bcefcca5fc39da98ebe26a27677f08a90f7",
+          "bytes": 11705,
+          "sha256": "e8e17a48120e83ecfd26ff49a07a3ad5126df3a103e384c21a3f84348b673792",
           "target_drive_directory": "My Drive/Colab Notebooks/forensics-web-lab/phase_4c1/"
         }
       ],

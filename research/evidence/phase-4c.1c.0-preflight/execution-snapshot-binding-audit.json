@@ -1,10 +1,10 @@
 {
   "schema_version": "1.0.0",
-  "phase": "Phase 4C.1C.8",
+  "phase": "Phase 4C.1C.9",
   "audit_name": "execution_snapshot_binding_audit",
-  "timestamp_utc": "2026-09-30T05:21:47.951805+00:00",
+  "timestamp_utc": "2026-09-30T08:28:50.064788+00:00",
   "execution_snapshot_commit": "79bb11527d900fd387de1f41f2010c4152b7fea7",
-  "audited_head_commit": "cdebd630d6395c5a87e867253838dfd79b3b784b",
+  "audited_head_commit": "b842accdd469a552ae2bab308205acfd6688a8a4",
   "code_archive": {
     "name": "phase_4c1_code_79bb115.tar.gz",
     "bytes": 758350,
@@ -12,7 +12,7 @@
     "status": "VERIFIED_CURRENT_AND_IMMUTABLE"
   },
   "diff_summary": {
-    "total_files_changed": 5,
+    "total_files_changed": 11,
     "files": [
       {
         "status": "M",
@@ -20,11 +20,35 @@
       },
       {
         "status": "M",
+        "path": "docs/continuity/CURRENT_STATE.md"
+      },
+      {
+        "status": "M",
         "path": "docs/continuity/STATUS_LEDGER.md"
+      },
+      {
+        "status": "M",
+        "path": "ml/tests/test_phase_4c1_notebook.py"
+      },
+      {
+        "status": "A",
+        "path": "ml/tests/test_phase_4c1_operator.py"
+      },
+      {
+        "status": "M",
+        "path": "notebooks/phase_4c1_learning_curve_colab.ipynb"
+      },
+      {
+        "status": "A",
+        "path": "research/evidence/phase-4c.1c.0-preflight/PRE_EXECUTION_GO_NO_GO.json"
       },
       {
         "status": "A",
         "path": "research/evidence/phase-4c.1c.0-preflight/execution-code-n250-receipt.json"
+      },
+      {
+        "status": "A",
+        "path": "research/evidence/phase-4c.1c.0-preflight/execution-snapshot-binding-audit.json"
       },
       {
         "status": "A",
