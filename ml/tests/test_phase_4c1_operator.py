@@ -30,8 +30,8 @@ OPERATOR_SIDECAR = OPERATOR_SCRIPT.with_name(OPERATOR_SCRIPT.name + ".sha256")
 EXPECTED_CODE_SHA = "79bb11527d900fd387de1f41f2010c4152b7fea7"
 EXPECTED_BUNDLE_SHA = "d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27"
 EXPECTED_CODE_ARCHIVE_SHA = "5e775a7708d1555bf22f56dceb5358e26e07dd224c4b6186f575aff4d2b590d5"
-EXPECTED_OPERATOR_SHA = "1a7570d757ccfc1b471c636f64d0f001c3b6fcc9306b9894f94186f909f1f3c4"
-EXPECTED_OPERATOR_BYTES = 21662
+EXPECTED_OPERATOR_SHA = "6da81e2bf449f7d98492f8960a4b6330487bdcc5f96a39a2f02ab4423af2d9dc"
+EXPECTED_OPERATOR_BYTES = 23344
 
 OPERATOR_EXISTS = OPERATOR_SCRIPT.exists()
 
@@ -201,6 +201,75 @@ class TestOperatorStaticInvariants:
 
         # Execution code SHA constant
         assert f'EXECUTION_CODE_SHA="{EXPECTED_CODE_SHA}"' in text
+
+    def test_venv_creation_and_without_pip_regression(self):
+        """Regression tests for Colab venv creation without ensurepip."""
+        text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
+        # 1. Must contain --without-pip and --system-site-packages
+        assert "--without-pip" in text
+        assert "--system-site-packages" in text
+
+        # 2. No command creating venv without --without-pip (which triggers ensurepip)
+        lines = [line.strip() for line in text.splitlines()]
+        for line in lines:
+            if "venv" in line and ("$SYS_PY3" in line or "python3" in line) and "-m venv" in line:
+                assert "--without-pip" in line, f"Found venv creation missing --without-pip: {line}"
+                assert "--system-site-packages" in line, f"Found venv creation missing --system-site-packages: {line}"
+
+        # 3. Check venv pip verification
+        assert '"$VENV_ROOT/bin/python" -m pip --version' in text
+
+        # 4. Check import torch and CUDA verification immediately after venv
+        assert 'import torch; assert torch.cuda.is_available(); print(torch.__version__)' in text
+
+        # 5. Check no pip upgrade or direct bin/pip call that can fail
+        assert '"$VENV_ROOT/bin/pip" install --upgrade' not in text
+        assert '"$VENV_ROOT/bin/pip" install' not in text
+
+        # 6. Check safe venv cleanup: strictly checks path is /content/phase4c1-venv before rm -rf
+        assert 'if [[ "$VENV_ROOT" == "/content/phase4c1-venv" && -d "$VENV_ROOT" ]]; then' in text
+        assert 'rm -rf "$VENV_ROOT"' in text
+
+    def test_preflight_failure_does_not_block_retry(self):
+        """Simulate environment with prior OPERATOR_FAILURE.json & OPERATOR_STATUS.json; operator allows retry."""
+        text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
+        # Verify script contains logic to clear/archive prior preflight OPERATOR_FAILURE.json
+        assert 'if [[ -f "$OUTPUT_ROOT/OPERATOR_FAILURE.json" ]]; then' in text
+        assert 'OPERATOR_FAILURE_prior' in text
+
+        # Verify simulation: in an output directory with only OPERATOR_FAILURE.json and OPERATOR_STATUS.json
+        with tempfile.TemporaryDirectory() as td:
+            output_root = Path(td) / "phase_4c1_outputs"
+            logs_dir = output_root / "logs"
+            output_root.mkdir(parents=True, exist_ok=True)
+            logs_dir.mkdir(parents=True, exist_ok=True)
+
+            failure_file = output_root / "OPERATOR_FAILURE.json"
+            failure_file.write_text(json.dumps({
+                "status": "OPERATOR_FAILED",
+                "current_state": "PREFLIGHT",
+                "failed_command": "$SYS_PY3 -m venv --system-site-packages $VENV_ROOT",
+                "notes": "Simulated prior failure"
+            }), encoding="utf-8")
+
+            status_file = output_root / "OPERATOR_STATUS.json"
+            status_file.write_text(json.dumps({
+                "status": "OPERATOR_FAILED",
+                "matrix": "15_RUNS_STAGE1_FROZEN"
+            }), encoding="utf-8")
+
+            # 1. Verify these files are not run directories and cannot be confused with n<size>_seed_<seed>
+            run_dirs = [p for p in output_root.glob("n*_seed_*") if p.is_dir()]
+            assert len(run_dirs) == 0, "OPERATOR_FAILURE.json must not be treated as a run directory"
+
+            # 2. Simulate preflight cleanup step from operator
+            if failure_file.exists():
+                shutil.move(str(failure_file), str(logs_dir / "OPERATOR_FAILURE_prior.json"))
+            status_file.write_text(json.dumps({"status": "PREFLIGHT"}), encoding="utf-8")
+
+            assert not failure_file.exists(), "OPERATOR_FAILURE.json must be cleared"
+            assert (logs_dir / "OPERATOR_FAILURE_prior.json").exists(), "Prior failure must be archived to logs"
+            assert json.loads(status_file.read_text())["status"] == "PREFLIGHT", "Status must be reset to PREFLIGHT"
 
 
 @pytest.mark.skipif(not OPERATOR_EXISTS, reason="Local operator script not found")

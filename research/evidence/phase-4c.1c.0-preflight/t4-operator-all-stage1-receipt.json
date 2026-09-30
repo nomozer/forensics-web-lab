@@ -4,9 +4,9 @@
     "phase": "Phase 4C.1C.0D",
     "script_name": "phase_4c1_t4_execute_all_stage1.sh",
     "script_path": "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\t4_transfer\\phase_4c1_t4_execute_all_stage1.sh",
-    "bytes": 21662,
-    "sha256": "1a7570d757ccfc1b471c636f64d0f001c3b6fcc9306b9894f94186f909f1f3c4",
-    "timestamp_utc": "2026-09-30T02:40:00Z",
+    "bytes": 23344,
+    "sha256": "6da81e2bf449f7d98492f8960a4b6330487bdcc5f96a39a2f02ab4423af2d9dc",
+    "timestamp_utc": "2026-09-30T11:50:00Z",
     "execution_code_sha": "79bb11527d900fd387de1f41f2010c4152b7fea7",
     "execution_code_binding_source": "phase4c1_environment_lock.json",
     "code_archive": {
@@ -42,8 +42,8 @@
     },
     "canonical_runner_command_template": "python -m ml.training.run_phase_4c1 --config ml/configs/phase_4c1_learning_curve.yaml --bundle /content/bundle --sample-size <SIZE> --seed <SEED> --stage frozen --device cuda --train-partition development_train --eval-partition inner_validation --output /content/phase_4c1_outputs/n<SIZE>_seed_<SEED>",
     "static_validation_results": {
-      "assertions_total": 21,
-      "assertions_passed": 21,
+      "assertions_total": 23,
+      "assertions_passed": 23,
       "assertions_failed": 0,
       "all_passed": true,
       "checks": {
@@ -55,6 +55,8 @@
         "zero_google_drive": "PASS",
         "zero_windows_paths_in_remote": "PASS",
         "zero_torch_reinstall": "PASS",
+        "without_pip_venv_creation": "PASS",
+        "preflight_failure_retry_allowed": "PASS",
         "zero_stage_2_invocation": "PASS",
         "zero_locked_test_invocation": "PASS",
         "three_size_contract": "PASS",

@@ -51,10 +51,10 @@
       "operator_static_assertions": {
         "status": "PASS",
         "script_name": "phase_4c1_t4_execute_all_stage1.sh",
-        "bytes": 21662,
-        "sha256": "1a7570d757ccfc1b471c636f64d0f001c3b6fcc9306b9894f94186f909f1f3c4",
-        "assertions_total": 21,
-        "assertions_passed": 21,
+        "bytes": 23344,
+        "sha256": "6da81e2bf449f7d98492f8960a4b6330487bdcc5f96a39a2f02ab4423af2d9dc",
+        "assertions_total": 23,
+        "assertions_passed": 23,
         "assertions_failed": 0,
         "all_passed": true
       },
@@ -71,7 +71,7 @@
         "status": "PASS",
         "path": "notebooks/phase_4c1_learning_curve_colab.ipynb",
         "bytes": 10395,
-        "sha256": "fdd807ee5a352ba8615d50b9ce538e8cda3fee89a6f9bce4ad56342b5c29e580",
+        "sha256": "7ba525fdd3bd758a11c44ebe4b873383650da8e2e69e6f3ed6d025161883e084",
         "cells_total": 5,
         "markdown_cells": 1,
         "code_cells": 4,
