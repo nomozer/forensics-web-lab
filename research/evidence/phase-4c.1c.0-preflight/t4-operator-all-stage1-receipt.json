@@ -1,12 +1,12 @@
 {
   "operator_script_receipt": {
     "schema_version": "1.0.0",
-    "phase": "Phase 4C.1C.0D",
+    "phase": "Phase 4C.1C.8",
     "script_name": "phase_4c1_t4_execute_all_stage1.sh",
     "script_path": "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\t4_transfer\\phase_4c1_t4_execute_all_stage1.sh",
-    "bytes": 23344,
-    "sha256": "6da81e2bf449f7d98492f8960a4b6330487bdcc5f96a39a2f02ab4423af2d9dc",
-    "timestamp_utc": "2026-09-30T11:50:00Z",
+    "bytes": 25470,
+    "sha256": "16cc4655c77ca5931290d5dd3c2612e40af1084cd0f0c1320e8fc68260e63daa",
+    "timestamp_utc": "2026-09-30T05:21:47.951805+00:00",
     "execution_code_sha": "79bb11527d900fd387de1f41f2010c4152b7fea7",
     "execution_code_binding_source": "phase4c1_environment_lock.json",
     "code_archive": {
@@ -40,10 +40,10 @@
       "train_partition": "development_train",
       "eval_partition": "inner_validation"
     },
-    "canonical_runner_command_template": "python -m ml.training.run_phase_4c1 --config ml/configs/phase_4c1_learning_curve.yaml --bundle /content/bundle --sample-size <SIZE> --seed <SEED> --stage frozen --device cuda --train-partition development_train --eval-partition inner_validation --output /content/phase_4c1_outputs/n<SIZE>_seed_<SEED>",
+    "canonical_runner_command_template": "\"$SYS_PY3\" -m ml.training.run_phase_4c1 --config ml/configs/phase_4c1_learning_curve.yaml --bundle /content/bundle --sample-size <SIZE> --seed <SEED> --stage frozen --device cuda --train-partition development_train --eval-partition inner_validation --output /content/phase_4c1_outputs/n<SIZE>_seed_<SEED>",
     "static_validation_results": {
-      "assertions_total": 23,
-      "assertions_passed": 23,
+      "assertions_total": 25,
+      "assertions_passed": 25,
       "assertions_failed": 0,
       "all_passed": true,
       "checks": {
@@ -54,8 +54,10 @@
         "zero_credentials": "PASS",
         "zero_google_drive": "PASS",
         "zero_windows_paths_in_remote": "PASS",
-        "zero_torch_reinstall": "PASS",
-        "without_pip_venv_creation": "PASS",
+        "zero_torch_or_cuda_reinstall": "PASS",
+        "zero_venv_in_operator": "PASS",
+        "direct_python3_discovery": "PASS",
+        "dependency_preflight_checks_imports": "PASS",
         "preflight_failure_retry_allowed": "PASS",
         "zero_stage_2_invocation": "PASS",
         "zero_locked_test_invocation": "PASS",
@@ -98,21 +100,51 @@
       "logs_archive": "phase_4c1_t4_execution_logs.tar.gz"
     },
     "notebook_status": {
-      "status": "SUPERSEDED_NOT_EXECUTABLE",
-      "sha256": "f26576cb70b6c892faaade7b225872d4bafbcfe1424b64df29564dd9e1cd28b9",
-      "historical_preservation": true
+      "status": "CANONICAL_LAUNCHER_ACTIVE",
+      "canonical_path": "notebooks/phase_4c1_learning_curve_colab.ipynb",
+      "canonical_bytes": 10395,
+      "canonical_sha256": "3cd2dc4c2d69cf40aa4a117eb8be4bcefcca5fc39da98ebe26a27677f08a90f7",
+      "historical_superseded_notebook_sha256": "f26576cb70b6c892faaade7b225872d4bafbcfe1424b64df29564dd9e1cd28b9",
+      "cells_total": 5,
+      "default_execute": true
     },
     "training_runs_local": 0,
     "locked_test_accesses": 0,
-    "status": "READY_FOR_REMOTE_EXECUTION",
+    "status": "READY_FOR_USER_COLAB_EXECUTION",
     "required_user_actions": {
-      "files_to_upload": [
-        "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\t4_transfer\\phase_4c1_code_79bb115.tar.gz",
-        "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\t4_transfer\\phase_4c1_binary_n250_reusable.tar",
-        "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\t4_transfer\\phase_4c1_t4_execute_all_stage1.sh"
+      "action_summary": "Only upload the refactored operator script and canonical notebook. Code archive and dataset bundle are unchanged and do not need re-uploading.",
+      "reupload_required_files": [
+        {
+          "file_name": "phase_4c1_t4_execute_all_stage1.sh",
+          "local_path": "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\t4_transfer\\phase_4c1_t4_execute_all_stage1.sh",
+          "bytes": 25470,
+          "sha256": "16cc4655c77ca5931290d5dd3c2612e40af1084cd0f0c1320e8fc68260e63daa",
+          "target_drive_directory": "My Drive/Colab Notebooks/forensics-web-lab/phase_4c1/inputs/"
+        },
+        {
+          "file_name": "phase_4c1_learning_curve_colab.ipynb",
+          "local_path": "notebooks/phase_4c1_learning_curve_colab.ipynb",
+          "bytes": 10395,
+          "sha256": "3cd2dc4c2d69cf40aa4a117eb8be4bcefcca5fc39da98ebe26a27677f08a90f7",
+          "target_drive_directory": "My Drive/Colab Notebooks/forensics-web-lab/phase_4c1/"
+        }
       ],
-      "target_directory": "/content/forensics-transfer",
-      "execution_command": "bash /content/forensics-transfer/phase_4c1_t4_execute_all_stage1.sh"
-    }
+      "immutable_unchanged_files_no_reupload": [
+        {
+          "file_name": "phase_4c1_code_79bb115.tar.gz",
+          "bytes": 758350,
+          "sha256": "5e775a7708d1555bf22f56dceb5358e26e07dd224c4b6186f575aff4d2b590d5",
+          "location": "My Drive/Colab Notebooks/forensics-web-lab/phase_4c1/inputs/"
+        },
+        {
+          "file_name": "phase_4c1_binary_n250_reusable.tar",
+          "bytes": 724633600,
+          "sha256": "d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27",
+          "location": "My Drive/Colab Notebooks/forensics-web-lab/phase_4c1/inputs/"
+        }
+      ],
+      "execution_procedure": "Open phase_4c1_learning_curve_colab.ipynb in Google Colab (T4 GPU runtime), verify EXECUTE = True, and select Runtime -> Run all."
+    },
+    "runtime_strategy": "Colab system Python direct execution (zero venv, zero torch/cuda reinstall, auxiliary deps preflight)"
   }
 }

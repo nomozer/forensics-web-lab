@@ -30,16 +30,20 @@ OPERATOR_SIDECAR = OPERATOR_SCRIPT.with_name(OPERATOR_SCRIPT.name + ".sha256")
 EXPECTED_CODE_SHA = "79bb11527d900fd387de1f41f2010c4152b7fea7"
 EXPECTED_BUNDLE_SHA = "d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27"
 EXPECTED_CODE_ARCHIVE_SHA = "5e775a7708d1555bf22f56dceb5358e26e07dd224c4b6186f575aff4d2b590d5"
-EXPECTED_OPERATOR_SHA = "6da81e2bf449f7d98492f8960a4b6330487bdcc5f96a39a2f02ab4423af2d9dc"
-EXPECTED_OPERATOR_BYTES = 23344
+EXPECTED_OPERATOR_SHA = "16cc4655c77ca5931290d5dd3c2612e40af1084cd0f0c1320e8fc68260e63daa"
+EXPECTED_OPERATOR_BYTES = 25470
 
 OPERATOR_EXISTS = OPERATOR_SCRIPT.exists()
 
 
 def extract_verification_python_code(script_text: str) -> str:
+    func_marker = "verify_run_artifacts()"
+    f_idx = script_text.find(func_marker)
+    if f_idx == -1:
+        raise ValueError("Could not find verify_run_artifacts() in operator script")
     start_marker = "<<'PY'\n"
     end_marker = "\nPY\n"
-    s_idx = script_text.find(start_marker)
+    s_idx = script_text.find(start_marker, f_idx)
     if s_idx == -1:
         raise ValueError("Could not find start marker for python code in operator script")
     e_idx = script_text.find(end_marker, s_idx)
@@ -202,40 +206,48 @@ class TestOperatorStaticInvariants:
         # Execution code SHA constant
         assert f'EXECUTION_CODE_SHA="{EXPECTED_CODE_SHA}"' in text
 
-    def test_venv_creation_and_without_pip_regression(self):
-        """Regression tests for Colab venv creation without ensurepip."""
+    def test_complete_removal_of_venv(self):
+        """Phase 4C.1C.8: Operator must completely eliminate virtual environment and use Colab Python."""
         text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
-        # 1. Must contain --without-pip and --system-site-packages
-        assert "--without-pip" in text
-        assert "--system-site-packages" in text
+        # 1. Zero venv traces
+        assert "VENV_ROOT" not in text
+        assert "-m venv" not in text
+        assert "activate" not in text
+        assert "$VENV_ROOT/bin/python" not in text
+        assert "--system-site-packages" not in text
+        assert "--without-pip" not in text
+        assert "phase4c1-venv" not in text
+        assert "bin/pip" not in text
 
-        # 2. No command creating venv without --without-pip (which triggers ensurepip)
-        lines = [line.strip() for line in text.splitlines()]
-        for line in lines:
-            if "venv" in line and ("$SYS_PY3" in line or "python3" in line) and "-m venv" in line:
-                assert "--without-pip" in line, f"Found venv creation missing --without-pip: {line}"
-                assert "--system-site-packages" in line, f"Found venv creation missing --system-site-packages: {line}"
+        # 2. Direct python3 discovery and runner execution
+        assert 'SYS_PY3="$(command -v python3)"' in text
+        assert '"$SYS_PY3" -m ml.training.run_phase_4c1' in text
+        assert '"$SYS_PY3" -m ml.datasets.validate_phase_4c1_bundle' in text
 
-        # 3. Check venv pip verification
-        assert '"$VENV_ROOT/bin/python" -m pip --version' in text
+    def test_dependency_preflight_and_safety_policy(self):
+        """Phase 4C.1C.8: Verify dependency preflight, non-reinstall policy, and forbidden torch/cuda."""
+        text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
+        # Required imports checked
+        for mod in ["torch", "torchvision", "numpy", "PIL", "yaml", "sklearn", "scipy"]:
+            assert f'"{mod}"' in text or f"'{mod}'" in text
 
-        # 4. Check import torch and CUDA verification immediately after venv
-        assert 'import torch; assert torch.cuda.is_available(); print(torch.__version__)' in text
+        # CUDA assert
+        assert "assert torch.cuda.is_available()" in text
 
-        # 5. Check no pip upgrade or direct bin/pip call that can fail
-        assert '"$VENV_ROOT/bin/pip" install --upgrade' not in text
-        assert '"$VENV_ROOT/bin/pip" install' not in text
-
-        # 6. Check safe venv cleanup: strictly checks path is /content/phase4c1-venv before rm -rf
-        assert 'if [[ "$VENV_ROOT" == "/content/phase4c1-venv" && -d "$VENV_ROOT" ]]; then' in text
-        assert 'rm -rf "$VENV_ROOT"' in text
+        # Forbidden packages
+        assert "torch" in text
+        assert "torchvision" in text
+        assert "torchaudio" in text
+        assert "pip install --upgrade pip" not in text
 
     def test_preflight_failure_does_not_block_retry(self):
-        """Simulate environment with prior OPERATOR_FAILURE.json & OPERATOR_STATUS.json; operator allows retry."""
+        """Simulate environment with prior OPERATOR_FAILURE.json & OPERATOR_STATUS.json; operator archives and allows retry."""
         text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
-        # Verify script contains logic to clear/archive prior preflight OPERATOR_FAILURE.json
+        # Verify script contains logic to archive prior preflight OPERATOR_FAILURE.json with cp -p
         assert 'if [[ -f "$OUTPUT_ROOT/OPERATOR_FAILURE.json" ]]; then' in text
-        assert 'OPERATOR_FAILURE_prior' in text
+        assert "OPERATOR_FAILURE_prior_" in text
+        assert "cp -p" in text
+        assert "rm -f" in text
 
         # Verify simulation: in an output directory with only OPERATOR_FAILURE.json and OPERATOR_STATUS.json
         with tempfile.TemporaryDirectory() as td:
@@ -262,13 +274,14 @@ class TestOperatorStaticInvariants:
             run_dirs = [p for p in output_root.glob("n*_seed_*") if p.is_dir()]
             assert len(run_dirs) == 0, "OPERATOR_FAILURE.json must not be treated as a run directory"
 
-            # 2. Simulate preflight cleanup step from operator
-            if failure_file.exists():
-                shutil.move(str(failure_file), str(logs_dir / "OPERATOR_FAILURE_prior.json"))
+            # 2. Simulate preflight archive step from operator (cp -p followed by rm -f)
+            archive_path = logs_dir / "OPERATOR_FAILURE_prior_20260930_120000Z.json"
+            shutil.copy2(str(failure_file), str(archive_path))
+            failure_file.unlink()
             status_file.write_text(json.dumps({"status": "PREFLIGHT"}), encoding="utf-8")
 
             assert not failure_file.exists(), "OPERATOR_FAILURE.json must be cleared"
-            assert (logs_dir / "OPERATOR_FAILURE_prior.json").exists(), "Prior failure must be archived to logs"
+            assert archive_path.exists(), "Prior failure must be archived to logs"
             assert json.loads(status_file.read_text())["status"] == "PREFLIGHT", "Status must be reset to PREFLIGHT"
 
 

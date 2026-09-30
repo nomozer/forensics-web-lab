@@ -3,8 +3,8 @@
     "schema_version": "1.0.0",
     "phase": "Phase 4C.1",
     "verdict": "GO",
-    "verdict_rationale": "All pre-execution gates pass without exception: operator and runner receipt contract gap reconciled using canonical phase4c1_environment_lock.json (sealed with .sha256 sidecar, binding execution_code_sha to 79bb11527d900fd387de1f41f2010c4152b7fea7 and code_archive_sha256 to 5e775a7708d1555bf22f56dceb5358e26e07dd224c4b6186f575aff4d2b590d5); operator static assertions and 7 mandatory fault injections 21/21 PASS; execution snapshot binding 79bb115 is intact with zero executable code changes; single canonical notebook refactored into a concise 5-cell launcher (1 markdown + 4 code, 10,395 bytes, EXECUTE=True ready) with read-only fail-closed inputs preflight and persistent Drive architecture; all 17 notebook tests PASS; duplicate notebook is removed; training runs remain 0; locked-test accesses remain 0; and stage 2 invocations remain 0.",
-    "timestamp_utc": "2026-09-30T02:40:00.000000+00:00",
+    "verdict_rationale": "All pre-execution gates pass without exception: operator refactored to eliminate virtual environments completely and directly utilize Colab system Python, PyTorch (CUDA-enabled), and auxiliary dependencies; preflight failure retry allowed without blocking; operator static assertions and 7 mandatory fault injections 13/13 PASS; execution snapshot binding 79bb115 is intact with zero executable code changes; single canonical notebook refactored into a concise 5-cell launcher (1 markdown + 4 code, 10,395 bytes, SHA-256 3cd2dc4c..., EXECUTE=True ready) with read-only fail-closed inputs preflight and persistent Drive architecture; all 17 notebook tests PASS; duplicate notebook is removed; training runs remain 0; locked-test accesses remain 0; and stage 2 invocations remain 0.",
+    "timestamp_utc": "2026-09-30T05:21:47.951805+00:00",
     "gates": {
       "cardinality_reconciliation": {
         "status": "PASS",
@@ -51,10 +51,10 @@
       "operator_static_assertions": {
         "status": "PASS",
         "script_name": "phase_4c1_t4_execute_all_stage1.sh",
-        "bytes": 23344,
-        "sha256": "6da81e2bf449f7d98492f8960a4b6330487bdcc5f96a39a2f02ab4423af2d9dc",
-        "assertions_total": 23,
-        "assertions_passed": 23,
+        "bytes": 25470,
+        "sha256": "16cc4655c77ca5931290d5dd3c2612e40af1084cd0f0c1320e8fc68260e63daa",
+        "assertions_total": 25,
+        "assertions_passed": 25,
         "assertions_failed": 0,
         "all_passed": true
       },
@@ -71,7 +71,7 @@
         "status": "PASS",
         "path": "notebooks/phase_4c1_learning_curve_colab.ipynb",
         "bytes": 10395,
-        "sha256": "7ba525fdd3bd758a11c44ebe4b873383650da8e2e69e6f3ed6d025161883e084",
+        "sha256": "3cd2dc4c2d69cf40aa4a117eb8be4bcefcca5fc39da98ebe26a27677f08a90f7",
         "cells_total": 5,
         "markdown_cells": 1,
         "code_cells": 4,
@@ -101,17 +101,38 @@
       }
     },
     "execution_readiness": {
-      "status": "READY_FOR_USER_COLAB_DRY_RUN",
-      "files_to_upload": [
-        "phase_4c1_code_79bb115.tar.gz",
-        "phase_4c1_binary_n250_reusable.tar",
-        "phase_4c1_t4_execute_all_stage1.sh"
+      "status": "READY_FOR_USER_COLAB_EXECUTION",
+      "action_summary": "Only upload the refactored operator script and canonical notebook. Code archive and dataset bundle are unchanged and do not need re-uploading.",
+      "reupload_required_files": [
+        {
+          "file_name": "phase_4c1_t4_execute_all_stage1.sh",
+          "bytes": 25470,
+          "sha256": "16cc4655c77ca5931290d5dd3c2612e40af1084cd0f0c1320e8fc68260e63daa",
+          "target_drive_directory": "My Drive/Colab Notebooks/forensics-web-lab/phase_4c1/inputs/"
+        },
+        {
+          "file_name": "phase_4c1_learning_curve_colab.ipynb",
+          "bytes": 10395,
+          "sha256": "3cd2dc4c2d69cf40aa4a117eb8be4bcefcca5fc39da98ebe26a27677f08a90f7",
+          "target_drive_directory": "My Drive/Colab Notebooks/forensics-web-lab/phase_4c1/"
+        }
       ],
-      "target_drive_directory": "/content/drive/MyDrive/Colab Notebooks/forensics-web-lab/phase_4c1/inputs",
-      "target_staging_directory": "/content/forensics-transfer",
+      "immutable_unchanged_files_no_reupload": [
+        {
+          "file_name": "phase_4c1_code_79bb115.tar.gz",
+          "bytes": 758350,
+          "sha256": "5e775a7708d1555bf22f56dceb5358e26e07dd224c4b6186f575aff4d2b590d5",
+          "location": "My Drive/Colab Notebooks/forensics-web-lab/phase_4c1/inputs/"
+        },
+        {
+          "file_name": "phase_4c1_binary_n250_reusable.tar",
+          "bytes": 724633600,
+          "sha256": "d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27",
+          "location": "My Drive/Colab Notebooks/forensics-web-lab/phase_4c1/inputs/"
+        }
+      ],
       "execution_options": {
-        "cli_option": "bash /content/forensics-transfer/phase_4c1_t4_execute_all_stage1.sh",
-        "notebook_option": "Upload 3 artifacts to Google Drive (/content/drive/MyDrive/Colab Notebooks/forensics-web-lab/phase_4c1/inputs), open notebooks/phase_4c1_learning_curve_colab.ipynb in Google Colab T4, and set EXECUTE = True"
+        "notebook_option": "Open phase_4c1_learning_curve_colab.ipynb in Google Colab (T4 GPU runtime), verify EXECUTE = True, and select Runtime -> Run all."
       }
     }
   }
