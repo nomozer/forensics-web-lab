@@ -1,12 +1,12 @@
 {
   "operator_script_receipt": {
     "schema_version": "1.0.0",
-    "phase": "Phase 4C.1C.14",
+    "phase": "Phase 4C.1C.15",
     "script_name": "phase_4c1_t4_execute_all_stage1.sh",
     "script_path": "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\t4_transfer\\phase_4c1_t4_execute_all_stage1.sh",
-    "bytes": 49460,
-    "sha256": "ef8b41f0bc7d6f1b6e749231eeedddc8be78b5506659791cd2f5d25ecfdc95a1",
-    "timestamp_utc": "2026-09-30T16:31:19.864084+00:00",
+    "bytes": 49684,
+    "sha256": "bae476db0296bd5634ad1002c230f72694de8e0e8cb7372d899165f1fa0759a9",
+    "timestamp_utc": "2026-09-30T17:04:43.603887+00:00",
     "execution_code_sha": "79bb11527d900fd387de1f41f2010c4152b7fea7",
     "execution_code_binding_source": "phase4c1_environment_lock.json",
     "code_archive": {
@@ -44,8 +44,8 @@
     },
     "canonical_runner_command_template": "\"$SYS_PY3\" -m ml.training.run_phase_4c1 --config ml/configs/phase_4c1_learning_curve.yaml --bundle /content/bundle --sample-size <SIZE> --seed <SEED> --stage frozen --device cuda --train-partition development_train --eval-partition inner_validation --output /content/phase_4c1_outputs/n<SIZE>_seed_<SEED>",
     "static_validation_results": {
-      "assertions_total": 86,
-      "assertions_passed": 86,
+      "assertions_total": 91,
+      "assertions_passed": 91,
       "assertions_failed": 0,
       "all_passed": true,
       "checks": {
@@ -81,9 +81,11 @@
         "no_phase_4c1c11_stale_string": "PASS",
         "gpu_policy_defaults_to_compatible": "PASS",
         "gpu_vram_parser_quoting_hotfix": "PASS",
-        "validator_invoked_reusable_n250_mode": "PASS"
+        "validator_invoked_reusable_n250_mode": "PASS",
+        "unbound_variable_bundle_content_sha_hotfix": "PASS",
+        "unbound_uppercase_variables_scan": "PASS"
       },
-      "test_suite_summary": "86 tests passing in ml/tests/test_phase_4c1_operator.py covering 35 behavioral requirements across: TestOperatorStaticInvariants (16 tests), TestGpuCapabilityAndPolicy (13 tests), TestScientificBindingAndRuntimePolicy (15 tests), TestDependencyPreflightPolicy (3 tests), TestCodeStagingAndSecurity (3 tests), TestOperatorFaultInjections (30 tests), and TestPhase4C1C13PythonQuotingAndPreflightRegression (6 tests)."
+      "test_suite_summary": "91 tests passing in ml/tests/test_phase_4c1_operator.py covering 36 behavioral requirements across: TestOperatorStaticInvariants (16 tests), TestGpuCapabilityAndPolicy (13 tests), TestScientificBindingAndRuntimePolicy (15 tests), TestDependencyPreflightPolicy (3 tests), TestCodeStagingAndSecurity (3 tests), TestOperatorFaultInjections (30 tests), and TestPhase4C1C13PythonQuotingAndPreflightRegression (11 tests)."
     },
     "resume_contract": {
       "fail_closed_on_missing_artifacts": true,
@@ -114,7 +116,7 @@
       "status": "CANONICAL_LAUNCHER_ACTIVE",
       "canonical_path": "notebooks/phase_4c1_learning_curve_colab.ipynb",
       "canonical_bytes": 12342,
-      "canonical_sha256": "4bdce00de28e1f7e79e2c0733eb3b5d2ff4cd2182d14bc08084017b08945c1dc",
+      "canonical_sha256": "d3b27ce06e28066b8d5aa333a8a45cc40a5dcc2ea717a8dd584a4a1c6474d5aa",
       "historical_superseded_notebook_sha256": "f26576cb70b6c892faaade7b225872d4bafbcfe1424b64df29564dd9e1cd28b9",
       "cells_total": 5,
       "default_execute": true
@@ -128,15 +130,15 @@
         {
           "file_name": "phase_4c1_t4_execute_all_stage1.sh",
           "local_path": "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\t4_transfer\\phase_4c1_t4_execute_all_stage1.sh",
-          "bytes": 49460,
-          "sha256": "ef8b41f0bc7d6f1b6e749231eeedddc8be78b5506659791cd2f5d25ecfdc95a1",
+          "bytes": 49684,
+          "sha256": "bae476db0296bd5634ad1002c230f72694de8e0e8cb7372d899165f1fa0759a9",
           "target_drive_directory": "My Drive/Colab Notebooks/forensics-web-lab/phase_4c1/inputs/"
         },
         {
           "file_name": "phase_4c1_learning_curve_colab.ipynb",
           "local_path": "notebooks/phase_4c1_learning_curve_colab.ipynb",
           "bytes": 12342,
-          "sha256": "4bdce00de28e1f7e79e2c0733eb3b5d2ff4cd2182d14bc08084017b08945c1dc",
+          "sha256": "d3b27ce06e28066b8d5aa333a8a45cc40a5dcc2ea717a8dd584a4a1c6474d5aa",
           "target_drive_directory": "My Drive/Colab Notebooks/forensics-web-lab/phase_4c1/"
         }
       ],
