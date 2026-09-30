@@ -199,7 +199,8 @@ def test_sealed_artifacts_and_drive_paths_configured():
     src = "".join(config_cell.source) if isinstance(config_cell.source, list) else config_cell.source
 
     # Standard paths
-    assert "/content/drive/MyDrive/forensics-web-lab/phase_4c1" in src
+    assert "/content/drive/MyDrive/Colab Notebooks/forensics-web-lab/phase_4c1" in src
+    assert "MyDrive/forensics-web-lab/phase_4c1" not in src
     assert "DRIVE_INPUT_DIR" in src
     assert "DRIVE_OUTPUT_DIR" in src
     assert "LOCAL_TRANSFER_DIR" in src
