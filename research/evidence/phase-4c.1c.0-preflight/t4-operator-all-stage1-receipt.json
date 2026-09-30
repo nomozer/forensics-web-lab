@@ -5,8 +5,8 @@
     "script_name": "phase_4c1_t4_execute_all_stage1.sh",
     "script_path": "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\t4_transfer\\phase_4c1_t4_execute_all_stage1.sh",
     "bytes": 49370,
-    "sha256": "e16e3e2c7d7aafe3695976062bc86731e5f166a89cc6a350485d13ff9bf500eb",
-    "timestamp_utc": "2026-09-30T14:28:43.486453+00:00",
+    "sha256": "104679cd6c1ffd308b8d1da8ee89bef36ae338a0bc5a1a9e0721c3a4c961b5bb",
+    "timestamp_utc": "2026-09-30T14:52:57.850501+00:00",
     "execution_code_sha": "79bb11527d900fd387de1f41f2010c4152b7fea7",
     "execution_code_binding_source": "phase4c1_environment_lock.json",
     "code_archive": {
@@ -44,8 +44,8 @@
     },
     "canonical_runner_command_template": "\"$SYS_PY3\" -m ml.training.run_phase_4c1 --config ml/configs/phase_4c1_learning_curve.yaml --bundle /content/bundle --sample-size <SIZE> --seed <SEED> --stage frozen --device cuda --train-partition development_train --eval-partition inner_validation --output /content/phase_4c1_outputs/n<SIZE>_seed_<SEED>",
     "static_validation_results": {
-      "assertions_total": 78,
-      "assertions_passed": 78,
+      "assertions_total": 80,
+      "assertions_passed": 80,
       "assertions_failed": 0,
       "all_passed": true,
       "checks": {
@@ -77,9 +77,11 @@
         "persistent_download_dir": "PASS",
         "err_trap_inheritance_set_E": "PASS",
         "canonical_manifest_fail_closed": "PASS",
-        "baseline_pip_freeze_fail_closed": "PASS"
+        "baseline_pip_freeze_fail_closed": "PASS",
+        "no_phase_4c1c11_stale_string": "PASS",
+        "gpu_policy_defaults_to_compatible": "PASS"
       },
-      "test_suite_summary": "78 tests passing in ml/tests/test_phase_4c1_operator.py covering 33 behavioral requirements across: TestOperatorStaticInvariants (14 tests), TestGpuCapabilityAndPolicy (13 tests), TestScientificBindingAndRuntimePolicy (15 tests), TestDependencyPreflightPolicy (3 tests), TestCodeStagingAndSecurity (3 tests), and TestOperatorFaultInjections (30 tests)."
+      "test_suite_summary": "80 tests passing in ml/tests/test_phase_4c1_operator.py covering 33 behavioral requirements across: TestOperatorStaticInvariants (16 tests), TestGpuCapabilityAndPolicy (13 tests), TestScientificBindingAndRuntimePolicy (15 tests), TestDependencyPreflightPolicy (3 tests), TestCodeStagingAndSecurity (3 tests), and TestOperatorFaultInjections (30 tests)."
     },
     "resume_contract": {
       "fail_closed_on_missing_artifacts": true,
@@ -110,7 +112,7 @@
       "status": "CANONICAL_LAUNCHER_ACTIVE",
       "canonical_path": "notebooks/phase_4c1_learning_curve_colab.ipynb",
       "canonical_bytes": 12342,
-      "canonical_sha256": "b62129a1fb1ec9a31ea260747561b6aacd4a8de09b38d7eced549cee724fa05c",
+      "canonical_sha256": "f88b1175170ab680ec22bfe3bde0defbf34511e1d541213bdf5c7df718f2597d",
       "historical_superseded_notebook_sha256": "f26576cb70b6c892faaade7b225872d4bafbcfe1424b64df29564dd9e1cd28b9",
       "cells_total": 5,
       "default_execute": true
@@ -125,14 +127,14 @@
           "file_name": "phase_4c1_t4_execute_all_stage1.sh",
           "local_path": "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\t4_transfer\\phase_4c1_t4_execute_all_stage1.sh",
           "bytes": 49370,
-          "sha256": "e16e3e2c7d7aafe3695976062bc86731e5f166a89cc6a350485d13ff9bf500eb",
+          "sha256": "104679cd6c1ffd308b8d1da8ee89bef36ae338a0bc5a1a9e0721c3a4c961b5bb",
           "target_drive_directory": "My Drive/Colab Notebooks/forensics-web-lab/phase_4c1/inputs/"
         },
         {
           "file_name": "phase_4c1_learning_curve_colab.ipynb",
           "local_path": "notebooks/phase_4c1_learning_curve_colab.ipynb",
           "bytes": 12342,
-          "sha256": "b62129a1fb1ec9a31ea260747561b6aacd4a8de09b38d7eced549cee724fa05c",
+          "sha256": "f88b1175170ab680ec22bfe3bde0defbf34511e1d541213bdf5c7df718f2597d",
           "target_drive_directory": "My Drive/Colab Notebooks/forensics-web-lab/phase_4c1/"
         }
       ],

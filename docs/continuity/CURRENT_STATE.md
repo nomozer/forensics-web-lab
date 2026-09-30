@@ -1,7 +1,7 @@
 # Trạng thái Hiện tại: Forensics Web Lab (Current State)
 
 > **Tài liệu đọc đầu tiên bắt buộc cho mọi phiên làm việc AI mới.**<br>
-> **Documented through substantive commit**: `0020a98`<br>
+> **Documented through substantive commit**: `ae4c46b`<br>
 > **Ending commit Phase 4C.0**: `110fef1`<br>
 > **Phase hoàn thành gần nhất**: Phase 4C.1C.12 — Correct Output Persistence, Atomic Restaging and Exact Cohort Gate<br>
 > **Branch**: `research/phase-4c1-learning-curve`<br>
@@ -87,10 +87,10 @@
 ## 6. Kết quả Kiểm thử & Bản dựng Gần nhất (Latest Verification)
 
 * **TypeScript & Continuity Test Suite (`pnpm test`)**: 70/70 tests passing (57 vitest tests trên 6 packages + 13 continuity checker unit tests).
-* **Python Test Suite (`pytest ml/tests -v`)**: 256/257 tests passing (1 test skipped: `test_smoke_run_cpu_fixture`; 78 Phase 4C.1 operator tests, 19 Phase 4C.1 notebook tests, 15 Phase 4C.1 bundle tests, 14 Phase 4C.1 runner tests, 10 eval leakage regression tests, 9 Phase 4C.0 gate tests, 8 Phase 4C.0a reconciliation tests, etc.).
+* **Python Test Suite (`pytest ml/tests -v`)**: 258/259 tests passing (1 test skipped: `test_smoke_run_cpu_fixture`; 80 Phase 4C.1 operator tests, 19 Phase 4C.1 notebook tests, 15 Phase 4C.1 bundle tests, 14 Phase 4C.1 runner tests, 10 eval leakage regression tests, 9 Phase 4C.0 gate tests, 8 Phase 4C.0a reconciliation tests, etc.).
 * **Operator Syntax Check (`bash -n`)**: PASS (clean exit code 0).
-* **Operator Script (`phase_4c1_t4_execute_all_stage1.sh`)**: 49,370 bytes, SHA-256 `e16e3e2c7d7aafe3695976062bc86731e5f166a89cc6a350485d13ff9bf500eb`.
-* **Canonical Colab Notebook (`notebooks/phase_4c1_learning_curve_colab.ipynb`)**: 12,342 bytes, SHA-256 `b62129a1fb1ec9a31ea260747561b6aacd4a8de09b38d7eced549cee724fa05c`.
+* **Operator Script (`phase_4c1_t4_execute_all_stage1.sh`)**: 49,370 bytes, SHA-256 `104679cd6c1ffd308b8d1da8ee89bef36ae338a0bc5a1a9e0721c3a4c961b5bb`.
+* **Canonical Colab Notebook (`notebooks/phase_4c1_learning_curve_colab.ipynb`)**: 12,342 bytes, SHA-256 `f88b1175170ab680ec22bfe3bde0defbf34511e1d541213bdf5c7df718f2597d`.
 * **Phase 4C.1 Runner ECE Fix**: Added `compute_ece` to `ml/evaluation/metrics.py`; all runner tests pass.
 * **Phase 4C.1B.5 Verification**: Evaluation leakage EVAL-LEAK-001 repaired. Corrected validation-only metrics: Macro-F1 0.565816, AUROC 0.611762. Bootstrap CI (source_id, 1000 iter): Macro-F1 0.5658 [0.522, 0.609], CI lower bounds > 0 for both dummy and metadata gaps. All metrics reproduced.
 * **Dataset Registry Validation**: 7/7 datasets valid.
