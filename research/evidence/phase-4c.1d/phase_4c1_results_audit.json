@@ -1,0 +1,510 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.1D",
+  "timestamp_utc": "2026-10-01T01:20:00Z",
+  "total_runs_audited": 15,
+  "sample_sizes_verified": [
+    50,
+    100,
+    250
+  ],
+  "seeds_verified": [
+    42,
+    1337,
+    2025,
+    3407,
+    9001
+  ],
+  "execution_hardware": "Tesla T4 (14.56 GB VRAM)",
+  "hardware_homogeneity": true,
+  "source_archive": "phase_4c1_all_15_runs_results.tar.gz",
+  "source_archive_sha256": "f58d663168e02d0be180423e8f7109229a7ec6d47f62391f39837df96e069feb",
+  "source_archive_bytes": 77494613,
+  "lock_verification": {
+    "execution_code_sha": "79bb11527d900fd387de1f41f2010c4152b7fea7",
+    "bundle_content_sha256": "c365c812cc814097f11b9e5ed5c82e672015e2ba093f09f975df0a2a01229e9b",
+    "bundle_archive_sha256": "d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27",
+    "config_hash": "e03c07dae05a2402416abb0c60480a8cd0a35d060de3bb138a09d0bec0a85dc9",
+    "runtime_requirements_sha256": "850478c0a9746b93354dd756ba428621a4aa48abab4e6aa5fa7e00669cea67a0",
+    "match": true
+  },
+  "scientific_integrity_checks": {
+    "all_status_completed": true,
+    "all_stages_frozen": true,
+    "locked_test_accesses": 0,
+    "stage2_invocations": 0,
+    "validation_source_counts_equal_91": true,
+    "checksums_verified_15_of_15": true,
+    "environment_bindings_verified_15_of_15": true,
+    "cohort_cardinalities_equal_182": true,
+    "identical_validation_cohort_across_all_runs": true
+  },
+  "paired_statistical_analysis": {
+    "n100_minus_n50": {
+      "macro_f1": {
+        "mean_delta": 0.040555,
+        "std_delta": 0.013682,
+        "ci_95_lower": 0.023567,
+        "ci_95_upper": 0.057543,
+        "t_statistic": 6.6281,
+        "p_value": 0.002688
+      },
+      "balanced_accuracy": {
+        "mean_delta": 0.036264,
+        "std_delta": 0.006265,
+        "ci_95_lower": 0.028485,
+        "ci_95_upper": 0.044042,
+        "t_statistic": 12.9437,
+        "p_value": 0.000206
+      },
+      "auroc": {
+        "mean_delta": 0.044004,
+        "std_delta": 0.012678,
+        "ci_95_lower": 0.028263,
+        "ci_95_upper": 0.059746,
+        "t_statistic": 7.7613,
+        "p_value": 0.001485
+      },
+      "brier_score": {
+        "mean_delta": -0.003136,
+        "std_delta": 0.000801,
+        "ci_95_lower": -0.004131,
+        "ci_95_upper": -0.002142,
+        "t_statistic": -8.7571,
+        "p_value": 0.000937
+      },
+      "ece": {
+        "mean_delta": 0.027885,
+        "std_delta": 0.008415,
+        "ci_95_lower": 0.017436,
+        "ci_95_upper": 0.038333,
+        "t_statistic": 7.4096,
+        "p_value": 0.00177
+      },
+      "val_loss": {
+        "mean_delta": -0.002635,
+        "std_delta": 0.001401,
+        "ci_95_lower": -0.004374,
+        "ci_95_upper": -0.000896,
+        "t_statistic": -4.2077,
+        "p_value": 0.013611
+      }
+    },
+    "n250_minus_n100": {
+      "macro_f1": {
+        "mean_delta": -0.010064,
+        "std_delta": 0.016584,
+        "ci_95_lower": -0.030656,
+        "ci_95_upper": 0.010528,
+        "t_statistic": -1.357,
+        "p_value": 0.246311
+      },
+      "balanced_accuracy": {
+        "mean_delta": -0.002198,
+        "std_delta": 0.014328,
+        "ci_95_lower": -0.019988,
+        "ci_95_upper": 0.015593,
+        "t_statistic": -0.343,
+        "p_value": 0.748868
+      },
+      "auroc": {
+        "mean_delta": -0.000145,
+        "std_delta": 0.011206,
+        "ci_95_lower": -0.014059,
+        "ci_95_upper": 0.01377,
+        "t_statistic": -0.0289,
+        "p_value": 0.978318
+      },
+      "brier_score": {
+        "mean_delta": 0.000817,
+        "std_delta": 0.000558,
+        "ci_95_lower": 0.000124,
+        "ci_95_upper": 0.00151,
+        "t_statistic": 3.273,
+        "p_value": 0.030702
+      },
+      "ece": {
+        "mean_delta": 0.003001,
+        "std_delta": 0.017449,
+        "ci_95_lower": -0.018665,
+        "ci_95_upper": 0.024667,
+        "t_statistic": 0.3845,
+        "p_value": 0.720141
+      },
+      "val_loss": {
+        "mean_delta": 0.000204,
+        "std_delta": 0.000675,
+        "ci_95_lower": -0.000634,
+        "ci_95_upper": 0.001041,
+        "t_statistic": 0.675,
+        "p_value": 0.536657
+      }
+    },
+    "n250_minus_n50": {
+      "macro_f1": {
+        "mean_delta": 0.03049,
+        "std_delta": 0.028574,
+        "ci_95_lower": -0.004989,
+        "ci_95_upper": 0.06597,
+        "t_statistic": 2.386,
+        "p_value": 0.075493
+      },
+      "balanced_accuracy": {
+        "mean_delta": 0.034066,
+        "std_delta": 0.016206,
+        "ci_95_lower": 0.013943,
+        "ci_95_upper": 0.054189,
+        "t_statistic": 4.7002,
+        "p_value": 0.009307
+      },
+      "auroc": {
+        "mean_delta": 0.043859,
+        "std_delta": 0.017586,
+        "ci_95_lower": 0.022023,
+        "ci_95_upper": 0.065696,
+        "t_statistic": 5.5767,
+        "p_value": 0.005068
+      },
+      "brier_score": {
+        "mean_delta": -0.002319,
+        "std_delta": 0.000487,
+        "ci_95_lower": -0.002924,
+        "ci_95_upper": -0.001715,
+        "t_statistic": -10.6604,
+        "p_value": 0.000439
+      },
+      "ece": {
+        "mean_delta": 0.030885,
+        "std_delta": 0.015286,
+        "ci_95_lower": 0.011905,
+        "ci_95_upper": 0.049866,
+        "t_statistic": 4.5179,
+        "p_value": 0.010675
+      },
+      "val_loss": {
+        "mean_delta": -0.002432,
+        "std_delta": 0.00139,
+        "ci_95_lower": -0.004158,
+        "ci_95_upper": -0.000706,
+        "t_statistic": -3.9113,
+        "p_value": 0.017374
+      }
+    }
+  },
+  "learning_curve_summary": {
+    "50": {
+      "macro_f1": {
+        "n_seeds": 5,
+        "mean": 0.532224,
+        "std": 0.014787,
+        "median": 0.538238,
+        "min": 0.505934,
+        "max": 0.541477,
+        "ci_95_lower": 0.513864,
+        "ci_95_upper": 0.550584
+      },
+      "balanced_accuracy": {
+        "n_seeds": 5,
+        "mean": 0.538462,
+        "std": 0.00777,
+        "median": 0.538462,
+        "min": 0.527473,
+        "max": 0.549451,
+        "ci_95_lower": 0.528813,
+        "ci_95_upper": 0.54811
+      },
+      "auroc": {
+        "n_seeds": 5,
+        "mean": 0.542133,
+        "std": 0.012432,
+        "median": 0.542084,
+        "min": 0.526144,
+        "max": 0.560681,
+        "ci_95_lower": 0.526696,
+        "ci_95_upper": 0.557569
+      },
+      "brier_score": {
+        "n_seeds": 5,
+        "mean": 0.248721,
+        "std": 0.000651,
+        "median": 0.248802,
+        "min": 0.24779,
+        "max": 0.249602,
+        "ci_95_lower": 0.247913,
+        "ci_95_upper": 0.249529
+      },
+      "ece": {
+        "n_seeds": 5,
+        "mean": 0.017114,
+        "std": 0.006055,
+        "median": 0.016469,
+        "min": 0.009995,
+        "max": 0.026531,
+        "ci_95_lower": 0.009595,
+        "ci_95_upper": 0.024632
+      },
+      "val_loss": {
+        "n_seeds": 5,
+        "mean": 0.173913,
+        "std": 0.001007,
+        "median": 0.173768,
+        "min": 0.172759,
+        "max": 0.175474,
+        "ci_95_lower": 0.172662,
+        "ci_95_upper": 0.175163
+      },
+      "best_epoch": {
+        "n_seeds": 5,
+        "mean": 6.0,
+        "std": 6.819091,
+        "median": 3.0,
+        "min": 2.0,
+        "max": 18.0,
+        "ci_95_lower": -2.46702,
+        "ci_95_upper": 14.46702
+      },
+      "epochs_completed": {
+        "n_seeds": 5,
+        "mean": 11.0,
+        "std": 6.819091,
+        "median": 8.0,
+        "min": 7.0,
+        "max": 23.0,
+        "ci_95_lower": 2.53298,
+        "ci_95_upper": 19.46702
+      },
+      "training_time_s": {
+        "n_seeds": 5,
+        "mean": 109.781803,
+        "std": 69.048834,
+        "median": 79.432177,
+        "min": 69.133416,
+        "max": 231.282949,
+        "ci_95_lower": 24.046351,
+        "ci_95_upper": 195.517255
+      },
+      "peak_vram_mb": {
+        "n_seeds": 5,
+        "mean": 108.998535,
+        "std": 0.0,
+        "median": 108.998535,
+        "min": 108.998535,
+        "max": 108.998535,
+        "ci_95_lower": 108.998535,
+        "ci_95_upper": 108.998535
+      }
+    },
+    "100": {
+      "macro_f1": {
+        "n_seeds": 5,
+        "mean": 0.572779,
+        "std": 0.004802,
+        "median": 0.57403,
+        "min": 0.565816,
+        "max": 0.577313,
+        "ci_95_lower": 0.566816,
+        "ci_95_upper": 0.578741
+      },
+      "balanced_accuracy": {
+        "n_seeds": 5,
+        "mean": 0.574725,
+        "std": 0.006265,
+        "median": 0.576923,
+        "min": 0.565934,
+        "max": 0.582418,
+        "ci_95_lower": 0.566947,
+        "ci_95_upper": 0.582504
+      },
+      "auroc": {
+        "n_seeds": 5,
+        "mean": 0.586137,
+        "std": 0.008949,
+        "median": 0.586523,
+        "min": 0.573361,
+        "max": 0.596546,
+        "ci_95_lower": 0.575025,
+        "ci_95_upper": 0.597249
+      },
+      "brier_score": {
+        "n_seeds": 5,
+        "mean": 0.245585,
+        "std": 0.000339,
+        "median": 0.245541,
+        "min": 0.245166,
+        "max": 0.246108,
+        "ci_95_lower": 0.245164,
+        "ci_95_upper": 0.246005
+      },
+      "ece": {
+        "n_seeds": 5,
+        "mean": 0.044998,
+        "std": 0.008482,
+        "median": 0.046256,
+        "min": 0.031553,
+        "max": 0.054279,
+        "ci_95_lower": 0.034466,
+        "ci_95_upper": 0.05553
+      },
+      "val_loss": {
+        "n_seeds": 5,
+        "mean": 0.171277,
+        "std": 0.000885,
+        "median": 0.170924,
+        "min": 0.170497,
+        "max": 0.172771,
+        "ci_95_lower": 0.170179,
+        "ci_95_upper": 0.172376
+      },
+      "best_epoch": {
+        "n_seeds": 5,
+        "mean": 8.0,
+        "std": 3.391165,
+        "median": 7.0,
+        "min": 6.0,
+        "max": 14.0,
+        "ci_95_lower": 3.789313,
+        "ci_95_upper": 12.210687
+      },
+      "epochs_completed": {
+        "n_seeds": 5,
+        "mean": 13.0,
+        "std": 3.391165,
+        "median": 12.0,
+        "min": 11.0,
+        "max": 19.0,
+        "ci_95_lower": 8.789313,
+        "ci_95_upper": 17.210687
+      },
+      "training_time_s": {
+        "n_seeds": 5,
+        "mean": 178.319571,
+        "std": 46.196611,
+        "median": 162.235839,
+        "min": 150.809598,
+        "max": 260.093803,
+        "ci_95_lower": 120.958902,
+        "ci_95_upper": 235.68024
+      },
+      "peak_vram_mb": {
+        "n_seeds": 5,
+        "mean": 108.998535,
+        "std": 0.0,
+        "median": 108.998535,
+        "min": 108.998535,
+        "max": 108.998535,
+        "ci_95_lower": 108.998535,
+        "ci_95_upper": 108.998535
+      }
+    },
+    "250": {
+      "macro_f1": {
+        "n_seeds": 5,
+        "mean": 0.562714,
+        "std": 0.017207,
+        "median": 0.561039,
+        "min": 0.54493,
+        "max": 0.583371,
+        "ci_95_lower": 0.541349,
+        "ci_95_upper": 0.584079
+      },
+      "balanced_accuracy": {
+        "n_seeds": 5,
+        "mean": 0.572527,
+        "std": 0.011912,
+        "median": 0.571429,
+        "min": 0.554945,
+        "max": 0.587912,
+        "ci_95_lower": 0.557737,
+        "ci_95_upper": 0.587318
+      },
+      "auroc": {
+        "n_seeds": 5,
+        "mean": 0.585992,
+        "std": 0.007804,
+        "median": 0.584954,
+        "min": 0.5765,
+        "max": 0.59389,
+        "ci_95_lower": 0.576302,
+        "ci_95_upper": 0.595682
+      },
+      "brier_score": {
+        "n_seeds": 5,
+        "mean": 0.246401,
+        "std": 0.000288,
+        "median": 0.246412,
+        "min": 0.245998,
+        "max": 0.246785,
+        "ci_95_lower": 0.246044,
+        "ci_95_upper": 0.246759
+      },
+      "ece": {
+        "n_seeds": 5,
+        "mean": 0.047999,
+        "std": 0.015774,
+        "median": 0.050284,
+        "min": 0.026947,
+        "max": 0.069607,
+        "ci_95_lower": 0.028413,
+        "ci_95_upper": 0.067585
+      },
+      "val_loss": {
+        "n_seeds": 5,
+        "mean": 0.171481,
+        "std": 0.000742,
+        "median": 0.171032,
+        "min": 0.170855,
+        "max": 0.172458,
+        "ci_95_lower": 0.17056,
+        "ci_95_upper": 0.172402
+      },
+      "best_epoch": {
+        "n_seeds": 5,
+        "mean": 5.2,
+        "std": 0.83666,
+        "median": 5.0,
+        "min": 4.0,
+        "max": 6.0,
+        "ci_95_lower": 4.161149,
+        "ci_95_upper": 6.238851
+      },
+      "epochs_completed": {
+        "n_seeds": 5,
+        "mean": 10.2,
+        "std": 0.83666,
+        "median": 10.0,
+        "min": 9.0,
+        "max": 11.0,
+        "ci_95_lower": 9.161149,
+        "ci_95_upper": 11.238851
+      },
+      "training_time_s": {
+        "n_seeds": 5,
+        "mean": 248.17096,
+        "std": 20.550125,
+        "median": 243.798404,
+        "min": 218.288311,
+        "max": 267.944854,
+        "ci_95_lower": 222.65461,
+        "ci_95_upper": 273.68731
+      },
+      "peak_vram_mb": {
+        "n_seeds": 5,
+        "mean": 108.998535,
+        "std": 0.0,
+        "median": 108.998535,
+        "min": 108.998535,
+        "max": 108.998535,
+        "ci_95_lower": 108.998535,
+        "ci_95_upper": 108.998535
+      }
+    }
+  },
+  "verdict": "STAGE1_EVALUATION_COMPLETE_AND_VERIFIED",
+  "key_findings": {
+    "n50_to_n100_improvement": "Statistically significant gain in Macro-F1 (+0.0406, p=0.0027, 95% CI [+0.0236, +0.0575]) and AUROC (+0.0440, p=0.0015).",
+    "n100_to_n250_plateau": "Statistically indistinguishable difference in Macro-F1 (-0.0101, p=0.2463, 95% CI [-0.0307, +0.0105]) and AUROC (-0.0001, p=0.9783).",
+    "n50_to_n250_overall": "Significant AUROC improvement (+0.0439, p=0.0051), marginal Macro-F1 gain (+0.0305, p=0.0755).",
+    "baseline_comparison": "All N sizes outperform Dummy Baseline (0.4940) and Metadata Baseline (0.5000), peaking at N=100 (Macro-F1=0.5728 vs 0.4940).",
+    "representation_capacity_note": "Frozen MobileNetV3 linear probe achieves maximum sample efficiency around N=100; higher sample counts require backbone unfreezing (Stage 2) or multimodal fusion (DSP/metadata) to extract further signal."
+  }
+}

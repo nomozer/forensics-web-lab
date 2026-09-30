@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" width="900" height="600" style="background-color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+<text x="110" y="40" font-size="20" font-weight="bold" fill="#1e293b">Phase 4C.1 Stage 1: Balanced Accuracy and AUROC vs Sample Size</text>
+<text x="110" y="65" font-size="13" fill="#64748b">Discrimination performance metrics across sample sizes N=50, 100, 250 (Mean ± 95% CI)</text>
+<line x1="110" y1="520.0" x2="740" y2="520.0" stroke="#e2e8f0" stroke-width="1" />
+<text x="95" y="524.0" font-size="12" fill="#64748b" text-anchor="end">0.500</text>
+<line x1="110" y1="448.33333333333326" x2="740" y2="448.33333333333326" stroke="#e2e8f0" stroke-width="1" />
+<text x="95" y="452.33333333333326" font-size="12" fill="#64748b" text-anchor="end">0.520</text>
+<line x1="110" y1="376.6666666666665" x2="740" y2="376.6666666666665" stroke="#e2e8f0" stroke-width="1" />
+<text x="95" y="380.6666666666665" font-size="12" fill="#64748b" text-anchor="end">0.540</text>
+<line x1="110" y1="304.9999999999998" x2="740" y2="304.9999999999998" stroke="#e2e8f0" stroke-width="1" />
+<text x="95" y="308.9999999999998" font-size="12" fill="#64748b" text-anchor="end">0.560</text>
+<line x1="110" y1="233.33333333333346" x2="740" y2="233.33333333333346" stroke="#e2e8f0" stroke-width="1" />
+<text x="95" y="237.33333333333346" font-size="12" fill="#64748b" text-anchor="end">0.580</text>
+<line x1="110" y1="161.66666666666674" x2="740" y2="161.66666666666674" stroke="#e2e8f0" stroke-width="1" />
+<text x="95" y="165.66666666666674" font-size="12" fill="#64748b" text-anchor="end">0.600</text>
+<line x1="110" y1="90.0" x2="740" y2="90.0" stroke="#e2e8f0" stroke-width="1" />
+<text x="95" y="94.0" font-size="12" fill="#64748b" text-anchor="end">0.620</text>
+<text x="25" y="305.0" font-size="14" font-weight="600" fill="#1e293b" text-anchor="middle" transform="rotate(-90, 25, 305.0)">Metric Value</text>
+<line x1="110" y1="520" x2="740" y2="520" stroke="#64748b" stroke-width="1.5" />
+<line x1="204.5" y1="520" x2="204.5" y2="526" stroke="#64748b" stroke-width="1.5" />
+<text x="204.5" y="545" font-size="13" font-weight="600" fill="#1e293b" text-anchor="middle">N = 50</text>
+<text x="204.5" y="562" font-size="11" fill="#64748b" text-anchor="middle">(50 pairs)</text>
+<line x1="425.0" y1="520" x2="425.0" y2="526" stroke="#64748b" stroke-width="1.5" />
+<text x="425.0" y="545" font-size="13" font-weight="600" fill="#1e293b" text-anchor="middle">N = 100</text>
+<text x="425.0" y="562" font-size="11" fill="#64748b" text-anchor="middle">(100 pairs)</text>
+<line x1="677.0" y1="520" x2="677.0" y2="526" stroke="#64748b" stroke-width="1.5" />
+<text x="677.0" y="545" font-size="13" font-weight="600" fill="#1e293b" text-anchor="middle">N = 250</text>
+<text x="677.0" y="562" font-size="11" fill="#64748b" text-anchor="middle">(250 pairs)</text>
+<text x="425.0" y="585" font-size="13" font-weight="600" fill="#1e293b" text-anchor="middle">Training Cohort Sample Size (N)</text>
+<line x1="110" y1="520.0" x2="740" y2="520.0" stroke="#94a3b8" stroke-dasharray="6,4" stroke-width="2" />
+<text x="750" y="524.0" font-size="11" font-weight="bold" fill="#94a3b8">Random Chance (0.5000)</text>
+<line x1="204.5" y1="424.3393333333331" x2="204.5" y2="313.71108333333336" stroke="#8b5cf6" stroke-width="2" opacity="0.8" />
+<line x1="198.5" y1="424.3393333333331" x2="210.5" y2="424.3393333333331" stroke="#8b5cf6" stroke-width="2" opacity="0.8" />
+<line x1="198.5" y1="313.71108333333336" x2="210.5" y2="313.71108333333336" stroke="#8b5cf6" stroke-width="2" opacity="0.8" />
+<line x1="425.0" y1="251.1604166666666" x2="425.0" y2="171.52441666666653" stroke="#8b5cf6" stroke-width="2" opacity="0.8" />
+<line x1="419.0" y1="251.1604166666666" x2="431.0" y2="251.1604166666666" stroke="#8b5cf6" stroke-width="2" opacity="0.8" />
+<line x1="419.0" y1="171.52441666666653" x2="431.0" y2="171.52441666666653" stroke="#8b5cf6" stroke-width="2" opacity="0.8" />
+<line x1="677.0" y1="246.58450000000005" x2="677.0" y2="177.13949999999983" stroke="#8b5cf6" stroke-width="2" opacity="0.8" />
+<line x1="671.0" y1="246.58450000000005" x2="683.0" y2="246.58450000000005" stroke="#8b5cf6" stroke-width="2" opacity="0.8" />
+<line x1="671.0" y1="177.13949999999983" x2="683.0" y2="177.13949999999983" stroke="#8b5cf6" stroke-width="2" opacity="0.8" />
+<polyline points="204.5,369.0234166666668 425.0,211.3424166666666 677.0,211.86200000000014" fill="none" stroke="#8b5cf6" stroke-width="2.8"  />
+<circle cx="204.5" cy="369.0234166666668" r="5.5" fill="#8b5cf6" stroke="#ffffff" stroke-width="1.5" />
+<text x="204.5" y="357.0234166666668" font-size="11" font-weight="bold" fill="#8b5cf6" text-anchor="middle">0.5421</text>
+<circle cx="425.0" cy="211.3424166666666" r="5.5" fill="#8b5cf6" stroke="#ffffff" stroke-width="1.5" />
+<text x="425.0" y="199.3424166666666" font-size="11" font-weight="bold" fill="#8b5cf6" text-anchor="middle">0.5861</text>
+<circle cx="677.0" cy="211.86200000000014" r="5.5" fill="#8b5cf6" stroke="#ffffff" stroke-width="1.5" />
+<text x="677.0" y="199.86200000000014" font-size="11" font-weight="bold" fill="#8b5cf6" text-anchor="middle">0.5860</text>
+<line x1="204.5" y1="416.75341666666674" x2="204.5" y2="347.60583333333335" stroke="#10b981" stroke-width="2" opacity="0.8" />
+<line x1="198.5" y1="416.75341666666674" x2="210.5" y2="416.75341666666674" stroke="#10b981" stroke-width="2" opacity="0.8" />
+<line x1="198.5" y1="347.60583333333335" x2="210.5" y2="347.60583333333335" stroke="#10b981" stroke-width="2" opacity="0.8" />
+<line x1="425.0" y1="280.1065833333334" x2="425.0" y2="224.36066666666656" stroke="#10b981" stroke-width="2" opacity="0.8" />
+<line x1="419.0" y1="280.1065833333334" x2="431.0" y2="280.1065833333334" stroke="#10b981" stroke-width="2" opacity="0.8" />
+<line x1="419.0" y1="224.36066666666656" x2="431.0" y2="224.36066666666656" stroke="#10b981" stroke-width="2" opacity="0.8" />
+<line x1="677.0" y1="313.10908333333316" x2="677.0" y2="207.11049999999994" stroke="#10b981" stroke-width="2" opacity="0.8" />
+<line x1="671.0" y1="313.10908333333316" x2="683.0" y2="313.10908333333316" stroke="#10b981" stroke-width="2" opacity="0.8" />
+<line x1="671.0" y1="207.11049999999994" x2="683.0" y2="207.11049999999994" stroke="#10b981" stroke-width="2" opacity="0.8" />
+<polyline points="204.5,382.17783333333335 425.0,252.23541666666648 677.0,260.11158333333333" fill="none" stroke="#10b981" stroke-width="2.8"  />
+<circle cx="204.5" cy="382.17783333333335" r="5.5" fill="#10b981" stroke="#ffffff" stroke-width="1.5" />
+<text x="204.5" y="370.17783333333335" font-size="11" font-weight="bold" fill="#10b981" text-anchor="middle">0.5385</text>
+<circle cx="425.0" cy="252.23541666666648" r="5.5" fill="#10b981" stroke="#ffffff" stroke-width="1.5" />
+<text x="425.0" y="240.23541666666648" font-size="11" font-weight="bold" fill="#10b981" text-anchor="middle">0.5747</text>
+<circle cx="677.0" cy="260.11158333333333" r="5.5" fill="#10b981" stroke="#ffffff" stroke-width="1.5" />
+<text x="677.0" y="248.11158333333333" font-size="11" font-weight="bold" fill="#10b981" text-anchor="middle">0.5725</text>
+<g transform="translate(750, 100)">
+<line x1="0" y1="6" x2="16" y2="6" stroke="#8b5cf6" stroke-width="2.5" />
+<circle cx="8" cy="6" r="3.5" fill="#8b5cf6" />
+<text x="22" y="10" font-size="11" fill="#1e293b">AUROC (Mean ± 95% CI)</text>
+<line x1="0" y1="28" x2="16" y2="28" stroke="#10b981" stroke-width="2.5" />
+<circle cx="8" cy="28" r="3.5" fill="#10b981" />
+<text x="22" y="32" font-size="11" fill="#1e293b">Balanced Accuracy (Mean ± 95% CI)</text>
+</g>
+</svg>

@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" width="900" height="600" style="background-color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+<text x="110" y="40" font-size="20" font-weight="bold" fill="#1e293b">Phase 4C.1 Stage 1: Per-Seed Macro-F1 Trajectories</text>
+<text x="110" y="65" font-size="13" fill="#64748b">Individual trajectories across 5 seeds demonstrating universal improvement from N=50 to N=100</text>
+<line x1="110" y1="520.0" x2="740" y2="520.0" stroke="#e2e8f0" stroke-width="1" />
+<text x="95" y="524.0" font-size="12" fill="#64748b" text-anchor="end">0.480</text>
+<line x1="110" y1="448.33333333333326" x2="740" y2="448.33333333333326" stroke="#e2e8f0" stroke-width="1" />
+<text x="95" y="452.33333333333326" font-size="12" fill="#64748b" text-anchor="end">0.500</text>
+<line x1="110" y1="376.6666666666665" x2="740" y2="376.6666666666665" stroke="#e2e8f0" stroke-width="1" />
+<text x="95" y="380.6666666666665" font-size="12" fill="#64748b" text-anchor="end">0.520</text>
+<line x1="110" y1="304.9999999999998" x2="740" y2="304.9999999999998" stroke="#e2e8f0" stroke-width="1" />
+<text x="95" y="308.9999999999998" font-size="12" fill="#64748b" text-anchor="end">0.540</text>
+<line x1="110" y1="233.33333333333346" x2="740" y2="233.33333333333346" stroke="#e2e8f0" stroke-width="1" />
+<text x="95" y="237.33333333333346" font-size="12" fill="#64748b" text-anchor="end">0.560</text>
+<line x1="110" y1="161.66666666666674" x2="740" y2="161.66666666666674" stroke="#e2e8f0" stroke-width="1" />
+<text x="95" y="165.66666666666674" font-size="12" fill="#64748b" text-anchor="end">0.580</text>
+<line x1="110" y1="90.0" x2="740" y2="90.0" stroke="#e2e8f0" stroke-width="1" />
+<text x="95" y="94.0" font-size="12" fill="#64748b" text-anchor="end">0.600</text>
+<text x="25" y="305.0" font-size="14" font-weight="600" fill="#1e293b" text-anchor="middle" transform="rotate(-90, 25, 305.0)">Validation Macro-F1</text>
+<line x1="110" y1="520" x2="740" y2="520" stroke="#64748b" stroke-width="1.5" />
+<line x1="204.5" y1="520" x2="204.5" y2="526" stroke="#64748b" stroke-width="1.5" />
+<text x="204.5" y="545" font-size="13" font-weight="600" fill="#1e293b" text-anchor="middle">N = 50</text>
+<text x="204.5" y="562" font-size="11" fill="#64748b" text-anchor="middle">(50 pairs)</text>
+<line x1="425.0" y1="520" x2="425.0" y2="526" stroke="#64748b" stroke-width="1.5" />
+<text x="425.0" y="545" font-size="13" font-weight="600" fill="#1e293b" text-anchor="middle">N = 100</text>
+<text x="425.0" y="562" font-size="11" fill="#64748b" text-anchor="middle">(100 pairs)</text>
+<line x1="677.0" y1="520" x2="677.0" y2="526" stroke="#64748b" stroke-width="1.5" />
+<text x="677.0" y="545" font-size="13" font-weight="600" fill="#1e293b" text-anchor="middle">N = 250</text>
+<text x="677.0" y="562" font-size="11" fill="#64748b" text-anchor="middle">(250 pairs)</text>
+<text x="425.0" y="585" font-size="13" font-weight="600" fill="#1e293b" text-anchor="middle">Training Cohort Sample Size (N)</text>
+<line x1="110" y1="448.33333333333326" x2="740" y2="448.33333333333326" stroke="#f59e0b" stroke-dasharray="6,4" stroke-width="2" />
+<text x="750" y="452.33333333333326" font-size="11" font-weight="bold" fill="#f59e0b">Metadata Baseline (0.5000)</text>
+<line x1="110" y1="469.83333333333326" x2="740" y2="469.83333333333326" stroke="#94a3b8" stroke-dasharray="6,4" stroke-width="2" />
+<text x="750" y="473.83333333333326" font-size="11" font-weight="bold" fill="#94a3b8">Dummy Baseline (0.4940)</text>
+<polyline points="204.5,299.7066896071441 425.0,171.29405533145894 677.0,172.7380772675581" fill="none" stroke="#ef4444" stroke-width="2.0"  />
+<circle cx="204.5" cy="299.7066896071441" r="4.5" fill="#ef4444" stroke="#ffffff" stroke-width="1.5" />
+<circle cx="425.0" cy="171.29405533145894" r="4.5" fill="#ef4444" stroke="#ffffff" stroke-width="1.5" />
+<circle cx="677.0" cy="172.7380772675581" r="4.5" fill="#ef4444" stroke="#ffffff" stroke-width="1.5" />
+<polyline points="204.5,315.52083333333326 425.0,212.49232472696156 677.0,278.7648809523811" fill="none" stroke="#3b82f6" stroke-width="2.0"  />
+<circle cx="204.5" cy="315.52083333333326" r="4.5" fill="#3b82f6" stroke="#ffffff" stroke-width="1.5" />
+<circle cx="425.0" cy="212.49232472696156" r="4.5" fill="#3b82f6" stroke="#ffffff" stroke-width="1.5" />
+<circle cx="677.0" cy="278.7648809523811" r="4.5" fill="#3b82f6" stroke="#ffffff" stroke-width="1.5" />
+<polyline points="204.5,311.3120695904314 425.0,183.06057934891615 677.0,287.3349796779338" fill="none" stroke="#10b981" stroke-width="2.0"  />
+<circle cx="204.5" cy="311.3120695904314" r="4.5" fill="#10b981" stroke="#ffffff" stroke-width="1.5" />
+<circle cx="425.0" cy="183.06057934891615" r="4.5" fill="#10b981" stroke="#ffffff" stroke-width="1.5" />
+<circle cx="677.0" cy="287.3349796779338" r="4.5" fill="#10b981" stroke="#ffffff" stroke-width="1.5" />
+<polyline points="204.5,427.0686026936023 425.0,197.03124999999977 677.0,149.58550804260892" fill="none" stroke="#f59e0b" stroke-width="2.0"  />
+<circle cx="204.5" cy="427.0686026936023" r="4.5" fill="#f59e0b" stroke="#ffffff" stroke-width="1.5" />
+<circle cx="425.0" cy="197.03124999999977" r="4.5" fill="#f59e0b" stroke="#ffffff" stroke-width="1.5" />
+<circle cx="677.0" cy="149.58550804260892" r="4.5" fill="#f59e0b" stroke="#ffffff" stroke-width="1.5" />
+<polyline points="204.5,310.7125603864732 425.0,173.83737675861292 677.0,229.61038961038966" fill="none" stroke="#8b5cf6" stroke-width="2.0"  />
+<circle cx="204.5" cy="310.7125603864732" r="4.5" fill="#8b5cf6" stroke="#ffffff" stroke-width="1.5" />
+<circle cx="425.0" cy="173.83737675861292" r="4.5" fill="#8b5cf6" stroke="#ffffff" stroke-width="1.5" />
+<circle cx="677.0" cy="229.61038961038966" r="4.5" fill="#8b5cf6" stroke="#ffffff" stroke-width="1.5" />
+<g transform="translate(750, 100)">
+<line x1="0" y1="6" x2="16" y2="6" stroke="#ef4444" stroke-width="2.5" />
+<circle cx="8" cy="6" r="3.5" fill="#ef4444" />
+<text x="22" y="10" font-size="11" fill="#1e293b">Seed 42</text>
+<line x1="0" y1="28" x2="16" y2="28" stroke="#3b82f6" stroke-width="2.5" />
+<circle cx="8" cy="28" r="3.5" fill="#3b82f6" />
+<text x="22" y="32" font-size="11" fill="#1e293b">Seed 1337</text>
+<line x1="0" y1="50" x2="16" y2="50" stroke="#10b981" stroke-width="2.5" />
+<circle cx="8" cy="50" r="3.5" fill="#10b981" />
+<text x="22" y="54" font-size="11" fill="#1e293b">Seed 2025</text>
+<line x1="0" y1="72" x2="16" y2="72" stroke="#f59e0b" stroke-width="2.5" />
+<circle cx="8" cy="72" r="3.5" fill="#f59e0b" />
+<text x="22" y="76" font-size="11" fill="#1e293b">Seed 3407</text>
+<line x1="0" y1="94" x2="16" y2="94" stroke="#8b5cf6" stroke-width="2.5" />
+<circle cx="8" cy="94" r="3.5" fill="#8b5cf6" />
+<text x="22" y="98" font-size="11" fill="#1e293b">Seed 9001</text>
+</g>
+</svg>
