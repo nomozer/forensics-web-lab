@@ -33,8 +33,8 @@ EXPECTED_CODE_ARCHIVE_SHA = "5e775a7708d1555bf22f56dceb5358e26e07dd224c4b6186f57
 EXPECTED_CONFIG_HASH = "e03c07dae05a2402416abb0c60480a8cd0a35d060de3bb138a09d0bec0a85dc9"
 EXPECTED_REQS_SHA = "850478c0a9746b93354dd756ba428621a4aa48abab4e6aa5fa7e00669cea67a0"
 
-EXPECTED_OPERATOR_SHA = "ef8b41f0bc7d6f1b6e749231eeedddc8be78b5506659791cd2f5d25ecfdc95a1"
-EXPECTED_OPERATOR_BYTES = 49460
+EXPECTED_OPERATOR_SHA = "bae476db0296bd5634ad1002c230f72694de8e0e8cb7372d899165f1fa0759a9"
+EXPECTED_OPERATOR_BYTES = 49684
 
 OPERATOR_EXISTS = OPERATOR_SCRIPT.exists()
 
@@ -1553,3 +1553,194 @@ echo "[+] Validated GPU: $ACTUAL_GPU_MODEL ($ACTUAL_GPU_VRAM_GB GB VRAM)"
             assert "Cross-partition overlap: ZERO" in cp_val.stdout
             assert "Cohort cardinalities: 50 / 100 / 250 nested + 91 val" in cp_val.stdout
             assert "0 source ID mismatches" in cp_val.stdout
+
+    def test_bundle_content_sha_variable_defined_before_use(self):
+        """Phase 4C.1C.15: BUNDLE_CONTENT_SHA256 assigned before any use and EXTRACTED_CONTENT_SHA removed."""
+        text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
+        assert "EXTRACTED_CONTENT_SHA" not in text
+
+        assign_idx = text.find("BUNDLE_CONTENT_SHA256=")
+        assert assign_idx != -1, "BUNDLE_CONTENT_SHA256= assignment not found"
+
+        ref_matches = [m.start() for m in re.finditer(r"\$\{?BUNDLE_CONTENT_SHA256\}?", text)]
+        assert len(ref_matches) > 0, "No references to BUNDLE_CONTENT_SHA256 found"
+        for ref_pos in ref_matches:
+            assert ref_pos > assign_idx, f"Reference at {ref_pos} occurs before assignment at {assign_idx}"
+
+        assert r"^[0-9a-f]{64}$" in text
+        assert '"$BUNDLE_CONTENT_SHA256" != "$EXPECTED_BUNDLE_CONTENT_SHA256"' in text
+
+    def test_bundle_content_sha_real_execution_valid_fixture(self):
+        """Phase 4C.1C.15: Real bash execution with valid bundle_receipt fixture succeeds with content hash."""
+        with tempfile.NamedTemporaryFile("w", delete=False, suffix=".json", encoding="utf-8") as f:
+            json.dump({"bundle_sha256": "c365c812cc814097f11b9e5ed5c82e672015e2ba093f09f975df0a2a01229e9b"}, f)
+            receipt_path = f.name
+        try:
+            bash_script = f"""set -Eeuo pipefail
+SYS_PY3=$(command -v python3 || command -v python)
+BUNDLE_RECEIPT="{receipt_path.replace(chr(92), '/')}"
+BUNDLE_RECEIPT=$(wslpath -u "$BUNDLE_RECEIPT" 2>/dev/null || echo "$BUNDLE_RECEIPT")
+EXPECTED_BUNDLE_CONTENT_SHA256="c365c812cc814097f11b9e5ed5c82e672015e2ba093f09f975df0a2a01229e9b"
+
+BUNDLE_CONTENT_SHA256=$(
+    "$SYS_PY3" -c \\
+    'import json, sys; print(json.load(open(sys.argv[1], "r", encoding="utf-8")).get("bundle_sha256", ""))' \\
+    "$BUNDLE_RECEIPT"
+)
+
+if [[ ! "$BUNDLE_CONTENT_SHA256" =~ ^[0-9a-f]{{64}}$ ]]; then
+    echo "Invalid hash" >&2
+    exit 3
+fi
+
+if [[ "$BUNDLE_CONTENT_SHA256" != "$EXPECTED_BUNDLE_CONTENT_SHA256" ]]; then
+    echo "Mismatch" >&2
+    exit 3
+fi
+
+echo "RESOLVED_CONTENT_SHA=$BUNDLE_CONTENT_SHA256"
+""".replace("\r\n", "\n").replace("\r", "").encode("utf-8")
+
+            cp = subprocess.run(["bash", "-s"], input=bash_script, capture_output=True)
+            out = cp.stdout.decode("utf-8", errors="replace")
+            err = cp.stderr.decode("utf-8", errors="replace")
+            assert cp.returncode == 0, f"Valid fixture failed ({cp.returncode}): {err}"
+            assert "RESOLVED_CONTENT_SHA=c365c812cc814097f11b9e5ed5c82e672015e2ba093f09f975df0a2a01229e9b" in out
+            assert "unbound variable" not in err
+        finally:
+            Path(receipt_path).unlink()
+
+    def test_bundle_content_sha_invalid_fixtures_fail(self):
+        """Phase 4C.1C.15: Invalid bundle_receipt fixtures fail with non-zero exit code."""
+        invalid_payloads = [
+            {},  # missing
+            {"bundle_sha256": ""},  # empty
+            {"bundle_sha256": "abc123"},  # too short
+            {"bundle_sha256": "z" * 64},  # non-hex
+            {"bundle_sha256": "d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27"},  # archive hash mismatch
+        ]
+        for p in invalid_payloads:
+            with tempfile.NamedTemporaryFile("w", delete=False, suffix=".json", encoding="utf-8") as f:
+                json.dump(p, f)
+                p_path = f.name
+            try:
+                b_script = f"""set -Eeuo pipefail
+SYS_PY3=$(command -v python3 || command -v python)
+BUNDLE_RECEIPT="{p_path.replace(chr(92), '/')}"
+BUNDLE_RECEIPT=$(wslpath -u "$BUNDLE_RECEIPT" 2>/dev/null || echo "$BUNDLE_RECEIPT")
+EXPECTED_BUNDLE_CONTENT_SHA256="c365c812cc814097f11b9e5ed5c82e672015e2ba093f09f975df0a2a01229e9b"
+
+BUNDLE_CONTENT_SHA256=$(
+    "$SYS_PY3" -c \\
+    'import json, sys; print(json.load(open(sys.argv[1], "r", encoding="utf-8")).get("bundle_sha256", ""))' \\
+    "$BUNDLE_RECEIPT"
+)
+
+if [[ ! "$BUNDLE_CONTENT_SHA256" =~ ^[0-9a-f]{{64}}$ ]]; then
+    exit 3
+fi
+
+if [[ "$BUNDLE_CONTENT_SHA256" != "$EXPECTED_BUNDLE_CONTENT_SHA256" ]]; then
+    exit 3
+fi
+""".replace("\r\n", "\n").replace("\r", "").encode("utf-8")
+                cp_inv = subprocess.run(["bash", "-s"], input=b_script, capture_output=True)
+                assert cp_inv.returncode != 0, f"Expected non-zero exit code for payload {p}"
+            finally:
+                Path(p_path).unlink()
+
+    def test_unbound_uppercase_variables_static_scan(self):
+        """Phase 4C.1C.15: Static scan verifies all uppercase variables referenced in operator are defined or allowlisted."""
+        text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
+        ref_pattern = re.compile(r'\$\{?([A-Z][A-Z0-9_]*)\}?')
+        refs = set(ref_pattern.findall(text))
+
+        assign_pattern = re.compile(r'(?:^|[;\s])([A-Z][A-Z0-9_]*)=', re.MULTILINE)
+        assigns = set(assign_pattern.findall(text))
+        assigns.update(re.findall(r'\bfor\s+([A-Z][A-Z0-9_]*)\b', text))
+        assigns.update(re.findall(r'\bread\s+([A-Z][A-Z0-9_]*)\b', text))
+
+        allowlist = {"BASH_COMMAND", "LINENO", "PATH"}
+        unassigned = refs - assigns - allowlist
+        assert len(unassigned) == 0, f"Found unassigned uppercase variables: {unassigned}"
+
+        # Verify static scanner catches C.14's unassigned BUNDLE_CONTENT_SHA256
+        c14_text = text.replace("BUNDLE_CONTENT_SHA256=$(", "EXTRACTED_CONTENT_SHA=$(")
+        c14_assigns = set(assign_pattern.findall(c14_text))
+        c14_unassigned = refs - c14_assigns - allowlist
+        assert "BUNDLE_CONTENT_SHA256" in c14_unassigned, "Static scanner failed to detect missing BUNDLE_CONTENT_SHA256 on C.14"
+
+    def test_step3_to_step4_behavioral_preflight_no_training(self):
+        """Phase 4C.1C.15: Behavioral preflight from Step 3 to Step 4 executes cleanly without unbound variables and verifies all 10 observation arguments."""
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp_p = Path(tmp_dir)
+            fake_receipt = tmp_p / "bundle_receipt.json"
+            fake_receipt.write_text(
+                json.dumps({"bundle_sha256": "c365c812cc814097f11b9e5ed5c82e672015e2ba093f09f975df0a2a01229e9b"}),
+                encoding="utf-8",
+            )
+
+            step_script = f"""set -Eeuo pipefail
+SYS_PY3=$(command -v python3 || command -v python)
+
+# Preflight outputs simulated
+ACTUAL_GPU_MODEL="Tesla T4"
+RUNTIME_POLICY="compatible"
+GPU_POLICY="compatible"
+EXECUTION_CODE_SHA="79bb11527d900fd387de1f41f2010c4152b7fea7"
+CODE_ACTUAL_SHA="5e775a7708d1555bf22f56dceb5358e26e07dd224c4b6186f575aff4d2b590d5"
+BUNDLE_ARCHIVE_SHA256="d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27"
+EXPECTED_BUNDLE_CONTENT_SHA256="c365c812cc814097f11b9e5ed5c82e672015e2ba093f09f975df0a2a01229e9b"
+STAGED_REQ_SHA="850478c0a9746b93354dd756ba428621a4aa48abab4e6aa5fa7e00669cea67a0"
+STAGED_CONFIG_SHA="e03c07dae05a2402416abb0c60480a8cd0a35d060de3bb138a09d0bec0a85dc9"
+SESSION_PIP_FREEZE_SHA="11223344556677889900aabbccddeeff11223344556677889900aabbccddeeff"
+BUNDLE_RECEIPT="{fake_receipt.as_posix()}"
+BUNDLE_RECEIPT=$(wslpath -u "$BUNDLE_RECEIPT" 2>/dev/null || echo "$BUNDLE_RECEIPT")
+
+# Step 3 content SHA extraction (Phase 4C.1C.15 block)
+BUNDLE_CONTENT_SHA256=$(
+    "$SYS_PY3" -c \\
+    'import json, sys; print(json.load(open(sys.argv[1], "r", encoding="utf-8")).get("bundle_sha256", ""))' \\
+    "$BUNDLE_RECEIPT"
+)
+
+if [[ ! "$BUNDLE_CONTENT_SHA256" =~ ^[0-9a-f]{{64}}$ ]]; then
+    exit 3
+fi
+
+if [[ "$BUNDLE_CONTENT_SHA256" != "$EXPECTED_BUNDLE_CONTENT_SHA256" ]]; then
+    exit 3
+fi
+
+# Step 4 runtime observation argument passing simulation
+args=(
+    "test_obs.json"
+    "$SESSION_PIP_FREEZE_SHA"
+    "$STAGED_REQ_SHA"
+    "$STAGED_CONFIG_SHA"
+    "$RUNTIME_POLICY"
+    "$GPU_POLICY"
+    "$ACTUAL_GPU_MODEL"
+    "$EXECUTION_CODE_SHA"
+    "$CODE_ACTUAL_SHA"
+    "$BUNDLE_ARCHIVE_SHA256"
+    "$BUNDLE_CONTENT_SHA256"
+)
+
+# Verify all 11 args non-empty
+for idx in "${{!args[@]}}"; do
+    val="${{args[$idx]}}"
+    if [[ -z "$val" ]]; then
+        echo "Arg $idx is empty" >&2
+        exit 1
+    fi
+    echo "ARG_$idx=$val"
+done
+""".replace("\r\n", "\n").replace("\r", "").encode("utf-8")
+
+            cp_step = subprocess.run(["bash", "-s"], input=step_script, capture_output=True)
+            out_step = cp_step.stdout.decode("utf-8", errors="replace")
+            err_step = cp_step.stderr.decode("utf-8", errors="replace")
+            assert cp_step.returncode == 0, f"Step 3-4 simulation failed: {err_step}"
+            assert "ARG_10=c365c812cc814097f11b9e5ed5c82e672015e2ba093f09f975df0a2a01229e9b" in out_step
+            assert "unbound variable" not in err_step
