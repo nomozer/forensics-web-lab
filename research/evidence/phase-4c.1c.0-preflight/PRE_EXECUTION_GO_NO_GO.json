@@ -1,10 +1,10 @@
 {
   "pre_execution_verdict": {
     "schema_version": "1.0.0",
-    "phase": "Phase 4C.1C.11",
+    "phase": "Phase 4C.1C.12",
     "verdict": "GO",
-    "verdict_rationale": "All gates pass without exception: operator and Colab notebook patched with safe ephemeral code staging directly from verified archive; runner config_hash and requirements_sha256 bound fail-closed; strict dictionary checksum schema enforced; GPU/runtime policy validated; baseline pip-freeze preserved; exact inner_validation cohort checked against bundle manifest; completed run N50 seed42 verified and skipped; next run N50 seed1337 targeted; 67 operator tests PASS, 17 notebook tests PASS; compatible NVIDIA CUDA GPU runtime supported with actual training validation observed on Tesla T4 only.",
-    "timestamp_utc": "2026-09-30T13:47:06.177534+00:00",
+    "verdict_rationale": "All gates pass without exception: operator and Colab notebook patched with output persistence directly under persistent Google Drive output (/content/phase_4c1_outputs/download); atomic staging with .part and os.replace; fail-closed canonical bundle manifest gate with exact inner_validation source membership; set -Eeuo pipefail ERR trap inheritance; fail-closed baseline pip-freeze verification; artifact-based dynamic disk checking; 78 operator tests PASS, 19 notebook tests PASS; completed run N50 seed42 verified COMPLETED_VALID and skipped; next target N50 seed1337; compatible NVIDIA CUDA GPU runtime supported with actual training validation observed on Tesla T4 only.",
+    "timestamp_utc": "2026-09-30T14:28:43.486453+00:00",
     "gates": {
       "cardinality_reconciliation": {
         "status": "PASS",
@@ -45,15 +45,15 @@
         "execution_code_sha_verified": "79bb11527d900fd387de1f41f2010c4152b7fea7",
         "receipt_stage2_check_aligned": "Checked both stage2_invocations and stage_2_invocation == 0",
         "checksum_schema_policy": "Strict dictionary schema enforced: {size_bytes: int > 0, sha256: 64-hex}; string checksum fallback rejected fail-closed",
-        "test_suite_coverage": "67 unit, security staging, policy, and fault-injection tests covering all 31 behavioral requirements"
+        "test_suite_coverage": "78 unit, security staging, policy, and fault-injection tests covering all 33 behavioral requirements"
       },
       "operator_static_assertions": {
         "status": "PASS",
         "script_name": "phase_4c1_t4_execute_all_stage1.sh",
-        "bytes": 48539,
-        "sha256": "cf240f3c289dc42ab93aa590457d95f85ff21280b13c337a02cf6d5533e91e6d",
-        "assertions_total": 67,
-        "assertions_passed": 67,
+        "bytes": 49370,
+        "sha256": "e16e3e2c7d7aafe3695976062bc86731e5f166a89cc6a350485d13ff9bf500eb",
+        "assertions_total": 78,
+        "assertions_passed": 78,
         "assertions_failed": 0,
         "all_passed": true
       },
@@ -69,13 +69,13 @@
       "canonical_colab_notebook": {
         "status": "PASS",
         "path": "notebooks/phase_4c1_learning_curve_colab.ipynb",
-        "bytes": 12038,
-        "sha256": "426a0b8f68163ea1dd072149ac8aa4e76704e98a12167826757b1dd5bd0f343f",
+        "bytes": 12342,
+        "sha256": "b62129a1fb1ec9a31ea260747561b6aacd4a8de09b38d7eced549cee724fa05c",
         "cells_total": 5,
         "markdown_cells": 1,
         "code_cells": 4,
-        "tests_count": 17,
-        "tests_passed": 17,
+        "tests_count": 19,
+        "tests_passed": 19,
         "drive_persistence_architecture": true,
         "drive_input_dir": "/content/drive/MyDrive/Colab Notebooks/forensics-web-lab/phase_4c1/inputs",
         "drive_output_dir": "/content/drive/MyDrive/Colab Notebooks/forensics-web-lab/phase_4c1/runs/execution_79bb115",
@@ -93,7 +93,7 @@
       },
       "scientific_honesty": {
         "status": "PASS",
-        "training_runs_in_wave": 1,
+        "training_runs_in_wave": 0,
         "locked_test_accesses": 0,
         "stage_2_invocations": 0,
         "unsupported_model_performance_claim": false,

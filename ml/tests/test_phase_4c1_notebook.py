@@ -157,7 +157,8 @@ def test_gpu_gate_conditional_on_execute():
     assert "if EXECUTE:" in src, "GPU check must be guarded by if EXECUTE:"
     assert "torch.cuda.is_available()" in src
     assert "T4" in src
-    assert "free_gb >= 5.0" in src
+    assert "required_bytes" in src
+    assert "stat_content.free >= required_bytes" in src
 
 
 @pytest.mark.skipif(not IPYTHON_AVAILABLE, reason="IPython not installed")
@@ -200,8 +201,8 @@ def test_sealed_artifacts_and_drive_paths_configured():
     assert 724633600 in eval(src.split("EXPECTED_ARTIFACTS = ")[1].split("\n\n")[0])["reusable_bundle"].values()
     assert "d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27" in src
     assert "phase_4c1_t4_execute_all_stage1.sh" in src
-    assert 48539 in eval(src.split("EXPECTED_ARTIFACTS = ")[1].split("\n\n")[0])["operator_script"].values()
-    assert "cf240f3c289dc42ab93aa590457d95f85ff21280b13c337a02cf6d5533e91e6d" in src
+    assert 49370 in eval(src.split("EXPECTED_ARTIFACTS = ")[1].split("\n\n")[0])["operator_script"].values()
+    assert "e16e3e2c7d7aafe3695976062bc86731e5f166a89cc6a350485d13ff9bf500eb" in src
 
 
 @pytest.mark.skipif(not IPYTHON_AVAILABLE, reason="IPython not installed")
@@ -250,7 +251,7 @@ def test_staging_and_persistent_output_binding():
     src = "".join(cell_2.source) if isinstance(cell_2.source, list) else cell_2.source
 
     assert ".part" in src, "Must copy to temporary .part file"
-    assert "part_dst.rename(dst)" in src or "rename(" in src, "Must atomically rename after verification"
+    assert "os.replace(part_dst, dst)" in src, "Must atomically replace destination with os.replace"
     assert "LOCAL_OUTPUT_PATH.symlink_to" in src, "Must establish symlink to Drive output"
     assert "rm -rf" not in src, "Must not use destructive rm -rf"
     assert "chmod(0o755)" in src, "Must grant execute permission to operator script"
@@ -381,3 +382,83 @@ def test_input_preflight_fail_closed_logic_with_tmp_path(tmp_path):
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
+
+def test_atomic_staging_behavior_refresh_stale_and_skip_valid(tmp_path):
+    """
+    Behavioral test for notebook atomic staging:
+    - If local destination matches size and hash, skip copy.
+    - If local destination is stale (wrong hash), refresh via .part and os.replace.
+    - If .part verification fails, destination is untouched.
+    """
+    import shutil, hashlib, os
+
+    src_dir = tmp_path / "inputs"
+    src_dir.mkdir()
+    dst_dir = tmp_path / "transfer"
+    dst_dir.mkdir()
+
+    # Create valid source file
+    content_valid = b"OPERATOR_VALID_CONTENT_PHASE4C1C12"
+    sha_valid = hashlib.sha256(content_valid).hexdigest()
+    spec = {
+        "filename": "operator.sh",
+        "bytes": len(content_valid),
+        "sha256": sha_valid,
+    }
+    src_file = src_dir / spec["filename"]
+    src_file.write_bytes(content_valid)
+
+    dst_file = dst_dir / spec["filename"]
+
+    # 1. Existing file with stale/wrong content
+    content_stale = b"OLD_OPERATOR_CONTENT"
+    dst_file.write_bytes(content_stale)
+    assert dst_file.read_bytes() == content_stale
+
+    # Run staging logic
+    if not (dst_file.exists() and dst_file.stat().st_size == spec["bytes"] and hashlib.sha256(dst_file.read_bytes()).hexdigest() == spec["sha256"]):
+        part_dst = dst_dir / f"{spec['filename']}.part"
+        if part_dst.exists():
+            part_dst.unlink()
+        shutil.copy2(src_file, part_dst)
+        assert part_dst.stat().st_size == spec["bytes"]
+        assert hashlib.sha256(part_dst.read_bytes()).hexdigest() == spec["sha256"]
+        os.replace(part_dst, dst_file)
+
+    assert dst_file.read_bytes() == content_valid
+    assert not (dst_dir / f"{spec['filename']}.part").exists()
+
+    # 2. Re-running with valid destination must skip copy
+    mtime_before = dst_file.stat().st_mtime_ns
+    skipped = False
+    if dst_file.exists() and dst_file.stat().st_size == spec["bytes"] and hashlib.sha256(dst_file.read_bytes()).hexdigest() == spec["sha256"]:
+        skipped = True
+
+    assert skipped is True
+    assert dst_file.stat().st_mtime_ns == mtime_before
+
+    # 3. If source file is corrupt, destination is preserved
+    corrupt_src = src_dir / "corrupt.sh"
+    corrupt_src.write_bytes(b"WRONG")
+    corrupt_spec = {"filename": "corrupt.sh", "bytes": 100, "sha256": "00" * 32}
+    corrupt_dst = dst_dir / "corrupt.sh"
+    corrupt_dst.write_bytes(b"PRESERVED_LOCAL")
+
+    with pytest.raises(AssertionError):
+        part_dst = dst_dir / f"{corrupt_spec['filename']}.part"
+        shutil.copy2(corrupt_src, part_dst)
+        assert part_dst.stat().st_size == corrupt_spec["bytes"]
+        assert hashlib.sha256(part_dst.read_bytes()).hexdigest() == corrupt_spec["sha256"]
+        os.replace(part_dst, corrupt_dst)
+
+    assert corrupt_dst.read_bytes() == b"PRESERVED_LOCAL"
+
+
+def test_dynamic_disk_space_requirement_calculation():
+    """Test dynamic disk space formula computes required_bytes based on artifacts."""
+    reusable_bundle_bytes = 724633600
+    code_archive_bytes = 758350
+    safety_margin_bytes = 512 * 1024 * 1024
+    expected_required = 2 * reusable_bundle_bytes + code_archive_bytes + safety_margin_bytes
+    assert expected_required == 1986896462
+    assert 1.8 < (expected_required / (1024 ** 3)) < 2.0

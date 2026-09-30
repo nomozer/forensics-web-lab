@@ -1,4 +1,4 @@
-"""Tests for Phase 4C.1C.11 Operator Script: Static Invariants, GPU Capability,
+"""Tests for Phase 4C.1C.12 Operator Script: Static Invariants, GPU Capability,
 
 Staging, Security, Checksums, and Resume Behavioral Tests.
 """
@@ -33,8 +33,8 @@ EXPECTED_CODE_ARCHIVE_SHA = "5e775a7708d1555bf22f56dceb5358e26e07dd224c4b6186f57
 EXPECTED_CONFIG_HASH = "e03c07dae05a2402416abb0c60480a8cd0a35d060de3bb138a09d0bec0a85dc9"
 EXPECTED_REQS_SHA = "850478c0a9746b93354dd756ba428621a4aa48abab4e6aa5fa7e00669cea67a0"
 
-EXPECTED_OPERATOR_SHA = "cf240f3c289dc42ab93aa590457d95f85ff21280b13c337a02cf6d5533e91e6d"
-EXPECTED_OPERATOR_BYTES = 48539
+EXPECTED_OPERATOR_SHA = "e16e3e2c7d7aafe3695976062bc86731e5f166a89cc6a350485d13ff9bf500eb"
+EXPECTED_OPERATOR_BYTES = 49370
 
 OPERATOR_EXISTS = OPERATOR_SCRIPT.exists()
 
@@ -85,7 +85,11 @@ def run_py_verification(
         str(gpu_policy),
         str(expected_gpu),
         str(exp_config_hash),
-        str(bundle_root if bundle_root else run_dir.parent / "bundle"),
+        str(
+            bundle_root
+            if bundle_root is not None
+            else (run_dir.parent / "bundle" if (run_dir.parent / "bundle").exists() else run_dir.parent.parent / "bundle")
+        ),
     ]
     cp = subprocess.run(cmd, capture_output=True, text=True)
     return cp.returncode == 0, cp.stdout, cp.stderr
@@ -103,7 +107,7 @@ def setup_mock_environment_and_run(
     best_epoch: int = 18,
     gpu_model: str = "Tesla T4",
     config_hash: str = EXPECTED_CONFIG_HASH,
-    setup_bundle_manifest: bool = False,
+    setup_bundle_manifest: bool = True,
 ):
     output_root = base_dir / "phase_4c1_outputs"
     output_root.mkdir(parents=True, exist_ok=True)
@@ -146,6 +150,9 @@ def setup_mock_environment_and_run(
         ] + [
             {"source_id": f"dev_{i:04d}", "partition": "development_train"}
             for i in range(50)
+        ] + [
+            {"source_id": f"lock_{i:04d}", "partition": "locked_test"}
+            for i in range(30)
         ]
         with open(manifest_file, "w", newline="", encoding="utf-8") as mf:
             writer = csv.DictWriter(mf, fieldnames=["source_id", "partition"])
@@ -330,6 +337,26 @@ class TestOperatorStaticInvariants:
         assert 'CODE_STAGE_DIR="$(mktemp -d /content/phase4c1-code-79bb115.XXXXXX)"' in text
         assert 'Auditing code archive tar entries for safe extraction' in text
 
+    def test_download_dir_is_under_output_root(self):
+        """1. Output archives must be saved under persistent OUTPUT_ROOT/download, not ephemeral /content/download."""
+        text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
+        assert 'DOWNLOAD_DIR="$OUTPUT_ROOT/download"' in text
+        assert 'DOWNLOAD_DIR="/content/download"' not in text
+
+    def test_err_trap_inherited_with_set_E(self):
+        """4. Shell options must use set -Eeuo pipefail to inherit ERR trap in functions and subshells."""
+        text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
+        assert "set -Eeuo pipefail" in text
+        assert "set -euo pipefail" not in text
+        assert "trap - ERR" in text
+
+    def test_fail_closed_manifest_check_no_fallback(self):
+        """3. Exact bundle manifest must be present without cardinality-only fallback."""
+        text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
+        assert "if not bundle_manifest_p.exists():" in text
+        assert "raise FileNotFoundError" in text
+        assert "assert len(set(source_ids)) == 91" not in text
+
     def test_hardware_summary_fail_closed_no_or_true(self):
         """27. Hardware summary generation is fail-closed, does not ignore errors with || true."""
         text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
@@ -498,16 +525,17 @@ class TestScientificBindingAndRuntimePolicy:
         staged_req_sha: str = EXPECTED_REQS_SHA,
         staged_cfg_sha: str = EXPECTED_CONFIG_HASH,
         baseline_freeze_content: str = None,
+        baseline_freeze_filename: str = None,
     ):
         with tempfile.TemporaryDirectory() as td:
-            lock_path = Path(td) / "phase4c1_environment_lock.json"
+            output_root = Path(td)
+            lock_path = output_root / "phase4c1_environment_lock.json"
             lock_path.write_text(json.dumps(lock_data, indent=2), encoding="utf-8")
 
-            base_freeze_file = ""
             if baseline_freeze_content is not None:
-                bff = Path(td) / "baseline-pip-freeze.txt"
+                fname = baseline_freeze_filename or lock_data.get("baseline_pip_freeze_file") or "baseline-pip-freeze.txt"
+                bff = output_root / fname
                 bff.write_bytes(baseline_freeze_content.encode("utf-8"))
-                base_freeze_file = str(bff)
 
             preamble = f"""
 import sys, types, torch
@@ -530,7 +558,7 @@ torch.cuda.get_device_name = lambda dev=0: "{mock_current_gpu}"
                 current_pip_freeze_sha,
                 staged_req_sha,
                 staged_cfg_sha,
-                base_freeze_file,
+                str(output_root),
             ]
             cp = subprocess.run(cmd, capture_output=True, text=True)
             return cp.returncode == 0, cp.stdout, cp.stderr
@@ -668,20 +696,6 @@ torch.cuda.get_device_name = lambda dev=0: "{mock_current_gpu}"
 
     def test_19_pip_freeze_differs_in_compatible_mode_provenance_warning(self):
         """19. pip freeze khác do package không liên quan trong compatible mode -> provenance warning."""
-        lock = {
-            "execution_code_sha": EXPECTED_CODE_SHA,
-            "code_archive_sha256": EXPECTED_CODE_ARCHIVE_SHA,
-            "bundle_archive_sha256": EXPECTED_BUNDLE_ARCHIVE_SHA,
-            "bundle_content_sha256": EXPECTED_BUNDLE_CONTENT_SHA,
-            "pip_freeze_sha256": "different_freeze_sha",
-            "gpu_model": "Tesla T4",
-        }
-        ok, out, _ = self.run_lock_verification(lock, runtime_policy="compatible")
-        assert ok, "Must pass in compatible mode"
-        assert "pip freeze digest differs" in out
-
-    def test_19b_legacy_baseline_pip_freeze_matches_passes(self):
-        """21. Legacy baseline pip freeze khớp lock -> PASS."""
         sample_freeze = "torch==2.2.0\nnumpy==1.26.0\n"
         freeze_sha = hashlib.sha256(sample_freeze.encode("utf-8")).hexdigest()
         lock = {
@@ -692,8 +706,35 @@ torch.cuda.get_device_name = lambda dev=0: "{mock_current_gpu}"
             "pip_freeze_sha256": freeze_sha,
             "gpu_model": "Tesla T4",
         }
-        ok, out, err = self.run_lock_verification(lock, baseline_freeze_content=sample_freeze)
-        assert ok, f"Expected PASS when baseline freeze matches lock: {err}"
+        # Run with current session freeze different from baseline
+        ok, out, _ = self.run_lock_verification(
+            lock,
+            runtime_policy="compatible",
+            current_pip_freeze_sha="different_session_freeze_sha",
+            baseline_freeze_content=sample_freeze,
+        )
+        assert ok, "Must pass in compatible mode"
+        assert "pip freeze digest differs" in out
+
+    def test_19b_legacy_baseline_pip_freeze_matches_passes(self):
+        """21. Legacy baseline pip freeze (t4-pip-freeze.txt) khớp lock -> PASS."""
+        sample_freeze = "torch==2.2.0\nnumpy==1.26.0\n"
+        freeze_sha = hashlib.sha256(sample_freeze.encode("utf-8")).hexdigest()
+        lock = {
+            "execution_code_sha": EXPECTED_CODE_SHA,
+            "code_archive_sha256": EXPECTED_CODE_ARCHIVE_SHA,
+            "bundle_archive_sha256": EXPECTED_BUNDLE_ARCHIVE_SHA,
+            "bundle_content_sha256": EXPECTED_BUNDLE_CONTENT_SHA,
+            "pip_freeze_sha256": freeze_sha,
+            "gpu_model": "Tesla T4",
+        }
+        ok, out, err = self.run_lock_verification(
+            lock,
+            baseline_freeze_content=sample_freeze,
+            baseline_freeze_filename="t4-pip-freeze.txt",
+        )
+        assert ok, f"Expected PASS when legacy baseline freeze matches lock: {err}"
+        assert "Baseline pip freeze verified" in out
 
     def test_19c_legacy_baseline_pip_freeze_mismatch_fails(self):
         """22. Legacy baseline pip freeze sai hash -> FAIL."""
@@ -706,9 +747,49 @@ torch.cuda.get_device_name = lambda dev=0: "{mock_current_gpu}"
             "pip_freeze_sha256": "00" * 32,
             "gpu_model": "Tesla T4",
         }
-        ok, _, err = self.run_lock_verification(lock, baseline_freeze_content=sample_freeze)
+        ok, _, err = self.run_lock_verification(
+            lock,
+            baseline_freeze_content=sample_freeze,
+            baseline_freeze_filename="t4-pip-freeze.txt",
+        )
         assert not ok, "Expected FAIL when baseline freeze file doesn't match lock sha"
         assert "Provenance corrupted" in err
+
+    def test_19d_lock_has_freeze_sha_but_baseline_file_missing_fails(self):
+        """5. Fail-closed: Lock có pip_freeze_sha256 nhưng không tìm thấy file baseline -> FAIL."""
+        lock = {
+            "execution_code_sha": EXPECTED_CODE_SHA,
+            "code_archive_sha256": EXPECTED_CODE_ARCHIVE_SHA,
+            "bundle_archive_sha256": EXPECTED_BUNDLE_ARCHIVE_SHA,
+            "bundle_content_sha256": EXPECTED_BUNDLE_CONTENT_SHA,
+            "pip_freeze_sha256": "aabb" * 16,
+            "gpu_model": "Tesla T4",
+        }
+        # Notice: baseline_freeze_content is None, so neither t4-pip-freeze.txt nor baseline-pip-freeze.txt exists
+        ok, _, err = self.run_lock_verification(lock, baseline_freeze_content=None)
+        assert not ok, "Expected FAIL when baseline pip freeze file is missing"
+        assert "Baseline pip freeze file required by environment lock not found" in err
+
+    def test_19e_new_baseline_pip_freeze_matches_passes(self):
+        """5. New session baseline pip freeze (baseline-pip-freeze.txt declared in lock) -> PASS."""
+        sample_freeze = "torch==2.2.0\nscipy==1.12.0\n"
+        freeze_sha = hashlib.sha256(sample_freeze.encode("utf-8")).hexdigest()
+        lock = {
+            "execution_code_sha": EXPECTED_CODE_SHA,
+            "code_archive_sha256": EXPECTED_CODE_ARCHIVE_SHA,
+            "bundle_archive_sha256": EXPECTED_BUNDLE_ARCHIVE_SHA,
+            "bundle_content_sha256": EXPECTED_BUNDLE_CONTENT_SHA,
+            "baseline_pip_freeze_file": "baseline-pip-freeze.txt",
+            "pip_freeze_sha256": freeze_sha,
+            "gpu_model": "Tesla T4",
+        }
+        ok, out, err = self.run_lock_verification(
+            lock,
+            baseline_freeze_content=sample_freeze,
+            baseline_freeze_filename="baseline-pip-freeze.txt",
+        )
+        assert ok, f"Expected PASS when baseline-pip-freeze.txt matches lock: {err}"
+        assert "Baseline pip freeze verified: baseline-pip-freeze.txt" in out
 
 
 @pytest.mark.skipif(not OPERATOR_EXISTS, reason="Local operator script not found")
@@ -1174,3 +1255,120 @@ class TestOperatorFaultInjections:
         """27. Hardware summary lỗi -> operator không tuyên bố complete."""
         text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
         assert 'fail_operator "PACKAGING" 1 "Failed to generate HARDWARE_SUMMARY.json' in text
+
+
+    def test_33e_missing_bundle_manifest_fails(self):
+        """3. Missing canonical bundle manifest -> FAIL closed (no fallback)."""
+        with tempfile.TemporaryDirectory() as td:
+            output_root, run_dir = setup_mock_environment_and_run(Path(td), 50, 42, setup_bundle_manifest=False)
+            bundle_root = Path(td) / "bundle"
+            # Explicitly ensure manifest is absent
+            manifest_file = bundle_root / "manifest_pilot_a_option_p.csv"
+            if manifest_file.exists():
+                manifest_file.unlink()
+
+            ok, out, err = run_py_verification(self.py_code, run_dir, 50, 42, bundle_root=bundle_root)
+            assert not ok, "Expected FAIL when canonical bundle manifest is missing"
+            assert "Canonical bundle manifest not found" in (out + err)
+
+    def test_33f_corrupt_manifest_schema_fails(self):
+        """3. Corrupt bundle manifest schema -> FAIL."""
+        with tempfile.TemporaryDirectory() as td:
+            output_root, run_dir = setup_mock_environment_and_run(Path(td), 50, 42, setup_bundle_manifest=False)
+            bundle_root = Path(td) / "bundle"
+            manifest_file = bundle_root / "manifest_pilot_a_option_p.csv"
+            manifest_file.write_text("wrong_col1,wrong_col2\nval1,val2\n", encoding="utf-8")
+
+            ok, out, err = run_py_verification(self.py_code, run_dir, 50, 42, bundle_root=bundle_root)
+            assert not ok, "Expected FAIL when bundle manifest schema is corrupt"
+
+    def test_33g_locked_test_source_in_predictions_fails(self):
+        """3. Locked-test partition source appearing in predictions -> FAIL."""
+        with tempfile.TemporaryDirectory() as td:
+            output_root, run_dir = setup_mock_environment_and_run(Path(td), 50, 42, setup_bundle_manifest=True)
+            bundle_root = Path(td) / "bundle"
+            preds_file = run_dir / "predictions.json"
+            preds = json.loads(preds_file.read_text(encoding="utf-8"))
+            preds["source_ids"][0] = "lock_0000"
+            preds["source_ids"][91] = "lock_0000"
+            preds_file.write_text(json.dumps(preds), encoding="utf-8")
+            csums_file = run_dir / "checksums.json"
+            csums = json.loads(csums_file.read_text(encoding="utf-8"))
+            csums["predictions.json"]["size_bytes"] = preds_file.stat().st_size
+            csums["predictions.json"]["sha256"] = hashlib.sha256(preds_file.read_bytes()).hexdigest()
+            csums_file.write_text(json.dumps(csums), encoding="utf-8")
+
+            ok, out, err = run_py_verification(self.py_code, run_dir, 50, 42, bundle_root=bundle_root)
+            assert not ok, "Expected FAIL when locked-test source appears in validation predictions"
+
+    def test_33h_cardinality_91_but_wrong_membership_fails(self):
+        """3. Correct cardinality (91 unique sources) but wrong membership -> FAIL."""
+        with tempfile.TemporaryDirectory() as td:
+            output_root, run_dir = setup_mock_environment_and_run(Path(td), 50, 42, setup_bundle_manifest=True)
+            bundle_root = Path(td) / "bundle"
+            preds_file = run_dir / "predictions.json"
+            preds = json.loads(preds_file.read_text(encoding="utf-8"))
+            # Replace valid src_0000 with synthetic src_unregistered
+            preds["source_ids"] = [
+                "src_unregistered" if s == "src_0000" else s
+                for s in preds["source_ids"]
+            ]
+            assert len(set(preds["source_ids"])) == 91
+            preds_file.write_text(json.dumps(preds), encoding="utf-8")
+            csums_file = run_dir / "checksums.json"
+            csums = json.loads(csums_file.read_text(encoding="utf-8"))
+            csums["predictions.json"]["size_bytes"] = preds_file.stat().st_size
+            csums["predictions.json"]["sha256"] = hashlib.sha256(preds_file.read_bytes()).hexdigest()
+            csums_file.write_text(json.dumps(csums), encoding="utf-8")
+
+            ok, out, err = run_py_verification(self.py_code, run_dir, 50, 42, bundle_root=bundle_root)
+            assert not ok, "Expected FAIL when membership does not exactly match inner_validation"
+            assert "Predictions source IDs mismatch" in (out + err)
+
+    def test_42_subshell_and_function_error_caught_by_E_trap(self, tmp_path):
+        """4. Behavioral test: set -Eeuo pipefail ensures errors in functions or subshells trigger ERR trap."""
+        failure_json = tmp_path / "OPERATOR_FAILURE.json"
+
+        script = """set -Eeuo pipefail
+SYS_PY=$(command -v python3 || command -v python)
+fail_operator() {
+    trap - ERR
+    local state="$1"
+    local code="$2"
+    local reason="$3"
+    local line="${4:-$LINENO}"
+    "$SYS_PY" -c '
+import sys, json
+state, code, reason, line, out_p = sys.argv[1:6]
+with open(out_p, "w") as f:
+    json.dump({"status": "failed", "state": state, "code": int(code), "reason": reason, "line": int(line)}, f)
+' "$state" "$code" "$reason" "$line" "OPERATOR_FAILURE.json"
+    exit "$code"
+}
+
+trap 'fail_operator "SUBSHELL_TEST" $? "$BASH_COMMAND" $LINENO' ERR
+
+inner_func() {
+    ( exit 42 )
+}
+
+inner_func
+""".replace("\r\n", "\n").encode("utf-8")
+
+        cp = subprocess.run(["bash", "-s"], input=script, capture_output=True, cwd=str(tmp_path))
+        assert cp.returncode == 42
+        assert failure_json.exists()
+        doc = json.loads(failure_json.read_text(encoding="utf-8"))
+        assert doc["status"] == "failed"
+        assert doc["code"] == 42
+        assert doc["state"] == "SUBSHELL_TEST"
+
+    def test_43_download_dir_is_persistent_output(self):
+        """1. Operator script defines DOWNLOAD_DIR under persistent OUTPUT_ROOT."""
+        text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
+        assert 'OUTPUT_ROOT="/content/phase_4c1_outputs"' in text
+        assert 'DOWNLOAD_DIR="$OUTPUT_ROOT/download"' in text
+        assert 'mkdir -p "$OUTPUT_ROOT" "$DOWNLOAD_DIR" "$LOGS_DIR"' in text
+        assert '$DOWNLOAD_DIR/n${size}_results.tar.gz' in text
+        assert '$DOWNLOAD_DIR/phase_4c1_all_15_runs_results.tar.gz' in text
+        assert '$DOWNLOAD_DIR/phase_4c1_t4_execution_logs.tar.gz' in text
