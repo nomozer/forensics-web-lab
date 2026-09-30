@@ -1,10 +1,10 @@
 {
   "pre_execution_verdict": {
     "schema_version": "1.0.0",
-    "phase": "Phase 4C.1C.1",
+    "phase": "Phase 4C.1",
     "verdict": "GO",
-    "verdict_rationale": "All pre-execution gates pass without exception: receipt cardinality is reconciled with physical assets, operator static assertion count is 18/18 PASS, execution snapshot binding 79bb115 is intact with zero executable code changes, single canonical notebook with persistent Drive architecture compiles and passes all 14 tests, duplicate notebook is removed, training runs remain 0, and locked-test accesses remain 0.",
-    "timestamp_utc": "2026-09-29T18:55:00.000000+00:00",
+    "verdict_rationale": "All pre-execution gates pass without exception: operator and runner receipt contract gap reconciled using canonical phase4c1_environment_lock.json (sealed with .sha256 sidecar, binding execution_code_sha to 79bb11527d900fd387de1f41f2010c4152b7fea7 and code_archive_sha256 to 5e775a7708d1555bf22f56dceb5358e26e07dd224c4b6186f575aff4d2b590d5); operator static assertions and 7 mandatory fault injections 21/21 PASS; execution snapshot binding 79bb115 is intact with zero executable code changes; single canonical notebook with persistent Drive architecture compiles and passes all 16 notebook tests; duplicate notebook is removed; training runs remain 0; locked-test accesses remain 0; and stage 2 invocations remain 0.",
+    "timestamp_utc": "2026-09-30T02:40:00.000000+00:00",
     "gates": {
       "cardinality_reconciliation": {
         "status": "PASS",
@@ -32,13 +32,29 @@
         "ratio_authentic_to_ai_edited": "1:1 (341 authentic : 341 ai_edited)",
         "cross_split_source_overlap": 0
       },
+      "contract_gap_reconciliation": {
+        "status": "PASS",
+        "contract_gap": "Operator previously asserted execution_code_sha in run_receipt.json, which is not emitted by frozen runner snapshot 79bb115.",
+        "reconciliation_artifact": "phase4c1_environment_lock.json",
+        "sidecar_artifact": "phase4c1_environment_lock.sha256",
+        "binding_fields_verified": [
+          "execution_code_sha",
+          "code_archive_sha256",
+          "bundle_sha256"
+        ],
+        "execution_code_sha_verified": "79bb11527d900fd387de1f41f2010c4152b7fea7",
+        "receipt_stage2_check_aligned": "Checked both stage2_invocations and stage_2_invocation == 0",
+        "receipt_checksums_dict_aligned": "Checked both dict {size_bytes, sha256} and string checksum formats",
+        "fault_injections_tested": 7,
+        "fault_injections_passed": 7
+      },
       "operator_static_assertions": {
         "status": "PASS",
         "script_name": "phase_4c1_t4_execute_all_stage1.sh",
-        "bytes": 20005,
-        "sha256": "deb3f04dd7c1039c4f3248f98a27f4eaf8e11f206a218125e949e5869da8ce05",
-        "assertions_total": 18,
-        "assertions_passed": 18,
+        "bytes": 21662,
+        "sha256": "1a7570d757ccfc1b471c636f64d0f001c3b6fcc9306b9894f94186f909f1f3c4",
+        "assertions_total": 21,
+        "assertions_passed": 21,
         "assertions_failed": 0,
         "all_passed": true
       },
@@ -55,7 +71,9 @@
         "status": "PASS",
         "path": "notebooks/phase_4c1_learning_curve_colab.ipynb",
         "bytes": 12826,
-        "sha256": "463ae56390f93f50e246d0a1703f42f5effb3bc51fdee4cc90b5cc2d7697e7cc",
+        "sha256": "d095c02018d99ab93079cf47fcc7653a7328143417ed933e6ead07dec3ab512c",
+        "tests_count": 16,
+        "tests_passed": 16,
         "drive_persistence_architecture": true,
         "drive_input_dir": "/content/drive/MyDrive/forensics-web-lab/phase_4c1/inputs",
         "drive_output_dir": "/content/drive/MyDrive/forensics-web-lab/phase_4c1/runs/execution_79bb115",
@@ -77,7 +95,7 @@
       }
     },
     "execution_readiness": {
-      "status": "READY_FOR_REMOTE_EXECUTION",
+      "status": "READY_FOR_USER_COLAB_DRY_RUN",
       "files_to_upload": [
         "phase_4c1_code_79bb115.tar.gz",
         "phase_4c1_binary_n250_reusable.tar",

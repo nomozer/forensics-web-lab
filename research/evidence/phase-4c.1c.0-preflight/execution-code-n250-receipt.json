@@ -8,6 +8,6 @@
   "createdAtUtc": "2026-09-29T16:30:00Z",
   "notebookSha256": "f26576cb70b6c892faaade7b225872d4bafbcfe1424b64df29564dd9e1cd28b9",
   "reusableBundleSha256": "d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27",
-  "operatorSha256": "deb3f04dd7c1039c4f3248f98a27f4eaf8e11f206a218125e949e5869da8ce05",
+  "operatorSha256": "1a7570d757ccfc1b471c636f64d0f001c3b6fcc9306b9894f94186f909f1f3c4",
   "notes": "Execution snapshot containing reusable N250 bundle exporter, fail-closed validator, and 15-run canonical runner."
 }

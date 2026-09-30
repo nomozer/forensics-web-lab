@@ -211,7 +211,7 @@ def test_sealed_artifacts_and_drive_paths_configured():
     assert "phase_4c1_binary_n250_reusable.tar" in src
     assert "d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27" in src
     assert "phase_4c1_t4_execute_all_stage1.sh" in src
-    assert "deb3f04dd7c1039c4f3248f98a27f4eaf8e11f206a218125e949e5869da8ce05" in src
+    assert "1a7570d757ccfc1b471c636f64d0f001c3b6fcc9306b9894f94186f909f1f3c4" in src
 
 
 @pytest.mark.skipif(not IPYTHON_AVAILABLE, reason="IPython not installed")

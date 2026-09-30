@@ -4,10 +4,11 @@
     "phase": "Phase 4C.1C.0D",
     "script_name": "phase_4c1_t4_execute_all_stage1.sh",
     "script_path": "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\t4_transfer\\phase_4c1_t4_execute_all_stage1.sh",
-    "bytes": 20005,
-    "sha256": "deb3f04dd7c1039c4f3248f98a27f4eaf8e11f206a218125e949e5869da8ce05",
-    "timestamp_utc": "2026-09-29T16:30:00Z",
+    "bytes": 21662,
+    "sha256": "1a7570d757ccfc1b471c636f64d0f001c3b6fcc9306b9894f94186f909f1f3c4",
+    "timestamp_utc": "2026-09-30T02:40:00Z",
     "execution_code_sha": "79bb11527d900fd387de1f41f2010c4152b7fea7",
+    "execution_code_binding_source": "phase4c1_environment_lock.json",
     "code_archive": {
       "name": "phase_4c1_code_79bb115.tar.gz",
       "path": "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\t4_transfer\\phase_4c1_code_79bb115.tar.gz",
@@ -41,8 +42,8 @@
     },
     "canonical_runner_command_template": "python -m ml.training.run_phase_4c1 --config ml/configs/phase_4c1_learning_curve.yaml --bundle /content/bundle --sample-size <SIZE> --seed <SEED> --stage frozen --device cuda --train-partition development_train --eval-partition inner_validation --output /content/phase_4c1_outputs/n<SIZE>_seed_<SEED>",
     "static_validation_results": {
-      "assertions_total": 18,
-      "assertions_passed": 18,
+      "assertions_total": 21,
+      "assertions_passed": 21,
       "assertions_failed": 0,
       "all_passed": true,
       "checks": {
@@ -60,10 +61,13 @@
         "five_seed_contract": "PASS",
         "fifteen_run_matrix": "PASS",
         "runner_flags_match_real_cli": "PASS",
-        "fault_injection_valid_run_passes": "PASS",
-        "fault_injection_missing_checkpoint_fails": "PASS",
-        "fault_injection_corrupted_checksum_fails": "PASS",
-        "fault_injection_locked_test_access_fails": "PASS"
+        "fault_injection_correct_binding_passes": "PASS",
+        "fault_injection_missing_binding_fails": "PASS",
+        "fault_injection_wrong_binding_fails": "PASS",
+        "fault_injection_completed_valid_run_resumable": "PASS",
+        "fault_injection_partial_run_fails_closed": "PASS",
+        "fault_injection_locked_test_access_fails": "PASS",
+        "fault_injection_stage2_invocation_fails": "PASS"
       }
     },
     "resume_contract": {
