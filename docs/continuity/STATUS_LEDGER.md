@@ -1,3 +1,15 @@
+## Phase 4C.1D — Reconciled Evidence from Raw Run Artifacts (Phase 4C.1D.1)
+
+- **Muc tieu**: Fix all discrepancies in Phase 4C.1D evidence by deterministically rebuilding all CSV, JSON, Markdown, and figures from 15 raw run receipts and archives. No new training, no locked-test access, no Stage 2.
+- **Starting commit**: 65e7240 (Phase 4C.1D initial commit)
+- **Branch**: research/phase-4c1-learning-curve
+- **Thay đổi chính**: (1) Audited 5 root causes: checkpoint SHA typo/draft carryover, metric column divergence, external report mixing pre-sigmoid/synthetic metrics, misrepresenting stratified dummy as constant 0.4940, and git command in PHASE_REPORT commit. (2) Created canonical pipeline `scripts/research/analyze_phase_4c1d_runs.py` generating 100% of artifacts deterministically from raw receipts. (3) Regenerated all evidence: Table 2 matches receipts (15/15 prefixes exact), dummy evaluated per-seed (0.4749 ± 0.0325), paired differences computed correctly, two-step provenance (`audited_through_commit`), separated remote T4 vs local environment. (4) Toned down scientific claims: exploratory n=5, exact permutation tests, Holm correction, no claim of generalizability/product readiness. (5) Added table parity and fault injection tests to `ml/tests/test_phase_4c1d_analysis.py` (8/8 PASS).
+- **Kiểm tra**: 8/8 Phase 4C.1D.1 tests pass, full ML pytest pass, 70/70 TS pass, typecheck 0, build OK, continuity PASS.
+- **Kết quả**: 100% parity across raw receipts, CSVs, JSONs, Markdown tables, and figures. Single canonical Phase 4C.1D evidence set established.
+- **Evidence**: research/evidence/phase-4c.1d/ (8 data/report artifacts + 5 figure pairs).
+- **Quyết định tiếp theo**: Prepare Phase 4C.2 / Stage 2 unfreezing proposal with differential learning rates, retaining reconciled Phase 4C.1D.1 baselines.
+
+---
 ## Phase 4C.1D — Ingest, Verify and Analyze 15 Stage-1 Runs
 
 - **Muc tieu**: Ingest 15 Colab T4 runs from local storage, verify 5 archives + 5 sidecars, verify all 15 runs (9 artifacts, status completed, frozen, locked-test 0, stage 2 0, 91 validation sources), aggregate learning curve (N=50, 100, 250 across 5 seeds), generate figures and report.

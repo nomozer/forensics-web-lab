@@ -1,16 +1,16 @@
 # Trạng thái Hiện tại: Forensics Web Lab (Current State)
 
 > **Tài liệu đọc đầu tiên bắt buộc cho mọi phiên làm việc AI mới.**<br>
-> **Documented through substantive commit**: `85ac5d7`<br>
+> **Documented through substantive commit**: `65e7240`<br>
 > **Ending commit Phase 4C.0**: `110fef1`<br>
-> **Phase hoàn thành gần nhất**: Phase 4C.1D — Ingest, Verify and Analyze 15 Stage-1 Runs<br>
+> **Phase hoàn thành gần nhất**: Phase 4C.1D.1 — Rebuild and Reconcile All Analysis Evidence from Raw Run Artifacts<br>
 > **Branch**: `research/phase-4c1-learning-curve`<br>
 > **Base main commit**: `460f6d5` (bảo toàn nguyên vẹn, không commit trực tiếp)<br>
 > **Working tree**: clean<br>
 > **Remote completed training runs**: 15/15 (N=50, 100, 250 across seeds 42, 1337, 2025, 3407, 9001 on Colab T4)<br>
 > **Remaining training runs**: 0<br>
 > **Tuyên bố khoa học tối thượng**:<br>
-> **`Stage-1 frozen MobileNetV3 linear probe evaluated across 15 runs; performance plateaus at N=100 (Macro-F1 0.5728 ± 0.0048); Stage 2 backbone unfreezing scientifically justified.`**
+> **`Stage-1 frozen MobileNetV3 linear probe evaluated across 15 runs; no observed improvement from N=100 to N=250 in frozen configuration (Macro-F1: N50=0.5322, N100=0.5728, N250=0.5627; N100-N50 delta=+0.0406, N250-N100 delta=-0.0101); evidence is consistent with, but does not prove, a representation bottleneck; Stage 2 unfreezing is the next empirical hypothesis test.`**
 
 ---
 
@@ -79,16 +79,16 @@
   * 2-class pipeline (`authentic` vs `ai_edited`): `runnable`.
   * 3-class pipeline: `not-runnable-missing-fully-generated-data`.
 * **Số lượt huấn luyện (Training runs)**: `15` remote runs hoàn thành trên Colab T4 (3 sample sizes $N \in \{50, 100, 250\} \times 5$ random seeds $\{42, 1337, 2025, 3407, 9001\}$: 100% completed, frozen stage, 0 locked-test access, 0 stage 2 invocations, 91 validation sources identically evaluated); 0 locked-test evaluations; 0 stage 2 invocations.
-* **Chỉ số khoa học**: Stage-1 Multi-Seed Learning Curve đã hoàn thành (N=50: Macro-F1 0.5322 ± 0.0148 [0.5139, 0.5506], AUROC 0.5421 ± 0.0124; N=100: Macro-F1 0.5728 ± 0.0048 [0.5668, 0.5787], AUROC 0.5861 ± 0.0089; N=250: Macro-F1 0.5627 ± 0.0172 [0.5413, 0.5841], AUROC 0.5860 ± 0.0078). Paired deltas across same 5 seeds: N100 - N50 Δ Macro-F1 = +0.0406 ± 0.0137 (p=0.0027, statistically significant across 5/5 seeds), N250 - N100 Δ Macro-F1 = -0.0101 ± 0.0166 (p=0.2463, saturation / plateau). Model at N=100 outperforms Dummy (0.4940) and Metadata (0.5000) baselines. Frozen linear probe exhibits representation capacity bottleneck at N=100; Stage 2 backbone unfreezing is scientifically justified.
+* **Chỉ số khoa học**: Stage-1 Multi-Seed Learning Curve đã hoàn thành (N=50: Macro-F1 0.5322 ± 0.0148 [0.5139, 0.5506], AUROC 0.5421 ± 0.0124; N=100: Macro-F1 0.5728 ± 0.0048 [0.5668, 0.5787], AUROC 0.5861 ± 0.0089; N=250: Macro-F1 0.5627 ± 0.0172 [0.5413, 0.5841], AUROC 0.5860 ± 0.0078). Paired deltas across same 5 seeds: N100 - N50 Δ Macro-F1 = +0.0406 ± 0.0137 (exploratory n=5, paired t p=0.0027, Holm p=0.0081, permutation p=0.0625), N250 - N100 Δ Macro-F1 = -0.0101 ± 0.0166 (paired t p=0.2463, Holm p=0.2463, permutation p=0.1875). Không quan sát thấy cải thiện từ N=100 lên N=250 trong cấu hình frozen. Mô hình vượt Stratified Dummy baseline (mean 0.4749 ± 0.0325 across seeds; seed 42: 0.4940, 1337: 0.4173, 2025: 0.4820, 3407: 0.4930, 9001: 0.4883) và Metadata baseline (0.5000). ECE tăng từ 0.0171 (N=50) lên 0.0450 (N=100) và 0.0480 (N=250), cho thấy mô hình chưa được hiệu chuẩn tốt. Bằng chứng nhất quán với (nhưng không chứng minh) giới hạn biểu diễn của linear probe; Stage 2 unfreezing là giả thuyết thực nghiệm tiếp theo.
 * **Quy chuẩn trung thực & Tái lập**: All reported quantities are classified explicitly as measured, reproduced, projected, estimated, or not measured. Each classification is tied to its evidence artifact and execution environment. Metrics deterministically reproduced in the recorded software environment using the registered artifacts and prediction-vector hashes.
 
 ---
 
 ## 6. Kết quả Kiểm thử & Bản dựng Gần nhất (Latest Verification)
 
-* **Phase 4C.1D Ingestion & Learning Curve Suite (`ml/tests/test_phase_4c1d_analysis.py`)**: 6/6 tests passing (archive hashes, 15-run verification, metrics schema, 95% CI calculations, paired deltas, SVG/PNG figures).
+* **Phase 4C.1D.1 Analysis Suite (`ml/tests/test_phase_4c1d_analysis.py`)**: 8/8 tests passing (archive hashes, 15-run verification, 15 checkpoint prefixes match receipts, markdown table-CSV parity, summary recalculation, per-seed baseline, figure sources, and fault-injection detection).
 * **TypeScript & Continuity Test Suite (`pnpm test`)**: 70/70 tests passing (57 vitest tests trên 6 packages + 13 continuity checker unit tests).
-* **Python Test Suite (`pytest ml/tests -v`)**: 270/271 tests passing (1 test skipped: `test_smoke_run_cpu_fixture`; 6 Phase 4C.1D tests, 91 Phase 4C.1 operator tests, 19 Phase 4C.1 notebook tests, 15 Phase 4C.1 bundle tests, 14 Phase 4C.1 runner tests, 10 eval leakage regression tests, 9 Phase 4C.0 gate tests, 8 Phase 4C.0a reconciliation tests, etc.).
+* **Python Test Suite (`pytest ml/tests -v`)**: 272/273 tests passing (1 test skipped: `test_smoke_run_cpu_fixture`; 8 Phase 4C.1D.1 tests, 91 Phase 4C.1 operator tests, 19 Phase 4C.1 notebook tests, 15 Phase 4C.1 bundle tests, 14 Phase 4C.1 runner tests, 10 eval leakage regression tests, 9 Phase 4C.0 gate tests, 8 Phase 4C.0a reconciliation tests, etc.).
 * **Operator Syntax Check (`bash -n`)**: PASS (clean exit code 0).
 * **Operator Script (`phase_4c1_t4_execute_all_stage1.sh`)**: 49,460 bytes, SHA-256 `ef8b41f0bc7d6f1b6e749231eeedddc8be78b5506659791cd2f5d25ecfdc95a1`.
 * **Canonical Colab Notebook (`notebooks/phase_4c1_learning_curve_colab.ipynb`)**: 12,342 bytes, SHA-256 `4bdce00de28e1f7e79e2c0733eb3b5d2ff4cd2182d14bc08084017b08945c1dc`.
@@ -204,6 +204,7 @@
 
 ## 9. Công việc Đang thực hiện & Công việc Tiếp theo
 
+* **Đã hoàn thành (Phase 4C.1D.1 — Rebuild and Reconcile All Analysis Evidence from Raw Run Artifacts)**: Tái tạo và đối soát 100% evidence từ 15 raw run artifacts (`run_receipt.json`, `metrics.json`, `predictions.json`, `checksums.json`, `environment.json`, `environment-binding.json`). Khắc phục 5 nhóm bất nhất: (1) Sửa 14/15 checkpoint SHA prefix sai trong báo cáo; (2) Đồng bộ các chỉ số Brier, ECE, val-loss với metrics gốc; (3) Loại bỏ số liệu ngoại lai và thay bằng số liệu thực nghiệm Colab T4 (val-loss 0.171–0.174, peak VRAM 109.0 MB, training time 109–248s); (4) Tính baseline Stratified Dummy theo từng seed (mean 0.4749 ± 0.0325); (5) Chuẩn hóa provenance hai bước (`audited_through_commit`), tách môi trường remote training (Colab T4) và local analysis (GTX 1650); (6) Tạo pipeline chuẩn tắc `scripts/research/analyze_phase_4c1d_runs.py` và tái tạo tất cả CSV/JSON/MD/figures; (7) Bổ sung exact sign-flip permutation tests ($p=0.0625$), Holm-Bonferroni correction ($p=0.0081$), và giảm mức khẳng định khoa học (exploratory $n=5$, không khẳng định bottleneck tuyệt đối, Stage 2 là kiểm định giả thuyết tiếp theo); (8) Bổ sung test parity và fault-injection (8/8 tests PASS). 0 training runs mới, 0 locked-test access, 0 Stage 2 invocation.
 * **Đã hoàn thành (Phase 4C.1D — Ingest, Verify and Analyze 15 Stage-1 Runs)**: Nhập và xác minh toàn vẹn 10 file tải về từ Colab T4 (5 archives + 5 sidecars SHA-256); giải nén an toàn chống path traversal vào local artifacts; kiểm toán 15/15 runs đạt chuẩn 9 artifacts mỗi run, status completed, stage frozen, locked_test_access=0, stage2_invocations=0, cohort 91 inner_validation sources đồng nhất; tổng hợp thống kê learning curve N=50, 100, 250 với 95% CI (t-distribution df=4); tính paired seed deltas chứng minh cải thiện rõ rệt từ N=50 lên N=100 (+0.0406, p=0.0027) và bão hòa tại N=250 (-0.0101, p=0.2463); xác nhận linear probe bottleneck và biện minh cho Stage 2; xuất 5 cặp biểu đồ SVG/PNG độ phân giải cao; hoàn thành báo cáo chuyên sâu và test suite (6/6 tests PASS); toàn bộ quality gates PASS. 0 training runs mới local, 0 locked-test access, 0 stage 2 invocations.
 * **Đã hoàn thành (Phase 4C.0a)**: Đối soát triệt để cấu hình smoke (Option A là single source of truth); tái đánh giá checkpoint trên inner_validation (Macro-F1 0.5035, AUROC 0.5278, Brier 0.2504, ECE 0.0347); thống nhất bảng Stage 0 kèm SHA-256 prediction hashes; hiệu chỉnh resource profile (5.29 MB heap, RSS chưa đo); hiệu chỉnh các phát biểu khoa học; chuẩn hóa metadata evidence-manifest (`artifactCount=9`, `directoryFileCount=10`, `manifestSelfExcluded=true`); đạt chứng nhận `MAIN_READY: true`; 107 tests Python, 70 tests TS, build và continuity check 100% PASS.
 * **Đã hoàn thành (Phase CI.2)**: Sửa TypeScript CI failure (TS18047 tại `packages/inference/src/__tests__/fusion.test.ts:83`) bằng explicit guard. Toàn bộ verification local PASS: `pnpm test` 70/70, `pnpm typecheck` 0 errors, `pnpm build` success, `pytest ml/tests` 107/107, validators 4/4, registry 7/7, evidence reproducer PASS. Commit pushed lên feature branch, PR #1 tự động cập nhật.

@@ -1,72 +1,71 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" width="900" height="600" style="background-color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-<text x="110" y="40" font-size="20" font-weight="bold" fill="#1e293b">Phase 4C.1 Stage 1: Calibration Quality (Brier Score & ECE) vs N</text>
-<text x="110" y="65" font-size="13" fill="#64748b">Probabilistic scoring metrics (Brier Score in [0.24, 0.26], ECE in [0.00, 0.08]; lower is better)</text>
-<line x1="110" y1="520.0" x2="740" y2="520.0" stroke="#e2e8f0" stroke-width="1" />
-<text x="95" y="524.0" font-size="12" fill="#64748b" text-anchor="end">0.000</text>
-<line x1="110" y1="448.33333333333337" x2="740" y2="448.33333333333337" stroke="#e2e8f0" stroke-width="1" />
-<text x="95" y="452.33333333333337" font-size="12" fill="#64748b" text-anchor="end">0.047</text>
-<line x1="110" y1="376.6666666666667" x2="740" y2="376.6666666666667" stroke="#e2e8f0" stroke-width="1" />
-<text x="95" y="380.6666666666667" font-size="12" fill="#64748b" text-anchor="end">0.093</text>
-<line x1="110" y1="305.0" x2="740" y2="305.0" stroke="#e2e8f0" stroke-width="1" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" width="900" height="600" style="background-color: #ffffff; font-family: Segoe UI, Roboto, Helvetica, Arial, sans-serif;">
+<rect width="900" height="600" fill="#ffffff"/>
+<text x="110" y="42" font-size="20" font-weight="700" fill="#0f172a">Phase 4C.1 Stage 1: Probability Calibration (Brier Score & ECE) vs N</text>
+<text x="110" y="68" font-size="13" fill="#64748b">Uncalibrated probabilities (lower is better; ECE increases with N indicating need for Temperature Scaling)</text>
+<line x1="110" y1="515.0" x2="730" y2="515.0" stroke="#e2e8f0" stroke-width="1"/>
+<text x="95" y="519.0" font-size="12" fill="#64748b" text-anchor="end">0.000</text>
+<line x1="110" y1="445.0" x2="730" y2="445.0" stroke="#e2e8f0" stroke-width="1"/>
+<text x="95" y="449.0" font-size="12" fill="#64748b" text-anchor="end">0.047</text>
+<line x1="110" y1="375.0" x2="730" y2="375.0" stroke="#e2e8f0" stroke-width="1"/>
+<text x="95" y="379.0" font-size="12" fill="#64748b" text-anchor="end">0.093</text>
+<line x1="110" y1="305.0" x2="730" y2="305.0" stroke="#e2e8f0" stroke-width="1"/>
 <text x="95" y="309.0" font-size="12" fill="#64748b" text-anchor="end">0.140</text>
-<line x1="110" y1="233.33333333333334" x2="740" y2="233.33333333333334" stroke="#e2e8f0" stroke-width="1" />
-<text x="95" y="237.33333333333334" font-size="12" fill="#64748b" text-anchor="end">0.187</text>
-<line x1="110" y1="161.66666666666666" x2="740" y2="161.66666666666666" stroke="#e2e8f0" stroke-width="1" />
-<text x="95" y="165.66666666666666" font-size="12" fill="#64748b" text-anchor="end">0.233</text>
-<line x1="110" y1="90.0" x2="740" y2="90.0" stroke="#e2e8f0" stroke-width="1" />
-<text x="95" y="94.0" font-size="12" fill="#64748b" text-anchor="end">0.280</text>
-<text x="25" y="305.0" font-size="14" font-weight="600" fill="#1e293b" text-anchor="middle" transform="rotate(-90, 25, 305.0)">Calibration Metric</text>
-<line x1="110" y1="520" x2="740" y2="520" stroke="#64748b" stroke-width="1.5" />
-<line x1="204.5" y1="520" x2="204.5" y2="526" stroke="#64748b" stroke-width="1.5" />
-<text x="204.5" y="545" font-size="13" font-weight="600" fill="#1e293b" text-anchor="middle">N = 50</text>
-<text x="204.5" y="562" font-size="11" fill="#64748b" text-anchor="middle">(50 pairs)</text>
-<line x1="425.0" y1="520" x2="425.0" y2="526" stroke="#64748b" stroke-width="1.5" />
-<text x="425.0" y="545" font-size="13" font-weight="600" fill="#1e293b" text-anchor="middle">N = 100</text>
-<text x="425.0" y="562" font-size="11" fill="#64748b" text-anchor="middle">(100 pairs)</text>
-<line x1="677.0" y1="520" x2="677.0" y2="526" stroke="#64748b" stroke-width="1.5" />
-<text x="677.0" y="545" font-size="13" font-weight="600" fill="#1e293b" text-anchor="middle">N = 250</text>
-<text x="677.0" y="562" font-size="11" fill="#64748b" text-anchor="middle">(250 pairs)</text>
-<text x="425.0" y="585" font-size="13" font-weight="600" fill="#1e293b" text-anchor="middle">Training Cohort Sample Size (N)</text>
-<line x1="110" y1="136.0714285714286" x2="740" y2="136.0714285714286" stroke="#94a3b8" stroke-dasharray="6,4" stroke-width="2" />
-<text x="750" y="140.0714285714286" font-size="11" font-weight="bold" fill="#94a3b8">Uninformative Prior Brier (0.2500)</text>
-<line x1="204.5" y1="139.27646428571435" x2="204.5" y2="136.79475000000002" stroke="#2563eb" stroke-width="2" opacity="0.8" />
-<line x1="198.5" y1="139.27646428571435" x2="210.5" y2="139.27646428571435" stroke="#2563eb" stroke-width="2" opacity="0.8" />
-<line x1="198.5" y1="136.79475000000002" x2="210.5" y2="136.79475000000002" stroke="#2563eb" stroke-width="2" opacity="0.8" />
-<line x1="425.0" y1="143.4981428571429" x2="425.0" y2="142.2066071428572" stroke="#2563eb" stroke-width="2" opacity="0.8" />
-<line x1="419.0" y1="143.4981428571429" x2="431.0" y2="143.4981428571429" stroke="#2563eb" stroke-width="2" opacity="0.8" />
-<line x1="419.0" y1="142.2066071428572" x2="431.0" y2="142.2066071428572" stroke="#2563eb" stroke-width="2" opacity="0.8" />
-<line x1="677.0" y1="142.1467142857143" x2="677.0" y2="141.0486785714286" stroke="#2563eb" stroke-width="2" opacity="0.8" />
-<line x1="671.0" y1="142.1467142857143" x2="683.0" y2="142.1467142857143" stroke="#2563eb" stroke-width="2" opacity="0.8" />
-<line x1="671.0" y1="141.0486785714286" x2="683.0" y2="141.0486785714286" stroke="#2563eb" stroke-width="2" opacity="0.8" />
-<polyline points="204.5,138.03560714285715 425.0,142.8516071428572 677.0,141.59846428571433" fill="none" stroke="#2563eb" stroke-width="2.5"  />
-<circle cx="204.5" cy="138.03560714285715" r="5" fill="#2563eb" stroke="#ffffff" stroke-width="1.5" />
-<text x="204.5" y="126.03560714285715" font-size="11" font-weight="bold" fill="#2563eb" text-anchor="middle">0.2487</text>
-<circle cx="425.0" cy="142.8516071428572" r="5" fill="#2563eb" stroke="#ffffff" stroke-width="1.5" />
-<text x="425.0" y="130.8516071428572" font-size="11" font-weight="bold" fill="#2563eb" text-anchor="middle">0.2456</text>
-<circle cx="677.0" cy="141.59846428571433" r="5" fill="#2563eb" stroke="#ffffff" stroke-width="1.5" />
-<text x="677.0" y="129.59846428571433" font-size="11" font-weight="bold" fill="#2563eb" text-anchor="middle">0.2464</text>
-<line x1="204.5" y1="505.2648214285714" x2="204.5" y2="482.1722857142857" stroke="#f59e0b" stroke-width="2" opacity="0.8" />
-<line x1="198.5" y1="505.2648214285714" x2="210.5" y2="505.2648214285714" stroke="#f59e0b" stroke-width="2" opacity="0.8" />
-<line x1="198.5" y1="482.1722857142857" x2="210.5" y2="482.1722857142857" stroke="#f59e0b" stroke-width="2" opacity="0.8" />
-<line x1="425.0" y1="467.07007142857145" x2="425.0" y2="434.7217857142857" stroke="#f59e0b" stroke-width="2" opacity="0.8" />
-<line x1="419.0" y1="467.07007142857145" x2="431.0" y2="467.07007142857145" stroke="#f59e0b" stroke-width="2" opacity="0.8" />
-<line x1="419.0" y1="434.7217857142857" x2="431.0" y2="434.7217857142857" stroke="#f59e0b" stroke-width="2" opacity="0.8" />
-<line x1="677.0" y1="476.36575" x2="677.0" y2="416.20875" stroke="#f59e0b" stroke-width="2" opacity="0.8" />
-<line x1="671.0" y1="476.36575" x2="683.0" y2="476.36575" stroke="#f59e0b" stroke-width="2" opacity="0.8" />
-<line x1="671.0" y1="416.20875" x2="683.0" y2="416.20875" stroke="#f59e0b" stroke-width="2" opacity="0.8" />
-<polyline points="204.5,493.7177857142857 425.0,450.8959285714286 677.0,446.28725000000003" fill="none" stroke="#f59e0b" stroke-width="2.5"  />
-<circle cx="204.5" cy="493.7177857142857" r="5" fill="#f59e0b" stroke="#ffffff" stroke-width="1.5" />
-<text x="204.5" y="481.7177857142857" font-size="11" font-weight="bold" fill="#f59e0b" text-anchor="middle">0.0171</text>
-<circle cx="425.0" cy="450.8959285714286" r="5" fill="#f59e0b" stroke="#ffffff" stroke-width="1.5" />
-<text x="425.0" y="438.8959285714286" font-size="11" font-weight="bold" fill="#f59e0b" text-anchor="middle">0.0450</text>
-<circle cx="677.0" cy="446.28725000000003" r="5" fill="#f59e0b" stroke="#ffffff" stroke-width="1.5" />
-<text x="677.0" y="434.28725000000003" font-size="11" font-weight="bold" fill="#f59e0b" text-anchor="middle">0.0480</text>
-<g transform="translate(750, 100)">
-<line x1="0" y1="6" x2="16" y2="6" stroke="#2563eb" stroke-width="2.5" />
-<circle cx="8" cy="6" r="3.5" fill="#2563eb" />
-<text x="22" y="10" font-size="11" fill="#1e293b">Brier Score (Mean ± 95% CI)</text>
-<line x1="0" y1="28" x2="16" y2="28" stroke="#f59e0b" stroke-width="2.5" />
-<circle cx="8" cy="28" r="3.5" fill="#f59e0b" />
-<text x="22" y="32" font-size="11" fill="#1e293b">Expected Calibration Error (ECE)</text>
-</g>
+<line x1="110" y1="235.0" x2="730" y2="235.0" stroke="#e2e8f0" stroke-width="1"/>
+<text x="95" y="239.0" font-size="12" fill="#64748b" text-anchor="end">0.187</text>
+<line x1="110" y1="165.0" x2="730" y2="165.0" stroke="#e2e8f0" stroke-width="1"/>
+<text x="95" y="169.0" font-size="12" fill="#64748b" text-anchor="end">0.233</text>
+<line x1="110" y1="95.0" x2="730" y2="95.0" stroke="#e2e8f0" stroke-width="1"/>
+<text x="95" y="99.0" font-size="12" fill="#64748b" text-anchor="end">0.280</text>
+<text x="25" y="305.0" font-size="14" font-weight="600" fill="#0f172a" text-anchor="middle" transform="rotate(-90, 25, 305.0)">Calibration Metric</text>
+<line x1="110" y1="515" x2="730" y2="515" stroke="#64748b" stroke-width="1.5"/>
+<line x1="203.0" y1="515" x2="203.0" y2="521" stroke="#64748b" stroke-width="1.5"/>
+<text x="203.0" y="540" font-size="13" font-weight="600" fill="#0f172a" text-anchor="middle">N = 50</text>
+<text x="203.0" y="557" font-size="11" fill="#64748b" text-anchor="middle">(50 pairs)</text>
+<line x1="420.0" y1="515" x2="420.0" y2="521" stroke="#64748b" stroke-width="1.5"/>
+<text x="420.0" y="540" font-size="13" font-weight="600" fill="#0f172a" text-anchor="middle">N = 100</text>
+<text x="420.0" y="557" font-size="11" fill="#64748b" text-anchor="middle">(100 pairs)</text>
+<line x1="668.0" y1="515" x2="668.0" y2="521" stroke="#64748b" stroke-width="1.5"/>
+<text x="668.0" y="540" font-size="13" font-weight="600" fill="#0f172a" text-anchor="middle">N = 250</text>
+<text x="668.0" y="557" font-size="11" fill="#64748b" text-anchor="middle">(250 pairs)</text>
+<text x="420.0" y="582" font-size="13" font-weight="600" fill="#0f172a" text-anchor="middle">Training Cohort Sample Size (N)</text>
+<line x1="110" y1="140.0" x2="730" y2="140.0" stroke="#64748b" stroke-width="1.8" stroke-dasharray="5,5"/>
+<text x="740" y="144.0" font-size="11" font-weight="600" fill="#64748b">Uninformative Prior Brier (0.2500)</text>
+<line x1="203.0" y1="143.1" x2="203.0" y2="140.7" stroke="#2563eb" stroke-width="1.8" stroke-opacity="0.8"/>
+<line x1="197.0" y1="143.1" x2="209.0" y2="143.1" stroke="#2563eb" stroke-width="1.8"/>
+<line x1="197.0" y1="140.7" x2="209.0" y2="140.7" stroke="#2563eb" stroke-width="1.8"/>
+<line x1="420.0" y1="147.3" x2="420.0" y2="146.0" stroke="#2563eb" stroke-width="1.8" stroke-opacity="0.8"/>
+<line x1="414.0" y1="147.3" x2="426.0" y2="147.3" stroke="#2563eb" stroke-width="1.8"/>
+<line x1="414.0" y1="146.0" x2="426.0" y2="146.0" stroke="#2563eb" stroke-width="1.8"/>
+<line x1="668.0" y1="145.9" x2="668.0" y2="144.9" stroke="#2563eb" stroke-width="1.8" stroke-opacity="0.8"/>
+<line x1="662.0" y1="145.9" x2="674.0" y2="145.9" stroke="#2563eb" stroke-width="1.8"/>
+<line x1="662.0" y1="144.9" x2="674.0" y2="144.9" stroke="#2563eb" stroke-width="1.8"/>
+<polyline points="203.0,141.9 420.0,146.6 668.0,145.4" fill="none" stroke="#2563eb" stroke-width="2.5"/>
+<circle cx="203.0" cy="141.9" r="5" fill="#2563eb" stroke="#ffffff" stroke-width="2"/>
+<text x="203.0" y="129.9" font-size="11" font-weight="700" fill="#2563eb" text-anchor="middle">0.2487</text>
+<circle cx="420.0" cy="146.6" r="5" fill="#2563eb" stroke="#ffffff" stroke-width="2"/>
+<text x="420.0" y="134.6" font-size="11" font-weight="700" fill="#2563eb" text-anchor="middle">0.2456</text>
+<circle cx="668.0" cy="145.4" r="5" fill="#2563eb" stroke="#ffffff" stroke-width="2"/>
+<text x="668.0" y="133.4" font-size="11" font-weight="700" fill="#2563eb" text-anchor="middle">0.2464</text>
+<line x1="203.0" y1="500.6" x2="203.0" y2="478.1" stroke="#d97706" stroke-width="1.8" stroke-opacity="0.8"/>
+<line x1="197.0" y1="500.6" x2="209.0" y2="500.6" stroke="#d97706" stroke-width="1.8"/>
+<line x1="197.0" y1="478.1" x2="209.0" y2="478.1" stroke="#d97706" stroke-width="1.8"/>
+<line x1="420.0" y1="463.3" x2="420.0" y2="431.7" stroke="#d97706" stroke-width="1.8" stroke-opacity="0.8"/>
+<line x1="414.0" y1="463.3" x2="426.0" y2="463.3" stroke="#d97706" stroke-width="1.8"/>
+<line x1="414.0" y1="431.7" x2="426.0" y2="431.7" stroke="#d97706" stroke-width="1.8"/>
+<line x1="668.0" y1="472.4" x2="668.0" y2="413.6" stroke="#d97706" stroke-width="1.8" stroke-opacity="0.8"/>
+<line x1="662.0" y1="472.4" x2="674.0" y2="472.4" stroke="#d97706" stroke-width="1.8"/>
+<line x1="662.0" y1="413.6" x2="674.0" y2="413.6" stroke="#d97706" stroke-width="1.8"/>
+<polyline points="203.0,489.3 420.0,447.5 668.0,443.0" fill="none" stroke="#d97706" stroke-width="2.5"/>
+<circle cx="203.0" cy="489.3" r="5" fill="#d97706" stroke="#ffffff" stroke-width="2"/>
+<text x="203.0" y="507.3" font-size="11" font-weight="700" fill="#d97706" text-anchor="middle">0.0171</text>
+<circle cx="420.0" cy="447.5" r="5" fill="#d97706" stroke="#ffffff" stroke-width="2"/>
+<text x="420.0" y="465.5" font-size="11" font-weight="700" fill="#d97706" text-anchor="middle">0.0450</text>
+<circle cx="668.0" cy="443.0" r="5" fill="#d97706" stroke="#ffffff" stroke-width="2"/>
+<text x="668.0" y="461.0" font-size="11" font-weight="700" fill="#d97706" text-anchor="middle">0.0480</text>
+<line x1="745" y1="110" x2="765" y2="110" stroke="#2563eb" stroke-width="2.5"/>
+<circle cx="755" cy="110" r="3.5" fill="#2563eb"/>
+<text x="771" y="114" font-size="11" font-weight="600" fill="#0f172a">Brier Score</text>
+<line x1="745" y1="134" x2="765" y2="134" stroke="#d97706" stroke-width="2.5"/>
+<circle cx="755" cy="134" r="3.5" fill="#d97706"/>
+<text x="771" y="138" font-size="11" font-weight="600" fill="#0f172a">Expected Calibration Error (ECE)</text>
 </svg>

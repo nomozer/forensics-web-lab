@@ -1,15 +1,28 @@
 {
-  "timestamp": "2026-09-30T18:25:00.000000Z",
+  "timestamp": "2026-10-01T01:40:00.000000Z",
   "phase": "4C.1D",
-  "description": "Ingest, Verify and Analyze 15 Stage-1 Runs",
-  "git_head": "85ac5d78c3559b6e202da4b80ab496effc9cbd49",
+  "description": "Rebuild and reconcile all analysis evidence from raw run artifacts",
+  "audited_through_commit": "65e7240f95e5894093a7f8d0bf4cf4479a177068",
   "branch": "research/phase-4c1-learning-curve",
-  "python_executable": "D:\\\\Documents\\\\forensics-web-lab\\\\ml\\\\.venv\\\\Scripts\\\\python.exe",
-  "python_version": "3.12.10",
-  "torch_version": "2.5.1+cu121",
-  "torchvision_version": "0.20.1+cu121",
-  "cuda_version": "12.1",
-  "gpu": "Tesla T4 (remote runs 15/15); NVIDIA GeForce GTX 1650 (local analysis environment)",
-  "gpu_vram_gb": 14.56,
+  "remote_training_environment": {
+    "platform": "Google Colab",
+    "gpu": "NVIDIA Tesla T4",
+    "gpu_vram_gb": 14.56317138671875,
+    "cuda_version": "12.8",
+    "python_version": "3.13.15 (main, Aug 6 2026, 11:06:22) [GCC 13.3.0]",
+    "torch_version": "2.11.0+cu128",
+    "runs_executed": 15,
+    "runs_completed": 15
+  },
+  "local_analysis_environment": {
+    "platform": "Windows 11 (AMD64)",
+    "gpu": "NVIDIA GeForce GTX 1650",
+    "gpu_vram_gb": 3.99969482421875,
+    "cuda_version": "12.1",
+    "python_version": "3.12.10",
+    "torch_version": "2.5.1+cu121",
+    "torchvision_version": "0.20.1+cu121",
+    "purpose": "Ingestion, verification, metric calculation, figure generation, and test assertion"
+  },
   "previous_phase": "4C.1C.15"
 }
