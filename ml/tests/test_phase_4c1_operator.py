@@ -33,8 +33,8 @@ EXPECTED_CODE_ARCHIVE_SHA = "5e775a7708d1555bf22f56dceb5358e26e07dd224c4b6186f57
 EXPECTED_CONFIG_HASH = "e03c07dae05a2402416abb0c60480a8cd0a35d060de3bb138a09d0bec0a85dc9"
 EXPECTED_REQS_SHA = "850478c0a9746b93354dd756ba428621a4aa48abab4e6aa5fa7e00669cea67a0"
 
-EXPECTED_OPERATOR_SHA = "8ec5cf55b73548901e0fb34d2f9d5e806ee084870f4378a7c6e493b80ee1c6cd"
-EXPECTED_OPERATOR_BYTES = 49399
+EXPECTED_OPERATOR_SHA = "ef8b41f0bc7d6f1b6e749231eeedddc8be78b5506659791cd2f5d25ecfdc95a1"
+EXPECTED_OPERATOR_BYTES = 49460
 
 OPERATOR_EXISTS = OPERATOR_SCRIPT.exists()
 
@@ -1504,3 +1504,52 @@ echo "[+] Validated GPU: $ACTUAL_GPU_MODEL ($ACTUAL_GPU_VRAM_GB GB VRAM)"
         err_bash = cp_bash.stderr.decode("utf-8", errors="replace")
         assert cp_bash.returncode == 0, f"Preflight bash failed ({cp_bash.returncode}): {err_bash}"
         assert "Validated GPU: Tesla T4 (14.56 GB VRAM)" in out_bash
+
+    def test_operator_invokes_reusable_n250_validator_mode(self):
+        """Phase 4C.1C.14: Operator invokes validate_phase_4c1_bundle with --reusable-n250 in Step 3."""
+        text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
+
+        # 1. Operator calls module ml.datasets.validate_phase_4c1_bundle
+        assert "ml.datasets.validate_phase_4c1_bundle" in text
+
+        # 2. Exactly passes --bundle "$BUNDLE_ROOT" and --reusable-n250
+        assert '--bundle "$BUNDLE_ROOT"' in text
+        assert "--reusable-n250" in text
+
+        # 3. No canonical validator invocation lacks --reusable-n250
+        assert 'validate_phase_4c1_bundle.py --bundle "$BUNDLE_ROOT"\n' not in text
+        assert 'validate_phase_4c1_bundle.py --bundle "$BUNDLE_ROOT"' not in text
+
+        # 4. Check real parser via subprocess --help
+        cp_help = subprocess.run(
+            [sys.executable, "-m", "ml.datasets.validate_phase_4c1_bundle", "--help"],
+            capture_output=True,
+            text=True,
+            cwd=str(REPO_ROOT),
+        )
+        assert cp_help.returncode == 0
+        assert "--bundle" in cp_help.stdout
+        assert "--reusable-n250" in cp_help.stdout
+
+        # 5. If canonical reusable bundle exists locally, run behavioral validation test
+        local_bundle = LOCAL_ARTIFACTS_DIR / "phase_4c1" / "t4_transfer" / "reusable_n250_bundle"
+        if local_bundle.exists() and (local_bundle / "bundle_receipt.json").exists():
+            cp_val = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "ml.datasets.validate_phase_4c1_bundle",
+                    "--bundle",
+                    str(local_bundle),
+                    "--reusable-n250",
+                ],
+                capture_output=True,
+                text=True,
+                cwd=str(REPO_ROOT),
+            )
+            assert cp_val.returncode == 0, f"Validator failed: {cp_val.stderr}"
+            assert "ALL VALIDATIONS PASSED" in cp_val.stdout
+            assert "Locked-test rows/sources/files: ZERO" in cp_val.stdout
+            assert "Cross-partition overlap: ZERO" in cp_val.stdout
+            assert "Cohort cardinalities: 50 / 100 / 250 nested + 91 val" in cp_val.stdout
+            assert "0 source ID mismatches" in cp_val.stdout
