@@ -1,12 +1,12 @@
 {
   "operator_script_receipt": {
     "schema_version": "1.0.0",
-    "phase": "Phase 4C.1C.10",
+    "phase": "Phase 4C.1C.11",
     "script_name": "phase_4c1_t4_execute_all_stage1.sh",
     "script_path": "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\t4_transfer\\phase_4c1_t4_execute_all_stage1.sh",
-    "bytes": 43085,
-    "sha256": "75d26863c48edbee821b2410204d4517ec1b1baffc456b47a931306b38235b1d",
-    "timestamp_utc": "2026-09-30T13:00:36.030337+00:00",
+    "bytes": 48539,
+    "sha256": "cf240f3c289dc42ab93aa590457d95f85ff21280b13c337a02cf6d5533e91e6d",
+    "timestamp_utc": "2026-09-30T13:47:06.177534+00:00",
     "execution_code_sha": "79bb11527d900fd387de1f41f2010c4152b7fea7",
     "execution_code_binding_source": "phase4c1_environment_lock.json",
     "code_archive": {
@@ -44,8 +44,8 @@
     },
     "canonical_runner_command_template": "\"$SYS_PY3\" -m ml.training.run_phase_4c1 --config ml/configs/phase_4c1_learning_curve.yaml --bundle /content/bundle --sample-size <SIZE> --seed <SEED> --stage frozen --device cuda --train-partition development_train --eval-partition inner_validation --output /content/phase_4c1_outputs/n<SIZE>_seed_<SEED>",
     "static_validation_results": {
-      "assertions_total": 48,
-      "assertions_passed": 48,
+      "assertions_total": 67,
+      "assertions_passed": 67,
       "assertions_failed": 0,
       "all_passed": true,
       "checks": {
@@ -74,7 +74,8 @@
         "fault_injection_partial_run_fails_closed": "PASS",
         "fault_injection_locked_test_access_fails": "PASS",
         "fault_injection_stage2_invocation_fails": "PASS"
-      }
+      },
+      "test_suite_summary": "67 tests passing in ml/tests/test_phase_4c1_operator.py covering 31 behavioral requirements across: TestOperatorStaticInvariants (11 tests), TestGpuCapabilityAndPolicy (13 tests), TestScientificBindingAndRuntimePolicy (13 tests), TestDependencyPreflightPolicy (3 tests), TestCodeStagingAndSecurity (3 tests), and TestOperatorFaultInjections (24 tests)."
     },
     "resume_contract": {
       "fail_closed_on_missing_artifacts": true,
@@ -104,8 +105,8 @@
     "notebook_status": {
       "status": "CANONICAL_LAUNCHER_ACTIVE",
       "canonical_path": "notebooks/phase_4c1_learning_curve_colab.ipynb",
-      "canonical_bytes": 12857,
-      "canonical_sha256": "0f96e227aed8c0717a0aecfe3be6ec6ee0a7b1f0b3af00f4ef774ae613721fc0",
+      "canonical_bytes": 12038,
+      "canonical_sha256": "426a0b8f68163ea1dd072149ac8aa4e76704e98a12167826757b1dd5bd0f343f",
       "historical_superseded_notebook_sha256": "f26576cb70b6c892faaade7b225872d4bafbcfe1424b64df29564dd9e1cd28b9",
       "cells_total": 5,
       "default_execute": true
@@ -119,15 +120,15 @@
         {
           "file_name": "phase_4c1_t4_execute_all_stage1.sh",
           "local_path": "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\t4_transfer\\phase_4c1_t4_execute_all_stage1.sh",
-          "bytes": 43085,
-          "sha256": "75d26863c48edbee821b2410204d4517ec1b1baffc456b47a931306b38235b1d",
+          "bytes": 48539,
+          "sha256": "cf240f3c289dc42ab93aa590457d95f85ff21280b13c337a02cf6d5533e91e6d",
           "target_drive_directory": "My Drive/Colab Notebooks/forensics-web-lab/phase_4c1/inputs/"
         },
         {
           "file_name": "phase_4c1_learning_curve_colab.ipynb",
           "local_path": "notebooks/phase_4c1_learning_curve_colab.ipynb",
-          "bytes": 12857,
-          "sha256": "0f96e227aed8c0717a0aecfe3be6ec6ee0a7b1f0b3af00f4ef774ae613721fc0",
+          "bytes": 12038,
+          "sha256": "426a0b8f68163ea1dd072149ac8aa4e76704e98a12167826757b1dd5bd0f343f",
           "target_drive_directory": "My Drive/Colab Notebooks/forensics-web-lab/phase_4c1/"
         }
       ],
@@ -145,9 +146,9 @@
           "location": "My Drive/Colab Notebooks/forensics-web-lab/phase_4c1/inputs/"
         }
       ],
-      "execution_procedure": "Open phase_4c1_learning_curve_colab.ipynb in Google Colab (T4 GPU runtime), verify EXECUTE = True, and select Runtime -> Run all."
+      "execution_procedure": "Open phase_4c1_learning_curve_colab.ipynb in Google Colab (compatible NVIDIA CUDA GPU runtime; reference: Tesla T4), verify EXECUTE = True, and select Runtime -> Run all."
     },
-    "runtime_strategy": "Colab system Python direct execution (zero venv, zero torch/cuda reinstall, auxiliary deps preflight)",
+    "runtime_strategy": "Colab system Python direct execution (zero venv, zero torch/cuda reinstall, auxiliary deps preflight, compatible NVIDIA CUDA GPU runtime; capability policy and simulated tests cover T4, L4, V100 and A100; actual training validation observed on Tesla T4 only).",
     "remote_completed_runs": 1,
     "completed_run_details": {
       "run_id": "phase4c1-stage1-n50-seed42",

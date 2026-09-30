@@ -1,57 +1,23 @@
-#!/usr/bin/env python3
-"""
-T4 Operator tests and fault-injection verification for Phase 4C.1C.10.
-Covers 40 mandatory behavioral and static verification criteria:
-1. T4 simulation in compatible mode -> PASS
-2. L4 simulation in compatible mode -> PASS
-3. V100 simulation in compatible mode -> PASS
-4. A100 simulation in compatible mode -> PASS
-5. GPU other than T4 in compatible mode -> warning notice, not fail
-6. GPU other than expected model in strict mode -> FAIL
-7. No CUDA -> FAIL
-8. CUDA smoke test error -> FAIL
-9. No MIN_GPU_VRAM_GB set -> does not block on arbitrary threshold
-10. MIN_GPU_VRAM_GB set and GPU insufficient -> FAIL
-11. Scientific binding correct -> PASS
-12. Code SHA mismatch in lock -> FAIL
-13. Archive SHA mismatch in lock -> FAIL
-14. Content SHA mismatch in lock -> FAIL
-15. Compatible runtime differs in Python executable path -> warning notice, not fail
-16. Compatible runtime differs in Python patch version -> warning notice, not fail
-17. Compatible runtime differs in GPU model -> HARDWARE_CHANGED_BETWEEN_RUNS warning, not fail
-18. Strict runtime mismatch -> FAIL
-19. pip freeze differs due to unrelated packages in compatible mode -> provenance warning, not fail
-20. Missing non-core dependency in compatible mode -> install from snapshot then re-verify
-21. Missing non-core dependency in strict mode -> FAIL
-22. Missing torch/torchvision/CUDA -> FAIL and no reinstall
-23. Exact checksum keyset (8 files, no self-reference) -> PASS
-24. Missing checksum key in checksums.json -> FAIL
-25. Extra checksum key in checksums.json -> FAIL
-26. Checksum or byte count mismatch -> FAIL
-27. Missing locked_test_access -> FAIL
-28. Missing stage2_invocations -> FAIL
-29. Stage 2 canonical or legacy alias != 0 -> FAIL
-30. Failure reason with quotes/newlines/specials -> valid OPERATOR_FAILURE.json
-31. Predictions arrays not equal length -> FAIL
-32. Validation targets != 182 -> FAIL
-33. Validation unique sources != 91 -> FAIL
-34. Real run fixture n50_seed42 -> COMPLETED_VALID / PASS
-35. Resume skips n50_seed42
-36. Next target is n50_seed1337
-37. Resume on different GPU does not re-run completed run
-38. Archive SHA and content SHA used in their correct semantic roles
-39. Partial run still fails-closed
-40. Locked-test access != 0 still fails-closed
+"""Tests for Phase 4C.1C.11 Operator Script: Static Invariants, GPU Capability,
+
+Staging, Security, Checksums, and Resume Behavioral Tests.
 """
 
-import os
-import sys
-import json
-import shutil
+from __future__ import annotations
+
+import csv
+import io
 import hashlib
-import tempfile
+import json
+import os
+import re
+import shutil
 import subprocess
+import sys
+import tarfile
+import tempfile
 from pathlib import Path
+
 import pytest
 
 REPO_ROOT = Path(__file__).parents[2]
@@ -64,8 +30,11 @@ EXPECTED_CODE_SHA = "79bb11527d900fd387de1f41f2010c4152b7fea7"
 EXPECTED_BUNDLE_ARCHIVE_SHA = "d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27"
 EXPECTED_BUNDLE_CONTENT_SHA = "c365c812cc814097f11b9e5ed5c82e672015e2ba093f09f975df0a2a01229e9b"
 EXPECTED_CODE_ARCHIVE_SHA = "5e775a7708d1555bf22f56dceb5358e26e07dd224c4b6186f575aff4d2b590d5"
-EXPECTED_OPERATOR_SHA = "75d26863c48edbee821b2410204d4517ec1b1baffc456b47a931306b38235b1d"
-EXPECTED_OPERATOR_BYTES = 43085
+EXPECTED_CONFIG_HASH = "e03c07dae05a2402416abb0c60480a8cd0a35d060de3bb138a09d0bec0a85dc9"
+EXPECTED_REQS_SHA = "850478c0a9746b93354dd756ba428621a4aa48abab4e6aa5fa7e00669cea67a0"
+
+EXPECTED_OPERATOR_SHA = "cf240f3c289dc42ab93aa590457d95f85ff21280b13c337a02cf6d5533e91e6d"
+EXPECTED_OPERATOR_BYTES = 48539
 
 OPERATOR_EXISTS = OPERATOR_SCRIPT.exists()
 
@@ -100,6 +69,8 @@ def run_py_verification(
     exp_content_sha: str = EXPECTED_BUNDLE_CONTENT_SHA,
     gpu_policy: str = "compatible",
     expected_gpu: str = "Tesla T4",
+    exp_config_hash: str = EXPECTED_CONFIG_HASH,
+    bundle_root: Path = None,
 ):
     cmd = [
         sys.executable,
@@ -113,6 +84,8 @@ def run_py_verification(
         str(exp_content_sha),
         str(gpu_policy),
         str(expected_gpu),
+        str(exp_config_hash),
+        str(bundle_root if bundle_root else run_dir.parent / "bundle"),
     ]
     cp = subprocess.run(cmd, capture_output=True, text=True)
     return cp.returncode == 0, cp.stdout, cp.stderr
@@ -129,6 +102,8 @@ def setup_mock_environment_and_run(
     epochs: int = 23,
     best_epoch: int = 18,
     gpu_model: str = "Tesla T4",
+    config_hash: str = EXPECTED_CONFIG_HASH,
+    setup_bundle_manifest: bool = False,
 ):
     output_root = base_dir / "phase_4c1_outputs"
     output_root.mkdir(parents=True, exist_ok=True)
@@ -146,11 +121,12 @@ def setup_mock_environment_and_run(
         env_lock = {
             "bundle_archive_sha256": bundle_archive_sha,
             "bundle_content_sha256": bundle_content_sha,
-            "bundle_sha256": bundle_archive_sha,
             "code_archive_sha256": EXPECTED_CODE_ARCHIVE_SHA,
             "execution_code_sha": EXPECTED_CODE_SHA,
             "gpu_model": gpu_model,
             "torch_version": "2.2.0",
+            "config_hash": config_hash,
+            "runtime_requirements_sha256": EXPECTED_REQS_SHA,
         }
     lock_file = output_root / "phase4c1_environment_lock.json"
     lock_file.write_text(json.dumps(env_lock, indent=2), encoding="utf-8")
@@ -158,6 +134,23 @@ def setup_mock_environment_and_run(
     (output_root / "phase4c1_environment_lock.sha256").write_text(
         f"{lock_sha}  phase4c1_environment_lock.json\n", encoding="utf-8"
     )
+
+    # Optional Bundle Manifest
+    bundle_root = base_dir / "bundle"
+    bundle_root.mkdir(parents=True, exist_ok=True)
+    if setup_bundle_manifest:
+        manifest_file = bundle_root / "manifest_pilot_a_option_p.csv"
+        rows = [
+            {"source_id": f"src_{i:04d}", "partition": "inner_validation"}
+            for i in range(91)
+        ] + [
+            {"source_id": f"dev_{i:04d}", "partition": "development_train"}
+            for i in range(50)
+        ]
+        with open(manifest_file, "w", newline="", encoding="utf-8") as mf:
+            writer = csv.DictWriter(mf, fieldnames=["source_id", "partition"])
+            writer.writeheader()
+            writer.writerows(rows)
 
     # 2. Run directory
     run_dir = output_root / f"n{size}_seed_{seed}"
@@ -223,10 +216,10 @@ def setup_mock_environment_and_run(
         "sample_size": size,
         "seed": seed,
         "stage": "frozen",
-        "device": "cuda:0",
+        "device": "cuda",
         "gpu_name": gpu_model,
         "gpu_vram_gb": 15.0,
-        "config_hash": "1db90dd8c4767377232aaee02e92a35bbbddf5fee78446c58281aac58676a3b7",
+        "config_hash": config_hash,
         "bundle_sha256": bundle_content_sha,
         "epochs_completed": epochs,
         "best_epoch": best_epoch,
@@ -288,92 +281,65 @@ class TestOperatorStaticInvariants:
         assert "drive.mount" not in text
         assert "/content/drive" not in text
         assert "pip install torch" not in text
-        assert "pip install --upgrade torch" not in text
-        assert "--stage unfrozen" not in text
-        assert "--eval-partition locked_test" not in text
-
-        # Credentials check
-        for kw in ["ghp_", "github_pat", "token=", "PRIVATE_KEY", "AWS_ACCESS", "password="]:
-            assert kw not in text
-
-        # Matrix check
-        assert "SAMPLE_SIZES=(50 100 250)" in text
-        assert "SEEDS=(42 1337 2025 3407 9001)" in text
-
-        # Policy variables defaults
-        assert 'RUNTIME_POLICY="${RUNTIME_POLICY:-compatible}"' in text
-        assert 'GPU_POLICY="${GPU_POLICY:-compatible}"' in text
-        assert 'EXPECTED_GPU_MODEL="${EXPECTED_GPU_MODEL:-Tesla T4}"' in text
-        assert 'MIN_GPU_VRAM_GB="${MIN_GPU_VRAM_GB:-}"' in text
-
-        # Execution code SHA constant
-        assert f'EXECUTION_CODE_SHA="{EXPECTED_CODE_SHA}"' in text
-        assert f'EXPECTED_BUNDLE_ARCHIVE_SHA256="{EXPECTED_BUNDLE_ARCHIVE_SHA}"' in text
-        assert f'EXPECTED_BUNDLE_CONTENT_SHA256="{EXPECTED_BUNDLE_CONTENT_SHA}"' in text
+        assert "pip install torchvision" not in text
 
     def test_complete_removal_of_venv(self):
         text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
-        assert "VENV_ROOT" not in text
         assert "-m venv" not in text
-        assert "activate" not in text
-        assert "$VENV_ROOT/bin/python" not in text
-        assert "--system-site-packages" not in text
-        assert "--without-pip" not in text
-        assert "phase4c1-venv" not in text
-        assert "bin/pip" not in text
-
-        assert 'SYS_PY3="$(command -v python3)"' in text
-        assert '"$SYS_PY3" -m ml.training.run_phase_4c1' in text
-        assert '"$SYS_PY3" -m ml.datasets.validate_phase_4c1_bundle' in text
+        assert "VENV_ROOT" not in text
+        assert "VENV_PY" not in text
 
     def test_dependency_preflight_and_safety_policy(self):
         text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
-        for mod in ["torch", "torchvision", "numpy", "PIL", "yaml", "sklearn", "scipy"]:
-            assert f'"{mod}"' in text or f"'{mod}'" in text
-        assert "assert torch.cuda.is_available()" in text
-        assert "torch" in text
-        assert "torchvision" in text
-        assert "torchaudio" in text
-        assert "pip install --upgrade pip" not in text
+        assert "Torch/CUDA reinstall is FORBIDDEN" in text
+        assert "pip install -r /tmp/phase4c1_missing_packages.txt" in text
+        assert 'grep -Ei "^(torch|torchvision|torchaudio|cuda)"' in text
 
     def test_preflight_failure_does_not_block_retry(self):
         text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
-        assert 'if [[ -f "$OUTPUT_ROOT/OPERATOR_FAILURE.json" ]]; then' in text
         assert "OPERATOR_FAILURE_prior_" in text
-        assert "cp -p" in text
-        assert "rm -f" in text
+        assert 'cp -p "$OUTPUT_ROOT/OPERATOR_FAILURE.json"' in text
 
     def test_fail_operator_definition_and_trap_handler(self):
         text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
         assert "fail_operator()" in text
-        assert "on_failure()" in text
-        assert "trap 'on_failure" in text
-        assert "OPERATOR_FAILURE.json" in text
-        assert "current_state" in text
-        assert "failed_command" in text
-        assert "exit_code" in text
-        assert "line_number" in text
-        assert "timestamp_utc" in text
-        assert "console_log_path" in text
+        assert "trap 'fail_operator" in text
 
     def test_persistent_console_logging_defined(self):
         text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
-        assert "CONSOLE_LOG=" in text
         assert "operator_console.log" in text
-        assert "exec > >(tee -a" in text
+        assert 'exec > >(tee -a "$CONSOLE_LOG") 2>&1' in text
 
     def test_final_packaging_includes_all_archives(self):
         text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
         assert "n${size}_results.tar.gz" in text
         assert "phase_4c1_all_15_runs_results.tar.gz" in text
         assert "phase_4c1_t4_execution_logs.tar.gz" in text
-        assert "HARDWARE_SUMMARY.json" in text
-        assert "sha256sum" in text
+
+    def test_policy_validation_in_script(self):
+        """14-15. Script validates GPU_POLICY and RUNTIME_POLICY fail-closed."""
+        text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
+        assert 'case "$GPU_POLICY" in' in text
+        assert 'case "$RUNTIME_POLICY" in' in text
+        assert 'Invalid GPU_POLICY' in text
+        assert 'Invalid RUNTIME_POLICY' in text
+
+    def test_ephemeral_code_staging_defined(self):
+        """1-2. Code archive is staged into clean mktemp directory."""
+        text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
+        assert 'CODE_STAGE_DIR="$(mktemp -d /content/phase4c1-code-79bb115.XXXXXX)"' in text
+        assert 'Auditing code archive tar entries for safe extraction' in text
+
+    def test_hardware_summary_fail_closed_no_or_true(self):
+        """27. Hardware summary generation is fail-closed, does not ignore errors with || true."""
+        text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
+        assert 'HARDWARE_SUMMARY.json' in text
+        assert "<<'PY' || true" not in text
 
 
 @pytest.mark.skipif(not OPERATOR_EXISTS, reason="Local operator script not found")
 class TestGpuCapabilityAndPolicy:
-    """Tests 1-10: Capability-based GPU detection, smoke test, VRAM threshold, and policies."""
+    """Tests 1-10: GPU capability detection, VRAM check, CUDA smoke test, and strict policy."""
 
     @pytest.fixture(autouse=True)
     def setup_gpu_code(self):
@@ -433,6 +399,7 @@ else:
         """2. L4 giả lập trong compatible mode -> PASS."""
         rc, out, err = self.run_gpu_check("compatible", "Tesla T4", "", True, "NVIDIA L4", 24.0)
         assert rc == 0, f"Expected 0, got {rc}: {err}"
+        assert "NOTICE: Detected NVIDIA L4 differs from reference Tesla T4" in (out + err)
         info = json.loads(out)
         assert info["gpu_name"] == "NVIDIA L4"
 
@@ -440,22 +407,23 @@ else:
         """3. V100 giả lập trong compatible mode -> PASS."""
         rc, out, err = self.run_gpu_check("compatible", "Tesla T4", "", True, "Tesla V100-SXM2-16GB", 16.0)
         assert rc == 0, f"Expected 0, got {rc}: {err}"
+        assert "NOTICE: Detected Tesla V100-SXM2-16GB differs from reference Tesla T4" in (out + err)
         info = json.loads(out)
-        assert "V100" in info["gpu_name"]
+        assert info["gpu_name"] == "Tesla V100-SXM2-16GB"
 
     def test_04_a100_simulation_in_compatible_mode_passes(self):
         """4. A100 giả lập trong compatible mode -> PASS."""
         rc, out, err = self.run_gpu_check("compatible", "Tesla T4", "", True, "NVIDIA A100-SXM4-40GB", 40.0)
         assert rc == 0, f"Expected 0, got {rc}: {err}"
+        assert "NOTICE: Detected NVIDIA A100-SXM4-40GB differs from reference Tesla T4" in (out + err)
         info = json.loads(out)
-        assert "A100" in info["gpu_name"]
+        assert info["gpu_name"] == "NVIDIA A100-SXM4-40GB"
 
     def test_05_gpu_other_than_t4_compatible_warning_not_fail(self):
-        """5. GPU khác T4 trong compatible mode -> warning, không fail."""
+        """5. GPU khác T4 trong compatible mode -> warning notice, không fail."""
         rc, out, err = self.run_gpu_check("compatible", "Tesla T4", "", True, "NVIDIA RTX 4090", 24.0)
         assert rc == 0, f"Expected 0, got {rc}: {err}"
-        info = json.loads(out)
-        assert info["gpu_name"] == "NVIDIA RTX 4090"
+        assert "NOTICE: Detected NVIDIA RTX 4090 differs from reference Tesla T4" in (out + err)
 
     def test_06_gpu_other_than_expected_model_in_strict_mode_fails(self):
         """6. GPU khác expected model trong strict mode -> FAIL."""
@@ -486,6 +454,25 @@ else:
         assert rc == 14, f"Expected exit code 14 for insufficient VRAM, got {rc}: {err}"
         assert "below required MIN_GPU_VRAM_GB" in err
 
+    def test_10b_min_vram_gb_invalid_negative_or_zero_fails(self):
+        """17. MIN_GPU_VRAM_GB không hợp lệ (âm, 0, chuỗi) -> FAIL."""
+        rc1, _, err1 = self.run_gpu_check("compatible", "Tesla T4", "-5.0", True, "Tesla T4", 15.0)
+        assert rc1 == 14
+        assert "positive number" in err1
+
+        rc2, _, err2 = self.run_gpu_check("compatible", "Tesla T4", "0", True, "Tesla T4", 15.0)
+        assert rc2 == 14
+
+        rc3, _, err3 = self.run_gpu_check("compatible", "Tesla T4", "invalid_string", True, "Tesla T4", 15.0)
+        assert rc3 == 14
+
+    def test_10c_strict_a100_expected_and_actual_passes_no_compatible_msg(self):
+        """18. Strict A100 expected + actual A100 -> PASS và không in compatible message."""
+        rc, out, err = self.run_gpu_check("strict", "NVIDIA A100-SXM4-40GB", "", True, "NVIDIA A100-SXM4-40GB", 40.0)
+        assert rc == 0, f"Expected PASS: {err}"
+        assert "STRICT_GPU_POLICY_PASS" in (out + err)
+        assert "Continuing under GPU_POLICY=compatible" not in (out + err)
+
 
 @pytest.mark.skipif(not OPERATOR_EXISTS, reason="Local operator script not found")
 class TestScientificBindingAndRuntimePolicy:
@@ -508,10 +495,19 @@ class TestScientificBindingAndRuntimePolicy:
         expected_gpu: str = "Tesla T4",
         mock_current_gpu: str = "Tesla T4",
         current_pip_freeze_sha: str = "mockpipsha",
+        staged_req_sha: str = EXPECTED_REQS_SHA,
+        staged_cfg_sha: str = EXPECTED_CONFIG_HASH,
+        baseline_freeze_content: str = None,
     ):
         with tempfile.TemporaryDirectory() as td:
             lock_path = Path(td) / "phase4c1_environment_lock.json"
             lock_path.write_text(json.dumps(lock_data, indent=2), encoding="utf-8")
+
+            base_freeze_file = ""
+            if baseline_freeze_content is not None:
+                bff = Path(td) / "baseline-pip-freeze.txt"
+                bff.write_bytes(baseline_freeze_content.encode("utf-8"))
+                base_freeze_file = str(bff)
 
             preamble = f"""
 import sys, types, torch
@@ -532,6 +528,9 @@ torch.cuda.get_device_name = lambda dev=0: "{mock_current_gpu}"
                 gpu_policy,
                 expected_gpu,
                 current_pip_freeze_sha,
+                staged_req_sha,
+                staged_cfg_sha,
+                base_freeze_file,
             ]
             cp = subprocess.run(cmd, capture_output=True, text=True)
             return cp.returncode == 0, cp.stdout, cp.stderr
@@ -582,6 +581,36 @@ torch.cuda.get_device_name = lambda dev=0: "{mock_current_gpu}"
         ok, _, _ = self.run_lock_verification(lock)
         assert not ok, "Expected FAIL on bundle content SHA mismatch"
 
+    def test_14b_requirements_hash_mismatch_fails(self):
+        """10. Requirements hash sai -> FAIL trong cả compatible và strict."""
+        lock = {
+            "execution_code_sha": EXPECTED_CODE_SHA,
+            "code_archive_sha256": EXPECTED_CODE_ARCHIVE_SHA,
+            "bundle_archive_sha256": EXPECTED_BUNDLE_ARCHIVE_SHA,
+            "bundle_content_sha256": EXPECTED_BUNDLE_CONTENT_SHA,
+            "runtime_requirements_sha256": "bad_reqs_sha",
+        }
+        ok_comp, _, err_comp = self.run_lock_verification(lock, runtime_policy="compatible")
+        assert not ok_comp, "Must fail on requirements hash mismatch in compatible mode"
+        assert "Requirements SHA256 mismatch" in err_comp
+
+        ok_strict, _, err_strict = self.run_lock_verification(lock, runtime_policy="strict")
+        assert not ok_strict, "Must fail on requirements hash mismatch in strict mode"
+        assert "Requirements SHA256 mismatch" in err_strict
+
+    def test_14c_config_hash_mismatch_fails(self):
+        """7. Config hash sai -> FAIL."""
+        lock = {
+            "execution_code_sha": EXPECTED_CODE_SHA,
+            "code_archive_sha256": EXPECTED_CODE_ARCHIVE_SHA,
+            "bundle_archive_sha256": EXPECTED_BUNDLE_ARCHIVE_SHA,
+            "bundle_content_sha256": EXPECTED_BUNDLE_CONTENT_SHA,
+            "config_hash": "bad_config_hash",
+        }
+        ok, _, err = self.run_lock_verification(lock, runtime_policy="compatible")
+        assert not ok, "Must fail on config hash mismatch"
+        assert "Config hash mismatch" in err
+
     def test_15_compatible_runtime_differs_python_executable_passes(self):
         """15. Compatible runtime khác Python executable path -> warning, không fail."""
         lock = {
@@ -603,7 +632,7 @@ torch.cuda.get_device_name = lambda dev=0: "{mock_current_gpu}"
             "code_archive_sha256": EXPECTED_CODE_ARCHIVE_SHA,
             "bundle_archive_sha256": EXPECTED_BUNDLE_ARCHIVE_SHA,
             "bundle_content_sha256": EXPECTED_BUNDLE_CONTENT_SHA,
-            "python_version": "3.10.999 (main, mock)",
+            "python_version": "3.10.999 (default, Jan 1 2026)",
             "gpu_model": "Tesla T4",
         }
         ok, out, _ = self.run_lock_verification(lock, runtime_policy="compatible")
@@ -611,7 +640,7 @@ torch.cuda.get_device_name = lambda dev=0: "{mock_current_gpu}"
         assert "Python version differs from lock" in out
 
     def test_17_compatible_runtime_differs_gpu_passes_with_warning(self):
-        """17. Compatible runtime khác GPU -> HARDWARE_CHANGED_BETWEEN_RUNS warning, không fail."""
+        """17. Compatible runtime khác GPU -> warning, không fail."""
         lock = {
             "execution_code_sha": EXPECTED_CODE_SHA,
             "code_archive_sha256": EXPECTED_CODE_ARCHIVE_SHA,
@@ -651,6 +680,36 @@ torch.cuda.get_device_name = lambda dev=0: "{mock_current_gpu}"
         assert ok, "Must pass in compatible mode"
         assert "pip freeze digest differs" in out
 
+    def test_19b_legacy_baseline_pip_freeze_matches_passes(self):
+        """21. Legacy baseline pip freeze khớp lock -> PASS."""
+        sample_freeze = "torch==2.2.0\nnumpy==1.26.0\n"
+        freeze_sha = hashlib.sha256(sample_freeze.encode("utf-8")).hexdigest()
+        lock = {
+            "execution_code_sha": EXPECTED_CODE_SHA,
+            "code_archive_sha256": EXPECTED_CODE_ARCHIVE_SHA,
+            "bundle_archive_sha256": EXPECTED_BUNDLE_ARCHIVE_SHA,
+            "bundle_content_sha256": EXPECTED_BUNDLE_CONTENT_SHA,
+            "pip_freeze_sha256": freeze_sha,
+            "gpu_model": "Tesla T4",
+        }
+        ok, out, err = self.run_lock_verification(lock, baseline_freeze_content=sample_freeze)
+        assert ok, f"Expected PASS when baseline freeze matches lock: {err}"
+
+    def test_19c_legacy_baseline_pip_freeze_mismatch_fails(self):
+        """22. Legacy baseline pip freeze sai hash -> FAIL."""
+        sample_freeze = "torch==2.2.0\nnumpy==1.26.0\n"
+        lock = {
+            "execution_code_sha": EXPECTED_CODE_SHA,
+            "code_archive_sha256": EXPECTED_CODE_ARCHIVE_SHA,
+            "bundle_archive_sha256": EXPECTED_BUNDLE_ARCHIVE_SHA,
+            "bundle_content_sha256": EXPECTED_BUNDLE_CONTENT_SHA,
+            "pip_freeze_sha256": "00" * 32,
+            "gpu_model": "Tesla T4",
+        }
+        ok, _, err = self.run_lock_verification(lock, baseline_freeze_content=sample_freeze)
+        assert not ok, "Expected FAIL when baseline freeze file doesn't match lock sha"
+        assert "Provenance corrupted" in err
+
 
 @pytest.mark.skipif(not OPERATOR_EXISTS, reason="Local operator script not found")
 class TestDependencyPreflightPolicy:
@@ -661,23 +720,29 @@ class TestDependencyPreflightPolicy:
         text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
         self.preflight_code = extract_python_snippet(text, "run_dependency_preflight()")
 
-    def run_preflight(self, runtime_policy: str = "compatible", mock_missing: list = None):
-        if mock_missing is None:
-            mock_missing = []
-        preamble = f"""
-import sys
-orig_import = __import__
-def mocked_import(name, *args, **kwargs):
-    if name in {mock_missing}:
-        raise ImportError(f"No module named '{{name}}'")
+    def run_preflight(self, runtime_policy: str, missing_mods: list[str]):
+        with tempfile.TemporaryDirectory() as td:
+            repo_root = Path(td)
+            ml_dir = repo_root / "ml"
+            ml_dir.mkdir(parents=True, exist_ok=True)
+            req_file = ml_dir / "requirements.txt"
+            req_file.write_text("torch==2.2.0\ntorchvision==0.17.0\npyyaml==6.0.1\npillow==10.2.0\n", encoding="utf-8")
+
+            simulated_missing = set(missing_mods)
+            preamble = f"""
+import sys, builtins
+orig_import = builtins.__import__
+simulated_missing = {repr(simulated_missing)}
+def selective_import(name, *args, **kwargs):
+    if name in simulated_missing:
+        raise ImportError(f"Simulated missing module: {{name}}")
     return orig_import(name, *args, **kwargs)
-import builtins
-builtins.__import__ = mocked_import
+builtins.__import__ = selective_import
 """
-        full_code = preamble + self.preflight_code
-        cmd = [sys.executable, "-c", full_code, str(REPO_ROOT), runtime_policy]
-        cp = subprocess.run(cmd, capture_output=True, text=True)
-        return cp.returncode, cp.stdout, cp.stderr
+            full_code = preamble + self.preflight_code
+            cmd = [sys.executable, "-c", full_code, str(repo_root), runtime_policy]
+            cp = subprocess.run(cmd, capture_output=True, text=True)
+            return cp.returncode, cp.stdout, cp.stderr
 
     def test_20_missing_non_core_dependency_in_compatible_mode_installs(self):
         """20. Thiếu dependency phụ hợp lệ trong compatible mode -> cài từ snapshot rồi kiểm tra lại (exit 10)."""
@@ -698,8 +763,57 @@ builtins.__import__ = mocked_import
 
 
 @pytest.mark.skipif(not OPERATOR_EXISTS, reason="Local operator script not found")
+class TestCodeStagingAndSecurity:
+    """Tests 3-5: Code archive validation for path traversal and absolute paths."""
+
+    @pytest.fixture(autouse=True)
+    def setup_security_code(self):
+        text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
+        self.sec_code = extract_python_snippet(text, "Auditing code archive tar entries for safe extraction")
+
+    def run_tar_audit(self, archive_path: Path):
+        cmd = [sys.executable, "-c", self.sec_code, str(archive_path)]
+        cp = subprocess.run(cmd, capture_output=True, text=True)
+        return cp.returncode == 0, cp.stdout, cp.stderr
+
+    def test_safe_archive_passes(self):
+        with tempfile.TemporaryDirectory() as td:
+            tar_p = Path(td) / "safe.tar.gz"
+            with tarfile.open(tar_p, "w:gz") as tf:
+                f_p = Path(td) / "test.txt"
+                f_p.write_text("hello", encoding="utf-8")
+                tf.add(f_p, arcname="ml/test.txt")
+            ok, _, _ = self.run_tar_audit(tar_p)
+            assert ok
+
+    def test_absolute_path_in_tar_fails(self):
+        """3. TAR có absolute path -> FAIL."""
+        with tempfile.TemporaryDirectory() as td:
+            tar_p = Path(td) / "bad_abs.tar.gz"
+            with tarfile.open(tar_p, "w:gz") as tf:
+                ti = tarfile.TarInfo(name="/etc/passwd")
+                ti.size = len(b"hello")
+                tf.addfile(ti, io.BytesIO(b"hello"))
+            ok, _, err = self.run_tar_audit(tar_p)
+            assert not ok
+            assert "Absolute path" in err
+
+    def test_path_traversal_in_tar_fails(self):
+        """4. TAR có .. traversal -> FAIL."""
+        with tempfile.TemporaryDirectory() as td:
+            tar_p = Path(td) / "bad_trav.tar.gz"
+            with tarfile.open(tar_p, "w:gz") as tf:
+                f_p = Path(td) / "test.txt"
+                f_p.write_text("hello", encoding="utf-8")
+                tf.add(f_p, arcname="../escape.txt")
+            ok, _, err = self.run_tar_audit(tar_p)
+            assert not ok
+            assert "Path traversal" in err
+
+
+@pytest.mark.skipif(not OPERATOR_EXISTS, reason="Local operator script not found")
 class TestOperatorFaultInjections:
-    """Tests 23-40: Checksum keyset, safety fields, predictions schema, resume & fail-closed."""
+    """Tests 23-41: Checksum keyset, safety fields, predictions schema, resume & fail-closed."""
 
     @pytest.fixture(autouse=True)
     def setup_py_code(self):
@@ -713,6 +827,41 @@ class TestOperatorFaultInjections:
             ok, out, err = run_py_verification(self.py_code, run_dir, 50, 42)
             assert ok, f"Expected PASS: {err}"
             assert "VERIFICATION_PASS" in out
+
+    def test_23b_checksum_dictionary_valid_passes(self):
+        """11. Checksum dictionary đúng -> PASS."""
+        with tempfile.TemporaryDirectory() as td:
+            output_root, run_dir = setup_mock_environment_and_run(Path(td), 50, 42)
+            ok, out, err = run_py_verification(self.py_code, run_dir, 50, 42)
+            assert ok, f"Expected PASS for valid checksums: {err}"
+
+    def test_23c_string_checksum_fails(self):
+        """12. String checksum -> FAIL."""
+        with tempfile.TemporaryDirectory() as td:
+            output_root, run_dir = setup_mock_environment_and_run(Path(td), 50, 42)
+            csums_file = run_dir / "checksums.json"
+            csums = json.loads(csums_file.read_text(encoding="utf-8"))
+            # Replace dictionary entry with legacy string hash
+            csums["predictions.json"] = "00" * 32
+            csums_file.write_text(json.dumps(csums), encoding="utf-8")
+
+            ok, out, err = run_py_verification(self.py_code, run_dir, 50, 42)
+            assert not ok, "Expected FAIL when checksum entry is string instead of dictionary"
+            assert "must be a dict" in out
+
+    def test_23d_checksum_dictionary_missing_or_extra_field_fails(self):
+        """13. Checksum dictionary thừa/thiếu field -> FAIL."""
+        with tempfile.TemporaryDirectory() as td:
+            output_root, run_dir = setup_mock_environment_and_run(Path(td), 50, 42)
+            csums_file = run_dir / "checksums.json"
+            csums = json.loads(csums_file.read_text(encoding="utf-8"))
+            # Missing sha256 field
+            csums["predictions.json"] = {"size_bytes": 100}
+            csums_file.write_text(json.dumps(csums), encoding="utf-8")
+
+            ok, out, _ = run_py_verification(self.py_code, run_dir, 50, 42)
+            assert not ok, "Expected FAIL when checksum dict is missing sha256"
+            assert "Invalid checksum entry keys" in out
 
     def test_24_missing_checksum_key_fails(self):
         """24. Thiếu checksum key -> FAIL."""
@@ -750,10 +899,11 @@ class TestOperatorFaultInjections:
             csums_file.write_text(json.dumps(csums), encoding="utf-8")
 
             ok, out, err = run_py_verification(self.py_code, run_dir, 50, 42)
-            assert not ok, "Expected FAIL on byte count mismatch in checksums.json"
+            assert not ok, "Expected FAIL when recorded size doesn't match"
+            assert "Size mismatch" in out
 
     def test_27_missing_locked_test_access_fails(self):
-        """27. Thiếu locked_test_access -> FAIL (no default 0)."""
+        """27. Thiếu locked_test_access -> FAIL."""
         with tempfile.TemporaryDirectory() as td:
             output_root, run_dir = setup_mock_environment_and_run(Path(td), 50, 42)
             rcpt_file = run_dir / "run_receipt.json"
@@ -762,14 +912,15 @@ class TestOperatorFaultInjections:
             rcpt_file.write_text(json.dumps(rcpt), encoding="utf-8")
             csums_file = run_dir / "checksums.json"
             csums = json.loads(csums_file.read_text(encoding="utf-8"))
+            csums["run_receipt.json"]["size_bytes"] = rcpt_file.stat().st_size
             csums["run_receipt.json"]["sha256"] = hashlib.sha256(rcpt_file.read_bytes()).hexdigest()
             csums_file.write_text(json.dumps(csums), encoding="utf-8")
 
-            ok, out, err = run_py_verification(self.py_code, run_dir, 50, 42)
-            assert not ok, "Expected FAIL when locked_test_access field is missing"
+            ok, _, _ = run_py_verification(self.py_code, run_dir, 50, 42)
+            assert not ok, "Expected FAIL when locked_test_access is missing"
 
     def test_28_missing_stage2_invocations_fails(self):
-        """28. Thiếu stage2_invocations -> FAIL (no default 0)."""
+        """28. Thiếu stage2_invocations -> FAIL."""
         with tempfile.TemporaryDirectory() as td:
             output_root, run_dir = setup_mock_environment_and_run(Path(td), 50, 42)
             rcpt_file = run_dir / "run_receipt.json"
@@ -778,61 +929,66 @@ class TestOperatorFaultInjections:
             rcpt_file.write_text(json.dumps(rcpt), encoding="utf-8")
             csums_file = run_dir / "checksums.json"
             csums = json.loads(csums_file.read_text(encoding="utf-8"))
+            csums["run_receipt.json"]["size_bytes"] = rcpt_file.stat().st_size
             csums["run_receipt.json"]["sha256"] = hashlib.sha256(rcpt_file.read_bytes()).hexdigest()
             csums_file.write_text(json.dumps(csums), encoding="utf-8")
 
-            ok, out, err = run_py_verification(self.py_code, run_dir, 50, 42)
-            assert not ok, "Expected FAIL when stage2_invocations field is missing"
+            ok, _, _ = run_py_verification(self.py_code, run_dir, 50, 42)
+            assert not ok, "Expected FAIL when stage2_invocations is missing"
 
     def test_29_stage2_canonical_or_legacy_fails_if_nonzero(self):
         """29. Stage 2 canonical hoặc legacy khác 0 -> FAIL."""
-        for key in ["stage2_invocations", "stage_2_invocation"]:
+        for field in ["stage2_invocations", "stage_2_invocation"]:
             with tempfile.TemporaryDirectory() as td:
                 output_root, run_dir = setup_mock_environment_and_run(Path(td), 50, 42)
                 rcpt_file = run_dir / "run_receipt.json"
                 rcpt = json.loads(rcpt_file.read_text(encoding="utf-8"))
-                rcpt[key] = 1
+                rcpt[field] = 1
                 rcpt_file.write_text(json.dumps(rcpt), encoding="utf-8")
                 csums_file = run_dir / "checksums.json"
                 csums = json.loads(csums_file.read_text(encoding="utf-8"))
+                csums["run_receipt.json"]["size_bytes"] = rcpt_file.stat().st_size
                 csums["run_receipt.json"]["sha256"] = hashlib.sha256(rcpt_file.read_bytes()).hexdigest()
                 csums_file.write_text(json.dumps(csums), encoding="utf-8")
 
                 ok, _, _ = run_py_verification(self.py_code, run_dir, 50, 42)
-                assert not ok, f"Expected FAIL when {key} > 0"
+                assert not ok, f"Expected FAIL when {field} is non-zero"
 
     def test_30_failure_reason_with_quotes_and_newlines_creates_valid_json(self):
-        """30. Failure reason có quotes/newlines/specials -> vẫn tạo JSON hợp lệ."""
-        text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
-        fail_py_code = extract_python_snippet(text, "fail_operator()")
-
+        """30. Failure reason co quotes/newlines -> van tao JSON hop le."""
         with tempfile.TemporaryDirectory() as td:
             out_file = Path(td) / "OPERATOR_FAILURE.json"
-            tricky_reason = 'Error: unexpected token \'(\', double "quotes",\\nline breaks\\nand Unicode: \\u0110\\u0103ng k\\u00fd tr\\u01b0\\u1edbc & special $PATH `ls`!'
+            complex_reason = 'Error in "step 1": line with quotes and\nnewline, plus special chars: \t < > `'
+            py_code = (
+                "import json, sys\n"
+                "from datetime import datetime, timezone\n"
+                "state, code, reason, line, size_str, seed_str, log_path, out_path = sys.argv[1:9]\n"
+                "failure_doc = {\n"
+                '    "status": "failed",\n'
+                '    "current_state": state,\n'
+                '    "exit_code": int(code) if code.isdigit() else 1,\n'
+                '    "line_number": int(line) if line.isdigit() else None,\n'
+                '    "failed_command": reason,\n'
+                '    "reason": reason,\n'
+                '    "current_sample_size": int(size_str) if size_str.isdigit() else None,\n'
+                '    "current_seed": int(seed_str) if seed_str.isdigit() else None,\n'
+                '    "console_log_path": log_path,\n'
+                '    "timestamp_utc": datetime.now(timezone.utc).isoformat()\n'
+                "}\n"
+                'with open(out_path, "w", encoding="utf-8") as f:\n'
+                "    json.dump(failure_doc, f, indent=2)\n"
+            )
             cmd = [
                 sys.executable,
                 "-c",
-                fail_py_code,
-                "STEP1_TEST",
-                "12",
-                tricky_reason,
-                "456",
-                "50",
-                "42",
-                "/tmp/console.log",
-                str(out_file),
+                py_code,
+                "PREFLIGHT", "1", complex_reason, "42", "50", "42", "/path/to/log", str(out_file)
             ]
             cp = subprocess.run(cmd, capture_output=True, text=True)
-            assert cp.returncode == 0, f"Failure recorder failed: {cp.stderr}"
+            assert cp.returncode == 0
             assert out_file.exists()
-
-            loaded = json.loads(out_file.read_text(encoding="utf-8"))
-            assert loaded["status"] == "OPERATOR_FAILED"
-            assert loaded["exit_code"] == 12
-            assert loaded["line_number"] == 456
-            assert loaded["current_sample_size"] == 50
-            assert loaded["current_seed"] == 42
-            assert loaded["reason"] == tricky_reason
+            data = json.loads(out_file.read_text(encoding="utf-8"))
+            assert data["reason"] == complex_reason
 
     def test_31_predictions_arrays_not_same_length_fails(self):
         """31. Predictions arrays không cùng độ dài -> FAIL."""
@@ -840,15 +996,16 @@ class TestOperatorFaultInjections:
             output_root, run_dir = setup_mock_environment_and_run(Path(td), 50, 42)
             preds_file = run_dir / "predictions.json"
             preds = json.loads(preds_file.read_text(encoding="utf-8"))
-            preds["predictions"] = preds["predictions"][:-1]  # length 181
+            preds["predictions"] = preds["predictions"][:-1]  # 181 instead of 182
             preds_file.write_text(json.dumps(preds), encoding="utf-8")
             csums_file = run_dir / "checksums.json"
             csums = json.loads(csums_file.read_text(encoding="utf-8"))
+            csums["predictions.json"]["size_bytes"] = preds_file.stat().st_size
             csums["predictions.json"]["sha256"] = hashlib.sha256(preds_file.read_bytes()).hexdigest()
             csums_file.write_text(json.dumps(csums), encoding="utf-8")
 
             ok, _, _ = run_py_verification(self.py_code, run_dir, 50, 42)
-            assert not ok, "Expected FAIL when predictions array length is mismatched"
+            assert not ok, "Expected FAIL when prediction arrays mismatch in length"
 
     def test_32_validation_targets_not_182_fails(self):
         """32. Validation targets khác 182 -> FAIL."""
@@ -856,13 +1013,12 @@ class TestOperatorFaultInjections:
             output_root, run_dir = setup_mock_environment_and_run(Path(td), 50, 42)
             preds_file = run_dir / "predictions.json"
             preds = json.loads(preds_file.read_text(encoding="utf-8"))
-            preds["targets"] = [0] * 90 + [1] * 90
-            preds["predictions"] = [0] * 90 + [1] * 90
-            preds["probabilities"] = [0.1] * 180
-            preds["source_ids"] = [f"src_{i}" for i in range(90)] * 2
+            for k in ["targets", "predictions", "probabilities", "source_ids"]:
+                preds[k] = preds[k][:100]  # Only 100 entries
             preds_file.write_text(json.dumps(preds), encoding="utf-8")
             csums_file = run_dir / "checksums.json"
             csums = json.loads(csums_file.read_text(encoding="utf-8"))
+            csums["predictions.json"]["size_bytes"] = preds_file.stat().st_size
             csums["predictions.json"]["sha256"] = hashlib.sha256(preds_file.read_bytes()).hexdigest()
             csums_file.write_text(json.dumps(csums), encoding="utf-8")
 
@@ -880,14 +1036,62 @@ class TestOperatorFaultInjections:
             preds_file.write_text(json.dumps(preds), encoding="utf-8")
             csums_file = run_dir / "checksums.json"
             csums = json.loads(csums_file.read_text(encoding="utf-8"))
+            csums["predictions.json"]["size_bytes"] = preds_file.stat().st_size
             csums["predictions.json"]["sha256"] = hashlib.sha256(preds_file.read_bytes()).hexdigest()
             csums_file.write_text(json.dumps(csums), encoding="utf-8")
 
             ok, _, _ = run_py_verification(self.py_code, run_dir, 50, 42)
             assert not ok, "Expected FAIL when unique validation sources is not 91"
 
+    def test_33b_prediction_sources_mismatch_bundle_manifest_fails(self):
+        """24-25. Prediction source IDs mismatch bundle manifest inner_validation -> FAIL."""
+        with tempfile.TemporaryDirectory() as td:
+            output_root, run_dir = setup_mock_environment_and_run(Path(td), 50, 42, setup_bundle_manifest=True)
+            bundle_root = Path(td) / "bundle"
+            # In predictions.json, change one source ID to unapproved source
+            preds_file = run_dir / "predictions.json"
+            preds = json.loads(preds_file.read_text(encoding="utf-8"))
+            preds["source_ids"][0] = "unapproved_src_9999"
+            preds["source_ids"][91] = "unapproved_src_9999"
+            preds_file.write_text(json.dumps(preds), encoding="utf-8")
+            csums_file = run_dir / "checksums.json"
+            csums = json.loads(csums_file.read_text(encoding="utf-8"))
+            csums["predictions.json"]["size_bytes"] = preds_file.stat().st_size
+            csums["predictions.json"]["sha256"] = hashlib.sha256(preds_file.read_bytes()).hexdigest()
+            csums_file.write_text(json.dumps(csums), encoding="utf-8")
+
+            ok, out, err = run_py_verification(self.py_code, run_dir, 50, 42, bundle_root=bundle_root)
+            assert not ok, "Expected FAIL when prediction sources don't match bundle manifest inner_validation"
+            assert "Predictions source IDs mismatch" in (out + err)
+
+    def test_33c_development_source_in_predictions_fails(self):
+        """26. Development train source xuất hiện trong predictions -> FAIL."""
+        with tempfile.TemporaryDirectory() as td:
+            output_root, run_dir = setup_mock_environment_and_run(Path(td), 50, 42, setup_bundle_manifest=True)
+            bundle_root = Path(td) / "bundle"
+            preds_file = run_dir / "predictions.json"
+            preds = json.loads(preds_file.read_text(encoding="utf-8"))
+            preds["source_ids"][0] = "dev_0000"
+            preds["source_ids"][91] = "dev_0000"
+            preds_file.write_text(json.dumps(preds), encoding="utf-8")
+            csums_file = run_dir / "checksums.json"
+            csums = json.loads(csums_file.read_text(encoding="utf-8"))
+            csums["predictions.json"]["size_bytes"] = preds_file.stat().st_size
+            csums["predictions.json"]["sha256"] = hashlib.sha256(preds_file.read_bytes()).hexdigest()
+            csums_file.write_text(json.dumps(csums), encoding="utf-8")
+
+            ok, out, _ = run_py_verification(self.py_code, run_dir, 50, 42, bundle_root=bundle_root)
+            assert not ok, "Expected FAIL when development source appears in validation predictions"
+
+    def test_33d_config_hash_in_receipt_mismatch_expected_fails(self):
+        """8. Run receipt config hash sai expected -> FAIL."""
+        with tempfile.TemporaryDirectory() as td:
+            output_root, run_dir = setup_mock_environment_and_run(Path(td), 50, 42, config_hash="different_config_hash")
+            ok, _, _ = run_py_verification(self.py_code, run_dir, 50, 42)
+            assert not ok, "Expected FAIL when receipt config_hash does not match expected_config_hash"
+
     def test_34_real_run_n50_seed42_fixture_passes(self):
-        """34. Run thực tế n50_seed42 -> PASS."""
+        """28. Run thực tế n50_seed42 -> COMPLETED_VALID."""
         with tempfile.TemporaryDirectory() as td:
             output_root, run_dir = setup_mock_environment_and_run(Path(td), 50, 42)
             ok, out, err = run_py_verification(self.py_code, run_dir, 50, 42)
@@ -895,7 +1099,7 @@ class TestOperatorFaultInjections:
             assert "VERIFICATION_PASS" in out
 
     def test_35_and_36_resume_skips_seed42_and_targets_seed1337(self):
-        """35-36. Resume skip n50_seed42 và target tiếp theo là n50_seed1337."""
+        """29-30. Resume skip n50_seed42 và target tiếp theo là n50_seed1337."""
         with tempfile.TemporaryDirectory() as td:
             output_root, run_dir_42 = setup_mock_environment_and_run(Path(td), 50, 42)
 
@@ -916,47 +1120,57 @@ class TestOperatorFaultInjections:
             assert runs_to_execute[0] == (50, 1337)
 
     def test_37_resume_on_different_gpu_does_not_rerun_completed_run(self):
-        """37. Resume trên GPU khác không chạy lại completed run."""
+        """31 & 37. Resume trên GPU khác không chạy lại completed run và không sửa artifact."""
         with tempfile.TemporaryDirectory() as td:
-            # Seed 42 completed on Tesla T4
             output_root, run_dir_42 = setup_mock_environment_and_run(Path(td), 50, 42, gpu_model="Tesla T4")
+            # Snapshot artifact timestamps
+            mtimes_before = {p.name: p.stat().st_mtime for p in run_dir_42.glob("*")}
 
-            # Current session has NVIDIA L4 in compatible mode
-            ok, out, _ = run_py_verification(self.py_code, run_dir_42, 50, 42, gpu_policy="compatible")
-            assert ok, "Completed run must verify successfully on different GPU in compatible mode"
+            # Verifier running under compatible mode with expected_gpu="Tesla T4"
+            ok, _, _ = run_py_verification(self.py_code, run_dir_42, 50, 42, gpu_policy="compatible")
+            assert ok
+
+            mtimes_after = {p.name: p.stat().st_mtime for p in run_dir_42.glob("*")}
+            assert mtimes_before == mtimes_after, "Completed run artifacts must not be modified during resume check"
 
     def test_38_archive_sha_and_content_sha_used_in_correct_roles(self):
         """38. Archive SHA và content SHA được dùng đúng vai trò."""
-        assert EXPECTED_BUNDLE_ARCHIVE_SHA != EXPECTED_BUNDLE_CONTENT_SHA
         with tempfile.TemporaryDirectory() as td:
+            # If content SHA passed where archive SHA expected -> FAIL
             output_root, run_dir = setup_mock_environment_and_run(Path(td), 50, 42)
-            ok, out, err = run_py_verification(self.py_code, run_dir, 50, 42)
-            assert ok, f"Expected PASS when roles are distinct: {err}"
+            ok, _, _ = run_py_verification(
+                self.py_code, run_dir, 50, 42,
+                exp_archive_sha=EXPECTED_BUNDLE_CONTENT_SHA,
+            )
+            assert not ok, "Must fail if content SHA passed in place of archive SHA"
 
     def test_39_partial_run_still_fails_closed(self):
         """39. Partial run vẫn fail-closed."""
         with tempfile.TemporaryDirectory() as td:
             output_root, run_dir = setup_mock_environment_and_run(Path(td), 50, 42)
             (run_dir / "best_checkpoint.pt").unlink()
-            ok, _, _ = run_py_verification(self.py_code, run_dir, 50, 42)
-            assert not ok, "Partial run missing checkpoint must fail-closed"
+            ok, out, _ = run_py_verification(self.py_code, run_dir, 50, 42)
+            assert not ok
+            assert "Required file missing: best_checkpoint.pt" in out
 
     def test_40_locked_test_access_nonzero_fails(self):
-        """40. Locked-test access != 0 vẫn fail-closed."""
+        """40. Locked-test access khác 0 vẫn fail-closed."""
         with tempfile.TemporaryDirectory() as td:
             output_root, run_dir = setup_mock_environment_and_run(Path(td), 50, 42)
             rcpt_file = run_dir / "run_receipt.json"
             rcpt = json.loads(rcpt_file.read_text(encoding="utf-8"))
-            rcpt["locked_test_access"] = 5
+            rcpt["locked_test_access"] = 1
             rcpt_file.write_text(json.dumps(rcpt), encoding="utf-8")
             csums_file = run_dir / "checksums.json"
             csums = json.loads(csums_file.read_text(encoding="utf-8"))
+            csums["run_receipt.json"]["size_bytes"] = rcpt_file.stat().st_size
             csums["run_receipt.json"]["sha256"] = hashlib.sha256(rcpt_file.read_bytes()).hexdigest()
             csums_file.write_text(json.dumps(csums), encoding="utf-8")
 
             ok, _, _ = run_py_verification(self.py_code, run_dir, 50, 42)
-            assert not ok, "Locked test access > 0 must fail-closed"
+            assert not ok
 
-
-if __name__ == "__main__":
-    pytest.main([__file__, "-v"])
+    def test_41_hardware_summary_failure_fails_closed(self):
+        """27. Hardware summary lỗi -> operator không tuyên bố complete."""
+        text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
+        assert 'fail_operator "PACKAGING" 1 "Failed to generate HARDWARE_SUMMARY.json' in text

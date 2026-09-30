@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0.0",
-  "phase": "Phase 4C.1C.10",
+  "phase": "Phase 4C.1C.11",
   "audit_name": "execution_snapshot_binding_audit",
-  "timestamp_utc": "2026-09-30T13:00:36.030337+00:00",
+  "timestamp_utc": "2026-09-30T13:47:06.177534+00:00",
   "execution_snapshot_commit": "79bb11527d900fd387de1f41f2010c4152b7fea7",
   "code_archive": {
     "name": "phase_4c1_code_79bb115.tar.gz",
@@ -59,11 +59,11 @@
       }
     ],
     "executable_code_changes_count": 0,
-    "contains_only_continuity_and_evidence": true,
-    "audited_scope": "All commits on research/phase-4c1-learning-curve between 79bb115 and HEAD"
+    "audited_scope": "All commits on research/phase-4c1-learning-curve between 79bb115 and dbb51d18e6789286d5e49b43ed5340ddc335b9ad",
+    "contains_no_execution_snapshot_model_or_training_source_changes": true
   },
   "verdict": "SNAPSHOT_BINDING_VALID_AND_INTACT",
-  "verdict_rationale": "All changes between execution snapshot 79bb115 and current HEAD are strictly confined to continuity records, evidence receipts, operator script and test suites. Zero lines of executable model or training pipeline code have been modified.",
-  "audited_parent_commit": "d0536fd23c1595662885bfa1688a3fc8bae96676",
-  "audited_through_commit": "d0536fd23c1595662885bfa1688a3fc8bae96676"
+  "verdict_rationale": "All changes between execution snapshot 79bb115 and current HEAD are strictly confined to continuity records, evidence receipts, operator script, tests and notebook launcher. Zero lines of executable model or training pipeline code in snapshot 79bb115 have been modified.",
+  "audited_parent_commit": "dbb51d18e6789286d5e49b43ed5340ddc335b9ad",
+  "audited_through_commit": "dbb51d18e6789286d5e49b43ed5340ddc335b9ad"
 }

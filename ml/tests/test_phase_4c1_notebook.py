@@ -200,8 +200,8 @@ def test_sealed_artifacts_and_drive_paths_configured():
     assert 724633600 in eval(src.split("EXPECTED_ARTIFACTS = ")[1].split("\n\n")[0])["reusable_bundle"].values()
     assert "d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27" in src
     assert "phase_4c1_t4_execute_all_stage1.sh" in src
-    assert 43085 in eval(src.split("EXPECTED_ARTIFACTS = ")[1].split("\n\n")[0])["operator_script"].values()
-    assert "75d26863c48edbee821b2410204d4517ec1b1baffc456b47a931306b38235b1d" in src
+    assert 48539 in eval(src.split("EXPECTED_ARTIFACTS = ")[1].split("\n\n")[0])["operator_script"].values()
+    assert "cf240f3c289dc42ab93aa590457d95f85ff21280b13c337a02cf6d5533e91e6d" in src
 
 
 @pytest.mark.skipif(not IPYTHON_AVAILABLE, reason="IPython not installed")

@@ -1,10 +1,10 @@
 {
   "pre_execution_verdict": {
     "schema_version": "1.0.0",
-    "phase": "Phase 4C.1C.10",
+    "phase": "Phase 4C.1C.11",
     "verdict": "GO",
-    "verdict_rationale": "All gates pass without exception: operator and Colab notebook hardened with capability-based GPU detection (compatible with T4, L4, V100, A100; warning instead of failure in compatible mode); fail-closed scientific invariants; safe failure reporting via arguments; exact 8-file checksums keyset; completed run N50 seed42 verified and skipped; next run N50 seed1337 targeted; 48 operator tests PASS, 17 notebook tests PASS, 224 python tests PASS, TypeScript test/typecheck/build PASS.",
-    "timestamp_utc": "2026-09-30T13:00:36.030337+00:00",
+    "verdict_rationale": "All gates pass without exception: operator and Colab notebook patched with safe ephemeral code staging directly from verified archive; runner config_hash and requirements_sha256 bound fail-closed; strict dictionary checksum schema enforced; GPU/runtime policy validated; baseline pip-freeze preserved; exact inner_validation cohort checked against bundle manifest; completed run N50 seed42 verified and skipped; next run N50 seed1337 targeted; 67 operator tests PASS, 17 notebook tests PASS; compatible NVIDIA CUDA GPU runtime supported with actual training validation observed on Tesla T4 only.",
+    "timestamp_utc": "2026-09-30T13:47:06.177534+00:00",
     "gates": {
       "cardinality_reconciliation": {
         "status": "PASS",
@@ -44,17 +44,16 @@
         ],
         "execution_code_sha_verified": "79bb11527d900fd387de1f41f2010c4152b7fea7",
         "receipt_stage2_check_aligned": "Checked both stage2_invocations and stage_2_invocation == 0",
-        "receipt_checksums_dict_aligned": "Checked both dict {size_bytes, sha256} and string checksum formats",
-        "fault_injections_tested": 7,
-        "fault_injections_passed": 7
+        "checksum_schema_policy": "Strict dictionary schema enforced: {size_bytes: int > 0, sha256: 64-hex}; string checksum fallback rejected fail-closed",
+        "test_suite_coverage": "67 unit, security staging, policy, and fault-injection tests covering all 31 behavioral requirements"
       },
       "operator_static_assertions": {
         "status": "PASS",
         "script_name": "phase_4c1_t4_execute_all_stage1.sh",
-        "bytes": 43085,
-        "sha256": "75d26863c48edbee821b2410204d4517ec1b1baffc456b47a931306b38235b1d",
-        "assertions_total": 48,
-        "assertions_passed": 48,
+        "bytes": 48539,
+        "sha256": "cf240f3c289dc42ab93aa590457d95f85ff21280b13c337a02cf6d5533e91e6d",
+        "assertions_total": 67,
+        "assertions_passed": 67,
         "assertions_failed": 0,
         "all_passed": true
       },
@@ -70,8 +69,8 @@
       "canonical_colab_notebook": {
         "status": "PASS",
         "path": "notebooks/phase_4c1_learning_curve_colab.ipynb",
-        "bytes": 12857,
-        "sha256": "0f96e227aed8c0717a0aecfe3be6ec6ee0a7b1f0b3af00f4ef774ae613721fc0",
+        "bytes": 12038,
+        "sha256": "426a0b8f68163ea1dd072149ac8aa4e76704e98a12167826757b1dd5bd0f343f",
         "cells_total": 5,
         "markdown_cells": 1,
         "code_cells": 4,
@@ -131,14 +130,14 @@
       "reupload_required_files": [
         {
           "file_name": "phase_4c1_t4_execute_all_stage1.sh",
-          "bytes": 43085,
-          "sha256": "75d26863c48edbee821b2410204d4517ec1b1baffc456b47a931306b38235b1d",
+          "bytes": 48539,
+          "sha256": "cf240f3c289dc42ab93aa590457d95f85ff21280b13c337a02cf6d5533e91e6d",
           "target_drive_directory": "My Drive/Colab Notebooks/forensics-web-lab/phase_4c1/inputs/"
         },
         {
           "file_name": "phase_4c1_learning_curve_colab.ipynb",
-          "bytes": 12857,
-          "sha256": "0f96e227aed8c0717a0aecfe3be6ec6ee0a7b1f0b3af00f4ef774ae613721fc0",
+          "bytes": 12038,
+          "sha256": "426a0b8f68163ea1dd072149ac8aa4e76704e98a12167826757b1dd5bd0f343f",
           "target_drive_directory": "My Drive/Colab Notebooks/forensics-web-lab/phase_4c1/"
         }
       ],
@@ -157,8 +156,9 @@
         }
       ],
       "execution_options": {
-        "notebook_option": "Open phase_4c1_learning_curve_colab.ipynb in Google Colab (T4 GPU runtime), verify EXECUTE = True, and select Runtime -> Run all."
-      }
+        "notebook_option": "Open phase_4c1_learning_curve_colab.ipynb in Google Colab (compatible NVIDIA CUDA GPU runtime; reference: Tesla T4), verify EXECUTE = True, and select Runtime -> Run all."
+      },
+      "runtime_support_note": "Capability policy and simulated tests cover T4, L4, V100 and A100. Actual training validation has currently been observed on Tesla T4 only."
     }
   }
 }
