@@ -33,8 +33,8 @@ EXPECTED_CODE_ARCHIVE_SHA = "5e775a7708d1555bf22f56dceb5358e26e07dd224c4b6186f57
 EXPECTED_CONFIG_HASH = "e03c07dae05a2402416abb0c60480a8cd0a35d060de3bb138a09d0bec0a85dc9"
 EXPECTED_REQS_SHA = "850478c0a9746b93354dd756ba428621a4aa48abab4e6aa5fa7e00669cea67a0"
 
-EXPECTED_OPERATOR_SHA = "104679cd6c1ffd308b8d1da8ee89bef36ae338a0bc5a1a9e0721c3a4c961b5bb"
-EXPECTED_OPERATOR_BYTES = 49370
+EXPECTED_OPERATOR_SHA = "8ec5cf55b73548901e0fb34d2f9d5e806ee084870f4378a7c6e493b80ee1c6cd"
+EXPECTED_OPERATOR_BYTES = 49399
 
 OPERATOR_EXISTS = OPERATOR_SCRIPT.exists()
 
@@ -1384,3 +1384,123 @@ inner_func
         assert '$DOWNLOAD_DIR/n${size}_results.tar.gz' in text
         assert '$DOWNLOAD_DIR/phase_4c1_all_15_runs_results.tar.gz' in text
         assert '$DOWNLOAD_DIR/phase_4c1_t4_execution_logs.tar.gz' in text
+
+class TestPhase4C1C13PythonQuotingAndPreflightRegression:
+    """Tests 44-48: Phase 4C.1C.13 Colab Python quoting hotfix and real preflight regression."""
+
+    @pytest.fixture(autouse=True)
+    def setup_operator(self):
+        assert OPERATOR_SCRIPT.exists(), f"Operator script missing: {OPERATOR_SCRIPT}"
+        self.text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
+
+        # Extract model and vram parser codes
+        m_model = re.search(
+            r'''ACTUAL_GPU_MODEL=\$\(["']?\$SYS_PY3["']?\s+-c\s+['"](.*?)['"]\s+"\$GPU_CHECK_RAW"\)''',
+            self.text,
+        )
+        assert m_model is not None, "Could not find ACTUAL_GPU_MODEL parser in operator"
+        self.model_code = m_model.group(1)
+
+        m_vram = re.search(
+            r'''ACTUAL_GPU_VRAM_GB=\$\(\s*["']?\$SYS_PY3["']?\s+-c\s+\\\s+['"](.*?)['"]\s+\\\s+"\$GPU_CHECK_RAW"\s*\)''',
+            self.text,
+        )
+        assert m_vram is not None, "Could not find ACTUAL_GPU_VRAM_GB parser in operator"
+        self.vram_code = m_vram.group(1)
+
+    def test_44_gpu_json_parser_real_execution_t4(self):
+        """1. Real execution of GPU JSON parser with T4 fixture returns model and 14.56 VRAM."""
+        fixture_t4 = json.dumps({"gpu_name": "Tesla T4", "vram_gb": 14.56317138671875})
+        res_m = subprocess.run([sys.executable, "-c", self.model_code, fixture_t4], capture_output=True, text=True)
+        res_v = subprocess.run([sys.executable, "-c", self.vram_code, fixture_t4], capture_output=True, text=True)
+
+        assert res_m.returncode == 0, f"Model parser failed with code {res_m.returncode}: {res_m.stderr}"
+        assert res_m.stderr == "", f"Model parser produced unexpected stderr: {res_m.stderr}"
+        assert res_m.stdout.strip() == "Tesla T4"
+
+        assert res_v.returncode == 0, f"VRAM parser failed with code {res_v.returncode}: {res_v.stderr}"
+        assert res_v.stderr == "", f"VRAM parser produced unexpected stderr: {res_v.stderr}"
+        assert res_v.stdout.strip() == "14.56"
+        assert "SyntaxError" not in res_v.stderr
+
+    def test_45_gpu_json_parser_real_execution_l4(self):
+        """2. Real execution of GPU JSON parser with L4 fixture returns model and 22.00 VRAM."""
+        fixture_l4 = json.dumps({"gpu_name": "NVIDIA L4", "vram_gb": 22.0})
+        res_m = subprocess.run([sys.executable, "-c", self.model_code, fixture_l4], capture_output=True, text=True)
+        res_v = subprocess.run([sys.executable, "-c", self.vram_code, fixture_l4], capture_output=True, text=True)
+
+        assert res_m.returncode == 0, f"Model parser failed: {res_m.stderr}"
+        assert res_m.stderr == ""
+        assert res_m.stdout.strip() == "NVIDIA L4"
+
+        assert res_v.returncode == 0, f"VRAM parser failed: {res_v.stderr}"
+        assert res_v.stderr == ""
+        assert res_v.stdout.strip() == "22.00"
+        assert "SyntaxError" not in res_v.stderr
+
+    def test_46_gpu_json_parser_invalid_vram_fails_explicitly(self):
+        """3. Invalid vram_gb values fail explicitly with non-zero exit code and error message."""
+        invalid_fixtures = [
+            json.dumps({"gpu_name": "Tesla T4", "vram_gb": "not_a_number"}),
+            json.dumps({"gpu_name": "Tesla T4", "vram_gb": None}),
+            json.dumps({"gpu_name": "Tesla T4"}),
+        ]
+        for fixture in invalid_fixtures:
+            res = subprocess.run([sys.executable, "-c", self.vram_code, fixture], capture_output=True, text=True)
+            assert res.returncode != 0, f"Expected non-zero return code for {fixture}, got {res.returncode}"
+            assert res.stderr != "", "Expected error output in stderr"
+
+    def test_47_scan_and_execute_all_operator_python_c_helpers(self):
+        """4. Scan and execute all standalone python -c helpers in operator using suitable fixtures."""
+        py_c_pattern = re.compile(r"""["']?\$SYS_PY3["']?\s+-c\s+(?:\\\s+)?(?:'([^']*)'|"([^"]*)")""", re.DOTALL)
+        matches = list(py_c_pattern.finditer(self.text))
+        assert len(matches) >= 4, f"Expected at least 4 python -c helpers, found {len(matches)}"
+
+        fixture_gpu = json.dumps({"gpu_name": "Tesla T4", "vram_gb": 14.56317138671875})
+        for idx, match in enumerate(matches, 1):
+            code = match.group(1) if match.group(1) is not None else match.group(2)
+            # Ensure no escaped quotes in single-quoted bash strings
+            assert r'\"' not in code, f"Helper {idx} contains forbidden escaped quote \\\": {code}"
+
+            if "gpu_name" in code or "vram_gb" in code:
+                cp = subprocess.run([sys.executable, "-c", code, fixture_gpu], capture_output=True, text=True)
+                assert cp.returncode == 0, f"Helper {idx} failed: {cp.stderr}"
+                assert cp.stderr == ""
+            elif "bundle_sha256" in code:
+                with tempfile.NamedTemporaryFile("w", delete=False, suffix=".json", encoding="utf-8") as f:
+                    json.dump({"bundle_sha256": "c365c812cc814097f11b9e5ed5c82e672015e2ba093f09f975df0a2a01229e9b"}, f)
+                    tmp_p = f.name
+                try:
+                    cp = subprocess.run([sys.executable, "-c", code, tmp_p], capture_output=True, text=True)
+                    assert cp.returncode == 0, f"Helper {idx} failed: {cp.stderr}"
+                    assert cp.stdout.strip() == "c365c812cc814097f11b9e5ed5c82e672015e2ba093f09f975df0a2a01229e9b"
+                finally:
+                    Path(tmp_p).unlink()
+            elif "datetime" in code:
+                cp = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True)
+                assert cp.returncode == 0, f"Helper {idx} failed: {cp.stderr}"
+                assert re.match(r"^\d{8}_\d{6}Z$", cp.stdout.strip())
+            else:
+                cp = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True)
+                assert cp.returncode == 0, f"Helper {idx} failed: {cp.stderr}"
+
+    def test_48_preflight_regression_gpu_validation_log(self):
+        """5. Preflight regression executes through GPU JSON generation, model/vram parsing, and logs Validated GPU."""
+        fixture_t4 = json.dumps({"gpu_name": "Tesla T4", "vram_gb": 14.56317138671875})
+        bash_script = f"""set -euo pipefail
+SYS_PY3=$(command -v python3 || command -v python)
+GPU_CHECK_RAW='{fixture_t4}'
+ACTUAL_GPU_MODEL=$("$SYS_PY3" -c '{self.model_code}' "$GPU_CHECK_RAW")
+ACTUAL_GPU_VRAM_GB=$(
+    "$SYS_PY3" -c \
+    '{self.vram_code}' \
+    "$GPU_CHECK_RAW"
+)
+echo "[+] Validated GPU: $ACTUAL_GPU_MODEL ($ACTUAL_GPU_VRAM_GB GB VRAM)"
+""".replace("\r\n", "\n").encode("utf-8")
+
+        cp_bash = subprocess.run(["bash", "-s"], input=bash_script, capture_output=True)
+        out_bash = cp_bash.stdout.decode("utf-8", errors="replace")
+        err_bash = cp_bash.stderr.decode("utf-8", errors="replace")
+        assert cp_bash.returncode == 0, f"Preflight bash failed ({cp_bash.returncode}): {err_bash}"
+        assert "Validated GPU: Tesla T4 (14.56 GB VRAM)" in out_bash
