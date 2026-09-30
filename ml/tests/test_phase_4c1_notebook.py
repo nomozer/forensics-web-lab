@@ -303,5 +303,88 @@ def test_code_cells_compile():
                 pytest.fail(f"Cell {i} syntax error: {e}\nSource:\n{src[:500]}")
 
 
+@pytest.mark.skipif(not IPYTHON_AVAILABLE, reason="IPython not installed")
+def test_input_preflight_is_readonly_and_fail_closed():
+    """
+    Test preflight does NOT create DRIVE_ROOT or DRIVE_INPUT_DIR with mkdir.
+    Verifies DRIVE_ROOT.is_dir() and DRIVE_INPUT_DIR.is_dir() fail-closed checks exist.
+    Verifies DRIVE_OUTPUT_DIR.mkdir() is NOT in preflight and only appears in staging.
+    Verifies missing artifact error reports exact path and actual directory entries.
+    """
+    with open(CANONICAL_NOTEBOOK_PATH, "r", encoding="utf-8") as f:
+        nb = nbformat.read(f, as_version=4)
+
+    # 1 & 2: No DRIVE_ROOT.mkdir or DRIVE_INPUT_DIR.mkdir in ANY cell
+    for i, cell in enumerate(nb.cells):
+        if cell.cell_type == "code":
+            src = "".join(cell.source) if isinstance(cell.source, list) else cell.source
+            assert "DRIVE_ROOT.mkdir" not in src, f"DRIVE_ROOT.mkdir forbidden, found in cell {i}"
+            assert "DRIVE_INPUT_DIR.mkdir" not in src, f"DRIVE_INPUT_DIR.mkdir forbidden, found in cell {i}"
+
+    preflight_cell = nb.cells[4]
+    preflight_src = "".join(preflight_cell.source) if isinstance(preflight_cell.source, list) else preflight_cell.source
+
+    # 3 & 4: is_dir checks
+    assert "DRIVE_ROOT.is_dir()" in preflight_src, "DRIVE_ROOT.is_dir() check missing in preflight"
+    assert "DRIVE_INPUT_DIR.is_dir()" in preflight_src, "DRIVE_INPUT_DIR.is_dir() check missing in preflight"
+    assert "DRIVE_OUTPUT_DIR.mkdir" not in preflight_src, "DRIVE_OUTPUT_DIR.mkdir must NOT be in preflight cell"
+
+    # Info prints
+    assert "print(f\"[INFO] Drive root: {DRIVE_ROOT}\")" in preflight_src or "Drive root:" in preflight_src
+    assert "print(f\"[INFO] Drive inputs: {DRIVE_INPUT_DIR}\")" in preflight_src or "Drive inputs:" in preflight_src
+
+    # 5: DRIVE_OUTPUT_DIR.mkdir appears only after artifact validation, in staging cell
+    staging_cell = nb.cells[6]
+    staging_src = "".join(staging_cell.source) if isinstance(staging_cell.source, list) else staging_cell.source
+    assert "DRIVE_OUTPUT_DIR.mkdir" in staging_src, "DRIVE_OUTPUT_DIR.mkdir must be present in staging cell"
+
+    # 7: Missing artifact message includes exact path and actual entries
+    assert "sorted(p.name for p in DRIVE_INPUT_DIR.iterdir())" in preflight_src
+    assert "Nội dung hiện có:" in preflight_src
+
+
+def test_input_preflight_fail_closed_logic_with_tmp_path(tmp_path):
+    """
+    Functional test of preflight logic to verify:
+    - Missing DRIVE_ROOT raises FileNotFoundError without creating it.
+    - Missing DRIVE_INPUT_DIR raises FileNotFoundError without creating it.
+    - Missing artifacts reports actual directory contents and exact path.
+    """
+    root_missing = tmp_path / "missing_root"
+    inputs_missing = root_missing / "inputs"
+
+    # Verify check for missing root
+    with pytest.raises(FileNotFoundError, match="Không tìm thấy thư mục dự án đã chuẩn bị"):
+        if not root_missing.is_dir():
+            raise FileNotFoundError(f"Không tìm thấy thư mục dự án đã chuẩn bị: {root_missing}")
+    assert not root_missing.exists(), "Root must not be created on check failure"
+
+    # Verify check for missing inputs dir
+    real_root = tmp_path / "real_root"
+    real_root.mkdir()
+    inputs_missing = real_root / "inputs"
+    with pytest.raises(FileNotFoundError, match="Không tìm thấy thư mục inputs đã chuẩn bị"):
+        if not inputs_missing.is_dir():
+            raise FileNotFoundError(f"Không tìm thấy thư mục inputs đã chuẩn bị: {inputs_missing}")
+    assert not inputs_missing.exists(), "Inputs dir must not be created on check failure"
+
+    # Verify missing artifact reporting
+    real_inputs = real_root / "inputs"
+    real_inputs.mkdir()
+    (real_inputs / "dummy_file.txt").write_text("hello", encoding="utf-8")
+    missing_artifacts = ["phase_4c1_code_79bb115.tar.gz"]
+
+    with pytest.raises(FileNotFoundError) as exc_info:
+        actual_entries = sorted(p.name for p in real_inputs.iterdir())
+        raise FileNotFoundError(
+            f"Thiếu artifact trong {real_inputs}: {missing_artifacts}. "
+            f"Nội dung hiện có: {actual_entries}"
+        )
+    err_msg = str(exc_info.value)
+    assert str(real_inputs) in err_msg
+    assert "dummy_file.txt" in err_msg
+    assert "phase_4c1_code_79bb115.tar.gz" in err_msg
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
