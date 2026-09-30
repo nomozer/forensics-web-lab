@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0.0",
-  "phase": "Phase 4C.1C.13",
+  "phase": "Phase 4C.1C.14",
   "audit_name": "execution_snapshot_binding_audit",
-  "timestamp_utc": "2026-09-30T16:15:59.419710+00:00",
+  "timestamp_utc": "2026-09-30T16:31:19.864084+00:00",
   "execution_snapshot_commit": "79bb11527d900fd387de1f41f2010c4152b7fea7",
   "code_archive": {
     "name": "phase_4c1_code_79bb115.tar.gz",
@@ -59,11 +59,11 @@
       }
     ],
     "executable_code_changes_count": 0,
-    "audited_scope": "Changes audited through commit e06677ceb5e2e976a3503a45b9998ce41cc7a525",
+    "audited_scope": "Changes audited through commit 319c6865dc4365e9689aee49369d8e755b0bff56",
     "contains_no_execution_snapshot_model_or_training_source_changes": true
   },
   "verdict": "SNAPSHOT_BINDING_VALID_AND_INTACT",
-  "verdict_rationale": "Changes audited through commit e06677ceb5e2e976a3503a45b9998ce41cc7a525 between execution snapshot 79bb115 and base commit are strictly confined to continuity records, evidence receipts, operator script, tests and notebook launcher. Zero lines of executable model or training pipeline code in snapshot 79bb115 have been modified.",
-  "audited_parent_commit": "e06677ceb5e2e976a3503a45b9998ce41cc7a525",
-  "audited_through_commit": "e06677ceb5e2e976a3503a45b9998ce41cc7a525"
+  "verdict_rationale": "Changes audited through commit 319c6865dc4365e9689aee49369d8e755b0bff56 between execution snapshot 79bb115 and base commit are strictly confined to continuity records, evidence receipts, operator script, tests and notebook launcher. Zero lines of executable model or training pipeline code in snapshot 79bb115 have been modified.",
+  "audited_parent_commit": "319c6865dc4365e9689aee49369d8e755b0bff56",
+  "audited_through_commit": "319c6865dc4365e9689aee49369d8e755b0bff56"
 }

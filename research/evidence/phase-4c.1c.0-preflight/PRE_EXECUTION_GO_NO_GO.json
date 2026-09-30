@@ -1,10 +1,10 @@
 {
   "pre_execution_verdict": {
     "schema_version": "1.0.0",
-    "phase": "Phase 4C.1C.13",
+    "phase": "Phase 4C.1C.14",
     "verdict": "GO",
-    "verdict_rationale": "All gates pass without exception: operator patched with Phase 4C.1C.13 hotfix eliminating Colab Python quoting syntax error in GPU VRAM parser (using format(float(...), '.2f') without escaped quotes in single-quoted bash command); verified with real execution tests across T4 (14.56 GB) and L4 (22.00 GB) fixtures and invalid input guards; all 5 python -c snippets audited syntax-clean; output persistence directly under persistent Google Drive output (/content/phase_4c1_outputs/download); atomic staging with .part and os.replace; fail-closed canonical bundle manifest gate; set -Eeuo pipefail ERR trap inheritance; fail-closed baseline pip-freeze verification; artifact-based dynamic disk checking; 85 operator tests PASS, 19 notebook tests PASS; completed run N50 seed42 verified COMPLETED_VALID and skipped; next target N50 seed1337; compatible NVIDIA CUDA GPU runtime supported.",
-    "timestamp_utc": "2026-09-30T16:15:59.419710+00:00",
+    "verdict_rationale": "All gates pass without exception: operator patched with Phase 4C.1C.14 hotfix invoking dataset bundle validator explicitly in fail-closed --reusable-n250 mode ($SYS_PY3 -m ml.datasets.validate_phase_4c1_bundle --bundle $BUNDLE_ROOT --reusable-n250); verified on local canonical reusable N250 bundle (verdict PASS: 250 dev sources, 91 val sources, 0 overlap, 0 locked-test); Phase 4C.1C.13 GPU VRAM parser format(float(...), '.2f') preserved intact (T4=14.56, L4=22.00); 86 operator tests PASS, 19 notebook tests PASS; completed run N50 seed42 verified COMPLETED_VALID and skipped; next target N50 seed1337; compatible NVIDIA CUDA GPU runtime supported.",
+    "timestamp_utc": "2026-09-30T16:31:19.864084+00:00",
     "gates": {
       "cardinality_reconciliation": {
         "status": "PASS",
@@ -45,15 +45,15 @@
         "execution_code_sha_verified": "79bb11527d900fd387de1f41f2010c4152b7fea7",
         "receipt_stage2_check_aligned": "Checked both stage2_invocations and stage_2_invocation == 0",
         "checksum_schema_policy": "Strict dictionary schema enforced: {size_bytes: int > 0, sha256: 64-hex}; string checksum fallback rejected fail-closed",
-        "test_suite_coverage": "85 unit, security staging, policy, quoting regression, and fault-injection tests covering all 34 behavioral requirements"
+        "test_suite_coverage": "86 unit, security staging, policy, quoting regression, and fault-injection tests covering all 35 behavioral requirements"
       },
       "operator_static_assertions": {
         "status": "PASS",
         "script_name": "phase_4c1_t4_execute_all_stage1.sh",
-        "bytes": 49399,
-        "sha256": "8ec5cf55b73548901e0fb34d2f9d5e806ee084870f4378a7c6e493b80ee1c6cd",
-        "assertions_total": 85,
-        "assertions_passed": 85,
+        "bytes": 49460,
+        "sha256": "ef8b41f0bc7d6f1b6e749231eeedddc8be78b5506659791cd2f5d25ecfdc95a1",
+        "assertions_total": 86,
+        "assertions_passed": 86,
         "assertions_failed": 0,
         "all_passed": true
       },
@@ -70,7 +70,7 @@
         "status": "PASS",
         "path": "notebooks/phase_4c1_learning_curve_colab.ipynb",
         "bytes": 12342,
-        "sha256": "1d1e761f92554f9409259e05880bce77667e6224d8f846004e78915d224e9f10",
+        "sha256": "4bdce00de28e1f7e79e2c0733eb3b5d2ff4cd2182d14bc08084017b08945c1dc",
         "cells_total": 5,
         "markdown_cells": 1,
         "code_cells": 4,
@@ -130,14 +130,14 @@
       "reupload_required_files": [
         {
           "file_name": "phase_4c1_t4_execute_all_stage1.sh",
-          "bytes": 49399,
-          "sha256": "8ec5cf55b73548901e0fb34d2f9d5e806ee084870f4378a7c6e493b80ee1c6cd",
+          "bytes": 49460,
+          "sha256": "ef8b41f0bc7d6f1b6e749231eeedddc8be78b5506659791cd2f5d25ecfdc95a1",
           "target_drive_directory": "My Drive/Colab Notebooks/forensics-web-lab/phase_4c1/inputs/"
         },
         {
           "file_name": "phase_4c1_learning_curve_colab.ipynb",
           "bytes": 12342,
-          "sha256": "1d1e761f92554f9409259e05880bce77667e6224d8f846004e78915d224e9f10",
+          "sha256": "4bdce00de28e1f7e79e2c0733eb3b5d2ff4cd2182d14bc08084017b08945c1dc",
           "target_drive_directory": "My Drive/Colab Notebooks/forensics-web-lab/phase_4c1/"
         }
       ],
