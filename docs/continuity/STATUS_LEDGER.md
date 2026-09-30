@@ -1,13 +1,13 @@
-## Phase 4C.1D — Reconciled Evidence from Raw Run Artifacts (Phase 4C.1D.1)
+## Phase 4C.1D — Final Scientific Wording and Consistency Patch (Phase 4C.1D.2)
 
-- **Muc tieu**: Fix all discrepancies in Phase 4C.1D evidence by deterministically rebuilding all CSV, JSON, Markdown, and figures from 15 raw run receipts and archives. No new training, no locked-test access, no Stage 2.
-- **Starting commit**: 65e7240 (Phase 4C.1D initial commit)
+- **Muc tieu**: Final scientific wording and evidence consistency hotfix before Stage 2 preregistration. Trace validation loss in snapshot 79bb115, correct calibration/metadata/statistical wording, ban inaccurate phrases. No new runs, no locked test.
+- **Starting commit**: 6a31a2a (Phase 4C.1D.1 ending)
 - **Branch**: research/phase-4c1-learning-curve
-- **Thay đổi chính**: (1) Audited 5 root causes: checkpoint SHA typo/draft carryover, metric column divergence, external report mixing pre-sigmoid/synthetic metrics, misrepresenting stratified dummy as constant 0.4940, and git command in PHASE_REPORT commit. (2) Created canonical pipeline `scripts/research/analyze_phase_4c1d_runs.py` generating 100% of artifacts deterministically from raw receipts. (3) Regenerated all evidence: Table 2 matches receipts (15/15 prefixes exact), dummy evaluated per-seed (0.4749 ± 0.0325), paired differences computed correctly, two-step provenance (`audited_through_commit`), separated remote T4 vs local environment. (4) Toned down scientific claims: exploratory n=5, exact permutation tests, Holm correction, no claim of generalizability/product readiness. (5) Added table parity and fault injection tests to `ml/tests/test_phase_4c1d_analysis.py` (8/8 PASS).
-- **Kiểm tra**: 8/8 Phase 4C.1D.1 tests pass, full ML pytest pass, 70/70 TS pass, typecheck 0, build OK, continuity PASS.
-- **Kết quả**: 100% parity across raw receipts, CSVs, JSONs, Markdown tables, and figures. Single canonical Phase 4C.1D evidence set established.
+- **Thay đổi chính**: (1) Traced validation loss to `FocalLoss(gamma=2.0, label_smoothing=0.05, reduction='mean')` on logits with sample-weighted accumulation; renamed to "runner-reported validation loss"; banned "BCE sau sigmoid". (2) Calibration: replaced overconfident assertion with ECE miscalibration interpretation; noted temperature scaling must be evaluated on independent calibration split without data leakage. (3) Metadata baseline: clarified as "uninformative metadata placeholder baseline (0.5000)"; does not evaluate full metadata model. (4) Statistics: noted permutation test resolution limit 0.0625 with n=5; avoided claiming definitive statistical significance; maintained Holm correction. (5) Added tests banning forbidden phrases and verifying canonical numbers (9/9 PASS).
+- **Kiểm tra**: 9/9 Phase 4C.1D.2 tests pass, full ML pytest pass, 70/70 TS pass, typecheck 0, build OK, continuity PASS.
+- **Kết quả**: All scientific phrasing reconciled with mathematical reality. Zero new training runs, zero locked-test accesses.
 - **Evidence**: research/evidence/phase-4c.1d/ (8 data/report artifacts + 5 figure pairs).
-- **Quyết định tiếp theo**: Prepare Phase 4C.2 / Stage 2 unfreezing proposal with differential learning rates, retaining reconciled Phase 4C.1D.1 baselines.
+- **Quyết định tiếp theo**: Preregister Stage 2 fine-tuning protocol with differential learning rates, retaining reconciled Phase 4C.1D.2 baselines and loss semantics.
 
 ---
 ## Phase 4C.1D — Ingest, Verify and Analyze 15 Stage-1 Runs

@@ -318,3 +318,46 @@ class TestPhase4C1DReconciliationAndParity:
         ok_sha, msg_sha = verify_table2_parity_against_csv(corrupted_sha, csv_rows)
         assert not ok_sha, "Fault injection on Checkpoint SHA prefix was NOT detected!"
         assert "checkpoint SHA prefix mismatch" in msg_sha
+
+    def test_scientific_wording_forbidden_phrases_and_canonical_numbers(self):
+        """Asserts that forbidden inaccurate or overclaimed scientific phrases are absent,
+        and reports only contain numbers derived from canonical CSV/JSON."""
+        rep_path = EVIDENCE_DIR / "phase_4c1_learning_curve_report.md"
+        phase_rep_path = EVIDENCE_DIR / "PHASE_REPORT.md"
+
+        rep_text = rep_path.read_text(encoding="utf-8")
+        phase_rep_text = phase_rep_path.read_text(encoding="utf-8")
+        combined_text = f"{rep_text}\n{phase_rep_text}"
+
+        # 1. Strictly forbidden phrases
+        forbidden_phrases = [
+            "BCE sau sigmoid",
+            "confirmed representation bottleneck",
+            "Temperature Scaling is mandatory",
+            "metadata baseline proves metadata performance",
+            "Bắt buộc phải áp dụng Temperature Scaling",
+            "mô hình trở nên overconfident",
+            "có ý nghĩa thống kê chắc chắn",
+            "Val Loss (BCE)",
+        ]
+        for phrase in forbidden_phrases:
+            assert phrase.lower() not in combined_text.lower(), f"Forbidden phrase found in report: '{phrase}'"
+
+        # 2. Required conservative scientific phrases
+        required_phrases = [
+            "runner-reported validation loss",
+            "uninformative metadata placeholder baseline",
+            "FocalLoss",
+            "0.0625",
+            "exploratory",
+        ]
+        for phrase in required_phrases:
+            assert phrase.lower() in combined_text.lower(), f"Required conservative phrase missing: '{phrase}'"
+
+        # 3. Canonical number verification: all numbers in summary CSV must be present in the markdown report
+        summary_csv_path = EVIDENCE_DIR / "learning_curve_summary.csv"
+        with open(summary_csv_path, encoding="utf-8") as f:
+            for row in csv.DictReader(f):
+                if row["metric"] in ["macro_f1", "auroc"]:
+                    val_mean = f"{float(row['mean']):.4f}"
+                    assert val_mean in rep_text, f"Canonical {row['metric']} {val_mean} missing from report"

@@ -10,7 +10,7 @@ Rebuilt, reconciled, and audited from raw execution receipts all 15 Stage-1 trai
 65e7240f95e5894093a7f8d0bf4cf4479a177068 (Phase 4C.1D raw artifact ingest and verification)
 
 ## Functional Commit Scope
-Phase 4C.1D.1 reconciliation of analysis artifacts from raw receipts
+Phase 4C.1D.2 final scientific wording and evidence consistency hotfix
 
 ## Branch
 research/phase-4c1-learning-curve
@@ -31,15 +31,17 @@ research/phase-4c1-learning-curve
    - $\Delta \text{Macro-F1}_{(100 - 50)} = +0.0406$ (95% CI [+0.0236, +0.0575], $t=+6.628, p=0.0027$, Holm $p=0.0081$, Perm $p=0.0625$).
    - $\Delta \text{Macro-F1}_{(250 - 100)} = -0.0101$ (95% CI [-0.0307, +0.0105], $t=-1.357, p=0.2463$, Holm $p=0.2463$, Perm $p=0.1875$).
    - $\Delta \text{Macro-F1}_{(250 - 50)} = +0.0305$ (95% CI [-0.0050, +0.0660], $t=+2.386, p=0.0755$, Holm $p=0.1510$, Perm $p=0.0625$).
+   - Exact two-sided sign-flip permutation tests have minimum resolution 0.0625 with n=5; cannot reach alpha=0.05 despite 5/5 positive pairs; definitive statistical significance is not claimed.
 6. **Non-Learning Baselines**:
-   - Stratified Dummy Baseline: Mean = 0.4749 ± 0.0325 (per-seed: {42: 0.493956, 1337: 0.417301, 2025: 0.481953, 3407: 0.492975, 9001: 0.488254}).
-   - Metadata Baseline: Constant 0.5000.
+   - Stratified Bernoulli Dummy Baseline: Mean = 0.4749 ± 0.0325 (per-seed: {42: 0.493956, 1337: 0.417301, 2025: 0.481953, 3407: 0.492975, 9001: 0.488254}).
+   - Uninformative Metadata Placeholder Baseline: Constant 0.5000 (reference placeholder, not an evaluation of a complete metadata model; does not imply metadata has no forensic value).
    - Model exceeds both baselines at all N sizes with lower CI bounds > 0.
 7. **Conservative Scientific Interpretation**:
    - No improvement observed from N=100 to N=250 in the frozen configuration.
    - Consistent with, but does not prove, a representation capacity bottleneck of frozen ImageNet features.
-   - Stage 2 backbone fine-tuning is justified as the next hypothesis-testing experiment.
-   - ECE increases with N; temperature scaling calibration is required.
+   - Stage 2 backbone fine-tuning is justified as the next hypothesis-testing experiment, not a pre-proven outcome.
+   - ECE increases with N indicating greater miscalibration; overconfidence vs underconfidence requires reliability diagrams or signed calibration error; Temperature Scaling is an option to evaluate on an independent calibration split or via nested/cross-fitting, never fit on model selection data and reported on the same set.
+   - Runner-reported validation loss is sample-weighted mean Focal Loss (gamma=2.0, label_smoothing=0.05) on logits, not BCE.
 
 ## Evidence Files Reconciled
 - `run_level_metrics.csv`

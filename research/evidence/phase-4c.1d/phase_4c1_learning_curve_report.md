@@ -25,7 +25,7 @@ Toàn bộ 15 runs đạt chuẩn an toàn nghiên cứu tuyệt đối:
 
 ## 2. Bảng Dữ liệu Chi tiết Từng Run (15 Runs)
 
-| Run ID | Cỡ mẫu (N) | Seed | Best Epoch / Tổng | Macro-F1 | Balanced Acc | AUROC | Brier Score | ECE | Val Loss | Thời gian (s) | Checkpoint SHA-256 (8 ký tự đầu) |
+| Run ID | Cỡ mẫu (N) | Seed | Best Epoch / Tổng | Macro-F1 | Balanced Acc | AUROC | Brier Score | ECE | Runner Val Loss | Thời gian (s) | Checkpoint SHA-256 (8 ký tự đầu) |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | `phase4c1-stage1-n50-seed42` | 50 | 42 | 18 / 23 | 0.5415 | 0.5495 | 0.5607 | 0.2478 | 0.0265 | 0.1728 | 231.3 | `b5fa53bf...` |
 | `phase4c1-stage1-n50-seed1337` | 50 | 1337 | 5 / 10 | 0.5371 | 0.5385 | 0.5437 | 0.2486 | 0.0165 | 0.1734 | 99.7 | `6a709a64...` |
@@ -51,7 +51,7 @@ Toàn bộ 15 runs đạt chuẩn an toàn nghiên cứu tuyệt đối:
 
 ### Bảng 1: Chỉ số Đánh giá Mô hình theo $N$ (Mean ± Std, 95% CI)
 
-| Cỡ mẫu ($N$) | Macro-F1 (Mean ± Std) | Macro-F1 [95% CI] | Balanced Acc (Mean ± Std) | AUROC (Mean ± Std) | AUROC [95% CI] | Brier Score (Thấp hơn là tốt) | ECE (Thấp hơn là tốt) | Val Loss (BCE) |
+| Cỡ mẫu ($N$) | Macro-F1 (Mean ± Std) | Macro-F1 [95% CI] | Balanced Acc (Mean ± Std) | AUROC (Mean ± Std) | AUROC [95% CI] | Brier Score (Thấp hơn là tốt) | ECE (Thấp hơn là tốt) | Runner Val Loss |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | **$N = 50$** | 0.5322 ± 0.0148 | [0.5139, 0.5506] | 0.5385 ± 0.0078 | 0.5421 ± 0.0124 | [0.5267, 0.5576] | 0.2487 ± 0.0007 | 0.0171 ± 0.0061 | 0.1739 ± 0.0010 |
 | **$N = 100$** | 0.5728 ± 0.0048 | [0.5668, 0.5787] | 0.5747 ± 0.0063 | 0.5861 ± 0.0089 | [0.5750, 0.5972] | 0.2456 ± 0.0003 | 0.0450 ± 0.0085 | 0.1713 ± 0.0009 |
@@ -65,11 +65,23 @@ Toàn bộ 15 runs đạt chuẩn an toàn nghiên cứu tuyệt đối:
 | **$N = 100$** | 8.0 (median 7, 6 - 14) | 13.0 (11 - 19) | 178.3 ± 46.2 (150.8 - 260.1) | 109.0 |
 | **$N = 250$** | 5.2 (median 5, 4 - 6) | 10.2 (9 - 11) | 248.2 ± 20.6 (218.3 - 267.9) | 109.0 |
 
+### 3.1. Truy vết Mã nguồn và Ngữ nghĩa Chỉ số Validation Loss
+
+Truy vết mã nguồn trong execution snapshot `79bb115` (`ml/training/run_phase_4c1.py` dòng 46, 517 và `ml/training/loss.py` dòng 6-51):
+- **Hàm mất mát cấu hình**: `criterion = FocalLoss(gamma=2.0, label_smoothing=0.05, reduction='mean')`.
+- **Đầu vào hàm loss**: Logits thô (`outputs = model(inputs)`, shape `[B, 2]`) và nhãn integer (`targets`, shape `[B]`).
+- **Cơ chế tính toán nội bộ**: `FocalLoss` áp dụng `F.log_softmax(logits, dim=1)`, làm mịn nhãn với `label_smoothing=0.05` trên 2 lớp, nhân trọng số focal `(1 - p)^2`, và tính `loss.mean()` trên từng mini-batch.
+- **Tích lũy & Thu gọn (Reduction)**: Trong hàm `evaluate()`, loss được tích lũy theo số mẫu `running_loss += loss.item() * targets.size(0)`, và epoch loss được chuẩn hóa bằng tổng số mẫu `running_loss / max(1, total)` (182 mẫu `inner_validation`).
+- **Kết luận ngữ nghĩa**: Giá trị được ghi nhận trong `metrics.json` là trung bình có trọng số theo mẫu của Multi-class Focal Loss (gamma=2.0, label_smoothing=0.05) trên logits thô, không phải Binary Cross Entropy và không qua sigmoid độc lập. Do đó, chỉ số này được định danh chính xác là **runner-reported validation loss** và không suy diễn thang đo ngoài định nghĩa toán học của hàm.
+
 ---
 
 ## 4. Phân tích Paired Deltas (Kiểm định Cặp trên cùng 5 Seeds)
 
-Do mỗi hạt ngẫu nhiên trong $\{42, 1337, 2025, 3407, 9001\}$ được huấn luyện nhất quán trên cả 3 cỡ mẫu, kiểm định cặp (Paired Samples) được thực hiện để loại trừ phương sai khởi tạo. Báo cáo cung cấp cả Paired $t$-test (có hiệu chỉnh Holm-Bonferroni cho Macro-F1) và Exact Paired Sign-Flip Permutation Test ($2^5 = 32$ hoán vị, ngưỡng tối thiểu hai phía là $2/32 = 0.0625$).
+Do mỗi hạt ngẫu nhiên trong $\{42, 1337, 2025, 3407, 9001\}$ được huấn luyện nhất quán trên cả 3 cỡ mẫu, kiểm định cặp (Paired Samples) được thực hiện để loại trừ phương sai khởi tạo:
+- **Paired $t$-test**: Mang tính chất thăm dò (exploratory) với quy mô mẫu nhỏ $n = 5$ random seeds.
+- **Exact Paired Sign-Flip Permutation Test**: Với $n = 5$, không gian hoán vị gồm $2^5 = 32$ hoán vị đối xứng, độ phân giải tối thiểu hai phía là $2 / 32 = 0.0625$. Do đó về mặt toán học không thể đạt mức ý nghĩa $\alpha = 0.05$ dù 5/5 seed đều ghi nhận độ lệch cùng chiều dương; nghiên cứu không khẳng định ý nghĩa thống kê xác quyết khi permutation test chưa đạt ngưỡng 0.05.
+- **Hiệu chỉnh Multiple Comparisons**: Duy trì quy trình hiệu chỉnh Holm-Bonferroni cho họ 3 so sánh giả thuyết chính của Macro-F1 đã đăng ký trước ($N_{100}-N_{50}$, $N_{250}-N_{100}$, $N_{250}-N_{50}$).
 
 ### Bảng 3: Chi tiết Paired Deltas theo Seed
 
@@ -97,8 +109,9 @@ Do mỗi hạt ngẫu nhiên trong $\{42, 1337, 2025, 3407, 9001\}$ được hu�
      - Seed 3407: `0.4930`
      - Seed 9001: `0.4883`
    - **Tổng hợp 5 seeds**: Mean = `0.4749 ± 0.0325`, 95% CI `[0.4345, 0.5153]`.
-2. **Metadata Heuristic Baseline**:
-   - Triển khai qua `run_metadata_baseline` trả về hợp đồng hằng số `macro_f1 = 0.5000` (Mean = `0.5000 ± 0.0000`), mô phỏng trường hợp tín hiệu EXIF/C2PA không cung cấp thông tin phân loại.
+2. **Uninformative Metadata Placeholder Baseline**:
+   - Triển khai qua `run_metadata_baseline` trả về hợp đồng hằng số `macro_f1 = 0.5000` (Mean = `0.5000 ± 0.0000`), mô phỏng trường hợp không có bộ phân loại metadata được huấn luyện.
+   - Giá trị hằng số 0.5000 này là một placeholder tham chiếu chưa qua huấn luyện, không phải kết quả đánh giá của một mô hình metadata hoàn chỉnh, và tuyệt đối không được dùng làm căn cứ để kết luận siêu dữ liệu (EXIF/C2PA) không có giá trị phân biệt pháp chứng.
 
 ### 5.2. Bảng So sánh Cặp giữa Mô hình và Baselines
 
@@ -131,7 +144,8 @@ Toàn bộ biểu đồ định dạng SVG vector và PNG raster chất lượng
    - Các đặc trưng cấp cao của ImageNet có thể chưa đủ nhạy với ranh giới chỉnh sửa cục bộ nếu không được tinh chỉnh trọng số.
    - **Stage 2 (Backbone Fine-tuning)** được đề xuất như một **thực nghiệm tiếp theo để kiểm tra giả thuyết này**, không phải một khẳng định đã được chứng minh trước.
 3. **Độ Hiệu chuẩn Xác suất (Calibration)**:
-   - Sai số hiệu chuẩn kỳ vọng (ECE) tăng rõ rệt từ $0.0171$ ($N=50$) lên $0.0450$ ($N=100$) và $0.0480$ ($N=250$). Mô hình trở nên tự tin quá mức (overconfident) khi tăng dữ liệu mà không cải thiện độ chính xác tương ứng. Bắt buộc phải áp dụng Temperature Scaling ở giai đoạn suy luận.
+   - Sai số hiệu chuẩn kỳ vọng (ECE) tăng từ $0.0171$ ($N=50$) lên $0.0450$ ($N=100$) và $0.0480$ ($N=250$). ECE tăng cho thấy độ lệch hiệu chuẩn lớn hơn; hướng lệch overconfidence hay underconfidence cần được xác định bằng reliability diagram hoặc signed calibration error.
+   - Temperature Scaling là phương án calibration cần được đánh giá trên tập calibration độc lập hoặc bằng quy trình nested/cross-fitted phù hợp, tuyệt đối không fit temperature trên chính dữ liệu dùng để lựa chọn mô hình rồi báo cáo trên cùng tập đó.
 4. **Giới hạn của Thí nghiệm**:
    - Thí nghiệm mang tính thăm dò với quy mô $n = 5$ random seeds.
    - Dữ liệu đánh giá hiện tại là nhị phân (`authentic` vs `ai_edited`) trên tập TGIF Option P; kết quả này chưa khái quát hóa ra ngoài phân phối hoặc sang không gian 3 lớp đầy đủ.
