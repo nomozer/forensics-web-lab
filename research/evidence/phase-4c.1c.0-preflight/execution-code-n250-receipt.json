@@ -7,12 +7,12 @@
   "branch": "research/phase-4c1-learning-curve",
   "createdAtUtc": "2026-09-29T16:30:00Z",
   "reusableBundleSha256": "d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27",
-  "operatorSha256": "e105441ed20a40da55cc8db4fd7f83440182cae8f951d46f03939b08504efc14",
+  "operatorSha256": "75d26863c48edbee821b2410204d4517ec1b1baffc456b47a931306b38235b1d",
   "notes": "Execution snapshot containing reusable N250 bundle exporter, fail-closed validator, and 15-run canonical runner.",
-  "canonicalNotebookSha256": "e8e17a48120e83ecfd26ff49a07a3ad5126df3a103e384c21a3f84348b673792",
+  "canonicalNotebookSha256": "0f96e227aed8c0717a0aecfe3be6ec6ee0a7b1f0b3af00f4ef774ae613721fc0",
   "historicalNotebookSha256": "f26576cb70b6c892faaade7b225872d4bafbcfe1424b64df29564dd9e1cd28b9",
-  "operatorBytes": 29794,
-  "lastAuditedUtc": "2026-09-30T08:28:50.064788+00:00",
+  "operatorBytes": 43085,
+  "lastAuditedUtc": "2026-09-30T13:00:36.030337+00:00",
   "bundleArchiveSha256": "d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27",
   "bundleContentSha256": "c365c812cc814097f11b9e5ed5c82e672015e2ba093f09f975df0a2a01229e9b"
 }

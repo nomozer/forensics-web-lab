@@ -1,10 +1,10 @@
 {
   "pre_execution_verdict": {
     "schema_version": "1.0.0",
-    "phase": "Phase 4C.1C.9",
+    "phase": "Phase 4C.1C.10",
     "verdict": "GO",
-    "verdict_rationale": "All gates pass without exception: bundle hash contract reconciled with clear semantic distinction between BUNDLE_ARCHIVE_SHA256 (d49a106f...) and BUNDLE_CONTENT_SHA256 (c365c812...); legacy environment lock verified backward-compatibly; operator error handling centralized with fail_operator and persistent console logging; canonical Colab notebook hardened with process error log tail streaming; real completed run N50 seed42 verified as COMPLETED_VALID and skipped by resume logic; remote completed runs = 1/15, remaining = 14, locked-test = 0, stage 2 = 0.",
-    "timestamp_utc": "2026-09-30T08:28:50.064788+00:00",
+    "verdict_rationale": "All gates pass without exception: operator and Colab notebook hardened with capability-based GPU detection (compatible with T4, L4, V100, A100; warning instead of failure in compatible mode); fail-closed scientific invariants; safe failure reporting via arguments; exact 8-file checksums keyset; completed run N50 seed42 verified and skipped; next run N50 seed1337 targeted; 48 operator tests PASS, 17 notebook tests PASS, 224 python tests PASS, TypeScript test/typecheck/build PASS.",
+    "timestamp_utc": "2026-09-30T13:00:36.030337+00:00",
     "gates": {
       "cardinality_reconciliation": {
         "status": "PASS",
@@ -51,10 +51,10 @@
       "operator_static_assertions": {
         "status": "PASS",
         "script_name": "phase_4c1_t4_execute_all_stage1.sh",
-        "bytes": 29794,
-        "sha256": "e105441ed20a40da55cc8db4fd7f83440182cae8f951d46f03939b08504efc14",
-        "assertions_total": 25,
-        "assertions_passed": 25,
+        "bytes": 43085,
+        "sha256": "75d26863c48edbee821b2410204d4517ec1b1baffc456b47a931306b38235b1d",
+        "assertions_total": 48,
+        "assertions_passed": 48,
         "assertions_failed": 0,
         "all_passed": true
       },
@@ -70,8 +70,8 @@
       "canonical_colab_notebook": {
         "status": "PASS",
         "path": "notebooks/phase_4c1_learning_curve_colab.ipynb",
-        "bytes": 11705,
-        "sha256": "e8e17a48120e83ecfd26ff49a07a3ad5126df3a103e384c21a3f84348b673792",
+        "bytes": 12857,
+        "sha256": "0f96e227aed8c0717a0aecfe3be6ec6ee0a7b1f0b3af00f4ef774ae613721fc0",
         "cells_total": 5,
         "markdown_cells": 1,
         "code_cells": 4,
@@ -131,14 +131,14 @@
       "reupload_required_files": [
         {
           "file_name": "phase_4c1_t4_execute_all_stage1.sh",
-          "bytes": 29794,
-          "sha256": "e105441ed20a40da55cc8db4fd7f83440182cae8f951d46f03939b08504efc14",
+          "bytes": 43085,
+          "sha256": "75d26863c48edbee821b2410204d4517ec1b1baffc456b47a931306b38235b1d",
           "target_drive_directory": "My Drive/Colab Notebooks/forensics-web-lab/phase_4c1/inputs/"
         },
         {
           "file_name": "phase_4c1_learning_curve_colab.ipynb",
-          "bytes": 11705,
-          "sha256": "e8e17a48120e83ecfd26ff49a07a3ad5126df3a103e384c21a3f84348b673792",
+          "bytes": 12857,
+          "sha256": "0f96e227aed8c0717a0aecfe3be6ec6ee0a7b1f0b3af00f4ef774ae613721fc0",
           "target_drive_directory": "My Drive/Colab Notebooks/forensics-web-lab/phase_4c1/"
         }
       ],

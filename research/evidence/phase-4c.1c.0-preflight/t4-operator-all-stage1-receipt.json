@@ -1,12 +1,12 @@
 {
   "operator_script_receipt": {
     "schema_version": "1.0.0",
-    "phase": "Phase 4C.1C.9",
+    "phase": "Phase 4C.1C.10",
     "script_name": "phase_4c1_t4_execute_all_stage1.sh",
     "script_path": "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\t4_transfer\\phase_4c1_t4_execute_all_stage1.sh",
-    "bytes": 29794,
-    "sha256": "e105441ed20a40da55cc8db4fd7f83440182cae8f951d46f03939b08504efc14",
-    "timestamp_utc": "2026-09-30T08:28:50.064788+00:00",
+    "bytes": 43085,
+    "sha256": "75d26863c48edbee821b2410204d4517ec1b1baffc456b47a931306b38235b1d",
+    "timestamp_utc": "2026-09-30T13:00:36.030337+00:00",
     "execution_code_sha": "79bb11527d900fd387de1f41f2010c4152b7fea7",
     "execution_code_binding_source": "phase4c1_environment_lock.json",
     "code_archive": {
@@ -44,8 +44,8 @@
     },
     "canonical_runner_command_template": "\"$SYS_PY3\" -m ml.training.run_phase_4c1 --config ml/configs/phase_4c1_learning_curve.yaml --bundle /content/bundle --sample-size <SIZE> --seed <SEED> --stage frozen --device cuda --train-partition development_train --eval-partition inner_validation --output /content/phase_4c1_outputs/n<SIZE>_seed_<SEED>",
     "static_validation_results": {
-      "assertions_total": 25,
-      "assertions_passed": 25,
+      "assertions_total": 48,
+      "assertions_passed": 48,
       "assertions_failed": 0,
       "all_passed": true,
       "checks": {
@@ -104,8 +104,8 @@
     "notebook_status": {
       "status": "CANONICAL_LAUNCHER_ACTIVE",
       "canonical_path": "notebooks/phase_4c1_learning_curve_colab.ipynb",
-      "canonical_bytes": 11705,
-      "canonical_sha256": "e8e17a48120e83ecfd26ff49a07a3ad5126df3a103e384c21a3f84348b673792",
+      "canonical_bytes": 12857,
+      "canonical_sha256": "0f96e227aed8c0717a0aecfe3be6ec6ee0a7b1f0b3af00f4ef774ae613721fc0",
       "historical_superseded_notebook_sha256": "f26576cb70b6c892faaade7b225872d4bafbcfe1424b64df29564dd9e1cd28b9",
       "cells_total": 5,
       "default_execute": true
@@ -119,15 +119,15 @@
         {
           "file_name": "phase_4c1_t4_execute_all_stage1.sh",
           "local_path": "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\t4_transfer\\phase_4c1_t4_execute_all_stage1.sh",
-          "bytes": 29794,
-          "sha256": "e105441ed20a40da55cc8db4fd7f83440182cae8f951d46f03939b08504efc14",
+          "bytes": 43085,
+          "sha256": "75d26863c48edbee821b2410204d4517ec1b1baffc456b47a931306b38235b1d",
           "target_drive_directory": "My Drive/Colab Notebooks/forensics-web-lab/phase_4c1/inputs/"
         },
         {
           "file_name": "phase_4c1_learning_curve_colab.ipynb",
           "local_path": "notebooks/phase_4c1_learning_curve_colab.ipynb",
-          "bytes": 11705,
-          "sha256": "e8e17a48120e83ecfd26ff49a07a3ad5126df3a103e384c21a3f84348b673792",
+          "bytes": 12857,
+          "sha256": "0f96e227aed8c0717a0aecfe3be6ec6ee0a7b1f0b3af00f4ef774ae613721fc0",
           "target_drive_directory": "My Drive/Colab Notebooks/forensics-web-lab/phase_4c1/"
         }
       ],

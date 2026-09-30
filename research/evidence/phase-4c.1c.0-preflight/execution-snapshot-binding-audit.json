@@ -1,10 +1,9 @@
 {
   "schema_version": "1.0.0",
-  "phase": "Phase 4C.1C.9",
+  "phase": "Phase 4C.1C.10",
   "audit_name": "execution_snapshot_binding_audit",
-  "timestamp_utc": "2026-09-30T08:28:50.064788+00:00",
+  "timestamp_utc": "2026-09-30T13:00:36.030337+00:00",
   "execution_snapshot_commit": "79bb11527d900fd387de1f41f2010c4152b7fea7",
-  "audited_head_commit": "b842accdd469a552ae2bab308205acfd6688a8a4",
   "code_archive": {
     "name": "phase_4c1_code_79bb115.tar.gz",
     "bytes": 758350,
@@ -64,5 +63,7 @@
     "audited_scope": "All commits on research/phase-4c1-learning-curve between 79bb115 and HEAD"
   },
   "verdict": "SNAPSHOT_BINDING_VALID_AND_INTACT",
-  "verdict_rationale": "All changes between execution snapshot 79bb115 and current HEAD are strictly confined to continuity records, evidence receipts, operator script and test suites. Zero lines of executable model or training pipeline code have been modified."
+  "verdict_rationale": "All changes between execution snapshot 79bb115 and current HEAD are strictly confined to continuity records, evidence receipts, operator script and test suites. Zero lines of executable model or training pipeline code have been modified.",
+  "audited_parent_commit": "d0536fd23c1595662885bfa1688a3fc8bae96676",
+  "audited_through_commit": "d0536fd23c1595662885bfa1688a3fc8bae96676"
 }
