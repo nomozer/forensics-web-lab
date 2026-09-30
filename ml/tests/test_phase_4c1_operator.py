@@ -33,7 +33,7 @@ EXPECTED_CODE_ARCHIVE_SHA = "5e775a7708d1555bf22f56dceb5358e26e07dd224c4b6186f57
 EXPECTED_CONFIG_HASH = "e03c07dae05a2402416abb0c60480a8cd0a35d060de3bb138a09d0bec0a85dc9"
 EXPECTED_REQS_SHA = "850478c0a9746b93354dd756ba428621a4aa48abab4e6aa5fa7e00669cea67a0"
 
-EXPECTED_OPERATOR_SHA = "e16e3e2c7d7aafe3695976062bc86731e5f166a89cc6a350485d13ff9bf500eb"
+EXPECTED_OPERATOR_SHA = "104679cd6c1ffd308b8d1da8ee89bef36ae338a0bc5a1a9e0721c3a4c961b5bb"
 EXPECTED_OPERATOR_BYTES = 49370
 
 OPERATOR_EXISTS = OPERATOR_SCRIPT.exists()
@@ -336,6 +336,18 @@ class TestOperatorStaticInvariants:
         text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
         assert 'CODE_STAGE_DIR="$(mktemp -d /content/phase4c1-code-79bb115.XXXXXX)"' in text
         assert 'Auditing code archive tar entries for safe extraction' in text
+
+    def test_no_phase_4c1c11_stale_string_in_operator(self):
+        """1. Operator script must contain Phase 4C.1C.12 banner and zero Phase 4C.1C.11 strings."""
+        text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
+        assert "Phase 4C.1C.11" not in text
+        assert "Phase 4C.1C.12 - Autonomous Resumable 15-Run Operator" in text
+
+    def test_gpu_policy_defaults_to_compatible(self):
+        """6. Operator script must default GPU_POLICY to compatible."""
+        text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
+        assert 'GPU_POLICY="${GPU_POLICY:-compatible}"' in text
+        assert 'RUNTIME_POLICY="${RUNTIME_POLICY:-compatible}"' in text
 
     def test_download_dir_is_under_output_root(self):
         """1. Output archives must be saved under persistent OUTPUT_ROOT/download, not ephemeral /content/download."""
