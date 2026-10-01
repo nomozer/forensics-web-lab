@@ -1,0 +1,38 @@
+{
+  "timestamp_utc": "2026-10-01T17:58:00.000000+00:00",
+  "phase": "Phase 4C.2F",
+  "receipt_name": "synthetic_dry_run_receipt",
+  "session_id": "phase4c2f-synthetic-dryrun-001",
+  "mode": "synthetic_dry_run",
+  "protocol": "stage1_frozen_backbone_linear_probe",
+  "sample_size": 250,
+  "seeds": [42, 1337, 2025, 3407, 9001],
+  "completed_unsealing_sessions": 1,
+  "completed_model_evaluations": 5,
+  "locked_test_real_accesses": 0,
+  "bootstrap_results": {
+    "aggregate_macro_f1": 0.8912438757010903,
+    "per_checkpoint_macro_f1": {
+      "42": 0.8906703216141267,
+      "1337": 0.9154166666666667,
+      "2025": 0.887749138812209,
+      "3407": 0.8833809329525364,
+      "9001": 0.8790023184599136
+    },
+    "between_seed_sd": 0.0142174854108829,
+    "bootstrap_replicates": 1000,
+    "bootstrap_rng_seed": 20261002,
+    "bootstrap_generator": "numpy.random.Generator(numpy.random.PCG64)",
+    "resampling_unit": "unique_source_id",
+    "observations_per_replicate": 686,
+    "sources_per_replicate": 343,
+    "ci_lower_95": 0.881617997882001,
+    "ci_upper_95": 0.9011460233692029,
+    "reference_threshold": 0.5000,
+    "reference_label": "balanced_binary_uninformative_reference",
+    "confirmatory_success": true,
+    "verdict": "CONFIRMATORY_SUCCESS",
+    "uncertainty_scope": "Source-sampling uncertainty conditional on the five fixed checkpoints. Does not cover training-seed uncertainty."
+  },
+  "status": "COMPLETED_VALID"
+}

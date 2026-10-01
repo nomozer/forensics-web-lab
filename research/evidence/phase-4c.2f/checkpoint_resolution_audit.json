@@ -1,0 +1,65 @@
+{
+  "timestamp_utc": "2026-10-01T17:58:00.000000+00:00",
+  "phase": "Phase 4C.2F",
+  "audit_name": "checkpoint_resolution_audit",
+  "candidate_protocol": "stage1_frozen_backbone_linear_probe",
+  "sample_size": 250,
+  "expected_bytes_per_checkpoint": 5627375,
+  "resolution_policy": {
+    "policy_name": "exact_sha256_and_byte_count_resolution",
+    "search_order": [
+      "canonical_extracted_tree: phase_4c1/runs/extracted_15_runs/n250_seed_{seed}/best_checkpoint.pt",
+      "canonical_archive_verification: phase_4c1/runs/colab_t4/n250_results.tar.gz"
+    ],
+    "collision_handling": "If multiple files share identical hash, candidate matching canonical extracted directory structure is selected. Filename alone is never trusted.",
+    "path_cleanliness": "Zero Windows absolute paths permitted in Git evidence."
+  },
+  "archive_provenance": {
+    "archive_relative_reference": "phase_4c1/runs/colab_t4/n250_results.tar.gz",
+    "archive_bytes": 25831610,
+    "archive_sha256": "16353d9e3c98b6aa99f7d45763dc01f56158a2d815774a3f12469446f2c75a40",
+    "sidecar_relative_reference": "phase_4c1/runs/colab_t4/n250_results.tar.gz.sha256"
+  },
+  "checkpoints": [
+    {
+      "seed": 42,
+      "run_id": "phase4c1-stage1-n250-seed42",
+      "logical_reference": "phase_4c1/runs/extracted_15_runs/n250_seed_42/best_checkpoint.pt",
+      "byte_count": 5627375,
+      "sha256": "c941f42ed00adb098962ddb43c0f2f7d897e48e20957cddc0c491243f8730c92",
+      "status": "VERIFIED_BITWISE_EXACT"
+    },
+    {
+      "seed": 1337,
+      "run_id": "phase4c1-stage1-n250-seed1337",
+      "logical_reference": "phase_4c1/runs/extracted_15_runs/n250_seed_1337/best_checkpoint.pt",
+      "byte_count": 5627375,
+      "sha256": "69e706f9062f050ccbfd2affb72d63d5dde9d12f02c1e64c762b0ea6719073f1",
+      "status": "VERIFIED_BITWISE_EXACT"
+    },
+    {
+      "seed": 2025,
+      "run_id": "phase4c1-stage1-n250-seed2025",
+      "logical_reference": "phase_4c1/runs/extracted_15_runs/n250_seed_2025/best_checkpoint.pt",
+      "byte_count": 5627375,
+      "sha256": "92ce5ee986d487fdf14374842067d0684fc7669f5ecb32c7d603f6813942ceee",
+      "status": "VERIFIED_BITWISE_EXACT"
+    },
+    {
+      "seed": 3407,
+      "run_id": "phase4c1-stage1-n250-seed3407",
+      "logical_reference": "phase_4c1/runs/extracted_15_runs/n250_seed_3407/best_checkpoint.pt",
+      "byte_count": 5627375,
+      "sha256": "4897821ef0a97df9f1c51acde8d4ac01d383aa3a7b9e7ee55bbc3b3108847868",
+      "status": "VERIFIED_BITWISE_EXACT"
+    },
+    {
+      "seed": 9001,
+      "run_id": "phase4c1-stage1-n250-seed9001",
+      "logical_reference": "phase_4c1/runs/extracted_15_runs/n250_seed_9001/best_checkpoint.pt",
+      "byte_count": 5627375,
+      "sha256": "5f0f8803adcb7eec88d47e398ef8b2002b46e740c263b12abc2ba392822a91c3",
+      "status": "VERIFIED_BITWISE_EXACT"
+    }
+  ]
+}

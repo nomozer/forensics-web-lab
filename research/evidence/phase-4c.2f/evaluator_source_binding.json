@@ -1,0 +1,30 @@
+{
+  "timestamp_utc": "2026-10-01T17:58:00.000000+00:00",
+  "phase": "Phase 4C.2F",
+  "contract_name": "evaluator_source_binding",
+  "branch": "research/phase-4c2f-locked-test-evaluator",
+  "base_main_commit": "8a379665bc8db3722a46618e47db4806a6ea7244",
+  "components": {
+    "confirmatory_metrics": {
+      "relative_path": "ml/evaluation/confirmatory_metrics.py",
+      "bytes": 13856,
+      "sha256": "19cc00aba9685c6b8e7592a0504dcd3f7214a66096544120ffb9dd7726d43531"
+    },
+    "locked_test_evaluator": {
+      "relative_path": "ml/evaluation/locked_test_evaluator.py",
+      "bytes": 23495,
+      "sha256": "dd30c1e42a475e89747a8aa83fca81f3daebdaf181adb3dae8f9e94d5469021a"
+    },
+    "run_evaluator_cli": {
+      "relative_path": "ml/evaluation/run_phase_4c2f_evaluator.py",
+      "bytes": 5546,
+      "sha256": "0e0f6e992c2c78f125e9ba8f4216a39250b9d79ef5759e448f8f9912a5f9cfaf"
+    },
+    "evaluator_test_suite": {
+      "relative_path": "ml/tests/test_phase_4c2f_evaluator.py",
+      "bytes": 26701,
+      "sha256": "7a912a3a057707916d595802fb8211336bc89ade5e60cbf0156680b514286fba"
+    }
+  },
+  "self_verification_rule": "Evaluator verifies component integrity against this binding before executing inference"
+}

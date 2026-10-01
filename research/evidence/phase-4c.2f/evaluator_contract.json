@@ -1,0 +1,40 @@
+{
+  "timestamp_utc": "2026-10-01T17:58:00.000000+00:00",
+  "phase": "Phase 4C.2F",
+  "contract_name": "locked_test_confirmatory_evaluator_contract",
+  "candidate_protocol": "stage1_frozen_backbone_linear_probe",
+  "sample_size": 250,
+  "checkpoint_count": 5,
+  "seeds": [42, 1337, 2025, 3407, 9001],
+  "authorization_policy": {
+    "human_authorization_required": true,
+    "authorization_artifact_name": "HUMAN_UNSEALING_AUTHORIZATION.json",
+    "fail_closed_if_missing": true
+  },
+  "access_limits": {
+    "max_authorized_unsealing_sessions": 1,
+    "max_authorized_model_evaluations": 5,
+    "current_completed_unsealing_sessions": 0,
+    "current_completed_model_evaluations": 0,
+    "current_locked_test_accesses": 0
+  },
+  "counter_increment_rules": {
+    "unsealing_sessions": "Increments from 0 to 1 immediately before the first read operation from the locked-test partition.",
+    "model_evaluations": "Increments immediately after inference of a checkpoint generates predictions, regardless of subsequent check status."
+  },
+  "fault_tolerance_policy": {
+    "pre_inference_crash": "Retryable without incrementing model evaluation counter; partial files are deleted.",
+    "post_inference_crash": "Fail-closed; silent re-run is strictly forbidden once final predictions exist.",
+    "output_staging": "Predictions written to .part file and atomically renamed via os.replace."
+  },
+  "environmental_guards": {
+    "network_isolation": "Outbound socket connections strictly blocked (air-gapped assertion).",
+    "read_only_data_mount": "Locked-test partition must be mounted read-only."
+  },
+  "evaluator_modules": {
+    "engine": "ml/evaluation/locked_test_evaluator.py",
+    "metrics": "ml/evaluation/confirmatory_metrics.py",
+    "cli": "ml/evaluation/run_phase_4c2f_evaluator.py",
+    "test_suite": "ml/tests/test_phase_4c2f_evaluator.py"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "timestamp_utc": "2026-10-01T17:58:00.000000+00:00",
+  "phase": "Phase 4C.2F",
+  "provenance_layers": {
+    "integration_main_baseline": {
+      "commit": "8a379665bc8db3722a46618e47db4806a6ea7244",
+      "description": "PR #4 merge commit integrating Phase 4C.2E locked-test preregistration into main"
+    },
+    "phase_4c2e_preregistration_commit": {
+      "commit": "2cc9722e23f08bc42b64556511f0f37d82237104",
+      "description": "Preregistration commit establishing Stage 1 N=250 candidate protocol and endpoints"
+    },
+    "candidate_stage1_training_snapshot": {
+      "commit": "79bb11527d900fd387de1f41f2010c4152b7fea7",
+      "description": "Stage 1 remote training execution snapshot producing the 5 candidate N=250 checkpoints"
+    },
+    "historical_stage2_snapshot": {
+      "commit": "9ee7fdbb88fad16167f5790b5105867747801372",
+      "description": "Historical Stage 2 fine-tuning snapshot (evaluated and excluded from primary candidacy)"
+    }
+  },
+  "branch_binding": {
+    "branch_name": "research/phase-4c2f-locked-test-evaluator",
+    "parent_branch": "main",
+    "parent_commit": "8a379665bc8db3722a46618e47db4806a6ea7244"
+  }
+}

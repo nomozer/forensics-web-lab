@@ -1,0 +1,20 @@
+{
+  "timestamp_utc": "2026-10-01T17:58:00.000000+00:00",
+  "phase": "Phase 4C.2F",
+  "gate_name": "PRE_UNSEALING_GO_NO_GO",
+  "candidate_protocol": "stage1_frozen_backbone_linear_probe",
+  "sample_size": 250,
+  "checkpoint_count": 5,
+  "seeds": [42, 1337, 2025, 3407, 9001],
+  "evaluator_commit": "8a379665bc8db3722a46618e47db4806a6ea7244",
+  "synthetic_tests_passed": true,
+  "preregistration_preserved": true,
+  "checkpoint_binding_complete": true,
+  "network_isolation_verified": true,
+  "locked_test_accesses": 0,
+  "gpu_inference_calls": 0,
+  "new_training_runs": 0,
+  "completed_unsealing_sessions": 0,
+  "completed_model_evaluations": 0,
+  "verdict": "READY_FOR_HUMAN_ONE_TIME_UNSEALING_APPROVAL"
+}

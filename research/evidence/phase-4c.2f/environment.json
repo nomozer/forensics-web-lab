@@ -1,0 +1,16 @@
+{
+  "timestamp_utc": "2026-10-01T17:58:00.000000+00:00",
+  "phase": "Phase 4C.2F",
+  "python_version": "3.12.10",
+  "packages": {
+    "torch": "2.10.0+cu128",
+    "torchvision": "0.25.0+cu128",
+    "numpy": "2.2.6",
+    "scikit-learn": "1.7.2",
+    "scipy": "1.16.2",
+    "pytest": "9.1.1",
+    "jsonschema": "4.26.1"
+  },
+  "branch": "research/phase-4c2f-locked-test-evaluator",
+  "git_base_commit": "8a379665bc8db3722a46618e47db4806a6ea7244"
+}
