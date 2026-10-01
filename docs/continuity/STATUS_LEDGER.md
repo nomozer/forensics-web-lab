@@ -1,12 +1,12 @@
-## Phase 4C.2D — Fix Hermetic CI Notebook Dependency (Phase 4C.2D.3)
+## Phase 4C.2D — Fix Hermetic CI Dependencies and Seal PR Gates (Phase 4C.2D.3)
 
-- **Muc tieu**: Fix hermetic CI notebook test dependency failure on GitHub Actions; convert `ml/tests/test_phase_4c1_notebook.py` to CASE A standard library `json` parsing; eliminate unguarded `nbformat` and unused `IPython` imports and skips; verify 100% hermetic collection in clean environments.
+- **Muc tieu**: Fix hermetic CI test dependency failures on GitHub Actions; convert `ml/tests/test_phase_4c1_notebook.py` to CASE A standard library `json` parsing; mark 5 research artifact test suites (`test_phase_4c1_bundle.py`, `test_phase_4c1_runner.py`, `test_phase_4c1d_analysis.py`, `test_phase_4c1_operator.py`, `test_phase_4c2_operator.py`) with `pytestmark = pytest.mark.requires_research_artifact`; verify 100% hermetic CI execution in clean environments.
 - **Starting commit**: 6aab7ca (Phase 4C.2D.2 evidence seal commit)
 - **Branch**: research/phase-4c2-finetuning
-- **Thay đổi chính**: (1) Converted `ml/tests/test_phase_4c1_notebook.py` from `nbformat` to standard library `json` (CASE A). (2) Removed 15 `@pytest.mark.skipif(not IPYTHON_AVAILABLE)` decorators so that all tests are executed without skipping. (3) Added regression test `test_hermetic_collection_without_nbformat` (20/20 PASS).
-- **Kiểm tra**: 20/20 notebook tests pass, full ML pytest pass, 70/70 TS pass, typecheck 0 errors, build OK, continuity check PASS.
+- **Thay đổi chính**: (1) Converted `test_phase_4c1_notebook.py` from `nbformat` to standard library `json` (CASE A) and removed unused `IPython` skips (20/20 PASS). (2) Added `pytestmark = pytest.mark.requires_research_artifact` to 5 test files depending on uncommitted research artifacts (237 tests collected for artifact gate; 246 self-contained hermetic tests pass 100% on hermetic gate).
+- **Kiểm tra**: 246/246 hermetic pytest pass, 237 collected in artifact gate, 70/70 TS pass, typecheck 0 errors, build OK, continuity check PASS.
 - **Kết quả**: Verdict READY_FOR_CI_PR_MERGE. Zero training runs, zero GPU calls, zero locked-test access.
-- **Evidence**: ml/tests/test_phase_4c1_notebook.py.
+- **Evidence**: ml/tests/test_phase_4c1_notebook.py, ml/tests/ (5 research artifact test suites).
 - **Quyết định tiếp theo**: Push hotfix to `research/phase-4c2-finetuning`, await green CI on PR #2, merge via merge commit, and initialize Phase 4C.2E.
 
 ---

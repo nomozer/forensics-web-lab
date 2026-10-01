@@ -5,6 +5,9 @@ Tests smoke bundle creation, validation, and fault injection.
 """
 
 import pytest
+
+pytestmark = pytest.mark.requires_research_artifact
+
 import tempfile
 import shutil
 import json

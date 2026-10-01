@@ -10,6 +10,9 @@ from typing import Dict, List, Tuple
 
 import numpy as np
 import pytest
+
+pytestmark = pytest.mark.requires_research_artifact
+
 from scipy import stats
 
 REPO_ROOT = Path(__file__).parents[2]

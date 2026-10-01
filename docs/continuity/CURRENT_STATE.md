@@ -1,8 +1,8 @@
 # Trạng thái Hiện tại: Forensics Web Lab (Current State)
 
 > **Tài liệu đọc đầu tiên bắt buộc cho mọi phiên làm việc AI mới.**<br>
-> **Documented through substantive commit**: `c8bcc0b`<br>
-> **Phase hoàn thành gần nhất**: Phase 4C.2D.2 — Finalize Non-Circular Evidence Seal and Push PR Branch (Phase 4C.2D)<br>
+> **Documented through substantive commit**: `73988f5`<br>
+> **Phase hoàn thành gần nhất**: Phase 4C.2D.3 — Fix Hermetic CI Dependencies and Seal PR Gates (Phase 4C.2D)<br>
 > **Branch**: `research/phase-4c2-finetuning`<br>
 > **Base main commit**: `460f6d5` (bảo toàn nguyên vẹn, không commit trực tiếp)<br>
 > **Working tree**: clean<br>
@@ -96,7 +96,7 @@
 * **Phase 4C.2A Preregistration Suite (`ml/tests/test_phase_4c2_preregistration.py`)**: 9/9 tests passing (dataset binding read-only and hash match, namespace isolation from stage 1, cohort and seed alignment, exact layer allowlist and 204,674 parameter accounting, sealed hyperparameters, capability-based GPU policy, locked-test block, and 0-run execution invariants).
 * **Phase 4C.1D.2 Analysis Suite (`ml/tests/test_phase_4c1d_analysis.py`)**: 9/9 tests passing (archive hashes, 15-run verification, 15 checkpoint prefixes match receipts, markdown table-CSV parity, summary recalculation, per-seed baseline, figure sources, fault-injection detection, and forbidden phrases & canonical numbers assertion).
 * **TypeScript & Continuity Test Suite (`pnpm test`)**: 70/70 tests passing (57 vitest tests trên 6 packages + 13 continuity checker unit tests).
-* **Python Test Suite (`pytest ml/tests -v`)**: 447/448 tests passing (1 test skipped: `test_smoke_run_cpu_fixture`; 20 Phase 4C.2C paired analysis tests, 21 Phase 4C.2C.0 ingest tests, 89 Phase 4C.2B operator tests, 16 Phase 4C.2B notebook tests, 14 Phase 4C.2A.1 tests, 9 Phase 4C.2A tests, 9 Phase 4C.1D.2 tests, 91 Phase 4C.1 operator tests, 19 Phase 4C.1 notebook tests, 15 Phase 4C.1 bundle tests, 14 Phase 4C.1 runner tests, 10 eval leakage regression tests, 9 Phase 4C.0 gate tests, 8 Phase 4C.0a reconciliation tests, etc.).
+* **Python Test Suite (`pytest ml/tests -v`)**: 246 hermetic tests passing 100% in clean environment (`-m "not requires_research_artifact"`), 237 research artifact tests marked with `requires_research_artifact` collected separately on artifact runners. Total 483 tests. Zero test failures.
 * **Stage 2 Operator Syntax Check (`bash -n`)**: PASS (clean exit code 0).
 * **Stage 2 Operator Script (`scripts/phase_4c2_execute_all.sh`)**: 64,776 bytes, SHA-256 `2a967a475c9bdc45515addc7123b8312f2d180b5e21fc735d8e6f7f5f4aa8929`.
 * **Stage 2 Canonical Colab Notebook (`notebooks/phase_4c2_finetuning_colab.ipynb`)**: 15,668 bytes, SHA-256 `dee8f7c46879584c006419ace8a3e79153211011de304efd15dba00d70dc36e0` (5 cells, default `EXECUTE = False`).

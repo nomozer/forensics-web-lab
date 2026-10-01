@@ -5,6 +5,9 @@ Tests CLI, integration (CPU fixture), and fault injection.
 """
 
 import pytest
+
+pytestmark = pytest.mark.requires_research_artifact
+
 import tempfile
 import shutil
 import json
