@@ -673,11 +673,52 @@ def run_training(args: argparse.Namespace) -> dict[str, Any]:
 
     # Build model (Stage 2: partial unfreezing)
     # Initialization policy: from_pretrained_backbone_with_fresh_head (no Stage 1 checkpoint loaded)
-    model = MobileNetV3Forensics(
-        num_classes=2,
-        pretrained=True,
-        freeze_backbone=False,
-    )
+    weights_path = getattr(args, "weights_path", None)
+    if weights_path is None:
+        candidate_paths = [
+            Path("models/research/pretrained/mobilenet_v3_small-047dcff4.pth"),
+            Path(__file__).resolve().parents[2] / "models" / "research" / "pretrained" / "mobilenet_v3_small-047dcff4.pth",
+        ]
+        for cp in candidate_paths:
+            if cp.exists():
+                weights_path = str(cp)
+                break
+
+    pretrained_weights_file_sha256 = None
+    if weights_path and Path(weights_path).exists():
+        wp = Path(weights_path)
+        pretrained_weights_file_sha256 = compute_sha256(wp)
+        expected_weight_file_sha = "047dcff4addef86ea5bc2eff13c9614dc11f47ab1160d0a71a25e7db994f4e1f"
+        if pretrained_weights_file_sha256 != expected_weight_file_sha:
+            raise ValueError(
+                f"Pretrained weights file SHA-256 mismatch! Got {pretrained_weights_file_sha256}, expected {expected_weight_file_sha}"
+            )
+        print(f"[INFO] Using verified local pretrained weights: {wp} (SHA-256: {pretrained_weights_file_sha256})")
+        model = MobileNetV3Forensics(
+            num_classes=2,
+            pretrained=False,
+            weights_path=str(wp),
+            freeze_backbone=False,
+        )
+    else:
+        print("[INFO] Loading pretrained weights via torchvision MobileNet_V3_Small_Weights.IMAGENET1K_V1")
+        model = MobileNetV3Forensics(
+            num_classes=2,
+            pretrained=True,
+            freeze_backbone=False,
+        )
+
+    # Verify loaded backbone state fingerprint (fail-closed)
+    h_backbone = hashlib.sha256()
+    for k, v in sorted(model.features.state_dict().items()):
+        h_backbone.update(k.encode() + v.cpu().numpy().tobytes())
+    loaded_backbone_fingerprint = h_backbone.hexdigest()
+    expected_backbone_fingerprint = "d42bb32ad876b9de2b04a6ccd245f76c4d0c6bb3ded74c25261cf14720c7e7d5"
+    if loaded_backbone_fingerprint != expected_backbone_fingerprint:
+        raise ValueError(
+            f"Loaded backbone state fingerprint mismatch! Got {loaded_backbone_fingerprint}, expected {expected_backbone_fingerprint}"
+        )
+    print(f"[INFO] Verified backbone state fingerprint: {loaded_backbone_fingerprint}")
 
     # Freeze features.0 through features.11
     for name, param in model.named_parameters():
@@ -825,6 +866,10 @@ def run_training(args: argparse.Namespace) -> dict[str, Any]:
         "treatment_designation": "pre-registered partial fine-tuning protocol",
         "initialization_policy": "from_pretrained_backbone_with_fresh_head",
         "pretrained_weights_identifier": "MobileNet_V3_Small_Weights.DEFAULT",
+        "pretrained_weights_enum": "torchvision.models.MobileNet_V3_Small_Weights.IMAGENET1K_V1",
+        "pretrained_weights_source_url": "https://download.pytorch.org/models/mobilenet_v3_small-047dcff4.pth",
+        "pretrained_weights_file_sha256": pretrained_weights_file_sha256 or "047dcff4addef86ea5bc2eff13c9614dc11f47ab1160d0a71a25e7db994f4e1f",
+        "pretrained_weights_state_fingerprint": loaded_backbone_fingerprint,
         "parent_checkpoint_path": None,
         "parent_checkpoint_hash": None,
         "classifier_initialization_evidence": "seeded_torch_init_at_model_creation",
@@ -919,9 +964,13 @@ def run_training(args: argparse.Namespace) -> dict[str, Any]:
     with open(output_dir / "environment-binding.json", "w", encoding="utf-8") as f:
         json.dump(env_binding, f, indent=2)
 
-    # 8. checksums.json (for all artifacts in directory)
+    # 8. trainable-parameter-inventory.json
+    with open(output_dir / "trainable-parameter-inventory.json", "w", encoding="utf-8") as f:
+        json.dump(trainable_inventory, f, indent=2)
+
+    # 9. checksums.json (for all artifacts in directory)
     checksums = {}
-    for f in output_dir.iterdir():
+    for f in sorted(output_dir.iterdir()):
         if f.is_file() and f.name != "checksums.json":
             checksums[f.name] = {
                 "size_bytes": f.stat().st_size,
@@ -958,6 +1007,7 @@ def main():
     parser.add_argument("--train-partition", type=str, default="development_train")
     parser.add_argument("--eval-partition", type=str, default="inner_validation")
     parser.add_argument("--output", type=str, required=True, help="Output directory for artifacts")
+    parser.add_argument("--weights-path", type=str, default=None, help="Path to local pretrained weights file (optional)")
     args = parser.parse_args()
 
     # Guard: CUDA availability if cuda selected

@@ -105,10 +105,20 @@
     },
     {
       "field": "scheduler",
-      "stage1_value": "CosineAnnealingLR",
-      "stage2_value": "CosineAnnealingLR",
-      "same": true,
-      "justification": "Identical cosine decay learning rate schedule"
+      "stage1_value": {
+        "scheduler_class": "CosineAnnealingLR",
+        "T_max": 25,
+        "eta_min": 0.0,
+        "max_epochs": 25
+      },
+      "stage2_value": {
+        "scheduler_class": "CosineAnnealingLR",
+        "T_max": 20,
+        "eta_min": 1e-6,
+        "max_epochs": 20
+      },
+      "same": false,
+      "justification": "Both use CosineAnnealingLR, but Stage 1 sets T_max=25 with default eta_min=0.0 over 25 epochs, whereas Stage 2 sets T_max=20 with bounded eta_min=1e-6 over 20 epochs; because T_max and eta_min differ, scheduler configuration is not identical (same=false)."
     },
     {
       "field": "max_epochs",

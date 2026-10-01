@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2B",
+  "timestamp_utc": "2026-10-01T04:27:00.000000+00:00",
+  "pretrained_weights_binding": {
+    "identifier": "torchvision.models.MobileNet_V3_Small_Weights.IMAGENET1K_V1",
+    "alias": "torchvision.models.MobileNet_V3_Small_Weights.DEFAULT",
+    "model_architecture": "mobilenet_v3_small",
+    "source_url": "https://download.pytorch.org/models/mobilenet_v3_small-047dcff4.pth",
+    "allowed_domain": "download.pytorch.org",
+    "filename": "mobilenet_v3_small-047dcff4.pth",
+    "file_size_bytes": 10306551,
+    "file_sha256": "047dcff4addef86ea5bc2eff13c9614dc11f47ab1160d0a71a25e7db994f4e1f",
+    "full_state_dict_keys_count": 244,
+    "full_state_dict_fingerprint": "3adfbce13df024027cd59bfe2370aed39563091eec20fc14cdf58f4c48bc08ca",
+    "loaded_features_backbone_keys_count": 240,
+    "loaded_features_backbone_fingerprint": "d42bb32ad876b9de2b04a6ccd245f76c4d0c6bb3ded74c25261cf14720c7e7d5",
+    "stage1_weights_parity": {
+      "equivalent_to_stage1": true,
+      "weights_drift_detected": false,
+      "rationale": "MobileNet_V3_Small_Weights.DEFAULT in torchvision 0.20+ resolves strictly to MobileNet_V3_Small_Weights.IMAGENET1K_V1; packaged weights file 047dcff4addef86ea5bc2eff13c9614dc11f47ab1160d0a71a25e7db994f4e1f provides 0-diff bitwise identity with Stage 1 backbone weights."
+    },
+    "quarantine_and_isolation": {
+      "packaged_in_code_archive": true,
+      "archive_relative_path": "models/research/pretrained/mobilenet_v3_small-047dcff4.pth",
+      "network_access_at_runtime": "forbidden",
+      "fail_closed_on_mismatch": true
+    }
+  }
+}

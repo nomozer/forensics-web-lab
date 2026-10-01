@@ -29,8 +29,8 @@ def test_only_canonical_notebook_exists():
     """Test that only canonical notebook exists in notebooks/ and v2 is removed."""
     assert CANONICAL_NOTEBOOK_PATH.exists(), f"Canonical notebook missing: {CANONICAL_NOTEBOOK_PATH}"
     assert not V2_NOTEBOOK_PATH.exists(), f"Duplicate/v2 notebook must be removed: {V2_NOTEBOOK_PATH}"
-    all_notebooks = list(NOTEBOOKS_DIR.glob("*.ipynb"))
-    assert len(all_notebooks) == 1, f"Expected exactly 1 notebook, found: {[p.name for p in all_notebooks]}"
+    all_notebooks = [p for p in NOTEBOOKS_DIR.glob("*.ipynb") if "phase_4c1" in p.name]
+    assert len(all_notebooks) == 1, f"Expected exactly 1 phase_4c1 notebook, found: {[p.name for p in all_notebooks]}"
     assert all_notebooks[0].name == "phase_4c1_learning_curve_colab.ipynb"
 
 

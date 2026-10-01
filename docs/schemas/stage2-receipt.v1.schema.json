@@ -80,6 +80,20 @@
     "pretrained_weights_identifier": {
       "type": "string"
     },
+    "pretrained_weights_enum": {
+      "type": "string"
+    },
+    "pretrained_weights_source_url": {
+      "type": "string"
+    },
+    "pretrained_weights_file_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "pretrained_weights_state_fingerprint": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
     "parent_checkpoint_path": {
       "type": "null"
     },

@@ -139,6 +139,16 @@ def test_4_stage1_stage2_hyperparameter_diff():
     assert "gradient_clipping" in fields and fields["gradient_clipping"]["same"] is False
     assert fields["gradient_clipping"]["stage2_value"] == 1.0
 
+    assert "scheduler" in fields and fields["scheduler"]["same"] is False
+    assert fields["scheduler"]["stage1_value"]["scheduler_class"] == "CosineAnnealingLR"
+    assert fields["scheduler"]["stage1_value"]["T_max"] == 25
+    assert fields["scheduler"]["stage1_value"]["eta_min"] == 0.0
+    assert fields["scheduler"]["stage1_value"]["max_epochs"] == 25
+    assert fields["scheduler"]["stage2_value"]["scheduler_class"] == "CosineAnnealingLR"
+    assert fields["scheduler"]["stage2_value"]["T_max"] == 20
+    assert fields["scheduler"]["stage2_value"]["eta_min"] == 1e-6
+    assert fields["scheduler"]["stage2_value"]["max_epochs"] == 20
+
 
 def test_5_focalloss_parity():
     """Verify FocalLoss constructor, parameters, and alpha=null parity with Stage 1."""

@@ -54,6 +54,10 @@ initialization_contract:
   policy: "from_pretrained_backbone_with_fresh_head"
   description: "Stage 1 and Stage 2 start from identical torchvision ImageNet pretrained weights and model construction code, with fresh seeded head initialization. Best Stage 1 checkpoint is NOT loaded."
   pretrained_weights_identifier: "MobileNet_V3_Small_Weights.DEFAULT"
+  pretrained_weights_enum: "torchvision.models.MobileNet_V3_Small_Weights.IMAGENET1K_V1"
+  pretrained_weights_source_url: "https://download.pytorch.org/models/mobilenet_v3_small-047dcff4.pth"
+  pretrained_weights_file_sha256: "047dcff4addef86ea5bc2eff13c9614dc11f47ab1160d0a71a25e7db994f4e1f"
+  pretrained_weights_state_fingerprint: "3adfbce13df024027cd59bfe2370aed39563091eec20fc14cdf58f4c48bc08ca"
   parent_checkpoint_path: null
   parent_checkpoint_hash: null
   classifier_initialization_evidence: "seeded_torch_init_at_model_creation"
