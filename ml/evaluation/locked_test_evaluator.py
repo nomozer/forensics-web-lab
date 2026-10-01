@@ -32,6 +32,8 @@ import datetime
 import hashlib
 import json
 import os
+import re
+import subprocess
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 import numpy as np
@@ -294,6 +296,8 @@ class LockedTestEvaluator:
         schema_path: Optional[Path | str] = None,
         source_binding_path: Optional[Path | str] = None,
         current_time_utc: Optional[datetime.datetime] = None,
+        expected_git_head: Optional[str] = None,
+        bypass_git_checks: bool = False,
     ) -> Dict[str, Any]:
         """Verifies presence, integrity, and strict adherence to schema of human authorization artifact.
 
@@ -384,6 +388,10 @@ class LockedTestEvaluator:
             ) from e
 
         # 4. Strict Field Validations
+        if auth_data.get("status") == "PENDING_HUMAN_APPROVAL":
+            raise PermissionError(
+                "Evaluation blocked: Authorization artifact has status 'PENDING_HUMAN_APPROVAL' and is not yet AUTHORIZED. Fail-closed."
+            )
         if auth_data.get("status") != "AUTHORIZED":
             raise PermissionError(
                 f"Evaluation blocked: Authorization status is '{auth_data.get('status')}', expected 'AUTHORIZED'."
@@ -478,6 +486,48 @@ class LockedTestEvaluator:
                     )
             except Exception as e:
                 raise PermissionError(f"Evaluation blocked: Invalid authorized_at_utc: {e}")
+
+        # Execution package commit verification
+        auth_pkg_commit = auth_data.get("execution_package_commit")
+        if not auth_pkg_commit or not isinstance(auth_pkg_commit, str) or not re.match(r"^[0-9a-f]{40}$", auth_pkg_commit):
+            raise PermissionError(
+                "Evaluation blocked: Missing or invalid 'execution_package_commit' in authorization artifact "
+                "(expected 40-character hex SHA). Fail-closed."
+            )
+
+        # Execution package tree clean verification
+        if auth_data.get("execution_package_tree_clean") is not True:
+            raise PermissionError(
+                "Evaluation blocked: Authorization artifact must have 'execution_package_tree_clean: true'. Fail-closed."
+            )
+
+        if not bypass_git_checks:
+            try:
+                actual_head = subprocess.check_output(
+                    ["git", "rev-parse", "HEAD"], stderr=subprocess.PIPE, text=True
+                ).strip()
+            except Exception as e:
+                raise PermissionError(f"Evaluation blocked: Failed to resolve actual Git HEAD via git rev-parse: {e}")
+
+            target_head = expected_git_head or auth_pkg_commit
+            if actual_head != target_head:
+                raise PermissionError(
+                    f"Evaluation blocked: Execution package commit mismatch: "
+                    f"authorization specifies '{auth_pkg_commit}', actual Git HEAD is '{actual_head}'. Fail-closed."
+                )
+
+            try:
+                porcelain_status = subprocess.check_output(
+                    ["git", "status", "--porcelain"], stderr=subprocess.PIPE, text=True
+                ).strip()
+            except Exception as e:
+                raise PermissionError(f"Evaluation blocked: Failed to verify git working tree status: {e}")
+
+            if porcelain_status:
+                raise PermissionError(
+                    f"Evaluation blocked: Repository working tree is dirty (git status --porcelain is not empty). "
+                    f"Fail-closed before locked-test access:\n{porcelain_status}"
+                )
 
         return auth_data
 
