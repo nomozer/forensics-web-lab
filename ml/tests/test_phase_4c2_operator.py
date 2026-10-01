@@ -1368,7 +1368,7 @@ def test_behavioral_11_exact_safe_targets_pass():
     script_text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
     safe_del_code = extract_python_snippet(script_text, "assert_safe_delete_target()")
 
-    out_root = "/content/drive/runs/execution_9ee7fdb"
+    out_root = "/opt/runs/execution_9ee7fdb"
     work_dir = "/content/phase_4c2_work"
     code_dir = "/content/phase_4c2_code"
 
