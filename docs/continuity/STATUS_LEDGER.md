@@ -1,3 +1,16 @@
+## Phase 4C.2E — Locked-Test Confirmatory Protocol Preregistration
+
+- **Muc tieu**: Preregister Stage 1 N=250 frozen backbone linear probe protocol, 5 candidate checkpoints, primary aggregate Macro-F1 endpoint, source-cluster bootstrap 95% CI (10,000 replicates, RNG seed 20261002), and one-time unsealing protocol for locked-test evaluation. Locked-test partition strictly sealed (0 accesses).
+- **Starting commit**: 143e02c (PR #3 merge commit)
+- **Branch**: research/phase-4c2e-locked-test-preregistration
+- **Thay đổi chính**: (1) Locked candidate protocol as stage1_frozen_backbone_linear_probe (N=250, maximum development data principle). (2) Bound 5 checkpoint SHA-256 digests matching Stage 1 lineage. (3) Formulated primary aggregate Macro-F1 endpoint with source-cluster bootstrap 95% CI and 0.5000 uninformative reference. (4) Established unsealing protocol with crash fault tolerance. (5) Added test suite ml/tests/test_phase_4c2e_preregistration.py (30/30 PASS).
+- **Kiểm tra**: 30/30 prereg tests pass, 382/382 hermetic pytest pass, 130/131 artifact pytest pass (1 skipped), 70/70 TS pass, typecheck 0 errors, build OK, continuity check PASS.
+- **Kết quả**: Verdict READY_FOR_HUMAN_UNSEALING_APPROVAL. Checkpoints = 5, unsealing sessions = 0, model evaluations = 0, locked-test accesses = 0.
+- **Evidence**: research/evidence/phase-4c.2e/ (PHASE_REPORT.md, candidate_checkpoint_binding.json, confirmatory_metrics_plan.json, unsealing_protocol.json, LOCKED_TEST_PREREGISTRATION.json, PRE_EXECUTION_GO_NO_GO.json, provenance_bindings.json, environment.json).
+- **Quyết định tiếp theo**: Await human approval before unsealing locked-test partition and authorizing Phase 4C.2F confirmatory evaluation.
+
+---
+
 ## Phase 4C.2D — Audit Hermetic vs Research-Artifact Test Boundary (Phase 4C.2E.0)
 
 - **Muc tieu**: Audit and refine the test boundary between hermetic CI and research-artifact test suites across 6 modules; eliminate blanket module markers; granularly mark only artifact-dependent tests; normalize line-ending hash invariance in `test_acquisition_safety.py`; preserve locked-test partition strictly sealed. Zero training runs, zero GPU calls, zero locked-test evaluations.

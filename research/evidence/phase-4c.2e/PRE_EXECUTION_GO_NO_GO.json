@@ -1,0 +1,17 @@
+{
+  "timestamp_utc": "2026-10-01T17:35:00.000000+00:00",
+  "phase": "Phase 4C.2E",
+  "selected_protocol": "stage1_frozen_backbone_linear_probe",
+  "sample_size": 250,
+  "seeds": [42, 1337, 2025, 3407, 9001],
+  "checkpoint_count": 5,
+  "preregistration_complete": true,
+  "locked_test_partition_status": "SEALED",
+  "locked_test_accesses": 0,
+  "completed_unsealing_sessions": 0,
+  "completed_model_evaluations": 0,
+  "new_training_runs": 0,
+  "gpu_inference_calls": 0,
+  "verdict": "READY_FOR_HUMAN_UNSEALING_APPROVAL",
+  "next_required_action": "Awaiting explicit human approval to unseal locked-test partition and authorize one-time confirmatory evaluation."
+}

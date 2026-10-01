@@ -1,0 +1,51 @@
+{
+  "timestamp_utc": "2026-10-01T17:35:00.000000+00:00",
+  "phase": "Phase 4C.2E",
+  "human_approval_required": true,
+  "human_approval_status": "PENDING_HUMAN_APPROVAL",
+  "exact_evaluator_commit_binding": "TO_BE_RECORDED_AND_SEALED_AT_UNSEALING_AUTHORIZATION",
+  "candidate_checkpoints": {
+    "count": 5,
+    "sample_size": 250,
+    "seeds": [42, 1337, 2025, 3407, 9001],
+    "hashes": {
+      "seed_42": "c941f42ed00adb098962ddb43c0f2f7d897e48e20957cddc0c491243f8730c92",
+      "seed_1337": "69e706f9062f050ccbfd2affb72d63d5dde9d12f02c1e64c762b0ea6719073f1",
+      "seed_2025": "92ce5ee986d487fdf14374842067d0684fc7669f5ecb32c7d603f6813942ceee",
+      "seed_3407": "4897821ef0a97df9f1c51acde8d4ac01d383aa3a7b9e7ee55bbc3b3108847868",
+      "seed_9001": "5f0f8803adcb7eec88d47e398ef8b2002b46e740c263b12abc2ba392822a91c3"
+    }
+  },
+  "locked_test_mount_mode": "read_only",
+  "network_policy": "disabled_isolated",
+  "access_accounting": {
+    "authorized_unsealing_sessions": 1,
+    "authorized_model_evaluations": 5,
+    "completed_unsealing_sessions": 0,
+    "completed_model_evaluations": 0,
+    "locked_test_accesses": 0
+  },
+  "execution_rules": {
+    "atomic_prediction_emission": true,
+    "atomic_staging_mechanism": "Write to .part staging directory, verify checksums and integrity, then atomically rename to canonical run directory.",
+    "receipt_recording": "Written synchronously after each checkpoint evaluation with exact hashes, byte counts, and timestamps.",
+    "access_ledger_policy": "append_only",
+    "overwrite_or_deletion_of_valid_results": "FORBIDDEN"
+  },
+  "fault_tolerance_matrix": {
+    "crash_before_inference": {
+      "classification": "PRE_INFERENCE_RUNTIME_FAILURE",
+      "retry_allowed": true,
+      "increment_model_evaluation_count": false,
+      "protocol": "Clean up uncommitted temporary files, log root cause to incident log, and restart preflight under verified conditions."
+    },
+    "crash_after_predictions_exist": {
+      "classification": "POST_INFERENCE_INTEGRITY_VIOLATION",
+      "retry_allowed": false,
+      "increment_model_evaluation_count": true,
+      "protocol": "FAIL-CLOSED. No silent retry or automated re-execution. Quarantine artifacts and halt pipeline for formal human investigation."
+    },
+    "retry_categorization_mandatory": true
+  },
+  "post_evaluation_lock": "Following completion of the 5 model evaluations, outputs are cryptographically sealed. Only the preregistered confirmatory and descriptive analyses may be executed on the generated prediction vectors."
+}

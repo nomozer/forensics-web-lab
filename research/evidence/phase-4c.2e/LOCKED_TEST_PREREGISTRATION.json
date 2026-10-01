@@ -1,0 +1,49 @@
+{
+  "timestamp_utc": "2026-10-01T17:35:00.000000+00:00",
+  "phase": "Phase 4C.2E",
+  "status": "PREREGISTERED",
+  "preregistration_timing": "POST_MODEL_DEVELOPMENT_PRE_LOCKED_TEST_ACCESS",
+  "candidate_protocol": "stage1_frozen_backbone_linear_probe",
+  "sample_size": 250,
+  "selection_reason": "maximum_development_data",
+  "selection_narrative": "Cohort N=250 was selected based on the maximum-development-data principle, as it represents the largest registered training sample size available before opening the locked-test partition. It was not chosen based on inner-validation scores (where N=100 exhibited a slightly higher mean). This prospective policy was frozen post model development but strictly prior to locked-test unsealing.",
+  "seeds": [42, 1337, 2025, 3407, 9001],
+  "checkpoint_count": 5,
+  "best_seed_selection": false,
+  "ensemble_created": false,
+  "new_training_runs": 0,
+  "retrained_with_inner_val": false,
+  "locked_test_partition": {
+    "status": "SEALED",
+    "expected_unique_sources": 343,
+    "expected_samples": 686,
+    "samples_per_source": 2,
+    "label_pair": [0, 1],
+    "development_train_overlap": 0,
+    "inner_validation_overlap": 0,
+    "canonical_split_seal": "519e7a0e6815e781d1cefa95971e5221ac1f25656837374d8dc4ba41401fded9"
+  },
+  "access_accounting": {
+    "authorized_unsealing_sessions": 1,
+    "authorized_model_evaluations": 5,
+    "completed_unsealing_sessions": 0,
+    "completed_model_evaluations": 0,
+    "locked_test_accesses": 0
+  },
+  "integrity_and_leakage_gates": [
+    "Verify locked-test source count equals 343 unique source_ids.",
+    "Verify exactly two samples per source_id (1 authentic + 1 ai_edited).",
+    "Verify exact label pair {0, 1} for every source_id.",
+    "Verify 0 overlap between locked-test sources and development_train (250 sources).",
+    "Verify 0 overlap between locked-test sources and inner_validation (91 sources).",
+    "Verify zero write paths from Stage 1/2 outputs to dataset inputs.",
+    "Verify dataset archive, content, and manifest hashes match canonical bundle metadata.",
+    "Verify all 5 checkpoint SHA-256 hashes match candidate_checkpoint_binding.json before evaluation.",
+    "Verify network isolation is active (0 external bytes transferred).",
+    "Verify zero package or model weight downloads during evaluation.",
+    "Verify fail-closed behavior on runtime crash after predictions exist (no silent retry)."
+  ],
+  "candidate_checkpoints_reference": "candidate_checkpoint_binding.json",
+  "confirmatory_metrics_plan_reference": "confirmatory_metrics_plan.json",
+  "unsealing_protocol_reference": "unsealing_protocol.json"
+}

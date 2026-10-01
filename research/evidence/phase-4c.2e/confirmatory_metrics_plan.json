@@ -1,0 +1,73 @@
+{
+  "timestamp_utc": "2026-10-01T17:35:00.000000+00:00",
+  "phase": "Phase 4C.2E",
+  "status": "PREREGISTERED",
+  "primary_endpoint": {
+    "metric": "macro_f1",
+    "target_partition": "locked_test",
+    "evaluation_unit": "per_checkpoint_and_aggregate",
+    "aggregate_estimator": "arithmetic_mean_macro_f1_5_checkpoints",
+    "checkpoints_evaluated_count": 5,
+    "no_paired_t_test_confirmatory_reason": "All five models are evaluated on the exact same locked-test cohort, violating independent observations assumption required for confirmatory t-inference."
+  },
+  "confirmatory_reference": {
+    "reference_value": 0.5,
+    "designation": "balanced_binary_uninformative_reference",
+    "prohibited_designation": "trained_metadata_baseline",
+    "decision_rule": "Confirmatory success requires that the lower bound of the 95% source-cluster bootstrap CI of the aggregate Macro-F1 across the 5 Stage 1 N=250 checkpoints is strictly greater than 0.5000 (CI_lower > 0.5000). If CI_lower <= 0.5000, conclude lack of confirmatory evidence exceeding reference.",
+    "threshold_mutation_policy": "FORBIDDEN"
+  },
+  "confidence_interval_specification": {
+    "method": "source_cluster_bootstrap",
+    "resampling_unit": "unique_source_id",
+    "paired_sample_preservation": true,
+    "pairing_rule": "When a unique source_id is resampled with replacement, both the authentic and ai_edited paired samples associated with that source_id are jointly preserved in the resampled replicate.",
+    "fixed_checkpoints": true,
+    "checkpoint_count": 5,
+    "replicates": 10000,
+    "preregistered_rng_seed": 20261002,
+    "ci_type": "percentile",
+    "percentile_lower": 2.5,
+    "percentile_upper": 97.5,
+    "algorithm_steps": [
+      "1. Resample 343 unique source_ids with replacement using RNG seed 20261002.",
+      "2. For each of the 5 fixed checkpoints, compute Macro-F1 on the reconstructed paired test set (686 samples).",
+      "3. Compute the arithmetic mean of the 5 Macro-F1 scores for that replicate.",
+      "4. Repeat for 10,000 replicates.",
+      "5. Sort the 10,000 aggregate Macro-F1 scores and take the 2.5th and 97.5th percentiles as the 95% CI."
+    ],
+    "post_hoc_method_change": "FORBIDDEN"
+  },
+  "secondary_endpoints": {
+    "classification": "descriptive_exploratory",
+    "multiplicity_correction_policy": "NONE_REGISTERED_ALL_DESCRIPTIVE",
+    "metrics": [
+      "balanced_accuracy",
+      "auroc",
+      "brier_score",
+      "ece",
+      "confusion_matrix",
+      "class_sensitivity_recall",
+      "class_specificity",
+      "per_checkpoint_metrics",
+      "between_seed_mean_and_sd"
+    ]
+  },
+  "calibration_protocol": {
+    "mode": "evaluation_only",
+    "fitting_allowed": false,
+    "temperature_scaling": "FORBIDDEN",
+    "threshold_optimization": "FORBIDDEN_STANDARD_0_5_USED",
+    "platt_or_isotonic": "FORBIDDEN",
+    "binning_specification": {
+      "bin_count": 10,
+      "bin_edges": [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+      "bin_strategy": "uniform_width_fixed"
+    },
+    "calibration_metrics": {
+      "citl": "calibration_in_the_large_mean_pred_minus_mean_target",
+      "signed_confidence_calibration_gap": "mean_confidence_minus_accuracy"
+    },
+    "locked_test_model_adjustment": "FORBIDDEN"
+  }
+}
