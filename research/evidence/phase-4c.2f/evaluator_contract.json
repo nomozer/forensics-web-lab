@@ -1,35 +1,60 @@
 {
-  "timestamp_utc": "2026-10-01T17:58:00.000000+00:00",
-  "phase": "Phase 4C.2F",
+  "timestamp_utc": "2026-10-02T01:00:00.000000+00:00",
+  "phase": "Phase 4C.2F.1",
   "contract_name": "locked_test_confirmatory_evaluator_contract",
   "candidate_protocol": "stage1_frozen_backbone_linear_probe",
   "sample_size": 250,
   "checkpoint_count": 5,
   "seeds": [42, 1337, 2025, 3407, 9001],
+  "base_main_commit": "8a379665bc8db3722a46618e47db4806a6ea7244",
+  "evaluator_functional_commit": "656529f04ee8dfcf26e7bb46c757f5cba279326e",
+  "audited_through_commit": "656529f04ee8dfcf26e7bb46c757f5cba279326e",
   "authorization_policy": {
     "human_authorization_required": true,
     "authorization_artifact_name": "HUMAN_UNSEALING_AUTHORIZATION.json",
+    "authorization_schema": "docs/schemas/human-unsealing-authorization.v1.schema.json",
     "fail_closed_if_missing": true
   },
   "access_limits": {
     "max_authorized_unsealing_sessions": 1,
-    "max_authorized_model_evaluations": 5,
+    "max_authorized_evaluation_attempts": 5,
+    "max_authorized_completed_model_evaluations": 5,
     "current_completed_unsealing_sessions": 0,
+    "current_evaluation_attempts": 0,
     "current_completed_model_evaluations": 0,
     "current_locked_test_accesses": 0
   },
   "counter_increment_rules": {
     "unsealing_sessions": "Increments from 0 to 1 immediately before the first read operation from the locked-test partition.",
-    "model_evaluations": "Increments immediately after inference of a checkpoint generates predictions, regardless of subsequent check status."
+    "evaluation_attempts": "Increments immediately upon EVALUATION_RESERVED before model forward pass.",
+    "completed_model_evaluations": "Increments immediately after predictions are atomically renamed to predictions_seed_{seed}.json upon EVALUATION_COMPLETED."
   },
   "fault_tolerance_policy": {
-    "pre_inference_crash": "Retryable without incrementing model evaluation counter; partial files are deleted.",
-    "post_inference_crash": "Fail-closed; silent re-run is strictly forbidden once final predictions exist.",
-    "output_staging": "Predictions written to .part file and atomically renamed via os.replace."
+    "post_reservation_crash": "Logs EVALUATION_ATTEMPT_INTERRUPTED in tamper-evident ledger; automatic retry strictly forbidden; human adjudication required.",
+    "output_staging": "Predictions written to .part file, flushed, fsynced, then atomically renamed via os.replace.",
+    "post_inference_crash": "Fail-closed; silent re-run is strictly forbidden once final predictions exist."
   },
   "environmental_guards": {
-    "network_isolation": "Outbound socket connections strictly blocked (air-gapped assertion).",
-    "read_only_data_mount": "Locked-test partition must be mounted read-only."
+    "network_isolation": "Strictly passive verification (zero outbound socket probes, zero external transmissions; verifies proxies, routing tables, and container namespace metadata).",
+    "read_only_data_mount": "Strictly non-invasive verification (zero canary writes, zero filesystem mutations; verifies disjoint realpaths and mount ro flags)."
+  },
+  "ledger_semantics": {
+    "type": "tamper-evident hash-chained ledger",
+    "entry_fields": [
+      "sequence_number",
+      "timestamp_utc",
+      "event_type",
+      "session_id",
+      "checkpoint_seed",
+      "evaluator_functional_commit",
+      "cumulative_unsealing_sessions",
+      "cumulative_evaluation_attempts",
+      "cumulative_model_evaluations",
+      "metadata",
+      "prev_entry_hash",
+      "entry_hash"
+    ],
+    "tip_hash_recorded_in_receipt": true
   },
   "evaluator_modules": {
     "engine": "ml/evaluation/locked_test_evaluator.py",

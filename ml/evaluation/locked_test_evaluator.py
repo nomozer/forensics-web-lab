@@ -1,29 +1,29 @@
 """
-Locked-Test Confirmatory Evaluator Engine for Phase 4C.2F / Phase 4C.2.
+Locked-Test Confirmatory Evaluator Engine for Phase 4C.2F.1 / Phase 4C.2.
 
 Strict Architectural Guarantees:
 1. Default Fail-Closed: Refuses to access locked-test without valid signed human authorization artifact.
-2. Self-verification: Binds to exact code SHA-256 and git commit hash.
+2. Self-verification: Binds to canonical evaluator functional commit 656529f04ee8dfcf26e7bb46c757f5cba279326e.
 3. Checkpoint Resolution: Validates 5 Stage 1 N=250 checkpoints by exact seed, byte count (5,627,375 bytes),
    and cryptographic SHA-256 before inference.
-4. Access Accounting:
+4. Tamper-Evident Hash-Chained Ledger:
    - Max authorized unsealing sessions = 1.
-   - Max authorized model evaluations = 5.
-   - Session counter increments from 0 to 1 immediately BEFORE the first read from locked-test.
-   - Model evaluation counter increments immediately after a checkpoint's predictions are generated.
-   - Append-only, hash-chained access ledger (locked_test_access_ledger.jsonl).
-5. Output Safety:
-   - Predictions staged to .part then atomic rename via os.replace.
-   - Never overwrites valid existing predictions.
-   - Pre-inference crash allows retry without incrementing model evaluation count.
-   - Post-inference crash is fail-closed (predictions exist, silent re-run forbidden).
-6. Isolation:
-   - Network isolation guard (air-gapped assertion).
-   - Read-only data mount assertion.
-7. Confirmatory Protocol:
+   - Max authorized evaluation attempts = 5.
+   - Max authorized completed model evaluations = 5.
+   - Sequence: EVALUATION_RESERVED (increments evaluation_attempts before forward) -> inference ->
+     .part write -> atomic rename -> completed_model_evaluations incremented -> EVALUATION_COMPLETED.
+   - Post-reservation crash logs EVALUATION_ATTEMPT_INTERRUPTED; automatic retry strictly forbidden.
+   - Append-only hash chain with sequence_number, prev_entry_hash, entry_hash, and evaluator_functional_commit.
+5. Passive Environmental Guards (ZERO outbound transmissions, ZERO canary writes):
+   - Passive network isolation verification (zero outbound probes; inspects routing, proxies, namespaces, receipts).
+   - Non-invasive read-only mount verification (zero writes/modifications to locked-test root).
+6. Confirmatory Protocol:
    - Arithmetic mean of 5 per-checkpoint Macro-F1s.
    - 10,000 source-cluster bootstrap replicates with PCG64 seed 20261002 (preserving 2-sample clusters, 686 rows).
    - Uninformative reference 0.5000; confirmatory success iff CI_lower > 0.5000.
+7. Synthetic Dry-Run Disclaimers:
+   - Synthetic pipeline returns verdict SYNTHETIC_PIPELINE_PASS; real counters remain 0.
+   - Confirmatory scientific verdicts strictly forbidden in synthetic fixtures.
 """
 
 from __future__ import annotations
@@ -33,7 +33,6 @@ import hashlib
 import json
 import os
 from pathlib import Path
-import socket
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 import numpy as np
 
@@ -47,6 +46,11 @@ from ml.evaluation.confirmatory_metrics import (
     logits_to_probabilities,
     predict_classes,
 )
+
+# Canonical Commit Bindings
+EVALUATOR_FUNCTIONAL_COMMIT = "656529f04ee8dfcf26e7bb46c757f5cba279326e"
+BASE_MAIN_COMMIT = "8a379665bc8db3722a46618e47db4806a6ea7244"
+AUDITED_THROUGH_COMMIT = "656529f04ee8dfcf26e7bb46c757f5cba279326e"
 
 AUTHORIZED_PROTOCOL = "stage1_frozen_backbone_linear_probe"
 AUTHORIZED_SAMPLE_SIZE = 250
@@ -64,6 +68,13 @@ CHECKPOINT_SHA256_REGISTRY: Dict[int, str] = {
     9001: "5f0f8803adcb7eec88d47e398ef8b2002b46e740c263b12abc2ba392822a91c3",
 }
 
+FORBIDDEN_SYNTHETIC_VERDICTS = {
+    "CONFIRMATORY_SUCCESS",
+    "CONFIRMATORY_FAILURE",
+    "LOCKED_TEST_PASS",
+    "LOCKED_TEST_FAIL",
+}
+
 
 def compute_file_sha256(path: Path | str) -> str:
     """Computes SHA-256 digest of a local file in 64 KiB chunks."""
@@ -75,7 +86,7 @@ def compute_file_sha256(path: Path | str) -> str:
 
 
 class AccessLedger:
-    """Append-only, cryptographically hash-chained audit ledger for locked-test evaluations."""
+    """Tamper-evident hash-chained audit ledger for locked-test evaluations."""
 
     def __init__(self, ledger_path: Path):
         self.ledger_path = Path(ledger_path)
@@ -94,13 +105,13 @@ class AccessLedger:
                 if not line:
                     continue
                 entry = json.loads(line)
-                if entry.get("entry_index") != line_idx:
+                if entry.get("sequence_number") != line_idx:
                     raise ValueError(
-                        f"Ledger corruption: entry_index {entry.get('entry_index')} != {line_idx}"
+                        f"Ledger corruption: sequence_number {entry.get('sequence_number')} != {line_idx}"
                     )
                 if entry.get("prev_entry_hash") != prev_hash:
                     raise ValueError(
-                        f"Ledger hash chain broken at index {line_idx}: expected prev {prev_hash}, got {entry.get('prev_entry_hash')}"
+                        f"Ledger hash chain broken at index {line_idx}: expected prev '{prev_hash}', got '{entry.get('prev_entry_hash')}'"
                     )
 
                 # Recompute current hash
@@ -110,7 +121,7 @@ class AccessLedger:
                 ).hexdigest()
                 if entry.get("entry_hash") != calc_hash:
                     raise ValueError(
-                        f"Ledger entry hash mismatch at index {line_idx}: {entry.get('entry_hash')} != {calc_hash}"
+                        f"Ledger entry hash mismatch at index {line_idx}: '{entry.get('entry_hash')}' != '{calc_hash}'"
                     )
 
                 prev_hash = calc_hash
@@ -123,23 +134,37 @@ class AccessLedger:
         return int(self.entries[-1].get("cumulative_unsealing_sessions", 0))
 
     @property
+    def evaluation_attempts(self) -> int:
+        if not self.entries:
+            return 0
+        return int(self.entries[-1].get("cumulative_evaluation_attempts", 0))
+
+    @property
     def completed_model_evaluations(self) -> int:
         if not self.entries:
             return 0
         return int(self.entries[-1].get("cumulative_model_evaluations", 0))
 
+    @property
+    def tip_entry_hash(self) -> str:
+        if not self.entries:
+            return "GENESIS"
+        return str(self.entries[-1]["entry_hash"])
+
     def record_event(
         self,
         event_type: str,
         session_id: str,
-        seed: Optional[int] = None,
+        checkpoint_seed: Optional[int] = None,
         metadata: Optional[Dict[str, Any]] = None,
         inc_unsealing_session: bool = False,
+        inc_evaluation_attempt: bool = False,
         inc_model_eval: bool = False,
     ) -> Dict[str, Any]:
         """Appends a new hash-chained record to the ledger with immediate fsync."""
         prev_hash = self.entries[-1]["entry_hash"] if self.entries else "GENESIS"
         new_sessions = self.completed_unsealing_sessions + (1 if inc_unsealing_session else 0)
+        new_attempts = self.evaluation_attempts + (1 if inc_evaluation_attempt else 0)
         new_evals = self.completed_model_evaluations + (1 if inc_model_eval else 0)
 
         # Enforce limits
@@ -147,21 +172,27 @@ class AccessLedger:
             raise PermissionError(
                 f"Violation: Attempted to exceed maximum authorized unsealing sessions (requested={new_sessions}, max=1)"
             )
+        if new_attempts > 5:
+            raise PermissionError(
+                f"Violation: Attempted to exceed maximum authorized evaluation attempts (requested={new_attempts}, max=5)"
+            )
         if new_evals > 5:
             raise PermissionError(
-                f"Violation: Attempted to exceed maximum authorized model evaluations (requested={new_evals}, max=5)"
+                f"Violation: Attempted to exceed maximum authorized completed model evaluations (requested={new_evals}, max=5)"
             )
 
-        entry_idx = len(self.entries)
+        seq_no = len(self.entries)
         timestamp = datetime.datetime.now(datetime.timezone.utc).isoformat()
 
         entry_payload: Dict[str, Any] = {
-            "entry_index": entry_idx,
+            "sequence_number": seq_no,
             "timestamp_utc": timestamp,
             "event_type": event_type,
             "session_id": session_id,
-            "seed": seed,
+            "checkpoint_seed": checkpoint_seed,
+            "evaluator_functional_commit": EVALUATOR_FUNCTIONAL_COMMIT,
             "cumulative_unsealing_sessions": new_sessions,
+            "cumulative_evaluation_attempts": new_attempts,
             "cumulative_model_evaluations": new_evals,
             "metadata": metadata or {},
             "prev_entry_hash": prev_hash,
@@ -205,7 +236,7 @@ class LockedTestEvaluator:
 
     @staticmethod
     def verify_human_authorization(authorization_path: Optional[Path | str]) -> Dict[str, Any]:
-        """Verifies presence and validity of human authorization artifact.
+        """Verifies presence, integrity, and adherence to schema of human authorization artifact.
 
         Fail-closed: Returns authorization metadata if valid, raises PermissionError otherwise.
         """
@@ -227,14 +258,24 @@ class LockedTestEvaluator:
             except Exception as e:
                 raise PermissionError(f"Evaluation blocked: Malformed authorization JSON: {e}")
 
+        # Strict Field Validations
         if auth_data.get("status") != "AUTHORIZED":
             raise PermissionError(
                 f"Evaluation blocked: Authorization status is '{auth_data.get('status')}', expected 'AUTHORIZED'."
             )
 
-        if auth_data.get("target_protocol") != AUTHORIZED_PROTOCOL:
+        if not auth_data.get("authorization_id"):
+            raise PermissionError("Evaluation blocked: Missing 'authorization_id' in authorization artifact.")
+
+        if not auth_data.get("authorized_by"):
+            raise PermissionError("Evaluation blocked: Missing 'authorized_by' in authorization artifact.")
+
+        if not auth_data.get("authorized_at_utc"):
+            raise PermissionError("Evaluation blocked: Missing 'authorized_at_utc' in authorization artifact.")
+
+        if auth_data.get("candidate_protocol") != AUTHORIZED_PROTOCOL:
             raise PermissionError(
-                f"Protocol mismatch: authorized for '{auth_data.get('target_protocol')}', expected '{AUTHORIZED_PROTOCOL}'."
+                f"Protocol mismatch: authorized for '{auth_data.get('candidate_protocol')}', expected '{AUTHORIZED_PROTOCOL}'."
             )
 
         if auth_data.get("sample_size") != AUTHORIZED_SAMPLE_SIZE:
@@ -242,76 +283,249 @@ class LockedTestEvaluator:
                 f"Sample size mismatch: authorized for {auth_data.get('sample_size')}, expected {AUTHORIZED_SAMPLE_SIZE}."
             )
 
-        auth_seeds = sorted(auth_data.get("authorized_seeds", []))
+        auth_seeds = sorted(auth_data.get("exact_seeds", []))
         if auth_seeds != AUTHORIZED_SEEDS:
             raise PermissionError(
                 f"Seeds mismatch: authorized seeds {auth_seeds} != expected {AUTHORIZED_SEEDS}."
             )
 
-        if auth_data.get("max_unsealing_sessions") != 1:
+        # Checkpoint SHA-256 verification
+        cp_hashes = auth_data.get("checkpoint_sha256s", {})
+        for seed in AUTHORIZED_SEEDS:
+            expected_hash = CHECKPOINT_SHA256_REGISTRY[seed]
+            actual_hash = cp_hashes.get(str(seed)) or cp_hashes.get(seed)
+            if actual_hash != expected_hash:
+                raise PermissionError(
+                    f"Checkpoint hash mismatch in authorization for seed {seed}: got '{actual_hash}', expected '{expected_hash}'."
+                )
+
+        # Evaluator functional commit verification
+        auth_commit = auth_data.get("evaluator_functional_commit")
+        if not auth_commit:
+            raise PermissionError("Evaluation blocked: Missing 'evaluator_functional_commit' in authorization artifact.")
+        if auth_commit != EVALUATOR_FUNCTIONAL_COMMIT:
             raise PermissionError(
-                f"Session limit mismatch: authorized {auth_data.get('max_unsealing_sessions')}, expected 1."
+                f"Commit binding mismatch: authorization is locked to commit '{auth_commit}', "
+                f"evaluator is at canonical commit '{EVALUATOR_FUNCTIONAL_COMMIT}'."
             )
 
-        if auth_data.get("max_model_evaluations") != 5:
+        # Evaluator component hashes check
+        comp_hashes = auth_data.get("evaluator_component_hashes")
+        if not comp_hashes or not isinstance(comp_hashes, dict):
+            raise PermissionError("Evaluation blocked: Missing 'evaluator_component_hashes' in authorization artifact.")
+
+        if auth_data.get("maximum_unsealing_sessions") != 1:
             raise PermissionError(
-                f"Evaluation limit mismatch: authorized {auth_data.get('max_model_evaluations')}, expected 5."
+                f"Session limit mismatch: authorized {auth_data.get('maximum_unsealing_sessions')}, expected 1."
             )
 
-        if not auth_data.get("approver_id"):
-            raise PermissionError("Evaluation blocked: Missing approver_id in authorization artifact.")
+        if auth_data.get("maximum_model_evaluation_attempts") != 5:
+            raise PermissionError(
+                f"Evaluation attempt limit mismatch: authorized {auth_data.get('maximum_model_evaluation_attempts')}, expected 5."
+            )
+
+        if not auth_data.get("expiry_policy"):
+            raise PermissionError("Evaluation blocked: Missing 'expiry_policy' in authorization artifact.")
+
+        if not auth_data.get("authorization_purpose"):
+            raise PermissionError("Evaluation blocked: Missing 'authorization_purpose' in authorization artifact.")
+
+        if auth_data.get("no_tuning_acknowledgment") is not True:
+            raise PermissionError(
+                "Evaluation blocked: Missing or invalid 'no_tuning_acknowledgment'. "
+                "Explicit commitment against post-hoc tuning on locked-test is required."
+            )
 
         return auth_data
 
     @staticmethod
-    def verify_network_isolation(allow_mock_override: bool = False) -> None:
-        """Verifies that the execution environment has no outbound Internet connectivity.
+    def verify_network_isolation(
+        allow_mock_override: bool = False,
+        isolation_receipt_path: Optional[Path | str] = None,
+    ) -> Dict[str, Any]:
+        """Passively verifies network isolation locally with ZERO outbound packet transmission.
 
-        Raises RuntimeError if network calls succeed.
+        Strict constraints:
+        - ZERO DNS queries, ZERO HTTP/HTTPS requests, ZERO socket connections to external hosts.
+        - Passively inspects:
+          1. Proxy environment variables (HTTP_PROXY, HTTPS_PROXY, ALL_PROXY must not point externally).
+          2. Linux routing table (no default routes to external gateways on non-loopback interfaces).
+          3. Network namespace metadata (/proc/self/ns/net).
+          4. Runtime isolation receipt or NETWORK_DISABLED_RUNTIME environment marker.
+
+        Fail-closed: if isolation cannot be verified passively, raises RuntimeError.
         """
         if allow_mock_override or os.environ.get("MOCK_AIRGAP_ISOLATION") == "1":
-            return
+            return {
+                "status": "PASSIVE_ISOLATION_VERIFIED",
+                "mode": "mock_override",
+                "outbound_probes_transmitted": 0,
+            }
 
-        # Attempt connection to public DNS
-        test_host = "8.8.8.8"
-        test_port = 53
-        try:
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.settimeout(0.5)
-            s.connect((test_host, test_port))
-            s.close()
-            # If connect succeeds, network is active
-            raise RuntimeError(
-                "Network isolation violation: outbound connection succeeded! "
-                "Locked-test confirmatory evaluation must be strictly air-gapped / network-disabled."
-            )
-        except (socket.timeout, socket.error, OSError):
-            # Expected in air-gapped environment
-            pass
+        # 1. Passive check: Proxy environment variables
+        suspicious_env_vars = [
+            "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY",
+            "http_proxy", "https_proxy", "all_proxy",
+        ]
+        for var in suspicious_env_vars:
+            val = os.environ.get(var)
+            if val and not (val.startswith("http://127.0.0.1") or val.startswith("http://localhost")):
+                raise RuntimeError(
+                    f"Network isolation violation: proxy environment variable '{var}' is configured: {val}"
+                )
 
-    @staticmethod
-    def verify_read_only_mount(data_dir: Path | str, allow_mock_override: bool = False) -> None:
-        """Verifies that the locked_test data directory is mounted read-only."""
-        if allow_mock_override or os.environ.get("MOCK_READ_ONLY_MOUNT") == "1":
-            return
+        # 2. Check for explicit runtime isolation receipt or container network-disabled flag
+        receipt_found = False
+        receipt_candidates = [
+            Path("/run/network_isolation_receipt.json"),
+            Path("/etc/network_isolation_receipt.json"),
+        ]
+        if isolation_receipt_path:
+            receipt_candidates.insert(0, Path(isolation_receipt_path))
 
-        data_path = Path(data_dir)
-        canary_path = data_path / ".canary_write_test"
-        try:
-            with open(canary_path, "w") as f:
-                f.write("test")
-            # If write succeeded, partition is not read-only!
+        for candidate in receipt_candidates:
+            if candidate.is_file():
+                try:
+                    with open(candidate, "r", encoding="utf-8") as f:
+                        rec = json.load(f)
+                        if rec.get("network_disabled") is True or rec.get("isolated") is True:
+                            receipt_found = True
+                            break
+                except Exception:
+                    pass
+
+        # 3. Check Linux routing table and interfaces if on Linux
+        linux_isolated = False
+        proc_route = Path("/proc/net/route")
+        if proc_route.is_file():
             try:
-                canary_path.unlink()
+                with open(proc_route, "r", encoding="utf-8") as f:
+                    lines = f.readlines()
+                # If only header or no non-loopback default gateway (dest 00000000)
+                default_routes = [
+                    line for line in lines[1:]
+                    if line.split()[1] == "00000000" and line.split()[0] != "lo"
+                ]
+                if not default_routes:
+                    linux_isolated = True
             except Exception:
                 pass
-            raise RuntimeError(
-                f"Security violation: locked-test data directory '{data_path}' is writable! "
-                "Evaluation requires strict read-only mount."
-            )
-        except (PermissionError, OSError):
-            # Expected: read-only filesystem
+
+        # Check network namespace inode against host init namespace
+        try:
+            init_net = Path("/proc/1/ns/net")
+            self_net = Path("/proc/self/ns/net")
+            if init_net.exists() and self_net.exists():
+                if init_net.stat().st_ino != self_net.stat().st_ino:
+                    linux_isolated = True
+        except Exception:
             pass
+
+        # Runtime environment flag for container isolation
+        if os.environ.get("NETWORK_DISABLED_RUNTIME") == "1":
+            receipt_found = True
+
+        if not (receipt_found or linux_isolated):
+            raise RuntimeError(
+                "Network isolation cannot be verified passively: no evidence of network-disabled runtime "
+                "namespace, isolated container environment, or valid runtime isolation receipt. "
+                "Active outbound probing is strictly prohibited. Runtime must be locked from outside."
+            )
+
+        return {
+            "status": "PASSIVE_ISOLATION_VERIFIED",
+            "linux_namespace_isolated": linux_isolated,
+            "runtime_receipt_present": receipt_found,
+            "outbound_probes_transmitted": 0,
+        }
+
+    @staticmethod
+    def verify_read_only_mount(
+        data_dir: Path | str,
+        output_dir: Optional[Path | str] = None,
+        allow_mock_override: bool = False,
+    ) -> Dict[str, Any]:
+        """Verifies that the locked_test data directory is mounted read-only using strictly non-invasive methods.
+
+        Strict constraints:
+        - ZERO canary writes, ZERO file creations, ZERO renames, ZERO unlinks.
+        - Checks realpath disjointness between locked-test root and output directory.
+        - Inspects /proc/self/mountinfo or /proc/mounts for 'ro' option.
+        - Inspects os.statvfs flag ST_RDONLY if supported by OS.
+        """
+        if allow_mock_override or os.environ.get("MOCK_READ_ONLY_MOUNT") == "1":
+            return {
+                "status": "READ_ONLY_MOUNT_VERIFIED",
+                "method": "mock_override",
+                "canary_writes_performed": 0,
+            }
+
+        data_path = Path(data_dir).resolve()
+        if not data_path.exists():
+            raise FileNotFoundError(f"Locked-test directory '{data_path}' does not exist.")
+
+        # 1. Canonical realpath disjointness from output directory
+        if output_dir:
+            out_path = Path(output_dir).resolve()
+            if data_path == out_path or str(data_path).startswith(str(out_path) + os.sep) or str(out_path).startswith(str(data_path) + os.sep):
+                raise RuntimeError(
+                    f"Path collision: locked-test dir '{data_path}' overlaps with output dir '{out_path}'"
+                )
+
+        is_ro = False
+        detection_method = "none"
+
+        # 2. Linux mountinfo / proc mounts
+        proc_mountinfo = Path("/proc/self/mountinfo")
+        proc_mounts = Path("/proc/mounts")
+        if proc_mountinfo.is_file():
+            try:
+                with open(proc_mountinfo, "r", encoding="utf-8") as f:
+                    for line in f:
+                        parts = line.split()
+                        if len(parts) >= 6:
+                            mount_point = parts[4]
+                            mount_opts = parts[5].split(",")
+                            if "ro" in mount_opts and str(data_path).startswith(mount_point):
+                                is_ro = True
+                                detection_method = "proc_mountinfo"
+            except Exception:
+                pass
+        elif proc_mounts.is_file():
+            try:
+                with open(proc_mounts, "r", encoding="utf-8") as f:
+                    for line in f:
+                        parts = line.split()
+                        if len(parts) >= 4:
+                            mount_point = parts[1]
+                            mount_opts = parts[3].split(",")
+                            if "ro" in mount_opts and str(data_path).startswith(mount_point):
+                                is_ro = True
+                                detection_method = "proc_mounts"
+            except Exception:
+                pass
+
+        # 3. os.statvfs ST_RDONLY
+        if hasattr(os, "statvfs") and hasattr(os, "ST_RDONLY"):
+            try:
+                vfs = os.statvfs(str(data_path))
+                if vfs.f_flag & os.ST_RDONLY:
+                    is_ro = True
+                    detection_method = "statvfs_ST_RDONLY"
+            except Exception:
+                pass
+
+        if not is_ro:
+            raise RuntimeError(
+                f"Read-only mount violation: locked-test directory '{data_path}' is not mounted read-only (ro). "
+                "Evaluation requires a verified read-only mount. Passive verification found no 'ro' flag."
+            )
+
+        return {
+            "status": "READ_ONLY_MOUNT_VERIFIED",
+            "method": detection_method,
+            "canary_writes_performed": 0,
+        }
 
     @staticmethod
     def resolve_and_verify_checkpoints(
@@ -387,7 +601,21 @@ class LockedTestEvaluator:
         data_loader: Any,
         session_id: str,
     ) -> Dict[str, Any]:
-        """Executes evaluation for a single checkpoint with atomic output writing and receipting."""
+        """Executes evaluation for a single checkpoint with strict accounting and atomic receipts.
+
+        Mandatory Sequence:
+        1. Verify authorization, commit, checkpoint, and runtime state.
+        2. Check for prior interrupted attempts (fail closed against silent retry).
+        3. Record EVALUATION_RESERVED in ledger and fsync.
+        4. Increment evaluation_attempts BEFORE first model forward.
+        5. Run inference. If crash: mark EVALUATION_ATTEMPT_INTERRUPTED and fail closed.
+        6. Validate predictions.
+        7. Stage predictions to .part, flush and fsync.
+        8. Atomic rename via os.replace.
+        9. Increment completed_model_evaluations.
+        10. Record EVALUATION_COMPLETED in ledger and fsync.
+        11. Write single checkpoint receipt with tip_entry_hash and fsync.
+        """
         if seed not in AUTHORIZED_SEEDS:
             raise ValueError(f"Unauthorized seed: {seed}. Allowed: {AUTHORIZED_SEEDS}")
 
@@ -396,59 +624,101 @@ class LockedTestEvaluator:
 
         # Check if already completed
         if pred_file.is_file() and receipt_file.is_file():
-            # Already completed; fail-closed against silent re-run
             raise RuntimeError(
                 f"Output already exists for seed {seed}: '{pred_file}'. Silent re-run forbidden."
             )
 
-        # Pre-inference crash handling: if part file exists from crashed prior run, clean it up
+        # Crash discrimination: check ledger for prior uncompleted reservation
+        reserved = False
+        for entry in self.ledger.entries:
+            if entry.get("checkpoint_seed") == seed:
+                if entry.get("event_type") == "EVALUATION_RESERVED":
+                    reserved = True
+                elif entry.get("event_type") == "EVALUATION_COMPLETED":
+                    reserved = False
+
+        if reserved:
+            raise RuntimeError(
+                f"Evaluation blocked: Prior attempt for seed {seed} was interrupted after reservation. "
+                "Automatic retry forbidden. Human adjudication required."
+            )
+
         part_file = self.output_dir / f"predictions_seed_{seed}.json.part"
         if part_file.is_file():
-            part_file.unlink()
+            raise RuntimeError(
+                f"Evaluation blocked: Partial predictions file '{part_file}' found for seed {seed}. "
+                "Interrupted attempt detected. Automatic retry forbidden. Human adjudication required."
+            )
 
-        # Log start
+        # Check limits
+        if self.ledger.evaluation_attempts >= 5:
+            raise PermissionError(
+                f"Violation: Attempted to exceed maximum authorized evaluation attempts (current={self.ledger.evaluation_attempts}, max=5)"
+            )
+        if self.ledger.completed_model_evaluations >= 5:
+            raise PermissionError(
+                f"Violation: Attempted to exceed maximum authorized completed evaluations (current={self.ledger.completed_model_evaluations}, max=5)"
+            )
+
+        # Step 2 & 3: Log EVALUATION_RESERVED and increment evaluation_attempts BEFORE model forward
         self.ledger.record_event(
-            event_type="MODEL_EVAL_START",
+            event_type="EVALUATION_RESERVED",
             session_id=session_id,
-            seed=seed,
-            metadata={"checkpoint_sha256": checkpoint_info["sha256"]},
-            inc_model_eval=False,
+            checkpoint_seed=seed,
+            metadata={
+                "checkpoint_sha256": checkpoint_info["sha256"],
+                "evaluator_functional_commit": EVALUATOR_FUNCTIONAL_COMMIT,
+            },
+            inc_evaluation_attempt=True,
         )
 
+        # Step 4: Execute model forward / inference
         try:
-            # Execute inference
             predictions_payload = inference_fn(seed, checkpoint_info, data_loader)
         except Exception as e:
-            # Pre-inference crash (before predictions generated)
+            # Crash after reservation! Mark EVALUATION_ATTEMPT_INTERRUPTED; DO NOT retry
             self.ledger.record_event(
-                event_type="MODEL_EVAL_CRASH",
+                event_type="EVALUATION_ATTEMPT_INTERRUPTED",
                 session_id=session_id,
-                seed=seed,
+                checkpoint_seed=seed,
                 metadata={"error": str(e), "crash_stage": "inference"},
-                inc_model_eval=False,
             )
-            raise e
+            raise RuntimeError(
+                f"Evaluation crash for seed {seed} during inference. "
+                "Logged EVALUATION_ATTEMPT_INTERRUPTED in tamper-evident ledger. "
+                "Automatic retry forbidden. Human adjudication required."
+            ) from e
 
         # Validate prediction structure
         records = predictions_payload.get("predictions", [])
         if len(records) != EXPECTED_LOCKED_TEST_SAMPLES:
+            self.ledger.record_event(
+                event_type="EVALUATION_ATTEMPT_INTERRUPTED",
+                session_id=session_id,
+                checkpoint_seed=seed,
+                metadata={
+                    "error": f"Record count {len(records)} != {EXPECTED_LOCKED_TEST_SAMPLES}",
+                    "crash_stage": "validation",
+                },
+            )
             raise ValueError(
                 f"Prediction count mismatch for seed {seed}: got {len(records)}, expected {EXPECTED_LOCKED_TEST_SAMPLES}"
             )
 
-        # Write predictions atomically via .part then rename
+        # Step 5: Write predictions to .part, flush and fsync
         with open(part_file, "w", encoding="utf-8") as f:
             json.dump(predictions_payload, f, indent=2)
             f.flush()
             os.fsync(f.fileno())
 
+        # Step 6: Atomic rename
         os.replace(part_file, pred_file)
 
-        # Increment completed_model_evaluations immediately after predictions exist
+        # Step 7 & 8: Increment completed_model_evaluations and log EVALUATION_COMPLETED
         self.ledger.record_event(
-            event_type="MODEL_EVAL_COMPLETE",
+            event_type="EVALUATION_COMPLETED",
             session_id=session_id,
-            seed=seed,
+            checkpoint_seed=seed,
             metadata={
                 "prediction_file_sha256": compute_file_sha256(pred_file),
                 "record_count": len(records),
@@ -456,27 +726,31 @@ class LockedTestEvaluator:
             inc_model_eval=True,
         )
 
-        # Compute single checkpoint metrics
+        # Compute single checkpoint descriptive metrics
         y_true = np.array([r["true_label"] for r in records], dtype=np.int64)
         logits = np.array([r["logits"] for r in records], dtype=np.float64)
         metrics = compute_confirmatory_descriptive_metrics(y_true, logits)
 
-        # Write receipt
+        # Step 9: Write receipt with tip_entry_hash and fsync
         receipt = {
             "timestamp_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
             "protocol": AUTHORIZED_PROTOCOL,
             "sample_size": AUTHORIZED_SAMPLE_SIZE,
-            "seed": seed,
+            "checkpoint_seed": seed,
             "session_id": session_id,
+            "evaluator_functional_commit": EVALUATOR_FUNCTIONAL_COMMIT,
             "checkpoint_sha256": checkpoint_info["sha256"],
             "prediction_file": str(pred_file.name),
             "prediction_file_sha256": compute_file_sha256(pred_file),
             "sample_count": len(records),
             "metrics": metrics,
+            "tip_entry_hash": self.ledger.tip_entry_hash,
             "status": "COMPLETED",
         }
         with open(receipt_file, "w", encoding="utf-8") as f:
             json.dump(receipt, f, indent=2)
+            f.flush()
+            os.fsync(f.fileno())
 
         return receipt
 
@@ -484,8 +758,17 @@ class LockedTestEvaluator:
         self,
         mock_records: List[Dict[str, Any]],
         session_id: str = "dry-run-synthetic-session-001",
+        n_bootstrap_replicates: int = BOOTSTRAP_REPLICATES,
     ) -> Dict[str, Any]:
-        """Executes an end-to-end dry run on synthetic mock data without touching locked-test."""
+        """Executes an end-to-end dry run on synthetic mock data without touching locked-test.
+
+        Strict Disclaimers:
+        - Synthetic fixture only; not a scientific result.
+        - Must not be included in actual performance reports.
+        - Real counters (completed_real_unsealing_sessions, completed_real_model_evaluations,
+          locked_test_real_accesses) strictly remain 0.
+        - Verdict is strictly SYNTHETIC_PIPELINE_PASS.
+        """
         if len(mock_records) != EXPECTED_LOCKED_TEST_SAMPLES:
             raise ValueError(
                 f"Synthetic mock records count {len(mock_records)} != {EXPECTED_LOCKED_TEST_SAMPLES}"
@@ -510,7 +793,6 @@ class LockedTestEvaluator:
         for seed in AUTHORIZED_SEEDS:
             # Deterministic mock logits based on seed
             rng = np.random.Generator(np.random.PCG64(seed))
-            # Slightly informative synthetic signal
             noise = rng.normal(0, 0.5, size=len(y_true))
             pos_logits = (y_true - 0.5) * 1.2 + noise
             neg_logits = -pos_logits
@@ -548,36 +830,54 @@ class LockedTestEvaluator:
             )
             all_predictions[seed] = mock_logits
 
-        # Compute source-cluster bootstrap CI
+        # Compute source-cluster bootstrap CI with exactly 10,000 replicates
         bootstrap_results = compute_source_cluster_bootstrap_ci(
             source_ids=source_ids,
             y_true=y_true,
             predictions_per_checkpoint=all_predictions,
-            n_replicates=1000,  # 1000 for dry-run speed; 10,000 for formal confirmatory run
+            n_replicates=n_bootstrap_replicates,
             seed=BOOTSTRAP_RNG_SEED,
+            is_synthetic_dry_run=True,
         )
+
+        # Enforce prohibition of confirmatory verdicts in synthetic receipt
+        for forbidden in FORBIDDEN_SYNTHETIC_VERDICTS:
+            if bootstrap_results.get("verdict") == forbidden:
+                raise RuntimeError(
+                    f"Security violation: synthetic dry-run produced forbidden verdict '{forbidden}'"
+                )
 
         summary_payload = {
             "timestamp_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
             "session_id": session_id,
-            "mode": "synthetic_dry_run",
+            "mode": "synthetic_dry_run_fixture_only",
+            "notice": "SYNTHETIC FIXTURE ONLY. Not a scientific result. Must not be included in actual performance reports.",
+            "scientific_result": False,
             "protocol": AUTHORIZED_PROTOCOL,
             "sample_size": AUTHORIZED_SAMPLE_SIZE,
             "seeds": AUTHORIZED_SEEDS,
-            "completed_unsealing_sessions": self.ledger.completed_unsealing_sessions,
-            "completed_model_evaluations": self.ledger.completed_model_evaluations,
+            "evaluator_functional_commit": EVALUATOR_FUNCTIONAL_COMMIT,
+            "synthetic_sessions_simulated": 1,
+            "synthetic_model_evaluations_simulated": 5,
+            "completed_real_unsealing_sessions": 0,
+            "completed_real_model_evaluations": 0,
+            "locked_test_real_accesses": 0,
+            "tip_entry_hash": self.ledger.tip_entry_hash,
             "bootstrap_results": bootstrap_results,
-            "status": "COMPLETED",
+            "verdict": "SYNTHETIC_PIPELINE_PASS",
+            "status": "COMPLETED_VALID",
         }
 
         summary_file = self.output_dir / "synthetic_dry_run_summary.json"
         with open(summary_file, "w", encoding="utf-8") as f:
             json.dump(summary_payload, f, indent=2)
+            f.flush()
+            os.fsync(f.fileno())
 
         self.ledger.record_event(
             event_type="SESSION_CLOSE",
             session_id=session_id,
-            metadata={"status": "COMPLETED", "summary_file": str(summary_file.name)},
+            metadata={"status": "COMPLETED_VALID", "summary_file": str(summary_file.name)},
             inc_unsealing_session=False,
             inc_model_eval=False,
         )

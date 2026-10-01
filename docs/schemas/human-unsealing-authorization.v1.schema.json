@@ -1,0 +1,130 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://forensics-web-lab.local/schemas/human-unsealing-authorization.v1.schema.json",
+  "title": "HumanUnsealingAuthorizationV1",
+  "description": "Preregistered schema for one-time human authorization artifact required to unseal locked-test partition.",
+  "type": "object",
+  "required": [
+    "status",
+    "authorization_id",
+    "authorized_by",
+    "authorized_at_utc",
+    "candidate_protocol",
+    "sample_size",
+    "exact_seeds",
+    "checkpoint_sha256s",
+    "evaluator_functional_commit",
+    "evaluator_component_hashes",
+    "maximum_unsealing_sessions",
+    "maximum_model_evaluation_attempts",
+    "expiry_policy",
+    "authorization_purpose",
+    "no_tuning_acknowledgment"
+  ],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["AUTHORIZED"],
+      "description": "Must be strictly AUTHORIZED to permit locked-test unsealing."
+    },
+    "authorization_id": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9_-]{8,64}$",
+      "description": "Unique identifier for this human authorization."
+    },
+    "authorized_by": {
+      "type": "string",
+      "minLength": 3,
+      "description": "Identity, role, or institutional affiliation of the authorizer."
+    },
+    "authorized_at_utc": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 UTC timestamp when authorization was executed."
+    },
+    "candidate_protocol": {
+      "type": "string",
+      "enum": ["stage1_frozen_backbone_linear_probe"],
+      "description": "Candidate protocol locked during Phase 4C.2E preregistration."
+    },
+    "sample_size": {
+      "type": "integer",
+      "const": 250,
+      "description": "Maximum development sample size principle locked in preregistration."
+    },
+    "exact_seeds": {
+      "type": "array",
+      "items": { "type": "integer" },
+      "minItems": 5,
+      "maxItems": 5,
+      "description": "Strict 5-seed list [42, 1337, 2025, 3407, 9001]."
+    },
+    "checkpoint_sha256s": {
+      "type": "object",
+      "required": ["42", "1337", "2025", "3407", "9001"],
+      "properties": {
+        "42": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "1337": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "2025": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "3407": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "9001": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      },
+      "additionalProperties": false,
+      "description": "Cryptographic SHA-256 digests for all 5 candidate checkpoints."
+    },
+    "evaluator_functional_commit": {
+      "type": "string",
+      "const": "656529f04ee8dfcf26e7bb46c757f5cba279326e",
+      "description": "Canonical functional commit hash of the confirmatory evaluator."
+    },
+    "evaluator_component_hashes": {
+      "type": "object",
+      "required": [
+        "confirmatory_metrics",
+        "locked_test_evaluator",
+        "run_evaluator_cli"
+      ],
+      "properties": {
+        "confirmatory_metrics": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "locked_test_evaluator": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "run_evaluator_cli": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      },
+      "description": "SHA-256 digests of canonical evaluator source components."
+    },
+    "maximum_unsealing_sessions": {
+      "type": "integer",
+      "const": 1,
+      "description": "Hard limit on total unsealing sessions (exactly 1)."
+    },
+    "maximum_model_evaluation_attempts": {
+      "type": "integer",
+      "const": 5,
+      "description": "Hard limit on evaluation attempts across the 5 candidate checkpoints (exactly 5)."
+    },
+    "expiry_policy": {
+      "type": "object",
+      "required": ["policy"],
+      "properties": {
+        "policy": {
+          "type": "string",
+          "enum": ["single_session_only", "explicit_expiry_timestamp", "explicit_no_expiry"]
+        },
+        "expires_at_utc": {
+          "type": ["string", "null"]
+        }
+      },
+      "description": "Specification of unsealing authorization expiry."
+    },
+    "authorization_purpose": {
+      "type": "string",
+      "minLength": 10,
+      "description": "Explicit statement of evaluation purpose."
+    },
+    "no_tuning_acknowledgment": {
+      "type": "boolean",
+      "const": true,
+      "description": "Irrevocable acknowledgment that no model tuning, threshold tuning, or hyperparameter selection will occur on locked-test."
+    }
+  },
+  "additionalProperties": false
+}

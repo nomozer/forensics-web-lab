@@ -6,7 +6,12 @@ Strict constraints:
 - Selected candidate: stage1_frozen_backbone_linear_probe (N=250, 5 seeds).
 - Label mapping: authentic = 0, ai_edited = 1.
 - Positive probability: softmax(logits)[:, 1].
-- Predicted class: argmax(logits) == (positive_prob >= 0.5).
+- Predicted class: argmax(logits, axis=1).
+  Official tie-breaking semantics:
+  * p1 > 0.5: class 1
+  * p1 < 0.5: class 0
+  * p1 == 0.5: class 0 according to argmax first-index behavior (authentic).
+  Do NOT equate argmax with p1 >= 0.5 (which would select class 1 at p1 == 0.5).
 - Macro-F1: sklearn.metrics.f1_score(y_true, y_pred, average="macro", labels=[0, 1], zero_division=0).
 - Source-cluster bootstrap: 10,000 replicates, PCG64 seed 20261002, exactly 343 sources sampled with replacement,
   preserving 2-sample clusters (686 rows per replicate), arithmetic mean of per-checkpoint Macro-F1s.
@@ -59,9 +64,15 @@ def logits_to_probabilities(logits: np.ndarray) -> np.ndarray:
 
 
 def predict_classes(logits_or_probs: np.ndarray) -> np.ndarray:
-    """Predicts discrete binary class {0, 1} via argmax on logits/probs.
+    """Predicts discrete binary class {0, 1} via argmax on logits/probs along axis=1.
 
-    Argmax on 2 classes is exactly equivalent to positive_probability >= 0.5.
+    Official tie-breaking rule:
+    predicted_class = argmax(logits, axis=1)
+    - p1 > 0.5: class 1
+    - p1 < 0.5: class 0
+    - p1 == 0.5: class 0 (first-index behavior of argmax)
+
+    Note: This is NOT equivalent to p1 >= 0.5 (which would select class 1 at 0.5).
     Threshold optimization is strictly prohibited.
     """
     arr = np.asarray(logits_or_probs, dtype=np.float64)
@@ -234,12 +245,28 @@ def compute_confirmatory_descriptive_metrics(
     }
 
 
+def _fast_binary_macro_f1(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    """Computes exact binary Macro-F1 across {0, 1} with zero_division=0.
+
+    100% numerically identical to sklearn.metrics.f1_score(y_true, y_pred, average='macro', labels=[0, 1], zero_division=0).
+    """
+    idx = 2 * y_true + y_pred
+    counts = np.bincount(idx, minlength=4)
+    tn, fp, fn, tp = counts[0], counts[1], counts[2], counts[3]
+    denom0 = 2 * tn + fp + fn
+    f1_0 = (2.0 * tn / denom0) if denom0 > 0 else 0.0
+    denom1 = 2 * tp + fp + fn
+    f1_1 = (2.0 * tp / denom1) if denom1 > 0 else 0.0
+    return 0.5 * (f1_0 + f1_1)
+
+
 def compute_source_cluster_bootstrap_ci(
     source_ids: Sequence[str],
     y_true: np.ndarray,
     predictions_per_checkpoint: Dict[int, np.ndarray],
     n_replicates: int = BOOTSTRAP_REPLICATES,
     seed: int = BOOTSTRAP_RNG_SEED,
+    is_synthetic_dry_run: bool = False,
 ) -> Dict[str, Any]:
     """Executes the exact preregistered source-cluster bootstrap protocol for confirmatory evaluation.
 
@@ -304,7 +331,7 @@ def compute_source_cluster_bootstrap_ci(
             )
         source_to_indices.append(rows)
 
-    # 1. Point estimates on full cohort
+    # 1. Point estimates on full cohort (using canonical sklearn implementation)
     per_checkpoint_f1: Dict[int, float] = {}
     for s in seeds:
         per_checkpoint_f1[s] = compute_binary_macro_f1(y_true_arr, preds_per_cp[s])
@@ -332,7 +359,7 @@ def compute_source_cluster_bootstrap_ci(
 
         # Compute per-checkpoint Macro-F1 on this replicate
         rep_f1s = [
-            compute_binary_macro_f1(y_boot, preds_per_cp[s][replicate_rows])
+            _fast_binary_macro_f1(y_boot, preds_per_cp[s][replicate_rows])
             for s in seeds
         ]
 
@@ -344,15 +371,19 @@ def compute_source_cluster_bootstrap_ci(
     ci_lower = float(ci[0])
     ci_upper = float(ci[1])
 
-    # 4. Confirmatory verdict
-    confirmatory_success = bool(ci_lower > UNINFORMATIVE_REFERENCE_THRESHOLD)
-    verdict = (
-        "CONFIRMATORY_SUCCESS"
-        if confirmatory_success
-        else "INSUFFICIENT_CONFIRMATORY_EVIDENCE"
-    )
+    # 4. Verdict determination
+    if is_synthetic_dry_run:
+        confirmatory_success = None
+        verdict = "SYNTHETIC_PIPELINE_PASS"
+    else:
+        confirmatory_success = bool(ci_lower > UNINFORMATIVE_REFERENCE_THRESHOLD)
+        verdict = (
+            "CONFIRMATORY_SUCCESS"
+            if confirmatory_success
+            else "INSUFFICIENT_CONFIRMATORY_EVIDENCE"
+        )
 
-    return {
+    res: Dict[str, Any] = {
         "aggregate_macro_f1": aggregate_macro_f1,
         "per_checkpoint_macro_f1": per_checkpoint_f1,
         "between_seed_sd": float(np.std(list(per_checkpoint_f1.values()), ddof=1)),
@@ -366,10 +397,13 @@ def compute_source_cluster_bootstrap_ci(
         "ci_upper_95": ci_upper,
         "reference_threshold": UNINFORMATIVE_REFERENCE_THRESHOLD,
         "reference_label": UNINFORMATIVE_REFERENCE_LABEL,
-        "confirmatory_success": confirmatory_success,
         "verdict": verdict,
         "uncertainty_scope": (
             "Source-sampling uncertainty conditional on the five fixed checkpoints. "
             "Does not cover training-seed uncertainty."
         ),
     }
+    if confirmatory_success is not None:
+        res["confirmatory_success"] = confirmatory_success
+
+    return res

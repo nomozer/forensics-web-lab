@@ -111,15 +111,15 @@ def main() -> int:
 
     try:
         auth_data = evaluator.verify_human_authorization(args.authorization_file)
-        print(f"[SECURITY] Authorization verified. Approver: {auth_data.get('approver_id')}")
+        print(f"[SECURITY] Authorization verified. Authorized by: {auth_data.get('authorized_by')} (ID: {auth_data.get('authorization_id')})")
     except PermissionError as e:
         print(f"[BLOCKED] Authorization check failed: {e}", file=sys.stderr)
         return 1
 
-    print("[SECURITY] Verifying network isolation...")
+    print("[SECURITY] Verifying network isolation (passive local inspection)...")
     try:
         evaluator.verify_network_isolation()
-        print("[SECURITY] Network isolation confirmed.")
+        print("[SECURITY] Network isolation confirmed passively (0 outbound probes).")
     except RuntimeError as e:
         print(f"[BLOCKED] Network isolation check failed: {e}", file=sys.stderr)
         return 2
@@ -128,10 +128,10 @@ def main() -> int:
         print(f"[BLOCKED] Invalid locked-test directory: {args.locked_test_dir}", file=sys.stderr)
         return 3
 
-    print("[SECURITY] Verifying read-only mount...")
+    print("[SECURITY] Verifying read-only mount (non-invasive inspection)...")
     try:
-        evaluator.verify_read_only_mount(args.locked_test_dir)
-        print("[SECURITY] Read-only data mount confirmed.")
+        evaluator.verify_read_only_mount(args.locked_test_dir, output_dir=args.output_dir)
+        print("[SECURITY] Read-only data mount confirmed non-invasively (0 canary writes).")
     except RuntimeError as e:
         print(f"[BLOCKED] Read-only mount check failed: {e}", file=sys.stderr)
         return 4

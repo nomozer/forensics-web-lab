@@ -1,6 +1,6 @@
 {
-  "timestamp_utc": "2026-10-01T17:58:00.000000+00:00",
-  "phase": "Phase 4C.2F",
+  "timestamp_utc": "2026-10-02T01:00:00.000000+00:00",
+  "phase": "Phase 4C.2F.1",
   "contract_name": "bootstrap_contract",
   "method": "source_cluster_bootstrap",
   "resampling_unit": "unique_source_id",
@@ -29,5 +29,6 @@
     "value": 0.5000,
     "label": "balanced_binary_uninformative_reference",
     "criterion": "ci_lower > 0.5000"
-  }
+  },
+  "synthetic_mode_rule": "When executed on synthetic fixtures, output verdict is SYNTHETIC_PIPELINE_PASS and confirmatory success is omitted to prevent confusing fixtures with confirmatory evidence."
 }

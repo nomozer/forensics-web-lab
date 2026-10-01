@@ -1,6 +1,6 @@
 {
-  "timestamp_utc": "2026-10-01T17:58:00.000000+00:00",
-  "phase": "Phase 4C.2F",
+  "timestamp_utc": "2026-10-02T01:00:00.000000+00:00",
+  "phase": "Phase 4C.2F.1",
   "contract_name": "metric_implementation_contract",
   "label_mapping": {
     "authentic": 0,
@@ -8,8 +8,8 @@
   },
   "prediction_rule": {
     "positive_probability": "softmax(logits, dim=1)[:, 1]",
-    "predicted_class": "argmax(logits, dim=1)",
-    "threshold": 0.5,
+    "predicted_class": "argmax(logits, axis=1)",
+    "tie_breaking": "Official argmax first-index rule: p1 > 0.5 -> class 1; p1 < 0.5 -> class 0; p1 == 0.5 -> class 0 (first index). Not equivalent to p1 >= 0.5.",
     "threshold_optimization_allowed": false
   },
   "primary_endpoint": {

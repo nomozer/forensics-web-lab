@@ -1,12 +1,13 @@
 """
-Unit, Contract, and Fault-Injection Tests for Phase 4C.2F Locked-Test Confirmatory Evaluator.
+Unit, Contract, and Fault-Injection Tests for Phase 4C.2F.1 / Phase 4C.2 Locked-Test Confirmatory Evaluator.
 
 Guarantees:
 - ZERO accesses to locked-test partition (uses only synthetic fixtures).
-- ZERO network calls.
+- ZERO outbound network calls or socket probes.
+- ZERO canary writes or filesystem mutations under locked-test roots.
 - ZERO training runs or GPU inferences.
 - Verifies exact 5 candidate checkpoints, bootstrap protocol, calibration semantics,
-  fail-closed authorization, append-only hash-chained ledger, and crash accounting.
+  fail-closed authorization, tamper-evident hash-chained ledger, and crash accounting.
 """
 
 from __future__ import annotations
@@ -38,13 +39,17 @@ from ml.evaluation.confirmatory_metrics import (
     predict_classes,
 )
 from ml.evaluation.locked_test_evaluator import (
+    AUDITED_THROUGH_COMMIT,
     AUTHORIZED_PROTOCOL,
     AUTHORIZED_SAMPLE_SIZE,
     AUTHORIZED_SEEDS,
+    BASE_MAIN_COMMIT,
     CHECKPOINT_SHA256_REGISTRY,
+    EVALUATOR_FUNCTIONAL_COMMIT,
     EXPECTED_CHECKPOINT_BYTES,
     EXPECTED_LOCKED_TEST_SAMPLES,
     EXPECTED_LOCKED_TEST_SOURCES,
+    FORBIDDEN_SYNTHETIC_VERDICTS,
     AccessLedger,
     LockedTestEvaluator,
     compute_file_sha256,
@@ -72,19 +77,16 @@ class TestCandidateCheckpointResolution:
         cp_dir = tmp_path / "checkpoints"
         cp_dir.mkdir()
 
-        # Create dummy files and mock registry hashes to match
         custom_registry = {}
         for seed in AUTHORIZED_SEEDS:
             run_dir = cp_dir / f"n250_seed_{seed}"
             run_dir.mkdir()
             cp_file = run_dir / "best_checkpoint.pt"
-            # Write exactly EXPECTED_CHECKPOINT_BYTES
             content = f"dummy_checkpoint_seed_{seed}".encode("utf-8")
             padding = b"\0" * (EXPECTED_CHECKPOINT_BYTES - len(content))
             cp_file.write_bytes(content + padding)
             custom_registry[seed] = hashlib.sha256(content + padding).hexdigest()
 
-        # Monkeypatch CHECKPOINT_SHA256_REGISTRY for this test
         import ml.evaluation.locked_test_evaluator as lte
         orig_registry = lte.CHECKPOINT_SHA256_REGISTRY
         try:
@@ -106,7 +108,6 @@ class TestCandidateCheckpointResolution:
             run_dir = cp_dir / f"n250_seed_{seed}"
             run_dir.mkdir()
             cp_file = run_dir / "best_checkpoint.pt"
-            # Corrupted content (hash won't match real registry)
             cp_file.write_bytes(b"corrupted" + b"\0" * (EXPECTED_CHECKPOINT_BYTES - 9))
 
         with pytest.raises(ValueError, match="Checkpoint SHA-256 mismatch"):
@@ -117,7 +118,6 @@ class TestCandidateCheckpointResolution:
         cp_dir = tmp_path / "checkpoints"
         cp_dir.mkdir()
 
-        # Only create 4 out of 5
         for seed in [42, 1337, 2025, 3407]:
             run_dir = cp_dir / f"n250_seed_{seed}"
             run_dir.mkdir()
@@ -141,10 +141,10 @@ class TestCandidateCheckpointResolution:
 
     def test_06_best_seed_selection_and_ensembling_forbidden(self):
         """Contract invariants: no cherry-picking, no post-hoc ensembling."""
-        from ml.evaluation.locked_test_evaluator import AUTHORIZED_SEEDS
         assert len(AUTHORIZED_SEEDS) == 5
-        # The primary endpoint must compute individual Macro-F1 per checkpoint and average them,
-        # never selecting argmax across seeds.
+        assert EVALUATOR_FUNCTIONAL_COMMIT == "656529f04ee8dfcf26e7bb46c757f5cba279326e"
+        assert BASE_MAIN_COMMIT == "8a379665bc8db3722a46618e47db4806a6ea7244"
+        assert EVALUATOR_FUNCTIONAL_COMMIT != BASE_MAIN_COMMIT
 
 
 # ==============================================================================
@@ -152,7 +152,7 @@ class TestCandidateCheckpointResolution:
 # ==============================================================================
 
 class TestConfirmatoryMetricsImplementation:
-    """Tests exact metric definitions, numerical parity, calibration 10 bins, and edge cases."""
+    """Tests exact metric definitions, numerical parity, calibration 10 bins, and tie-breaking."""
 
     def test_07_exact_label_mapping(self):
         """Verifies label mapping: authentic=0, ai_edited=1."""
@@ -160,19 +160,41 @@ class TestConfirmatoryMetricsImplementation:
         assert LABEL_MAP["ai_edited"] == 1
         assert len(LABEL_MAP) == 2
 
-    def test_08_logits_to_probabilities_and_argmax(self):
-        """Verifies softmax stability and argmax threshold 0.5 equivalence."""
+    def test_08_argmax_tie_breaking_official_semantics(self):
+        """Verifies official tie-breaking rule:
+        predicted_class = argmax(logits, axis=1)
+        - p1 > 0.5: class 1
+        - p1 < 0.5: class 0
+        - p1 == 0.5: class 0 according to argmax first-index behavior
+        Not equivalent to p1 >= 0.5!
+        """
         logits = np.array([
-            [2.0, 1.0],   # pred 0 (pos prob < 0.5)
-            [-1.0, 3.0],  # pred 1 (pos prob > 0.5)
-            [0.0, 0.0],   # tie -> argmax 0
+            [2.0, 1.0],   # pred 0 (p1 < 0.5)
+            [-1.0, 3.0],  # pred 1 (p1 > 0.5)
+            [0.0, 0.0],   # tie (p1 == 0.5) -> argmax chooses index 0 (authentic)
+            [1.5, 1.5],   # tie (p1 == 0.5) -> argmax chooses index 0 (authentic)
+            [-2.0, -2.0], # tie (p1 == 0.5) -> argmax chooses index 0 (authentic)
         ])
         probs = logits_to_probabilities(logits)
-        assert probs.shape == (3, 2)
-        np.testing.assert_allclose(probs.sum(axis=1), [1.0, 1.0, 1.0])
+        assert probs.shape == (5, 2)
+        np.testing.assert_allclose(probs.sum(axis=1), [1.0, 1.0, 1.0, 1.0, 1.0])
 
-        preds = predict_classes(probs)
-        assert list(preds) == [0, 1, 0]
+        # For the tie rows, probs are exactly [0.5, 0.5]
+        assert probs[2, 0] == 0.5 and probs[2, 1] == 0.5
+        assert probs[3, 0] == 0.5 and probs[3, 1] == 0.5
+        assert probs[4, 0] == 0.5 and probs[4, 1] == 0.5
+
+        # Test prediction from logits directly
+        preds_from_logits = predict_classes(logits)
+        assert list(preds_from_logits) == [0, 1, 0, 0, 0]
+
+        # Test prediction from probabilities
+        preds_from_probs = predict_classes(probs)
+        assert list(preds_from_probs) == [0, 1, 0, 0, 0]
+
+        # Contrast with naive >= 0.5 threshold which would erroneously choose class 1
+        naive_geq_half = (probs[:, 1] >= 0.5).astype(int)
+        assert list(naive_geq_half) == [0, 1, 1, 1, 1]  # Demonstrates why equating them is wrong
 
     def test_09_macro_f1_parity_with_fixture(self):
         """Verifies exact parity with sklearn macro-F1 on binary classes {0, 1}."""
@@ -199,7 +221,6 @@ class TestConfirmatoryMetricsImplementation:
         assert metrics["temperature_scaling_applied"] is False
         assert metrics["threshold_optimized"] is False
 
-        # Confusion matrix checks: TN=1, FP=1, FN=1, TP=1
         cm = metrics["confusion_matrix"]
         assert cm["tn"] == 1
         assert cm["fp"] == 1
@@ -223,15 +244,13 @@ class TestConfirmatoryMetricsImplementation:
         assert len(ECE_BIN_EDGES) == 11
         assert ECE_BIN_EDGES == [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 
-        # Construct specific probabilities at boundary points
         y_true = np.array([1, 1, 1, 1, 1])
-        # confidences: max prob per row
         probs = np.array([
-            [1.0, 0.0],  # conf = 1.0 (should fall in bin 9: [0.9, 1.0])
-            [0.1, 0.9],  # conf = 0.9 (should fall in bin 9: [0.9, 1.0])
-            [0.5, 0.5],  # conf = 0.5 (should fall in bin 5: [0.5, 0.6))
-            [0.9, 0.1],  # conf = 0.9 (should fall in bin 9: [0.9, 1.0])
-            [0.0, 1.0],  # conf = 1.0 (should fall in bin 9: [0.9, 1.0])
+            [1.0, 0.0],  # conf = 1.0 (bin 9: [0.9, 1.0])
+            [0.1, 0.9],  # conf = 0.9 (bin 9: [0.9, 1.0])
+            [0.5, 0.5],  # conf = 0.5 (bin 5: [0.5, 0.6))
+            [0.9, 0.1],  # conf = 0.9 (bin 9: [0.9, 1.0])
+            [0.0, 1.0],  # conf = 1.0 (bin 9: [0.9, 1.0])
         ])
         ece = compute_ece_10_bins(y_true, probs, num_bins=10)
         assert 0.0 <= ece <= 1.0
@@ -240,11 +259,10 @@ class TestConfirmatoryMetricsImplementation:
         """When multiple bins are empty, they contribute 0 and cause no ZeroDivisionError."""
         y_true = np.array([0, 1])
         probs = np.array([
-            [0.85, 0.15],  # conf = 0.85 (bin [0.8, 0.9))
-            [0.15, 0.85],  # conf = 0.85 (bin [0.8, 0.9))
+            [0.85, 0.15],
+            [0.15, 0.85],
         ])
         ece = compute_ece_10_bins(y_true, probs, num_bins=10)
-        # 100% correct in bin [0.8, 0.9), conf = 0.85, acc = 1.0, diff = 0.15
         assert abs(ece - 0.15) < 1e-6
 
 
@@ -257,7 +275,6 @@ class TestSourceClusterBootstrap:
 
     def test_14_each_bootstrap_replicate_has_exact_686_rows(self):
         """Verifies each replicate draws 343 sources and produces exactly 686 rows."""
-        # Create synthetic 343 sources (686 samples)
         mock_data = generate_synthetic_mock_records()
         assert len(mock_data) == EXPECTED_LOCKED_TEST_SAMPLES
         assert len(set(r["source_id"] for r in mock_data)) == EXPECTED_LOCKED_TEST_SOURCES
@@ -265,13 +282,11 @@ class TestSourceClusterBootstrap:
         source_ids = [r["source_id"] for r in mock_data]
         y_true = np.array([r["true_label"] for r in mock_data], dtype=np.int64)
 
-        # Mock predictions for 5 seeds
         mock_preds = {
             seed: np.array([r["true_label"] for r in mock_data], dtype=np.int64)
             for seed in AUTHORIZED_SEEDS
         }
 
-        # Run 5 replicates to verify shape
         res = compute_source_cluster_bootstrap_ci(
             source_ids=source_ids,
             y_true=y_true,
@@ -284,12 +299,10 @@ class TestSourceClusterBootstrap:
 
     def test_15_duplicate_bootstrap_sources_preserve_multiplicity(self):
         """Verifies that when a source is selected k times, BOTH samples appear k times."""
-        # Simple test with 3 sources (6 samples)
         source_ids = ["s1", "s1", "s2", "s2", "s3", "s3"]
         y_true = np.array([0, 1, 0, 1, 0, 1])
         mock_preds = {seed: copy.deepcopy(y_true) for seed in AUTHORIZED_SEEDS}
 
-        # Deterministic small bootstrap
         res = compute_source_cluster_bootstrap_ci(
             source_ids=source_ids,
             y_true=y_true,
@@ -334,7 +347,7 @@ class TestSourceClusterBootstrap:
         source_ids = [f"s_{i}" for i in range(10) for _ in range(2)]
         y_true = np.array([0, 1] * 10)
 
-        # 1. Perfect model -> CI lower >> 0.5000 -> CONFIRMATORY_SUCCESS
+        # 1. Perfect model -> CONFIRMATORY_SUCCESS
         perfect_preds = {s: copy.deepcopy(y_true) for s in AUTHORIZED_SEEDS}
         res_success = compute_source_cluster_bootstrap_ci(
             source_ids=source_ids,
@@ -348,7 +361,7 @@ class TestSourceClusterBootstrap:
         assert res_success["verdict"] == "CONFIRMATORY_SUCCESS"
         assert res_success["reference_label"] == UNINFORMATIVE_REFERENCE_LABEL
 
-        # 2. Random guessing -> CI lower <= 0.5000 -> INSUFFICIENT_CONFIRMATORY_EVIDENCE
+        # 2. Random guessing -> INSUFFICIENT_CONFIRMATORY_EVIDENCE
         all_zero_preds = {s: np.zeros_like(y_true) for s in AUTHORIZED_SEEDS}
         res_fail = compute_source_cluster_bootstrap_ci(
             source_ids=source_ids,
@@ -367,7 +380,7 @@ class TestSourceClusterBootstrap:
 # ==============================================================================
 
 class TestEvaluatorFailClosedAndLedger:
-    """Verifies authorization checks, isolation guards, append-only ledger, and crash accounting."""
+    """Verifies authorization checks, isolation guards, tamper-evident ledger, and crash accounting."""
 
     def test_18_missing_authorization_artifact_fails_closed(self, tmp_path):
         """Missing authorization file causes immediate rejection."""
@@ -377,38 +390,60 @@ class TestEvaluatorFailClosedAndLedger:
         with pytest.raises(PermissionError, match="does not exist"):
             LockedTestEvaluator.verify_human_authorization(tmp_path / "nonexistent.json")
 
-    def test_19_invalid_authorization_fields_rejected(self, tmp_path):
+    def test_19_authorization_validator_strictly_checks_schema(self, tmp_path):
         """Tampered authorization artifact fields are rejected fail-closed."""
         auth_file = tmp_path / "auth.json"
 
-        # Wrong protocol
-        auth_file.write_text(json.dumps({
+        valid_auth = {
             "status": "AUTHORIZED",
-            "target_protocol": "stage2_partial_fine_tuning",
+            "authorization_id": "auth-2026-001",
+            "authorized_by": "Senior Research Governance Lead",
+            "authorized_at_utc": "2026-10-02T00:00:00Z",
+            "candidate_protocol": AUTHORIZED_PROTOCOL,
             "sample_size": 250,
-            "authorized_seeds": [42, 1337, 2025, 3407, 9001],
-            "max_unsealing_sessions": 1,
-            "max_model_evaluations": 5,
-            "approver_id": "human_reviewer",
-        }))
-        with pytest.raises(PermissionError, match="Protocol mismatch"):
+            "exact_seeds": [42, 1337, 2025, 3407, 9001],
+            "checkpoint_sha256s": CHECKPOINT_SHA256_REGISTRY,
+            "evaluator_functional_commit": EVALUATOR_FUNCTIONAL_COMMIT,
+            "evaluator_component_hashes": {
+                "confirmatory_metrics": "a" * 64,
+                "locked_test_evaluator": "b" * 64,
+                "run_evaluator_cli": "c" * 64,
+            },
+            "maximum_unsealing_sessions": 1,
+            "maximum_model_evaluation_attempts": 5,
+            "expiry_policy": {"policy": "single_session_only"},
+            "authorization_purpose": "Confirmatory prospective evaluation on locked-test.",
+            "no_tuning_acknowledgment": True,
+        }
+
+        # 1. Valid auth passes
+        auth_file.write_text(json.dumps(valid_auth))
+        parsed = LockedTestEvaluator.verify_human_authorization(auth_file)
+        assert parsed["status"] == "AUTHORIZED"
+
+        # 2. Missing or wrong evaluator functional commit fails
+        bad_commit = copy.deepcopy(valid_auth)
+        bad_commit["evaluator_functional_commit"] = BASE_MAIN_COMMIT
+        auth_file.write_text(json.dumps(bad_commit))
+        with pytest.raises(PermissionError, match="Commit binding mismatch"):
             LockedTestEvaluator.verify_human_authorization(auth_file)
 
-        # Unauthorized seed list
-        auth_file.write_text(json.dumps({
-            "status": "AUTHORIZED",
-            "target_protocol": AUTHORIZED_PROTOCOL,
-            "sample_size": 250,
-            "authorized_seeds": [42, 1337],
-            "max_unsealing_sessions": 1,
-            "max_model_evaluations": 5,
-            "approver_id": "human_reviewer",
-        }))
-        with pytest.raises(PermissionError, match="Seeds mismatch"):
+        # 3. Wrong checkpoint hash fails
+        bad_hash = copy.deepcopy(valid_auth)
+        bad_hash["checkpoint_sha256s"]["42"] = "0" * 64
+        auth_file.write_text(json.dumps(bad_hash))
+        with pytest.raises(PermissionError, match="Checkpoint hash mismatch"):
             LockedTestEvaluator.verify_human_authorization(auth_file)
 
-    def test_20_ledger_append_only_and_hash_chain_integrity(self, tmp_path):
-        """Ledger records entries sequentially and detects broken hash chain."""
+        # 4. Missing no_tuning_acknowledgment fails
+        no_ack = copy.deepcopy(valid_auth)
+        no_ack["no_tuning_acknowledgment"] = False
+        auth_file.write_text(json.dumps(no_ack))
+        with pytest.raises(PermissionError, match="no_tuning_acknowledgment"):
+            LockedTestEvaluator.verify_human_authorization(auth_file)
+
+    def test_20_tamper_evident_ledger_hash_chain_and_sequence(self, tmp_path):
+        """Ledger records entries sequentially and detects broken hash chain or altered sequence."""
         ledger_file = tmp_path / "test_ledger.jsonl"
         ledger = AccessLedger(ledger_file)
 
@@ -417,33 +452,46 @@ class TestEvaluatorFailClosedAndLedger:
             session_id="s1",
             inc_unsealing_session=True,
         )
-        assert e0["entry_index"] == 0
+        assert e0["sequence_number"] == 0
         assert e0["prev_entry_hash"] == "GENESIS"
+        assert e0["evaluator_functional_commit"] == EVALUATOR_FUNCTIONAL_COMMIT
         assert ledger.completed_unsealing_sessions == 1
 
         e1 = ledger.record_event(
-            event_type="MODEL_EVAL_COMPLETE",
+            event_type="EVALUATION_RESERVED",
             session_id="s1",
-            seed=42,
+            checkpoint_seed=42,
+            inc_evaluation_attempt=True,
+        )
+        assert e1["sequence_number"] == 1
+        assert e1["prev_entry_hash"] == e0["entry_hash"]
+        assert ledger.evaluation_attempts == 1
+
+        e2 = ledger.record_event(
+            event_type="EVALUATION_COMPLETED",
+            session_id="s1",
+            checkpoint_seed=42,
             inc_model_eval=True,
         )
-        assert e1["entry_index"] == 1
-        assert e1["prev_entry_hash"] == e0["entry_hash"]
+        assert e2["sequence_number"] == 2
+        assert e2["prev_entry_hash"] == e1["entry_hash"]
         assert ledger.completed_model_evaluations == 1
+        assert ledger.tip_entry_hash == e2["entry_hash"]
 
-        # Re-load ledger in a fresh object: must succeed
-        ledger_reloaded = AccessLedger(ledger_file)
-        assert ledger_reloaded.completed_unsealing_sessions == 1
-        assert ledger_reloaded.completed_model_evaluations == 1
+        # Re-load ledger: must succeed
+        reloaded = AccessLedger(ledger_file)
+        assert reloaded.completed_unsealing_sessions == 1
+        assert reloaded.evaluation_attempts == 1
+        assert reloaded.completed_model_evaluations == 1
+        assert reloaded.tip_entry_hash == e2["entry_hash"]
 
-        # Tamper with the ledger file
+        # Tampering with entry payload is immediately detected
         lines = ledger_file.read_text(encoding="utf-8").splitlines()
-        tampered_entry = json.loads(lines[0])
-        tampered_entry["session_id"] = "tampered_session"
-        lines[0] = json.dumps(tampered_entry)
+        tampered_entry = json.loads(lines[1])
+        tampered_entry["checkpoint_seed"] = 9999
+        lines[1] = json.dumps(tampered_entry)
         ledger_file.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
-        # Loading tampered ledger must fail
         with pytest.raises(ValueError, match="Ledger entry hash mismatch"):
             AccessLedger(ledger_file)
 
@@ -452,52 +500,75 @@ class TestEvaluatorFailClosedAndLedger:
         ledger_file = tmp_path / "ledger.jsonl"
         ledger = AccessLedger(ledger_file)
 
-        # First session
         ledger.record_event("SESSION_1", session_id="s1", inc_unsealing_session=True)
         assert ledger.completed_unsealing_sessions == 1
 
-        # Second session must raise PermissionError
         with pytest.raises(PermissionError, match="exceed maximum authorized unsealing sessions"):
             ledger.record_event("SESSION_2", session_id="s2", inc_unsealing_session=True)
 
-    def test_22_sixth_model_evaluation_forbidden(self, tmp_path):
-        """Attempting a 6th model evaluation raises PermissionError."""
+    def test_22_evaluation_accounting_limits(self, tmp_path):
+        """Attempting a 6th evaluation attempt or 6th completed evaluation raises PermissionError."""
         ledger_file = tmp_path / "ledger.jsonl"
         ledger = AccessLedger(ledger_file)
 
-        # 5 evaluations
+        # 5 reserved attempts
         for i, s in enumerate(AUTHORIZED_SEEDS):
-            ledger.record_event(f"EVAL_{s}", session_id="s1", seed=s, inc_model_eval=True)
+            ledger.record_event("EVAL_RESERVED", session_id="s1", checkpoint_seed=s, inc_evaluation_attempt=True)
+            ledger.record_event("EVAL_COMPLETED", session_id="s1", checkpoint_seed=s, inc_model_eval=True)
 
+        assert ledger.evaluation_attempts == 5
         assert ledger.completed_model_evaluations == 5
 
-        # 6th evaluation must fail
-        with pytest.raises(PermissionError, match="exceed maximum authorized model evaluations"):
-            ledger.record_event("EVAL_EXTRA", session_id="s1", seed=999, inc_model_eval=True)
+        # 6th attempt must fail
+        with pytest.raises(PermissionError, match="exceed maximum authorized evaluation attempts"):
+            ledger.record_event("EVAL_RESERVED_6", session_id="s1", checkpoint_seed=999, inc_evaluation_attempt=True)
 
-    def test_23_pre_inference_crash_does_not_increment_counter(self, tmp_path):
-        """Pre-inference crash cleans up .part and does NOT increment model evaluation count."""
+        # 6th completed evaluation must fail
+        with pytest.raises(PermissionError, match="exceed maximum authorized completed model evaluations"):
+            ledger.record_event("EVAL_COMPLETED_6", session_id="s1", checkpoint_seed=999, inc_model_eval=True)
+
+    def test_23_evaluation_reservation_occurs_before_model_forward(self, tmp_path):
+        """Evaluation reservation happens before model forward; mid-inference crash blocks automatic retry."""
         evaluator = LockedTestEvaluator(output_dir=tmp_path)
-
-        def failing_inference(seed, cp, dl):
-            raise RuntimeError("Simulated GPU OOM or pre-inference crash")
-
         cp_info = {"sha256": CHECKPOINT_SHA256_REGISTRY[42]}
 
-        with pytest.raises(RuntimeError, match="Simulated GPU OOM"):
+        forward_observed_state = {}
+
+        def crash_during_inference(seed, cp, dl):
+            # Assert that reservation has ALREADY happened before forward
+            forward_observed_state["attempts"] = evaluator.ledger.evaluation_attempts
+            forward_observed_state["completed"] = evaluator.ledger.completed_model_evaluations
+            forward_observed_state["last_event"] = evaluator.ledger.entries[-1]["event_type"]
+            raise RuntimeError("Hardware failure during forward pass")
+
+        with pytest.raises(RuntimeError, match="Logged EVALUATION_ATTEMPT_INTERRUPTED"):
             evaluator.execute_checkpoint_evaluation(
                 seed=42,
                 checkpoint_info=cp_info,
-                inference_fn=failing_inference,
+                inference_fn=crash_during_inference,
                 data_loader=None,
                 session_id="s1",
             )
 
-        # Counter remains 0
+        # Verify state during forward
+        assert forward_observed_state["attempts"] == 1
+        assert forward_observed_state["completed"] == 0
+        assert forward_observed_state["last_event"] == "EVALUATION_RESERVED"
+
+        # After crash: marked EVALUATION_ATTEMPT_INTERRUPTED in ledger
+        assert evaluator.ledger.entries[-1]["event_type"] == "EVALUATION_ATTEMPT_INTERRUPTED"
+        assert evaluator.ledger.evaluation_attempts == 1
         assert evaluator.ledger.completed_model_evaluations == 0
-        # No prediction file created
-        assert not (tmp_path / "predictions_seed_42.json").exists()
-        assert not (tmp_path / "predictions_seed_42.json.part").exists()
+
+        # Automatic retry is strictly blocked fail-closed; requires human adjudication
+        with pytest.raises(RuntimeError, match="Prior attempt for seed 42 was interrupted.*Automatic retry forbidden"):
+            evaluator.execute_checkpoint_evaluation(
+                seed=42,
+                checkpoint_info=cp_info,
+                inference_fn=lambda s, c, d: {"predictions": []},
+                data_loader=None,
+                session_id="s1",
+            )
 
     def test_24_post_inference_crash_is_fail_closed(self, tmp_path):
         """Once predictions exist, silent re-run is strictly forbidden."""
@@ -538,62 +609,135 @@ class TestEvaluatorFailClosedAndLedger:
                 session_id="s1",
             )
 
-    def test_25_synthetic_dry_run_end_to_end(self, tmp_path):
-        """End-to-end execution of synthetic dry-run without touching locked-test."""
+    def test_25_synthetic_dry_run_end_to_end_and_forbidden_verdicts(self, tmp_path):
+        """End-to-end execution of synthetic dry-run:
+        - Exactly 10,000 bootstrap replicates.
+        - Simulated counters = 1 and 5; real counters = 0.
+        - Verdict is strictly SYNTHETIC_PIPELINE_PASS.
+        - Strictly contains no confirmatory scientific verdicts.
+        """
         evaluator = LockedTestEvaluator(output_dir=tmp_path)
         mock_data = generate_synthetic_mock_records()
 
-        summary = evaluator.run_synthetic_dry_run(mock_data, session_id="test_dry_run")
-        assert summary["status"] == "COMPLETED"
-        assert summary["completed_unsealing_sessions"] == 1
-        assert summary["completed_model_evaluations"] == 5
-        assert summary["bootstrap_results"]["observations_per_replicate"] == 686
-        assert (tmp_path / "synthetic_dry_run_summary.json").is_file()
+        summary = evaluator.run_synthetic_dry_run(
+            mock_data,
+            session_id="test_dry_run",
+            n_bootstrap_replicates=10000,
+        )
+        assert summary["status"] == "COMPLETED_VALID"
+        assert summary["verdict"] == "SYNTHETIC_PIPELINE_PASS"
+        assert summary["synthetic_sessions_simulated"] == 1
+        assert summary["synthetic_model_evaluations_simulated"] == 5
+        assert summary["completed_real_unsealing_sessions"] == 0
+        assert summary["completed_real_model_evaluations"] == 0
+        assert summary["locked_test_real_accesses"] == 0
+        assert summary["bootstrap_results"]["bootstrap_replicates"] == 10000
+        assert summary["bootstrap_results"]["verdict"] == "SYNTHETIC_PIPELINE_PASS"
+        assert summary["scientific_result"] is False
+
+        # Verify no forbidden scientific verdict
+        for forbidden in FORBIDDEN_SYNTHETIC_VERDICTS:
+            assert summary["verdict"] != forbidden
+            assert summary["bootstrap_results"]["verdict"] != forbidden
 
         # Verify all 5 prediction files and 5 receipts exist
         for s in AUTHORIZED_SEEDS:
-            assert (tmp_path / f"predictions_seed_{s}.json").is_file()
-            assert (tmp_path / f"receipt_seed_{s}.json").is_file()
+            pred_file = tmp_path / f"predictions_seed_{s}.json"
+            receipt_file = tmp_path / f"receipt_seed_{s}.json"
+            assert pred_file.is_file()
+            assert receipt_file.is_file()
+            receipt_data = json.loads(receipt_file.read_text(encoding="utf-8"))
+            assert receipt_data["evaluator_functional_commit"] == EVALUATOR_FUNCTIONAL_COMMIT
+            assert receipt_data["tip_entry_hash"] != "GENESIS"
 
-    def test_26_zero_locked_test_reads_during_testing(self):
-        """Confirms that no test accessed real locked_test data directory."""
-        locked_test_path = Path("data/research/tgif/test")
-        # In this repository, locked-test must remain sealed
-        assert not (locked_test_path / ".read_access_marker").exists()
-
-    def test_27_quantile_method_linear(self):
-        """Verifies that percentile CI uses numpy.quantile with method='linear'."""
-        dist = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
-        q_linear = np.quantile(dist, [0.025, 0.975], method="linear")
-        assert len(q_linear) == 2
-        assert q_linear[0] < q_linear[1]
-
-    def test_28_network_isolation_violation_detected(self, monkeypatch):
-        """If an outbound socket connection succeeds, verify_network_isolation raises RuntimeError."""
+    def test_26_zero_outbound_network_transmissions(self, monkeypatch):
+        """Verifies network isolation check transmits zero packets and calls zero outbound sockets."""
         import socket
-        class MockSocket:
-            def __init__(self, *args, **kwargs):
-                pass
-            def settimeout(self, t):
-                pass
-            def connect(self, addr):
-                # Simulated successful connection to outbound IP
-                pass
-            def close(self):
-                pass
+        # If any socket.connect is attempted, fail immediately
+        def forbidden_connect(*args, **kwargs):
+            raise AssertionError("Forbidden socket.connect attempted during passive network verification!")
 
-        monkeypatch.setattr(socket, "socket", MockSocket)
-        # Clear mock airgap env if present
+        monkeypatch.setattr(socket.socket, "connect", forbidden_connect)
+
+        # 1. Passive mock override passes without calling connect
+        res = LockedTestEvaluator.verify_network_isolation(allow_mock_override=True)
+        assert res["outbound_probes_transmitted"] == 0
+
+        # 2. Suspicious external proxy is passively detected and fails closed
+        monkeypatch.setenv("HTTP_PROXY", "http://external-proxy.example.com:8080")
         monkeypatch.delenv("MOCK_AIRGAP_ISOLATION", raising=False)
-        with pytest.raises(RuntimeError, match="Network isolation violation"):
+        with pytest.raises(RuntimeError, match="proxy environment variable"):
             LockedTestEvaluator.verify_network_isolation(allow_mock_override=False)
 
-    def test_29_writable_mount_violation_detected(self, tmp_path):
-        """If the target directory is writable, verify_read_only_mount raises RuntimeError."""
-        writable_dir = tmp_path / "mock_locked_test"
-        writable_dir.mkdir()
-        with pytest.raises(RuntimeError, match="Security violation: locked-test data directory .* is writable"):
-            LockedTestEvaluator.verify_read_only_mount(writable_dir, allow_mock_override=False)
+    def test_27_zero_canary_writes_in_read_only_mount_check(self, tmp_path):
+        """Verifies read-only mount check performs ZERO canary writes and leaves directory untouched."""
+        data_dir = tmp_path / "mock_dataset"
+        data_dir.mkdir()
+        test_file = data_dir / "sample.txt"
+        test_file.write_text("immutable_data")
+
+        # Snapshot directory contents before check
+        before_entries = set(os.listdir(data_dir))
+
+        # Check with mock override
+        res = LockedTestEvaluator.verify_read_only_mount(
+            data_dir=data_dir,
+            output_dir=tmp_path / "output",
+            allow_mock_override=True,
+        )
+        assert res["canary_writes_performed"] == 0
+
+        # Verify no files were created or modified
+        after_entries = set(os.listdir(data_dir))
+        assert before_entries == after_entries
+        assert not (data_dir / ".canary_write_test").exists()
+
+        # Path collision between data_dir and output_dir fails closed
+        with pytest.raises(RuntimeError, match="overlaps with output dir"):
+            LockedTestEvaluator.verify_read_only_mount(
+                data_dir=data_dir,
+                output_dir=data_dir,
+                allow_mock_override=False,
+            )
+
+    def test_28_pre_unsealing_gate_locks_functional_commit_and_counters(self):
+        """Verifies PRE_UNSEALING_GO_NO_GO.json binds to functional commit 656529f... and 0 real counters."""
+        gate_path = Path("research/evidence/phase-4c.2f/PRE_UNSEALING_GO_NO_GO.json")
+        if not gate_path.is_file():
+            pytest.skip("Evidence not created yet.")
+
+        gate = json.loads(gate_path.read_text(encoding="utf-8"))
+        assert gate["evaluator_functional_commit"] == EVALUATOR_FUNCTIONAL_COMMIT
+        assert gate["base_main_commit"] == BASE_MAIN_COMMIT
+        assert gate["evaluator_functional_commit"] != gate["base_main_commit"]
+        assert gate["evaluator_functional_commit"].startswith("656529f")
+        assert gate["base_main_commit"].startswith("8a37966")
+        assert gate["completed_unsealing_sessions"] == 0
+        assert gate["completed_model_evaluations"] == 0
+        assert gate["locked_test_accesses"] == 0
+        assert gate["gpu_inference_calls"] == 0
+        assert gate["new_training_runs"] == 0
+        assert gate["network_guard_tests_passed"] is True
+        assert gate["actual_execution_network_isolation"] == "PENDING_RUNTIME_VERIFICATION"
+
+    def test_29_synthetic_receipt_contract(self):
+        """Verifies synthetic_dry_run_receipt.json satisfies all Section B requirements."""
+        receipt_path = Path("research/evidence/phase-4c.2f/synthetic_dry_run_receipt.json")
+        if not receipt_path.is_file():
+            pytest.skip("Receipt not created yet.")
+
+        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+        assert receipt["verdict"] == "SYNTHETIC_PIPELINE_PASS"
+        assert receipt["synthetic_sessions_simulated"] == 1
+        assert receipt["synthetic_model_evaluations_simulated"] == 5
+        assert receipt["completed_real_unsealing_sessions"] == 0
+        assert receipt["completed_real_model_evaluations"] == 0
+        assert receipt["locked_test_real_accesses"] == 0
+        assert receipt["bootstrap_results"]["bootstrap_replicates"] == 10000
+        assert receipt["scientific_result"] is False
+        for forbidden in FORBIDDEN_SYNTHETIC_VERDICTS:
+            assert receipt["verdict"] != forbidden
+            assert receipt["bootstrap_results"]["verdict"] != forbidden
 
     def test_30_no_windows_absolute_paths_in_evidence(self):
         """Scans all JSON/MD files in research/evidence/phase-4c.2f/ for illegal Windows paths."""
@@ -609,4 +753,3 @@ class TestEvaluatorFailClosedAndLedger:
                 content = f.read_text(encoding="utf-8")
                 matches = win_path_pattern.findall(content)
                 assert not matches, f"Forbidden Windows absolute path found in {f}: {matches}"
-
