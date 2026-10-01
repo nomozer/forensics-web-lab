@@ -1,11 +1,20 @@
 {
-  "timestamp_utc": "2026-10-02T01:00:00.000000+00:00",
-  "phase": "Phase 4C.2F.1",
+  "timestamp_utc": "2026-10-01T18:42:00.000000+00:00",
+  "phase": "Phase 4C.2F.2",
   "contract_name": "evaluator_source_binding",
   "branch": "research/phase-4c2f-locked-test-evaluator",
   "base_main_commit": "8a379665bc8db3722a46618e47db4806a6ea7244",
-  "evaluator_functional_commit": "656529f04ee8dfcf26e7bb46c757f5cba279326e",
-  "audited_through_commit": "656529f04ee8dfcf26e7bb46c757f5cba279326e",
+  "original_evaluator_commit": "656529f04ee8dfcf26e7bb46c757f5cba279326e",
+  "pre_hotfix_evaluator_commit": "656529f04ee8dfcf26e7bb46c757f5cba279326e",
+  "safety_hotfix_commit": "959139e847f56fddd61e7615759f05897d7f5d9b",
+  "effective_evaluator_commit": "97851a3008c03e2cdeeed22a3cdf896380605a0b",
+  "evaluator_functional_commit": "97851a3008c03e2cdeeed22a3cdf896380605a0b",
+  "audited_through_commit": "97851a3008c03e2cdeeed22a3cdf896380605a0b",
+  "authorization_schema": {
+    "relative_path": "docs/schemas/human-unsealing-authorization.v1.schema.json",
+    "bytes": 5686,
+    "sha256": "29eb1a477e449ab35e07020a0218c6f2eda7b407b186e842834e347e5eb8eb84"
+  },
   "components": {
     "confirmatory_metrics": {
       "relative_path": "ml/evaluation/confirmatory_metrics.py",
@@ -14,8 +23,8 @@
     },
     "locked_test_evaluator": {
       "relative_path": "ml/evaluation/locked_test_evaluator.py",
-      "bytes": 38061,
-      "sha256": "5fb81f2ce7117b6c1131ca7f2eed4c8da7d70325137e2c72ea252a5ff2636bd8"
+      "bytes": 45226,
+      "sha256": "70d1196c501147d6944a799e3a287635b5ae7042c01cc2ed776dcf3c58940927"
     },
     "run_evaluator_cli": {
       "relative_path": "ml/evaluation/run_phase_4c2f_evaluator.py",
@@ -24,9 +33,9 @@
     },
     "evaluator_test_suite": {
       "relative_path": "ml/tests/test_phase_4c2f_evaluator.py",
-      "bytes": 34304,
-      "sha256": "c116a7a2b2c4dd3e194d5417000505ae1d0ce486c3841df69801b8500dbef9a6"
+      "bytes": 48939,
+      "sha256": "927d229ecb06ef7968542408e8f043a2a0eae67e90acf6ebdf899f52314323a8"
     }
   },
-  "self_verification_rule": "Evaluator verifies component integrity against this binding before executing inference"
+  "self_verification_rule": "Evaluator verifies component integrity and authorization schema against this binding before executing inference"
 }

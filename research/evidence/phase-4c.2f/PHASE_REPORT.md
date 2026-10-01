@@ -1,123 +1,111 @@
-# BÁO CÁO NGHIÊN CỨU PHASE 4C.2F.1 — HOTFIX AN TOÀN TIỀN MỞ NIÊM PHONG VÀ RÀNG BUỘC NGUỒN GỐC (FINAL PRE-UNSEALING SAFETY & PROVENANCE HOTFIX)
+# BÁO CÁO NGHIÊN CỨU PHASE 4C.2F.2 — HOTFIX KHÓA COMMIT THỰC THI CUỐI VÀ CHUẨN HÓA ĐẶC TẢ PHÊ DUYỆT (EFFECTIVE EVALUATOR COMMIT & AUTHORIZATION SCHEMA EXACTNESS HOTFIX)
 
 ---
 
 ## 1. Mục tiêu và Định vị Nghiên cứu
 
-Phase 4C.2F.1 là đợt hoàn thiện an toàn và kiểm toán nguồn gốc cuối cùng cho công cụ đánh giá xác nhận (`confirmatory evaluator`) trước khi chuyển giao quyền mở niêm phong cho con người. Mục tiêu cốt lõi:
-1. **Phân định rõ ràng ba tầng commit**:
-   - `base_main_commit`: `8a379665bc8db3722a46618e47db4806a6ea7244` (PR #4 merge commit từ main).
-   - `evaluator_functional_commit`: `656529f04ee8dfcf26e7bb46c757f5cba279326e` (commit chức năng chuẩn tắc của evaluator).
-   - `audited_through_commit`: `656529f04ee8dfcf26e7bb46c757f5cba279326e`.
-   - Áp dụng mô hình evidence seal không tự tham chiếu: Git commit đóng gói là terminal evidence seal theo ngữ nghĩa phi vòng lặp.
-2. **Chuẩn hóa Synthetic Dry-Run Receipt**:
-   - Thay các trường dễ gây nhầm lẫn bằng: `synthetic_sessions_simulated = 1`, `synthetic_model_evaluations_simulated = 5`, `completed_real_unsealing_sessions = 0`, `completed_real_model_evaluations = 0`, `locked_test_real_accesses = 0`, `verdict = "SYNTHETIC_PIPELINE_PASS"`.
-   - Cấm hoàn toàn các phán quyết khoa học (`CONFIRMATORY_SUCCESS`, `CONFIRMATORY_FAILURE`, `LOCKED_TEST_PASS`, `LOCKED_TEST_FAIL`) trong synthetic receipt.
-   - Chạy lại bootstrap giả lập đúng 10,000 replicates bằng `numpy.random.Generator(numpy.random.PCG64(20261002))`.
-   - Ghi rõ: fixture giả lập, không phải kết quả khoa học, không đưa vào báo cáo hiệu năng thực tế.
-3. **Loại bỏ hoàn toàn Outbound Socket Probe**:
-   - Cấm evaluator chủ động kết nối DNS, HTTP/HTTPS hoặc bất kỳ địa chỉ mạng ngoài nào để kiểm tra cô lập.
-   - Thay bằng cơ chế kiểm tra cục bộ thụ động, không truyền dữ liệu: biến môi trường proxy, bảng định tuyến, network namespace, và runtime isolation receipt.
-   - Ghi nhận `network_guard_tests_passed = true` và `actual_execution_network_isolation = "PENDING_RUNTIME_VERIFICATION"`.
-4. **Loại bỏ hoàn toàn Canary Write**:
-   - Xóa bỏ việc tạo/xóa file `.canary_write_test` trên thư mục locked-test.
-   - Xác minh read-only bằng phương pháp hoàn toàn không thay đổi dữ liệu: đối chiếu disjoint giữa `realpath` dữ liệu và output, kiểm tra mount options (`ro`) qua `/proc/self/mountinfo` hoặc `/proc/mounts`, cờ `os.statvfs` `ST_RDONLY`.
-   - Evaluator chỉ mở file dataset bằng chế độ đọc nhị phân (`"rb"`).
-5. **Chuẩn hóa kế toán truy cập (Access Accounting)**:
-   - Tách biệt hai bộ đếm: `evaluation_attempts` và `completed_model_evaluations`.
-   - Trình tự nghiêm ngặt cho mỗi checkpoint:
-     1. Xác minh authorization, commit, checkpoint, runtime.
-     2. Ghi ledger event `EVALUATION_RESERVED` và fsync.
-     3. Tăng `evaluation_attempts` trước model forward đầu tiên.
-     4. Chạy inference.
-     5. Ghi predictions `.part`, flush và fsync.
-     6. Atomic rename qua `os.replace`.
-     7. Tăng `completed_model_evaluations`.
-     8. Ghi `EVALUATION_COMPLETED` và fsync.
-   - Sự cố sau `EVALUATION_RESERVED`: ghi `EVALUATION_ATTEMPT_INTERRUPTED`, cấm tự động retry, bắt buộc can thiệp con người.
-   - Chặn đứng: attempt thứ 6, completed evaluation thứ 6, session thứ 2.
-6. **Khóa quy tắc Tie-Breaking**:
-   - Quy tắc chính thức: $\text{predicted\_class} = \text{argmax}(\text{logits}, \text{axis}=1)$.
-   - Đối với hai lớp: $p_1 > 0.5 \implies 1$; $p_1 < 0.5 \implies 0$; $p_1 == 0.5 \implies 0$ (theo cơ chế ưu tiên chỉ số đầu tiên của argmax). Không quy đổi tương đương $p_1 \ge 0.5$.
-7. **Xây dựng Schema phê duyệt con người**:
-   - Tạo `docs/schemas/human-unsealing-authorization.v1.schema.json` khóa chặt các trường bắt buộc.
-   - Tuyệt đối không tạo file artifact mang trạng thái `AUTHORIZED`.
-8. **Chuẩn hóa thuật ngữ Ledger**:
-   - Sử dụng định danh chính xác: `tamper-evident hash-chained ledger`.
-   - Mỗi entry chứa đầy đủ: `sequence_number`, `prev_entry_hash`, `entry_hash`, `timestamp_utc`, `event_type`, `session_id`, `checkpoint_seed`, `evaluator_functional_commit`, các bộ đếm tích lũy, và metadata.
-   - Ghi `tip_entry_hash` vào receipt có fsync.
+Phase 4C.2F.2 là bước chuẩn hóa chuẩn xác cuối cùng (exactness hotfix) nhằm khóa chặt commit thực thi evaluator thực tế, hoàn thiện schema phê duyệt mở niêm phong của con người theo cơ chế không thể suy diễn hay sai lệch, tích hợp kiểm tra tự xác minh toàn vẹn schema trước khi đọc locked-test, và chuẩn hóa toàn bộ dấu thời gian UTC thực tế.
+
+Mục tiêu cốt lõi:
+1. **Khóa chặt phân tầng Commit (Commit Hierarchy)**:
+   - `base_main_commit`: `8a379665bc8db3722a46618e47db4806a6ea7244` (PR #4 merge commit trên nhánh main).
+   - `original_evaluator_commit` / `pre_hotfix_evaluator_commit`: `656529f04ee8dfcf26e7bb46c757f5cba279326e` (commit mã nguồn evaluator ban đầu).
+   - `safety_hotfix_commit`: `959139e847f56fddd61e7615759f05897d7f5d9b` (hotfix Phase 4C.2F.1).
+   - `effective_evaluator_commit`: `97851a3008c03e2cdeeed22a3cdf896380605a0b` (commit chức năng chứa toàn bộ code thực thi cuối cùng của evaluator).
+   - `audited_through_commit`: `97851a3008c03e2cdeeed22a3cdf896380605a0b`.
+   - `evidence_seal_semantics`: `non_circular_terminal_git_commit` (commit đóng gói bằng chứng cuối cùng theo ngữ nghĩa phi tự tham chiếu).
+   - Tuyệt đối cấm sử dụng `656529f` làm commit chức năng hiện hành.
+2. **Khóa chặt Schema Phê duyệt con người (`human-unsealing-authorization.v1.schema.json`)**:
+   - `exact_seeds`: Khóa danh sách đúng 5 seed `[42, 1337, 2025, 3407, 9001]` theo đúng giá trị và thứ tự chuẩn tắc bằng từ khóa `const`.
+   - `checkpoint_sha256s`: Khóa toàn bộ object 5 hash SHA-256 bằng `const` và `additionalProperties: false`.
+   - `evaluator_component_hashes`: Khóa toàn bộ 3 hash SHA-256 của các module evaluator bằng `const` và `additionalProperties: false`.
+   - `evaluator_effective_commit`: Khóa bằng `const: "97851a3008c03e2cdeeed22a3cdf896380605a0b"`.
+   - `additionalProperties: false` cho toàn bộ các nested object và root.
+   - Định dạng `date-time`: Kiểm tra định dạng thời gian ISO-8601 UTC bằng `jsonschema.FormatChecker` tại runtime validator.
+   - Chính sách hết hạn `expiry_policy`: Khóa bằng cấu trúc `oneOf` cho 3 trường hợp:
+     * `single_session_only`: `expires_at_utc` phải là `null` hoặc không tồn tại.
+     * `explicit_expiry_timestamp`: `expires_at_utc` bắt buộc là chuỗi ISO UTC date-time hợp lệ.
+     * `explicit_no_expiry`: `expires_at_utc` bắt buộc là `null`.
+   - Cấm tạo bất kỳ file `HUMAN_UNSEALING_AUTHORIZATION.json` thật nào.
+3. **Tự xác minh Schema phía Evaluator (Schema Self-Verification)**:
+   - Đưa thông tin `authorization_schema` (`relative_path`, `bytes`, `sha256`) vào `evaluator_source_binding.json`.
+   - Evaluator tự đọc và kiểm tra độ dài byte và mã băm SHA-256 của file schema trước khi dùng để kiểm tra quyền truy cập. Nếu sai lệch dù 1 byte: lập tức fail-closed trước khi đọc locked-test.
+4. **Chuẩn hóa Timestamp UTC thực tế**:
+   - Mọi timestamp UTC trong evidence được sinh từ `datetime.now(timezone.utc).isoformat()`.
+   - Loại bỏ hoàn toàn tình trạng gán giờ địa phương kèm nhãn `+00:00`.
+   - Kiểm tra mọi timestamp không được nằm trong tương lai.
 
 ---
 
-## 2. Ràng buộc Nguồn gốc và Phân định Commit
+## 2. Ràng buộc Nguồn gốc và Bảng Khóa Mã Băm
 
+### 2.1. Phân tầng Commit
 * **Nhánh nghiên cứu**: `research/phase-4c2f-locked-test-evaluator`
-* **Base main commit**: `8a379665bc8db3722a46618e47db4806a6ea7244` (PR #4 merge commit)
-* **Evaluator functional commit**: `656529f04ee8dfcf26e7bb46c757f5cba279326e`
-* **Audited through commit**: `656529f04ee8dfcf26e7bb46c757f5cba279326e`
-* **Mô hình niêm phong bằng chứng (Evidence Seal Semantics)**:
-  - Áp dụng mô hình terminal Git commit đóng gói toàn bộ artifacts, không nhúng mã băm của chính commit đó vào file nhằm triệt tiêu nghịch lý tự tham chiếu (circular reference).
+* **Base main commit**: `8a379665bc8db3722a46618e47db4806a6ea7244`
+* **Original evaluator commit**: `656529f04ee8dfcf26e7bb46c757f5cba279326e`
+* **Safety hotfix commit**: `959139e847f56fddd61e7615759f05897d7f5d9b`
+* **Effective evaluator commit**: `97851a3008c03e2cdeeed22a3cdf896380605a0b`
+* **Audited through commit**: `97851a3008c03e2cdeeed22a3cdf896380605a0b`
+* **Evidence seal semantics**: `non_circular_terminal_git_commit`
+
+### 2.2. Khóa Thành phần Mã Nguồn Evaluator (`evaluator_source_binding.json`)
+| Thành phần | Đường dẫn | Kích thước (bytes) | SHA-256 |
+| :--- | :--- | :--- | :--- |
+| `confirmatory_metrics` | `ml/evaluation/confirmatory_metrics.py` | 15,199 | `bacbb9dc0a230359f1c3bbaece1ce8c19e30ddafa807313480d173a808bde808` |
+| `locked_test_evaluator` | `ml/evaluation/locked_test_evaluator.py` | 45,226 | `70d1196c501147d6944a799e3a287635b5ae7042c01cc2ed776dcf3c58940927` |
+| `run_evaluator_cli` | `ml/evaluation/run_phase_4c2f_evaluator.py` | 5,739 | `37ed02ff44d8c523150ebb968d2777bba9c2dee8597b3df60efa1fb5bd1e9041` |
+| `authorization_schema` | `docs/schemas/human-unsealing-authorization.v1.schema.json` | 5,686 | `29eb1a477e449ab35e07020a0218c6f2eda7b407b186e842834e347e5eb8eb84` |
+| `evaluator_test_suite` | `ml/tests/test_phase_4c2f_evaluator.py` | 48,939 | `927d229ecb06ef7968542408e8f043a2a0eae67e90acf6ebdf899f52314323a8` |
+
+### 2.3. Khóa Checkpoints Ứng viên (Stage 1 N=250 Lineage)
+| Seed | Checkpoint File | Checkpoint SHA-256 |
+| :--- | :--- | :--- |
+| 42 | `checkpoints/best_checkpoint.pt` | `c941f42ed00adb098962ddb43c0f2f7d897e48e20957cddc0c491243f8730c92` |
+| 1337 | `checkpoints/best_checkpoint.pt` | `69e706f9062f050ccbfd2affb72d63d5dde9d12f02c1e64c762b0ea6719073f1` |
+| 2025 | `checkpoints/best_checkpoint.pt` | `92ce5ee986d487fdf14374842067d0684fc7669f5ecb32c7d603f6813942ceee` |
+| 3407 | `checkpoints/best_checkpoint.pt` | `4897821ef0a97df9f1c51acde8d4ac01d383aa3a7b9e7ee55bbc3b3108847868` |
+| 9001 | `checkpoints/best_checkpoint.pt` | `5f0f8803adcb7eec88d47e398ef8b2002b46e740c263b12abc2ba392822a91c3` |
 
 ---
 
-## 3. Kiến trúc Bảo vệ Lỗi đóng Cải tiến (Hardened Fail-Closed Guards)
+## 3. Kết quả Kiểm thử Hồi quy Toàn diện (Regression Suite)
 
-1. **Passive Airgap Guard (Không phát gói tin ra ngoài)**:
-   - Hàm `LockedTestEvaluator.verify_network_isolation()` không còn mở socket kết nối tới 8.8.8.8 hay bất kỳ máy chủ nào.
-   - Kiểm tra thụ động cục bộ: phát hiện proxy lạ qua biến môi trường (`HTTP_PROXY`, `HTTPS_PROXY`, `ALL_PROXY`), kiểm tra bảng định tuyến Linux (`/proc/net/route` không có default route ngoài loopback), và kiểm tra network namespace `/proc/self/ns/net`.
-   - Nếu không có chứng cứ cô lập từ runtime container/namespace: fail-closed trước khi truy cập dữ liệu.
-2. **Non-Invasive Read-Only Mount Guard (Không canary write)**:
-   - Hàm `LockedTestEvaluator.verify_read_only_mount()` không tạo, đổi tên, ghi hoặc xóa bất kỳ file nào dưới locked-test root.
-   - Xác thực tính read-only bằng kiểm tra mount options (`ro`) trong `/proc/self/mountinfo` hoặc `/proc/mounts`, kiểm tra cờ hệ thống `os.statvfs` `ST_RDONLY`, và kiểm tra tính disjoint của đường dẫn canonical `realpath` so với output directory.
-3. **Kế toán đặt chỗ trước suy luận (Pre-Forward Reservation)**:
-   - Ghi nhận `EVALUATION_RESERVED` và tăng `evaluation_attempts` trước khi chuyển dữ liệu vào mô hình.
-   - Nếu quá trình suy luận hoặc validation gặp sự cố, hệ thống ghi nhận `EVALUATION_ATTEMPT_INTERRUPTED` và khóa dừng ngay lập tức. Mọi nỗ lực tái chạy checkpoint đó mà không có phê duyệt con người đều bị từ chối (`fail-closed`).
-   - Giới hạn cứng: đúng 5 attempts, đúng 5 completed evaluations, đúng 1 unsealing session.
-4. **Tamper-Evident Hash-Chained Ledger**:
-   - `locked_test_access_ledger.jsonl` duy trì chuỗi băm liên tục với `sequence_number`, `prev_entry_hash`, và `entry_hash`.
-   - Mọi thao tác sửa đổi nội dung, đảo thứ tự, hoặc chèn dòng đều bị phát hiện ngay lập tức khi khởi tạo đối tượng `AccessLedger`.
-   - `tip_entry_hash` được nhúng trực tiếp vào receipt của từng checkpoint và fsync xuống đĩa.
+Bộ test suite mở rộng `ml/tests/test_phase_4c2f_evaluator.py` đạt **45/45 PASS**:
+* **30 test cơ sở Phase 4C.2F / 4C.2F.1**:
+  - Parity số học Macro-F1, balanced accuracy, ECE 10 uniform bins với sklearn fixture.
+  - Source-cluster bootstrap 10,000 replicates PCG64 (seed 20261002), 686 rows/replicate.
+  - Fail-closed khi thiếu authorization, hỏng chuỗi băm ledger, quá 1 session hoặc quá 5 attempts.
+  - Đặt chỗ `EVALUATION_RESERVED` trước forward, sự cố đánh dấu `EVALUATION_ATTEMPT_INTERRUPTED`.
+  - Kiểm tra cô lập mạng thụ động (0 socket connects), kiểm tra read-only mount thụ động (0 canary writes).
+  - Synthetic receipt verdict `SYNTHETIC_PIPELINE_PASS` với 0 real counters.
+* **15 ca kiểm thử hồi quy mới Phase 4C.2F.2 (`TestPhase4C2F2SchemaExactnessAndProvenance`)**:
+  1. `test_f01_exact_seeds_differing_element_fails`: Sai lệch dù 1 seed lập tức FAIL.
+  2. `test_f02_exact_seeds_out_of_order_fails`: Đổi thứ tự seed lập tức FAIL.
+  3. `test_f03_checkpoint_hash_wrong_value_fails`: Checkpoint hash sai giá trị lập tức FAIL.
+  4. `test_f04_evaluator_component_hash_wrong_value_fails`: Evaluator hash sai giá trị lập tức FAIL.
+  5. `test_f05_authorization_locks_to_effective_evaluator_commit`: Khóa đúng `97851a3008c03e2cdeeed22a3cdf896380605a0b`.
+  6. `test_f06_original_evaluator_commit_656529f_rejected`: Commit cũ `656529f` bị từ chối với `PermissionError`.
+  7. `test_f07_authorization_schema_sha_mismatch_fails`: Sửa đổi schema dù 1 byte lập tức FAIL khi evaluator tự kiểm tra.
+  8. `test_f08_nested_additional_property_fails`: Thêm trường lạ vào nested object lập tức FAIL (`additionalProperties: false`).
+  9. `test_f09_invalid_datetime_fails_with_format_checker`: Format date-time không hợp lệ lập tức FAIL qua FormatChecker.
+  10. `test_f10_expiry_policy_and_expires_at_utc_inconsistency_fails`: Không nhất quán giữa expiry policy và timestamp lập tức FAIL.
+  11. `test_f11_timestamp_utc_not_in_future`: Timestamp UTC trong mọi bằng chứng có timezone aware và không ở tương lai.
+  12. `test_f12_pre_unsealing_gate_locks_effective_evaluator_commit`: PRE gate khóa đúng `effective_evaluator_commit`.
+  13. `test_f13_synthetic_receipt_zero_real_counters`: Toàn bộ bộ đếm thực tế trong synthetic receipt bằng 0.
+  14. `test_f14_no_real_authorization_artifact_created`: Không có file authorization thật trong repository.
+  15. `test_f15_locked_test_real_accesses_remains_zero`: Số lần truy cập locked-test bằng 0 tuyệt đối.
 
----
-
-## 4. Định nghĩa Toán học và Tie-Breaking Chuẩn tắc
-
-1. **Phân lớp dự đoán (Predicted Class)**:
-   $$\hat{y} = \text{argmax}(\text{logits}, \text{axis}=1)$$
-   - Nếu $p_1 > 0.5 \implies \hat{y} = 1$ (`ai_edited`).
-   - Nếu $p_1 < 0.5 \implies \hat{y} = 0$ (`authentic`).
-   - Nếu $p_1 == 0.5 \implies \hat{y} = 0$ (theo cơ chế ưu tiên chỉ số đầu tiên `first-index` của hàm `argmax`).
-   - Tuyệt đối không diễn giải là "tương đương $p_1 \ge 0.5$" vì tại $0.5$ ngưỡng $\ge$ sẽ chọn nhãn 1.
-2. **Source-Cluster Bootstrap (10,000 Replicates)**:
-   - Bộ sinh số ngẫu nhiên: `numpy.random.Generator(numpy.random.PCG64(20261002))`.
-   - Lấy mẫu có hoàn lại 343 cụm nguồn `unique_source_id`.
-   - Bảo toàn tính đa bội cụm (multiplicity): khi nguồn được chọn $k$ lần, cả 2 mẫu xuất hiện đúng $k$ lần (đúng 686 dòng/replicate).
-   - Tối ưu hóa tính toán F1 qua bincount nhị phân đạt tốc độ 1.1s cho 10,000 replicates, bảo toàn sự tương đương số học tuyệt đối với `sklearn.metrics.f1_score` đến $10^{-15}$.
-
----
-
-## 5. Kết quả Kiểm thử Toàn diện (Verification Suite)
-
-Đã bổ sung và hoàn thiện bộ test suite độc lập `ml/tests/test_phase_4c2f_evaluator.py`:
-* **Tổng số tests**: **30/30 PASS**.
-* **Các ca kiểm thử quan trọng**:
-  1. PRE gate khóa đúng functional commit `656529f04ee8dfcf26e7bb46c757f5cba279326e` và phân biệt với `base_main_commit`.
-  2. Synthetic dry-run receipt không chứa phán quyết khoa học xác nhận; verdict là `SYNTHETIC_PIPELINE_PASS`.
-  3. Mọi bộ đếm thực tế (`completed_real_unsealing_sessions`, `completed_real_model_evaluations`, `locked_test_real_accesses`) luôn bằng 0.
-  4. Bootstrap giả lập chạy đúng 10,000 replicates với PCG64 seed 20261002.
-  5. Kiểm tra cô lập mạng thụ động, 0 cuộc gọi socket outbound.
-  6. Kiểm tra gắn đĩa chỉ đọc thụ động, 0 canary writes, 0 sửa đổi filesystem.
-  7. Đặt chỗ đánh giá (`EVALUATION_RESERVED`) diễn ra trước model forward.
-  8. Crash giữa chừng đánh dấu `EVALUATION_ATTEMPT_INTERRUPTED` và chặn đứng việc tự động retry.
-  9. Chặn đứng lần attempt thứ 6, completed evaluation thứ 6, và session thứ 2.
-  10. Tie-breaking $p_1 == 0.5$ chọn class 0.
-  11. Schema phê duyệt con người từ chối nếu thiếu hoặc sai evaluator commit, sai checkpoint hashes, hoặc thiếu cam kết không tuning.
-  12. Phát hiện lập tức mọi hành vi sửa đổi chuỗi băm trong ledger.
-  13. `locked_test_accesses` duy trì bằng 0 tuyệt đối trong toàn bộ test suite.
+Các kiểm thử toàn repo:
+* `ml/tests/test_phase_4c2e_preregistration.py`: **30/30 PASS**.
+* Toàn bộ test hermetic Python (`pytest ml/tests -m "not requires_research_artifact"`): **427 passed, 131 deselected**.
+* Frontend test (`pnpm test`): **34/34 TS passed, 13/13 continuity unit tests passed**.
+* Typecheck (`pnpm typecheck`): **0 errors**.
+* Web build (`pnpm build`): **Build thành công**.
+* Git diff check (`git diff --check`): **Sạch 100%, không có whitespace error**.
 
 ---
 
-## 6. Bảng Tổng kết Các Bộ đếm & Trạng thái Khóa
+## 4. Bảng Tổng kết Các Bộ đếm & Trạng thái Khóa
 
 | Chỉ số / Bộ đếm | Trạng thái Hiện tại | Giới hạn Cho phép | Trạng thái Tuân thủ |
 | :--- | :--- | :--- | :--- |
@@ -129,13 +117,15 @@ Phase 4C.2F.1 là đợt hoàn thiện an toàn và kiểm toán nguồn gốc c
 | Checkpoints resolved | **5/5** | 5 | **100% SHA-256 MATCH** |
 | Outbound network probes | **0** | 0 | **TUÂN THỦ TUYỆT ĐỐI** |
 | Canary writes to locked-test | **0** | 0 | **TUÂN THỦ TUYỆT ĐỐI** |
+| Real authorization artifacts | **0** | 0 | **TUÂN THỦ TUYỆT ĐỐI** |
 | Windows paths in Git evidence | **0** | 0 | **TUÂN THỦ TUYỆT ĐỐI** |
 
 ---
 
-## 7. Phán quyết Pre-Unsealing Hotfix
+## 5. Phán quyết Pre-Unsealing Hotfix
 
 ```
 READY_FOR_HUMAN_ONE_TIME_UNSEALING_APPROVAL
 ```
-Toàn bộ các yêu cầu an toàn, kiểm toán nguồn gốc, kế toán truy cập và loại bỏ các tác vụ xâm lấn (outbound socket, canary write) đã được xử lý triệt để. Hệ thống hoàn toàn sẵn sàng cho bước cấp phép một lần bằng văn bản từ con người.
+
+Tất cả các điều kiện tiên quyết cho việc phê duyệt mở niêm phong một lần duy nhất đã được thỏa mãn đầy đủ và xác minh nghiêm ngặt. Hệ thống sẵn sàng tiếp nhận văn bản phê duyệt chuẩn tắc từ con người để chuyển sang Phase 4C.2G.

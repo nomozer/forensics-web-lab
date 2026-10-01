@@ -1,6 +1,6 @@
 {
   "timestamp_utc": "2026-10-01T18:20:22.487262+00:00",
-  "phase": "Phase 4C.2F.1",
+  "phase": "Phase 4C.2F.2",
   "receipt_name": "synthetic_dry_run_receipt",
   "session_id": "phase4c2f-synthetic-dryrun-001",
   "mode": "synthetic_dry_run_fixture_only",
@@ -15,7 +15,8 @@
     3407,
     9001
   ],
-  "evaluator_functional_commit": "656529f04ee8dfcf26e7bb46c757f5cba279326e",
+  "effective_evaluator_commit": "97851a3008c03e2cdeeed22a3cdf896380605a0b",
+  "evaluator_functional_commit": "97851a3008c03e2cdeeed22a3cdf896380605a0b",
   "synthetic_sessions_simulated": 1,
   "synthetic_model_evaluations_simulated": 5,
   "completed_real_unsealing_sessions": 0,
