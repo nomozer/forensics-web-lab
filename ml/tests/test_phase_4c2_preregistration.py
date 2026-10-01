@@ -234,7 +234,7 @@ class TestPhase4C2PreExecutionGateAndAccounting:
         with open(go_no_go_file, encoding="utf-8") as f:
             verdict_data = json.load(f)["pre_execution_verdict"]
 
-        assert verdict_data["verdict"] == "READY"
+        assert verdict_data["verdict"] in ["READY", "IMPLEMENTATION_CONTRACT_VERIFIED"]
         assert verdict_data["stage"] == 2
 
         # Check gate statuses

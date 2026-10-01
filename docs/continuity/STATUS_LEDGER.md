@@ -1,13 +1,13 @@
-## Phase 4C.2A — Preregister Stage 2 Fine-Tuning Experiment
+## Phase 4C.2A — Stage 2 Preregistration & Contract Reconciliation (Phase 4C.2A.1)
 
-- **Muc tieu**: Preregister Stage 2 partial fine-tuning experiment before training. Bind canonical reusable N250 bundle in read-only mode, lock layer allowlist (features.12 + head: 204,674 params), seal differential LRs and 15-run paired matrix. Zero runs, zero locked-test.
-- **Starting commit**: f6eb57df121dbfc908ec1731d55bbe3c87dc5453 (Phase 4C.1D.2 ending)
+- **Muc tieu**: Preregister Stage 2 fine-tuning protocol and reconcile execution contract against codebase. Verify model names (He A: 7 tensors, 204,674 params), initialization contract, frozen BN policy, differential optimizer groups, hyperparameter diff table, and dedicated runner. Zero runs.
+- **Starting commit**: 1d67007 (Phase 4C.2A base)
 - **Branch**: research/phase-4c1-learning-curve
-- **Thay đổi chính**: (1) Dataset binding: canonical reusable N250 bundle locked read-only with cryptographic hashes. (2) Isolated namespace: phase_4c2 on Drive and local artifacts, blocking writes to phase_4c1. (3) Trainable layer allowlist: exactly features.12 and classifier (7 tensors, 204,674 trainable params, 870,560 frozen). (4) Sealed hyperparameters: AdamW, differential LRs (5e-5 backbone, 5e-4 head), cosine annealing, max 20 epochs, FocalLoss, fp32. (5) 15-run paired comparison matrix (N=50,100,250 x 5 seeds), zero preliminary tuning. (6) Pre-registered analysis plan: primary delta Macro-F1, exploratory paired t-test, permutation limit 0.0625, Holm correction. (7) Added 9 unit tests in ml/tests/test_phase_4c2_preregistration.py (9/9 PASS).
-- **Kiểm tra**: 9/9 Phase 4C.2A tests pass, 9/9 Phase 4C.1D.2 tests pass, 70/70 TS pass, typecheck 0, build OK, continuity PASS.
-- **Kết quả**: PRE_EXECUTION_GO_NO_GO verdict READY. Training runs = 0, locked-test accesses = 0, Stage 2 invocations = 0.
-- **Evidence**: research/evidence/phase-4c.2a/ (dataset_binding.json, PRE_EXECUTION_GO_NO_GO.json, environment.json, PHASE_REPORT.md, ml/configs/phase_4c2_stage2_finetuning.yaml).
-- **Quyết định tiếp theo**: Await user authorization to launch Stage 2 execution wave on Google Colab or compatible GPU environment.
+- **Thay đổi chính**: (1) Model naming verified as He A (`features.12.*` & `classifier.*`). (2) Initialization sealed to fresh head from pretrained backbone (0 parent checkpoints). (3) Frozen BN policy keeps features.0-11 buffers immutable during training. (4) Differential optimizer groups (5e-5 backbone, 5e-4 head) disjoint and complete. (5) Machine-readable hyperparameter diff table (23 fields) locks treatment as 'pre-registered partial fine-tuning protocol'. (6) Dedicated runner `ml/training/run_phase_4c2.py` and receipt schema `docs/schemas/stage2-receipt.v1.schema.json`. (7) 14 contract unit & synthetic behavioral tests (14/14 PASS).
+- **Kiểm tra**: 14/14 Phase 4C.2A.1 tests pass, 9/9 Phase 4C.2A tests pass, 9/9 Phase 4C.1D.2 tests pass, 70/70 TS pass, typecheck 0, build OK, continuity PASS.
+- **Kết quả**: PRE_EXECUTION_GO_NO_GO verdict IMPLEMENTATION_CONTRACT_VERIFIED. Training runs = 0, locked-test = 0, Stage 2 invocations = 0.
+- **Evidence**: research/evidence/phase-4c.2a/ (dataset_binding.json, PRE_EXECUTION_GO_NO_GO.json, stage1_stage2_hyperparameter_diff.json, environment.json, PHASE_REPORT.md, ml/configs/phase_4c2_stage2_finetuning.yaml).
+- **Quyết định tiếp theo**: Build Stage 2 Colab training operator and verification scripts before launching remote training wave.
 
 ---
 ## Phase 4C.1D — Final Scientific Wording and Consistency Patch (Phase 4C.1D.2)

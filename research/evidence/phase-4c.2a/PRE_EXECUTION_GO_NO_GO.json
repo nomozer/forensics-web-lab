@@ -1,11 +1,16 @@
 {
   "pre_execution_verdict": {
     "schema_version": "1.0.0",
-    "phase": "Phase 4C.2A",
+    "phase": "Phase 4C.2A.1",
     "stage": 2,
-    "verdict": "READY",
-    "verdict_rationale": "Stage 2 fine-tuning experiment is fully preregistered and sealed. Canonical reusable N=250 dataset bundle is bound in strictly read-only mode with 100% matching cryptographic hashes (archive, content, manifest). Stage 1 evidence at commit f6eb57d is preserved intact. Exact trainable layer allowlist is locked to features.12 and classifier (204,674 trainable parameters; 870,560 frozen parameters). 15-run paired experiment matrix is fixed without single-seed exploratory tuning. Namespace isolation between phase_4c1 and phase_4c2 is strictly enforced. Locked test access is sealed at 0. Zero new training runs, zero locked-test accesses, and zero Stage 2 invocations have occurred in this preregistration phase.",
-    "timestamp_utc": "2026-10-01T02:40:00.000000+00:00",
+    "verdict": "IMPLEMENTATION_CONTRACT_VERIFIED",
+    "readiness_semantics": {
+      "preregistration_status": "PREREGISTRATION_READY",
+      "implementation_contract_status": "IMPLEMENTATION_CONTRACT_VERIFIED",
+      "colab_execution_status": "NOT_READY"
+    },
+    "verdict_rationale": "Stage 2 implementation contract is reconciled and verified against actual codebase before building the training operator. Model named parameters strictly confirmed to Hệ A (features.12.* and classifier.*: 7 tensors, exactly 204,674 trainable parameters). Initialization contract sealed to from_pretrained_backbone_with_fresh_head without loading Stage 1 checkpoints. Frozen BatchNorm policy keeps features.0-11 buffers immutable during training. Differential optimizer groups (5e-5 for backbone, 5e-4 for head) verified disjoint and complete. FocalLoss alpha=null parity verified with Stage 1. Output path validator rejects Stage 1 paths. Dedicated Stage 2 runner ml/training/run_phase_4c2.py and receipt schema sealed. Zero new training runs, zero locked-test accesses, and zero Stage 2 research invocations have occurred in this phase.",
+    "timestamp_utc": "2026-10-01T03:37:00.000000+00:00",
     "gates": {
       "dataset_binding_integrity": {
         "status": "PASS",
@@ -29,6 +34,7 @@
         "status": "PASS",
         "config_file": "ml/configs/phase_4c2_stage2_finetuning.yaml",
         "scientific_status": "preregistered_protocol",
+        "treatment_designation": "pre-registered partial fine-tuning protocol",
         "license_track": "research-only",
         "immutable": true
       },
@@ -52,6 +58,37 @@
           "classifier.3.bias"
         ],
         "frozen_features_range": "features.0 through features.11"
+      },
+      "initialization_contract": {
+        "status": "PASS",
+        "policy": "from_pretrained_backbone_with_fresh_head",
+        "parent_checkpoint_path": null,
+        "parent_checkpoint_hash": null,
+        "pretrained_weights_identifier": "MobileNet_V3_Small_Weights.DEFAULT",
+        "classifier_initialization_evidence": "seeded_torch_init_at_model_creation"
+      },
+      "batchnorm_freeze_policy": {
+        "status": "PASS",
+        "features_0_to_11_bn_eval": true,
+        "reapply_after_train_call": true,
+        "running_buffers_immutable": true
+      },
+      "differential_optimizer_groups": {
+        "status": "PASS",
+        "optimizer": "AdamW",
+        "backbone_learning_rate": 0.00005,
+        "head_learning_rate": 0.0005,
+        "weight_decay": 0.0001,
+        "groups_disjoint": true,
+        "groups_complete": true
+      },
+      "focal_loss_parity": {
+        "status": "PASS",
+        "loss_implementation": "ml.training.loss.FocalLoss",
+        "alpha": null,
+        "gamma": 2.0,
+        "label_smoothing": 0.05,
+        "reduction": "mean"
       },
       "experiment_matrix_fixation": {
         "status": "PASS",
@@ -89,13 +126,20 @@
         "locked_test_seal": "519e7a0e6815e781d1cefa95971e5221ac1f25656837374d8dc4ba41401fded9",
         "locked_test_accesses": 0,
         "locked_test_evaluations": 0
+      },
+      "stage2_runner_and_receipt_schema": {
+        "status": "PASS",
+        "runner_file": "ml/training/run_phase_4c2.py",
+        "schema_file": "docs/schemas/stage2-receipt.v1.schema.json",
+        "stage_identifier": "partial_finetune",
+        "stage_frozen_prohibited": true
       }
     },
     "provenance_and_accounting": {
       "training_runs_in_phase": 0,
       "locked_test_accesses": 0,
       "stage2_invocations": 0,
-      "readiness_verdict": "READY"
+      "readiness_verdict": "IMPLEMENTATION_CONTRACT_VERIFIED"
     }
   }
 }

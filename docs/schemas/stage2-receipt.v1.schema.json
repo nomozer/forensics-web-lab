@@ -1,0 +1,219 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://forensics-web-lab.local/schemas/stage2-receipt.v1.schema.json",
+  "title": "Stage2RunReceipt",
+  "description": "Schema for Stage 2 partial fine-tuning run receipts in Forensics Web Lab",
+  "type": "object",
+  "required": [
+    "run_id",
+    "timestamp_utc",
+    "sample_size",
+    "seed",
+    "stage",
+    "treatment_designation",
+    "status",
+    "initialization_policy",
+    "pretrained_weights_identifier",
+    "parent_checkpoint_path",
+    "parent_checkpoint_hash",
+    "classifier_initialization_evidence",
+    "device",
+    "gpu_name",
+    "gpu_vram_gb",
+    "config_hash",
+    "dataset_archive_sha256",
+    "dataset_content_sha256",
+    "dataset_manifest_sha256",
+    "exact_trainable_tensor_inventory",
+    "trainable_parameters_count",
+    "frozen_parameters_count",
+    "total_parameters_count",
+    "optimizer_parameter_groups",
+    "batchnorm_policy",
+    "epochs_completed",
+    "best_epoch",
+    "best_val_macro_f1",
+    "final_metrics",
+    "dummy_baseline",
+    "metadata_baseline",
+    "training_time_seconds",
+    "peak_vram_mb",
+    "checkpoint_sha256",
+    "validation_source_count",
+    "validation_sample_count",
+    "locked_test_access",
+    "stage1_output_writes"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "pattern": "^phase4c2-stage2-n(50|100|250)-seed(42|1337|2025|3407|9001)$"
+    },
+    "timestamp_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "sample_size": {
+      "type": "integer",
+      "enum": [50, 100, 250]
+    },
+    "seed": {
+      "type": "integer",
+      "enum": [42, 1337, 2025, 3407, 9001]
+    },
+    "stage": {
+      "type": "string",
+      "enum": ["partial_finetune"]
+    },
+    "treatment_designation": {
+      "type": "string",
+      "enum": ["pre-registered partial fine-tuning protocol"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["completed", "failed"]
+    },
+    "initialization_policy": {
+      "type": "string",
+      "enum": ["from_pretrained_backbone_with_fresh_head"]
+    },
+    "pretrained_weights_identifier": {
+      "type": "string"
+    },
+    "parent_checkpoint_path": {
+      "type": "null"
+    },
+    "parent_checkpoint_hash": {
+      "type": "null"
+    },
+    "classifier_initialization_evidence": {
+      "type": "string"
+    },
+    "device": {
+      "type": "string"
+    },
+    "gpu_name": {
+      "type": "string"
+    },
+    "gpu_vram_gb": {
+      "type": "number",
+      "minimum": 0
+    },
+    "config_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "dataset_archive_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "dataset_content_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "dataset_manifest_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "exact_trainable_tensor_inventory": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "shape", "numel"],
+        "properties": {
+          "name": { "type": "string" },
+          "shape": { "type": "array", "items": { "type": "integer" } },
+          "numel": { "type": "integer" }
+        }
+      }
+    },
+    "trainable_parameters_count": {
+      "type": "integer",
+      "const": 204674
+    },
+    "frozen_parameters_count": {
+      "type": "integer",
+      "const": 870560
+    },
+    "total_parameters_count": {
+      "type": "integer",
+      "const": 1075234
+    },
+    "optimizer_parameter_groups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["group_name", "param_names", "learning_rate", "weight_decay", "tensor_count", "numel"]
+      }
+    },
+    "batchnorm_policy": {
+      "type": "object",
+      "required": ["frozen_features_eval", "reapply_after_train"],
+      "properties": {
+        "frozen_features_eval": { "type": "boolean", "const": true },
+        "reapply_after_train": { "type": "boolean", "const": true },
+        "unfrozen_features_12_bn_train": { "type": "boolean" }
+      }
+    },
+    "epochs_completed": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "best_epoch": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "best_val_macro_f1": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "final_metrics": {
+      "type": "object",
+      "required": ["macro_f1", "balanced_accuracy", "auroc", "brier_score", "ece", "loss"],
+      "properties": {
+        "macro_f1": { "type": "number" },
+        "balanced_accuracy": { "type": "number" },
+        "auroc": { "type": "number" },
+        "brier_score": { "type": "number" },
+        "ece": { "type": "number" },
+        "loss": { "type": "number" }
+      }
+    },
+    "dummy_baseline": {
+      "type": "object",
+      "required": ["macro_f1", "macro_f1_mean", "macro_f1_std"]
+    },
+    "metadata_baseline": {
+      "type": "object",
+      "required": ["macro_f1", "macro_f1_mean", "macro_f1_std"]
+    },
+    "training_time_seconds": {
+      "type": "number",
+      "minimum": 0
+    },
+    "peak_vram_mb": {
+      "type": "number",
+      "minimum": 0
+    },
+    "checkpoint_sha256": {
+      "type": "string"
+    },
+    "validation_source_count": {
+      "type": "integer",
+      "const": 91
+    },
+    "validation_sample_count": {
+      "type": "integer",
+      "const": 182
+    },
+    "locked_test_access": {
+      "type": "integer",
+      "const": 0
+    },
+    "stage1_output_writes": {
+      "type": "integer",
+      "const": 0
+    }
+  }
+}

@@ -9,6 +9,8 @@ pilot_branch: "Pilot A"
 title: "Phase 4C.2 Stage 2 Fine-Tuning: Partial Backbone Unfreezing (Option P, N=50,100,250)"
 scientific_status: "preregistered_protocol"
 license_track: "research-only"
+treatment_designation: "pre-registered partial fine-tuning protocol"
+treatment_justification: "Designated as 'pre-registered partial fine-tuning protocol' (and not 'pure isolated unfreezing effect') because differential learning rates, lowered head learning rate (5e-4 vs 1e-3), bounded epochs (20 vs 25), and gradient clipping (1.0 vs None) are jointly pre-registered to ensure optimization stability during convolution block unfreezing."
 
 independent_statistical_unit: "source_id"
 enforce_source_isolation: true
@@ -47,6 +49,14 @@ namespace_isolation:
     evidence_dir: "research/evidence/phase-4c.2a/"
     environment_lock: "phase4c2_environment_lock.json"
     notebook_launcher: "notebooks/phase_4c2_finetuning_colab.ipynb"
+
+initialization_contract:
+  policy: "from_pretrained_backbone_with_fresh_head"
+  description: "Stage 1 and Stage 2 start from identical torchvision ImageNet pretrained weights and model construction code, with fresh seeded head initialization. Best Stage 1 checkpoint is NOT loaded."
+  pretrained_weights_identifier: "MobileNet_V3_Small_Weights.DEFAULT"
+  parent_checkpoint_path: null
+  parent_checkpoint_hash: null
+  classifier_initialization_evidence: "seeded_torch_init_at_model_creation"
 
 intervention_definition:
   control_group:
@@ -101,7 +111,12 @@ intervention_definition:
       frozen_parameters: 870560
       total_parameters: 1075234
       trainable_percentage: 19.035
-    invariance_constraint: "No simultaneous modification of architecture, dataset, augmentation, or loss function. Only partial unfreezing and differential learning rate are evaluated."
+    batchnorm_policy:
+      frozen_features_eval: true
+      reapply_after_train: true
+      unfrozen_features_12_bn_train: true
+      rule: "BatchNorm in features.0-11 strictly kept in eval mode via apply_frozen_bn_policy() after every model.train() call. Buffers running_mean, running_var, and num_batches_tracked remain immutable."
+    invariance_constraint: "No simultaneous modification of architecture, dataset, augmentation, or loss function. Only partial unfreezing, differential learning rates, lowered head learning rate, bounded epochs, and gradient clipping are evaluated under the registered protocol."
 
 hyperparameters:
   optimizer: "AdamW"
@@ -115,10 +130,12 @@ hyperparameters:
   batch_size: 32
   max_epochs: 20
   early_stopping_patience: 5
+  early_stopping_delta: 0.001
   primary_checkpoint_metric: "inner_val_macro_f1"
   gradient_clipping_max_norm: 1.0
   loss_function: "FocalLoss"
   loss_params:
+    alpha: null
     gamma: 2.0
     label_smoothing: 0.05
     reduction: "mean"
@@ -183,16 +200,24 @@ preregistered_analysis_plan:
     permutation_test:
       type: "exact_two_sided_sign_flip"
       resolution_limit: 0.0625
-      caveat: "With n=5, minimum resolution is 2/32 = 0.0625; mathematically cannot achieve alpha < 0.05 despite unanimous 5/5 positive direction"
-    multiple_testing_correction: "Holm-Bonferroni correction across the 3 registered sample sizes (N=50, 100, 250)"
+      formula: "p_min = 2 / (2^5) = 2 / 32 = 0.0625"
+      caveat: "With n=5, minimum two-sided resolution is 2/32 = 0.0625; mathematically cannot achieve alpha < 0.05 despite unanimous 5/5 positive direction"
+    multiple_testing_correction:
+      method: "Holm-Bonferroni correction across the 3 registered sample sizes (N=50, 100, 250)"
+      hypotheses:
+        H_N50: "paired delta Macro-F1 (Stage 2 - Stage 1) at N=50"
+        H_N100: "paired delta Macro-F1 (Stage 2 - Stage 1) at N=100"
+        H_N250: "paired delta Macro-F1 (Stage 2 - Stage 1) at N=250"
   calibration_protocol:
     temperature_scaling: "Option to evaluate on an independent calibration split or via nested cross-fitting"
     data_leakage_guard: "Forbidden to fit temperature parameter on model selection data and report calibration on the same data"
     miscalibration_diagnosis: "Reliability diagram or signed calibration error required before asserting overconfidence vs underconfidence"
+  evidence_status_note: "inner_validation is used both for checkpoint selection and reported development metrics; Stage 2 provides exploratory/development evidence, not locked-test confirmatory evidence."
 
-execution_gate:
-  requires_explicit_user_approval: true
-  preregistration_status: "SEALED_PREREGISTERED"
+readiness_semantics:
+  preregistration_status: "PREREGISTRATION_READY"
+  implementation_contract_status: "IMPLEMENTATION_CONTRACT_VERIFIED"
+  colab_execution_status: "NOT_READY"
   training_runs_in_phase: 0
   locked_test_evaluations: 0
   stage_2_invocations: 0
