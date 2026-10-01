@@ -11,8 +11,8 @@
 Before authorizing locked-test unsealing, the human reviewer must verify:
 
 1. [ ] **Protocol Review**: Reviewed preregistered protocol in Phase 4C.2E (`research/evidence/phase-4c.2e/`).
-2. [ ] **Evaluator Review**: Reviewed evaluator implementation in Phase 4C.2F.2 (`ml/evaluation/locked_test_evaluator.py`, `confirmatory_metrics.py`).
-3. [ ] **Execution Package Commit**: Confirmed `execution_package_commit` matches exact Git HEAD and working tree is completely clean.
+2. [ ] **Evaluator Review**: Reviewed evaluator implementation frozen in Phase 4C.2G.0 at commit `3cf75c2bf0c9835dd58897b7b36982732cab40ab` (`ml/evaluation/locked_test_evaluator.py`, `confirmatory_metrics.py`).
+3. [ ] **Execution Package Commit**: Confirmed `execution_package_commit` matches exact sealed commit `2826a8274cb89ec548d6fac5c8ae50c1c2836202`, and verified preferred execution mode (clean detached Git worktree/checkout at `2826a8274cb89ec548d6fac5c8ae50c1c2836202` with clean working tree).
 4. [ ] **Single Unsealing Session**: Agreed to strictly **1** unsealing session (`maximum_unsealing_sessions = 1`).
 5. [ ] **Attempt Accounting**: Agreed to strictly **5** model evaluation attempts (`maximum_model_evaluation_attempts = 5`, 1 attempt per seed).
 6. [ ] **No Post-Unsealing Tuning**: Acknowledged that zero tuning, hyperparameter search, or prompt adjustment may take place after unsealing.
@@ -40,11 +40,11 @@ Structure required by schema `docs/schemas/human-unsealing-authorization.v1.sche
   "sample_size": 250,
   "exact_seeds": [42, 1337, 2025, 3407, 9001],
   "checkpoint_sha256s": {
-    "42": "26038e788bc5fca39d67566d5885c3dbb9cf19a4e32d56a3103fe319d672ea4c",
-    "1337": "53086eb0717208d1f855d045fb9f237efb99e71ec912ba09756b3fa20ae77196",
-    "2025": "c644d6786a345517f8a70a8039775080fb0ae9fa2f33f1fe904033c5e88e7be1",
-    "3407": "f444c4fae0a2ea9c98efd4ba2195f001cbe65b2ea24a259c15b169543e55c3c0",
-    "9001": "d79ab0b606fbf42442cf282d02c7717466542718ef0c36b8e210543666b4c10c"
+    "42": "c941f42ed00adb098962ddb43c0f2f7d897e48e20957cddc0c491243f8730c92",
+    "1337": "69e706f9062f050ccbfd2affb72d63d5dde9d12f02c1e64c762b0ea6719073f1",
+    "2025": "92ce5ee986d487fdf14374842067d0684fc7669f5ecb32c7d603f6813942ceee",
+    "3407": "4897821ef0a97df9f1c51acde8d4ac01d383aa3a7b9e7ee55bbc3b3108847868",
+    "9001": "5f0f8803adcb7eec88d47e398ef8b2002b46e740c263b12abc2ba392822a91c3"
   },
   "evaluator_effective_commit": "3cf75c2bf0c9835dd58897b7b36982732cab40ab",
   "evaluator_component_hashes": {
@@ -59,7 +59,7 @@ Structure required by schema `docs/schemas/human-unsealing-authorization.v1.sche
   },
   "authorization_purpose": "Confirmatory prospective evaluation on locked-test partition.",
   "no_tuning_acknowledgment": true,
-  "execution_package_commit": "<EXACT_40_CHAR_TERMINAL_SEAL_COMMIT>",
+  "execution_package_commit": "2826a8274cb89ec548d6fac5c8ae50c1c2836202",
   "execution_package_tree_clean": true
 }
 ```

@@ -13,17 +13,24 @@ In accordance with strict research governance invariants:
 
 ---
 
-## 2. Commit Lineage and Functional Seal
+## 2. Commit Lineage and Sealed Execution Package
 
 | Role | Commit / Identifier | Description |
 | :--- | :--- | :--- |
 | **Base Main Commit** | `8a379665bc8db3722a46618e47db4806a6ea7244` | Candidate selection and protocol baseline |
 | **Parent Phase 4C.2F Commit** | `35f430f410c77247b1e8bb9bb9559ac615b0cd5b` | Sealed Phase 4C.2F.2 evaluator and evidence |
 | **Final Effective Evaluator Commit** | `3cf75c2bf0c9835dd58897b7b36982732cab40ab` | Evaluator source code frozen with execution package commit verification |
-| **Execution Package Commit** | *Terminal Evidence Seal Commit* | Terminal commit containing package contracts, schema, and evidence |
+| **Execution Package Commit** | `2826a8274cb89ec548d6fac5c8ae50c1c2836202` | Terminal evidence seal commit containing sealed package, schema, and contracts |
 | **Current Working Branch** | `research/phase-4c2g-locked-test-execution` | Isolated evaluation execution branch |
 
 Evaluator source code was frozen at commit `3cf75c2bf0c9835dd58897b7b36982732cab40ab`. No evaluator source modifications have been or will be made following that commit.
+
+### Preferred Execution Mode
+- Create a clean detached Git worktree or checkout at exact execution package commit: `2826a8274cb89ec548d6fac5c8ae50c1c2836202`.
+- Verify working tree is clean via `git status --porcelain` (must be completely empty).
+- Verify three evaluator components match sealed SHA-256 digests.
+- Do NOT run directly from the HEAD of evidence hotfix commits.
+- The 29,823-byte archive is a delivery and backup sealed artifact; it does not replace checking the exact execution-package commit.
 
 ---
 
@@ -37,6 +44,13 @@ Evaluator source code was frozen at commit `3cf75c2bf0c9835dd58897b7b36982732cab
 | **Authorization Schema** | `docs/schemas/human-unsealing-authorization.v1.schema.json` | 6,143 | `15291643b2ca2b3d6e3c135957db140e33f7cc65bc11aebc4668f3e105af6734` |
 | **Candidate Checkpoints Binding** | `research/evidence/phase-4c.2e/candidate_checkpoint_binding.json` | 3,519 | `b1363cb69e393927c6e2340a38e10865d16749939c1c391b28f2842666b31cfb` |
 
+### Canonical Candidate Checkpoints (Phase 4C.2E Preregistered Lineage)
+- **Seed 42**: `c941f42ed00adb098962ddb43c0f2f7d897e48e20957cddc0c491243f8730c92`
+- **Seed 1337**: `69e706f9062f050ccbfd2affb72d63d5dde9d12f02c1e64c762b0ea6719073f1`
+- **Seed 2025**: `92ce5ee986d487fdf14374842067d0684fc7669f5ecb32c7d603f6813942ceee`
+- **Seed 3407**: `4897821ef0a97df9f1c51acde8d4ac01d383aa3a7b9e7ee55bbc3b3108847868`
+- **Seed 9001**: `5f0f8803adcb7eec88d47e398ef8b2002b46e740c263b12abc2ba392822a91c3`
+
 ---
 
 ## 4. Offline Runtime Readiness & Device Policy
@@ -45,9 +59,10 @@ Evaluator source code was frozen at commit `3cf75c2bf0c9835dd58897b7b36982732cab
    - Evaluator includes passive inspection verifying: zero default routes outside loopback, absence of `HTTP_PROXY`, `HTTPS_PROXY`, `ALL_PROXY`, absence of active DNS queries, and zero outbound socket probes.
    - Tested and verified via synthetic fixture (`test_phase_4c2g_preparation.py`).
    - Current environment is a development host; `actual_execution_network_isolation` is recorded as `NOT_YET_VERIFIED`.
+   - Read-only mount verification must be strictly non-mutating (statvfs, metadata, disjoint realpath); canary writes into the locked-test partition are strictly forbidden.
 2. **Device Independence & Determinism**:
    - Evaluator supports both CPU and CUDA inference paths.
-   - CPU execution is prioritized for the offline evaluation run (5 seeds × 686 samples) to guarantee cross-platform numerical determinism and remove NVIDIA driver dependencies in air-gapped environments.
+   - CPU được ưu tiên để giảm phụ thuộc CUDA và cải thiện khả năng tái lập trong một runtime đã niêm phong. Bitwise parity giữa các host, BLAS, PyTorch hoặc kiến trúc CPU khác nhau không được giả định nếu chưa được kiểm chứng.
    - Preprocessing, thresholding, and metric logic are strictly invariant to device selection.
 
 ---
@@ -58,8 +73,8 @@ The formal request artifact `research/evidence/phase-4c.2g.0/HUMAN_AUTHORIZATION
 
 Before authorizing execution in Phase 4C.2G.1, the human reviewer must verify all 10 governance criteria:
 1. Protocol review (Phase 4C.2E).
-2. Evaluator code review (Phase 4C.2F.2).
-3. Execution package commit verification (`execution_package_commit` matching Git HEAD and clean working tree).
+2. Evaluator code review (frozen commit `3cf75c2bf0c9835dd58897b7b36982732cab40ab`).
+3. Execution package commit verification (`execution_package_commit: 2826a8274cb89ec548d6fac5c8ae50c1c2836202` matching Git HEAD and clean working tree).
 4. Strictly 1 unsealing session.
 5. Strictly 5 model evaluation attempts (1 per seed).
 6. Zero post-unsealing tuning.

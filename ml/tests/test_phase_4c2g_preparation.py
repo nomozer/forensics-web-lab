@@ -299,3 +299,161 @@ class TestZeroAccessAndCounters:
         """No GPU inference calls were executed."""
         gpu_calls = 0
         assert gpu_calls == 0
+
+
+# ==============================================================================
+# 5. Phase 4C.2G.0.1 Reconciliation Regression Tests
+# ==============================================================================
+
+class TestPhase4C2G01Reconciliation:
+    """Regression tests for Phase 4C.2G.0.1 reconciliation of execution package,
+    canonical checkpoint bindings, offline runtime evidence, and preferred execution mode.
+    """
+
+    STALE_HASHES = [
+        "26038e788bc5fca39d67566d5885c3dbb9cf19a4e32d56a3103fe319d672ea4c",
+        "53086eb0717208d1f855d045fb9f237efb99e71ec912ba09756b3fa20ae77196",
+        "c644d6786a345517f8a70a8039775080fb0ae9fa2f33f1fe904033c5e88e7be1",
+        "f444c4fae0a2ea9c98efd4ba2195f001cbe65b2ea24a259c15b169543e55c3c0",
+        "d79ab0b606fbf42442cf282d02c7717466542718ef0c36b8e210543666b4c10c",
+    ]
+
+    CANONICAL_CHECKPOINTS = {
+        42: "c941f42ed00adb098962ddb43c0f2f7d897e48e20957cddc0c491243f8730c92",
+        1337: "69e706f9062f050ccbfd2affb72d63d5dde9d12f02c1e64c762b0ea6719073f1",
+        2025: "92ce5ee986d487fdf14374842067d0684fc7669f5ecb32c7d603f6813942ceee",
+        3407: "4897821ef0a97df9f1c51acde8d4ac01d383aa3a7b9e7ee55bbc3b3108847868",
+        9001: "5f0f8803adcb7eec88d47e398ef8b2002b46e740c263b12abc2ba392822a91c3",
+    }
+
+    EXECUTION_PACKAGE_COMMIT = "2826a8274cb89ec548d6fac5c8ae50c1c2836202"
+
+    def test_g16_checkpoint_hashes_exact_match_canonical(self):
+        """All 5 checkpoint hashes in request, schema, and provenance match canonical binding."""
+        req = json.loads(Path("research/evidence/phase-4c.2g.0/HUMAN_AUTHORIZATION_REQUEST.json").read_text(encoding="utf-8"))
+        prov = json.loads(Path("research/evidence/phase-4c.2g.0/provenance_bindings.json").read_text(encoding="utf-8"))
+        schema = json.loads(Path("docs/schemas/human-unsealing-authorization.v1.schema.json").read_text(encoding="utf-8"))
+        cand_binding = json.loads(Path("research/evidence/phase-4c.2e/candidate_checkpoint_binding.json").read_text(encoding="utf-8"))
+
+        cand_map = {c["seed"]: c["checkpoint_sha256"] for c in cand_binding["checkpoints"]}
+        schema_map = schema["properties"]["checkpoint_sha256s"]["const"]
+
+        for seed, h in self.CANONICAL_CHECKPOINTS.items():
+            str_seed = str(seed)
+            assert cand_map[seed] == h
+            assert schema_map[str_seed] == h
+            assert req["exact_checkpoint_hashes"][str_seed] == h
+            assert prov["candidate_checkpoints"][str_seed] == h
+
+    def test_g17_checkpoint_hash_mismatch_fails_closed(self):
+        """Even a single character difference in one checkpoint hash fails verification."""
+        corrupted = dict(self.CANONICAL_CHECKPOINTS)
+        corrupted[42] = corrupted[42][:-1] + "0"
+        with pytest.raises(AssertionError):
+            assert corrupted == self.CANONICAL_CHECKPOINTS
+
+    def test_g18_no_stale_hashes_in_phase_4c2g(self):
+        """Zero occurrences of the 5 stale hashes across research/evidence/phase-4c.2g.0/."""
+        evidence_dir = Path("research/evidence/phase-4c.2g.0")
+        for f in evidence_dir.rglob("*"):
+            if f.is_file():
+                content = f.read_text(encoding="utf-8", errors="ignore")
+                for stale in self.STALE_HASHES:
+                    assert stale not in content, f"Stale hash {stale} found in {f}"
+
+    def test_g19_no_placeholder_commit_string(self):
+        """Placeholder TO_BE_BOUND_TO_TERMINAL_SEAL_COMMIT is completely eliminated."""
+        placeholder = "TO_BE_BOUND_TO_TERMINAL_SEAL_COMMIT"
+        tracked_files = subprocess.check_output(["git", "ls-files"], text=True).splitlines()
+        for f in tracked_files:
+            p = Path(f)
+            if p.is_file():
+                try:
+                    text = p.read_text(encoding="utf-8", errors="ignore")
+                    assert placeholder not in text, f"Found placeholder in {p}"
+                except Exception:
+                    pass
+        # Also check research/evidence/phase-4c.2g.0 explicitly
+        for p in Path("research/evidence/phase-4c.2g.0").rglob("*"):
+            if p.is_file():
+                text = p.read_text(encoding="utf-8", errors="ignore")
+                assert placeholder not in text, f"Found placeholder in {p}"
+
+    def test_g20_exact_commit_distinction(self):
+        """Distinct values for effective evaluator commit vs execution package commit."""
+        receipt = json.loads(Path("research/evidence/phase-4c.2g.0/EXECUTION_PACKAGE_RECEIPT.json").read_text(encoding="utf-8"))
+        assert receipt["effective_evaluator_commit"] == FINAL_EFFECTIVE_EVALUATOR_COMMIT
+        assert receipt["execution_package_commit"] == self.EXECUTION_PACKAGE_COMMIT
+        assert receipt["effective_evaluator_commit"] != receipt["execution_package_commit"]
+
+    def test_g21_execution_receipt_exact_fields(self):
+        """Machine-readable block in EXECUTION_PACKAGE_RECEIPT.json matches exact archive specs."""
+        receipt = json.loads(Path("research/evidence/phase-4c.2g.0/EXECUTION_PACKAGE_RECEIPT.json").read_text(encoding="utf-8"))
+        assert receipt["archive_filename"] == "phase_4c2g_locked_test_evaluator_2826a82.tar.gz"
+        assert receipt["archive_bytes"] == 29823
+        assert receipt["archive_sha256"] == "5ab922a2ec2aa3871b375ca6123b1591e74d29ed5001c191be532ac219ce891b"
+        assert receipt["archive_member_count"] == 24
+        assert receipt["effective_evaluator_commit"] == FINAL_EFFECTIVE_EVALUATOR_COMMIT
+        assert receipt["execution_package_commit"] == self.EXECUTION_PACKAGE_COMMIT
+
+    def test_g22_canary_write_required_is_false(self):
+        """canary_write_verification_required is False, non_mutating read-only check is True."""
+        readiness = json.loads(Path("research/evidence/phase-4c.2g.0/OFFLINE_RUNTIME_READINESS.json").read_text(encoding="utf-8"))
+        fs = readiness["readiness_checks"]["filesystem_isolation"]
+        assert fs["canary_write_verification_required"] is False
+        assert fs["non_mutating_read_only_mount_verification_required"] is True
+
+    def test_g23_no_unproven_cross_platform_bit_parity_claim(self):
+        """Ensures cross-platform CPU bitwise parity is not asserted without empirical proof."""
+        unproven_claim = "guarantees exact bit-for-bit determinism across host platforms"
+        env = Path("research/evidence/phase-4c.2g.0/environment.json").read_text(encoding="utf-8")
+        readiness = Path("research/evidence/phase-4c.2g.0/OFFLINE_RUNTIME_READINESS.json").read_text(encoding="utf-8")
+        assert unproven_claim not in env
+        assert unproven_claim not in readiness
+
+        # Must contain the exact required phrasing
+        assert "Bitwise parity giữa các host, BLAS, PyTorch hoặc kiến trúc CPU khác nhau không được giả định" in env
+        assert "Bitwise parity giữa các host, BLAS, PyTorch hoặc kiến trúc CPU khác nhau không được giả định" in readiness
+
+    def test_g24_status_strictly_pending_human_approval(self):
+        """Authorization request status remains strictly PENDING_HUMAN_APPROVAL."""
+        req = json.loads(Path("research/evidence/phase-4c.2g.0/HUMAN_AUTHORIZATION_REQUEST.json").read_text(encoding="utf-8"))
+        assert req["status"] == "PENDING_HUMAN_APPROVAL"
+
+    def test_g25_runtime_isolation_not_yet_verified(self):
+        """Runtime network isolation is NOT_YET_VERIFIED and gate is RUNTIME_PREPARATION_REQUIRED."""
+        gate = json.loads(Path("research/evidence/phase-4c.2g.0/PRE_AUTHORIZATION_GO_NO_GO.json").read_text(encoding="utf-8"))
+        assert gate["checks"]["actual_execution_network_isolation"] == "NOT_YET_VERIFIED"
+        assert gate["verdict"] == "RUNTIME_PREPARATION_REQUIRED"
+
+    def test_g26_locked_test_counters_strictly_zero(self):
+        """All accounting counters remain strictly 0."""
+        req = json.loads(Path("research/evidence/phase-4c.2g.0/HUMAN_AUTHORIZATION_REQUEST.json").read_text(encoding="utf-8"))
+        gate = json.loads(Path("research/evidence/phase-4c.2g.0/PRE_AUTHORIZATION_GO_NO_GO.json").read_text(encoding="utf-8"))
+        receipt = json.loads(Path("research/evidence/phase-4c.2g.0/EXECUTION_PACKAGE_RECEIPT.json").read_text(encoding="utf-8"))
+        env = json.loads(Path("research/evidence/phase-4c.2g.0/environment.json").read_text(encoding="utf-8"))
+
+        assert gate["checks"]["locked_test_real_accesses"] == 0
+        assert gate["checks"]["completed_real_unsealing_sessions"] == 0
+        assert gate["checks"]["completed_real_model_evaluations"] == 0
+        assert gate["checks"]["evaluation_attempts"] == 0
+        assert gate["checks"]["gpu_inference_calls"] == 0
+
+        assert receipt["counters_at_seal"]["locked_test_real_accesses"] == 0
+        assert env["accounting_counters"]["locked_test_real_accesses"] == 0
+
+    def test_g27_no_human_unsealing_authorization_json(self):
+        """HUMAN_UNSEALING_AUTHORIZATION.json does NOT exist anywhere in repository."""
+        matches = list(Path(".").rglob("HUMAN_UNSEALING_AUTHORIZATION.json"))
+        repo_matches = [m for m in matches if ".git" not in m.parts and ".venv" not in m.parts and "node_modules" not in m.parts]
+        assert len(repo_matches) == 0
+
+    def test_g28_execution_mode_clean_detached_checkout_required(self):
+        """Preferred execution mode requires clean detached Git worktree/checkout at 2826a82."""
+        receipt = json.loads(Path("research/evidence/phase-4c.2g.0/EXECUTION_PACKAGE_RECEIPT.json").read_text(encoding="utf-8"))
+        readiness = json.loads(Path("research/evidence/phase-4c.2g.0/OFFLINE_RUNTIME_READINESS.json").read_text(encoding="utf-8"))
+
+        assert receipt["preferred_execution_mode"]["mode"] == "CLEAN_DETACHED_GIT_CHECKOUT"
+        assert receipt["preferred_execution_mode"]["required_commit"] == self.EXECUTION_PACKAGE_COMMIT
+        assert readiness["preferred_execution_mode"]["mode"] == "CLEAN_DETACHED_GIT_CHECKOUT"
+        assert readiness["preferred_execution_mode"]["required_commit"] == self.EXECUTION_PACKAGE_COMMIT

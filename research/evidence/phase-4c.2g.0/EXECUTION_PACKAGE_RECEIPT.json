@@ -1,9 +1,25 @@
 {
   "phase": "4C.2G.0",
-  "receipt_version": "1.0.0",
-  "timestamp_utc": "2026-10-01T19:15:00Z",
+  "receipt_version": "1.0.1",
+  "timestamp_utc": "2026-10-01T19:30:00Z",
+  "archive_filename": "phase_4c2g_locked_test_evaluator_2826a82.tar.gz",
+  "archive_bytes": 29823,
+  "archive_sha256": "5ab922a2ec2aa3871b375ca6123b1591e74d29ed5001c191be532ac219ce891b",
+  "archive_member_count": 24,
+  "effective_evaluator_commit": "3cf75c2bf0c9835dd58897b7b36982732cab40ab",
   "final_effective_evaluator_commit": "3cf75c2bf0c9835dd58897b7b36982732cab40ab",
-  "execution_package_commit_role": "TERMINAL_EVIDENCE_SEAL_COMMIT",
+  "execution_package_commit": "2826a8274cb89ec548d6fac5c8ae50c1c2836202",
+  "preferred_execution_mode": {
+    "mode": "CLEAN_DETACHED_GIT_CHECKOUT",
+    "required_commit": "2826a8274cb89ec548d6fac5c8ae50c1c2836202",
+    "instructions": [
+      "Create clean detached Git worktree or checkout at exact execution_package_commit: 2826a8274cb89ec548d6fac5c8ae50c1c2836202",
+      "Verify working tree is clean via git status --porcelain (must be empty)",
+      "Verify three evaluator components match sealed SHA-256 digests",
+      "Do NOT run directly from HEAD of evidence hotfix commit",
+      "Archive 29,823 bytes is a delivery and backup sealed artifact; it does not replace checking exact execution-package commit"
+    ]
+  },
   "components": {
     "confirmatory_metrics": {
       "relative_path": "ml/evaluation/confirmatory_metrics.py",
@@ -29,7 +45,10 @@
   "archive_specification": {
     "format": "tar.gz",
     "target_directory": "data/research/local-artifacts/phase-4c.2g/",
-    "filename_template": "phase_4c2g_locked_test_evaluator_<execution_package_commit_short>.tar.gz",
+    "filename": "phase_4c2g_locked_test_evaluator_2826a82.tar.gz",
+    "bytes": 29823,
+    "sha256": "5ab922a2ec2aa3871b375ca6123b1591e74d29ed5001c191be532ac219ce891b",
+    "member_count": 24,
     "included_paths": [
       "ml/evaluation/",
       "docs/schemas/human-unsealing-authorization.v1.schema.json",
@@ -38,7 +57,7 @@
       "research/evidence/phase-4c.2f/bootstrap_contract.json",
       "research/evidence/phase-4c.2f/evaluator_contract.json",
       "research/evidence/phase-4c.2e/candidate_checkpoint_binding.json",
-      "pyproject.toml",
+      "ml/pyproject.toml",
       "package.json"
     ],
     "tar_security_audit": {

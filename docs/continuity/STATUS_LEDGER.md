@@ -1,3 +1,16 @@
+## Phase 4C.2G.0 — Reconcile Execution-Package, Checkpoint Bindings, and Offline-Runtime Evidence (Phase 4C.2G.0.1)
+
+- **Muc tieu**: Reconcile canonical checkpoint bindings with Phase 4C.2E baseline; lock execution_package_commit 2826a82; verify out-of-git archive (29,823 bytes, SHA-256 5ab922a); define preferred execution mode (clean detached checkout); eliminate canary write requirement; correct CPU determinism claim. Locked-test sealed (0 accesses).
+- **Starting commit**: 2826a82 (Phase 4C.2G.0 terminal seal)
+- **Branch**: research/phase-4c2g-locked-test-execution
+- **Thay đổi chính**: (1) Replaced stale checkpoint hashes with canonical Stage 1 N=250 hashes in request, template, and provenance. (2) Replaced commit placeholder with exact execution_package_commit 2826a82. (3) Verified existing archive (29,823 bytes, 24 members, SHA-256 5ab922a, streaming SHA check PASS). (4) Registered preferred execution mode (clean detached checkout at 2826a82). (5) Changed canary_write_verification_required to false; non_mutating read-only check to true. (6) Corrected CPU determinism rationale. (7) Added 13 regression tests (test_g16 to test_g28) in ml/tests/test_phase_4c2g_preparation.py (73/73 PASS).
+- **Kiểm tra**: 73/73 evaluator & preparation tests PASS, 442/442 unit pytest PASS, 13/13 continuity test PASS, 34/34 TS test PASS, typecheck 0 errors, build OK, continuity check PASS, git diff clean.
+- **Kết quả**: Pre-authorization gate verdict: RUNTIME_PREPARATION_REQUIRED (actual_execution_network_isolation = NOT_YET_VERIFIED). Real counters strictly 0 (accesses=0, unsealing_sessions=0, model_evaluations=0, evaluation_attempts=0, gpu_calls=0).
+- **Evidence**: research/evidence/phase-4c.2g.0/ (PHASE_REPORT.md, EXECUTION_PACKAGE_RECEIPT.json, OFFLINE_RUNTIME_READINESS.json, HUMAN_AUTHORIZATION_REQUEST.json, PRE_AUTHORIZATION_GO_NO_GO.json, provenance_bindings.json, environment.json, HUMAN_APPROVAL_TEMPLATE.md).
+- **Quyết định tiếp theo**: Await human offline runtime verification and signed authorization artifact before running Phase 4C.2G.1.
+
+---
+
 ## Phase 4C.2G.0 — Build Final Execution Package, Prepare Offline Runtime, and Request Human Authorization
 
 - **Muc tieu**: Build and seal final execution package; bind execution_package_commit and git cleanliness checks; establish offline runtime readiness constraints; emit formal HUMAN_AUTHORIZATION_REQUEST.json (status PENDING_HUMAN_APPROVAL). Locked-test partition strictly sealed (0 accesses).
