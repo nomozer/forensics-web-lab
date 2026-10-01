@@ -1,0 +1,1044 @@
+{
+  "archive_name": "execution_9ee7fdb_complete_results.tar.gz",
+  "total_entries": 173,
+  "entries": [
+    {
+      "name": "n50_seed_42",
+      "type": "directory",
+      "size_bytes": 0,
+      "mode": "0o700"
+    },
+    {
+      "name": "n50_seed_42/best_checkpoint.pt",
+      "type": "file",
+      "size_bytes": 6081701,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_42/checksums.json",
+      "type": "file",
+      "size_bytes": 1238,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_42/environment-binding.json",
+      "type": "file",
+      "size_bytes": 257,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_42/environment.json",
+      "type": "file",
+      "size_bytes": 300,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_42/epoch_history.json",
+      "type": "file",
+      "size_bytes": 4319,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_42/metrics.json",
+      "type": "file",
+      "size_bytes": 391,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_42/predictions.json",
+      "type": "file",
+      "size_bytes": 10673,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_42/run_receipt.json",
+      "type": "file",
+      "size_bytes": 4019,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_42/trainable-parameter-inventory.json",
+      "type": "file",
+      "size_bytes": 699,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_42/training_history.csv",
+      "type": "file",
+      "size_bytes": 2031,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_1337",
+      "type": "directory",
+      "size_bytes": 0,
+      "mode": "0o700"
+    },
+    {
+      "name": "n50_seed_1337/best_checkpoint.pt",
+      "type": "file",
+      "size_bytes": 6081701,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_1337/checksums.json",
+      "type": "file",
+      "size_bytes": 1238,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_1337/environment-binding.json",
+      "type": "file",
+      "size_bytes": 261,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_1337/environment.json",
+      "type": "file",
+      "size_bytes": 300,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_1337/epoch_history.json",
+      "type": "file",
+      "size_bytes": 6109,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_1337/metrics.json",
+      "type": "file",
+      "size_bytes": 393,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_1337/predictions.json",
+      "type": "file",
+      "size_bytes": 10682,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_1337/run_receipt.json",
+      "type": "file",
+      "size_bytes": 4021,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_1337/trainable-parameter-inventory.json",
+      "type": "file",
+      "size_bytes": 699,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_1337/training_history.csv",
+      "type": "file",
+      "size_bytes": 2821,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_2025",
+      "type": "directory",
+      "size_bytes": 0,
+      "mode": "0o700"
+    },
+    {
+      "name": "n50_seed_2025/best_checkpoint.pt",
+      "type": "file",
+      "size_bytes": 6081701,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_2025/checksums.json",
+      "type": "file",
+      "size_bytes": 1238,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_2025/environment-binding.json",
+      "type": "file",
+      "size_bytes": 261,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_2025/environment.json",
+      "type": "file",
+      "size_bytes": 300,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_2025/epoch_history.json",
+      "type": "file",
+      "size_bytes": 3266,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_2025/metrics.json",
+      "type": "file",
+      "size_bytes": 394,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_2025/predictions.json",
+      "type": "file",
+      "size_bytes": 10683,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_2025/run_receipt.json",
+      "type": "file",
+      "size_bytes": 4019,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_2025/trainable-parameter-inventory.json",
+      "type": "file",
+      "size_bytes": 699,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_2025/training_history.csv",
+      "type": "file",
+      "size_bytes": 1578,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_3407",
+      "type": "directory",
+      "size_bytes": 0,
+      "mode": "0o700"
+    },
+    {
+      "name": "n50_seed_3407/best_checkpoint.pt",
+      "type": "file",
+      "size_bytes": 6081701,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_3407/checksums.json",
+      "type": "file",
+      "size_bytes": 1238,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_3407/environment-binding.json",
+      "type": "file",
+      "size_bytes": 261,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_3407/environment.json",
+      "type": "file",
+      "size_bytes": 300,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_3407/epoch_history.json",
+      "type": "file",
+      "size_bytes": 2165,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_3407/metrics.json",
+      "type": "file",
+      "size_bytes": 397,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_3407/predictions.json",
+      "type": "file",
+      "size_bytes": 10674,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_3407/run_receipt.json",
+      "type": "file",
+      "size_bytes": 4024,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_3407/trainable-parameter-inventory.json",
+      "type": "file",
+      "size_bytes": 699,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_3407/training_history.csv",
+      "type": "file",
+      "size_bytes": 1077,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_9001",
+      "type": "directory",
+      "size_bytes": 0,
+      "mode": "0o700"
+    },
+    {
+      "name": "n50_seed_9001/best_checkpoint.pt",
+      "type": "file",
+      "size_bytes": 6081701,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_9001/checksums.json",
+      "type": "file",
+      "size_bytes": 1238,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_9001/environment-binding.json",
+      "type": "file",
+      "size_bytes": 261,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_9001/environment.json",
+      "type": "file",
+      "size_bytes": 300,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_9001/epoch_history.json",
+      "type": "file",
+      "size_bytes": 3615,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_9001/metrics.json",
+      "type": "file",
+      "size_bytes": 393,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_9001/predictions.json",
+      "type": "file",
+      "size_bytes": 10658,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_9001/run_receipt.json",
+      "type": "file",
+      "size_bytes": 4018,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_9001/trainable-parameter-inventory.json",
+      "type": "file",
+      "size_bytes": 699,
+      "mode": "0o600"
+    },
+    {
+      "name": "n50_seed_9001/training_history.csv",
+      "type": "file",
+      "size_bytes": 1727,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_42",
+      "type": "directory",
+      "size_bytes": 0,
+      "mode": "0o700"
+    },
+    {
+      "name": "n100_seed_42/best_checkpoint.pt",
+      "type": "file",
+      "size_bytes": 6081701,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_42/checksums.json",
+      "type": "file",
+      "size_bytes": 1238,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_42/environment-binding.json",
+      "type": "file",
+      "size_bytes": 259,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_42/environment.json",
+      "type": "file",
+      "size_bytes": 300,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_42/epoch_history.json",
+      "type": "file",
+      "size_bytes": 3607,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_42/metrics.json",
+      "type": "file",
+      "size_bytes": 391,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_42/predictions.json",
+      "type": "file",
+      "size_bytes": 10673,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_42/run_receipt.json",
+      "type": "file",
+      "size_bytes": 4019,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_42/trainable-parameter-inventory.json",
+      "type": "file",
+      "size_bytes": 699,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_42/training_history.csv",
+      "type": "file",
+      "size_bytes": 1719,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_1337",
+      "type": "directory",
+      "size_bytes": 0,
+      "mode": "0o700"
+    },
+    {
+      "name": "n100_seed_1337/best_checkpoint.pt",
+      "type": "file",
+      "size_bytes": 6081701,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_1337/checksums.json",
+      "type": "file",
+      "size_bytes": 1238,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_1337/environment-binding.json",
+      "type": "file",
+      "size_bytes": 263,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_1337/environment.json",
+      "type": "file",
+      "size_bytes": 300,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_1337/epoch_history.json",
+      "type": "file",
+      "size_bytes": 7241,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_1337/metrics.json",
+      "type": "file",
+      "size_bytes": 397,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_1337/predictions.json",
+      "type": "file",
+      "size_bytes": 10657,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_1337/run_receipt.json",
+      "type": "file",
+      "size_bytes": 4026,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_1337/trainable-parameter-inventory.json",
+      "type": "file",
+      "size_bytes": 699,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_1337/training_history.csv",
+      "type": "file",
+      "size_bytes": 3353,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_2025",
+      "type": "directory",
+      "size_bytes": 0,
+      "mode": "0o700"
+    },
+    {
+      "name": "n100_seed_2025/best_checkpoint.pt",
+      "type": "file",
+      "size_bytes": 6081701,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_2025/checksums.json",
+      "type": "file",
+      "size_bytes": 1238,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_2025/environment-binding.json",
+      "type": "file",
+      "size_bytes": 263,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_2025/environment.json",
+      "type": "file",
+      "size_bytes": 300,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_2025/epoch_history.json",
+      "type": "file",
+      "size_bytes": 4727,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_2025/metrics.json",
+      "type": "file",
+      "size_bytes": 396,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_2025/predictions.json",
+      "type": "file",
+      "size_bytes": 10685,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_2025/run_receipt.json",
+      "type": "file",
+      "size_bytes": 4024,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_2025/trainable-parameter-inventory.json",
+      "type": "file",
+      "size_bytes": 699,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_2025/training_history.csv",
+      "type": "file",
+      "size_bytes": 2239,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_3407",
+      "type": "directory",
+      "size_bytes": 0,
+      "mode": "0o700"
+    },
+    {
+      "name": "n100_seed_3407/best_checkpoint.pt",
+      "type": "file",
+      "size_bytes": 6081701,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_3407/checksums.json",
+      "type": "file",
+      "size_bytes": 1238,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_3407/environment-binding.json",
+      "type": "file",
+      "size_bytes": 263,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_3407/environment.json",
+      "type": "file",
+      "size_bytes": 300,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_3407/epoch_history.json",
+      "type": "file",
+      "size_bytes": 4355,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_3407/metrics.json",
+      "type": "file",
+      "size_bytes": 396,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_3407/predictions.json",
+      "type": "file",
+      "size_bytes": 10663,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_3407/run_receipt.json",
+      "type": "file",
+      "size_bytes": 4023,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_3407/trainable-parameter-inventory.json",
+      "type": "file",
+      "size_bytes": 699,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_3407/training_history.csv",
+      "type": "file",
+      "size_bytes": 2067,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_9001",
+      "type": "directory",
+      "size_bytes": 0,
+      "mode": "0o700"
+    },
+    {
+      "name": "n100_seed_9001/best_checkpoint.pt",
+      "type": "file",
+      "size_bytes": 6081701,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_9001/checksums.json",
+      "type": "file",
+      "size_bytes": 1238,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_9001/environment-binding.json",
+      "type": "file",
+      "size_bytes": 263,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_9001/environment.json",
+      "type": "file",
+      "size_bytes": 300,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_9001/epoch_history.json",
+      "type": "file",
+      "size_bytes": 5085,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_9001/metrics.json",
+      "type": "file",
+      "size_bytes": 395,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_9001/predictions.json",
+      "type": "file",
+      "size_bytes": 10660,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_9001/run_receipt.json",
+      "type": "file",
+      "size_bytes": 4021,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_9001/trainable-parameter-inventory.json",
+      "type": "file",
+      "size_bytes": 699,
+      "mode": "0o600"
+    },
+    {
+      "name": "n100_seed_9001/training_history.csv",
+      "type": "file",
+      "size_bytes": 2397,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_42",
+      "type": "directory",
+      "size_bytes": 0,
+      "mode": "0o700"
+    },
+    {
+      "name": "n250_seed_42/best_checkpoint.pt",
+      "type": "file",
+      "size_bytes": 6081701,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_42/checksums.json",
+      "type": "file",
+      "size_bytes": 1238,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_42/environment-binding.json",
+      "type": "file",
+      "size_bytes": 259,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_42/environment.json",
+      "type": "file",
+      "size_bytes": 300,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_42/epoch_history.json",
+      "type": "file",
+      "size_bytes": 5090,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_42/metrics.json",
+      "type": "file",
+      "size_bytes": 394,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_42/predictions.json",
+      "type": "file",
+      "size_bytes": 10661,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_42/run_receipt.json",
+      "type": "file",
+      "size_bytes": 4021,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_42/trainable-parameter-inventory.json",
+      "type": "file",
+      "size_bytes": 699,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_42/training_history.csv",
+      "type": "file",
+      "size_bytes": 2402,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_1337",
+      "type": "directory",
+      "size_bytes": 0,
+      "mode": "0o700"
+    },
+    {
+      "name": "n250_seed_1337/best_checkpoint.pt",
+      "type": "file",
+      "size_bytes": 6081701,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_1337/checksums.json",
+      "type": "file",
+      "size_bytes": 1238,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_1337/environment-binding.json",
+      "type": "file",
+      "size_bytes": 263,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_1337/environment.json",
+      "type": "file",
+      "size_bytes": 300,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_1337/epoch_history.json",
+      "type": "file",
+      "size_bytes": 2909,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_1337/metrics.json",
+      "type": "file",
+      "size_bytes": 397,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_1337/predictions.json",
+      "type": "file",
+      "size_bytes": 10671,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_1337/run_receipt.json",
+      "type": "file",
+      "size_bytes": 4024,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_1337/trainable-parameter-inventory.json",
+      "type": "file",
+      "size_bytes": 699,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_1337/training_history.csv",
+      "type": "file",
+      "size_bytes": 1421,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_2025",
+      "type": "directory",
+      "size_bytes": 0,
+      "mode": "0o700"
+    },
+    {
+      "name": "n250_seed_2025/best_checkpoint.pt",
+      "type": "file",
+      "size_bytes": 6081701,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_2025/checksums.json",
+      "type": "file",
+      "size_bytes": 1238,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_2025/environment-binding.json",
+      "type": "file",
+      "size_bytes": 263,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_2025/environment.json",
+      "type": "file",
+      "size_bytes": 300,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_2025/epoch_history.json",
+      "type": "file",
+      "size_bytes": 6176,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_2025/metrics.json",
+      "type": "file",
+      "size_bytes": 397,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_2025/predictions.json",
+      "type": "file",
+      "size_bytes": 10700,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_2025/run_receipt.json",
+      "type": "file",
+      "size_bytes": 4025,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_2025/trainable-parameter-inventory.json",
+      "type": "file",
+      "size_bytes": 699,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_2025/training_history.csv",
+      "type": "file",
+      "size_bytes": 2888,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_3407",
+      "type": "directory",
+      "size_bytes": 0,
+      "mode": "0o700"
+    },
+    {
+      "name": "n250_seed_3407/best_checkpoint.pt",
+      "type": "file",
+      "size_bytes": 6081701,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_3407/checksums.json",
+      "type": "file",
+      "size_bytes": 1238,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_3407/environment-binding.json",
+      "type": "file",
+      "size_bytes": 263,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_3407/environment.json",
+      "type": "file",
+      "size_bytes": 300,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_3407/epoch_history.json",
+      "type": "file",
+      "size_bytes": 2542,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_3407/metrics.json",
+      "type": "file",
+      "size_bytes": 394,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_3407/predictions.json",
+      "type": "file",
+      "size_bytes": 10667,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_3407/run_receipt.json",
+      "type": "file",
+      "size_bytes": 4021,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_3407/trainable-parameter-inventory.json",
+      "type": "file",
+      "size_bytes": 699,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_3407/training_history.csv",
+      "type": "file",
+      "size_bytes": 1254,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_9001",
+      "type": "directory",
+      "size_bytes": 0,
+      "mode": "0o700"
+    },
+    {
+      "name": "n250_seed_9001/best_checkpoint.pt",
+      "type": "file",
+      "size_bytes": 6081701,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_9001/checksums.json",
+      "type": "file",
+      "size_bytes": 1238,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_9001/environment-binding.json",
+      "type": "file",
+      "size_bytes": 263,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_9001/environment.json",
+      "type": "file",
+      "size_bytes": 300,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_9001/epoch_history.json",
+      "type": "file",
+      "size_bytes": 3984,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_9001/metrics.json",
+      "type": "file",
+      "size_bytes": 397,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_9001/predictions.json",
+      "type": "file",
+      "size_bytes": 10664,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_9001/run_receipt.json",
+      "type": "file",
+      "size_bytes": 4022,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_9001/trainable-parameter-inventory.json",
+      "type": "file",
+      "size_bytes": 699,
+      "mode": "0o600"
+    },
+    {
+      "name": "n250_seed_9001/training_history.csv",
+      "type": "file",
+      "size_bytes": 1896,
+      "mode": "0o600"
+    },
+    {
+      "name": "phase4c2_environment_lock.json",
+      "type": "file",
+      "size_bytes": 2561,
+      "mode": "0o600"
+    },
+    {
+      "name": "phase4c2_environment_lock.sha256",
+      "type": "file",
+      "size_bytes": 97,
+      "mode": "0o600"
+    },
+    {
+      "name": "normalized_execution_manifest.json",
+      "type": "file",
+      "size_bytes": 155233,
+      "mode": "0o600"
+    },
+    {
+      "name": "OPERATOR_STATUS.json",
+      "type": "file",
+      "size_bytes": 235,
+      "mode": "0o600"
+    },
+    {
+      "name": "runtime_observations",
+      "type": "directory",
+      "size_bytes": 0,
+      "mode": "0o700"
+    },
+    {
+      "name": "runtime_observations/runtime_20261001T095615Z.json",
+      "type": "file",
+      "size_bytes": 422,
+      "mode": "0o600"
+    },
+    {
+      "name": "logs",
+      "type": "directory",
+      "size_bytes": 0,
+      "mode": "0o700"
+    },
+    {
+      "name": "logs/operator_console.log",
+      "type": "file",
+      "size_bytes": 66500,
+      "mode": "0o600"
+    }
+  ]
+}
