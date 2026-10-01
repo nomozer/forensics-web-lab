@@ -60,7 +60,7 @@ from ml.evaluation.locked_test_evaluator import (
 )
 from ml.evaluation.run_phase_4c2f_evaluator import generate_synthetic_mock_records
 
-EFFECTIVE_EVALUATOR_COMMIT = "97851a3008c03e2cdeeed22a3cdf896380605a0b"
+EFFECTIVE_EVALUATOR_COMMIT = "3cf75c2bf0c9835dd58897b7b36982732cab40ab"
 
 
 # ==============================================================================
@@ -149,7 +149,7 @@ class TestCandidateCheckpointResolution:
         """Contract invariants: no cherry-picking, no post-hoc ensembling."""
         assert len(AUTHORIZED_SEEDS) == 5
         assert ORIGINAL_EVALUATOR_COMMIT == "656529f04ee8dfcf26e7bb46c757f5cba279326e"
-        assert EFFECTIVE_EVALUATOR_COMMIT.startswith("97851a3")
+        assert EFFECTIVE_EVALUATOR_COMMIT.startswith("3cf75c2")
         assert BASE_MAIN_COMMIT == "8a379665bc8db3722a46618e47db4806a6ea7244"
         assert EFFECTIVE_EVALUATOR_COMMIT != BASE_MAIN_COMMIT
 
@@ -419,7 +419,7 @@ class TestEvaluatorFailClosedAndLedger:
             "evaluator_effective_commit": EFFECTIVE_EVALUATOR_COMMIT,
             "evaluator_component_hashes": {
                 "confirmatory_metrics": "bacbb9dc0a230359f1c3bbaece1ce8c19e30ddafa807313480d173a808bde808",
-                "locked_test_evaluator": "70d1196c501147d6944a799e3a287635b5ae7042c01cc2ed776dcf3c58940927",
+                "locked_test_evaluator": "b311e010535600781e52014fb6b675d32d78a558c5fe7e67bd3ec00b6989a5e1",
                 "run_evaluator_cli": "37ed02ff44d8c523150ebb968d2777bba9c2dee8597b3df60efa1fb5bd1e9041",
             },
             "maximum_unsealing_sessions": 1,
@@ -427,11 +427,13 @@ class TestEvaluatorFailClosedAndLedger:
             "expiry_policy": {"policy": "single_session_only"},
             "authorization_purpose": "Confirmatory prospective evaluation on locked-test.",
             "no_tuning_acknowledgment": True,
+            "execution_package_commit": "3cf75c2bf0c9835dd58897b7b36982732cab40ab",
+            "execution_package_tree_clean": True,
         }
 
         # 1. Valid auth passes
         auth_file.write_text(json.dumps(valid_auth), encoding="utf-8")
-        parsed = LockedTestEvaluator.verify_human_authorization(auth_file)
+        parsed = LockedTestEvaluator.verify_human_authorization(auth_file, bypass_git_checks=True)
         assert parsed["status"] == "AUTHORIZED"
 
         # 2. Missing or wrong evaluator effective commit fails
@@ -727,7 +729,7 @@ class TestEvaluatorFailClosedAndLedger:
         assert gate["base_main_commit"] == BASE_MAIN_COMMIT
         assert gate["effective_evaluator_commit"] != gate["base_main_commit"]
         assert gate["effective_evaluator_commit"] != ORIGINAL_EVALUATOR_COMMIT
-        assert gate["effective_evaluator_commit"].startswith("97851a3")
+        assert gate["effective_evaluator_commit"].startswith("3cf75c2")
         assert gate["base_main_commit"].startswith("8a37966")
         assert gate["completed_unsealing_sessions"] == 0
         assert gate["completed_model_evaluations"] == 0
@@ -798,7 +800,7 @@ class TestPhase4C2F2SchemaExactnessAndProvenance:
             "evaluator_effective_commit": EFFECTIVE_EVALUATOR_COMMIT,
             "evaluator_component_hashes": {
                 "confirmatory_metrics": "bacbb9dc0a230359f1c3bbaece1ce8c19e30ddafa807313480d173a808bde808",
-                "locked_test_evaluator": "70d1196c501147d6944a799e3a287635b5ae7042c01cc2ed776dcf3c58940927",
+                "locked_test_evaluator": "b311e010535600781e52014fb6b675d32d78a558c5fe7e67bd3ec00b6989a5e1",
                 "run_evaluator_cli": "37ed02ff44d8c523150ebb968d2777bba9c2dee8597b3df60efa1fb5bd1e9041",
             },
             "maximum_unsealing_sessions": 1,
@@ -806,6 +808,8 @@ class TestPhase4C2F2SchemaExactnessAndProvenance:
             "expiry_policy": {"policy": "single_session_only"},
             "authorization_purpose": "Confirmatory prospective evaluation on locked-test.",
             "no_tuning_acknowledgment": True,
+            "execution_package_commit": "3cf75c2bf0c9835dd58897b7b36982732cab40ab",
+            "execution_package_tree_clean": True,
         }
 
     def test_f01_exact_seeds_differing_element_fails(self, tmp_path):
@@ -815,7 +819,7 @@ class TestPhase4C2F2SchemaExactnessAndProvenance:
         auth_file = tmp_path / "auth_f01.json"
         auth_file.write_text(json.dumps(auth), encoding="utf-8")
         with pytest.raises(PermissionError):
-            LockedTestEvaluator.verify_human_authorization(auth_file)
+            LockedTestEvaluator.verify_human_authorization(auth_file, bypass_git_checks=True)
 
     def test_f02_exact_seeds_out_of_order_fails(self, tmp_path):
         """Regression 2: exact_seeds out of canonical order must FAIL."""
@@ -824,7 +828,7 @@ class TestPhase4C2F2SchemaExactnessAndProvenance:
         auth_file = tmp_path / "auth_f02.json"
         auth_file.write_text(json.dumps(auth), encoding="utf-8")
         with pytest.raises(PermissionError):
-            LockedTestEvaluator.verify_human_authorization(auth_file)
+            LockedTestEvaluator.verify_human_authorization(auth_file, bypass_git_checks=True)
 
     def test_f03_checkpoint_hash_wrong_value_fails(self, tmp_path):
         """Regression 3: checkpoint hash valid format (64 hex) but wrong value must FAIL."""
@@ -835,7 +839,7 @@ class TestPhase4C2F2SchemaExactnessAndProvenance:
         auth_file = tmp_path / "auth_f03.json"
         auth_file.write_text(json.dumps(auth), encoding="utf-8")
         with pytest.raises(PermissionError):
-            LockedTestEvaluator.verify_human_authorization(auth_file)
+            LockedTestEvaluator.verify_human_authorization(auth_file, bypass_git_checks=True)
 
     def test_f04_evaluator_component_hash_wrong_value_fails(self, tmp_path):
         """Regression 4: evaluator component hash valid format but wrong value must FAIL."""
@@ -846,7 +850,7 @@ class TestPhase4C2F2SchemaExactnessAndProvenance:
         auth_file = tmp_path / "auth_f04.json"
         auth_file.write_text(json.dumps(auth), encoding="utf-8")
         with pytest.raises(PermissionError):
-            LockedTestEvaluator.verify_human_authorization(auth_file)
+            LockedTestEvaluator.verify_human_authorization(auth_file, bypass_git_checks=True)
 
     def test_f05_authorization_locks_to_effective_evaluator_commit(self, tmp_path):
         """Regression 5: authorization strictly requires effective evaluator commit."""
@@ -854,7 +858,7 @@ class TestPhase4C2F2SchemaExactnessAndProvenance:
         auth["evaluator_effective_commit"] = EFFECTIVE_EVALUATOR_COMMIT
         auth_file = tmp_path / "auth_f05.json"
         auth_file.write_text(json.dumps(auth), encoding="utf-8")
-        res = LockedTestEvaluator.verify_human_authorization(auth_file)
+        res = LockedTestEvaluator.verify_human_authorization(auth_file, bypass_git_checks=True)
         assert res["status"] == "AUTHORIZED"
 
     def test_f06_original_evaluator_commit_656529f_rejected(self, tmp_path):
@@ -864,7 +868,7 @@ class TestPhase4C2F2SchemaExactnessAndProvenance:
         auth_file = tmp_path / "auth_f06.json"
         auth_file.write_text(json.dumps(auth), encoding="utf-8")
         with pytest.raises(PermissionError, match="pre-hotfix and strictly forbidden|schema validation failed"):
-            LockedTestEvaluator.verify_human_authorization(auth_file)
+            LockedTestEvaluator.verify_human_authorization(auth_file, bypass_git_checks=True)
 
     def test_f07_authorization_schema_sha_mismatch_fails(self, tmp_path):
         """Regression 7: tampering with authorization schema by even 1 byte must FAIL closed."""
@@ -880,6 +884,7 @@ class TestPhase4C2F2SchemaExactnessAndProvenance:
             LockedTestEvaluator.verify_human_authorization(
                 auth_file,
                 schema_path=tampered_schema,
+                bypass_git_checks=True,
             )
 
     def test_f08_nested_additional_property_fails(self, tmp_path):
@@ -889,21 +894,21 @@ class TestPhase4C2F2SchemaExactnessAndProvenance:
         auth_file1 = tmp_path / "auth_f08_1.json"
         auth_file1.write_text(json.dumps(auth1), encoding="utf-8")
         with pytest.raises(PermissionError, match="schema validation failed"):
-            LockedTestEvaluator.verify_human_authorization(auth_file1)
+            LockedTestEvaluator.verify_human_authorization(auth_file1, bypass_git_checks=True)
 
         auth2 = self._get_valid_auth()
         auth2["evaluator_component_hashes"]["extra_comp"] = "a" * 64
         auth_file2 = tmp_path / "auth_f08_2.json"
         auth_file2.write_text(json.dumps(auth2), encoding="utf-8")
         with pytest.raises(PermissionError, match="schema validation failed"):
-            LockedTestEvaluator.verify_human_authorization(auth_file2)
+            LockedTestEvaluator.verify_human_authorization(auth_file2, bypass_git_checks=True)
 
         auth3 = self._get_valid_auth()
         auth3["expiry_policy"]["extra_field"] = 123
         auth_file3 = tmp_path / "auth_f08_3.json"
         auth_file3.write_text(json.dumps(auth3), encoding="utf-8")
         with pytest.raises(PermissionError, match="schema validation failed"):
-            LockedTestEvaluator.verify_human_authorization(auth_file3)
+            LockedTestEvaluator.verify_human_authorization(auth_file3, bypass_git_checks=True)
 
     def test_f09_invalid_datetime_fails_with_format_checker(self, tmp_path):
         """Regression 9: invalid date-time format in authorized_at_utc must FAIL via FormatChecker."""
@@ -912,7 +917,7 @@ class TestPhase4C2F2SchemaExactnessAndProvenance:
         auth_file = tmp_path / "auth_f09.json"
         auth_file.write_text(json.dumps(auth), encoding="utf-8")
         with pytest.raises(PermissionError, match="schema validation failed"):
-            LockedTestEvaluator.verify_human_authorization(auth_file)
+            LockedTestEvaluator.verify_human_authorization(auth_file, bypass_git_checks=True)
 
     def test_f10_expiry_policy_and_expires_at_utc_inconsistency_fails(self, tmp_path):
         """Regression 10: inconsistent expiry_policy combinations must FAIL."""
@@ -921,21 +926,21 @@ class TestPhase4C2F2SchemaExactnessAndProvenance:
         auth_file1 = tmp_path / "auth_f10_1.json"
         auth_file1.write_text(json.dumps(auth1), encoding="utf-8")
         with pytest.raises(PermissionError):
-            LockedTestEvaluator.verify_human_authorization(auth_file1)
+            LockedTestEvaluator.verify_human_authorization(auth_file1, bypass_git_checks=True)
 
         auth2 = self._get_valid_auth()
         auth2["expiry_policy"] = {"policy": "explicit_expiry_timestamp", "expires_at_utc": None}
         auth_file2 = tmp_path / "auth_f10_2.json"
         auth_file2.write_text(json.dumps(auth2), encoding="utf-8")
         with pytest.raises(PermissionError):
-            LockedTestEvaluator.verify_human_authorization(auth_file2)
+            LockedTestEvaluator.verify_human_authorization(auth_file2, bypass_git_checks=True)
 
         auth3 = self._get_valid_auth()
         auth3["expiry_policy"] = {"policy": "explicit_no_expiry", "expires_at_utc": "2026-10-01T20:00:00Z"}
         auth_file3 = tmp_path / "auth_f10_3.json"
         auth_file3.write_text(json.dumps(auth3), encoding="utf-8")
         with pytest.raises(PermissionError):
-            LockedTestEvaluator.verify_human_authorization(auth_file3)
+            LockedTestEvaluator.verify_human_authorization(auth_file3, bypass_git_checks=True)
 
     def test_f11_timestamp_utc_not_in_future(self, tmp_path):
         """Regression 11: timestamp_utc must not be in the future."""
@@ -944,7 +949,7 @@ class TestPhase4C2F2SchemaExactnessAndProvenance:
         auth_file = tmp_path / "auth_f11.json"
         auth_file.write_text(json.dumps(auth), encoding="utf-8")
         with pytest.raises(PermissionError, match="is in the future"):
-            LockedTestEvaluator.verify_human_authorization(auth_file)
+            LockedTestEvaluator.verify_human_authorization(auth_file, bypass_git_checks=True)
 
         from datetime import datetime, timezone, timedelta
         evidence_files = [

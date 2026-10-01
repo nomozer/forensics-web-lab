@@ -1,16 +1,16 @@
 # Trạng thái Hiện tại: Forensics Web Lab (Current State)
 
 > **Tài liệu đọc đầu tiên bắt buộc cho mọi phiên làm việc AI mới.**<br>
-> **Documented through substantive commit**: `97851a3008c03e2cdeeed22a3cdf896380605a0b`<br>
-> **Phase hoàn thành gần nhất**: Phase 4C.2F.2 — Effective Evaluator Commit and Authorization Schema Exactness Hotfix (Phase 4C.2F.2)<br>
-> **Branch**: `research/phase-4c2f-locked-test-evaluator`<br>
+> **Documented through substantive commit**: `3cf75c2bf0c9835dd58897b7b36982732cab40ab`<br>
+> **Phase hoàn thành gần nhất**: Phase 4C.2G.0 — Build Final Execution Package, Prepare Offline Runtime, and Request Human Authorization<br>
+> **Branch**: `research/phase-4c2g-locked-test-execution`<br>
 > **Base main commit**: `8a379665bc8db3722a46618e47db4806a6ea7244` (PR #4 merge commit; bảo toàn nguyên vẹn, không commit trực tiếp)<br>
-> **Original evaluator commit**: `656529f04ee8dfcf26e7bb46c757f5cba279326e`<br>
-> **Safety hotfix commit**: `959139e847f56fddd61e7615759f05897d7f5d9b`<br>
-> **Effective evaluator commit**: `97851a3008c03e2cdeeed22a3cdf896380605a0b`<br>
-> **Audited through commit**: `97851a3008c03e2cdeeed22a3cdf896380605a0b`<br>
-> **Evidence seal semantics**: `non_circular_terminal_git_commit`<br>
-> **Working tree**: clean<br>
+> **Parent Phase 4C.2F commit**: `35f430f410c77247b1e8bb9bb9559ac615b0cd5b`<br>
+> **Final effective evaluator commit**: `3cf75c2bf0c9835dd58897b7b36982732cab40ab`<br>
+> **Execution package commit role**: terminal evidence seal commit<br>
+> **Actual execution network isolation**: `NOT_YET_VERIFIED` (dev host; physical airgap verification deferred to execution host)<br>
+> **Pre-authorization gate verdict**: `RUNTIME_PREPARATION_REQUIRED`<br>
+> **Real counters**: locked_test_real_accesses = 0, completed_real_unsealing_sessions = 0, completed_real_model_evaluations = 0, evaluation_attempts = 0, gpu_inference_calls = 0<br>
 > **Remote completed training runs**: 15/15 Stage 1 + 15/15 Stage 2 (100% completed on Colab T4; Stage 2 safely ingested and audited in execution_9ee7fdb; paired analysis and lineage reconciliation completed in Phase 4C.2C and Phase 4C.2C.1; final model selection gate completed in Phase 4C.2D; verdict READY_FOR_PR_REVIEW)<br>
 > **Remaining training runs**: 0<br>
 > **Tuyên bố khoa học tối thượng**:<br>

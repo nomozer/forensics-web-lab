@@ -19,7 +19,9 @@
     "maximum_model_evaluation_attempts",
     "expiry_policy",
     "authorization_purpose",
-    "no_tuning_acknowledgment"
+    "no_tuning_acknowledgment",
+    "execution_package_commit",
+    "execution_package_tree_clean"
   ],
   "properties": {
     "status": {
@@ -78,7 +80,7 @@
     },
     "evaluator_effective_commit": {
       "type": "string",
-      "const": "97851a3008c03e2cdeeed22a3cdf896380605a0b",
+      "const": "3cf75c2bf0c9835dd58897b7b36982732cab40ab",
       "description": "Canonical effective commit hash of the confirmatory evaluator."
     },
     "evaluator_component_hashes": {
@@ -90,7 +92,7 @@
       },
       "const": {
         "confirmatory_metrics": "bacbb9dc0a230359f1c3bbaece1ce8c19e30ddafa807313480d173a808bde808",
-        "locked_test_evaluator": "70d1196c501147d6944a799e3a287635b5ae7042c01cc2ed776dcf3c58940927",
+        "locked_test_evaluator": "b311e010535600781e52014fb6b675d32d78a558c5fe7e67bd3ec00b6989a5e1",
         "run_evaluator_cli": "37ed02ff44d8c523150ebb968d2777bba9c2dee8597b3df60efa1fb5bd1e9041"
       },
       "additionalProperties": false,
@@ -152,6 +154,16 @@
       "type": "boolean",
       "const": true,
       "description": "Irrevocable acknowledgment that no model tuning, threshold tuning, or hyperparameter selection will occur on locked-test."
+    },
+    "execution_package_commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$",
+      "description": "Full 40-character Git commit hash of the terminal execution package."
+    },
+    "execution_package_tree_clean": {
+      "type": "boolean",
+      "const": true,
+      "description": "Attestation that the execution package repository working tree was verified clean."
     }
   },
   "additionalProperties": false

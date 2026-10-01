@@ -1,0 +1,48 @@
+{
+  "phase": "4C.2G.0",
+  "generated_at_utc": "2026-10-01T19:15:00Z",
+  "runtime_architecture": {
+    "supported_offline_targets": [
+      "air_gapped_physical_linux_host",
+      "network_isolated_container",
+      "wsl2_isolated_network_namespace"
+    ],
+    "prohibited_platforms": [
+      "google_colab",
+      "cloud_hosted_notebooks",
+      "internet_connected_vms"
+    ]
+  },
+  "readiness_checks": {
+    "network_isolation": {
+      "verified_by_synthetic_fixture": true,
+      "no_default_route_outside_loopback": "PASS_VIA_FIXTURE_POLICY",
+      "no_http_proxy": "PASS_VIA_FIXTURE_POLICY",
+      "no_https_proxy": "PASS_VIA_FIXTURE_POLICY",
+      "no_all_proxy": "PASS_VIA_FIXTURE_POLICY",
+      "no_active_dns_queries": "PASS_VIA_FIXTURE_POLICY",
+      "zero_outbound_socket_probes": true
+    },
+    "filesystem_isolation": {
+      "output_directory_writable": true,
+      "output_directory_path": "research/results/phase-4c.2g.1",
+      "locked_test_mount_separate": true,
+      "locked_test_mount_policy": "STRICT_READONLY",
+      "canary_write_verification_required": true,
+      "disk_space_sufficient_gb": 50
+    },
+    "dependency_readiness": {
+      "no_package_installation_at_runtime": true,
+      "preinstalled_wheels_verified": true
+    },
+    "device_policy": {
+      "cpu_inference_path": "VERIFIED_DETERMINISTIC",
+      "cuda_inference_path": "OPTIONAL_OBSERVATIONAL_ONLY",
+      "priority": "CPU_OFFLINE_RECOMMENDED",
+      "rationale": "CPU inference eliminates CUDA kernel floating point reduction non-determinism across GPU architectures, and requires zero NVIDIA driver infrastructure in offline environments."
+    }
+  },
+  "actual_execution_network_isolation": "NOT_YET_VERIFIED",
+  "runtime_verdict": "RUNTIME_PREPARATION_REQUIRED",
+  "governance_rule": "Execution of Phase 4C.2G.1 requires the host to have network adapters physically disconnected or disabled, or execution inside a network namespace with loopback-only interface. The evaluator will fail closed immediately before unsealing if any outbound route or proxy is active."
+}

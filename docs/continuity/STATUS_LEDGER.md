@@ -1,3 +1,16 @@
+## Phase 4C.2G.0 — Build Final Execution Package, Prepare Offline Runtime, and Request Human Authorization
+
+- **Muc tieu**: Build and seal final execution package; bind execution_package_commit and git cleanliness checks; establish offline runtime readiness constraints; emit formal HUMAN_AUTHORIZATION_REQUEST.json (status PENDING_HUMAN_APPROVAL). Locked-test partition strictly sealed (0 accesses).
+- **Starting commit**: 35f430f (Phase 4C.2F.2 evidence seal)
+- **Branch**: research/phase-4c2g-locked-test-execution
+- **Thay đổi chính**: (1) Created branch research/phase-4c2g-locked-test-execution. (2) Bound execution_package_commit (pattern regex) and execution_package_tree_clean in schema. (3) Locked evaluator functional commit 3cf75c2 (final_effective_evaluator_commit, code strictly frozen). (4) Added git HEAD runtime validation and porcelain cleanliness check. (5) Defined offline runtime policy prioritizing CPU inference. (6) Emitted HUMAN_AUTHORIZATION_REQUEST.json in PENDING state; human approval template with 10-point checklist. (7) Added 15 new tests in ml/tests/test_phase_4c2g_preparation.py (60/60 total suite PASS).
+- **Kiểm tra**: 60/60 evaluator and preparation tests PASS, full test suite pass, typecheck 0 errors, build OK, continuity check PASS, git diff clean.
+- **Kết quả**: Pre-authorization gate verdict: RUNTIME_PREPARATION_REQUIRED (actual_execution_network_isolation = NOT_YET_VERIFIED). Real counters strictly 0 (accesses=0, unsealing_sessions=0, model_evaluations=0, evaluation_attempts=0, gpu_calls=0).
+- **Evidence**: research/evidence/phase-4c.2g.0/ (PHASE_REPORT.md, EXECUTION_PACKAGE_RECEIPT.json, OFFLINE_RUNTIME_READINESS.json, HUMAN_AUTHORIZATION_REQUEST.json, PRE_AUTHORIZATION_GO_NO_GO.json, provenance_bindings.json, environment.json, HUMAN_APPROVAL_TEMPLATE.md).
+- **Quyết định tiếp theo**: Await human execution of offline runtime preparation and signing of formal authorization artifact before transitioning to Phase 4C.2G.1.
+
+---
+
 ## Phase 4C.2F — Effective Evaluator Commit and Authorization Schema Exactness Hotfix (Phase 4C.2F.2)
 
 - **Muc tieu**: Lock effective evaluator commit 97851a3 (distinct from base 8a37966 and pre-hotfix 656529f); enforce schema exact seeds, checkpoint hashes, and evaluator hashes; bind schema checksum with self-verification; normalize real UTC timestamps. Locked-test sealed (0 accesses).

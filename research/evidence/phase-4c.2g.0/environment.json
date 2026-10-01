@@ -1,0 +1,29 @@
+{
+  "phase": "4C.2G.0",
+  "generated_at_utc": "2026-10-01T19:15:00Z",
+  "system": {
+    "os": "Windows-11-10.0.26100-SP0",
+    "architecture": "AMD64",
+    "python_version": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+    "git_branch": "research/phase-4c2g-locked-test-execution",
+    "git_head_commit": "3cf75c2bf0c9835dd58897b7b36982732cab40ab"
+  },
+  "libraries": {
+    "torch": "2.5.1+cu121",
+    "scikit-learn": "1.9.1",
+    "numpy": "2.5.3",
+    "jsonschema": "4.26.0"
+  },
+  "hardware_observation": {
+    "cuda_available": true,
+    "device_policy": "CPU_PRIORITIZED",
+    "rationale": "CPU execution guarantees exact bit-for-bit determinism across host platforms, eliminating non-deterministic floating-point reduction order in CUDA kernels while requiring zero external driver dependencies during offline air-gapped execution."
+  },
+  "accounting_counters": {
+    "locked_test_real_accesses": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "gpu_inference_calls": 0
+  }
+}

@@ -7,13 +7,13 @@
   "original_evaluator_commit": "656529f04ee8dfcf26e7bb46c757f5cba279326e",
   "pre_hotfix_evaluator_commit": "656529f04ee8dfcf26e7bb46c757f5cba279326e",
   "safety_hotfix_commit": "959139e847f56fddd61e7615759f05897d7f5d9b",
-  "effective_evaluator_commit": "97851a3008c03e2cdeeed22a3cdf896380605a0b",
-  "evaluator_functional_commit": "97851a3008c03e2cdeeed22a3cdf896380605a0b",
-  "audited_through_commit": "97851a3008c03e2cdeeed22a3cdf896380605a0b",
+  "effective_evaluator_commit": "3cf75c2bf0c9835dd58897b7b36982732cab40ab",
+  "evaluator_functional_commit": "3cf75c2bf0c9835dd58897b7b36982732cab40ab",
+  "audited_through_commit": "3cf75c2bf0c9835dd58897b7b36982732cab40ab",
   "authorization_schema": {
     "relative_path": "docs/schemas/human-unsealing-authorization.v1.schema.json",
-    "bytes": 5686,
-    "sha256": "29eb1a477e449ab35e07020a0218c6f2eda7b407b186e842834e347e5eb8eb84"
+    "bytes": 6143,
+    "sha256": "15291643b2ca2b3d6e3c135957db140e33f7cc65bc11aebc4668f3e105af6734"
   },
   "components": {
     "confirmatory_metrics": {
@@ -23,8 +23,8 @@
     },
     "locked_test_evaluator": {
       "relative_path": "ml/evaluation/locked_test_evaluator.py",
-      "bytes": 45226,
-      "sha256": "70d1196c501147d6944a799e3a287635b5ae7042c01cc2ed776dcf3c58940927"
+      "bytes": 47708,
+      "sha256": "b311e010535600781e52014fb6b675d32d78a558c5fe7e67bd3ec00b6989a5e1"
     },
     "run_evaluator_cli": {
       "relative_path": "ml/evaluation/run_phase_4c2f_evaluator.py",
@@ -33,8 +33,8 @@
     },
     "evaluator_test_suite": {
       "relative_path": "ml/tests/test_phase_4c2f_evaluator.py",
-      "bytes": 48939,
-      "sha256": "927d229ecb06ef7968542408e8f043a2a0eae67e90acf6ebdf899f52314323a8"
+      "bytes": 49607,
+      "sha256": "0c16925a40bb7309b975d2740d7a6516123a201f3c7d82f81e7a334cef2c056d"
     }
   },
   "self_verification_rule": "Evaluator verifies component integrity and authorization schema against this binding before executing inference"
