@@ -1,0 +1,67 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2B",
+  "script_name": "phase_4c2_execute_all.sh",
+  "script_path": "scripts/phase_4c2_execute_all.sh",
+  "bytes": 30103,
+  "sha256": "84e6188db6e88b9987b3547cf3d5eab69ef11f92d4e9dcca1e2ee95afdffe92c",
+  "timestamp_utc": "2026-10-01T05:02:06.317954+00:00",
+  "execution_commit_sha": "9ee7fdbb88fad16167f5790b5105867747801372",
+  "code_archive": {
+    "name": "phase_4c2_code_9ee7fdb.tar.gz",
+    "bytes": 10478136,
+    "sha256": "951e9089582eb60cf3d293c37982a8f3c3b6a3e05fb3ef45f23c666d41bc7d89"
+  },
+  "dataset_bundle": {
+    "name": "phase_4c1_binary_n250_reusable.tar",
+    "path": "MyDrive/Colab Notebooks/forensics-web-lab/phase_4c1/inputs/phase_4c1_binary_n250_reusable.tar",
+    "bytes": 724633600,
+    "archive_sha256": "d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27",
+    "content_sha256": "c365c812cc814097f11b9e5ed5c82e672015e2ba093f09f975df0a2a01229e9b",
+    "manifest_sha256": "411e35da80843a10f7bb22e33efac8a4d1db70110dbda91cadbbf39532c9312d",
+    "read_only": true
+  },
+  "pretrained_weights": {
+    "identifier": "MobileNet_V3_Small_Weights.IMAGENET1K_V1",
+    "file_name": "mobilenet_v3_small-047dcff4.pth",
+    "file_sha256": "047dcff4addef86ea5bc2eff13c9614dc11f47ab1160d0a71a25e7db994f4e1f",
+    "file_bytes": 10306551,
+    "backbone_state_fingerprint": "d42bb32ad876b9de2b04a6ccd245f76c4d0c6bb3ded74c25261cf14720c7e7d5"
+  },
+  "matrix": {
+    "sample_sizes": [
+      50,
+      100,
+      250
+    ],
+    "seeds": [
+      42,
+      1337,
+      2025,
+      3407,
+      9001
+    ],
+    "total_runs": 15,
+    "stage": "partial_finetune",
+    "treatment_designation": "pre-registered partial fine-tuning protocol"
+  },
+  "canonical_runner_command_template": "python -m ml.training.run_phase_4c2 --config <config> --bundle <bundle> --sample-size <N> --seed <seed> --stage partial_finetune --device cuda --train-partition development_train --eval-partition inner_validation --output <output_dir>",
+  "runtime_policy": {
+    "gpu_policy": "compatible",
+    "min_vram_gb": 8.0,
+    "supported_gpus": [
+      "Tesla T4",
+      "L4",
+      "V100",
+      "A100",
+      "CUDA compatible >= 8GB"
+    ]
+  },
+  "resume_and_publishing": {
+    "strategy": "atomic_replace_via_part_staging",
+    "local_inprogress_pattern": "/content/phase_4c2_work/n<N>_seed_<seed>.inprogress",
+    "drive_part_pattern": "<output_root>/.publish_n<N>_seed_<seed>.part",
+    "drive_final_pattern": "<output_root>/n<N>_seed_<seed>"
+  },
+  "status": "READY_FOR_USER_COLAB_PREFLIGHT"
+}

@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2B",
+  "notebook_name": "phase_4c2_finetuning_colab.ipynb",
+  "path": "notebooks/phase_4c2_finetuning_colab.ipynb",
+  "bytes": 11731,
+  "sha256": "e9283f21b4fb4c7283a95c811081c09a95d78802a72b9427d9730b3db5f78254",
+  "cell_count": 5,
+  "cell_types": [
+    "markdown",
+    "code",
+    "code",
+    "code",
+    "code"
+  ],
+  "execute_default": false,
+  "timestamp_utc": "2026-10-01T05:02:06.317954+00:00",
+  "associated_operator_sha256": "84e6188db6e88b9987b3547cf3d5eab69ef11f92d4e9dcca1e2ee95afdffe92c",
+  "associated_code_archive_sha256": "951e9089582eb60cf3d293c37982a8f3c3b6a3e05fb3ef45f23c666d41bc7d89",
+  "invariants": {
+    "streaming_hash": true,
+    "read_only_inputs": true,
+    "no_input_mkdir": true,
+    "error_reporting": "fail_closed_with_console_tail"
+  }
+}

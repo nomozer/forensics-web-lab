@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2B",
+  "execution_commit_sha": "9ee7fdbb88fad16167f5790b5105867747801372",
+  "short_sha": "9ee7fdb",
+  "archive_name": "phase_4c2_code_9ee7fdb.tar.gz",
+  "archive_path": "D:\\\\Documents\\\\forensics-web-lab-local-artifacts\\\\phase_4c2\\\\inputs\\\\phase_4c2_code_9ee7fdb.tar.gz",
+  "archive_bytes": 10478136,
+  "archive_sha256": "951e9089582eb60cf3d293c37982a8f3c3b6a3e05fb3ef45f23c666d41bc7d89",
+  "created_at_utc": "2026-10-01T05:02:06.317954+00:00",
+  "canonical_components": {
+    "runner": {
+      "path": "ml/training/run_phase_4c2.py",
+      "bytes": 39097,
+      "sha256": "8ef0f0a06c25134a85982536064117a0bfc2eb9d63373c3b4ad6f4a2865783d4"
+    },
+    "config": {
+      "path": "ml/configs/phase_4c2_stage2_finetuning.yaml",
+      "bytes": 9642,
+      "sha256": "5ac7d41859798842aadf53d40fb8e9f2328e6ef46a4d2b1b248915cdee7543a4"
+    },
+    "receipt_schema": {
+      "path": "docs/schemas/stage2-receipt.v1.schema.json",
+      "bytes": 5893,
+      "sha256": "dde1c873a43276cdf6bfd2ca459edebe7e8e14f2f02b1c8e8b9fe879936df98f"
+    },
+    "dataset_binding": {
+      "path": "research/evidence/phase-4c.2a/dataset_binding.json",
+      "bytes": 3024,
+      "sha256": "dee09f81081466debd554642434a8282e60bef105bb8ff5a5a56c2bfc4f05c07"
+    },
+    "pretrained_weights": {
+      "path": "models/research/pretrained/mobilenet_v3_small-047dcff4.pth",
+      "bytes": 10306551,
+      "sha256": "047dcff4addef86ea5bc2eff13c9614dc11f47ab1160d0a71a25e7db994f4e1f",
+      "backbone_state_fingerprint": "d42bb32ad876b9de2b04a6ccd245f76c4d0c6bb3ded74c25261cf14720c7e7d5"
+    }
+  },
+  "notes": "Immutable execution snapshot packaging verified runner, config, receipt schema, dataset binding, validator, requirements, provenance manifest, and verified pretrained backbone weights."
+}

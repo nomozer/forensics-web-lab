@@ -1,3 +1,15 @@
+## Phase 4C.2B — Build and Verify Resumable 15-Run Colab Operator for Stage 2
+
+- **Muc tieu**: Package verified Stage 2 runner into resumable Colab operator, seal execution snapshot archive and canonical notebook, and isolate namespace from Stage 1. Zero training runs.
+- **Starting commit**: 346865c (Phase 4C.2A.1 ending)
+- **Branch**: research/phase-4c1-learning-curve
+- **Thay đổi chính**: (1) Reconciled scheduler diff (same: false, T_max=20 vs 25, eta_min=1e-6 vs 0). (2) Pretrained weights sealed to MobileNet_V3_Small_Weights.IMAGENET1K_V1 (047dcff4...) and packaged into archive. (3) Immutable execution snapshot phase_4c2_code_9ee7fdb.tar.gz (10,478,136 bytes, SHA-256 951e9089...). (4) Operator phase_4c2_execute_all.sh (30,103 bytes, SHA-256 84e6188d...) with capability GPU policy, fail-closed preflight, and atomic .part publishing. (5) Canonical notebook notebooks/phase_4c2_finetuning_colab.ipynb (11,731 bytes, SHA-256 e9283f21..., 5 cells, EXECUTE=False). (6) 31 unit/behavioral tests in test_phase_4c2_operator.py & test_phase_4c2_notebook.py (all PASS).
+- **Kiểm tra**: 31/31 Phase 4C.2B tests pass, 14/14 Phase 4C.2A.1 tests pass, 70/70 TS tests pass, typecheck 0, build OK, continuity PASS.
+- **Kết quả**: PRE_EXECUTION_GO_NO_GO verdict READY_FOR_USER_COLAB_PREFLIGHT. Training runs = 0, locked-test = 0, Stage 1 writes = 0.
+- **Evidence**: research/evidence/phase-4c.2b/ (execution_snapshot_receipt.json, operator_receipt.json, notebook_receipt.json, pretrained_weights_binding.json, PRE_EXECUTION_GO_NO_GO.json, environment.json, PHASE_REPORT.md).
+- **Quyết định tiếp theo**: User executes preflight verification on Google Colab GPU runtime before running 15 training runs.
+
+---
 ## Phase 4C.2A — Stage 2 Preregistration & Contract Reconciliation (Phase 4C.2A.1)
 
 - **Muc tieu**: Preregister Stage 2 fine-tuning protocol and reconcile execution contract against codebase. Verify model names (He A: 7 tensors, 204,674 params), initialization contract, frozen BN policy, differential optimizer groups, hyperparameter diff table, and dedicated runner. Zero runs.
