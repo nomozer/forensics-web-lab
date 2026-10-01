@@ -35,6 +35,8 @@ import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 import numpy as np
+import jsonschema
+from jsonschema import FormatChecker
 
 from ml.evaluation.confirmatory_metrics import (
     BOOTSTRAP_REPLICATES,
@@ -48,9 +50,15 @@ from ml.evaluation.confirmatory_metrics import (
 )
 
 # Canonical Commit Bindings
-EVALUATOR_FUNCTIONAL_COMMIT = "656529f04ee8dfcf26e7bb46c757f5cba279326e"
 BASE_MAIN_COMMIT = "8a379665bc8db3722a46618e47db4806a6ea7244"
-AUDITED_THROUGH_COMMIT = "656529f04ee8dfcf26e7bb46c757f5cba279326e"
+ORIGINAL_EVALUATOR_COMMIT = "656529f04ee8dfcf26e7bb46c757f5cba279326e"
+PRE_HOTFIX_EVALUATOR_COMMIT = "656529f04ee8dfcf26e7bb46c757f5cba279326e"
+SAFETY_HOTFIX_COMMIT = "959139e847f56fddd61e7615759f05897d7f5d9b"
+EVALUATOR_FUNCTIONAL_COMMIT = "959139e847f56fddd61e7615759f05897d7f5d9b"  # legacy alias
+AUDITED_THROUGH_COMMIT = "959139e847f56fddd61e7615759f05897d7f5d9b"
+
+DEFAULT_SOURCE_BINDING_PATH = Path("research/evidence/phase-4c.2f/evaluator_source_binding.json")
+DEFAULT_AUTH_SCHEMA_PATH = Path("docs/schemas/human-unsealing-authorization.v1.schema.json")
 
 AUTHORIZED_PROTOCOL = "stage1_frozen_backbone_linear_probe"
 AUTHORIZED_SAMPLE_SIZE = 250
@@ -76,6 +84,38 @@ FORBIDDEN_SYNTHETIC_VERDICTS = {
 }
 
 
+def get_format_checker() -> FormatChecker:
+    """Returns a FormatChecker instance strictly validating RFC3339/ISO-8601 date-time."""
+    checker = FormatChecker()
+
+    @checker.checks("date-time")
+    def _validate_datetime(val: Any) -> bool:
+        if not isinstance(val, str):
+            return True
+        try:
+            dt = datetime.datetime.fromisoformat(val.replace("Z", "+00:00"))
+            return dt.tzinfo is not None
+        except Exception:
+            return False
+
+    return checker
+
+
+def get_effective_evaluator_commit(source_binding_path: Optional[Path | str] = None) -> str:
+    """Resolves canonical effective evaluator commit from source binding or fallback."""
+    binding_file = Path(source_binding_path) if source_binding_path else DEFAULT_SOURCE_BINDING_PATH
+    if binding_file.is_file():
+        try:
+            with open(binding_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            eff = data.get("effective_evaluator_commit") or data.get("evaluator_effective_commit")
+            if eff:
+                return str(eff)
+        except Exception:
+            pass
+    return SAFETY_HOTFIX_COMMIT
+
+
 def compute_file_sha256(path: Path | str) -> str:
     """Computes SHA-256 digest of a local file in 64 KiB chunks."""
     h = hashlib.sha256()
@@ -88,8 +128,15 @@ def compute_file_sha256(path: Path | str) -> str:
 class AccessLedger:
     """Tamper-evident hash-chained audit ledger for locked-test evaluations."""
 
-    def __init__(self, ledger_path: Path):
+    def __init__(
+        self,
+        ledger_path: Path,
+        effective_evaluator_commit: Optional[str] = None,
+    ):
         self.ledger_path = Path(ledger_path)
+        self.effective_evaluator_commit = (
+            effective_evaluator_commit or get_effective_evaluator_commit()
+        )
         self.entries: List[Dict[str, Any]] = []
         self._load_and_verify()
 
@@ -190,7 +237,8 @@ class AccessLedger:
             "event_type": event_type,
             "session_id": session_id,
             "checkpoint_seed": checkpoint_seed,
-            "evaluator_functional_commit": EVALUATOR_FUNCTIONAL_COMMIT,
+            "evaluator_effective_commit": self.effective_evaluator_commit,
+            "evaluator_functional_commit": self.effective_evaluator_commit,
             "cumulative_unsealing_sessions": new_sessions,
             "cumulative_evaluation_attempts": new_attempts,
             "cumulative_model_evaluations": new_evals,
@@ -222,23 +270,43 @@ class LockedTestEvaluator:
         output_dir: Path | str,
         checkpoint_dir: Optional[Path | str] = None,
         ledger_path: Optional[Path | str] = None,
+        effective_evaluator_commit: Optional[str] = None,
     ):
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.checkpoint_dir = Path(checkpoint_dir) if checkpoint_dir else None
+        self.effective_evaluator_commit = (
+            effective_evaluator_commit or get_effective_evaluator_commit()
+        )
 
         actual_ledger = (
             Path(ledger_path)
             if ledger_path
             else self.output_dir / "locked_test_access_ledger.jsonl"
         )
-        self.ledger = AccessLedger(actual_ledger)
+        self.ledger = AccessLedger(
+            actual_ledger, effective_evaluator_commit=self.effective_evaluator_commit
+        )
 
     @staticmethod
-    def verify_human_authorization(authorization_path: Optional[Path | str]) -> Dict[str, Any]:
-        """Verifies presence, integrity, and adherence to schema of human authorization artifact.
+    def verify_human_authorization(
+        authorization_path: Optional[Path | str],
+        schema_path: Optional[Path | str] = None,
+        source_binding_path: Optional[Path | str] = None,
+        current_time_utc: Optional[datetime.datetime] = None,
+    ) -> Dict[str, Any]:
+        """Verifies presence, integrity, and strict adherence to schema of human authorization artifact.
 
-        Fail-closed: Returns authorization metadata if valid, raises PermissionError otherwise.
+        Fail-closed:
+        - Self-verifies the SHA-256 and byte count of the authorization schema against evaluator_source_binding.json.
+        - Validates the authorization artifact against the schema using jsonschema with FormatChecker.
+        - Verifies exact seeds [42, 1337, 2025, 3407, 9001] in exact order.
+        - Verifies candidate checkpoint SHA-256 hashes against registry.
+        - Verifies evaluator component hashes against source binding.
+        - Rejects original evaluator commit 656529f as effective commit.
+        - Verifies evaluator_effective_commit matches effective evaluator commit.
+        - Verifies expiry policy consistency (single_session_only, explicit_expiry_timestamp, explicit_no_expiry).
+        - Verifies authorized_at_utc is not in the future.
         """
         if not authorization_path:
             raise PermissionError(
@@ -258,32 +326,71 @@ class LockedTestEvaluator:
             except Exception as e:
                 raise PermissionError(f"Evaluation blocked: Malformed authorization JSON: {e}")
 
-        # Strict Field Validations
+        # 1. Resolve and verify evaluator_source_binding.json
+        binding_file = Path(source_binding_path) if source_binding_path else DEFAULT_SOURCE_BINDING_PATH
+        if not binding_file.is_file():
+            raise PermissionError(
+                f"Evaluation blocked: Evaluator source binding file '{binding_file}' does not exist."
+            )
+        try:
+            with open(binding_file, "r", encoding="utf-8") as f:
+                source_binding = json.load(f)
+        except Exception as e:
+            raise PermissionError(f"Evaluation blocked: Malformed source binding JSON: {e}")
+
+        # 2. Self-verify authorization schema against evaluator_source_binding.json
+        schema_meta = source_binding.get("authorization_schema")
+        if not schema_meta:
+            raise PermissionError(
+                "Evaluation blocked: Missing 'authorization_schema' in evaluator source binding."
+            )
+
+        target_schema_path = (
+            Path(schema_path) if schema_path else Path(schema_meta.get("relative_path", DEFAULT_AUTH_SCHEMA_PATH))
+        )
+        if not target_schema_path.is_file():
+            raise PermissionError(
+                f"Evaluation blocked: Authorization schema file '{target_schema_path}' does not exist."
+            )
+
+        schema_bytes = target_schema_path.read_bytes()
+        expected_bytes = schema_meta.get("bytes")
+        if expected_bytes is not None and len(schema_bytes) != expected_bytes:
+            raise PermissionError(
+                f"Evaluation blocked: Authorization schema byte count mismatch "
+                f"(expected {expected_bytes}, got {len(schema_bytes)}). Fail-closed."
+            )
+
+        actual_schema_sha256 = hashlib.sha256(schema_bytes).hexdigest()
+        expected_schema_sha256 = schema_meta.get("sha256")
+        if actual_schema_sha256 != expected_schema_sha256:
+            raise PermissionError(
+                f"Evaluation blocked: Authorization schema SHA-256 mismatch "
+                f"(expected '{expected_schema_sha256}', got '{actual_schema_sha256}'). Fail-closed."
+            )
+
+        try:
+            schema = json.loads(schema_bytes.decode("utf-8"))
+        except Exception as e:
+            raise PermissionError(f"Evaluation blocked: Malformed authorization schema JSON: {e}")
+
+        # 3. Validate against JSON schema with FormatChecker
+        format_checker = get_format_checker()
+        try:
+            jsonschema.validate(instance=auth_data, schema=schema, format_checker=format_checker)
+        except jsonschema.ValidationError as e:
+            raise PermissionError(
+                f"Evaluation blocked: Authorization artifact schema validation failed: {e.message}"
+            ) from e
+
+        # 4. Strict Field Validations
         if auth_data.get("status") != "AUTHORIZED":
             raise PermissionError(
                 f"Evaluation blocked: Authorization status is '{auth_data.get('status')}', expected 'AUTHORIZED'."
             )
 
-        if not auth_data.get("authorization_id"):
-            raise PermissionError("Evaluation blocked: Missing 'authorization_id' in authorization artifact.")
-
-        if not auth_data.get("authorized_by"):
-            raise PermissionError("Evaluation blocked: Missing 'authorized_by' in authorization artifact.")
-
-        if not auth_data.get("authorized_at_utc"):
-            raise PermissionError("Evaluation blocked: Missing 'authorized_at_utc' in authorization artifact.")
-
-        if auth_data.get("candidate_protocol") != AUTHORIZED_PROTOCOL:
-            raise PermissionError(
-                f"Protocol mismatch: authorized for '{auth_data.get('candidate_protocol')}', expected '{AUTHORIZED_PROTOCOL}'."
-            )
-
-        if auth_data.get("sample_size") != AUTHORIZED_SAMPLE_SIZE:
-            raise PermissionError(
-                f"Sample size mismatch: authorized for {auth_data.get('sample_size')}, expected {AUTHORIZED_SAMPLE_SIZE}."
-            )
-
-        auth_seeds = sorted(auth_data.get("exact_seeds", []))
+        # Exact seeds in exact order (no sorting)
+        auth_seeds = auth_data.get("exact_seeds")
         if auth_seeds != AUTHORIZED_SEEDS:
             raise PermissionError(
                 f"Seeds mismatch: authorized seeds {auth_seeds} != expected {AUTHORIZED_SEEDS}."
@@ -299,42 +406,78 @@ class LockedTestEvaluator:
                     f"Checkpoint hash mismatch in authorization for seed {seed}: got '{actual_hash}', expected '{expected_hash}'."
                 )
 
-        # Evaluator functional commit verification
-        auth_commit = auth_data.get("evaluator_functional_commit")
+        # Evaluator effective commit verification
+        auth_commit = auth_data.get("evaluator_effective_commit") or auth_data.get("evaluator_functional_commit")
         if not auth_commit:
-            raise PermissionError("Evaluation blocked: Missing 'evaluator_functional_commit' in authorization artifact.")
-        if auth_commit != EVALUATOR_FUNCTIONAL_COMMIT:
+            raise PermissionError("Evaluation blocked: Missing 'evaluator_effective_commit' in authorization artifact.")
+
+        if auth_commit == ORIGINAL_EVALUATOR_COMMIT:
+            raise PermissionError(
+                f"Evaluation blocked: Original evaluator commit '{ORIGINAL_EVALUATOR_COMMIT}' "
+                "is pre-hotfix and strictly forbidden as effective evaluator commit."
+            )
+
+        expected_effective_commit = source_binding.get("effective_evaluator_commit")
+        if expected_effective_commit and auth_commit != expected_effective_commit:
             raise PermissionError(
                 f"Commit binding mismatch: authorization is locked to commit '{auth_commit}', "
-                f"evaluator is at canonical commit '{EVALUATOR_FUNCTIONAL_COMMIT}'."
+                f"evaluator is at effective commit '{expected_effective_commit}'."
             )
 
-        # Evaluator component hashes check
-        comp_hashes = auth_data.get("evaluator_component_hashes")
-        if not comp_hashes or not isinstance(comp_hashes, dict):
-            raise PermissionError("Evaluation blocked: Missing 'evaluator_component_hashes' in authorization artifact.")
+        # Evaluator component hashes verification
+        comp_hashes = auth_data.get("evaluator_component_hashes", {})
+        for comp_name in ["confirmatory_metrics", "locked_test_evaluator", "run_evaluator_cli"]:
+            expected_comp_hash = source_binding.get("components", {}).get(comp_name, {}).get("sha256")
+            actual_comp_hash = comp_hashes.get(comp_name)
+            if expected_comp_hash and actual_comp_hash != expected_comp_hash:
+                raise PermissionError(
+                    f"Evaluator component hash mismatch for '{comp_name}': got '{actual_comp_hash}', expected '{expected_comp_hash}'."
+                )
 
-        if auth_data.get("maximum_unsealing_sessions") != 1:
-            raise PermissionError(
-                f"Session limit mismatch: authorized {auth_data.get('maximum_unsealing_sessions')}, expected 1."
-            )
+        # Expiry policy verification
+        expiry = auth_data.get("expiry_policy", {})
+        policy = expiry.get("policy")
+        expires_at = expiry.get("expires_at_utc")
 
-        if auth_data.get("maximum_model_evaluation_attempts") != 5:
-            raise PermissionError(
-                f"Evaluation attempt limit mismatch: authorized {auth_data.get('maximum_model_evaluation_attempts')}, expected 5."
-            )
+        now_utc = current_time_utc or datetime.datetime.now(datetime.timezone.utc)
 
-        if not auth_data.get("expiry_policy"):
-            raise PermissionError("Evaluation blocked: Missing 'expiry_policy' in authorization artifact.")
+        if policy == "single_session_only":
+            if expires_at is not None:
+                raise PermissionError(
+                    f"Inconsistent expiry policy: 'single_session_only' requires 'expires_at_utc' to be null or omitted, got '{expires_at}'."
+                )
+        elif policy == "explicit_expiry_timestamp":
+            if not expires_at or not isinstance(expires_at, str):
+                raise PermissionError(
+                    "Inconsistent expiry policy: 'explicit_expiry_timestamp' requires non-empty ISO UTC 'expires_at_utc'."
+                )
+            try:
+                exp_dt = datetime.datetime.fromisoformat(expires_at.replace("Z", "+00:00"))
+                if exp_dt < now_utc:
+                    raise PermissionError(
+                        f"Evaluation blocked: Authorization has expired at '{expires_at}' (current UTC: '{now_utc.isoformat()}')."
+                    )
+            except Exception as e:
+                raise PermissionError(f"Evaluation blocked: Invalid expires_at_utc: {e}")
+        elif policy == "explicit_no_expiry":
+            if expires_at is not None:
+                raise PermissionError(
+                    f"Inconsistent expiry policy: 'explicit_no_expiry' requires 'expires_at_utc' to be null, got '{expires_at}'."
+                )
+        else:
+            raise PermissionError(f"Evaluation blocked: Unknown expiry policy '{policy}'.")
 
-        if not auth_data.get("authorization_purpose"):
-            raise PermissionError("Evaluation blocked: Missing 'authorization_purpose' in authorization artifact.")
-
-        if auth_data.get("no_tuning_acknowledgment") is not True:
-            raise PermissionError(
-                "Evaluation blocked: Missing or invalid 'no_tuning_acknowledgment'. "
-                "Explicit commitment against post-hoc tuning on locked-test is required."
-            )
+        # Timestamp in future check
+        auth_time_str = auth_data.get("authorized_at_utc")
+        if auth_time_str:
+            try:
+                auth_dt = datetime.datetime.fromisoformat(auth_time_str.replace("Z", "+00:00"))
+                if auth_dt > now_utc + datetime.timedelta(seconds=60):
+                    raise PermissionError(
+                        f"Evaluation blocked: authorized_at_utc '{auth_time_str}' is in the future relative to current UTC '{now_utc.isoformat()}'."
+                    )
+            except Exception as e:
+                raise PermissionError(f"Evaluation blocked: Invalid authorized_at_utc: {e}")
 
         return auth_data
 
@@ -667,7 +810,8 @@ class LockedTestEvaluator:
             checkpoint_seed=seed,
             metadata={
                 "checkpoint_sha256": checkpoint_info["sha256"],
-                "evaluator_functional_commit": EVALUATOR_FUNCTIONAL_COMMIT,
+                "evaluator_effective_commit": self.effective_evaluator_commit,
+                "evaluator_functional_commit": self.effective_evaluator_commit,
             },
             inc_evaluation_attempt=True,
         )
@@ -738,7 +882,8 @@ class LockedTestEvaluator:
             "sample_size": AUTHORIZED_SAMPLE_SIZE,
             "checkpoint_seed": seed,
             "session_id": session_id,
-            "evaluator_functional_commit": EVALUATOR_FUNCTIONAL_COMMIT,
+            "evaluator_effective_commit": self.effective_evaluator_commit,
+            "evaluator_functional_commit": self.effective_evaluator_commit,
             "checkpoint_sha256": checkpoint_info["sha256"],
             "prediction_file": str(pred_file.name),
             "prediction_file_sha256": compute_file_sha256(pred_file),
@@ -856,7 +1001,8 @@ class LockedTestEvaluator:
             "protocol": AUTHORIZED_PROTOCOL,
             "sample_size": AUTHORIZED_SAMPLE_SIZE,
             "seeds": AUTHORIZED_SEEDS,
-            "evaluator_functional_commit": EVALUATOR_FUNCTIONAL_COMMIT,
+            "evaluator_effective_commit": self.effective_evaluator_commit,
+            "evaluator_functional_commit": self.effective_evaluator_commit,
             "synthetic_sessions_simulated": 1,
             "synthetic_model_evaluations_simulated": 5,
             "completed_real_unsealing_sessions": 0,
