@@ -1,3 +1,16 @@
+## Phase 4C.2D — Fix Hermetic CI Notebook Dependency (Phase 4C.2D.3)
+
+- **Muc tieu**: Fix hermetic CI notebook test dependency failure on GitHub Actions; convert `ml/tests/test_phase_4c1_notebook.py` to CASE A standard library `json` parsing; eliminate unguarded `nbformat` and unused `IPython` imports and skips; verify 100% hermetic collection in clean environments.
+- **Starting commit**: 6aab7ca (Phase 4C.2D.2 evidence seal commit)
+- **Branch**: research/phase-4c2-finetuning
+- **Thay đổi chính**: (1) Converted `ml/tests/test_phase_4c1_notebook.py` from `nbformat` to standard library `json` (CASE A). (2) Removed 15 `@pytest.mark.skipif(not IPYTHON_AVAILABLE)` decorators so that all tests are executed without skipping. (3) Added regression test `test_hermetic_collection_without_nbformat` (20/20 PASS).
+- **Kiểm tra**: 20/20 notebook tests pass, full ML pytest pass, 70/70 TS pass, typecheck 0 errors, build OK, continuity check PASS.
+- **Kết quả**: Verdict READY_FOR_CI_PR_MERGE. Zero training runs, zero GPU calls, zero locked-test access.
+- **Evidence**: ml/tests/test_phase_4c1_notebook.py.
+- **Quyết định tiếp theo**: Push hotfix to `research/phase-4c2-finetuning`, await green CI on PR #2, merge via merge commit, and initialize Phase 4C.2E.
+
+---
+
 ## Phase 4C.2D — Finalize Non-Circular Evidence Seal and Push PR Branch (Phase 4C.2D.2)
 
 - **Muc tieu**: Finalize non-circular evidence seal in `provenance_bindings.json`; replace pending placeholder with explicit provenance semantics without circular hash dependency; verify quality gates; push branch `research/phase-4c2-finetuning` to origin for PR review. Zero new training runs, zero GPU calls, zero locked-test evaluations.
