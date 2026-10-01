@@ -13,7 +13,7 @@
     "sample_size",
     "exact_seeds",
     "checkpoint_sha256s",
-    "evaluator_functional_commit",
+    "evaluator_effective_commit",
     "evaluator_component_hashes",
     "maximum_unsealing_sessions",
     "maximum_model_evaluation_attempts",
@@ -54,42 +54,47 @@
     },
     "exact_seeds": {
       "type": "array",
-      "items": { "type": "integer" },
-      "minItems": 5,
-      "maxItems": 5,
-      "description": "Strict 5-seed list [42, 1337, 2025, 3407, 9001]."
+      "const": [42, 1337, 2025, 3407, 9001],
+      "description": "Strict 5-seed list [42, 1337, 2025, 3407, 9001] in exact canonical order."
     },
     "checkpoint_sha256s": {
       "type": "object",
-      "required": ["42", "1337", "2025", "3407", "9001"],
       "properties": {
-        "42": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
-        "1337": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
-        "2025": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
-        "3407": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
-        "9001": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+        "42": { "type": "string" },
+        "1337": { "type": "string" },
+        "2025": { "type": "string" },
+        "3407": { "type": "string" },
+        "9001": { "type": "string" }
+      },
+      "const": {
+        "42": "c941f42ed00adb098962ddb43c0f2f7d897e48e20957cddc0c491243f8730c92",
+        "1337": "69e706f9062f050ccbfd2affb72d63d5dde9d12f02c1e64c762b0ea6719073f1",
+        "2025": "92ce5ee986d487fdf14374842067d0684fc7669f5ecb32c7d603f6813942ceee",
+        "3407": "4897821ef0a97df9f1c51acde8d4ac01d383aa3a7b9e7ee55bbc3b3108847868",
+        "9001": "5f0f8803adcb7eec88d47e398ef8b2002b46e740c263b12abc2ba392822a91c3"
       },
       "additionalProperties": false,
-      "description": "Cryptographic SHA-256 digests for all 5 candidate checkpoints."
+      "description": "Cryptographic SHA-256 digests for all 5 candidate checkpoints locked by exact const."
     },
-    "evaluator_functional_commit": {
+    "evaluator_effective_commit": {
       "type": "string",
-      "const": "656529f04ee8dfcf26e7bb46c757f5cba279326e",
-      "description": "Canonical functional commit hash of the confirmatory evaluator."
+      "const": "97851a3008c03e2cdeeed22a3cdf896380605a0b",
+      "description": "Canonical effective commit hash of the confirmatory evaluator."
     },
     "evaluator_component_hashes": {
       "type": "object",
-      "required": [
-        "confirmatory_metrics",
-        "locked_test_evaluator",
-        "run_evaluator_cli"
-      ],
       "properties": {
-        "confirmatory_metrics": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
-        "locked_test_evaluator": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
-        "run_evaluator_cli": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+        "confirmatory_metrics": { "type": "string" },
+        "locked_test_evaluator": { "type": "string" },
+        "run_evaluator_cli": { "type": "string" }
       },
-      "description": "SHA-256 digests of canonical evaluator source components."
+      "const": {
+        "confirmatory_metrics": "bacbb9dc0a230359f1c3bbaece1ce8c19e30ddafa807313480d173a808bde808",
+        "locked_test_evaluator": "70d1196c501147d6944a799e3a287635b5ae7042c01cc2ed776dcf3c58940927",
+        "run_evaluator_cli": "37ed02ff44d8c523150ebb968d2777bba9c2dee8597b3df60efa1fb5bd1e9041"
+      },
+      "additionalProperties": false,
+      "description": "SHA-256 digests of canonical evaluator source components locked by exact const."
     },
     "maximum_unsealing_sessions": {
       "type": "integer",
@@ -103,7 +108,6 @@
     },
     "expiry_policy": {
       "type": "object",
-      "required": ["policy"],
       "properties": {
         "policy": {
           "type": "string",
@@ -113,6 +117,30 @@
           "type": ["string", "null"]
         }
       },
+      "oneOf": [
+        {
+          "properties": {
+            "policy": { "const": "single_session_only" },
+            "expires_at_utc": { "type": "null" }
+          },
+          "required": ["policy"]
+        },
+        {
+          "properties": {
+            "policy": { "const": "explicit_expiry_timestamp" },
+            "expires_at_utc": { "type": "string", "format": "date-time" }
+          },
+          "required": ["policy", "expires_at_utc"]
+        },
+        {
+          "properties": {
+            "policy": { "const": "explicit_no_expiry" },
+            "expires_at_utc": { "type": "null" }
+          },
+          "required": ["policy", "expires_at_utc"]
+        }
+      ],
+      "additionalProperties": false,
       "description": "Specification of unsealing authorization expiry."
     },
     "authorization_purpose": {
