@@ -1,10 +1,10 @@
 # Trạng thái Hiện tại: Forensics Web Lab (Current State)
 
 > **Tài liệu đọc đầu tiên bắt buộc cho mọi phiên làm việc AI mới.**<br>
-> **Documented through substantive commit**: `73988f5`<br>
-> **Phase hoàn thành gần nhất**: Phase 4C.2D.3 — Fix Hermetic CI Dependencies and Seal PR Gates (Phase 4C.2D)<br>
-> **Branch**: `research/phase-4c2-finetuning`<br>
-> **Base main commit**: `460f6d5` (bảo toàn nguyên vẹn, không commit trực tiếp)<br>
+> **Documented through substantive commit**: `a205e37`<br>
+> **Phase hoàn thành gần nhất**: Phase 4C.2E.0 — Audit Hermetic vs Research-Artifact Test Boundary (Phase 4C.2E)<br>
+> **Branch**: `research/phase-4c2e-locked-test-preregistration`<br>
+> **Base main commit**: `a205e37` (bảo toàn nguyên vẹn, không commit trực tiếp)<br>
 > **Working tree**: clean<br>
 > **Remote completed training runs**: 15/15 Stage 1 + 15/15 Stage 2 (100% completed on Colab T4; Stage 2 safely ingested and audited in execution_9ee7fdb; paired analysis and lineage reconciliation completed in Phase 4C.2C and Phase 4C.2C.1; final model selection gate completed in Phase 4C.2D; verdict READY_FOR_PR_REVIEW)<br>
 > **Remaining training runs**: 0<br>
@@ -96,7 +96,7 @@
 * **Phase 4C.2A Preregistration Suite (`ml/tests/test_phase_4c2_preregistration.py`)**: 9/9 tests passing (dataset binding read-only and hash match, namespace isolation from stage 1, cohort and seed alignment, exact layer allowlist and 204,674 parameter accounting, sealed hyperparameters, capability-based GPU policy, locked-test block, and 0-run execution invariants).
 * **Phase 4C.1D.2 Analysis Suite (`ml/tests/test_phase_4c1d_analysis.py`)**: 9/9 tests passing (archive hashes, 15-run verification, 15 checkpoint prefixes match receipts, markdown table-CSV parity, summary recalculation, per-seed baseline, figure sources, fault-injection detection, and forbidden phrases & canonical numbers assertion).
 * **TypeScript & Continuity Test Suite (`pnpm test`)**: 70/70 tests passing (57 vitest tests trên 6 packages + 13 continuity checker unit tests).
-* **Python Test Suite (`pytest ml/tests -v`)**: 236 hermetic tests passing 100% in clean environment (`-m "not requires_research_artifact"`), 247 research artifact tests marked with `requires_research_artifact` collected separately on artifact runners. Total 483 tests. Zero test failures.
+* **Python Test Suite (`pytest ml/tests -v`)**: 352 hermetic tests passing 100% in clean environment (`-m "not requires_research_artifact"`), 131 research artifact tests marked with `requires_research_artifact` collected separately on artifact runners. Total 483 tests. Zero test failures.
 * **Stage 2 Operator Syntax Check (`bash -n`)**: PASS (clean exit code 0).
 * **Stage 2 Operator Script (`scripts/phase_4c2_execute_all.sh`)**: 64,776 bytes, SHA-256 `2a967a475c9bdc45515addc7123b8312f2d180b5e21fc735d8e6f7f5f4aa8929`.
 * **Stage 2 Canonical Colab Notebook (`notebooks/phase_4c2_finetuning_colab.ipynb`)**: 15,668 bytes, SHA-256 `dee8f7c46879584c006419ace8a3e79153211011de304efd15dba00d70dc36e0` (5 cells, default `EXECUTE = False`).
@@ -226,6 +226,8 @@
 ---
 
 ## 9. Công việc Đang thực hiện & Công việc Tiếp theo
+
+* **Đã hoàn thành (Phase 4C.2E.0 — Audit Hermetic vs Research-Artifact Test Boundary)**: Kiểm toán và tinh chỉnh ranh giới kiểm thử hermetic và research-artifact trên toàn bộ 6 test suites (`test_phase_4c1_bundle.py`, `test_phase_4c1_runner.py`, `test_phase_4c1d_analysis.py`, `test_phase_4c1_operator.py`, `test_phase_4c2_operator.py`, `test_eval_leakage_regression.py`). (1) Xóa bỏ marker ở cấp module tại 5 files có chứa hermetic tests, chuyển sang gắn marker `@pytest.mark.requires_research_artifact` chi tiết theo từng class/function; giữ nguyên module marker cho `test_phase_4c1_operator.py` do 100% test phụ thuộc script ngoại vi chưa commit. (2) Chuẩn hóa kiểm thử tính bất biến của kế hoạch thu thập dữ liệu trong `test_acquisition_safety.py` để xử lý line endings (CRLF và CR -> LF) trước khi băm SHA-256 so với mã băm chuẩn tắc `7da36f450fe424970e4676fc0c35047ea756385843dd2fb1c656f1fa45deac4e`. (3) Thêm `jsonschema>=4.20.0` vào `ml/requirements.txt` cho clean GitHub runner và chuẩn hóa đường dẫn `out_root` trong `test_behavioral_11` (`test_phase_4c2_operator.py`) tránh vi phạm guard `/content/drive` trên môi trường Linux. (4) Bảo toàn bất biến số lượng kiểm thử: tổng cộng 483 tests = 352 hermetic tests + 131 artifact-bound tests (khôi phục 116 hermetic tests cho clean CI). 0 training runs mới, 0 GPU calls, locked-test partition tiếp tục niêm phong tuyệt đối (0 accesses). Phán quyết: `TEST_BOUNDARY_FIXED_AND_PHASE_4C2E_READY`.
 
 * **Đã hoàn thành (Phase 4C.2D.3 — Fix Hermetic CI Notebook Dependency)**: Khắc phục triệt để lỗi phụ thuộc `nbformat` khi chạy CI hermetic trên GitHub Actions runner. (1) Phân loại CASE A: chuyển đổi toàn bộ kiểm thử cấu trúc và an toàn notebook trong `ml/tests/test_phase_4c1_notebook.py` sang dùng thư viện chuẩn Python `json`, loại bỏ hoàn toàn `import nbformat` và `IPython`. (2) Loại bỏ 15 decorator `@pytest.mark.skipif(not IPYTHON_AVAILABLE)` đảm bảo mọi kiểm thử notebook được thực thi đầy đủ và không bị bỏ qua. (3) Bổ sung regression test `test_hermetic_collection_without_nbformat` xác nhận file test collect và chạy độc lập hermetic 100% (20/20 PASS). 0 training runs mới, 0 GPU calls, 0 locked-test access.
 

@@ -12,8 +12,6 @@ Tests are based on:
 
 import pytest
 
-pytestmark = pytest.mark.requires_research_artifact
-
 import json
 import csv
 import numpy as np
@@ -44,6 +42,7 @@ def manifest_path():
     return MANIFEST_PATH
 
 
+@pytest.mark.requires_research_artifact
 def test_discover_source_instances_partitions(manifest_path):
     """Test that discover_source_instances_from_manifest correctly loads all partitions."""
     instances = discover_source_instances_from_manifest(
@@ -64,6 +63,7 @@ def test_discover_source_instances_partitions(manifest_path):
     assert sum(partitions.values()) == 141
 
 
+@pytest.mark.requires_research_artifact
 def test_development_validation_no_overlap(manifest_path):
     """Test that development_train and inner_validation source_ids don't overlap."""
     instances = discover_source_instances_from_manifest(
@@ -78,6 +78,7 @@ def test_development_validation_no_overlap(manifest_path):
     assert len(overlap) == 0, f"Development and validation source IDs overlap: {overlap}"
 
 
+@pytest.mark.requires_research_artifact
 def test_eval_leak_001_fault_injection(manifest_path):
     """
     Fault injection test reproducing EVAL-LEAK-001 symptoms.
@@ -169,6 +170,7 @@ def compute_sample_level_metrics(records):
     }
 
 
+@pytest.mark.requires_research_artifact
 def test_validation_only_stage1_predictions():
     """Test that Stage 1 validation-only predictions artifact has correct structure."""
     with open(STAGE1_PREDICTIONS_PATH, "r") as f:
@@ -207,6 +209,7 @@ def test_validation_only_stage1_predictions():
     assert abs(metrics["auroc"] - 0.6117618645091173) < 1e-10, f"AUROC mismatch: {metrics['auroc']}"
 
 
+@pytest.mark.requires_research_artifact
 def test_dummy_and_stage1_prediction_keys_match():
     """Test that Dummy and Stage 1 prediction keys match 100%."""
     with open(STAGE1_PREDICTIONS_PATH, "r") as f:
@@ -226,6 +229,7 @@ def test_dummy_and_stage1_prediction_keys_match():
     assert len(dummy_keys) == 182
 
 
+@pytest.mark.requires_research_artifact
 def test_paired_bootstrap_keeps_two_samples_per_source():
     """Test that paired bootstrap keeps both samples per source when cluster is resampled."""
     with open(STAGE1_PREDICTIONS_PATH, "r") as f:
@@ -259,6 +263,7 @@ def test_paired_bootstrap_keeps_two_samples_per_source():
     assert set(stage1_clusters.keys()) == set(dummy_clusters.keys())
 
 
+@pytest.mark.requires_research_artifact
 def test_paired_bootstrap_delta_point_identity():
     """Test that paired bootstrap delta point estimate matches exact difference (SAMPLE-LEVEL)."""
     with open(STAGE1_PREDICTIONS_PATH, "r") as f:
@@ -305,6 +310,7 @@ def test_shifted_stage1_ci_is_rejected():
     assert ci_contains_zero(placeholder_ci) == False
 
 
+@pytest.mark.requires_research_artifact
 def test_metadata_comparison_is_not_evaluated():
     """Test that metadata baseline comparison is NOT_EVALUATED."""
     # Read stage2-gate-status.json
@@ -322,6 +328,7 @@ def test_metadata_comparison_is_not_evaluated():
     assert gate["verdict"] == "INSUFFICIENT_EVIDENCE"
 
 
+@pytest.mark.requires_research_artifact
 def test_dummy_metric_reproduction():
     """Test that dummy metric reproduces exactly 0.49395551257253384 (SAMPLE-LEVEL)."""
     with open(DUMMY_PREDICTIONS_PATH, "r") as f:

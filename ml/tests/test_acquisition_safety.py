@@ -16,6 +16,7 @@ Comprehensive offline test suite for Phase 4A.4:
 
 from __future__ import annotations
 
+import hashlib
 import io
 import json
 import os
@@ -577,16 +578,13 @@ class MockOpener:
 
 
 def test_full_plan_sha256_invariance() -> None:
-    """Enforces plan invariance: pilot-a-tgif.v1.json SHA-256 must match exactly."""
+    """Enforces plan invariance: pilot-a-tgif.v1.json SHA-256 must match exactly after line-ending normalization."""
     repo_root = find_repo_root()
     plan_path = repo_root / "datasets" / "acquisition-plans" / "pilot-a-tgif.v1.json"
     assert plan_path.exists()
-    computed = compute_file_sha256(plan_path)
-    # Accept canonical SHA-256 for CRLF (Windows) or LF (POSIX/CI)
-    assert computed in (
-        "461d134df24f1869fa59731fa6ae2b343140963e6957f9ae914a690dd8fe058f",  # CRLF
-        "7da36f450fe424970e4676fc0c35047ea756385843dd2fb1c656f1fa45deac4e",  # LF
-    )
+    content = plan_path.read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    computed = hashlib.sha256(content).hexdigest()
+    assert computed == "7da36f450fe424970e4676fc0c35047ea756385843dd2fb1c656f1fa45deac4e"
 
 
 def test_component_selection_single_component_and_isolation() -> None:

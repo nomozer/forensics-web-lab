@@ -1,3 +1,16 @@
+## Phase 4C.2D — Audit Hermetic vs Research-Artifact Test Boundary (Phase 4C.2E.0)
+
+- **Muc tieu**: Audit and refine the test boundary between hermetic CI and research-artifact test suites across 6 modules; eliminate blanket module markers; granularly mark only artifact-dependent tests; normalize line-ending hash invariance in `test_acquisition_safety.py`; preserve locked-test partition strictly sealed. Zero training runs, zero GPU calls, zero locked-test evaluations.
+- **Starting commit**: a205e37 (PR #2 merge commit)
+- **Branch**: research/phase-4c2e-locked-test-preregistration
+- **Thay đổi chính**: (1) Granularly marked artifact-bound tests across 5 modules and preserved module marker on `test_phase_4c1_operator.py` (0 hermetic tests). (2) Normalized `test_acquisition_safety.py` plan hash computation to LF. (3) Added `jsonschema>=4.20.0` to `ml/requirements.txt` for clean CI environments and fixed cross-platform Linux deletion guard in `test_phase_4c2_operator.py`. (4) Satisfied collection invariant: 483 total = 352 hermetic + 131 artifact-bound (restored 116 hermetic tests to clean CI).
+- **Kiểm tra**: 352/352 hermetic pytest pass (131 deselected), 130/131 artifact pytest pass (1 skipped, 352 deselected), 70/70 TS pass, typecheck 0 errors, build OK, continuity check PASS.
+- **Kết quả**: Verdict TEST_BOUNDARY_FIXED_AND_PHASE_4C2E_READY. Hermetic tests = 352, artifact tests = 131, locked-test accesses = 0.
+- **Evidence**: ml/requirements.txt, ml/tests/ (test_acquisition_safety.py, test_eval_leakage_regression.py, test_phase_4c1_bundle.py, test_phase_4c1_runner.py, test_phase_4c1d_analysis.py, test_phase_4c2_operator.py).
+- **Quyết định tiếp theo**: Commit, push to `research/phase-4c2e-locked-test-preregistration`, create PR to `main`, await green CI, merge via merge commit, and proceed with locked-test preregistration.
+
+---
+
 ## Phase 4C.2D — Fix Hermetic CI Dependencies and Seal PR Gates (Phase 4C.2D.3)
 
 - **Muc tieu**: Fix hermetic CI test dependency failures on GitHub Actions; convert `ml/tests/test_phase_4c1_notebook.py` to CASE A standard library `json` parsing; mark 6 research artifact test suites (`test_phase_4c1_bundle.py`, `test_phase_4c1_runner.py`, `test_phase_4c1d_analysis.py`, `test_phase_4c1_operator.py`, `test_phase_4c2_operator.py`, `test_eval_leakage_regression.py`) with `pytestmark = pytest.mark.requires_research_artifact`; support cross-platform plan SHA invariance in `test_acquisition_safety.py`; verify 100% hermetic CI execution in clean environments.
