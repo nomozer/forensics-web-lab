@@ -33,6 +33,7 @@ CANONICAL_BUNDLE_BYTES = 724633600
 CANONICAL_WEIGHTS_FILE_SHA = "047dcff4addef86ea5bc2eff13c9614dc11f47ab1160d0a71a25e7db994f4e1f"
 CANONICAL_WEIGHTS_FILE_BYTES = 10306551
 CANONICAL_BACKBONE_FINGERPRINT = "d42bb32ad876b9de2b04a6ccd245f76c4d0c6bb3ded74c25261cf14720c7e7d5"
+CANONICAL_REQUIREMENTS_SHA = "81d648002fbf39311fa5a9a735a61318475ee8978fcc5d8456a8deaa12606721"
 
 EXPECTED_TRAINABLE_PARAMS = 204674
 EXPECTED_FROZEN_PARAMS = 870560
@@ -831,7 +832,7 @@ def test_39_corrupt_archive_same_size_fails(tmp_path):
 
 
 def test_40_43_canonical_component_hash_failures(tmp_path):
-    """40-43. Modification in runner, config, schema, or dataset binding fails post-extraction check."""
+    """40-43. Modification in runner, config, schema, dataset binding, or requirements fails post-extraction check."""
     script_text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
     comp_check_code = extract_python_snippet(script_text, "# 2.6 Verify exact SHA-256 of all canonical components")
 
@@ -839,31 +840,38 @@ def test_40_43_canonical_component_hash_failures(tmp_path):
     c = tmp_path / "config.yaml"
     s = tmp_path / "schema.json"
     d = tmp_path / "dataset_binding.json"
+    req = tmp_path / "requirements.txt"
 
     r.write_text("VALID_RUNNER", encoding="utf-8")
     c.write_text("VALID_CONFIG", encoding="utf-8")
     s.write_text("VALID_SCHEMA", encoding="utf-8")
     d.write_text("VALID_BINDING", encoding="utf-8")
+    req.write_text("VALID_REQUIREMENTS", encoding="utf-8")
 
     r_sha = hashlib.sha256(r.read_bytes()).hexdigest()
     c_sha = hashlib.sha256(c.read_bytes()).hexdigest()
     s_sha = hashlib.sha256(s.read_bytes()).hexdigest()
     d_sha = hashlib.sha256(d.read_bytes()).hexdigest()
+    req_sha = hashlib.sha256(req.read_bytes()).hexdigest()
 
     # 40. Wrong runner hash
-    cmd = [sys.executable, "-c", comp_check_code, str(r), "00" * 32, str(c), c_sha, str(s), s_sha, str(d), d_sha]
+    cmd = [sys.executable, "-c", comp_check_code, str(r), "00" * 32, str(c), c_sha, str(s), s_sha, str(d), d_sha, str(req), req_sha]
     assert subprocess.run(cmd, capture_output=True, text=True).returncode != 0
 
     # 41. Wrong config hash
-    cmd = [sys.executable, "-c", comp_check_code, str(r), r_sha, str(c), "00" * 32, str(s), s_sha, str(d), d_sha]
+    cmd = [sys.executable, "-c", comp_check_code, str(r), r_sha, str(c), "00" * 32, str(s), s_sha, str(d), d_sha, str(req), req_sha]
     assert subprocess.run(cmd, capture_output=True, text=True).returncode != 0
 
     # 42. Wrong schema hash
-    cmd = [sys.executable, "-c", comp_check_code, str(r), r_sha, str(c), c_sha, str(s), "00" * 32, str(d), d_sha]
+    cmd = [sys.executable, "-c", comp_check_code, str(r), r_sha, str(c), c_sha, str(s), "00" * 32, str(d), d_sha, str(req), req_sha]
     assert subprocess.run(cmd, capture_output=True, text=True).returncode != 0
 
     # 43. Wrong dataset-binding hash
-    cmd = [sys.executable, "-c", comp_check_code, str(r), r_sha, str(c), c_sha, str(s), s_sha, str(d), "00" * 32]
+    cmd = [sys.executable, "-c", comp_check_code, str(r), r_sha, str(c), c_sha, str(s), s_sha, str(d), "00" * 32, str(req), req_sha]
+    assert subprocess.run(cmd, capture_output=True, text=True).returncode != 0
+
+    # 43b. Wrong requirements hash
+    cmd = [sys.executable, "-c", comp_check_code, str(r), r_sha, str(c), c_sha, str(s), s_sha, str(d), d_sha, str(req), "00" * 32]
     assert subprocess.run(cmd, capture_output=True, text=True).returncode != 0
 
 
@@ -913,6 +921,7 @@ def test_48_environment_scientific_lock_creation_during_preflight(tmp_path):
         "5ac7d41859798842aadf53d40fb8e9f2328e6ef46a4d2b1b248915cdee7543a4",
         "dde1c873a43276cdf6bfd2ca459edebe7e8e14f2f02b1c8e8b9fe879936df98f",
         "dee09f81081466debd554642434a8282e60bef105bb8ff5a5a56c2bfc4f05c07",
+        CANONICAL_REQUIREMENTS_SHA,
         CANONICAL_BUNDLE_ARCHIVE_SHA,
         CANONICAL_BUNDLE_CONTENT_SHA,
         CANONICAL_BUNDLE_MANIFEST_SHA,
@@ -932,6 +941,7 @@ def test_48_environment_scientific_lock_creation_during_preflight(tmp_path):
     assert lock["code_archive"]["filename"] == "phase_4c2_code_9ee7fdb.tar.gz"
     assert lock["code_archive"]["bytes"] == 10478136
     assert lock["code_archive"]["sha256"] == "951e9089582eb60cf3d293c37982a8f3c3b6a3e05fb3ef45f23c666d41bc7d89"
+    assert lock["canonical_components"]["requirements_sha256"] == CANONICAL_REQUIREMENTS_SHA
     assert len(lock["run_matrix"]) == 3
 
 
@@ -960,6 +970,7 @@ def test_49_immutable_lock_retry_does_not_overwrite(tmp_path):
         "5ac7d41859798842aadf53d40fb8e9f2328e6ef46a4d2b1b248915cdee7543a4",
         "dde1c873a43276cdf6bfd2ca459edebe7e8e14f2f02b1c8e8b9fe879936df98f",
         "dee09f81081466debd554642434a8282e60bef105bb8ff5a5a56c2bfc4f05c07",
+        CANONICAL_REQUIREMENTS_SHA,
         CANONICAL_BUNDLE_ARCHIVE_SHA,
         CANONICAL_BUNDLE_CONTENT_SHA,
         CANONICAL_BUNDLE_MANIFEST_SHA,
@@ -1146,6 +1157,7 @@ def test_behavioral_01_preflight_creates_environment_lock_successfully(tmp_path)
         "5ac7d41859798842aadf53d40fb8e9f2328e6ef46a4d2b1b248915cdee7543a4",
         "dde1c873a43276cdf6bfd2ca459edebe7e8e14f2f02b1c8e8b9fe879936df98f",
         "dee09f81081466debd554642434a8282e60bef105bb8ff5a5a56c2bfc4f05c07",
+        CANONICAL_REQUIREMENTS_SHA,
         CANONICAL_BUNDLE_ARCHIVE_SHA,
         CANONICAL_BUNDLE_CONTENT_SHA,
         CANONICAL_BUNDLE_MANIFEST_SHA,
@@ -1190,6 +1202,7 @@ def test_behavioral_02_retry_with_unchanged_operator_verifies_existing_lock(tmp_
         "5ac7d41859798842aadf53d40fb8e9f2328e6ef46a4d2b1b248915cdee7543a4",
         "dde1c873a43276cdf6bfd2ca459edebe7e8e14f2f02b1c8e8b9fe879936df98f",
         "dee09f81081466debd554642434a8282e60bef105bb8ff5a5a56c2bfc4f05c07",
+        CANONICAL_REQUIREMENTS_SHA,
         CANONICAL_BUNDLE_ARCHIVE_SHA,
         CANONICAL_BUNDLE_CONTENT_SHA,
         CANONICAL_BUNDLE_MANIFEST_SHA,
@@ -1227,6 +1240,7 @@ def test_behavioral_03_changed_operator_hash_against_existing_lock_fails(tmp_pat
         "5ac7d41859798842aadf53d40fb8e9f2328e6ef46a4d2b1b248915cdee7543a4",
         "dde1c873a43276cdf6bfd2ca459edebe7e8e14f2f02b1c8e8b9fe879936df98f",
         "dee09f81081466debd554642434a8282e60bef105bb8ff5a5a56c2bfc4f05c07",
+        CANONICAL_REQUIREMENTS_SHA,
         CANONICAL_BUNDLE_ARCHIVE_SHA,
         CANONICAL_BUNDLE_CONTENT_SHA,
         CANONICAL_BUNDLE_MANIFEST_SHA,
@@ -1446,3 +1460,196 @@ def test_behavioral_18_stage1_output_writes_remain_zero():
     text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
     assert 'assert receipt.get("stage1_output_writes") == 0' in text
     assert 'targets Stage 1 namespace' in text
+
+
+# ------------------------------------------------------------------------------
+# Section K: Behavioral Mutation Tests for Existing Scientific Environment Lock
+# ------------------------------------------------------------------------------
+
+def _setup_canonical_lock_and_verify_harness(tmp_path, operator_sha="operator_sha_test"):
+    """Helper to create a canonical environment lock and return (lock_file, lock_sha_file, verify_lock_code)."""
+    script_text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
+    lock_func_code = extract_python_snippet(script_text, 'echo "[*] Creating immutable scientific environment lock')
+    verify_lock_code = extract_python_snippet(script_text, 'echo "[*] Verifying existing immutable scientific environment lock..."')
+
+    lock_file = tmp_path / "phase4c2_environment_lock.json"
+    lock_sha_file = tmp_path / "phase4c2_environment_lock.sha256"
+
+    cmd = [
+        sys.executable, "-c", lock_func_code,
+        str(lock_file),
+        str(lock_sha_file),
+        "9ee7fdbb88fad16167f5790b5105867747801372",
+        "phase_4c2_code_9ee7fdb.tar.gz",
+        "10478136",
+        "951e9089582eb60cf3d293c37982a8f3c3b6a3e05fb3ef45f23c666d41bc7d89",
+        "00" * 32,
+        "8ef0f0a06c25134a85982536064117a0bfc2eb9d63373c3b4ad6f4a2865783d4",
+        "5ac7d41859798842aadf53d40fb8e9f2328e6ef46a4d2b1b248915cdee7543a4",
+        "dde1c873a43276cdf6bfd2ca459edebe7e8e14f2f02b1c8e8b9fe879936df98f",
+        "dee09f81081466debd554642434a8282e60bef105bb8ff5a5a56c2bfc4f05c07",
+        CANONICAL_REQUIREMENTS_SHA,
+        CANONICAL_BUNDLE_ARCHIVE_SHA,
+        CANONICAL_BUNDLE_CONTENT_SHA,
+        CANONICAL_BUNDLE_MANIFEST_SHA,
+        str(CANONICAL_BUNDLE_BYTES),
+        CANONICAL_WEIGHTS_FILE_SHA,
+        str(CANONICAL_WEIGHTS_FILE_BYTES),
+        CANONICAL_BACKBONE_FINGERPRINT,
+        operator_sha,
+    ]
+    res = subprocess.run(cmd, capture_output=True, text=True)
+    assert res.returncode == 0, f"Setup lock failed: {res.stderr}"
+    return lock_file, lock_sha_file, verify_lock_code
+
+
+def _run_lock_verification(lock_file, lock_sha_file, verify_lock_code, operator_sha="operator_sha_test"):
+    cmd = [
+        sys.executable, "-c", verify_lock_code,
+        str(lock_file),
+        str(lock_sha_file),
+        "9ee7fdbb88fad16167f5790b5105867747801372",
+        "phase_4c2_code_9ee7fdb.tar.gz",
+        "10478136",
+        "951e9089582eb60cf3d293c37982a8f3c3b6a3e05fb3ef45f23c666d41bc7d89",
+        "00" * 32,
+        "8ef0f0a06c25134a85982536064117a0bfc2eb9d63373c3b4ad6f4a2865783d4",
+        "5ac7d41859798842aadf53d40fb8e9f2328e6ef46a4d2b1b248915cdee7543a4",
+        "dde1c873a43276cdf6bfd2ca459edebe7e8e14f2f02b1c8e8b9fe879936df98f",
+        "dee09f81081466debd554642434a8282e60bef105bb8ff5a5a56c2bfc4f05c07",
+        CANONICAL_REQUIREMENTS_SHA,
+        CANONICAL_BUNDLE_ARCHIVE_SHA,
+        CANONICAL_BUNDLE_CONTENT_SHA,
+        CANONICAL_BUNDLE_MANIFEST_SHA,
+        str(CANONICAL_BUNDLE_BYTES),
+        CANONICAL_WEIGHTS_FILE_SHA,
+        str(CANONICAL_WEIGHTS_FILE_BYTES),
+        CANONICAL_BACKBONE_FINGERPRINT,
+        operator_sha,
+    ]
+    return subprocess.run(cmd, capture_output=True, text=True)
+
+
+def _reseal_lock_file(lock_file, lock_sha_file, lock_dict):
+    lock_bytes = (json.dumps(lock_dict, indent=2) + "\n").encode("utf-8")
+    lock_file.write_bytes(lock_bytes)
+    lock_sha = hashlib.sha256(lock_bytes).hexdigest()
+    lock_sha_file.write_bytes(f"{lock_sha}  phase4c2_environment_lock.json\n".encode("utf-8"))
+
+
+def test_lock_mutation_baseline_unmodified_lock_passes(tmp_path):
+    """Mutation Baseline: Unmodified valid lock passes retry verification."""
+    lock_file, lock_sha_file, verify_code = _setup_canonical_lock_and_verify_harness(tmp_path)
+    res = _run_lock_verification(lock_file, lock_sha_file, verify_code)
+    assert res.returncode == 0
+    assert "Immutable scientific environment lock verified PASS" in res.stdout
+
+
+def test_lock_mutation_01_normalization_manifest_sha_fails(tmp_path):
+    """Mutation 1: Mutated normalization manifest SHA in lock fails retry."""
+    lock_file, lock_sha_file, verify_code = _setup_canonical_lock_and_verify_harness(tmp_path)
+    lock = json.loads(lock_file.read_text(encoding="utf-8"))
+    lock["code_archive"]["normalization_manifest_sha256"] = "ff" * 32
+    _reseal_lock_file(lock_file, lock_sha_file, lock)
+    res = _run_lock_verification(lock_file, lock_sha_file, verify_code)
+    assert res.returncode != 0
+    assert "Normalization manifest SHA mismatch in lock" in res.stderr
+
+
+def test_lock_mutation_02_deterministic_settings_fails(tmp_path):
+    """Mutation 2: Mutated deterministic settings fails retry."""
+    lock_file, lock_sha_file, verify_code = _setup_canonical_lock_and_verify_harness(tmp_path)
+    lock = json.loads(lock_file.read_text(encoding="utf-8"))
+    lock["deterministic_settings"]["cudnn_benchmark"] = True
+    _reseal_lock_file(lock_file, lock_sha_file, lock)
+    res = _run_lock_verification(lock_file, lock_sha_file, verify_code)
+    assert res.returncode != 0
+    assert "Deterministic settings mismatch in lock" in res.stderr
+
+
+def test_lock_mutation_03_treatment_designation_fails(tmp_path):
+    """Mutation 3: Mutated treatment designation fails retry."""
+    lock_file, lock_sha_file, verify_code = _setup_canonical_lock_and_verify_harness(tmp_path)
+    lock = json.loads(lock_file.read_text(encoding="utf-8"))
+    lock["treatment_designation"] = "unregistered_treatment_protocol"
+    _reseal_lock_file(lock_file, lock_sha_file, lock)
+    res = _run_lock_verification(lock_file, lock_sha_file, verify_code)
+    assert res.returncode != 0
+    assert "Treatment designation mismatch in lock" in res.stderr
+
+
+def test_lock_mutation_04_run_matrix_sample_size_fails(tmp_path):
+    """Mutation 4: Mutated sample size in run matrix fails retry."""
+    lock_file, lock_sha_file, verify_code = _setup_canonical_lock_and_verify_harness(tmp_path)
+    lock = json.loads(lock_file.read_text(encoding="utf-8"))
+    lock["run_matrix"][0]["sample_size"] = 999
+    _reseal_lock_file(lock_file, lock_sha_file, lock)
+    res = _run_lock_verification(lock_file, lock_sha_file, verify_code)
+    assert res.returncode != 0
+    assert "Run matrix mismatch in lock" in res.stderr
+
+
+def test_lock_mutation_05_run_matrix_seed_fails(tmp_path):
+    """Mutation 5: Mutated seed in run matrix fails retry."""
+    lock_file, lock_sha_file, verify_code = _setup_canonical_lock_and_verify_harness(tmp_path)
+    lock = json.loads(lock_file.read_text(encoding="utf-8"))
+    lock["run_matrix"][0]["seeds"][0] = 9999
+    _reseal_lock_file(lock_file, lock_sha_file, lock)
+    res = _run_lock_verification(lock_file, lock_sha_file, verify_code)
+    assert res.returncode != 0
+    assert "Run matrix mismatch in lock" in res.stderr
+
+
+def test_lock_mutation_06_frozen_param_count_fails(tmp_path):
+    """Mutation 6: Mutated frozen parameter count fails retry."""
+    lock_file, lock_sha_file, verify_code = _setup_canonical_lock_and_verify_harness(tmp_path)
+    lock = json.loads(lock_file.read_text(encoding="utf-8"))
+    lock["trainable_tensor_inventory_contract"]["frozen_parameters_count"] = 999999
+    _reseal_lock_file(lock_file, lock_sha_file, lock)
+    res = _run_lock_verification(lock_file, lock_sha_file, verify_code)
+    assert res.returncode != 0
+    assert "Frozen params count mismatch in lock" in res.stderr
+
+
+def test_lock_mutation_07_total_param_count_fails(tmp_path):
+    """Mutation 7: Mutated total parameter count fails retry."""
+    lock_file, lock_sha_file, verify_code = _setup_canonical_lock_and_verify_harness(tmp_path)
+    lock = json.loads(lock_file.read_text(encoding="utf-8"))
+    lock["trainable_tensor_inventory_contract"]["total_parameters_count"] = 999999
+    _reseal_lock_file(lock_file, lock_sha_file, lock)
+    res = _run_lock_verification(lock_file, lock_sha_file, verify_code)
+    assert res.returncode != 0
+    assert "Total params count mismatch in lock" in res.stderr
+
+
+def test_lock_mutation_08_tensor_name_fails(tmp_path):
+    """Mutation 8: Mutated tensor name in trainable inventory fails retry."""
+    lock_file, lock_sha_file, verify_code = _setup_canonical_lock_and_verify_harness(tmp_path)
+    lock = json.loads(lock_file.read_text(encoding="utf-8"))
+    lock["trainable_tensor_inventory_contract"]["names"][0] = "features.99.weight"
+    _reseal_lock_file(lock_file, lock_sha_file, lock)
+    res = _run_lock_verification(lock_file, lock_sha_file, verify_code)
+    assert res.returncode != 0
+    assert "Trainable tensor names mismatch in lock" in res.stderr
+
+
+def test_lock_mutation_09_requirements_hash_fails(tmp_path):
+    """Mutation 9: Mutated requirements hash in lock fails retry."""
+    lock_file, lock_sha_file, verify_code = _setup_canonical_lock_and_verify_harness(tmp_path)
+    lock = json.loads(lock_file.read_text(encoding="utf-8"))
+    lock["canonical_components"]["requirements_sha256"] = "ff" * 32
+    _reseal_lock_file(lock_file, lock_sha_file, lock)
+    res = _run_lock_verification(lock_file, lock_sha_file, verify_code)
+    assert res.returncode != 0
+    assert "Requirements SHA mismatch in lock" in res.stderr
+
+
+def test_lock_mutation_10_operator_hash_fails(tmp_path):
+    """Mutation 10: Mutated operator hash in lock fails retry."""
+    lock_file, lock_sha_file, verify_code = _setup_canonical_lock_and_verify_harness(tmp_path)
+    lock = json.loads(lock_file.read_text(encoding="utf-8"))
+    lock["operator"]["sha256"] = "ff" * 32
+    _reseal_lock_file(lock_file, lock_sha_file, lock)
+    res = _run_lock_verification(lock_file, lock_sha_file, verify_code)
+    assert res.returncode != 0
+    assert "operator SHA-256 mismatch" in res.stderr

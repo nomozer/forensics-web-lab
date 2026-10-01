@@ -1,10 +1,10 @@
 {
   "schema_version": "1.0.0",
-  "phase": "Phase 4C.2B.3",
+  "phase": "Phase 4C.2B.3.1",
   "notebook_name": "phase_4c2_finetuning_colab.ipynb",
   "path": "notebooks/phase_4c2_finetuning_colab.ipynb",
-  "bytes": 14953,
-  "sha256": "2f3e526ef76b66ccc2cef2c5e270d2153244d5c984acdf697aa2a8f63474167c",
+  "bytes": 14665,
+  "sha256": "1640725837737d46a87237a65f1556f24ac2e76297540cd523ec8a86d0e87de9",
   "cell_count": 5,
   "cell_types": [
     "markdown",
@@ -14,9 +14,9 @@
     "code"
   ],
   "execute_default": false,
-  "timestamp_utc": "2026-10-01T07:05:00.000000+00:00",
-  "associated_operator_sha256": "181ff27bca2500fd6275d729188d0e2fc188f171c6db01cb0a7444a5894a3824",
-  "associated_operator_bytes": 63087,
+  "timestamp_utc": "2026-10-01T07:20:00.000000+00:00",
+  "associated_operator_sha256": "2a967a475c9bdc45515addc7123b8312f2d180b5e21fc735d8e6f7f5f4aa8929",
+  "associated_operator_bytes": 64776,
   "associated_code_archive_sha256": "951e9089582eb60cf3d293c37982a8f3c3b6a3e05fb3ef45f23c666d41bc7d89",
   "associated_code_archive_name": "phase_4c2_code_9ee7fdb.tar.gz",
   "associated_code_archive_bytes": 10478136,

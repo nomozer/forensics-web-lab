@@ -62,6 +62,7 @@ CANONICAL_RUNNER_SHA="8ef0f0a06c25134a85982536064117a0bfc2eb9d63373c3b4ad6f4a286
 CANONICAL_CONFIG_SHA="5ac7d41859798842aadf53d40fb8e9f2328e6ef46a4d2b1b248915cdee7543a4"
 CANONICAL_SCHEMA_SHA="dde1c873a43276cdf6bfd2ca459edebe7e8e14f2f02b1c8e8b9fe879936df98f"
 CANONICAL_DATASET_BINDING_SHA="dee09f81081466debd554642434a8282e60bef105bb8ff5a5a56c2bfc4f05c07"
+CANONICAL_REQUIREMENTS_SHA="81d648002fbf39311fa5a9a735a61318475ee8978fcc5d8456a8deaa12606721"
 
 CANONICAL_BUNDLE_ARCHIVE_SHA="d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27"
 CANONICAL_BUNDLE_CONTENT_SHA="c365c812cc814097f11b9e5ed5c82e672015e2ba093f09f975df0a2a01229e9b"
@@ -615,6 +616,7 @@ CANONICAL_RUNNER="$CODE_DIR/ml/training/run_phase_4c2.py"
 CANONICAL_CONFIG="$CODE_DIR/ml/configs/phase_4c2_stage2_finetuning.yaml"
 CANONICAL_SCHEMA="$CODE_DIR/docs/schemas/stage2-receipt.v1.schema.json"
 CANONICAL_DATASET_BINDING="$CODE_DIR/research/evidence/phase-4c.2a/dataset_binding.json"
+CANONICAL_REQUIREMENTS="$CODE_DIR/ml/requirements.txt"
 CANONICAL_WEIGHTS_FILE="$CODE_DIR/models/research/pretrained/mobilenet_v3_small-047dcff4.pth"
 
 # 2.6 Verify exact SHA-256 of all canonical components
@@ -623,6 +625,7 @@ CANONICAL_WEIGHTS_FILE="$CODE_DIR/models/research/pretrained/mobilenet_v3_small-
     "$CANONICAL_CONFIG" "$CANONICAL_CONFIG_SHA" \
     "$CANONICAL_SCHEMA" "$CANONICAL_SCHEMA_SHA" \
     "$CANONICAL_DATASET_BINDING" "$CANONICAL_DATASET_BINDING_SHA" \
+    "$CANONICAL_REQUIREMENTS" "$CANONICAL_REQUIREMENTS_SHA" \
 <<'PY'
 import sys, hashlib
 from pathlib import Path
@@ -643,7 +646,7 @@ for i in range(0, len(args), 2):
             f"Canonical component SHA mismatch for {fpath.name}: {actual_sha} != {expected_sha}"
         )
 
-print("[+] Canonical component hashes (runner, config, schema, dataset binding) verified PASS")
+print("[+] Canonical component hashes (runner, config, schema, dataset binding, requirements) verified PASS")
 PY
 
 # 2.7 Pretrained weights verification
@@ -849,6 +852,7 @@ ensure_scientific_environment_lock() {
             "$CANONICAL_CONFIG_SHA" \
             "$CANONICAL_SCHEMA_SHA" \
             "$CANONICAL_DATASET_BINDING_SHA" \
+            "$CANONICAL_REQUIREMENTS_SHA" \
             "$CANONICAL_BUNDLE_ARCHIVE_SHA" \
             "$CANONICAL_BUNDLE_CONTENT_SHA" \
             "$CANONICAL_BUNDLE_MANIFEST_SHA" \
@@ -872,6 +876,7 @@ import sys, json, hashlib
     config_sha,
     schema_sha,
     dataset_binding_sha,
+    requirements_sha,
     bundle_archive_sha,
     bundle_content_sha,
     bundle_manifest_sha,
@@ -880,7 +885,7 @@ import sys, json, hashlib
     weights_bytes,
     backbone_fingerprint,
     operator_sha,
-) = sys.argv[1:20]
+) = sys.argv[1:21]
 
 lock = {
     "schema_version": "1.0.0",
@@ -897,6 +902,7 @@ lock = {
         "config_sha256": config_sha,
         "schema_sha256": schema_sha,
         "dataset_binding_sha256": dataset_binding_sha,
+        "requirements_sha256": requirements_sha,
     },
     "dataset": {
         "archive_sha256": bundle_archive_sha,
@@ -963,6 +969,7 @@ PY
             "$CANONICAL_CONFIG_SHA" \
             "$CANONICAL_SCHEMA_SHA" \
             "$CANONICAL_DATASET_BINDING_SHA" \
+            "$CANONICAL_REQUIREMENTS_SHA" \
             "$CANONICAL_BUNDLE_ARCHIVE_SHA" \
             "$CANONICAL_BUNDLE_CONTENT_SHA" \
             "$CANONICAL_BUNDLE_MANIFEST_SHA" \
@@ -986,6 +993,7 @@ import sys, json, hashlib
     config_sha,
     schema_sha,
     dataset_binding_sha,
+    requirements_sha,
     bundle_archive_sha,
     bundle_content_sha,
     bundle_manifest_sha,
@@ -994,7 +1002,7 @@ import sys, json, hashlib
     weights_bytes,
     backbone_fingerprint,
     operator_sha,
-) = sys.argv[1:20]
+) = sys.argv[1:21]
 
 with open(lock_file, "rb") as f:
     lock_bytes = f.read()
@@ -1011,14 +1019,14 @@ assert lock["full_execution_commit_sha"] == commit_sha, "Commit SHA mismatch in 
 assert lock["code_archive"]["filename"] == code_name, "Code archive filename mismatch in lock"
 assert lock["code_archive"]["bytes"] == int(code_bytes), "Code archive byte size mismatch in lock"
 assert lock["code_archive"]["sha256"] == code_sha, "Code archive SHA mismatch in lock"
-if "normalization_manifest_sha256" in lock["code_archive"]:
-    assert lock["code_archive"]["normalization_manifest_sha256"] == norm_manifest_sha, "Normalization manifest SHA mismatch in lock"
+assert lock["code_archive"]["normalization_manifest_sha256"] == norm_manifest_sha, "Normalization manifest SHA mismatch in lock"
 
 # 2. Canonical components
 assert lock["canonical_components"]["runner_sha256"] == runner_sha, "Runner SHA mismatch in lock"
 assert lock["canonical_components"]["config_sha256"] == config_sha, "Config SHA mismatch in lock"
 assert lock["canonical_components"]["schema_sha256"] == schema_sha, "Schema SHA mismatch in lock"
 assert lock["canonical_components"]["dataset_binding_sha256"] == dataset_binding_sha, "Dataset binding SHA mismatch in lock"
+assert lock["canonical_components"]["requirements_sha256"] == requirements_sha, "Requirements SHA mismatch in lock"
 
 # 3. Dataset
 assert lock["dataset"]["archive_sha256"] == bundle_archive_sha, "Dataset archive SHA mismatch in lock"
@@ -1041,11 +1049,40 @@ if lock_operator_sha != operator_sha:
         f"FAIL-CLOSED: Operator modified after lock was sealed. Refusing execution without clean preflight."
     )
 
-# 6. Run matrix and trainable inventory
-assert len(lock["run_matrix"]) == 3, "Run matrix must have 3 cohorts"
-inv_contract = lock.get("trainable_tensor_inventory_contract", {})
-assert inv_contract.get("tensor_count") == 7, "Trainable tensor count mismatch in lock"
-assert inv_contract.get("trainable_parameters_count") == 204674, "Trainable params count mismatch in lock"
+# 6. Deterministic settings
+expected_deterministic = {
+    "torch_deterministic": True,
+    "cudnn_benchmark": False,
+}
+assert lock.get("deterministic_settings") == expected_deterministic, f"Deterministic settings mismatch in lock: {lock.get('deterministic_settings')}"
+
+# 7. Treatment designation
+assert lock.get("treatment_designation") == "pre-registered partial fine-tuning protocol", f"Treatment designation mismatch in lock: {lock.get('treatment_designation')}"
+
+# 8. Run matrix
+expected_run_matrix = [
+    {"sample_size": 50, "seeds": [42, 1337, 2025, 3407, 9001]},
+    {"sample_size": 100, "seeds": [42, 1337, 2025, 3407, 9001]},
+    {"sample_size": 250, "seeds": [42, 1337, 2025, 3407, 9001]},
+]
+assert lock.get("run_matrix") == expected_run_matrix, f"Run matrix mismatch in lock: {lock.get('run_matrix')}"
+
+# 9. Trainable tensor inventory contract
+expected_tensor_names = [
+    "features.12.0.weight",
+    "features.12.1.weight",
+    "features.12.1.bias",
+    "classifier.0.weight",
+    "classifier.0.bias",
+    "classifier.3.weight",
+    "classifier.3.bias",
+]
+inv = lock.get("trainable_tensor_inventory_contract", {})
+assert inv.get("tensor_count") == 7, "Trainable tensor count mismatch in lock"
+assert inv.get("trainable_parameters_count") == 204674, "Trainable params count mismatch in lock"
+assert inv.get("frozen_parameters_count") == 870560, "Frozen params count mismatch in lock"
+assert inv.get("total_parameters_count") == 1075234, "Total params count mismatch in lock"
+assert inv.get("names") == expected_tensor_names, f"Trainable tensor names mismatch in lock: {inv.get('names')}"
 
 print("[+] Immutable scientific environment lock verified PASS (no overwrite)")
 PY

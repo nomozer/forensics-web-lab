@@ -1,4 +1,4 @@
-# Phase 4C.2B, 4C.2B.1, 4C.2B.2 & 4C.2B.3 — Resumable 15-Run Colab Operator for Stage 2, Tar-Safety Quoting Hotfix, Verifier Hardening & Preflight Closure
+# Phase 4C.2B, 4C.2B.1, 4C.2B.2, 4C.2B.3 & 4C.2B.3.1 — Resumable 15-Run Colab Operator for Stage 2, Tar-Safety Quoting Hotfix, Verifier Hardening, Preflight Closure & Final Environment-Lock Exactness Hotfix
 
 ## Phase Summary
 Packaged and verified the Stage 2 partial fine-tuning runner and dependencies into an autonomous, resumable Google Colab execution suite for the 15-run paired matrix ($N \in \{50, 100, 250\} \times 5$ seeds: 42, 1337, 2025, 3407, 9001). Reconciled the scheduler configuration differential between Stage 1 and Stage 2 (`same = false`), sealed the exact pretrained backbone weights (`MobileNet_V3_Small_Weights.IMAGENET1K_V1`) into a self-contained execution snapshot archive, and built a canonical 5-cell Colab notebook defaulting to `EXECUTE = False` (`--preflight-only`).
@@ -17,6 +17,26 @@ In **Phase 4C.2B.3**, closed all remaining fail-closed, provenance, and Colab pr
 7. **Quoting and Shell Robustness**: Quoted heredocs and command substitutions (`GPU_INFO_JSON=$("$SYS_PY3" - <<'PY'`); verified with `bash -n` and real execution tests.
 8. **CRLF Normalization Provenance**: Recorded all text normalization changes deterministically in `normalized_execution_manifest.json` and bound its SHA-256 to the environment lock without modifying binary weights.
 9. **18 Mandatory Behavioral Tests**: Built and executed automated behavioral test suite covering all 18 Section J requirements (78 operator tests + 6 notebook tests = 84 Phase 4C.2B tests PASS, 385 full ML pytest PASS).
+
+In **Phase 4C.2B.3.1 (Hotfix)**:
+1. **Canonical Pretrained Weight Constants Standardized**: Enforced uniform canonical pretrained weights SHA-256 (`047dcff4addef86ea5bc2eff13c9614dc11f47ab1160d0a71a25e7db994f4e1f`) and backbone state fingerprint (`d42bb32ad876b9de2b04a6ccd245f76c4d0c6bb3ded74c25261cf14720c7e7d5`) across all receipts, evidence, and operator code.
+2. **Environment Lock Exact Verification**: Hardened `ensure_scientific_environment_lock` resume verification to perform strict, non-conditional equality assertions on:
+   - `normalization_manifest_sha256`: mandatory field, asserted directly against expected manifest SHA;
+   - `deterministic_settings`: exact dict `{"torch_deterministic": true, "cudnn_benchmark": false}`;
+   - `treatment_designation`: exact string `"pre-registered partial fine-tuning protocol"`;
+   - `run_matrix`: exact 3 cohorts (sample sizes 50, 100, 250 with seeds `[42, 1337, 2025, 3407, 9001]`);
+   - `trainable_tensor_inventory_contract`: tensor count = 7, trainable params = 204674, frozen params = 870560, total params = 1075234, and exact 7 named tensors (`features.12.0.weight`, `features.12.1.weight`, `features.12.1.bias`, `classifier.0.weight`, `classifier.0.bias`, `classifier.3.weight`, `classifier.3.bias`);
+   - `requirements_sha256`: exact match against canonical requirements hash;
+   - `operator_sha`: exact match against canonical operator SHA.
+3. **Requirements Provenance (Option 1)**:
+   - Identified canonical `ml/requirements.txt` from code archive `phase_4c2_code_9ee7fdb.tar.gz`.
+   - Bound LF-normalized `CANONICAL_REQUIREMENTS_SHA="81d648002fbf39311fa5a9a735a61318475ee8978fcc5d8456a8deaa12606721"`.
+   - Added post-extraction verification in Section 2.6 of the operator script.
+   - Sealed `canonical_components.requirements_sha256` into `phase4c2_environment_lock.json`.
+   - Verified strictly on retry/resume.
+4. **Section K Lock Mutation Behavioral Tests**:
+   - Implemented 11 tests verifying baseline unmodified lock passes and each of 10 targeted field mutations causes fail-closed abort on retry.
+   - Total operator tests: 89/89 PASS. Total Stage 2 tests: 89 + 6 = 95/95 PASS.
 
 Zero new research training runs, zero locked-test accesses, zero Stage 1 modifications, and zero Stage 2 research invocations were executed in this wave.
 
@@ -72,6 +92,7 @@ Created immutable archive from commit `9ee7fdb`:
   - `research/evidence/phase-4c.2a/dataset_binding.json` (SHA-256: `dee09f81081466debd554642434a8282e60bef105bb8ff5a5a56c2bfc4f05c07`)
   - `models/research/pretrained/mobilenet_v3_small-047dcff4.pth` (SHA-256: `047dcff4addef86ea5bc2eff13c9614dc11f47ab1160d0a71a25e7db994f4e1f`)
   - `ml/requirements-colab.txt`
+  - `ml/requirements.txt` (SHA-256: `81d648002fbf39311fa5a9a735a61318475ee8978fcc5d8456a8deaa12606721`)
   - `ml/datasets/validate_phase_4c1_bundle.py`
   - `source_provenance_manifest.json`
 - **Exclusion Audit**: 0 git credentials, 0 dataset images, 0 Stage 1 outputs, 0 Stage 2 outputs, 0 locked-test evaluations, 0 absolute paths, 0 caches.
@@ -110,7 +131,7 @@ Guarantees verified: Zero `SyntaxError`, zero `unterminated string literal`, pro
 
 ---
 
-## 7. Phase 4C.2B.2 & 4C.2B.3 Hardening: Fail-Closed Verifiers and Execution Provenance
+## 7. Hardened Verifiers, Environment Lock & Requirements Provenance
 
 ### 7.1. Fail-Closed Schema Validation
 - `jsonschema` verified at preflight step 1.2; missing import raises exit code 6 and halts immediately without training.
@@ -123,28 +144,39 @@ Guarantees verified: Zero `SyntaxError`, zero `unterminated string literal`, pro
 - `bundle_dir` must exist; `manifest_pilot_a_option_p.csv` must exist; streaming SHA-256 must match `CANONICAL_BUNDLE_MANIFEST_SHA`.
 - Prediction cohort audited for exactly 182 validation samples, exactly 91 unique source IDs appearing twice with label pair `{0, 1}`, and 0 dev or locked-test sample leaks.
 
-### 7.3. Scientific Environment Lock vs Runtime Observations
+### 7.3. Exact Scientific Environment Lock vs Runtime Observations
 - Decoupled immutable scientific environment lock (`phase4c2_environment_lock.json` + `.sha256`) from transient runtime observations (`runtime_observations/`).
-- Sealed fields: commit SHA, archive filename/bytes/SHA, normalization manifest SHA, runner/config/schema/dataset-binding hashes, dataset archive/content/manifest hashes and bytes, pretrained weight bytes/hash/fingerprint, executing operator SHA-256, deterministic settings, exact 3x5 matrix, and 7-tensor trainable inventory contract.
-- Lock verification on retry/resume verifies all fields; strictly fails closed without overwrite if operator was modified.
+- Strictly asserted on retry/resume:
+  1. `normalization_manifest_sha256`: mandatory field, asserted directly against expected manifest SHA;
+  2. `deterministic_settings`: exact dict `{"torch_deterministic": true, "cudnn_benchmark": false}`;
+  3. `treatment_designation`: exact string `"pre-registered partial fine-tuning protocol"`;
+  4. `run_matrix`: exact 3 cohorts (sample sizes 50, 100, 250 with seeds `[42, 1337, 2025, 3407, 9001]`);
+  5. `trainable_tensor_inventory_contract`: tensor count = 7, trainable params = 204674, frozen params = 870560, total params = 1075234, and exact 7 named tensors (`features.12.0.weight`, `features.12.1.weight`, `features.12.1.bias`, `classifier.0.weight`, `classifier.0.bias`, `classifier.3.weight`, `classifier.3.bias`);
+  6. `requirements_sha256`: exact match against canonical requirements hash;
+  7. `operator_sha`: exact match against canonical operator SHA.
 
-### 7.4. Clean Provenance Arguments
+### 7.4. Requirements Provenance
+- Option 1 implemented: Canonical `ml/requirements.txt` bound via `CANONICAL_REQUIREMENTS_SHA="81d648002fbf39311fa5a9a735a61318475ee8978fcc5d8456a8deaa12606721"`.
+- Verified post-extraction in Step 2.6 of operator.
+- Sealed into environment lock and enforced on resume.
+
+### 7.5. Clean Provenance Arguments
 - Removed unused arguments (`commit_sha`, `code_archive_sha`, `runner_sha`) from `verify_run_artifacts()`.
 - Documented that commit and code archive bindings are verified via the immutable environment lock.
 
-### 7.5. Type-Specific Destructive Path Guard (`assert_safe_delete_target`)
+### 7.6. Type-Specific Destructive Path Guard (`assert_safe_delete_target`)
 - `local_inprogress`: must be direct child of `/content/phase_4c2_work/` matching regex `^n(50|100|250)_seed_(42|1337|2025|3407|9001)\.inprogress$`.
 - `stage_part`: must be direct child of canonical Stage 2 `OUTPUT_ROOT` matching regex `^\.publish_n(50|100|250)_seed_(42|1337|2025|3407|9001)\.part$`.
 - `code_dir`: exact match to resolved `/content/phase_4c2_code`.
 - Forbidden: `/`, `/content`, `/content/drive`, Stage 1, symlinks.
 - Eliminated `rm -rf STAGE_PART_DIR` by archiving stale `.part` to `failed_publish/`.
 
-### 7.6. Real Disk Capacity Gate
+### 7.7. Real Disk Capacity Gate
 - Implemented 5 GiB ($5,368,709,120$ bytes) threshold check via `shutil.disk_usage`.
 - Outputs available bytes, required bytes, formula, and status.
 - Halts preflight if available disk is insufficient.
 
-### 7.7. Deterministic CRLF Normalization Provenance
+### 7.8. Deterministic CRLF Normalization Provenance
 - Post-extraction CRLF -> LF transformation for text files in `$CODE_DIR`.
 - Generated `$OUTPUT_ROOT/normalized_execution_manifest.json` recording path, before_sha256, after_sha256, bytes_before, bytes_after.
 - Bound normalization manifest SHA-256 into the environment lock.
@@ -156,11 +188,11 @@ Guarantees verified: Zero `SyntaxError`, zero `unterminated string literal`, pro
 
 ### Exactly Two Files to Re-Upload:
 1. `scripts/phase_4c2_execute_all.sh` (Upload to Drive `phase_4c2/inputs/`)
-   - **Bytes**: 63,087
-   - **SHA-256**: `181ff27bca2500fd6275d729188d0e2fc188f171c6db01cb0a7444a5894a3824`
+   - **Bytes**: 64,776
+   - **SHA-256**: `2a967a475c9bdc45515addc7123b8312f2d180b5e21fc735d8e6f7f5f4aa8929`
 2. `notebooks/phase_4c2_finetuning_colab.ipynb` (Upload to Drive `phase_4c2/`)
-   - **Bytes**: 14,953
-   - **SHA-256**: `2f3e526ef76b66ccc2cef2c5e270d2153244d5c984acdf697aa2a8f63474167c`
+   - **Bytes**: 14,665
+   - **SHA-256**: `1640725837737d46a87237a65f1556f24ac2e76297540cd523ec8a86d0e87de9`
 
 ### Immutable Artifacts (NOT Re-Uploaded):
 - `phase_4c2_code_9ee7fdb.tar.gz`: 10,478,136 bytes, SHA-256 `951e9089582eb60cf3d293c37982a8f3c3b6a3e05fb3ef45f23c666d41bc7d89` (IMMUTABLE).
@@ -182,11 +214,11 @@ Guarantees verified: Zero `SyntaxError`, zero `unterminated string literal`, pro
 
 ## 10. Verification & Quality Gates
 - `bash -n scripts/phase_4c2_execute_all.sh`: PASS (exit code 0).
-- `test_phase_4c2_operator.py`: 78/78 PASS (including 10 TAR security behavioral fixtures, path guards, component hash checks, and 18 Section J behavioral tests).
+- `test_phase_4c2_operator.py`: 89/89 PASS (including 10 TAR security behavioral fixtures, path guards, component hash checks, 18 Section J behavioral tests, and 11 Section K lock mutation tests).
 - `test_phase_4c2_notebook.py`: 6/6 PASS (including exact archive binding, exact execution dir, 5-cell structure, EXECUTE=False).
 - `test_phase_4c2_implementation_contract.py`: 14/14 PASS.
 - `test_phase_4c2_preregistration.py`: 9/9 PASS.
-- `ml/tests` full pytest suite: 385 passed, 1 skipped.
+- `ml/tests` full pytest suite: 396 passed, 1 skipped.
 - `git ls-files models/research/pretrained/mobilenet_v3_small-047dcff4.pth`: PASS (empty string, 0 tracked weight files).
 
 ---
