@@ -1,7 +1,9 @@
-# Phase 4C.2B — Build and Verify Resumable 15-Run Colab Operator for Stage 2
+# Phase 4C.2B & 4C.2B.1 — Resumable 15-Run Colab Operator for Stage 2 & Tar-Safety Quoting Hotfix
 
 ## Phase Summary
 Packaged and verified the Stage 2 partial fine-tuning runner and dependencies into an autonomous, resumable Google Colab execution suite for the 15-run paired matrix ($N \in \{50, 100, 250\} \times 5$ seeds: 42, 1337, 2025, 3407, 9001). Reconciled the scheduler configuration differential between Stage 1 and Stage 2 (`same = false`), sealed the exact pretrained backbone weights (`MobileNet_V3_Small_Weights.IMAGENET1K_V1`) into a self-contained execution snapshot archive, and built a canonical 5-cell Colab notebook defaulting to `EXECUTE = False` (`--preflight-only`).
+
+In **Phase 4C.2B.1**, diagnosed and resolved a live Google Colab runtime failure (`SyntaxError: unterminated string literal` at `code_staging_and_verification`) caused by unquoted Bash heredoc expansion of backslashes. All embedded Python blocks were converted to quoted heredocs (`<<'PY'`) with parameters passed via `sys.argv`. Built a comprehensive behavioral test suite evaluating 10 TAR security fixtures via real Bash subprocess execution. Added failure archiving and retry support, extraction path defense, and atomic operator restaging.
 
 Zero new research training runs, zero locked-test accesses, zero Stage 1 modifications, and zero Stage 2 research invocations were executed in this wave.
 
@@ -40,10 +42,11 @@ To eliminate network fragility and dependency drift during remote Colab executio
   - SHA-256: `047dcff4addef86ea5bc2eff13c9614dc11f47ab1160d0a71a25e7db994f4e1f`
 - **Backbone State Fingerprint**: `d42bb32ad876b9de2b04a6ccd245f76c4d0c6bb3ded74c25261cf14720c7e7d5`
 - **Self-Contained Packaging**: The verified weight file is directly packed into `phase_4c2_code_9ee7fdb.tar.gz`. The runner (`ml/training/run_phase_4c2.py`) and operator script fail-closed if the loaded backbone state fingerprint deviates from this binding.
+- **Git Weight Exclusion Gate**: Verified that `git ls-files models/research/pretrained/mobilenet_v3_small-047dcff4.pth` returns empty string (0 tracked weights).
 
 ---
 
-## 3. Execution Snapshot Archive
+## 3. Execution Snapshot Archive (Immutable)
 Created immutable archive from commit `9ee7fdb`:
 - **Archive Name**: `phase_4c2_code_9ee7fdb.tar.gz`
 - **Archive Bytes**: 10,478,136
@@ -59,103 +62,190 @@ Created immutable archive from commit `9ee7fdb`:
   - `ml/datasets/validate_phase_4c1_bundle.py`
   - `source_provenance_manifest.json`
 - **Exclusion Audit**: 0 git credentials, 0 dataset images, 0 Stage 1 outputs, 0 Stage 2 outputs, 0 locked-test evaluations, 0 absolute paths, 0 caches.
+- **Immutability Invariant**: Code archive is not rebuilt or modified in this wave.
 
 ---
 
-## 4. Google Drive Layout & Namespace Isolation
-- **Dataset (Read-Only)**:
-  `MyDrive/Colab Notebooks/forensics-web-lab/phase_4c1/inputs/phase_4c1_binary_n250_reusable.tar`
-- **Stage 2 Isolated Namespace**:
+## 4. Phase 4C.2B.1 Hotfix: Root Cause & Heredoc Quoting Architecture
+
+### 4.1. Root Cause Analysis
+During live Google Colab execution, the operator halted at:
+```text
+state = code_staging_and_verification
+line = 251
+SyntaxError: unterminated string literal
+```
+The root cause was unquoted Bash heredoc `<<PY` in `scripts/phase_4c2_execute_all.sh`. In an unquoted heredoc, Bash performs backslash escape processing before handing text to Python:
+- Intended Python line: `if member.name.startswith("/") or member.name.startswith("\\"):`
+- Bash expanded `\\` into `\`, delivering: `member.name.startswith("\")` to Python.
+- Python interpreted `\"` as an escaped quotation mark, leaving the string literal unterminated and raising `SyntaxError: unterminated string literal`.
+
+### 4.2. Code Comparison: Old vs New Block
+
+#### Old (Vulnerable to Bash escaping):
+```bash
+$SYS_PY3 - <<PY
+import sys, tarfile
+archive_p = "$CODE_ARCHIVE"
+with tarfile.open(archive_p, "r:*") as tf:
+    for member in tf.getmembers():
+        if member.name.startswith("/") or member.name.startswith("\\"):
+            raise ValueError(f"Absolute path in code archive: {member.name}")
+        if ".." in member.name.split("/"):
+            raise ValueError(f"Path traversal detected in code archive: {member.name}")
+print("[+] Code archive tar safety audit PASS")
+PY
+```
+
+#### New (Quoted Heredoc `<<'PY'`, Zero Shell Interpolation, Safe Argv):
+```bash
+"$SYS_PY3" - "$CODE_ARCHIVE" <<'PY'
+import sys
+import tarfile
+from pathlib import PurePosixPath, PureWindowsPath
+
+archive_path = sys.argv[1]
+
+with tarfile.open(archive_path, "r:*") as archive:
+    for member in archive.getmembers():
+        raw_name = member.name
+
+        if not raw_name or "\x00" in raw_name:
+            raise ValueError(
+                f"Invalid empty or NUL-containing TAR entry: {raw_name!r}"
+            )
+
+        normalized_name = raw_name.replace("\\", "/")
+        posix_path = PurePosixPath(normalized_name)
+        windows_path = PureWindowsPath(raw_name)
+
+        if (
+            raw_name.startswith(("/", "\\"))
+            or posix_path.is_absolute()
+            or windows_path.is_absolute()
+        ):
+            raise ValueError(
+                f"Absolute path in code archive: {raw_name}"
+            )
+
+        if ".." in posix_path.parts:
+            raise ValueError(
+                f"Path traversal detected in code archive: {raw_name}"
+            )
+
+        # Canonical code archive does not require links or special files.
+        if member.issym() or member.islnk():
+            raise ValueError(
+                f"Links are forbidden in code archive: "
+                f"{raw_name} -> {member.linkname}"
+            )
+
+        if not (member.isfile() or member.isdir()):
+            raise ValueError(
+                f"Special TAR entry is forbidden: {raw_name}"
+            )
+
+print("[+] Code archive tar safety audit PASS")
+PY
+```
+
+### 4.3. Comprehensive Operator Heredoc Audit
+Audited every Python invocation in `scripts/phase_4c2_execute_all.sh`:
+- Line 200: GPU probe `GPU_INFO_JSON=$("$SYS_PY3" - <<'PY' ...)` -> Quoted `<<'PY'`.
+- Line 233-236: Inline JSON parsing via `"$SYS_PY3" -c` with stdin pipe -> No shell variable interpolation inside Python string.
+- Line 249: VRAM check `"$SYS_PY3" -c "import sys; print(float(sys.argv[1]) >= 8.0)" "$VRAM_GB"` -> Quoted, value passed via `sys.argv[1]`.
+- Line 269: Tar safety audit `"$SYS_PY3" - "$CODE_ARCHIVE" <<'PY'` -> Quoted `<<'PY'`, archive path via `sys.argv[1]`.
+- Line 350: Pretrained weights verification `"$SYS_PY3" - "$CANONICAL_WEIGHTS_FILE" ... <<'PY'` -> Quoted `<<'PY'`, all parameters via `sys.argv[1..6]`.
+- Line 403: Dataset bundle verification `"$SYS_PY3" - "$DATASET_ARCHIVE" ... <<'PY'` -> Quoted `<<'PY'`, all parameters via `sys.argv[1..3]`.
+- Line 442: Contract allowlist & BN policy check `"$SYS_PY3" - "$CANONICAL_WEIGHTS_FILE" <<'PY'` -> Quoted `<<'PY'`, weights path via `sys.argv[1]`.
+- Line 509 & 567: Environment lock creation & verification `"$SYS_PY3" - ... <<'PY'` -> Quoted `<<'PY'`, all dynamic fields via `sys.argv`.
+- Line 595: Artifact verification `"$SYS_PY3" - "$target_dir" "$sample_size" "$seed" "$BUNDLE_DIR" <<'PY'` -> Quoted `<<'PY'`.
+- Line 789: Persistent archives packaging `"$SYS_PY3" - "$OUTPUT_ROOT" "$DOWNLOAD_DIR" <<'PY'` -> Quoted `<<'PY'`, roots via `sys.argv[1..2]`.
+
+**Conclusion**: 100% of Python heredocs in `scripts/phase_4c2_execute_all.sh` use strictly single-quoted delimiters (`<<'PY'`) with zero shell parameter interpolation inside the Python body.
+
+---
+
+## 5. Behavioral TAR Security Fixture Audit (10/10 PASS)
+Implemented automated test suite executing the operator's actual TAR safety audit Bash block via a real Linux Bash subprocess against 10 distinct fixtures:
+
+| # | Fixture Type | Input Specification | Expected | Actual Result | Error / Output |
+|---|---|---|---|---|---|
+| 1 | Valid Archive | Regular files, dirs, nested POSIX paths | **PASS** | **PASS** (exit 0) | `[+] Code archive tar safety audit PASS` |
+| 2 | POSIX Absolute Path | Entry named `/tmp/evil` | **FAIL** | **FAIL** (exit 1) | `ValueError: Absolute path in code archive: /tmp/evil` |
+| 3 | Windows Root Path | Entry named `\evil` | **FAIL** | **FAIL** (exit 1) | `ValueError: Absolute path in code archive: \evil` |
+| 4 | Windows Drive Path | Entry named `C:\evil.txt` | **FAIL** | **FAIL** (exit 1) | `ValueError: Absolute path in code archive: C:\evil.txt` |
+| 5 | POSIX Traversal | Entry named `../../evil` | **FAIL** | **FAIL** (exit 1) | `ValueError: Path traversal detected in code archive: ../../evil` |
+| 6 | Backslash Traversal | Entry named `..\..\evil` | **FAIL** | **FAIL** (exit 1) | `ValueError: Path traversal detected in code archive: ..\..\evil` |
+| 7 | Symlink | `safe/link -> ../../evil` | **FAIL** | **FAIL** (exit 1) | `ValueError: Links are forbidden in code archive: safe/link -> ../../evil` |
+| 8 | Hardlink | `safe/hardlink -> target` | **FAIL** | **FAIL** (exit 1) | `ValueError: Links are forbidden in code archive: safe/hardlink -> target` |
+| 9 | Special Entry | FIFO special entry `safe/fifo` | **FAIL** | **FAIL** (exit 1) | `ValueError: Special TAR entry is forbidden: safe/fifo` |
+| 10 | Canonical Archive | `phase_4c2_code_9ee7fdb.tar.gz` | **PASS** | **PASS** (exit 0) | `[+] Code archive tar safety audit PASS` |
+
+Guarantees verified:
+- Zero `SyntaxError`.
+- Zero `unterminated string literal`.
+- Exit codes cleanly discriminate between benign and malicious entries.
+
+---
+
+## 6. Extraction Path Security & Preflight Failure Retry
+
+### 6.1. Clean Temporary Directory Extraction
+- Extraction path `$CODE_DIR` canonicalized via `pwd -P`.
+- Operator rejects extraction if targeting `/content`, `/content/drive`, Stage 1 paths (`phase_4c1`), or Stage 2 persistent execution directories (`execution_`).
+- Cleans and re-creates `$CODE_DIR` cleanly (`rm -rf` + `mkdir -p`).
+- Fails closed with exit code 5 and preserves diagnostic failure log if tar extraction fails.
+
+### 6.2. Preflight Retry & Failure Archiving
+- When retrying preflight after a prior failure, operator detects existing `$OUTPUT_ROOT/OPERATOR_FAILURE.json`.
+- Archives failure report to `$LOGS_DIR/OPERATOR_FAILURE_archived_<timestamp>.json` with UTC timestamp.
+- Removes stale failure JSON and resets `$OUTPUT_ROOT/OPERATOR_STATUS.json` to `"status": "in_progress"`.
+- Does not delete completed runs or treat operator-level failure as partial research run.
+
+---
+
+## 7. Resealed Artifacts & Checksums
+
+### Exactly Two Files to Re-Upload:
+1. `scripts/phase_4c2_execute_all.sh` (Upload to Drive `phase_4c2/inputs/`)
+   - **Bytes**: 33,633
+   - **SHA-256**: `c460a5485cfd779b6db6b851108e5a386abd6bc4afdc8adf548cd16fdcea3fa2`
+2. `notebooks/phase_4c2_finetuning_colab.ipynb` (Upload to Drive `phase_4c2/`)
+   - **Bytes**: 13,085
+   - **SHA-256**: `b4522254462f9ee83b04f30078411a37fc04c993ee1206967cb97fcbc81cfa2d`
+
+### Immutable Artifacts (NOT Re-Uploaded):
+- `phase_4c2_code_9ee7fdb.tar.gz`: 10,478,136 bytes, SHA-256 `951e9089582eb60cf3d293c37982a8f3c3b6a3e05fb3ef45f23c666d41bc7d89` (IMMUTABLE).
+- `phase_4c1_binary_n250_reusable.tar`: 724,633,600 bytes, SHA-256 `d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27` (IMMUTABLE, READ-ONLY).
+
+---
+
+## 8. Python Runtime Documentation & Capability Architecture
+- **Observed Colab Runtime**: Python 3.13.15 (with preinstalled PyTorch CUDA).
+- **Runtime Policy**: Capability-based target (`Python >= 3.10`, verified on Python 3.13.15).
+- **Notebook Preflight Guard**:
+  ```python
+  py_version_str = ".".join(map(str, sys.version_info[:3]))
+  assert sys.version_info >= (3, 10), f"Yêu cầu Python >= 3.10, nhận được: {py_version_str}"
+  print(f"[+] Python runtime: {py_version_str} (capability check PASS)")
   ```
-  MyDrive/Colab Notebooks/forensics-web-lab/phase_4c2/
-  ├── inputs/
-  │   ├── phase_4c2_code_9ee7fdb.tar.gz
-  │   └── phase_4c2_execute_all.sh
-  ├── runs/
-  │   └── execution_9ee7fdb/
-  └── phase_4c2_finetuning_colab.ipynb
-  ```
-- **Strict Isolation**: Operator verifies `OUTPUT_ROOT` via canonical path resolution and aborts immediately if targeting or symlinking to any path under `phase_4c1/` or `execution_79bb115`.
 
 ---
 
-## 5. Canonical Operator (`phase_4c2_execute_all.sh`)
-- **Path**: `scripts/phase_4c2_execute_all.sh`
-- **Bytes**: 30,103
-- **SHA-256**: `84e6188db6e88b9987b3547cf3d5eab69ef11f92d4e9dcca1e2ee95afdffe92c`
-- **CLI Modes**:
-  - `bash phase_4c2_execute_all.sh --preflight-only` (runs all static and runtime preflights without training)
-  - `bash phase_4c2_execute_all.sh --execute` (executes 15 runs with resume capability)
-- **Capability-Based GPU Policy**: Compatible with any CUDA GPU having $\ge 8$ GB VRAM (Tesla T4 preferred comparison, L4, V100, A100 accepted). No torch/CUDA reinstallation.
-- **Fail-Closed Preflight Checks**:
-  1. CUDA availability and VRAM $\ge 8$ GB.
-  2. Dataset archive, content, and manifest hashes matching canonical binding.
-  3. Reusable N250 bundle validation (250 dev, 91 val, 0 locked-test).
-  4. Pretrained weights file SHA-256 and backbone state fingerprint.
-  5. Exact trainable allowlist (7 tensors, 204,674 parameters).
-  6. Frozen BatchNorm policy verification.
-  7. Output namespace isolation from Stage 1.
-  8. Free disk space verification ($\ge 5$ GB).
-  9. Environment lock creation (`phase4c2_environment_lock.json`).
-
----
-
-## 6. Resume and Atomic Publishing Architecture
-Each training run executes under:
-1. Local ephemeral directory: `/content/phase_4c2_work/n<N>_seed_<seed>.inprogress`
-2. Full local run verification against the 10 required artifacts:
-   - `best_checkpoint.pt`
-   - `run_receipt.json`
-   - `epoch_history.json`
-   - `predictions.json`
-   - `training_history.csv`
-   - `metrics.json`
-   - `environment.json`
-   - `environment-binding.json`
-   - `trainable-parameter-inventory.json`
-   - `checksums.json`
-3. Staged copy to Drive: `<output_root>/.publish_n<N>_seed_<seed>.part`
-4. Remote staging verification of all byte counts and SHA-256 digests.
-5. Atomic directory promotion: `mv` to `<output_root>/n<N>_seed_<seed>`.
-- **Resume Rules**:
-  - Valid completed final run directory: **SKIP**.
-  - Corrupt or incomplete final run directory: **FAIL-CLOSED** (no silent overwrite).
-  - Interrupted local `.inprogress`: Archive diagnostic log and restart run.
-  - Interrupted Drive `.part`: Validate; finalize if complete, or move to `failed_publish/` with timestamp before re-publishing.
-
----
-
-## 7. Canonical Colab Launcher Notebook
-- **Path**: `notebooks/phase_4c2_finetuning_colab.ipynb`
-- **Bytes**: 11,731
-- **SHA-256**: `e9283f21b4fb4c7283a95c811081c09a95d78802a72b9427d9730b3db5f78254`
-- **Cell Structure (5 Cells)**:
-  1. Markdown Guidance & Execution Policy.
-  2. Configuration and Canonical Path Bindings (`EXECUTE = False`).
-  3. Drive Mounting, Read-Only Inputs Preflight, and Local Staging.
-  4. Operator Execution with Persistent Log Tail Streaming.
-  5. Audit, Integrity Verification, and Handoff.
-- **Safety Defaults**: Clean cells in git (zero execution counts, zero outputs), streaming sha256 chunks, fail-closed on missing inputs with directory contents printed, no input `mkdir`.
-
----
-
-## 8. Verification & Quality Gates
+## 9. Verification & Quality Gates
 - `bash -n scripts/phase_4c2_execute_all.sh`: PASS (exit code 0).
-- `test_phase_4c2_operator.py`: 28/28 PASS.
-- `test_phase_4c2_notebook.py`: 3/3 PASS.
+- `test_phase_4c2_operator.py`: 41/41 PASS (including 10 TAR security behavioral fixtures).
+- `test_phase_4c2_notebook.py`: 4/4 PASS.
 - `test_phase_4c2_implementation_contract.py`: 14/14 PASS.
 - `test_phase_4c2_preregistration.py`: 9/9 PASS.
-- `test_phase_4c1_notebook.py`: 19/19 PASS.
-- `pnpm test`: 70/70 PASS (57 vitest + 13 continuity tests).
-- `pnpm typecheck`: PASS (0 errors across 6 packages).
-- `pnpm build`: PASS (Vite production build in 14.47s).
-- `git diff --check`: PASS (0 trailing whitespace or carriage return issues).
+- `git ls-files models/research/pretrained/mobilenet_v3_small-047dcff4.pth`: PASS (empty string, 0 tracked weight files).
 
 ---
 
-## 9. Invariants & Verdict
+## 10. Accounting & Invariants
 - `training_runs_in_wave`: 0
 - `stage2_research_invocations`: 0
 - `locked_test_accesses`: 0
 - `stage1_modifications`: 0
-- **Final Phase Verdict**: **`READY_FOR_USER_COLAB_PREFLIGHT`**
+- **Final Verdict**: **`READY_FOR_USER_COLAB_PREFLIGHT_RETRY`**

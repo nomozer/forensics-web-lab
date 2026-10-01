@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0.0",
   "phase": "Phase 4C.2B",
-  "timestamp_utc": "2026-10-01T05:02:06.317954+00:00",
-  "verdict": "READY_FOR_USER_COLAB_PREFLIGHT",
+  "timestamp_utc": "2026-10-01T05:42:07.647710+00:00",
+  "verdict": "READY_FOR_USER_COLAB_PREFLIGHT_RETRY",
   "status_summary": {
     "training_runs_in_phase": 0,
     "stage2_research_invocations": 0,
@@ -31,31 +31,35 @@
     "canonical_operator_verified": {
       "status": "PASS",
       "script_name": "phase_4c2_execute_all.sh",
-      "bytes": 30103,
-      "sha256": "84e6188db6e88b9987b3547cf3d5eab69ef11f92d4e9dcca1e2ee95afdffe92c",
+      "bytes": 33633,
+      "sha256": "c460a5485cfd779b6db6b851108e5a386abd6bc4afdc8adf548cd16fdcea3fa2",
       "bash_syntax": "PASS (bash -n)",
       "modes": [
         "--preflight-only",
         "--execute"
-      ]
+      ],
+      "tar_safety_audit": "PASS (10/10 behavioral fixtures evaluated via Bash subprocess)",
+      "preflight_retry_policy": "PASS (archives prior OPERATOR_FAILURE.json to logs/ and resets to in_progress)"
     },
     "canonical_notebook_verified": {
       "status": "PASS",
       "notebook_name": "phase_4c2_finetuning_colab.ipynb",
-      "bytes": 11731,
-      "sha256": "e9283f21b4fb4c7283a95c811081c09a95d78802a72b9427d9730b3db5f78254",
+      "bytes": 13085,
+      "sha256": "b4522254462f9ee83b04f30078411a37fc04c993ee1206967cb97fcbc81cfa2d",
       "cells": 5,
-      "execute_default": false
+      "execute_default": false,
+      "atomic_restaging": "PASS",
+      "python_runtime_capability": "PASS (Python >= 3.10 capability check, Colab 3.13.15 verified)"
     },
     "unit_and_contract_tests": {
       "status": "PASS",
-      "stage2_operator_tests": "28/28 PASS",
-      "stage2_notebook_tests": "3/3 PASS",
+      "stage2_operator_tests": "41/41 PASS (including 10 TAR security behavioral fixtures)",
+      "stage2_notebook_tests": "4/4 PASS",
       "stage2_contract_tests": "14/14 PASS",
       "stage2_prereg_tests": "9/9 PASS",
       "typescript_continuity_tests": "70/70 PASS",
       "production_web_build": "PASS"
     }
   },
-  "next_approved_action": "User executes bash phase_4c2_execute_all.sh --preflight-only on Google Colab GPU runtime and provides output for validation."
+  "next_approved_action": "User uploads updated phase_4c2_execute_all.sh and phase_4c2_finetuning_colab.ipynb to Google Drive, then executes preflight-only retry on Google Colab GPU runtime."
 }

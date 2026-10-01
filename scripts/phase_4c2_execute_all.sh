@@ -173,6 +173,24 @@ EOF
 
 trap 'fail_operator ${LINENO} "$BASH_COMMAND"' ERR
 
+# Handle retry from previous failed preflight (archive stale OPERATOR_FAILURE.json)
+if [ -f "$OUTPUT_ROOT/OPERATOR_FAILURE.json" ]; then
+    ARCHIVE_TIMESTAMP=$(date -u +"%Y%m%d_%H%M%SZ" 2>/dev/null || echo "prior")
+    echo "[!] Detected previous OPERATOR_FAILURE.json in $OUTPUT_ROOT. Archiving..."
+    cp "$OUTPUT_ROOT/OPERATOR_FAILURE.json" "$LOGS_DIR/OPERATOR_FAILURE_archived_${ARCHIVE_TIMESTAMP}.json"
+    rm -f "$OUTPUT_ROOT/OPERATOR_FAILURE.json"
+fi
+
+# Reset operator status to in_progress
+cat <<EOF > "$OUTPUT_ROOT/OPERATOR_STATUS.json"
+{
+  "status": "in_progress",
+  "mode": "$EXEC_MODE",
+  "execution_short_sha": "$EXECUTION_SHORT_SHA",
+  "timestamp_utc": "$(date -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || echo "unknown")"
+}
+EOF
+
 # ------------------------------------------------------------------------------
 # 5. Step 1: GPU and Capability Preflight
 # ------------------------------------------------------------------------------
@@ -212,10 +230,10 @@ print(json.dumps({
 PY
 )
 
-CUDA_AVAILABLE=$(echo "$GPU_INFO_JSON" | $SYS_PY3 -c "import sys, json; print(json.load(sys.stdin).get('cuda_available', False))")
-SMOKE_PASS=$(echo "$GPU_INFO_JSON" | $SYS_PY3 -c "import sys, json; print(json.load(sys.stdin).get('smoke_pass', False))")
-GPU_NAME=$(echo "$GPU_INFO_JSON" | $SYS_PY3 -c "import sys, json; print(json.load(sys.stdin).get('gpu_name', ''))")
-VRAM_GB=$(echo "$GPU_INFO_JSON" | $SYS_PY3 -c "import sys, json; print(json.load(sys.stdin).get('vram_gb', 0.0))")
+CUDA_AVAILABLE=$(echo "$GPU_INFO_JSON" | "$SYS_PY3" -c "import sys, json; print(json.load(sys.stdin).get('cuda_available', False))")
+SMOKE_PASS=$(echo "$GPU_INFO_JSON" | "$SYS_PY3" -c "import sys, json; print(json.load(sys.stdin).get('smoke_pass', False))")
+GPU_NAME=$(echo "$GPU_INFO_JSON" | "$SYS_PY3" -c "import sys, json; print(json.load(sys.stdin).get('gpu_name', ''))")
+VRAM_GB=$(echo "$GPU_INFO_JSON" | "$SYS_PY3" -c "import sys, json; print(json.load(sys.stdin).get('vram_gb', 0.0))")
 
 if [ "$CUDA_AVAILABLE" != "True" ]; then
     echo "[-] FATAL: CUDA is not available. GPU is required." >&2
@@ -228,7 +246,7 @@ if [ "$SMOKE_PASS" != "True" ]; then
 fi
 
 # VRAM check (minimum 8.0 GB required)
-VRAM_CHECK_OK=$($SYS_PY3 -c "print($VRAM_GB >= 8.0)")
+VRAM_CHECK_OK=$("$SYS_PY3" -c "import sys; print(float(sys.argv[1]) >= 8.0)" "$VRAM_GB")
 if [ "$VRAM_CHECK_OK" != "True" ]; then
     echo "[-] FATAL: GPU VRAM insufficient: ${VRAM_GB} GB (minimum required: 8.0 GB)" >&2
     exit 4
@@ -248,20 +266,72 @@ if [ ! -f "$CODE_ARCHIVE" ]; then
 fi
 
 # Audit tar entries for path traversal before extraction
-$SYS_PY3 - <<PY
-import sys, tarfile
-archive_p = "$CODE_ARCHIVE"
-with tarfile.open(archive_p, "r:*") as tf:
-    for member in tf.getmembers():
-        if member.name.startswith("/") or member.name.startswith("\\"):
-            raise ValueError(f"Absolute path in code archive: {member.name}")
-        if ".." in member.name.split("/"):
-            raise ValueError(f"Path traversal detected in code archive: {member.name}")
+"$SYS_PY3" - "$CODE_ARCHIVE" <<'PY'
+import sys
+import tarfile
+from pathlib import PurePosixPath, PureWindowsPath
+
+archive_path = sys.argv[1]
+
+with tarfile.open(archive_path, "r:*") as archive:
+    for member in archive.getmembers():
+        raw_name = member.name
+
+        if not raw_name or "\x00" in raw_name:
+            raise ValueError(
+                f"Invalid empty or NUL-containing TAR entry: {raw_name!r}"
+            )
+
+        normalized_name = raw_name.replace("\\", "/")
+        posix_path = PurePosixPath(normalized_name)
+        windows_path = PureWindowsPath(raw_name)
+
+        if (
+            raw_name.startswith(("/", "\\"))
+            or posix_path.is_absolute()
+            or windows_path.is_absolute()
+        ):
+            raise ValueError(
+                f"Absolute path in code archive: {raw_name}"
+            )
+
+        if ".." in posix_path.parts:
+            raise ValueError(
+                f"Path traversal detected in code archive: {raw_name}"
+            )
+
+        # Canonical code archive does not require links or special files.
+        if member.issym() or member.islnk():
+            raise ValueError(
+                f"Links are forbidden in code archive: "
+                f"{raw_name} -> {member.linkname}"
+            )
+
+        if not (member.isfile() or member.isdir()):
+            raise ValueError(
+                f"Special TAR entry is forbidden: {raw_name}"
+            )
+
 print("[+] Code archive tar safety audit PASS")
 PY
 
+# Verify CODE_DIR target security before extraction
+CODE_DIR_CANONICAL=$(mkdir -p "$CODE_DIR" && cd "$CODE_DIR" && pwd -P)
+if [ "$CODE_DIR_CANONICAL" = "/content" ] || [ "$CODE_DIR_CANONICAL" = "/content/drive" ] || [[ "$CODE_DIR_CANONICAL" =~ phase_4c1 ]] || [[ "$CODE_DIR_CANONICAL" =~ execution_ ]]; then
+    echo "[-] FATAL SECURITY VIOLATION: Insecure or conflicting CODE_DIR: $CODE_DIR_CANONICAL" >&2
+    exit 5
+fi
+
+# Clean and extract code archive into dedicated CODE_DIR
+rm -rf "$CODE_DIR"
 mkdir -p "$CODE_DIR"
-tar -xzf "$CODE_ARCHIVE" -C "$CODE_DIR"
+
+echo "[*] Extracting code archive to $CODE_DIR..."
+if ! tar -xzf "$CODE_ARCHIVE" -C "$CODE_DIR"; then
+    echo "[-] FATAL: Failed to extract code archive: $CODE_ARCHIVE" >&2
+    rm -rf "$CODE_DIR"
+    exit 5
+fi
 
 CANONICAL_RUNNER="$CODE_DIR/ml/training/run_phase_4c2.py"
 CANONICAL_CONFIG="$CODE_DIR/ml/configs/phase_4c2_stage2_finetuning.yaml"
@@ -277,23 +347,28 @@ for req_file in "$CANONICAL_RUNNER" "$CANONICAL_CONFIG" "$CANONICAL_SCHEMA" "$CA
 done
 
 # Pretrained weights verification
-$SYS_PY3 - <<PY
+"$SYS_PY3" - "$CANONICAL_WEIGHTS_FILE" "$CANONICAL_WEIGHTS_FILE_BYTES" "$CANONICAL_WEIGHTS_FILE_SHA" "$CODE_DIR" "$CANONICAL_BACKBONE_FINGERPRINT" "$EXPECTED_TOTAL_PARAMS" <<'PY'
 import sys, os, hashlib, torch
-from torchvision.models import MobileNet_V3_Small_Weights, mobilenet_v3_small
 
-weights_path = "$CANONICAL_WEIGHTS_FILE"
+weights_path = sys.argv[1]
+expected_bytes = int(sys.argv[2])
+expected_file_sha = sys.argv[3]
+code_dir = sys.argv[4]
+expected_fingerprint = sys.argv[5]
+expected_total_params = int(sys.argv[6])
+
 assert os.path.exists(weights_path), f"Weights file missing: {weights_path}"
 
 # 1. Byte size and SHA-256
 file_bytes = os.path.getsize(weights_path)
-assert file_bytes == $CANONICAL_WEIGHTS_FILE_BYTES, f"Weights file size mismatch: {file_bytes} != $CANONICAL_WEIGHTS_FILE_BYTES"
+assert file_bytes == expected_bytes, f"Weights file size mismatch: {file_bytes} != {expected_bytes}"
 
 with open(weights_path, "rb") as f:
     file_sha = hashlib.sha256(f.read()).hexdigest()
-assert file_sha == "$CANONICAL_WEIGHTS_FILE_SHA", f"Weights SHA mismatch: {file_sha} != $CANONICAL_WEIGHTS_FILE_SHA"
+assert file_sha == expected_file_sha, f"Weights SHA mismatch: {file_sha} != {expected_file_sha}"
 
 # 2. Loaded state fingerprint check
-sys.path.insert(0, "$CODE_DIR")
+sys.path.insert(0, code_dir)
 from ml.training.mobilenetv3_forensics import MobileNetV3Forensics
 
 model = MobileNetV3Forensics(num_classes=2, pretrained=False, weights_path=weights_path)
@@ -302,14 +377,13 @@ for k, v in sorted(model.features.state_dict().items()):
     h_backbone.update(k.encode() + v.cpu().numpy().tobytes())
 loaded_fingerprint = h_backbone.hexdigest()
 
-assert loaded_fingerprint == "$CANONICAL_BACKBONE_FINGERPRINT", (
-    f"Loaded backbone fingerprint mismatch: {loaded_fingerprint} != $CANONICAL_BACKBONE_FINGERPRINT"
+assert loaded_fingerprint == expected_fingerprint, (
+    f"Loaded backbone fingerprint mismatch: {loaded_fingerprint} != {expected_fingerprint}"
 )
 
 # 3. Parameter count check
-trainable_count = sum(p.numel() for p in model.parameters() if p.requires_grad)
 total_count = sum(p.numel() for p in model.parameters())
-assert total_count == $EXPECTED_TOTAL_PARAMS, f"Total parameters mismatch: {total_count} != $EXPECTED_TOTAL_PARAMS"
+assert total_count == expected_total_params, f"Total parameters mismatch: {total_count} != {expected_total_params}"
 
 print("[+] Pretrained weights file & loaded backbone fingerprint verified PASS")
 PY
@@ -326,20 +400,24 @@ if [ ! -f "$DATASET_ARCHIVE" ]; then
 fi
 
 # Verify archive size and SHA-256
-$SYS_PY3 - <<PY
+"$SYS_PY3" - "$DATASET_ARCHIVE" "$CANONICAL_BUNDLE_BYTES" "$CANONICAL_BUNDLE_ARCHIVE_SHA" <<'PY'
 import sys, os, hashlib
 
-ds_path = "$DATASET_ARCHIVE"
+ds_path = sys.argv[1]
+expected_bytes = int(sys.argv[2])
+expected_sha = sys.argv[3]
+
+assert os.path.exists(ds_path), f"Dataset archive missing: {ds_path}"
 ds_size = os.path.getsize(ds_path)
-assert ds_size == $CANONICAL_BUNDLE_BYTES, f"Dataset size mismatch: {ds_size} != $CANONICAL_BUNDLE_BYTES"
+assert ds_size == expected_bytes, f"Dataset size mismatch: {ds_size} != {expected_bytes}"
 
 h = hashlib.sha256()
 with open(ds_path, "rb") as f:
     while chunk := f.read(1024 * 1024):
         h.update(chunk)
 archive_sha = h.hexdigest()
-assert archive_sha == "$CANONICAL_BUNDLE_ARCHIVE_SHA", (
-    f"Dataset archive SHA mismatch: {archive_sha} != $CANONICAL_BUNDLE_ARCHIVE_SHA"
+assert archive_sha == expected_sha, (
+    f"Dataset archive SHA mismatch: {archive_sha} != {expected_sha}"
 )
 print("[+] Dataset archive size and SHA-256 verified PASS")
 PY
@@ -352,7 +430,7 @@ if [ ! -f "$BUNDLE_DIR/manifest_pilot_a_option_p.csv" ]; then
 fi
 
 # Run canonical reusable-N250 validator
-PYTHONPATH="$CODE_DIR" $SYS_PY3 -m ml.datasets.validate_phase_4c1_bundle --bundle "$BUNDLE_DIR" --reusable-n250
+PYTHONPATH="$CODE_DIR" "$SYS_PY3" -m ml.datasets.validate_phase_4c1_bundle --bundle "$BUNDLE_DIR" --reusable-n250
 echo "[+] Dataset reusable-N250 bundle validation PASS"
 
 # ------------------------------------------------------------------------------
@@ -361,20 +439,17 @@ echo "[+] Dataset reusable-N250 bundle validation PASS"
 CURRENT_STAGE="implementation_contract_check"
 echo "[*] Step 4: Verifying Stage 2 implementation contract..."
 
-PYTHONPATH="$CODE_DIR" $SYS_PY3 - <<PY
-import sys, yaml, json, torch
-from pathlib import Path
+PYTHONPATH="$CODE_DIR" "$SYS_PY3" - "$CANONICAL_WEIGHTS_FILE" <<'PY'
+import sys, torch
 from ml.training.mobilenetv3_forensics import MobileNetV3Forensics
 from ml.training.run_phase_4c2 import (
     verify_trainable_allowlist,
     apply_frozen_bn_policy,
     build_stage2_optimizer,
-    EXPECTED_TRAINABLE_PARAMS,
-    EXPECTED_FROZEN_PARAMS,
-    EXPECTED_TOTAL_PARAMS,
 )
 
-model = MobileNetV3Forensics(num_classes=2, pretrained=False, weights_path="$CANONICAL_WEIGHTS_FILE")
+weights_path = sys.argv[1]
+model = MobileNetV3Forensics(num_classes=2, pretrained=False, weights_path=weights_path)
 
 # Freeze features.0 through features.11
 for name, param in model.named_parameters():
@@ -431,49 +506,80 @@ ENV_LOCK_SHA_FILE="$OUTPUT_ROOT/phase4c2_environment_lock.sha256"
 
 if [ ! -f "$ENV_LOCK_FILE" ]; then
     TIMESTAMP_UTC=$(date -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || echo "unknown")
-    $SYS_PY3 - <<PY
+    "$SYS_PY3" - \
+        "$ENV_LOCK_FILE" \
+        "$ENV_LOCK_SHA_FILE" \
+        "$TIMESTAMP_UTC" \
+        "$EXECUTION_SHORT_SHA" \
+        "$CODE_ARCHIVE" \
+        "$CANONICAL_BUNDLE_ARCHIVE_SHA" \
+        "$CANONICAL_BUNDLE_CONTENT_SHA" \
+        "$CANONICAL_BUNDLE_MANIFEST_SHA" \
+        "$CANONICAL_WEIGHTS_FILE_SHA" \
+        "$CANONICAL_BACKBONE_FINGERPRINT" \
+        "$GPU_NAME" \
+        "$VRAM_GB" \
+    <<'PY'
 import json, hashlib, sys, os, torch
+
+lock_file = sys.argv[1]
+lock_sha_file = sys.argv[2]
+timestamp_utc = sys.argv[3]
+execution_short_sha = sys.argv[4]
+code_archive = sys.argv[5]
+bundle_archive_sha = sys.argv[6]
+bundle_content_sha = sys.argv[7]
+bundle_manifest_sha = sys.argv[8]
+weights_file_sha = sys.argv[9]
+backbone_fingerprint = sys.argv[10]
+gpu_name = sys.argv[11]
+gpu_vram_gb = float(sys.argv[12])
 
 lock = {
     "schema_version": "1.0.0",
     "phase": "Phase 4C.2B",
-    "timestamp_utc": "$TIMESTAMP_UTC",
-    "execution_commit_sha": "$EXECUTION_SHORT_SHA",
-    "code_archive": "$CODE_ARCHIVE",
-    "dataset_archive_sha256": "$CANONICAL_BUNDLE_ARCHIVE_SHA",
-    "dataset_content_sha256": "$CANONICAL_BUNDLE_CONTENT_SHA",
-    "dataset_manifest_sha256": "$CANONICAL_BUNDLE_MANIFEST_SHA",
-    "pretrained_weights_file_sha256": "$CANONICAL_WEIGHTS_FILE_SHA",
-    "pretrained_backbone_fingerprint": "$CANONICAL_BACKBONE_FINGERPRINT",
-    "gpu_name": "$GPU_NAME",
-    "gpu_vram_gb": $VRAM_GB,
+    "timestamp_utc": timestamp_utc,
+    "execution_commit_sha": execution_short_sha,
+    "code_archive": code_archive,
+    "dataset_archive_sha256": bundle_archive_sha,
+    "dataset_content_sha256": bundle_content_sha,
+    "dataset_manifest_sha256": bundle_manifest_sha,
+    "pretrained_weights_file_sha256": weights_file_sha,
+    "pretrained_backbone_fingerprint": backbone_fingerprint,
+    "gpu_name": gpu_name,
+    "gpu_vram_gb": gpu_vram_gb,
     "python_version": sys.version,
     "torch_version": torch.__version__,
     "cuda_version": torch.version.cuda if torch.cuda.is_available() else None,
 }
-with open("$ENV_LOCK_FILE", "w", encoding="utf-8") as f:
+with open(lock_file, "w", encoding="utf-8") as f:
     json.dump(lock, f, indent=2)
 
-lock_bytes = open("$ENV_LOCK_FILE", "rb").read()
+lock_bytes = open(lock_file, "rb").read()
 lock_sha = hashlib.sha256(lock_bytes).hexdigest()
-with open("$ENV_LOCK_SHA_FILE", "w", encoding="utf-8") as f:
+with open(lock_sha_file, "w", encoding="utf-8") as f:
     f.write(f"{lock_sha}  phase4c2_environment_lock.json\n")
 
 print("[+] Environment lock created and sealed")
 PY
 else
     echo "[*] Verifying existing environment lock..."
-    $SYS_PY3 - <<PY
+    "$SYS_PY3" - "$ENV_LOCK_FILE" "$ENV_LOCK_SHA_FILE" "$CANONICAL_BUNDLE_ARCHIVE_SHA" "$CANONICAL_WEIGHTS_FILE_SHA" <<'PY'
 import json, hashlib, sys
 
-lock_bytes = open("$ENV_LOCK_FILE", "rb").read()
+lock_file = sys.argv[1]
+lock_sha_file = sys.argv[2]
+expected_bundle_sha = sys.argv[3]
+expected_weights_sha = sys.argv[4]
+
+lock_bytes = open(lock_file, "rb").read()
 lock_sha = hashlib.sha256(lock_bytes).hexdigest()
-sidecar_sha = open("$ENV_LOCK_SHA_FILE", "r", encoding="utf-8").read().strip().split()[0].lower()
+sidecar_sha = open(lock_sha_file, "r", encoding="utf-8").read().strip().split()[0].lower()
 assert lock_sha == sidecar_sha, f"Environment lock sidecar hash mismatch: {lock_sha} != {sidecar_sha}"
 
 lock = json.loads(lock_bytes.decode("utf-8"))
-assert lock["dataset_archive_sha256"] == "$CANONICAL_BUNDLE_ARCHIVE_SHA"
-assert lock["pretrained_weights_file_sha256"] == "$CANONICAL_WEIGHTS_FILE_SHA"
+assert lock["dataset_archive_sha256"] == expected_bundle_sha
+assert lock["pretrained_weights_file_sha256"] == expected_weights_sha
 print("[+] Existing environment lock verified PASS")
 PY
 fi
@@ -486,7 +592,7 @@ verify_run_artifacts() {
     local sample_size="$2"
     local seed="$3"
 
-    PYTHONPATH="$CODE_DIR" $SYS_PY3 - "$target_dir" "$sample_size" "$seed" "$BUNDLE_DIR" <<'PY'
+    PYTHONPATH="$CODE_DIR" "$SYS_PY3" - "$target_dir" "$sample_size" "$seed" "$BUNDLE_DIR" <<'PY'
 import sys, os, json, hashlib, csv
 from pathlib import Path
 
@@ -635,7 +741,7 @@ for N in "${SAMPLE_SIZES[@]}"; do
 
         # Execute training runner
         echo "[RUN] Training $RUN_ID..."
-        PYTHONPATH="$CODE_DIR" $SYS_PY3 -m ml.training.run_phase_4c2 \
+        PYTHONPATH="$CODE_DIR" "$SYS_PY3" -m ml.training.run_phase_4c2 \
             --config "$CANONICAL_CONFIG" \
             --bundle "$BUNDLE_DIR" \
             --sample-size "$N" \
@@ -680,12 +786,12 @@ done
 CURRENT_STAGE="packaging_archives"
 echo "[*] Step 8: Creating persistent download archives in $DOWNLOAD_DIR..."
 
-$SYS_PY3 - <<PY
-import os, tarfile, hashlib
+"$SYS_PY3" - "$OUTPUT_ROOT" "$DOWNLOAD_DIR" <<'PY'
+import os, tarfile, hashlib, sys
 from pathlib import Path
 
-output_root = Path("$OUTPUT_ROOT")
-download_dir = Path("$DOWNLOAD_DIR")
+output_root = Path(sys.argv[1])
+download_dir = Path(sys.argv[2])
 download_dir.mkdir(parents=True, exist_ok=True)
 
 def package_and_hash(archive_name, members):

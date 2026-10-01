@@ -54,3 +54,21 @@ def test_31_no_duplicate_notebook():
     nb_files = list(NOTEBOOK_DIR.glob("phase_4c2*.ipynb"))
     assert len(nb_files) == 1, f"Found multiple Stage 2 notebooks: {[f.name for f in nb_files]}"
     assert nb_files[0].name == "phase_4c2_finetuning_colab.ipynb"
+
+
+def test_33_notebook_operator_verification_and_restaging():
+    """33. Notebook verifies operator SHA/bytes, checks Python runtime capability, and enforces atomic restaging."""
+    with open(CANONICAL_NOTEBOOK, "r", encoding="utf-8") as f:
+        nb = json.load(f)
+
+    cell_1_src = "".join(nb["cells"][1]["source"])
+    assert "CANONICAL_OPERATOR_SHA = " in cell_1_src
+    assert "CANONICAL_OPERATOR_BYTES = " in cell_1_src
+
+    cell_2_src = "".join(nb["cells"][2]["source"])
+    assert "assert sys.version_info >= (3, 10)" in cell_2_src
+    assert "CANONICAL_OPERATOR_BYTES" in cell_2_src
+    assert "CANONICAL_OPERATOR_SHA" in cell_2_src
+    assert "sha256_file(operator_script)" in cell_2_src
+    assert "os.replace(part_dst, dst)" in cell_2_src
+    assert "needs_copy = True" in cell_2_src

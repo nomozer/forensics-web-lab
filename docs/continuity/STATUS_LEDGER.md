@@ -1,13 +1,15 @@
-## Phase 4C.2B — Build and Verify Resumable 15-Run Colab Operator for Stage 2
+## Phase 4C.2B — Build Resumable Operator & Fix Quoting (Phase 4C.2B.1)
 
-- **Muc tieu**: Package verified Stage 2 runner into resumable Colab operator, seal execution snapshot archive and canonical notebook, and isolate namespace from Stage 1. Zero training runs.
+- **Muc tieu**: Resolve Google Colab runtime failure (SyntaxError: unterminated string literal) caused by unquoted heredoc `<<PY` backslash expansion in `scripts/phase_4c2_execute_all.sh`. Reseal operator and notebook artifacts. Zero training runs.
 - **Starting commit**: 346865c (Phase 4C.2A.1 ending)
 - **Branch**: research/phase-4c1-learning-curve
-- **Thay đổi chính**: (1) Reconciled scheduler diff (same: false, T_max=20 vs 25, eta_min=1e-6 vs 0). (2) Pretrained weights sealed to MobileNet_V3_Small_Weights.IMAGENET1K_V1 (047dcff4...) and packaged into archive. (3) Immutable execution snapshot phase_4c2_code_9ee7fdb.tar.gz (10,478,136 bytes, SHA-256 951e9089...). (4) Operator phase_4c2_execute_all.sh (30,103 bytes, SHA-256 84e6188d...) with capability GPU policy, fail-closed preflight, and atomic .part publishing. (5) Canonical notebook notebooks/phase_4c2_finetuning_colab.ipynb (11,731 bytes, SHA-256 e9283f21..., 5 cells, EXECUTE=False). (6) 31 unit/behavioral tests in test_phase_4c2_operator.py & test_phase_4c2_notebook.py (all PASS).
-- **Kiểm tra**: 31/31 Phase 4C.2B tests pass, 14/14 Phase 4C.2A.1 tests pass, 70/70 TS tests pass, typecheck 0, build OK, continuity PASS.
-- **Kết quả**: PRE_EXECUTION_GO_NO_GO verdict READY_FOR_USER_COLAB_PREFLIGHT. Training runs = 0, locked-test = 0, Stage 1 writes = 0.
-- **Evidence**: research/evidence/phase-4c.2b/ (execution_snapshot_receipt.json, operator_receipt.json, notebook_receipt.json, pretrained_weights_binding.json, PRE_EXECUTION_GO_NO_GO.json, environment.json, PHASE_REPORT.md).
-- **Quyết định tiếp theo**: User executes preflight verification on Google Colab GPU runtime before running 15 training runs.
+- **Thay đổi chính**: (1) Converted all Python blocks in operator to quoted heredocs (`<<'PY'`) passing dynamic parameters via `sys.argv`. (2) 10 TAR security behavioral fixtures verified via real Linux Bash subprocess execution (10/10 PASS). (3) Added clean temporary directory extraction defense and preflight retry failure archiving (`OPERATOR_FAILURE_archived_<timestamp>.json`). (4) Updated Colab notebook `notebooks/phase_4c2_finetuning_colab.ipynb` (13,085 bytes, SHA-256 `b4522254...`) with Python >= 3.10 capability check, operator SHA/bytes verification and atomic restaging. (5) Operator `scripts/phase_4c2_execute_all.sh` resealed (33,633 bytes, SHA-256 `c460a548...`). (6) Immutable artifacts preserved: `phase_4c2_code_9ee7fdb.tar.gz` and `phase_4c1_binary_n250_reusable.tar`. (7) Git weight exclusion gate verified: `mobilenet_v3_small-047dcff4.pth` untracked. (8) 45 unit/behavioral tests in operator & notebook suites PASS.
+- **Kiểm tra**: 41/41 operator tests pass, 4/4 notebook tests pass, 14/14 Stage 2 contract tests pass, 9/9 Stage 2 prereg tests pass, 70/70 TS tests pass, typecheck 0, build OK, continuity check PASS.
+- **Kết quả**: PRE_EXECUTION_GO_NO_GO verdict READY_FOR_USER_COLAB_PREFLIGHT_RETRY. Training runs = 0, locked-test = 0, Stage 1 writes = 0.
+- **Evidence**: research/evidence/phase-4c.2b/ (operator_receipt.json, notebook_receipt.json, execution_snapshot_receipt.json, pretrained_weights_binding.json, PRE_EXECUTION_GO_NO_GO.json, environment.json, PHASE_REPORT.md).
+- **Quyết định tiếp theo**: User re-uploads only 2 files (`phase_4c2_execute_all.sh` to `inputs/`, `phase_4c2_finetuning_colab.ipynb` to `phase_4c2/`) and re-runs preflight on Colab GPU runtime.
+
+---
 
 ---
 ## Phase 4C.2A — Stage 2 Preregistration & Contract Reconciliation (Phase 4C.2A.1)

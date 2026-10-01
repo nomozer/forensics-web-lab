@@ -3,9 +3,9 @@
   "phase": "Phase 4C.2B",
   "script_name": "phase_4c2_execute_all.sh",
   "script_path": "scripts/phase_4c2_execute_all.sh",
-  "bytes": 30103,
-  "sha256": "84e6188db6e88b9987b3547cf3d5eab69ef11f92d4e9dcca1e2ee95afdffe92c",
-  "timestamp_utc": "2026-10-01T05:02:06.317954+00:00",
+  "bytes": 33633,
+  "sha256": "c460a5485cfd779b6db6b851108e5a386abd6bc4afdc8adf548cd16fdcea3fa2",
+  "timestamp_utc": "2026-10-01T05:42:07.647710+00:00",
   "execution_commit_sha": "9ee7fdbb88fad16167f5790b5105867747801372",
   "code_archive": {
     "name": "phase_4c2_code_9ee7fdb.tar.gz",
@@ -63,5 +63,18 @@
     "drive_part_pattern": "<output_root>/.publish_n<N>_seed_<seed>.part",
     "drive_final_pattern": "<output_root>/n<N>_seed_<seed>"
   },
-  "status": "READY_FOR_USER_COLAB_PREFLIGHT"
+  "status": "READY_FOR_USER_COLAB_PREFLIGHT_RETRY",
+  "tar_security_audit": {
+    "status": "PASS",
+    "method": "Quoted heredoc (<<'PY') passing CODE_ARCHIVE via sys.argv[1]",
+    "path_traversal_detection": "PurePosixPath & PureWindowsPath absolute & traversal check",
+    "behavioral_fixtures_evaluated": 10,
+    "behavioral_fixtures_passed": 10,
+    "subprocess_runner": "Real Bash subprocess"
+  },
+  "preflight_retry_policy": {
+    "status": "PASS",
+    "action": "Archive prior OPERATOR_FAILURE.json to logs/OPERATOR_FAILURE_archived_<timestamp>.json and reset status to in_progress",
+    "preserves_completed_runs": true
+  }
 }

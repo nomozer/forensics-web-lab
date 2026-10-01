@@ -8,12 +8,14 @@ from __future__ import annotations
 
 import csv
 import hashlib
+import io
 import json
 import os
 import re
 import shutil
 import subprocess
 import sys
+import tarfile
 import tempfile
 from pathlib import Path
 
@@ -481,3 +483,212 @@ def test_32_zero_research_runs_during_preparation():
     assert inv["training_runs_in_phase"] == 0
     assert inv["locked_test_accesses"] == 0
     assert inv["stage2_invocations"] == 0
+
+
+# ==============================================================================
+# Phase 4C.2B.1 TAR Security Behavioral Tests (10 Fixtures via Bash Subprocess)
+# ==============================================================================
+
+CANONICAL_CODE_ARCHIVE = (
+    REPO_ROOT.parent
+    / "forensics-web-lab-local-artifacts"
+    / "phase_4c2"
+    / "inputs"
+    / "phase_4c2_code_9ee7fdb.tar.gz"
+)
+
+
+def to_posix_path_for_bash(p: Path) -> str:
+    try:
+        res = subprocess.run(
+            ["bash", "-c", f"wslpath -u '{p.as_posix()}'"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        return res.stdout.strip()
+    except Exception:
+        return p.as_posix()
+
+
+def extract_tar_audit_bash_block(script_text: str) -> str:
+    start_marker = '# Audit tar entries for path traversal before extraction\n'
+    end_marker = '\nPY\n'
+    start_idx = script_text.find(start_marker)
+    if start_idx == -1:
+        raise ValueError(f"Could not find start marker '{start_marker}' in operator script")
+    end_idx = script_text.find(end_marker, start_idx)
+    if end_idx == -1:
+        raise ValueError(f"Could not find end marker '{end_marker}' in operator script")
+    return script_text[start_idx + len(start_marker) : end_idx + len(end_marker)]
+
+
+def run_tar_audit_subprocess(audit_block: str, archive_path: Path) -> subprocess.CompletedProcess:
+    posix_path = to_posix_path_for_bash(archive_path)
+    bash_script = f"""
+SYS_PY3="${{SYS_PY3:-$(which python3 || echo python)}}"
+CODE_ARCHIVE="{posix_path}"
+{audit_block}
+""".replace("\r\n", "\n").replace("\r", "\n")
+    proc = subprocess.run(
+        ["bash"],
+        input=bash_script.encode("utf-8"),
+        capture_output=True,
+    )
+    proc.stdout = proc.stdout.decode("utf-8", errors="replace")
+    proc.stderr = proc.stderr.decode("utf-8", errors="replace")
+    return proc
+
+
+def create_tar_fixture(dest: Path, entries: list[tuple[str, int, str | None]]):
+    with tarfile.open(dest, "w:gz") as tf:
+        for name, entry_type, linkname in entries:
+            ti = tarfile.TarInfo(name=name)
+            ti.type = entry_type
+            if linkname:
+                ti.linkname = linkname
+            if entry_type == tarfile.REGTYPE:
+                data = b"safe dummy content for fixture test"
+                ti.size = len(data)
+                tf.addfile(ti, io.BytesIO(data))
+            elif entry_type == tarfile.DIRTYPE:
+                ti.size = 0
+                tf.addfile(ti)
+            else:
+                ti.size = 0
+                tf.addfile(ti)
+
+
+@pytest.fixture(scope="module")
+def tar_audit_block():
+    script_text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
+    return extract_tar_audit_bash_block(script_text)
+
+
+class TestTarSafetyAuditBehavioral:
+    """Suite running the operator's actual TAR safety audit Bash block against 10 fixtures."""
+
+    def test_fixture_01_valid_archive_passes(self, tar_audit_block, tmp_path):
+        """1. Valid archive: regular files, directories, nested POSIX paths -> PASS."""
+        arch = tmp_path / "01_valid.tar.gz"
+        create_tar_fixture(arch, [
+            ("ml", tarfile.DIRTYPE, None),
+            ("ml/training", tarfile.DIRTYPE, None),
+            ("ml/training/run_phase_4c2.py", tarfile.REGTYPE, None),
+            ("ml/configs/phase_4c2.yaml", tarfile.REGTYPE, None),
+        ])
+        res = run_tar_audit_subprocess(tar_audit_block, arch)
+        assert res.returncode == 0, f"Expected PASS, got {res.returncode}: {res.stderr}"
+        assert "[+] Code archive tar safety audit PASS" in res.stdout
+        assert "SyntaxError" not in res.stderr
+        assert "unterminated string literal" not in res.stderr
+
+    def test_fixture_02_posix_absolute_path_fails(self, tar_audit_block, tmp_path):
+        """2. POSIX absolute path: /tmp/evil -> FAIL."""
+        arch = tmp_path / "02_posix_abs.tar.gz"
+        create_tar_fixture(arch, [("/tmp/evil", tarfile.REGTYPE, None)])
+        res = run_tar_audit_subprocess(tar_audit_block, arch)
+        assert res.returncode != 0
+        assert "Absolute path in code archive: /tmp/evil" in res.stderr
+        assert "SyntaxError" not in res.stderr
+        assert "unterminated string literal" not in res.stderr
+
+    def test_fixture_03_windows_root_path_fails(self, tar_audit_block, tmp_path):
+        r"""3. Windows-root path: \evil -> FAIL."""
+        arch = tmp_path / "03_win_root.tar.gz"
+        create_tar_fixture(arch, [(r"\evil", tarfile.REGTYPE, None)])
+        res = run_tar_audit_subprocess(tar_audit_block, arch)
+        assert res.returncode != 0
+        assert "Absolute path in code archive: \\evil" in res.stderr
+        assert "SyntaxError" not in res.stderr
+        assert "unterminated string literal" not in res.stderr
+
+    def test_fixture_04_windows_drive_path_fails(self, tar_audit_block, tmp_path):
+        r"""4. Windows drive path: C:\evil.txt -> FAIL."""
+        arch = tmp_path / "04_win_drive.tar.gz"
+        create_tar_fixture(arch, [(r"C:\evil.txt", tarfile.REGTYPE, None)])
+        res = run_tar_audit_subprocess(tar_audit_block, arch)
+        assert res.returncode != 0
+        assert "Absolute path in code archive: C:\\evil.txt" in res.stderr
+        assert "SyntaxError" not in res.stderr
+        assert "unterminated string literal" not in res.stderr
+
+    def test_fixture_05_posix_traversal_fails(self, tar_audit_block, tmp_path):
+        """5. POSIX traversal: ../../evil -> FAIL."""
+        arch = tmp_path / "05_posix_traversal.tar.gz"
+        create_tar_fixture(arch, [("../../evil", tarfile.REGTYPE, None)])
+        res = run_tar_audit_subprocess(tar_audit_block, arch)
+        assert res.returncode != 0
+        assert "Path traversal detected in code archive: ../../evil" in res.stderr
+        assert "SyntaxError" not in res.stderr
+        assert "unterminated string literal" not in res.stderr
+
+    def test_fixture_06_backslash_traversal_fails(self, tar_audit_block, tmp_path):
+        r"""6. Backslash traversal: ..\..\evil -> FAIL."""
+        arch = tmp_path / "06_backslash_traversal.tar.gz"
+        create_tar_fixture(arch, [(r"..\..\evil", tarfile.REGTYPE, None)])
+        res = run_tar_audit_subprocess(tar_audit_block, arch)
+        assert res.returncode != 0
+        assert "Path traversal detected in code archive: ..\\..\\evil" in res.stderr
+        assert "SyntaxError" not in res.stderr
+        assert "unterminated string literal" not in res.stderr
+
+    def test_fixture_07_symlink_fails(self, tar_audit_block, tmp_path):
+        """7. Symlink: safe/link -> ../../evil -> FAIL."""
+        arch = tmp_path / "07_symlink.tar.gz"
+        create_tar_fixture(arch, [("safe/link", tarfile.SYMTYPE, "../../evil")])
+        res = run_tar_audit_subprocess(tar_audit_block, arch)
+        assert res.returncode != 0
+        assert "Links are forbidden in code archive" in res.stderr
+        assert "SyntaxError" not in res.stderr
+        assert "unterminated string literal" not in res.stderr
+
+    def test_fixture_08_hardlink_fails(self, tar_audit_block, tmp_path):
+        """8. Hardlink -> FAIL."""
+        arch = tmp_path / "08_hardlink.tar.gz"
+        create_tar_fixture(arch, [("safe/hardlink", tarfile.LNKTYPE, "target")])
+        res = run_tar_audit_subprocess(tar_audit_block, arch)
+        assert res.returncode != 0
+        assert "Links are forbidden in code archive" in res.stderr
+        assert "SyntaxError" not in res.stderr
+        assert "unterminated string literal" not in res.stderr
+
+    def test_fixture_09_special_entry_fifo_fails(self, tar_audit_block, tmp_path):
+        """9. Special FIFO/device entry -> FAIL."""
+        arch = tmp_path / "09_fifo.tar.gz"
+        create_tar_fixture(arch, [("safe/fifo", tarfile.FIFOTYPE, None)])
+        res = run_tar_audit_subprocess(tar_audit_block, arch)
+        assert res.returncode != 0
+        assert "Special TAR entry is forbidden: safe/fifo" in res.stderr
+        assert "SyntaxError" not in res.stderr
+        assert "unterminated string literal" not in res.stderr
+
+    def test_fixture_10_canonical_archive_passes(self, tar_audit_block):
+        """10. Canonical code archive: phase_4c2_code_9ee7fdb.tar.gz -> PASS."""
+        if not CANONICAL_CODE_ARCHIVE.exists():
+            pytest.skip(f"Canonical code archive not found locally at {CANONICAL_CODE_ARCHIVE}")
+        res = run_tar_audit_subprocess(tar_audit_block, CANONICAL_CODE_ARCHIVE)
+        assert res.returncode == 0, f"Canonical archive audit failed: {res.stderr}"
+        assert "[+] Code archive tar safety audit PASS" in res.stdout
+        assert "SyntaxError" not in res.stderr
+        assert "unterminated string literal" not in res.stderr
+
+
+def test_extraction_security_contract_in_operator():
+    """Verify operator enforces clean extraction and rejects root/Drive/Stage1 targets."""
+    text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
+    assert "CODE_DIR_CANONICAL=$(mkdir -p \"$CODE_DIR\" && cd \"$CODE_DIR\" && pwd -P)" in text
+    assert 'if [ "$CODE_DIR_CANONICAL" = "/content" ] || [ "$CODE_DIR_CANONICAL" = "/content/drive" ]' in text
+    assert 'rm -rf "$CODE_DIR"' in text
+    assert 'mkdir -p "$CODE_DIR"' in text
+    assert 'if ! tar -xzf "$CODE_ARCHIVE" -C "$CODE_DIR"; then' in text
+
+
+def test_preflight_retry_resets_failure_and_archives_log():
+    """Verify operator archives prior OPERATOR_FAILURE.json and resets status to in_progress."""
+    text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
+    assert 'if [ -f "$OUTPUT_ROOT/OPERATOR_FAILURE.json" ]; then' in text
+    assert 'ARCHIVE_TIMESTAMP=$(date -u +"%Y%m%d_%H%M%SZ" 2>/dev/null || echo "prior")' in text
+    assert 'cp "$OUTPUT_ROOT/OPERATOR_FAILURE.json" "$LOGS_DIR/OPERATOR_FAILURE_archived_${ARCHIVE_TIMESTAMP}.json"' in text
+    assert 'rm -f "$OUTPUT_ROOT/OPERATOR_FAILURE.json"' in text
+    assert '"status": "in_progress"' in text
