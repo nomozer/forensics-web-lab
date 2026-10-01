@@ -1,0 +1,20 @@
+{
+  "timestamp_utc": "2026-10-02T02:55:00.000000+00:00",
+  "phase": "Phase 4C.2G.0.2",
+  "planned_evaluation_output_directory": "data/research/evaluation-outputs/phase_4c2g",
+  "evaluation_output_directory_status": "PREPARED_AND_WRITABLE",
+  "planned_locked_test_mountpoint": "data/research/locked-test-mount",
+  "locked_test_mountpoint_status": "EMPTY_PREPARED_MOUNTPOINT",
+  "path_disjointness_check": {
+    "output_and_mountpoint_disjoint": true,
+    "output_not_inside_mountpoint": true,
+    "mountpoint_not_inside_output": true,
+    "verification": "VERIFIED_DISJOINT"
+  },
+  "locked_test_mount_state": "UNMOUNTED",
+  "read_only_mount_verification": "PENDING_HUMAN_AUTHORIZATION",
+  "canary_write_verification_required": false,
+  "non_mutating_read_only_mount_verification_required": true,
+  "locked_test_real_accesses": 0,
+  "filesystem_preparation_verdict": "FILESYSTEM_SEPARATION_VERIFIED"
+}

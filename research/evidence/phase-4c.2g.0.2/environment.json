@@ -1,0 +1,42 @@
+{
+  "timestamp_utc": "2026-10-02T02:55:00.000000+00:00",
+  "phase": "Phase 4C.2G.0.2",
+  "python_version": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26100-SP0",
+  "processor": "Intel64 Family 6 Model 141 Stepping 1, GenuineIntel",
+  "machine": "AMD64",
+  "device_type": "cpu",
+  "selected_device": "cpu",
+  "cpu_threads_policy": {
+    "torch_num_threads": 1,
+    "torch_num_interop_threads": 1,
+    "omp_num_threads": 1,
+    "mkl_num_threads": 1
+  },
+  "cpu_inference_path": "IMPLEMENTATION_VERIFIED_RUNTIME_EXECUTION_PENDING",
+  "cpu_determinism_scientific_claim": "CPU được ưu tiên để giảm phụ thuộc CUDA và cải thiện khả năng tái lập trong một runtime đã niêm phong. Bitwise parity giữa các host, BLAS, PyTorch hoặc kiến trúc CPU khác nhau không được giả định nếu chưa được kiểm chứng.",
+  "package_versions": {
+    "torch": "2.5.1+cu121",
+    "torchvision": "0.20.1+cu121",
+    "numpy": "2.5.3",
+    "scipy": "1.18.1",
+    "scikit-learn": "1.9.1",
+    "pillow": "12.3.0",
+    "pyyaml": "6.0.3",
+    "jsonschema": "4.26.0"
+  },
+  "pip_freeze_sha256": "0e11c90b41f22f3f302a4c1a9860c6e3ffba109d6e465f361d447f71a3709a0c",
+  "pip_check_status": "PASS_NO_BROKEN_REQUIREMENTS",
+  "evaluator_effective_commit": "3cf75c2bf0c9835dd58897b7b36982732cab40ab",
+  "execution_package_commit": "2826a8274cb89ec548d6fac5c8ae50c1c2836202",
+  "hotfix_seal_commit": "54572ae4d6e11dc49110932a0d79e4685a335a0a",
+  "real_counters": {
+    "locked_test_real_accesses": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "cpu_inference_calls": 0,
+    "gpu_inference_calls": 0,
+    "new_training_runs": 0
+  }
+}

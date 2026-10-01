@@ -457,3 +457,136 @@ class TestPhase4C2G01Reconciliation:
         assert receipt["preferred_execution_mode"]["required_commit"] == self.EXECUTION_PACKAGE_COMMIT
         assert readiness["preferred_execution_mode"]["mode"] == "CLEAN_DETACHED_GIT_CHECKOUT"
         assert readiness["preferred_execution_mode"]["required_commit"] == self.EXECUTION_PACKAGE_COMMIT
+
+
+class TestPhase4C2G02OfflineRuntimeVerification:
+    """Test suite verifying Phase 4C.2G.0.2 offline runtime preparation and honesty constraints."""
+
+    PHASE_DIR = Path("research/evidence/phase-4c.2g.0.2")
+    EXECUTION_PACKAGE_COMMIT = "2826a8274cb89ec548d6fac5c8ae50c1c2836202"
+    EFFECTIVE_EVALUATOR_COMMIT = "3cf75c2bf0c9835dd58897b7b36982732cab40ab"
+    CANONICAL_CHECKPOINTS = {
+        42: "c941f42ed00adb098962ddb43c0f2f7d897e48e20957cddc0c491243f8730c92",
+        1337: "69e706f9062f050ccbfd2affb72d63d5dde9d12f02c1e64c762b0ea6719073f1",
+        2025: "92ce5ee986d487fdf14374842067d0684fc7669f5ecb32c7d603f6813942ceee",
+        3407: "4897821ef0a97df9f1c51acde8d4ac01d383aa3a7b9e7ee55bbc3b3108847868",
+        9001: "5f0f8803adcb7eec88d47e398ef8b2002b46e740c263b12abc2ba392822a91c3",
+    }
+
+    def test_g29_evidence_does_not_falsify_network_isolation(self):
+        """Network isolation inspection correctly records USER_PHYSICAL_ACTION_REQUIRED."""
+        net = json.loads((self.PHASE_DIR / "NETWORK_ISOLATION_INSPECTION.json").read_text(encoding="utf-8"))
+        gate = json.loads((self.PHASE_DIR / "PRE_AUTHORIZATION_RUNTIME_GATE.json").read_text(encoding="utf-8"))
+        host = json.loads((self.PHASE_DIR / "OFFLINE_HOST_PREPARATION.json").read_text(encoding="utf-8"))
+
+        assert net["inspection_verdict"] == "USER_PHYSICAL_ACTION_REQUIRED"
+        assert gate["gate_verdict"] == "USER_PHYSICAL_ACTION_REQUIRED"
+        assert host["host_verdict"] == "USER_PHYSICAL_ACTION_REQUIRED"
+        assert net["passive_checks"]["outbound_socket_probes_sent"] == 0
+        assert net["observed_host_routing"]["default_internet_route_detected"] is True
+
+    def test_g30_pending_fields_not_marked_verified(self):
+        """Fields requiring unsealing session or physical execution are not prematurely marked VERIFIED."""
+        host = json.loads((self.PHASE_DIR / "OFFLINE_HOST_PREPARATION.json").read_text(encoding="utf-8"))
+        fs = json.loads((self.PHASE_DIR / "FILESYSTEM_PREPARATION.json").read_text(encoding="utf-8"))
+
+        assert host["preparation_status_matrix"]["locked_test_read_only_mount"] == "PENDING_HUMAN_AUTHORIZATION"
+        assert host["preparation_status_matrix"]["human_authorization_artifact"] == "PENDING_HUMAN_APPROVAL"
+        assert host["preparation_status_matrix"]["actual_physical_network_isolation"] == "USER_PHYSICAL_ACTION_REQUIRED"
+        assert fs["read_only_mount_verification"] == "PENDING_HUMAN_AUTHORIZATION"
+        assert fs["locked_test_mount_state"] == "UNMOUNTED"
+
+    def test_g31_detached_execution_worktree_commit_exact(self):
+        """Detached execution worktree verification records exact commit 2826a82."""
+        wt = json.loads((self.PHASE_DIR / "EXECUTION_WORKTREE_VERIFICATION.json").read_text(encoding="utf-8"))
+
+        assert wt["preferred_execution_mode"] == "CLEAN_DETACHED_GIT_CHECKOUT"
+        assert wt["target_execution_commit"] == self.EXECUTION_PACKAGE_COMMIT
+        assert wt["worktree_head_verified"] == self.EXECUTION_PACKAGE_COMMIT
+        assert wt["effective_evaluator_commit"] == self.EFFECTIVE_EVALUATOR_COMMIT
+        assert wt["worktree_status_porcelain"] == "CLEAN_EMPTY"
+        assert wt["verification_verdict"] == "VERIFIED_EXACT_MATCH"
+
+    def test_g32_five_checkpoint_parity_and_canonical_hashes(self):
+        """All 5 checkpoints match canonical hashes and 5,627,375 bytes with zero model load."""
+        ckpt = json.loads((self.PHASE_DIR / "CHECKPOINT_STAGING_VERIFICATION.json").read_text(encoding="utf-8"))
+
+        assert ckpt["torch_load_performed"] is False
+        assert ckpt["model_forward_performed"] is False
+        assert ckpt["cpu_inference_calls"] == 0
+        assert ckpt["gpu_inference_calls"] == 0
+        assert len(ckpt["checkpoints"]) == 5
+
+        for item in ckpt["checkpoints"]:
+            seed = item["seed"]
+            assert seed in self.CANONICAL_CHECKPOINTS
+            assert item["expected_sha256"] == self.CANONICAL_CHECKPOINTS[seed]
+            assert item["actual_sha256"] == self.CANONICAL_CHECKPOINTS[seed]
+            assert item["expected_bytes"] == 5627375
+            assert item["actual_bytes"] == 5627375
+            assert item["status"] == "VERIFIED_BITWISE_EXACT"
+
+    def test_g33_no_locked_test_paths_or_content_in_evidence(self):
+        """Evidence directory contains zero locked-test file listings, paths, or keys."""
+        for p in self.PHASE_DIR.glob("**/*"):
+            if p.is_file():
+                text = p.read_text(encoding="utf-8", errors="ignore")
+                assert "test_patch" not in text.lower()
+                assert "locked_test_partition" not in text.lower()
+                assert "test_images" not in text.lower()
+
+    def test_g34_zero_real_counters_in_phase_4c2g02(self):
+        """All accounting counters remain strictly 0 in Phase 4C.2G.0.2 artifacts."""
+        env = json.loads((self.PHASE_DIR / "environment.json").read_text(encoding="utf-8"))
+        host = json.loads((self.PHASE_DIR / "OFFLINE_HOST_PREPARATION.json").read_text(encoding="utf-8"))
+        gate = json.loads((self.PHASE_DIR / "PRE_AUTHORIZATION_RUNTIME_GATE.json").read_text(encoding="utf-8"))
+        prov = json.loads((self.PHASE_DIR / "provenance_bindings.json").read_text(encoding="utf-8"))
+
+        for artifact in [env, host, gate, prov]:
+            counters = artifact["real_counters"]
+            assert counters["locked_test_real_accesses"] == 0
+            assert counters["completed_real_unsealing_sessions"] == 0
+            assert counters["completed_real_model_evaluations"] == 0
+            assert counters["evaluation_attempts"] == 0
+            assert counters["cpu_inference_calls"] == 0
+            assert counters["gpu_inference_calls"] == 0
+            assert counters["new_training_runs"] == 0
+
+    def test_g35_cpu_wording_no_unproven_cross_platform_claim(self):
+        """CPU determinism wording does not make unproven bitwise cross-platform parity claims."""
+        env = json.loads((self.PHASE_DIR / "environment.json").read_text(encoding="utf-8"))
+        host = json.loads((self.PHASE_DIR / "OFFLINE_HOST_PREPARATION.json").read_text(encoding="utf-8"))
+
+        claim = env["cpu_determinism_scientific_claim"]
+        assert "Bitwise parity giữa các host" in claim
+        assert "không được giả định nếu chưa được kiểm chứng" in claim
+        assert env["cpu_inference_path"] == "IMPLEMENTATION_VERIFIED_RUNTIME_EXECUTION_PENDING"
+        assert host["cpu_inference_path"] == "IMPLEMENTATION_VERIFIED_RUNTIME_EXECUTION_PENDING"
+
+    def test_g36_read_only_mount_verification_remains_pending(self):
+        """Read-only mount verification remains pending until human authorization session."""
+        fs = json.loads((self.PHASE_DIR / "FILESYSTEM_PREPARATION.json").read_text(encoding="utf-8"))
+
+        assert fs["read_only_mount_verification"] == "PENDING_HUMAN_AUTHORIZATION"
+        assert fs["canary_write_verification_required"] is False
+        assert fs["non_mutating_read_only_mount_verification_required"] is True
+        assert fs["locked_test_mount_state"] == "UNMOUNTED"
+        assert fs["locked_test_real_accesses"] == 0
+
+    def test_g37_no_output_metrics_or_predictions_in_evidence(self):
+        """No output metrics or predictions exist in phase 4c.2g.0.2 evidence."""
+        for p in self.PHASE_DIR.glob("*.json"):
+            data = json.loads(p.read_text(encoding="utf-8"))
+            assert "macro_f1" not in data
+            assert "predictions" not in data
+            assert "ece" not in data
+            assert "raw_predictions" not in data
+
+    def test_g38_dependency_lock_sha256_present_and_pip_check_pass(self):
+        """Dependency lock records pip check PASS and valid freeze SHA-256."""
+        dep = json.loads((self.PHASE_DIR / "DEPENDENCY_ENVIRONMENT_LOCK.json").read_text(encoding="utf-8"))
+
+        assert dep["pip_check_status"] == "PASS_NO_BROKEN_REQUIREMENTS"
+        assert len(dep["pip_freeze_sha256"]) == 64
+        assert dep["runtime_package_install_during_evaluation_session"] == "STRICTLY_FORBIDDEN"
+        assert dep["preinstalled_dependencies_verified"] is True

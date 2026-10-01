@@ -1,3 +1,16 @@
+## Phase 4C.2G.0.2 — Prepare and Verify the Physical Offline Runtime Before Human Authorization
+
+- **Muc tieu**: Prepare and verify physical offline CPU runtime; verify clean detached execution worktree at 2826a82; verify 4 evaluator components and 5 canonical checkpoints (5,627,375 bytes each, zero model forward); inspect passive network isolation (default route present -> verdict USER_PHYSICAL_ACTION_REQUIRED); verify disjoint filesystem paths. Locked-test sealed (0 accesses).
+- **Starting commit**: 54572ae (Phase 4C.2G.0.1 hotfix seal)
+- **Branch**: research/phase-4c2g-locked-test-execution
+- **Thay đổi chính**: (1) Created clean detached execution worktree at exact commit 2826a82. (2) Verified 4 evaluator components exact bytes and SHA-256 in both worktree and repo. (3) Verified 5 canonical checkpoints bitwise exact (zero model forward, zero torch load). (4) Locked dependencies via pip freeze SHA 0e11c90... and verified pip check PASS. (5) Performed passive network inspection (0 outbound probes, default route present -> verdict USER_PHYSICAL_ACTION_REQUIRED). (6) Verified output path and planned mountpoint disjoint. (7) Added 10 regression tests (test_g29 to test_g38) in ml/tests/test_phase_4c2g_preparation.py (83/83 PASS).
+- **Kiểm tra**: 83/83 evaluator & preparation tests PASS, 455/455 unit pytest PASS, 13/13 continuity test PASS, 34/34 TS test PASS, typecheck 0 errors, build OK, continuity check PASS, git diff clean.
+- **Kết quả**: Pre-authorization runtime gate verdict: USER_PHYSICAL_ACTION_REQUIRED (network default route detected). Real counters strictly 0 (accesses=0, unsealing_sessions=0, model_evaluations=0, evaluation_attempts=0, cpu_inference_calls=0, gpu_inference_calls=0, new_training_runs=0).
+- **Evidence**: research/evidence/phase-4c.2g.0.2/ (PHASE_REPORT.md, OFFLINE_HOST_PREPARATION.json, EXECUTION_WORKTREE_VERIFICATION.json, CHECKPOINT_STAGING_VERIFICATION.json, DEPENDENCY_ENVIRONMENT_LOCK.json, NETWORK_ISOLATION_INSPECTION.json, FILESYSTEM_PREPARATION.json, PRE_AUTHORIZATION_RUNTIME_GATE.json, provenance_bindings.json, environment.json).
+- **Quyết định tiếp theo**: Await physical network adapter disconnection or loopback namespace on execution host before granting human unsealing authorization.
+
+---
+
 ## Phase 4C.2G.0 — Reconcile Execution-Package, Checkpoint Bindings, and Offline-Runtime Evidence (Phase 4C.2G.0.1)
 
 - **Muc tieu**: Reconcile canonical checkpoint bindings with Phase 4C.2E baseline; lock execution_package_commit 2826a82; verify out-of-git archive (29,823 bytes, SHA-256 5ab922a); define preferred execution mode (clean detached checkout); eliminate canary write requirement; correct CPU determinism claim. Locked-test sealed (0 accesses).
