@@ -361,10 +361,49 @@ export function checkRepositoryIntegrity(rootDir) {
   if (fs.existsSync(evidenceDir)) {
     const dirs = fs.readdirSync(evidenceDir, { withFileTypes: true })
       .filter(d => d.isDirectory() && d.name.startsWith('phase-'))
-      .map(d => d.name);
+      .map(d => {
+        const dirPath = path.join(evidenceDir, d.name);
+        let timestamp = 0;
+        try {
+          for (const envFile of ['environment.json', 'analysis_environment.json', 'import_audit_summary.json', 'cross_phase_discrepancies.json']) {
+            const envPath = path.join(dirPath, envFile);
+            if (fs.existsSync(envPath)) {
+              const envContent = fs.readFileSync(envPath, 'utf-8');
+              const env = JSON.parse(envContent);
+              const ts = env.timestamp || env.timestamp_utc;
+              if (ts) {
+                timestamp = new Date(ts).getTime();
+                break;
+              }
+            }
+          }
+        } catch {}
+        // Fallback: use git log for the directory
+        if (timestamp === 0) {
+          try {
+            const gitLog = execFileSync('git', ['log', '-1', '--format=%ct', '--', dirPath], { cwd: rootDir, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }).trim();
+            if (gitLog) timestamp = parseInt(gitLog, 10) * 1000;
+          } catch {}
+        }
+        // Fallback: use filesystem stat mtime
+        if (timestamp === 0) {
+          try {
+            const stat = fs.statSync(dirPath);
+            timestamp = stat.mtimeMs;
+          } catch {}
+        }
+        return { name: d.name, timestamp };
+      })
+      .filter(d => d.timestamp > 0)
+      .sort((a, b) => {
+        // Primary sort: timestamp (newer first)
+        if (a.timestamp !== b.timestamp) return b.timestamp - a.timestamp;
+        // Secondary sort: phase token comparison (higher version first)
+        return comparePhaseTokens(b.name, a.name);
+      });
     if (dirs.length > 0) {
-      dirs.sort(comparePhaseTokens);
-      latestEvidenceFolder = dirs[dirs.length - 1];
+      // Sorted descending (newest first), so first element is latest
+      latestEvidenceFolder = dirs[0].name;
       latestEvidencePhase = latestEvidenceFolder.replace(/^phase-/, '');
     }
   }
@@ -464,8 +503,10 @@ export function runContinuityCheck(options = {}) {
 }
 
 // CLI execution if executed directly
-const isDirectExecution = import.meta.url === `file://${process.argv[1].replace(/\\/g, '/')}` ||
-  process.argv[1]?.endsWith('continuity-check.mjs');
+const isDirectExecution = Boolean(process.argv[1]) && (
+  import.meta.url === `file://${process.argv[1].replace(/\\/g, '/')}` ||
+  process.argv[1].endsWith('continuity-check.mjs')
+);
 
 if (isDirectExecution) {
   const options = parseArgs(process.argv.slice(2));

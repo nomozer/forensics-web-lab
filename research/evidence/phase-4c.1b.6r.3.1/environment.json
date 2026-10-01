@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-09-29T06:15:00.000000Z",
+  "phase": "4C.1B.6R.3.1",
+  "description": "Evidence Metadata, Dependency and T4 Execution Contract Closure",
+  "git_head": "13dfa8274ac1e5390c1fda97738bcb97ea285379",
+  "branch": "research/phase-4c1-learning-curve",
+  "python_executable": "D:\\\\Documents\\\\forensics-web-lab\\\\ml\\\\.venv\\\\Scripts\\\\python.exe",
+  "python_version": "3.12.10",
+  "torch_version": "2.5.1+cu121",
+  "torchvision_version": "0.20.1+cu121",
+  "cuda_version": "12.1",
+  "gpu": "NVIDIA GeForce GTX 1650",
+  "gpu_vram_gb": 3.99969482421875,
+  "previous_phase": "4C.1B.6R.3"
+}

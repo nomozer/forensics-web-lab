@@ -1,0 +1,188 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2A.1",
+  "timestamp_utc": "2026-10-01T03:36:00.000000+00:00",
+  "treatment_designation": "pre-registered partial fine-tuning protocol",
+  "treatment_justification": "Described as 'pre-registered partial fine-tuning protocol' (and not 'pure isolated unfreezing effect') because differential learning rates, lowered head learning rate (5e-4 vs 1e-3), bounded epochs (20 vs 25), and gradient clipping (1.0 vs None) are jointly pre-registered to ensure optimization stability during convolution block unfreezing.",
+  "comparison_table": [
+    {
+      "field": "architecture",
+      "stage1_value": "MobileNetV3Forensics(num_classes=2)",
+      "stage2_value": "MobileNetV3Forensics(num_classes=2)",
+      "same": true,
+      "justification": "Identical lightweight CNN architecture and head projection structure"
+    },
+    {
+      "field": "pretrained_weights",
+      "stage1_value": "MobileNet_V3_Small_Weights.DEFAULT",
+      "stage2_value": "MobileNet_V3_Small_Weights.DEFAULT",
+      "same": true,
+      "justification": "Identical ImageNet-1K pretrained weights identity for backbone initialization"
+    },
+    {
+      "field": "input_size",
+      "stage1_value": [224, 224],
+      "stage2_value": [224, 224],
+      "same": true,
+      "justification": "Identical spatial dimensions for input tensors"
+    },
+    {
+      "field": "normalization",
+      "stage1_value": { "mean": [0.485, 0.456, 0.406], "std": [0.229, 0.224, 0.225] },
+      "stage2_value": { "mean": [0.485, 0.456, 0.406], "std": [0.229, 0.224, 0.225] },
+      "same": true,
+      "justification": "Standard torchvision ImageNet channel normalization"
+    },
+    {
+      "field": "augmentation",
+      "stage1_value": "none (deterministic bicubic resize, to_tensor, normalize)",
+      "stage2_value": "none (deterministic bicubic resize, to_tensor, normalize)",
+      "same": true,
+      "justification": "No stochastic data augmentation in either stage to preserve paired comparability"
+    },
+    {
+      "field": "loss_implementation",
+      "stage1_value": "FocalLoss (ml.training.loss.FocalLoss)",
+      "stage2_value": "FocalLoss (ml.training.loss.FocalLoss)",
+      "same": true,
+      "justification": "Identical multi-class focal loss implementation operating directly on logits"
+    },
+    {
+      "field": "focal_gamma",
+      "stage1_value": 2.0,
+      "stage2_value": 2.0,
+      "same": true,
+      "justification": "Identical focusing parameter for modulating hard examples"
+    },
+    {
+      "field": "focal_alpha",
+      "stage1_value": null,
+      "stage2_value": null,
+      "same": true,
+      "justification": "Neither Stage 1 nor Stage 2 uses class weighting alpha; alpha is strictly null in both stages"
+    },
+    {
+      "field": "label_smoothing",
+      "stage1_value": 0.05,
+      "stage2_value": 0.05,
+      "same": true,
+      "justification": "Identical label smoothing parameter across classes"
+    },
+    {
+      "field": "reduction",
+      "stage1_value": "mean",
+      "stage2_value": "mean",
+      "same": true,
+      "justification": "Identical mean reduction over sample losses"
+    },
+    {
+      "field": "optimizer",
+      "stage1_value": "AdamW",
+      "stage2_value": "AdamW",
+      "same": true,
+      "justification": "Decoupled weight decay optimizer used in both stages"
+    },
+    {
+      "field": "head_learning_rate",
+      "stage1_value": 0.001,
+      "stage2_value": 0.0005,
+      "same": false,
+      "justification": "Lowered from 1e-3 to 5e-4 to avoid destabilizing pre-trained feature representation during joint fine-tuning"
+    },
+    {
+      "field": "backbone_learning_rate",
+      "stage1_value": 0.0,
+      "stage2_value": 0.00005,
+      "same": false,
+      "justification": "Backbone was completely frozen in Stage 1; unfrozen features.12 receives 5e-5 (10x lower than head)"
+    },
+    {
+      "field": "weight_decay",
+      "stage1_value": 0.0001,
+      "stage2_value": 0.0001,
+      "same": true,
+      "justification": "Identical L2 regularizer coefficient 1e-4"
+    },
+    {
+      "field": "scheduler",
+      "stage1_value": {
+        "scheduler_class": "CosineAnnealingLR",
+        "T_max": 25,
+        "eta_min": 0.0,
+        "max_epochs": 25
+      },
+      "stage2_value": {
+        "scheduler_class": "CosineAnnealingLR",
+        "T_max": 20,
+        "eta_min": 1e-6,
+        "max_epochs": 20
+      },
+      "same": false,
+      "justification": "Both use CosineAnnealingLR, but Stage 1 sets T_max=25 with default eta_min=0.0 over 25 epochs, whereas Stage 2 sets T_max=20 with bounded eta_min=1e-6 over 20 epochs; because T_max and eta_min differ, scheduler configuration is not identical (same=false)."
+    },
+    {
+      "field": "max_epochs",
+      "stage1_value": 25,
+      "stage2_value": 20,
+      "same": false,
+      "justification": "Stage 1 allocated 25 epochs; Stage 2 allocates 20 epochs to reduce overfitting on small cohorts"
+    },
+    {
+      "field": "early_stopping_patience",
+      "stage1_value": 5,
+      "stage2_value": 5,
+      "same": true,
+      "justification": "Identical 5-epoch early stopping patience window"
+    },
+    {
+      "field": "early_stopping_delta",
+      "stage1_value": 0.001,
+      "stage2_value": 0.001,
+      "same": true,
+      "justification": "Identical threshold for minimum macro-f1 improvement"
+    },
+    {
+      "field": "batch_size",
+      "stage1_value": 32,
+      "stage2_value": 32,
+      "same": true,
+      "justification": "Identical batch size across all runs"
+    },
+    {
+      "field": "checkpoint_metric",
+      "stage1_value": "inner_val_macro_f1",
+      "stage2_value": "inner_val_macro_f1",
+      "same": true,
+      "justification": "Identical checkpoint selection metric evaluated strictly on inner_validation"
+    },
+    {
+      "field": "gradient_clipping",
+      "stage1_value": null,
+      "stage2_value": 1.0,
+      "same": false,
+      "justification": "Gradient clipping at max_norm=1.0 added in Stage 2 to stabilize gradients through unfrozen convolution block"
+    },
+    {
+      "field": "precision",
+      "stage1_value": "fp32",
+      "stage2_value": "fp32",
+      "same": true,
+      "justification": "Deterministic standard float32 precision without automatic mixed precision"
+    },
+    {
+      "field": "deterministic_settings",
+      "stage1_value": {
+        "torch_deterministic": true,
+        "cudnn_benchmark": false,
+        "seeds": [42, 1337, 2025, 3407, 9001]
+      },
+      "stage2_value": {
+        "torch_deterministic": true,
+        "cudnn_benchmark": false,
+        "seeds": [42, 1337, 2025, 3407, 9001]
+      },
+      "same": true,
+      "justification": "Identical seeds and deterministic CUDA backend settings"
+    }
+  ]
+}

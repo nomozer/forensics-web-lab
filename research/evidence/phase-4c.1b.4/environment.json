@@ -1,0 +1,14 @@
+{
+  "timestamp": "2026-09-28T05:21:31.970825Z",
+  "phase": "4C.1B.4",
+  "description": "Independent Smoke Result Verification",
+  "git_head": "c9a3bb22b5c75526dedd68cb999192caa00c9308",
+  "branch": "research/phase-4c1-learning-curve",
+  "python_executable": "D:\\\\Documents\\\\forensics-web-lab\\\\ml\\\\.venv\\\\Scripts\\\\python.exe",
+  "python_version": "3.12.10",
+  "torch_version": "2.5.1+cu121",
+  "torchvision_version": "0.20.1+cu121",
+  "cuda_version": "12.1",
+  "gpu": "NVIDIA GeForce GTX 1650",
+  "gpu_vram_gb": 3.99969482421875
+}

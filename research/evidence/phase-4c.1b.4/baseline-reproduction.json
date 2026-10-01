@@ -1,0 +1,21 @@
+{
+  "dummy_baseline": {
+    "recomputed_mean": 0.42556390977443603,
+    "recomputed_std": 0.003683443222230343,
+    "reported_mean": 0.3483709273182957,
+    "reported_std": 0.0,
+    "mean_match": false,
+    "note": "Discrepancy expected: original runner used all 6 variants per source; this uses 1 variant per source"
+  },
+  "metadata_baseline": {
+    "recomputed_mean": 0.5,
+    "recomputed_std": 0.0,
+    "reported_mean": 0.5,
+    "reported_std": 0.0,
+    "match": true
+  },
+  "stage1_macro_f1": 0.566831184528606,
+  "stage1_vs_dummy": 0.21846025721031032,
+  "stage1_vs_metadata": 0.06683118452860604,
+  "note": "Discrepancy in dummy baseline expected: original runner used all 6 variants per source (6x more samples per source); this verification uses 1 variant per source (canonical only)"
+}

@@ -1,0 +1,161 @@
+{
+  "dependency_declaration_audit": {
+    "python_version": "3.12.10",
+    "declaration_files": [
+      "ml/pyproject.toml",
+      "ml/requirements.txt",
+      "ml/requirements-colab.txt"
+    ],
+    "direct_dependencies": [
+      {
+        "package": "torch",
+        "declaration": "torch>=2.2.0",
+        "installed_version": "2.5.1+cu121",
+        "status": "DECLARED_AND_VERIFIED",
+        "category": "project-runtime",
+        "direct_import": true,
+        "notes": "CUDA-enabled version installed"
+      },
+      {
+        "package": "torchvision",
+        "declaration": "torchvision>=0.17.0",
+        "installed_version": "0.20.1+cu121",
+        "status": "DECLARED_AND_VERIFIED",
+        "category": "project-runtime",
+        "direct_import": true,
+        "notes": "CUDA-enabled version installed"
+      },
+      {
+        "package": "numpy",
+        "declaration": "numpy>=1.26.0",
+        "installed_version": "2.5.3",
+        "status": "DECLARED_AND_VERIFIED",
+        "category": "project-runtime",
+        "direct_import": true
+      },
+      {
+        "package": "Pillow",
+        "declaration": "pillow>=10.2.0",
+        "installed_version": "12.3.0",
+        "status": "DECLARED_AND_VERIFIED",
+        "category": "project-runtime",
+        "direct_import": true
+      },
+      {
+        "package": "scikit-learn",
+        "declaration": "scikit-learn>=1.4.0",
+        "installed_version": "1.9.1",
+        "status": "DECLARED_AND_VERIFIED",
+        "category": "project-runtime",
+        "direct_import": true
+      },
+      {
+        "package": "scipy",
+        "declaration": "scipy>=1.12.0",
+        "installed_version": "1.18.1",
+        "status": "DECLARED_AND_VERIFIED",
+        "category": "project-runtime",
+        "direct_import": true
+      },
+      {
+        "package": "PyYAML",
+        "declaration": "pyyaml>=6.0",
+        "installed_version": "6.0.3",
+        "status": "DECLARED_AND_VERIFIED",
+        "category": "project-runtime",
+        "direct_import": true
+      },
+      {
+        "package": "onnx",
+        "declaration": "onnx>=1.15.0",
+        "installed_version": "1.23.0",
+        "status": "DECLARED_AND_VERIFIED",
+        "category": "project-runtime",
+        "direct_import": true
+      },
+      {
+        "package": "onnxruntime",
+        "declaration": "onnxruntime>=1.17.0",
+        "installed_version": "1.30.0",
+        "status": "DECLARED_AND_VERIFIED",
+        "category": "project-runtime",
+        "direct_import": true
+      },
+      {
+        "package": "psutil",
+        "declaration": "psutil>=5.9.0 (requirements-colab.txt)",
+        "installed_version": "7.2.2",
+        "status": "DECLARED_AND_VERIFIED",
+        "category": "colab-runtime",
+        "direct_import": true,
+        "notes": "Used by runner for resource tracking"
+      },
+      {
+        "package": "tqdm",
+        "declaration": "tqdm>=4.66.0 (requirements-colab.txt)",
+        "installed_version": "4.70.1",
+        "status": "DECLARED_AND_VERIFIED",
+        "category": "colab-runtime",
+        "direct_import": true,
+        "notes": "Used by runner for progress tracking"
+      },
+      {
+        "package": "pytest",
+        "declaration": "pytest>=8.0.0 (pyproject.toml dev, requirements.txt)",
+        "installed_version": "9.1.1",
+        "status": "DECLARED_AND_VERIFIED",
+        "category": "development-testing",
+        "direct_import": false
+      },
+      {
+        "package": "ruff",
+        "declaration": "ruff>=0.3.0 (pyproject.toml dev, requirements.txt)",
+        "installed_version": "not_installed",
+        "status": "OPTIONAL_NOT_EXECUTED",
+        "category": "development-testing",
+        "direct_import": false,
+        "notes": "Not installed in current env; CI workflow does not run ruff"
+      },
+      {
+        "package": "nbformat",
+        "declaration": "not declared",
+        "installed_version": "5.11.1",
+        "status": "MISSING_BLOCKING",
+        "category": "development-testing",
+        "direct_import": true,
+        "notes": "Imported by notebook tests; should be added to dev dependencies"
+      },
+      {
+        "package": "IPython",
+        "declaration": "not declared",
+        "installed_version": "9.17.1",
+        "status": "MISSING_BLOCKING",
+        "category": "development-testing",
+        "direct_import": true,
+        "notes": "Imported by notebook tests; should be added to dev dependencies"
+      },
+      {
+        "package": "google.colab",
+        "declaration": "google-colab>=1.0.0 (requirements-colab.txt)",
+        "installed_version": "not_installed",
+        "status": "RUNTIME_PROVIDED",
+        "category": "colab-runtime",
+        "direct_import": false,
+        "notes": "Provided by Colab runtime; not installable locally"
+      },
+      {
+        "package": "tensorboard",
+        "declaration": "tensorboard>=2.15.0 (requirements-colab.txt)",
+        "installed_version": "not_installed",
+        "status": "OPTIONAL_NOT_EXECUTED",
+        "category": "colab-runtime",
+        "direct_import": false,
+        "notes": "Optional for Colab; not used by current runner"
+      }
+    ],
+    "audit_timestamp_utc": "2026-09-29T06:15:00Z",
+    "pip_check_result": "No broken requirements found",
+    "missing_blocking_count": 2,
+    "optional_not_executed_count": 3
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "phase": "4C.1A.1",
+  "stage2_gate": {
+    "description": "Stage 2 (fine-tuning) is conditional and requires explicit gate pass",
+    "metric_primary": "inner_val_macro_f1",
+    "metric_secondary": "inner_val_balanced_accuracy",
+    "baselines_to_beat": [
+      "stratified_dummy",
+      "metadata_only"
+    ],
+    "gate_logic": "Stage 2 runs ONLY IF Stage 1 best Macro-F1 > Dummy AND > Metadata-Only on inner_validation",
+    "min_margin": 0.0,
+    "statistical_test": "Paired Stratified Bootstrap 95% CI on ΔMacro-F1",
+    "ci_lower_bound_requirement": "> 0.0",
+    "seed_aggregation": "Mean ± std across 5 seeds; Stage 2 runs only if mean Stage 1 beats both baselines AND 95% CI lower bound > 0 for both comparisons",
+    "metric_conflict_resolution": "If Macro-F1 and Balanced Accuracy give different conclusions, Macro-F1 is primary. Both must pass for gate pass.",
+    "stage2_conditional": true,
+    "included_in_approved_runs": false,
+    "max_stage2_runs": 15,
+    "stage2_config": {
+      "unfreeze_block": "features.12",
+      "learning_rate": 0.00005,
+      "max_epochs": 15,
+      "early_stopping_patience": 5,
+      "metric": "inner_val_macro_f1",
+      "optimizer": "AdamW",
+      "weight_decay": 0.0001,
+      "loss": "BCEWithLogitsLoss"
+    },
+    "reporting": "Stage 2 runs reported separately with clear conditional label. Not counted in Stage 1 approval."
+  }
+}

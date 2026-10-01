@@ -1,0 +1,12 @@
+{
+  "passed": 130,
+  "skipped": 15,
+  "errors": 0,
+  "failed": 1,
+  "runnerTestsSkipped": 15,
+  "collected": 146,
+  "colabPyTorchTrainingPath": "unverified locally",
+  "deselected": 0,
+  "executedAndPassed": 130,
+  "notes": "1 failed test in test_acquisition_safety.py (unrelated to Phase 4C.1), 15 runner tests skipped due to missing torch"
+}

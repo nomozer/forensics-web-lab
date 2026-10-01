@@ -1,0 +1,46 @@
+{
+  "bundleCompatibility": {
+    "changesSinceBundleGeneration": [
+      "test_acquisition_safety.py golden hash updated (INTENTIONAL_PLAN_CHANGE_WITH_STALE_GOLDEN_HASH)"
+    ],
+    "affectsManifest": false,
+    "affectsRunner": false,
+    "affectsNotebook": false,
+    "affectsProtocol": false,
+    "affectsBundlePayload": false
+  },
+  "workingTreeStatus": {
+    "untrackedFiles": [
+      "phase_4c1_bundle_smoke/ (LOCAL_TRANSFER_ARTIFACT)",
+      "phase_4c1_smoke_n50_seed42.tar.sha256 (LOCAL_TRANSFER_ARTIFACT)"
+    ],
+    "ignoredFiles": [
+      "phase_4c1_smoke_n50_seed42.tar (gitignore: *.tar)"
+    ],
+    "trackedModifications": [
+      "notebooks/phase_4c1_learning_curve_colab.ipynb (NOTEBOOK_OUTPUT_ONLY)",
+      "research/evidence/phase-4c.1b.0/environment.json (TIMESTAMP_ONLY)"
+    ]
+  },
+  "currentHead": "c8fc4f851506dc2b5f3202a9fb7501a09c4a90e4",
+  "environmentJsonDiff": {
+    "functionalImpact": "NONE",
+    "type": "TIMESTAMP_ONLY",
+    "changes": [
+      "timestamp updated",
+      "git_head updated to current HEAD"
+    ]
+  },
+  "bundleCompatibilityVerdict": "BUNDLE_STILL_VALID",
+  "bundleGenerationHead": "2e6ce2e0fedaead45dec23b24e9d9c5a5fcf777e",
+  "evidenceHead": "c8fc4f851506dc2b5f3202a9fb7501a09c4a90e4",
+  "notebookDiff": {
+    "functionalImpact": "NONE",
+    "type": "NOTEBOOK_OUTPUT_ONLY",
+    "changes": [
+      "kernelspec.display_name: 'Python 3' -> 'Python 3 (ipykernel)'",
+      "language_info removed"
+    ]
+  },
+  "ancestorRelationship": "2e6ce2e is ancestor of c8fc4f8"
+}

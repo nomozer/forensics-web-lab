@@ -1,0 +1,14 @@
+{
+  "description": "Measured Evidence Seal and Execution Ref Closure",
+  "pythonVersion": "3.12.10",
+  "pipPath": "D:\\Documents\\forensics-web-lab\\ml\\.venv\\Scripts\\pip.exe",
+  "timestamp": "2026-09-28T02:58:20Z",
+  "torchVersion": "2.14.0+cpu",
+  "phase": "4C.1B.3",
+  "branch": "research/phase-4c1-learning-curve",
+  "cudaAvailable": false,
+  "git_head": "c4df74b5180091507be624d19b27ad8614107a8d",
+  "pythonExecutable": "D:\\Documents\\forensics-web-lab\\ml\\.venv\\Scripts\\python.exe",
+  "torchvisionVersion": "0.29.0+cpu",
+  "virtualEnvironment": true
+}

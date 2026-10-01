@@ -1,0 +1,75 @@
+{
+  "dataset_binding": {
+    "schema_version": "1.0.0",
+    "phase": "Phase 4C.2A",
+    "stage": 2,
+    "description": "Cryptographic binding linking Stage 2 fine-tuning directly to the canonical Phase 4C.1 reusable N=250 dataset bundle in strictly read-only mode.",
+    "canonical_bundle_name": "phase_4c1_binary_n250_reusable.tar",
+    "canonical_bundle_paths": {
+      "google_drive_input": "MyDrive/Colab Notebooks/forensics-web-lab/phase_4c1/inputs/phase_4c1_binary_n250_reusable.tar",
+      "colab_staged_input": "/content/phase_4c1_inputs/phase_4c1_binary_n250_reusable.tar",
+      "local_artifact_path": "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\t4_transfer\\phase_4c1_binary_n250_reusable.tar"
+    },
+    "cryptographic_hashes": {
+      "archive_sha256": "d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27",
+      "content_sha256": "c365c812cc814097f11b9e5ed5c82e672015e2ba093f09f975df0a2a01229e9b",
+      "manifest_sha256": "411e35da80843a10f7bb22e33efac8a4d1db70110dbda91cadbbf39532c9312d"
+    },
+    "access_policy": {
+      "read_only": true,
+      "write_allowed": false,
+      "source_bundle_mutation_forbidden": true,
+      "prohibit_new_dataset_generation": true,
+      "prohibit_dataset_filtering_or_reexport": true,
+      "statement": "Stage 2 reads the canonical bundle directly from phase_4c1/inputs in strictly read-only mode. No new dataset is created, modified, filtered, re-exported, or copied for Stage 2."
+    },
+    "cohort_invariants": {
+      "development_cohorts": {
+        "n50": {
+          "unique_source_ids": 50,
+          "samples_per_source": 2,
+          "total_samples": 100
+        },
+        "n100": {
+          "unique_source_ids": 100,
+          "samples_per_source": 2,
+          "total_samples": 200
+        },
+        "n250": {
+          "unique_source_ids": 250,
+          "samples_per_source": 2,
+          "total_samples": 500
+        }
+      },
+      "nesting_structure": "N50 subset of N100 subset of N250 (100% verified nested cohort identity)",
+      "validation_cohort": {
+        "unique_source_ids": 91,
+        "samples_per_source": 2,
+        "total_samples": 182,
+        "identical_across_all_runs": true
+      },
+      "seeds": [42, 1337, 2025, 3407, 9001],
+      "locked_test_exclusion": {
+        "locked_test_sources_in_bundle": 0,
+        "locked_test_rows_in_bundle": 0,
+        "locked_test_files_in_bundle": 0,
+        "locked_test_accesses": 0
+      }
+    },
+    "preprocessing_and_pair_invariants": {
+      "target_task": "authentic_vs_ai_edited",
+      "labels": ["authentic", "ai_edited"],
+      "class_mapping": {
+        "authentic": 0,
+        "ai_edited": 1
+      },
+      "input_size": [224, 224],
+      "normalize_mean": [0.485, 0.456, 0.406],
+      "normalize_std": [0.229, 0.224, 0.225],
+      "interpolation": "bicubic",
+      "pair_structure": "1:1 authentic to ai_edited balanced pair cycling",
+      "independent_statistical_unit": "source_id"
+    },
+    "status": "SEALED_STAGE2_DATASET_BINDING"
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "phase": "4C.1B.5",
+  "description": "Validation Leakage Repair and Evidence Reseal",
+  "git_head": "95957b7c84b14d9cea7ee4058908554438e380c9",
+  "branch": "research/phase-4c1-learning-curve",
+  "files": [
+    {
+      "name": "environment.json",
+      "type": "phase-report",
+      "bytes": 726,
+      "sha256": "59afa1312b358bd2f0e97a05ea06ceb5a788335e37f80e90d155738f94496cde",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "leakage-finding.json",
+      "type": "finding",
+      "bytes": 1575,
+      "sha256": "440e263f44c040553dd36943a30c21a6b7ccd33add0569baeb0236e322fc6b5e",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "validation-partition-audit.json",
+      "type": "audit",
+      "bytes": 5693,
+      "sha256": "1a6ae23ee4cb29231c0b179c68114c5776d2892a1f488dc062618f74578df2af",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "corrected-metric-reproduction.json",
+      "type": "test-report",
+      "bytes": 1278,
+      "sha256": "c4f699a9706a08421bd2c67e650aecd9886662f13e5ab3593c3ee879e97b6814",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "corrected-baseline-reproduction.json",
+      "type": "test-report",
+      "bytes": 854,
+      "sha256": "9940b00f7f3c3dd618f108dcb0b7a2504d72a6fb8b1e96bb0e6cf8cb2d293bfd",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "confidence-intervals.json",
+      "type": "phase-report",
+      "bytes": 852,
+      "sha256": "be5aba6fcdaa54fdea4308754fee748e5eb184d451a1995a1d0c47c5abaf5445",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "stage2-gate-audit.json",
+      "type": "audit",
+      "bytes": 1138,
+      "sha256": "3203e67c5a62a2853cd3d53e6893032003b8f4c68fa008586e52fe750cf16be6",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "test-summary.json",
+      "type": "phase-report",
+      "bytes": 3250,
+      "sha256": "d47a129076f3b499abe781857df693c2b418d84cc63dad535ef1e61c58f9aa56",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "PHASE_REPORT.md",
+      "type": "phase-report",
+      "bytes": 9344,
+      "sha256": "e924812ebe570b491d0dfab8659c64248b14f53eae470353f8ee24fcf4386cb9",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    }
+  ],
+  "createdAtUtc": "2026-09-28T06:05:32.897564Z",
+  "manifestSelfExcluded": true,
+  "artifactCount": 9
+}

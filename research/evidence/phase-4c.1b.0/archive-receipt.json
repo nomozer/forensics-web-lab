@@ -1,0 +1,20 @@
+{
+  "lockedTestRows": 0,
+  "payloadImageFiles": 282,
+  "gitHead": "2e6ce2e0fedaead45dec23b24e9d9c5a5fcf777e",
+  "absoluteLocalPathExcludedFromGit": "D:\\Documents\\forensics-web-lab\\phase_4c1_smoke_n50_seed42.tar",
+  "payloadConfigFiles": 3,
+  "archiveName": "phase_4c1_smoke_n50_seed42.tar",
+  "archiveDirectoryEntryCount": 0,
+  "archiveRegularFileCount": 286,
+  "sha256": "B57D626D46A08427F6F1E4E1649565BD9D914E2D6F835E109E0391242AF5D0A6",
+  "manifestSha256": "D9B601C2DD2958499762DE7E96445FBF54303BBDE672CD18AF5F83790B1B3111",
+  "bundleReceiptFiles": 1,
+  "bytes": 303497728,
+  "bundleDigest": "21791E67B66D6A1587943D1F51E7F7B801105CCB872FB04ACDF50C6242236BDB",
+  "lockedTestPaths": 0,
+  "verifiedAtUtc": "2026-09-27T10:18:54Z",
+  "lockedTestSourceIds": 0,
+  "payloadFileCount": 285,
+  "verificationCommand": "& .\\ml\\.venv\\Scripts\\python.exe ml\\datasets\\validate_phase_4c1_bundle.py --bundle <extracted-dir> --smoke-only"
+}

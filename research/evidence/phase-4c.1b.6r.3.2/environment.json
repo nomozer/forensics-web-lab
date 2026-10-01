@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-09-29T12:30:00.000000Z",
+  "phase": "4C.1B.6R.3.2",
+  "description": "True Clean Environment and Dependency Seal",
+  "git_head": "941fdb6",
+  "branch": "research/phase-4c1-learning-curve",
+  "python_executable": "C:\\\\Users\\\\Bunny\\\\AppData\\\\Local\\\\Temp\\\\forensics-clean-verify\\\\Scripts\\\\python.exe",
+  "python_version": "3.12.10",
+  "torch_version": "2.14.0",
+  "torchvision_version": "0.29.0",
+  "cuda_version": "12.1",
+  "gpu": "NVIDIA GeForce GTX 1650 (local); T4 (Colab target)",
+  "gpu_vram_gb": 3.99969482421875,
+  "previous_phase": "4C.1B.6R.3.1"
+}

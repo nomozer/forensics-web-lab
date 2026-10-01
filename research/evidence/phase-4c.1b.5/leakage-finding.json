@@ -1,0 +1,55 @@
+{
+  "id": "EVAL-LEAK-001",
+  "description": "Evaluation loader included development_train samples in validation metrics",
+  "root_cause": "Evaluation dataset filter incorrectly included development_train samples (lc_n50 filter applied to inner_validation partition which has no lc_n50=True rows)",
+  "impact": "Validation metrics computed on 282 samples (100 development + 182 validation) instead of 182 validation-only samples",
+  "affected_metrics": [
+    "macro_f1",
+    "balanced_accuracy",
+    "auroc",
+    "brier_score",
+    "ece"
+  ],
+  "original_metrics": {
+    "macro_f1": 0.566831,
+    "balanced_accuracy": 0.567376,
+    "auroc": 0.609476,
+    "brier_score": 0.240628,
+    "ece": 0.028543
+  },
+  "corrected_metrics": {
+    "macro_f1": 0.565816,
+    "balanced_accuracy": 0.565934,
+    "auroc": 0.611762,
+    "brier_score": 0.239295,
+    "ece": 0.027281
+  },
+  "source_counts": {
+    "original": {
+      "total_source_ids": 141,
+      "development_train": 50,
+      "inner_validation": 91,
+      "locked_test": 0
+    },
+    "corrected": {
+      "total_source_ids": 91,
+      "development_train": 0,
+      "inner_validation": 91,
+      "locked_test": 0
+    },
+    "sample_counts": {
+      "original": {
+        "total": 282,
+        "development_train": 100,
+        "inner_validation": 182
+      },
+      "corrected": {
+        "total": 182,
+        "development_train": 0,
+        "inner_validation": 182
+      }
+    }
+  },
+  "detected_at": "2026-09-28T05:30:00Z",
+  "detected_by": "Phase 4C.1B.5 verification"
+}

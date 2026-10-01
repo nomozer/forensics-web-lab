@@ -1,0 +1,22 @@
+{
+  "local_transfer_verification": {
+    "code_archive": {
+      "path": "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\t4_transfer\\phase_4c1_code_8d00f5a.tar.gz",
+      "expected_bytes": 745321,
+      "actual_bytes": 745321,
+      "expected_sha256": "5ED90DB104E9C0CE0FD220B52650EF936F298737530D3674403951748E2647EA",
+      "actual_sha256": "5ED90DB104E9C0CE0FD220B52650EF936F298737530D3674403951748E2647EA",
+      "match": true
+    },
+    "dataset_bundle": {
+      "path": "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\smoke_n50_seed42\\phase_4c1_smoke_n50_seed42.tar",
+      "expected_bytes": 303497728,
+      "actual_bytes": 303497728,
+      "expected_sha256": "B57D626D46A08427F6F1E4E1649565BD9D914E2D6F835E109E0391242AF5D0A6",
+      "actual_sha256": "B57D626D46A08427F6F1E4E1649565BD9D914E2D6F835E109E0391242AF5D0A6",
+      "match": true
+    },
+    "verification_timestamp_utc": "2026-09-29T14:30:00Z",
+    "status": "VERIFIED"
+  }
+}

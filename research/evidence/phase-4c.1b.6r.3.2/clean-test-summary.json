@@ -1,0 +1,55 @@
+{
+  "clean_test_summary": {
+    "python_executable": "C:\\\\Users\\\\Bunny\\\\AppData\\\\Local\\\\Temp\\\\forensics-clean-verify\\\\Scripts\\\\python.exe",
+    "python_version": "3.12.10",
+    "hermetic_gate": {
+      "command": "pytest ml/tests -v -m \"not requires_research_artifact\"",
+      "exit_code": 0,
+      "collected": 156,
+      "deselected": 6,
+      "selected": 150,
+      "passed": 149,
+      "failed": 0,
+      "skipped": 1,
+      "errors": 0,
+      "duration": "41.96s"
+    },
+    "full_suite": {
+      "command": "pytest ml/tests -v",
+      "exit_code": 0,
+      "collected": 156,
+      "passed": 155,
+      "failed": 0,
+      "skipped": 1,
+      "errors": 0,
+      "duration": "39.26s"
+    },
+    "regression_tests": {
+      "file": "ml/tests/test_eval_leakage_regression.py",
+      "tests": 10,
+      "passed": 10,
+      "failed": 0
+    },
+    "config_validator": {
+      "command": "python -m ml.configs.validator --validate-all",
+      "exit_code": 0,
+      "passed": 4
+    },
+    "dataset_registry": {
+      "command": "python -m ml.datasets.acquire --validate-registry",
+      "exit_code": 0,
+      "passed": 7
+    },
+    "runner_help": {
+      "command": "python -m ml.training.run_phase_4c1 --help",
+      "exit_code": 0,
+      "help_displayed": true
+    },
+    "ruff_check": {
+      "command": "ruff check ml",
+      "exit_code": 1,
+      "errors_found": 483,
+      "fixable": 352
+    }
+  }
+}

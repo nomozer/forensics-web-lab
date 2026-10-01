@@ -1,0 +1,34 @@
+{
+  "regression_tests": {
+    "new_tests_added": [
+      "test_discover_source_instances_partitions",
+      "test_development_validation_no_overlap",
+      "test_build_instances_for_training_filters_correctly",
+      "test_create_data_loaders_validation_only_inner_validation",
+      "test_evaluation_loader_rejects_mixed_partition",
+      "test_validation_source_count",
+      "test_training_source_count"
+    ],
+    "test_file": "ml/tests/test_eval_leakage_regression.py",
+    "total_tests": 7,
+    "passed": 7,
+    "failed": 0,
+    "node_ids": [
+      "ml/tests/test_eval_leakage_regression.py::test_discover_source_instances_partitions",
+      "ml/tests/test_eval_leakage_regression.py::test_development_validation_no_overlap",
+      "ml/tests/test_eval_leakage_regression.py::test_build_instances_for_training_filters_correctly",
+      "ml/tests/test_eval_leakage_regression.py::test_create_data_loaders_validation_only_inner_validation",
+      "ml/tests/test_eval_leakage_regression.py::test_evaluation_loader_rejects_mixed_partition",
+      "ml/tests/test_eval_leakage_regression.py::test_validation_source_count",
+      "ml/tests/test_eval_leakage_regression.py::test_training_source_count"
+    ],
+    "test_purpose": "Verify evaluation loader correctly filters partitions and prevents EVAL-LEAK-001 regression",
+    "coverage": [
+      "Partition filtering correctness",
+      "Development/validation source overlap prevention",
+      "Training source count validation (N=50)",
+      "Validation source count validation (91 sources)",
+      "Bundle validation isolation"
+    ]
+  }
+}

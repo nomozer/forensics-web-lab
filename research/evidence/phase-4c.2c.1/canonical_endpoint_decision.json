@@ -1,0 +1,27 @@
+{
+  "timestamp_utc": "2026-10-01T12:59:21.942744+00:00",
+  "registered_endpoint": "inner_validation_macro_f1",
+  "canonical_source": "predictions.json_and_metrics.json_and_run_receipt.json",
+  "checkpoint_relation": "reloaded_best_checkpoint",
+  "runner_contract_trace": {
+    "checkpoint_saving": "ml/training/run_phase_4c2.py lines 794-813 (saved whenever val_macro_f1 > best_val_macro_f1)",
+    "checkpoint_reload": "ml/training/run_phase_4c2.py lines 823-825 (best_checkpoint.pt explicitly reloaded into model)",
+    "predictions_generation": "ml/training/run_phase_4c2.py line 829 (collect_predictions called on reloaded model)",
+    "final_evaluation": "ml/training/run_phase_4c2.py line 826 (evaluate called on reloaded model to produce final_metrics)",
+    "metrics_json_generation": "ml/training/run_phase_4c2.py lines 928-937 (final_metrics serialized to metrics.json)",
+    "receipt_generation": "ml/training/run_phase_4c2.py lines 860-909 (final_metrics and best_val_macro_f1 recorded)",
+    "epoch_history_consistency": "ml/training/run_phase_4c2.py lines 780-792, 911-914 (epoch_history records validation history)",
+    "checksums_atomic_sealing": "ml/training/run_phase_4c2.py lines 972-980 (computed over all output files at completion)"
+  },
+  "lineage_evidence_summary": {
+    "runs_evaluated": 15,
+    "receipt_best_vs_final_parity": "15/15 MATCH",
+    "receipt_final_vs_metrics_parity": "15/15 MATCH",
+    "metrics_vs_recomputed_predictions_parity": "15/15 MATCH",
+    "metrics_vs_epoch_history_max_parity": "15/15 MATCH",
+    "metrics_vs_checkpoint_metadata_parity": "15/15 MATCH",
+    "best_epoch_vs_checkpoint_epoch_parity": "15/15 MATCH"
+  },
+  "verdict": "PHASE_4C2C_ANALYSIS_RECONCILED",
+  "rationale": "All 15 raw Stage 2 runs demonstrate 100% mutual parity across the 6 internal run artifacts (best_checkpoint.pt, run_receipt.json, metrics.json, predictions.json, epoch_history.json, checksums.json). Phase 4C.2C correctly extracted and recomputed metrics from these canonical raw predictions and metrics. The discrepancies in Phase 4C.2C.0 Section 7 table arose purely from human/agent manual drafting errors in the markdown document during report generation and do not reflect the raw Colab execution outputs."
+}

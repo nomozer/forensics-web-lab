@@ -1,0 +1,115 @@
+{
+  "gates": [
+    {
+      "name": "Hermetic Gate",
+      "command": "& .\\ml\\.venv\\Scripts\\python.exe -m pytest ml/tests -v -m \"not requires_research_artifact\"",
+      "collected": 146,
+      "deselected": 6,
+      "selected": 139,
+      "passed": 139,
+      "failed": 0,
+      "skipped": 1,
+      "errors": 0,
+      "deselectedTests": [
+        "test_pair_aware_loader.py::test_discover_source_instances_on_actual_manifest",
+        "test_phase4c0_gates.py::test_real_data_resolution_matched_pairing",
+        "test_phase4c0_gates.py::test_checkpoint_receipt_and_research_isolation",
+        "test_phase4c0a_reconciliation.py::test_checkpoint_architecture_matches_binding",
+        "test_small_data_protocol.py::test_zero_cross_split_source_id_collision",
+        "test_small_data_protocol.py::test_variant_grouping_and_instance_count"
+      ]
+    },
+    {
+      "name": "Research Artifact Gate",
+      "command": "& .\\ml\\.venv\\Scripts\\python.exe -m pytest ml/tests -v -m \"requires_research_artifact\"",
+      "collected": 146,
+      "deselected": 140,
+      "selected": 6,
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "errors": 0
+    },
+    {
+      "name": "Acquisition Safety",
+      "command": "& .\\ml\\.venv\\Scripts\\python.exe -m pytest ml/tests/test_acquisition_safety.py -vv",
+      "collected": 23,
+      "deselected": 0,
+      "selected": 23,
+      "passed": 23,
+      "failed": 0,
+      "skipped": 0,
+      "errors": 0,
+      "targetedTest": {
+        "nodeId": "ml/tests/test_acquisition_safety.py::test_full_plan_sha256_invariance",
+        "rootCause": "INTENTIONAL_PLAN_CHANGE_WITH_STALE_GOLDEN_HASH",
+        "expectedSha": "7da36f450fe424970e4676fc0c35047ea756385843dd2fb1c656f1fa45deac4e",
+        "actualSha": "461d134df24f1869fa59731fa6ae2b343140963e6957f9ae914a690dd8fe058f",
+        "repair": "Updated golden hash to match intentional plan change (approvalStatus -> pending-user-approval)",
+        "result": "PASS"
+      }
+    },
+    {
+      "name": "Full Suite",
+      "command": "& .\\ml\\.venv\\Scripts\\python.exe -m pytest ml/tests -v",
+      "collected": 146,
+      "deselected": 0,
+      "selected": 146,
+      "passed": 145,
+      "failed": 0,
+      "skipped": 1,
+      "errors": 0,
+      "skippedTests": [
+        "ml/tests/test_phase_4c1_runner.py::TestIntegrationFixture::test_smoke_run_cpu_fixture"
+      ]
+    },
+    {
+      "name": "TypeScript Tests",
+      "command": "pnpm test",
+      "passed": 70,
+      "failed": 0,
+      "skipped": 0,
+      "duration_ms": 2477
+    },
+    {
+      "name": "Typecheck",
+      "command": "pnpm typecheck",
+      "errors": 0
+    },
+    {
+      "name": "Build",
+      "command": "pnpm build",
+      "exitCode": 0,
+      "modules": 55,
+      "duration": "2.86s"
+    },
+    {
+      "name": "Continuity",
+      "command": "pnpm continuity:check",
+      "status": "PASS"
+    },
+    {
+      "name": "Config Validator",
+      "command": "& .\\ml\\.venv\\Scripts\\python.exe -m ml.configs.validator --validate-all",
+      "passed": 4,
+      "failed": 0
+    },
+    {
+      "name": "Dataset Registry",
+      "command": "& .\\ml\\.venv\\Scripts\\python.exe -m ml.datasets.acquire --validate-registry",
+      "passed": 7,
+      "failed": 0
+    }
+  ],
+  "summary": {
+    "totalPythonTests": 146,
+    "totalPythonPassed": 145,
+    "totalPythonFailed": 0,
+    "totalPythonSkipped": 1,
+    "totalPythonDeselected": 6,
+    "invariantCheck": {
+      "selectedEqualsPassedPlusFailedPlusSkippedPlusErrors": true,
+      "collectedEqualsSelectedPlusDeselected": true
+    }
+  }
+}

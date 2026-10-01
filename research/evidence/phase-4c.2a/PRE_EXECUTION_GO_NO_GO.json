@@ -1,0 +1,145 @@
+{
+  "pre_execution_verdict": {
+    "schema_version": "1.0.0",
+    "phase": "Phase 4C.2A.1",
+    "stage": 2,
+    "verdict": "IMPLEMENTATION_CONTRACT_VERIFIED",
+    "readiness_semantics": {
+      "preregistration_status": "PREREGISTRATION_READY",
+      "implementation_contract_status": "IMPLEMENTATION_CONTRACT_VERIFIED",
+      "colab_execution_status": "NOT_READY"
+    },
+    "verdict_rationale": "Stage 2 implementation contract is reconciled and verified against actual codebase before building the training operator. Model named parameters strictly confirmed to Hệ A (features.12.* and classifier.*: 7 tensors, exactly 204,674 trainable parameters). Initialization contract sealed to from_pretrained_backbone_with_fresh_head without loading Stage 1 checkpoints. Frozen BatchNorm policy keeps features.0-11 buffers immutable during training. Differential optimizer groups (5e-5 for backbone, 5e-4 for head) verified disjoint and complete. FocalLoss alpha=null parity verified with Stage 1. Output path validator rejects Stage 1 paths. Dedicated Stage 2 runner ml/training/run_phase_4c2.py and receipt schema sealed. Zero new training runs, zero locked-test accesses, and zero Stage 2 research invocations have occurred in this phase.",
+    "timestamp_utc": "2026-10-01T03:37:00.000000+00:00",
+    "gates": {
+      "dataset_binding_integrity": {
+        "status": "PASS",
+        "canonical_bundle": "phase_4c1_binary_n250_reusable.tar",
+        "archive_sha256": "d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27",
+        "content_sha256": "c365c812cc814097f11b9e5ed5c82e672015e2ba093f09f975df0a2a01229e9b",
+        "manifest_sha256": "411e35da80843a10f7bb22e33efac8a4d1db70110dbda91cadbbf39532c9312d",
+        "access_mode": "read_only",
+        "new_dataset_created": false,
+        "dataset_mutation_permitted": false
+      },
+      "stage1_evidence_preservation": {
+        "status": "PASS",
+        "parent_phase": "Phase 4C.1D.2",
+        "parent_commit_sha": "f6eb57df121dbfc908ec1731d55bbe3c87dc5453",
+        "stage1_runs_audited": 15,
+        "stage1_artifacts_modified": 0,
+        "stage1_evidence_dir": "research/evidence/phase-4c.1d/"
+      },
+      "stage2_config_sealing": {
+        "status": "PASS",
+        "config_file": "ml/configs/phase_4c2_stage2_finetuning.yaml",
+        "scientific_status": "preregistered_protocol",
+        "treatment_designation": "pre-registered partial fine-tuning protocol",
+        "license_track": "research-only",
+        "immutable": true
+      },
+      "trainable_layers_allowlist": {
+        "status": "PASS",
+        "unfrozen_modules": [
+          "features.12",
+          "classifier"
+        ],
+        "trainable_parameters_count": 204674,
+        "frozen_parameters_count": 870560,
+        "total_parameters_count": 1075234,
+        "allowlist_tensor_count": 7,
+        "trainable_tensors": [
+          "features.12.0.weight",
+          "features.12.1.weight",
+          "features.12.1.bias",
+          "classifier.0.weight",
+          "classifier.0.bias",
+          "classifier.3.weight",
+          "classifier.3.bias"
+        ],
+        "frozen_features_range": "features.0 through features.11"
+      },
+      "initialization_contract": {
+        "status": "PASS",
+        "policy": "from_pretrained_backbone_with_fresh_head",
+        "parent_checkpoint_path": null,
+        "parent_checkpoint_hash": null,
+        "pretrained_weights_identifier": "MobileNet_V3_Small_Weights.DEFAULT",
+        "classifier_initialization_evidence": "seeded_torch_init_at_model_creation"
+      },
+      "batchnorm_freeze_policy": {
+        "status": "PASS",
+        "features_0_to_11_bn_eval": true,
+        "reapply_after_train_call": true,
+        "running_buffers_immutable": true
+      },
+      "differential_optimizer_groups": {
+        "status": "PASS",
+        "optimizer": "AdamW",
+        "backbone_learning_rate": 0.00005,
+        "head_learning_rate": 0.0005,
+        "weight_decay": 0.0001,
+        "groups_disjoint": true,
+        "groups_complete": true
+      },
+      "focal_loss_parity": {
+        "status": "PASS",
+        "loss_implementation": "ml.training.loss.FocalLoss",
+        "alpha": null,
+        "gamma": 2.0,
+        "label_smoothing": 0.05,
+        "reduction": "mean"
+      },
+      "experiment_matrix_fixation": {
+        "status": "PASS",
+        "sample_sizes": [50, 100, 250],
+        "random_seeds": [42, 1337, 2025, 3407, 9001],
+        "total_runs": 15,
+        "pairing_policy": "Strict 1-to-1 paired comparison with Stage 1 on identical N and seed",
+        "preliminary_tuning_prohibited": true
+      },
+      "namespace_isolation": {
+        "status": "PASS",
+        "google_drive_root": "MyDrive/Colab Notebooks/forensics-web-lab/phase_4c2/",
+        "local_artifacts_root": "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c2\\",
+        "forbidden_targets": [
+          "phase_4c1/runs/execution_79bb115/",
+          "phase_4c1/runs/"
+        ],
+        "isolation_verified": true
+      },
+      "hardware_and_gpu_policy": {
+        "status": "PASS",
+        "policy": "capability_based",
+        "min_vram_gb": 8.0,
+        "hardcode_t4_only": false,
+        "supported_architectures": [
+          "Tesla T4",
+          "NVIDIA L4",
+          "Tesla V100",
+          "NVIDIA A100",
+          "CUDA_COMPATIBLE_GENERIC"
+        ]
+      },
+      "locked_test_guard": {
+        "status": "PASS",
+        "locked_test_seal": "519e7a0e6815e781d1cefa95971e5221ac1f25656837374d8dc4ba41401fded9",
+        "locked_test_accesses": 0,
+        "locked_test_evaluations": 0
+      },
+      "stage2_runner_and_receipt_schema": {
+        "status": "PASS",
+        "runner_file": "ml/training/run_phase_4c2.py",
+        "schema_file": "docs/schemas/stage2-receipt.v1.schema.json",
+        "stage_identifier": "partial_finetune",
+        "stage_frozen_prohibited": true
+      }
+    },
+    "provenance_and_accounting": {
+      "training_runs_in_phase": 0,
+      "locked_test_accesses": 0,
+      "stage2_invocations": 0,
+      "readiness_verdict": "IMPLEMENTATION_CONTRACT_VERIFIED"
+    }
+  }
+}

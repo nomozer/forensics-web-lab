@@ -1,0 +1,94 @@
+{
+  "reusable_bundle_receipt": {
+    "schema_version": "1.0.0",
+    "phase": "Phase 4C.1C.0D",
+    "bundle_name": "phase_4c1_binary_n250_reusable.tar",
+    "bundle_path": "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c1\\t4_transfer\\phase_4c1_binary_n250_reusable.tar",
+    "archive_bytes": 724633600,
+    "archive_sha256": "d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27",
+    "manifest_sha256": "411e35da80843a10f7bb22e33efac8a4d1db70110dbda91cadbbf39532c9312d",
+    "cardinality": {
+      "manifest_type": "source_level",
+      "unique_source_ids": {
+        "development": 250,
+        "validation": 91,
+        "total": 341
+      },
+      "manifest_source_rows": {
+        "development": 250,
+        "validation": 91,
+        "total": 341
+      },
+      "image_samples": {
+        "development": 500,
+        "validation": 182,
+        "total": 682
+      },
+      "image_assets": {
+        "development": 500,
+        "validation": 182,
+        "total": 682
+      },
+      "development_sources": 250,
+      "development_samples": 500,
+      "validation_sources": 91,
+      "validation_samples": 182,
+      "total_sources": 341,
+      "total_samples": 682,
+      "total_image_files": 682
+    },
+    "cohorts": {
+      "n50_sources": 50,
+      "n50_samples": 100,
+      "n100_sources": 100,
+      "n100_samples": 200,
+      "n250_sources": 250,
+      "n250_samples": 500,
+      "nesting_invariant": "N50 subset of N100 subset of N250 (100% verified)",
+      "validation_invariance": "Identical 91 sources across all sample sizes"
+    },
+    "safety_audit": {
+      "locked_test_rows": 0,
+      "locked_test_sources": 0,
+      "locked_test_files": 0,
+      "dev_val_source_overlap": 0,
+      "clean_paths_no_windows_or_drive": true,
+      "fail_closed_validator_status": "PASS_ALL_14_CHECKS"
+    },
+    "partition_audit": {
+      "development_train_sources": 250,
+      "inner_validation_sources": 91,
+      "locked_test_sources": 0,
+      "development_train_rows": 250,
+      "inner_validation_rows": 91,
+      "locked_test_rows": 0,
+      "cross_split_source_overlap": 0
+    },
+    "cohort_invariance_audit": {
+      "n50_sources_count": 50,
+      "n100_sources_count": 100,
+      "n250_sources_count": 250,
+      "n50_subset_of_n100": true,
+      "n100_subset_of_n250": true,
+      "validation_set_invariant": true
+    },
+    "file_existence_audit": {
+      "total_images_in_bundle": 682,
+      "authentic_images_count": 341,
+      "canonical_edit_images_count": 341,
+      "missing_files_count": 0
+    },
+    "class_balance_audit": {
+      "authentic_samples": 341,
+      "ai_edited_samples": 341,
+      "class_ratio": "1:1"
+    },
+    "license_track_declaration": {
+      "track": "Research Track",
+      "license": "TGIF CC BY-SA 4.0 / MS-COCO CC BY 4.0",
+      "commercial_use": false,
+      "product_track_clean": true
+    },
+    "status": "SEALED_REUSABLE_BUNDLE"
+  }
+}

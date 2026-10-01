@@ -1,0 +1,69 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.1C.15",
+  "audit_name": "execution_snapshot_binding_audit",
+  "timestamp_utc": "2026-09-30T17:04:43.603887+00:00",
+  "execution_snapshot_commit": "79bb11527d900fd387de1f41f2010c4152b7fea7",
+  "code_archive": {
+    "name": "phase_4c1_code_79bb115.tar.gz",
+    "bytes": 758350,
+    "sha256": "5e775a7708d1555bf22f56dceb5358e26e07dd224c4b6186f575aff4d2b590d5",
+    "status": "VERIFIED_CURRENT_AND_IMMUTABLE"
+  },
+  "diff_summary": {
+    "total_files_changed": 11,
+    "files": [
+      {
+        "status": "M",
+        "path": "docs/continuity/CODE_INDEX.md"
+      },
+      {
+        "status": "M",
+        "path": "docs/continuity/CURRENT_STATE.md"
+      },
+      {
+        "status": "M",
+        "path": "docs/continuity/STATUS_LEDGER.md"
+      },
+      {
+        "status": "M",
+        "path": "ml/tests/test_phase_4c1_notebook.py"
+      },
+      {
+        "status": "A",
+        "path": "ml/tests/test_phase_4c1_operator.py"
+      },
+      {
+        "status": "M",
+        "path": "notebooks/phase_4c1_learning_curve_colab.ipynb"
+      },
+      {
+        "status": "A",
+        "path": "research/evidence/phase-4c.1c.0-preflight/PRE_EXECUTION_GO_NO_GO.json"
+      },
+      {
+        "status": "A",
+        "path": "research/evidence/phase-4c.1c.0-preflight/execution-code-n250-receipt.json"
+      },
+      {
+        "status": "A",
+        "path": "research/evidence/phase-4c.1c.0-preflight/execution-snapshot-binding-audit.json"
+      },
+      {
+        "status": "A",
+        "path": "research/evidence/phase-4c.1c.0-preflight/reusable-bundle-receipt.json"
+      },
+      {
+        "status": "A",
+        "path": "research/evidence/phase-4c.1c.0-preflight/t4-operator-all-stage1-receipt.json"
+      }
+    ],
+    "executable_code_changes_count": 0,
+    "audited_scope": "Changes audited through commit 8f3190f570b6ce1c0ddcda13744d8d9dfe962b12",
+    "contains_no_execution_snapshot_model_or_training_source_changes": true
+  },
+  "verdict": "SNAPSHOT_BINDING_VALID_AND_INTACT",
+  "verdict_rationale": "Changes audited through commit 8f3190f570b6ce1c0ddcda13744d8d9dfe962b12 between execution snapshot 79bb115 and base commit are strictly confined to continuity records, evidence receipts, operator script, tests and notebook launcher. Zero lines of executable model or training pipeline code in snapshot 79bb115 have been modified.",
+  "audited_parent_commit": "8f3190f570b6ce1c0ddcda13744d8d9dfe962b12",
+  "audited_through_commit": "8f3190f570b6ce1c0ddcda13744d8d9dfe962b12"
+}

@@ -1,0 +1,105 @@
+{
+  "hermetic_gate": {
+    "command": "& .\\ml\\.venv\\Scripts\\python.exe -m pytest ml/tests -v -m \"not requires_research_artifact\"",
+    "interpreter": "D:\\Documents\\forensics-web-lab\\ml\\.venv\\Scripts\\python.exe",
+    "exit_code": 0,
+    "collected": 146,
+    "deselected": 6,
+    "selected": 140,
+    "passed": 139,
+    "failed": 0,
+    "skipped": 1,
+    "errors": 0,
+    "duration": "39.86s",
+    "skipped_tests": [
+      "test_phase_4c1_runner.py::TestIntegrationFixture::test_smoke_run_cpu_fixture (Integration test requires full environment)"
+    ],
+    "deselected_tests": [
+      "test_pair_aware_loader.py::test_discover_source_instances_on_actual_manifest",
+      "test_phase4c0_gates.py::test_real_data_resolution_matched_pairing",
+      "test_phase4c0_gates.py::test_checkpoint_receipt_and_research_isolation",
+      "test_phase4c0a_reconciliation.py::test_checkpoint_architecture_matches_binding",
+      "test_small_data_protocol.py::test_zero_cross_split_source_id_collision",
+      "test_small_data_protocol.py::test_variant_grouping_and_instance_count"
+    ]
+  },
+  "research_artifact_gate": {
+    "command": "& .\\ml\\.venv\\Scripts\\python.exe -m pytest ml/tests -v -m \"requires_research_artifact\"",
+    "interpreter": "D:\\Documents\\forensics-web-lab\\ml\\.venv\\Scripts\\python.exe",
+    "exit_code": 0,
+    "collected": 146,
+    "deselected": 140,
+    "selected": 6,
+    "passed": 6,
+    "failed": 0,
+    "skipped": 0,
+    "errors": 0,
+    "duration": "8.55s"
+  },
+  "acquisition_safety": {
+    "command": "& .\\ml\\.venv\\Scripts\\python.exe -m pytest ml/tests/test_acquisition_safety.py -vv",
+    "exit_code": 0,
+    "collected": 23,
+    "passed": 23,
+    "failed": 0,
+    "skipped": 0,
+    "targeted_test": {
+      "node_id": "ml/tests/test_acquisition_safety.py::test_full_plan_sha256_invariance",
+      "result": "PASS (golden hash updated to match intentional plan change)",
+      "root_cause": "INTENTIONAL_PLAN_CHANGE_WITH_STALE_GOLDEN_HASH",
+      "expected_sha": "7da36f450fe424970e4676fc0c35047ea756385843dd2fb1c656f1fa45deac4e",
+      "actual_sha": "461d134df24f1869fa59731fa6ae2b343140963e6957f9ae914a690dd8fe058f",
+      "repair": "Updated golden hash to match intentional plan change (approvalStatus -> pending-user-approval)"
+    }
+  },
+  "full_suite": {
+    "command": "& .\\ml\\.venv\\Scripts\\python.exe -m pytest ml/tests -v",
+    "exit_code": 0,
+    "collected": 146,
+    "passed": 152,
+    "failed": 0,
+    "skipped": 1,
+    "errors": 0,
+    "duration": "39.86s",
+    "runner_tests_status": "14 passed, 1 skipped (integration)"
+  },
+  "typescript_tests": {
+    "test_command": "pnpm test",
+    "exit_code": 0,
+    "passed": 83,
+    "failed": 0
+  },
+  "typecheck": {
+    "command": "pnpm typecheck",
+    "exit_code": 0,
+    "errors": 0
+  },
+  "build": {
+    "command": "pnpm build",
+    "exit_code": 0,
+    "modules": 55,
+    "duration": "2.98s"
+  },
+  "continuity": {
+    "command": "pnpm continuity:check",
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  "config_validator": {
+    "command": "& .\\ml\\.venv\\Scripts\\python.exe -m ml.configs.validator --validate-all",
+    "exit_code": 0,
+    "passed": 4
+  },
+  "dataset_registry": {
+    "command": "& .\\ml\\.venv\\Scripts\\python.exe -m ml.datasets.acquire --validate-registry",
+    "exit_code": 0,
+    "passed": 7
+  },
+  "evaluation_leakage_regression_tests": {
+    "file": "ml/tests/test_eval_leakage_regression.py",
+    "tests": 7,
+    "passed": 7,
+    "failed": 0,
+    "purpose": "Prevent EVAL-LEAK-001 regression by verifying partition filtering correctness"
+  }
+}

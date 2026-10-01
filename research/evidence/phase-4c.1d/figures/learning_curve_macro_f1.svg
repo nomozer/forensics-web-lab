@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" width="900" height="600" style="background-color: #ffffff; font-family: Segoe UI, Roboto, Helvetica, Arial, sans-serif;">
+<rect width="900" height="600" fill="#ffffff"/>
+<text x="110" y="42" font-size="20" font-weight="700" fill="#0f172a">Phase 4C.1 Stage 1: Macro-F1 Learning Curve vs Sample Size (N)</text>
+<text x="110" y="68" font-size="13" fill="#64748b">Frozen MobileNetV3-Small probe evaluated on canonical inner_validation (mean +/- 95% t-distribution CI, n=5 seeds)</text>
+<line x1="110" y1="515.0" x2="730" y2="515.0" stroke="#e2e8f0" stroke-width="1"/>
+<text x="95" y="519.0" font-size="12" fill="#64748b" text-anchor="end">0.480</text>
+<line x1="110" y1="445.0" x2="730" y2="445.0" stroke="#e2e8f0" stroke-width="1"/>
+<text x="95" y="449.0" font-size="12" fill="#64748b" text-anchor="end">0.500</text>
+<line x1="110" y1="375.0" x2="730" y2="375.0" stroke="#e2e8f0" stroke-width="1"/>
+<text x="95" y="379.0" font-size="12" fill="#64748b" text-anchor="end">0.520</text>
+<line x1="110" y1="305.0" x2="730" y2="305.0" stroke="#e2e8f0" stroke-width="1"/>
+<text x="95" y="309.0" font-size="12" fill="#64748b" text-anchor="end">0.540</text>
+<line x1="110" y1="235.0" x2="730" y2="235.0" stroke="#e2e8f0" stroke-width="1"/>
+<text x="95" y="239.0" font-size="12" fill="#64748b" text-anchor="end">0.560</text>
+<line x1="110" y1="165.0" x2="730" y2="165.0" stroke="#e2e8f0" stroke-width="1"/>
+<text x="95" y="169.0" font-size="12" fill="#64748b" text-anchor="end">0.580</text>
+<line x1="110" y1="95.0" x2="730" y2="95.0" stroke="#e2e8f0" stroke-width="1"/>
+<text x="95" y="99.0" font-size="12" fill="#64748b" text-anchor="end">0.600</text>
+<text x="25" y="305.0" font-size="14" font-weight="600" fill="#0f172a" text-anchor="middle" transform="rotate(-90, 25, 305.0)">Validation Macro-F1</text>
+<line x1="110" y1="515" x2="730" y2="515" stroke="#64748b" stroke-width="1.5"/>
+<line x1="203.0" y1="515" x2="203.0" y2="521" stroke="#64748b" stroke-width="1.5"/>
+<text x="203.0" y="540" font-size="13" font-weight="600" fill="#0f172a" text-anchor="middle">N = 50</text>
+<text x="203.0" y="557" font-size="11" fill="#64748b" text-anchor="middle">(50 pairs)</text>
+<line x1="420.0" y1="515" x2="420.0" y2="521" stroke="#64748b" stroke-width="1.5"/>
+<text x="420.0" y="540" font-size="13" font-weight="600" fill="#0f172a" text-anchor="middle">N = 100</text>
+<text x="420.0" y="557" font-size="11" fill="#64748b" text-anchor="middle">(100 pairs)</text>
+<line x1="668.0" y1="515" x2="668.0" y2="521" stroke="#64748b" stroke-width="1.5"/>
+<text x="668.0" y="540" font-size="13" font-weight="600" fill="#0f172a" text-anchor="middle">N = 250</text>
+<text x="668.0" y="557" font-size="11" fill="#64748b" text-anchor="middle">(250 pairs)</text>
+<text x="420.0" y="582" font-size="13" font-weight="600" fill="#0f172a" text-anchor="middle">Training Cohort Sample Size (N)</text>
+<rect x="110" y="391.5" width="620" height="282.8" fill="#64748b" fill-opacity="0.10"/>
+<line x1="110" y1="532.9" x2="730" y2="532.9" stroke="#64748b" stroke-width="1.8" stroke-dasharray="5,5"/>
+<text x="740" y="536.9" font-size="11" font-weight="600" fill="#64748b">Stratified Dummy Mean (0.4749)</text>
+<line x1="110" y1="445.0" x2="730" y2="445.0" stroke="#d97706" stroke-width="1.8" stroke-dasharray="5,5"/>
+<text x="740" y="449.0" font-size="11" font-weight="600" fill="#d97706">Metadata Baseline (0.5000)</text>
+<line x1="203.0" y1="396.5" x2="203.0" y2="268.0" stroke="#2563eb" stroke-width="1.8" stroke-opacity="0.8"/>
+<line x1="197.0" y1="396.5" x2="209.0" y2="396.5" stroke="#2563eb" stroke-width="1.8"/>
+<line x1="197.0" y1="268.0" x2="209.0" y2="268.0" stroke="#2563eb" stroke-width="1.8"/>
+<line x1="420.0" y1="211.1" x2="420.0" y2="169.4" stroke="#2563eb" stroke-width="1.8" stroke-opacity="0.8"/>
+<line x1="414.0" y1="211.1" x2="426.0" y2="211.1" stroke="#2563eb" stroke-width="1.8"/>
+<line x1="414.0" y1="169.4" x2="426.0" y2="169.4" stroke="#2563eb" stroke-width="1.8"/>
+<line x1="668.0" y1="300.3" x2="668.0" y2="150.7" stroke="#2563eb" stroke-width="1.8" stroke-opacity="0.8"/>
+<line x1="662.0" y1="300.3" x2="674.0" y2="300.3" stroke="#2563eb" stroke-width="1.8"/>
+<line x1="662.0" y1="150.7" x2="674.0" y2="150.7" stroke="#2563eb" stroke-width="1.8"/>
+<polyline points="203.0,332.2 420.0,190.3 668.0,225.5" fill="none" stroke="#2563eb" stroke-width="3.0"/>
+<circle cx="203.0" cy="332.2" r="6" fill="#2563eb" stroke="#ffffff" stroke-width="2"/>
+<text x="203.0" y="350.2" font-size="11" font-weight="700" fill="#2563eb" text-anchor="middle">0.5322</text>
+<circle cx="420.0" cy="190.3" r="6" fill="#2563eb" stroke="#ffffff" stroke-width="2"/>
+<text x="420.0" y="178.3" font-size="11" font-weight="700" fill="#2563eb" text-anchor="middle">0.5728</text>
+<circle cx="668.0" cy="225.5" r="6" fill="#2563eb" stroke="#ffffff" stroke-width="2"/>
+<text x="668.0" y="213.5" font-size="11" font-weight="700" fill="#2563eb" text-anchor="middle">0.5627</text>
+<line x1="745" y1="110" x2="765" y2="110" stroke="#2563eb" stroke-width="2.5"/>
+<circle cx="755" cy="110" r="3.5" fill="#2563eb"/>
+<text x="771" y="114" font-size="11" font-weight="600" fill="#0f172a">Stage 1 (Frozen Head)</text>
+</svg>

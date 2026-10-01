@@ -1,0 +1,40 @@
+{
+  "phase": "4C.1A",
+  "manifestVersion": "1.0.0",
+  "generatedAt": "2026-09-27T01:45:00Z",
+  "artifacts": [
+    {
+      "name": "environment.json",
+      "path": "research/evidence/phase-4c.1a/environment.json",
+      "description": "Execution environment metadata"
+    },
+    {
+      "name": "dataset-readiness.json",
+      "path": "research/evidence/phase-4c.1a/dataset-readiness.json",
+      "description": "Dataset partition and readiness verification"
+    },
+    {
+      "name": "experiment-matrix.json",
+      "path": "research/evidence/phase-4c.1a/experiment-matrix.json",
+      "description": "Learning curve experiment matrix and preregistration mapping"
+    },
+    {
+      "name": "resource-budget.json",
+      "path": "research/evidence/phase-4c.1a/resource-budget.json",
+      "description": "Resource budget and compute estimates"
+    },
+    {
+      "name": "PHASE_REPORT.md",
+      "path": "research/evidence/phase-4c.1a/PHASE_REPORT.md",
+      "description": "Human-readable phase report"
+    }
+  ],
+  "artifactCount": 5,
+  "directoryFileCount": 6,
+  "manifestSelfExcluded": true,
+  "continuityFilesUpdated": [
+    "docs/continuity/CURRENT_STATE.md",
+    "docs/continuity/CODE_INDEX.md",
+    "docs/continuity/STATUS_LEDGER.md"
+  ]
+}

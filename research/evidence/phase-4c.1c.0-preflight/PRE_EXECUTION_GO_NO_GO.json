@@ -1,0 +1,164 @@
+{
+  "pre_execution_verdict": {
+    "schema_version": "1.0.0",
+    "phase": "Phase 4C.1C.15",
+    "verdict": "GO",
+    "verdict_rationale": "All gates pass without exception: operator patched with Phase 4C.1C.15 hotfix resolving unbound variable BUNDLE_CONTENT_SHA256 in Step 3 extraction (replaced EXTRACTED_CONTENT_SHA with BUNDLE_CONTENT_SHA256 assigned once with 64-hex regex and content hash verification before any reference); static scan verifies zero unassigned uppercase variables in operator; behavioral preflight from Step 3 to Step 4 verifies all 10 runtime observation arguments are defined and populated; validator explicitly runs in fail-closed --reusable-n250 mode; GPU VRAM parser format(float(...), '.2f') preserved intact (T4=14.56, L4=22.00); 91 operator tests PASS, 19 notebook tests PASS; completed run N50 seed42 verified COMPLETED_VALID and skipped; next target N50 seed1337; compatible NVIDIA CUDA GPU runtime supported.",
+    "timestamp_utc": "2026-09-30T17:04:43.603887+00:00",
+    "gates": {
+      "cardinality_reconciliation": {
+        "status": "PASS",
+        "manifest_type": "source_level",
+        "unique_source_ids": {
+          "development": 250,
+          "validation": 91,
+          "total": 341
+        },
+        "manifest_source_rows": {
+          "development": 250,
+          "validation": 91,
+          "total": 341
+        },
+        "image_samples": {
+          "development": 500,
+          "validation": 182,
+          "total": 682
+        },
+        "image_assets": {
+          "development": 500,
+          "validation": 182,
+          "total": 682
+        },
+        "ratio_authentic_to_ai_edited": "1:1 (341 authentic : 341 ai_edited)",
+        "cross_split_source_overlap": 0
+      },
+      "contract_gap_reconciliation": {
+        "status": "PASS",
+        "contract_gap": "Operator previously asserted execution_code_sha in run_receipt.json, which is not emitted by frozen runner snapshot 79bb115.",
+        "reconciliation_artifact": "phase4c1_environment_lock.json",
+        "sidecar_artifact": "phase4c1_environment_lock.sha256",
+        "binding_fields_verified": [
+          "execution_code_sha",
+          "code_archive_sha256",
+          "bundle_sha256"
+        ],
+        "execution_code_sha_verified": "79bb11527d900fd387de1f41f2010c4152b7fea7",
+        "receipt_stage2_check_aligned": "Checked both stage2_invocations and stage_2_invocation == 0",
+        "checksum_schema_policy": "Strict dictionary schema enforced: {size_bytes: int > 0, sha256: 64-hex}; string checksum fallback rejected fail-closed",
+        "test_suite_coverage": "91 unit, security staging, policy, quoting regression, and fault-injection tests covering all 36 behavioral requirements"
+      },
+      "operator_static_assertions": {
+        "status": "PASS",
+        "script_name": "phase_4c1_t4_execute_all_stage1.sh",
+        "bytes": 49684,
+        "sha256": "bae476db0296bd5634ad1002c230f72694de8e0e8cb7372d899165f1fa0759a9",
+        "assertions_total": 91,
+        "assertions_passed": 91,
+        "assertions_failed": 0,
+        "all_passed": true
+      },
+      "execution_snapshot_binding": {
+        "status": "PASS",
+        "snapshot_head": "79bb11527d900fd387de1f41f2010c4152b7fea7",
+        "code_archive": "phase_4c1_code_79bb115.tar.gz",
+        "code_archive_bytes": 758350,
+        "code_archive_sha256": "5e775a7708d1555bf22f56dceb5358e26e07dd224c4b6186f575aff4d2b590d5",
+        "executable_code_changes_since_snapshot": 0,
+        "code_archive_stale": false
+      },
+      "canonical_colab_notebook": {
+        "status": "PASS",
+        "path": "notebooks/phase_4c1_learning_curve_colab.ipynb",
+        "bytes": 12342,
+        "sha256": "d3b27ce06e28066b8d5aa333a8a45cc40a5dcc2ea717a8dd584a4a1c6474d5aa",
+        "cells_total": 5,
+        "markdown_cells": 1,
+        "code_cells": 4,
+        "tests_count": 19,
+        "tests_passed": 19,
+        "drive_persistence_architecture": true,
+        "drive_input_dir": "/content/drive/MyDrive/Colab Notebooks/forensics-web-lab/phase_4c1/inputs",
+        "drive_output_dir": "/content/drive/MyDrive/Colab Notebooks/forensics-web-lab/phase_4c1/runs/execution_79bb115",
+        "inputs_preflight_readonly": true,
+        "outputs_mkdir_after_validation": true,
+        "duplicate_notebook_removed": true,
+        "all_code_cells_compiled": true,
+        "default_execute": true,
+        "download_archive_removed": true,
+        "dry_run_verified": true,
+        "locked_test_accesses": 0,
+        "fail_closed_on_missing_file": true,
+        "fail_closed_on_sha_mismatch": true,
+        "historical_notebook_sha256": "f26576cb70b6c892faaade7b225872d4bafbcfe1424b64df29564dd9e1cd28b9"
+      },
+      "scientific_honesty": {
+        "status": "PASS",
+        "training_runs_in_wave": 0,
+        "locked_test_accesses": 0,
+        "stage_2_invocations": 0,
+        "unsupported_model_performance_claim": false,
+        "remote_completed_runs": 1,
+        "remaining_runs": 14,
+        "completed_run_details": {
+          "run_id": "phase4c1-stage1-n50-seed42",
+          "sample_size": 50,
+          "seed": 42,
+          "status": "completed",
+          "verification_verdict": "COMPLETED_VALID",
+          "resume_action": "SKIP",
+          "epochs_completed": 23,
+          "best_epoch": 18,
+          "validation_sources": 91,
+          "validation_samples": 182,
+          "locked_test_access": 0,
+          "stage2_invocations": 0,
+          "training_time_seconds": 222.859547,
+          "checkpoint_sha256": "b5fa53bfc3d31f239841800e258d122217e0541130ddde4ecec0b78f1bda8f9b",
+          "preliminary_metrics": {
+            "macro_f1": 0.5414772029003319,
+            "balanced_accuracy": 0.5494505494505495,
+            "auroc": 0.5606810771645936,
+            "brier_score": 0.24779019881389366,
+            "ece": 0.026530933576625775
+          }
+        }
+      }
+    },
+    "execution_readiness": {
+      "status": "READY_FOR_USER_COLAB_RESUME",
+      "action_summary": "Only upload the refactored operator script and canonical notebook. Code archive and dataset bundle are unchanged and do not need re-uploading.",
+      "reupload_required_files": [
+        {
+          "file_name": "phase_4c1_t4_execute_all_stage1.sh",
+          "bytes": 49684,
+          "sha256": "bae476db0296bd5634ad1002c230f72694de8e0e8cb7372d899165f1fa0759a9",
+          "target_drive_directory": "My Drive/Colab Notebooks/forensics-web-lab/phase_4c1/inputs/"
+        },
+        {
+          "file_name": "phase_4c1_learning_curve_colab.ipynb",
+          "bytes": 12342,
+          "sha256": "d3b27ce06e28066b8d5aa333a8a45cc40a5dcc2ea717a8dd584a4a1c6474d5aa",
+          "target_drive_directory": "My Drive/Colab Notebooks/forensics-web-lab/phase_4c1/"
+        }
+      ],
+      "immutable_unchanged_files_no_reupload": [
+        {
+          "file_name": "phase_4c1_code_79bb115.tar.gz",
+          "bytes": 758350,
+          "sha256": "5e775a7708d1555bf22f56dceb5358e26e07dd224c4b6186f575aff4d2b590d5",
+          "location": "My Drive/Colab Notebooks/forensics-web-lab/phase_4c1/inputs/"
+        },
+        {
+          "file_name": "phase_4c1_binary_n250_reusable.tar",
+          "bytes": 724633600,
+          "sha256": "d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27",
+          "location": "My Drive/Colab Notebooks/forensics-web-lab/phase_4c1/inputs/"
+        }
+      ],
+      "execution_options": {
+        "notebook_option": "Open phase_4c1_learning_curve_colab.ipynb in Google Colab (compatible NVIDIA CUDA GPU runtime; reference: Tesla T4), verify EXECUTE = True, and select Runtime -> Run all."
+      },
+      "runtime_support_note": "Capability policy and simulated tests cover T4, L4, V100 and A100. Actual training validation has currently been observed on Tesla T4 only."
+    }
+  }
+}

@@ -1,0 +1,110 @@
+{
+  "phase": "4C.1A.1",
+  "audit_timestamp": "2026-09-27T03:30:00Z",
+  "classification_scheme": {
+    "Measured": "Empirically observed in controlled local environment",
+    "Estimated": "Derived from measured values with reasonable assumptions",
+    "Projected": "Extrapolated from estimates with acknowledged uncertainty",
+    "Unknown": "Cannot be determined without execution"
+  },
+  "memory_accounting": {
+    "python_tracemalloc_peak": {
+      "value_mb": 5.29,
+      "classification": "Measured",
+      "context": "Phase 4C.0 smoke run N=50 seed=42, Python heap allocations only",
+      "limitation": "Does not include RSS, CUDA allocations, or system overhead"
+    },
+    "rss": {
+      "value_mb": "Unknown",
+      "classification": "Unknown",
+      "reason": "Not measured; requires psutil.Process().memory_info().rss",
+      "planned_measurement": "Add psutil to training script for Colab runs"
+    },
+    "cuda_vram_peak": {
+      "value_mb": "Unknown",
+      "classification": "Unknown",
+      "reason": "CPU-only environment; will be measured on Colab GPU"
+    }
+  },
+  "compute_timing": {
+    "smoke_run_measured": {
+      "n_sources": 50,
+      "seed": 42,
+      "epochs": 8,
+      "total_seconds": 89.2,
+      "seconds_per_epoch": 8.26,
+      "classification": "Measured",
+      "context": "Phase 4C.0 smoke run, CPU-only, single seed"
+    },
+    "full_stage1_projection": {
+      "total_runs": 15,
+      "estimated_seconds_per_run": 260,
+      "total_projected_seconds": 3900,
+      "projected_minutes": 65,
+      "classification": "Projected",
+      "assumptions": "25 epochs per run, 8.26s/epoch from smoke run, 3 sizes × 5 seeds"
+    },
+    "baseline_projection": {
+      "total_runs": 90,
+      "estimated_seconds_per_run": 5,
+      "total_projected_seconds": 450,
+      "projected_minutes": 7.5,
+      "classification": "Projected"
+    },
+    "stage2_projection": {
+      "max_runs": 15,
+      "estimated_seconds_per_run": 180,
+      "total_projected_seconds": 2700,
+      "projected_minutes": 45,
+      "classification": "Projected",
+      "condition": "Only if Stage 2 gate passes"
+    }
+  },
+  "storage": {
+    "dataset": {
+      "value_gb": 5.89,
+      "classification": "Measured",
+      "details": "6156 images, 5,890,096,035 bytes"
+    },
+    "checkpoints_stage1": {
+      "value_mb": 84,
+      "classification": "Projected",
+      "details": "15 runs × 5.6 MB per checkpoint"
+    },
+    "checkpoints_stage2": {
+      "value_mb": 84,
+      "classification": "Projected",
+      "condition": "Only if Stage 2 gate passes",
+      "details": "15 runs × 5.6 MB per checkpoint"
+    },
+    "logs_metrics_predictions": {
+      "value_gb": 1.0,
+      "classification": "Estimated"
+    },
+    "total_estimated_gb": {
+      "value_gb": 7.5,
+      "classification": "Projected"
+    }
+  },
+  "compute_plan": {
+    "primary_compute": "Google Colab GPU",
+    "preferred_accelerator": "NVIDIA T4 when available",
+    "artifact_storage": "Private Google Drive",
+    "local_fallback": "GTX 1650 (4GB VRAM) - fallback only",
+    "colab_gpu_type": "Unverified until runtime",
+    "cuda_version": "Unverified until runtime"
+  },
+  "dataset_bundle": {
+    "total_bytes": 5890096035,
+    "images": 6156,
+    "manifest_bytes": 249233,
+    "archive_total_bytes": 5879502782,
+    "manifest_sha256": "TO_BE_COMPUTED"
+  },
+  "classification_summary": {
+    "Measured": 4,
+    "Estimated": 4,
+    "Projected": 6,
+    "Unknown": 3
+  }
+}

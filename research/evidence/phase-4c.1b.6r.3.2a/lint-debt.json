@@ -1,0 +1,10 @@
+{
+  "lint_debt": {
+    "total_errors": 483,
+    "fixable": 352,
+    "unsafe_fixes": 32,
+    "classification": "KNOWN_PREEXISTING_NONBLOCKING_LINT_DEBT",
+    "training_gate_participation": false,
+    "notes": "Lint debt does not block Phase 4C.1 training; ruff is installed and runs but exit code != 0 is expected. 483 errors (352 fixable, 32 unsafe). Categories: F841 (unused variables), I001 (import sorting), F401 (unused imports), PLR0402 (torch.nn alias), UP035/UP045 (typing modernization), PLW1510 (subprocess check), etc. Most are in test files and runner scripts. Not blocking training gate."
+  }
+}

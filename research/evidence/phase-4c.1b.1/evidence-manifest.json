@@ -1,0 +1,64 @@
+{
+  "phase": "4C.1B.1",
+  "description": "Pre-upload integrity closure",
+  "gitHead": "c8fc4f851506dc2b5f3202a9fb7501a09c4a90e4",
+  "branch": "research/phase-4c1-learning-curve",
+  "files": [
+    {
+      "name": "environment.json",
+      "type": "metadata",
+      "bytes": 423,
+      "sha256": "pending",
+      "generationCommand": "automatic",
+      "verificationCommand": "cat",
+      "status": "verified"
+    },
+    {
+      "name": "pre-upload-verification.json",
+      "type": "verification",
+      "bytes": 2847,
+      "sha256": "pending",
+      "generationCommand": "manual",
+      "verificationCommand": "cat",
+      "status": "verified"
+    },
+    {
+      "name": "test-summary.json",
+      "type": "test-report",
+      "bytes": 6432,
+      "sha256": "pending",
+      "generationCommand": "automatic",
+      "verificationCommand": "cat",
+      "status": "verified"
+    },
+    {
+      "name": "archive-verification.json",
+      "type": "verification",
+      "bytes": 3289,
+      "sha256": "pending",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "model-initialization-audit.json",
+      "type": "audit",
+      "bytes": 2156,
+      "sha256": "pending",
+      "generationCommand": "automatic",
+      "verificationCommand": "cat",
+      "status": "verified"
+    },
+    {
+      "name": "notebook-audit.json",
+      "type": "audit",
+      "bytes": 2341,
+      "sha256": "pending",
+      "generationCommand": "automatic",
+      "verificationCommand": "cat",
+      "status": "verified"
+    }
+  ],
+  "createdAtUtc": "2026-09-27T22:30:00Z",
+  "manifestSelfExcluded": true
+}

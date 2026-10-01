@@ -1,0 +1,74 @@
+{
+  "phase": "4C.1B.4",
+  "description": "Independent Smoke Result Verification",
+  "git_head": "c9a3bb22b5c75526dedd68cb999192caa00c9308",
+  "branch": "research/phase-4c1-learning-curve",
+  "files": [
+    {
+      "name": "environment.json",
+      "type": "phase-report",
+      "bytes": 554,
+      "sha256": "b2b336ebd35370ace3439b1fb3419295defc55aeb6e64fa7df15ceaa7e589969",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "artifact-inventory.json",
+      "type": "phase-report",
+      "bytes": 2489,
+      "sha256": "184ebf2bec33154762599fe2b02fe26dc20b62357c9374b24f41750f57687cfa",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "checksum-verification.json",
+      "type": "verification",
+      "bytes": 1928,
+      "sha256": "aa97d0627a856105c754730a2d1800e8a124ce1e1541d08cf089628172d4e676",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "partition-audit.json",
+      "type": "audit",
+      "bytes": 6844,
+      "sha256": "514528527240028d2515e79f2770b4a55199d05608cf38e6ad2221b5f56db560",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "metric-reproduction.json",
+      "type": "test-report",
+      "bytes": 778,
+      "sha256": "47023845fd857b0400ad30718b37d876eab4410cbd9cd08958f00e0d0e29d05f",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "baseline-reproduction.json",
+      "type": "test-report",
+      "bytes": 815,
+      "sha256": "6b5504bfab55c17c64c87f56a339529b3476674e0e2bc80071d98eadd28004ba",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "stage2-gate-audit.json",
+      "type": "audit",
+      "bytes": 979,
+      "sha256": "a96a4921a56b03c2f487133f0aeada72afc14c45c687457ee19f0e101e3daf57",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    }
+  ],
+  "createdAtUtc": "2026-09-28T05:27:06.254513Z",
+  "manifestSelfExcluded": true,
+  "artifactCount": 7
+}

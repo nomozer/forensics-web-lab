@@ -1,0 +1,120 @@
+{
+  "phase": "4C.1B.6R.3.2a",
+  "description": "Dependency Declaration Amendment and Clean Venv Recreation",
+  "git_head": "8c3f5600042d5f6e5293c20591bc48e196c8ab15",
+  "branch": "research/phase-4c1-learning-curve",
+  "files": [
+    {
+      "name": "environment.json",
+      "type": "metadata",
+      "bytes": 643,
+      "sha256": "749a938a2f90887972c5f81b7e70d929fc31dc3f624e6ef55fa5c8f41532f532",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "dependency-amendment.json",
+      "type": "phase-report",
+      "bytes": 1348,
+      "sha256": "902449e28e5285d9048ffcecc03936983058a36e69e83a8546fa3611068f58b1",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "preinstall-package-list.txt",
+      "type": "phase-report",
+      "bytes": 30,
+      "sha256": "342cedb135a6f74b1ded09c6c24642b12bd06244d993c2e4a1eb76cbd951e83a",
+      "generationCommand": "pip list (pre-install)",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "clean-install-log.txt",
+      "type": "phase-report",
+      "bytes": 12128,
+      "sha256": "6293b1aa80412e74773b8b0c89b87c7685e2c81cd9b504f0d769fdab78cec10d",
+      "generationCommand": "pip install -r ml/requirements-dev.txt",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "clean-pip-check.txt",
+      "type": "phase-report",
+      "bytes": 29,
+      "sha256": "9bc9eff87ccde9a897a86ea3cf9096facadba3cc998bc2b74cc3d856cf1cc971",
+      "generationCommand": "pip check",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "clean-environment-lock.txt",
+      "type": "phase-report",
+      "bytes": 1022,
+      "sha256": "8d0631a481376c3c6d611079f326bd7ccc35822d1892bc69dc6c2dcd87bd2a4f",
+      "generationCommand": "pip freeze",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "clean-import-check.json",
+      "type": "phase-report",
+      "bytes": 663,
+      "sha256": "60ad67dcf94cb520f688a88f1c5c180f433af17ad83b98aebf6b665a6f82127b",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "clean-test-summary.json",
+      "type": "test-report",
+      "bytes": 1548,
+      "sha256": "3620d7b5cd50f989becec5bda40f9f7af792c4e5d8f8d0126ffc84536b9db885",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "lint-debt.json",
+      "type": "phase-report",
+      "bytes": 606,
+      "sha256": "0c7317b0e429d94b2032ebbb837058ec756467ffa9f2a58a11ee2a6293659740",
+      "generationCommand": "ruff check ml",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "t4-environment-policy.json",
+      "type": "phase-report",
+      "bytes": 1128,
+      "sha256": "98eb1aaf554d0423dc959096d953658a7dd2d3dba3a42280861cef5e787e7ee1",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "json-validation.json",
+      "type": "phase-report",
+      "bytes": 396,
+      "sha256": "543779667c5f48d78815a26d9bd4e889a42666dcd4f07071704adfef2d708d40",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "PHASE_REPORT.md",
+      "type": "phase-report",
+      "bytes": 2429,
+      "sha256": "8773d3167c9ec538582eed6976c6bc27901f325a576630736f1ef56828667137",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    }
+  ],
+  "createdAtUtc": "2026-09-29T13:20:00.000000Z",
+  "manifestSelfExcluded": true,
+  "artifactCount": 12,
+  "directoryFileCount": 13
+}

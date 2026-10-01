@@ -1,0 +1,73 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2B.3.2",
+  "notebook_name": "phase_4c2_finetuning_colab.ipynb",
+  "path": "notebooks/phase_4c2_finetuning_colab.ipynb",
+  "bytes": 15668,
+  "sha256": "dee8f7c46879584c006419ace8a3e79153211011de304efd15dba00d70dc36e0",
+  "cell_count": 5,
+  "cell_types": [
+    "markdown",
+    "code",
+    "code",
+    "code",
+    "code"
+  ],
+  "execute_default": false,
+  "timestamp_utc": "2026-10-01T11:45:00.000000+00:00",
+  "associated_operator_sha256": "2a967a475c9bdc45515addc7123b8312f2d180b5e21fc735d8e6f7f5f4aa8929",
+  "associated_operator_bytes": 64776,
+  "associated_code_archive_sha256": "951e9089582eb60cf3d293c37982a8f3c3b6a3e05fb3ef45f23c666d41bc7d89",
+  "associated_code_archive_name": "phase_4c2_code_9ee7fdb.tar.gz",
+  "associated_code_archive_bytes": 10478136,
+  "exact_execution_short_sha": "9ee7fdb",
+  "provenance_notebook_states": {
+    "canonical_pre_execution": {
+      "execute_default": false,
+      "bytes": 14665,
+      "sha256": "1640725837737d46a87237a65f1556f24ac2e76297540cd523ec8a86d0e87de9",
+      "purpose": "Preflight verification and static deployment baseline"
+    },
+    "active_execution_temporary": {
+      "execute_default": true,
+      "bytes": 14664,
+      "sha256": "e77adb2e2cc73673e2914cd317e1c5bd30293379bbd065859e29ae522987f64b",
+      "purpose": "Temporary runtime launcher uploaded to Colab to invoke operator with --execute"
+    },
+    "canonical_post_execution_reconciled": {
+      "execute_default": false,
+      "bytes": 15668,
+      "sha256": "dee8f7c46879584c006419ace8a3e79153211011de304efd15dba00d70dc36e0",
+      "purpose": "Post-execution reconciled canonical notebook in git repository with reconciled REQUIRED_ARCHIVES and hardened post-execution audit assertions"
+    }
+  },
+  "reconciled_required_archives": [
+    "execution_9ee7fdb_run_receipts_metrics.tar.gz",
+    "execution_9ee7fdb_run_predictions.tar.gz",
+    "execution_9ee7fdb_run_histories.tar.gz",
+    "execution_9ee7fdb_run_checkpoints.tar.gz",
+    "execution_9ee7fdb_environment_checksums.tar.gz"
+  ],
+  "post_execution_complete_backup": {
+    "file_name": "execution_9ee7fdb_complete_results.tar.gz",
+    "bytes": 83796910,
+    "sha256": "609a14bbe683a23b82db5fe98ae3954e984393244746d374bccd23e5c78e43e2",
+    "sidecar_file": "execution_9ee7fdb_complete_results.tar.gz.sha256",
+    "classification": "post_execution_complete_backup",
+    "note": "User-created complete backup after training containing all 10 required artifacts of 15 runs and provenance files. Does not replace the 5 canonical operator archives."
+  },
+  "invariants": {
+    "exact_archive_binding": true,
+    "no_archive_glob": true,
+    "exact_execution_directory_audit": true,
+    "no_execution_dir_glob": true,
+    "streaming_hash": true,
+    "read_only_inputs": true,
+    "no_input_mkdir": true,
+    "error_reporting": "fail_closed_with_exact_dir_logs",
+    "atomic_restaging": true,
+    "python_runtime_capability_check": "assert sys.version_info >= (3, 10)",
+    "preflight_only_invocation": "--preflight-only when EXECUTE=False",
+    "post_execution_archive_parity": true
+  }
+}

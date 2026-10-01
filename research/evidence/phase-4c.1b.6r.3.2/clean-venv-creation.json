@@ -1,0 +1,38 @@
+{
+  "clean_venv_creation": {
+    "clean_root": "C:\\\\Users\\\\Bunny\\\\AppData\\\\Local\\\\Temp\\\\forensics-clean-verify",
+    "python_executable": "C:\\\\Users\\\\Bunny\\\\AppData\\\\Local\\\\Temp\\\\forensics-clean-verify\\\\Scripts\\\\python.exe",
+    "python_version": "3.12.10",
+    "prefix": "C:\\\\Users\\\\Bunny\\\\AppData\\\\Local\\\\Temp\\\\forensics-clean-verify",
+    "base_prefix": "C:\\\\Users\\\\Bunny\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python312",
+    "is_isolated": true,
+    "creation_method": "python -m venv",
+    "system_site_packages": false
+  },
+  "clean_install_log": {
+    "requirements_txt": "D:\\\\Documents\\\\forensics-web-lab\\\\ml\\\\requirements.txt",
+    "install_command": "python -m pip install -r requirements.txt",
+    "packages_installed": [
+      "torchvision-0.29.0",
+      "onnx-1.23.0",
+      "scikit-learn-1.9.1"
+    ],
+    "already_satisfied": [
+      "torch-2.14.0",
+      "onnxruntime-1.30.0",
+      "numpy-2.5.3",
+      "pyyaml-6.0.3",
+      "pillow-12.3.0",
+      "scipy-1.18.1",
+      "pytest-9.1.1",
+      "ruff-0.16.9"
+    ],
+    "additional_packages": [
+      "psutil-7.2.2",
+      "tqdm-4.70.1",
+      "nbformat-5.11.1",
+      "IPython-9.17.1"
+    ],
+    "pip_check": "No broken requirements found"
+  }
+}

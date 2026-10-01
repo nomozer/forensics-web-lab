@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="520" viewBox="0 0 880 520">
+<rect width="880" height="520" fill="#ffffff"/>
+<text x="440.0" y="32" font-size="18" font-family="Segoe UI, Arial, sans-serif" font-weight="700" fill="#1f2937" text-anchor="middle">Paired Delta Macro-F1 by Seed across Cohorts</text>
+<text x="440.0" y="52" font-size="12" font-family="Segoe UI, Arial, sans-serif" fill="#6b7280" text-anchor="middle">&#916; Macro-F1 = Stage 2 &#8722; Stage 1 (zero line indicates no change; error bars: 95% CI)</text>
+<line x1="90" y1="450.0" x2="720" y2="450.0" stroke="#e5e7eb" stroke-width="1.0"/>
+<text x="78" y="454.0" font-size="11" font-family="Segoe UI, Arial, sans-serif" fill="#6b7280" text-anchor="end">-0.030</text>
+<line x1="90" y1="403.8" x2="720" y2="403.8" stroke="#e5e7eb" stroke-width="1.0"/>
+<text x="78" y="407.8" font-size="11" font-family="Segoe UI, Arial, sans-serif" fill="#6b7280" text-anchor="end">-0.020</text>
+<line x1="90" y1="357.5" x2="720" y2="357.5" stroke="#e5e7eb" stroke-width="1.0"/>
+<text x="78" y="361.5" font-size="11" font-family="Segoe UI, Arial, sans-serif" fill="#6b7280" text-anchor="end">-0.010</text>
+<line x1="90" y1="311.2" x2="720" y2="311.2" stroke="#1f2937" stroke-width="1.8"/>
+<text x="78" y="315.2" font-size="11" font-family="Segoe UI, Arial, sans-serif" fill="#6b7280" text-anchor="end">+0.000</text>
+<line x1="90" y1="265.0" x2="720" y2="265.0" stroke="#e5e7eb" stroke-width="1.0"/>
+<text x="78" y="269.0" font-size="11" font-family="Segoe UI, Arial, sans-serif" fill="#6b7280" text-anchor="end">+0.010</text>
+<line x1="90" y1="218.8" x2="720" y2="218.8" stroke="#e5e7eb" stroke-width="1.0"/>
+<text x="78" y="222.8" font-size="11" font-family="Segoe UI, Arial, sans-serif" fill="#6b7280" text-anchor="end">+0.020</text>
+<line x1="90" y1="172.5" x2="720" y2="172.5" stroke="#e5e7eb" stroke-width="1.0"/>
+<text x="78" y="176.5" font-size="11" font-family="Segoe UI, Arial, sans-serif" fill="#6b7280" text-anchor="end">+0.030</text>
+<line x1="90" y1="126.2" x2="720" y2="126.2" stroke="#e5e7eb" stroke-width="1.0"/>
+<text x="78" y="130.2" font-size="11" font-family="Segoe UI, Arial, sans-serif" fill="#6b7280" text-anchor="end">+0.040</text>
+<line x1="90" y1="80.0" x2="720" y2="80.0" stroke="#e5e7eb" stroke-width="1.0"/>
+<text x="78" y="84.0" font-size="11" font-family="Segoe UI, Arial, sans-serif" fill="#6b7280" text-anchor="end">+0.050</text>
+<line x1="90" y1="450" x2="720" y2="450" stroke="#6b7280" stroke-width="1.5"/>
+<line x1="90" y1="80" x2="90" y2="450" stroke="#6b7280" stroke-width="1.5"/>
+<text x="28" y="265.0" font-size="13" font-family="Segoe UI, Arial, sans-serif" font-weight="600" fill="#1f2937" text-anchor="middle" transform="rotate(-90, 28, 265.0)">&#916; Validation Macro-F1 (S2 &#8722; S1)</text>
+<text x="405.0" y="500" font-size="13" font-family="Segoe UI, Arial, sans-serif" font-weight="600" fill="#1f2937" text-anchor="middle">Training Cohort Sample Size (N)</text>
+<line x1="203.4" y1="450" x2="203.4" y2="456" stroke="#6b7280" stroke-width="1.5"/>
+<text x="203.4" y="474" font-size="13" font-family="Segoe UI, Arial, sans-serif" font-weight="600" fill="#1f2937" text-anchor="middle">N = 50</text>
+<line x1="405.0" y1="450" x2="405.0" y2="456" stroke="#6b7280" stroke-width="1.5"/>
+<text x="405.0" y="474" font-size="13" font-family="Segoe UI, Arial, sans-serif" font-weight="600" fill="#1f2937" text-anchor="middle">N = 100</text>
+<line x1="606.6" y1="450" x2="606.6" y2="456" stroke="#6b7280" stroke-width="1.5"/>
+<text x="606.6" y="474" font-size="13" font-family="Segoe UI, Arial, sans-serif" font-weight="600" fill="#1f2937" text-anchor="middle">N = 250</text>
+<line x1="167.4" y1="311.2" x2="167.4" y2="249.0" stroke="#ef4444" stroke-width="1.5" stroke-opacity="0.7"/>
+<circle cx="167.4" cy="249.0" r="5" fill="#ef4444" stroke="#ffffff" stroke-width="1.5"/>
+<line x1="185.4" y1="311.2" x2="185.4" y2="230.1" stroke="#8b5cf6" stroke-width="1.5" stroke-opacity="0.7"/>
+<circle cx="185.4" cy="230.1" r="5" fill="#8b5cf6" stroke="#ffffff" stroke-width="1.5"/>
+<line x1="203.4" y1="311.2" x2="203.4" y2="312.5" stroke="#3b82f6" stroke-width="1.5" stroke-opacity="0.7"/>
+<circle cx="203.4" cy="312.5" r="5" fill="#3b82f6" stroke="#ffffff" stroke-width="1.5"/>
+<line x1="221.4" y1="311.2" x2="221.4" y2="242.5" stroke="#10b981" stroke-width="1.5" stroke-opacity="0.7"/>
+<circle cx="221.4" cy="242.5" r="5" fill="#10b981" stroke="#ffffff" stroke-width="1.5"/>
+<line x1="239.4" y1="311.2" x2="239.4" y2="304.7" stroke="#f59e0b" stroke-width="1.5" stroke-opacity="0.7"/>
+<circle cx="239.4" cy="304.7" r="5" fill="#f59e0b" stroke="#ffffff" stroke-width="1.5"/>
+<line x1="369.0" y1="311.2" x2="369.0" y2="363.9" stroke="#ef4444" stroke-width="1.5" stroke-opacity="0.7"/>
+<circle cx="369.0" cy="363.9" r="5" fill="#ef4444" stroke="#ffffff" stroke-width="1.5"/>
+<line x1="387.0" y1="311.2" x2="387.0" y2="268.6" stroke="#8b5cf6" stroke-width="1.5" stroke-opacity="0.7"/>
+<circle cx="387.0" cy="268.6" r="5" fill="#8b5cf6" stroke="#ffffff" stroke-width="1.5"/>
+<line x1="405.0" y1="311.2" x2="405.0" y2="148.1" stroke="#3b82f6" stroke-width="1.5" stroke-opacity="0.7"/>
+<circle cx="405.0" cy="148.1" r="5" fill="#3b82f6" stroke="#ffffff" stroke-width="1.5"/>
+<line x1="423.0" y1="311.2" x2="423.0" y2="356.3" stroke="#10b981" stroke-width="1.5" stroke-opacity="0.7"/>
+<circle cx="423.0" cy="356.3" r="5" fill="#10b981" stroke="#ffffff" stroke-width="1.5"/>
+<line x1="441.0" y1="311.2" x2="441.0" y2="331.3" stroke="#f59e0b" stroke-width="1.5" stroke-opacity="0.7"/>
+<circle cx="441.0" cy="331.3" r="5" fill="#f59e0b" stroke="#ffffff" stroke-width="1.5"/>
+<line x1="570.6" y1="311.2" x2="570.6" y2="399.5" stroke="#ef4444" stroke-width="1.5" stroke-opacity="0.7"/>
+<circle cx="570.6" cy="399.5" r="5" fill="#ef4444" stroke="#ffffff" stroke-width="1.5"/>
+<line x1="588.6" y1="311.2" x2="588.6" y2="219.3" stroke="#8b5cf6" stroke-width="1.5" stroke-opacity="0.7"/>
+<circle cx="588.6" cy="219.3" r="5" fill="#8b5cf6" stroke="#ffffff" stroke-width="1.5"/>
+<line x1="606.6" y1="311.2" x2="606.6" y2="200.9" stroke="#3b82f6" stroke-width="1.5" stroke-opacity="0.7"/>
+<circle cx="606.6" cy="200.9" r="5" fill="#3b82f6" stroke="#ffffff" stroke-width="1.5"/>
+<line x1="624.6" y1="311.2" x2="624.6" y2="294.9" stroke="#10b981" stroke-width="1.5" stroke-opacity="0.7"/>
+<circle cx="624.6" cy="294.9" r="5" fill="#10b981" stroke="#ffffff" stroke-width="1.5"/>
+<line x1="642.6" y1="311.2" x2="642.6" y2="293.5" stroke="#f59e0b" stroke-width="1.5" stroke-opacity="0.7"/>
+<circle cx="642.6" cy="293.5" r="5" fill="#f59e0b" stroke="#ffffff" stroke-width="1.5"/>
+<line x1="265.4" y1="315.0" x2="265.4" y2="220.6" stroke="#059669" stroke-width="2.5"/>
+<line x1="260.4" y1="315.0" x2="270.4" y2="315.0" stroke="#059669" stroke-width="2.5"/>
+<line x1="260.4" y1="220.6" x2="270.4" y2="220.6" stroke="#059669" stroke-width="2.5"/>
+<circle cx="265.4" cy="267.8" r="6" fill="#059669" stroke="#ffffff" stroke-width="2"/>
+<text x="275.4" y="271.8" font-size="10" font-family="Segoe UI, Arial, sans-serif" font-weight="700" fill="#059669">mean +0.0094</text>
+<line x1="467.0" y1="404.9" x2="467.0" y2="182.4" stroke="#059669" stroke-width="2.5"/>
+<line x1="462.0" y1="404.9" x2="472.0" y2="404.9" stroke="#059669" stroke-width="2.5"/>
+<line x1="462.0" y1="182.4" x2="472.0" y2="182.4" stroke="#059669" stroke-width="2.5"/>
+<circle cx="467.0" cy="293.7" r="6" fill="#059669" stroke="#ffffff" stroke-width="2"/>
+<text x="477.0" y="297.7" font-size="10" font-family="Segoe UI, Arial, sans-serif" font-weight="700" fill="#059669">mean +0.0038</text>
+<line x1="668.6" y1="379.0" x2="668.6" y2="184.2" stroke="#059669" stroke-width="2.5"/>
+<line x1="663.6" y1="379.0" x2="673.6" y2="379.0" stroke="#059669" stroke-width="2.5"/>
+<line x1="663.6" y1="184.2" x2="673.6" y2="184.2" stroke="#059669" stroke-width="2.5"/>
+<circle cx="668.6" cy="281.6" r="6" fill="#059669" stroke="#ffffff" stroke-width="2"/>
+<text x="678.6" y="285.6" font-size="10" font-family="Segoe UI, Arial, sans-serif" font-weight="700" fill="#059669">mean +0.0064</text>
+<text x="735" y="95" font-size="12" font-family="Segoe UI, Arial, sans-serif" font-weight="700" fill="#1f2937">Random Seeds</text>
+<circle cx="745" cy="115" r="4.5" fill="#ef4444"/>
+<text x="757" y="119" font-size="11" font-family="Segoe UI, Arial, sans-serif" fill="#1f2937">seed 42</text>
+<circle cx="745" cy="137" r="4.5" fill="#8b5cf6"/>
+<text x="757" y="141" font-size="11" font-family="Segoe UI, Arial, sans-serif" fill="#1f2937">seed 1337</text>
+<circle cx="745" cy="159" r="4.5" fill="#3b82f6"/>
+<text x="757" y="163" font-size="11" font-family="Segoe UI, Arial, sans-serif" fill="#1f2937">seed 2025</text>
+<circle cx="745" cy="181" r="4.5" fill="#10b981"/>
+<text x="757" y="185" font-size="11" font-family="Segoe UI, Arial, sans-serif" fill="#1f2937">seed 3407</text>
+<circle cx="745" cy="203" r="4.5" fill="#f59e0b"/>
+<text x="757" y="207" font-size="11" font-family="Segoe UI, Arial, sans-serif" fill="#1f2937">seed 9001</text>
+<circle cx="745" cy="240" r="5" fill="#059669"/>
+<text x="757" y="244" font-size="11" font-family="Segoe UI, Arial, sans-serif" font-weight="600" fill="#059669">Mean &#177; 95% CI</text>
+</svg>

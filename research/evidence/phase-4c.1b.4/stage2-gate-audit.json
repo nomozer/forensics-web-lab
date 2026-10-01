@@ -1,0 +1,24 @@
+{
+  "stage1_macro_f1": 0.566831184528606,
+  "dummy_baseline_macro_f1": 0.3483709273182957,
+  "metadata_baseline_macro_f1": 0.5,
+  "gate_conditions": {
+    "stage1_gt_dummy": true,
+    "stage1_gt_metadata": true
+  },
+  "gate_passed": true,
+  "ci_computed": false,
+  "ci_method": "paired_bootstrap_source_id",
+  "ci_iterations": 1000,
+  "ci_confidence": 0.95,
+  "resampling_unit": "source_id",
+  "single_seed_limitation": true,
+  "verdict": "ELIGIBLE_VERIFIED",
+  "reasoning": "Stage 1 Macro-F1 (0.5668) exceeds both Dummy (0.3484) and Metadata (0.5) baselines. However, bootstrap CI not computed (single seed). Stage 2 eligibility is conditionally verified pending multi-seed runs.",
+  "confidence_intervals": {
+    "stage1_macro_f1_ci": "NOT_COMPUTED",
+    "stage1_minus_dummy_ci": "NOT_COMPUTED",
+    "stage1_minus_metadata_ci": "NOT_COMPUTED"
+  },
+  "recommendation": "Proceed to Stage 2 only after multi-seed verification and bootstrap CI computation"
+}

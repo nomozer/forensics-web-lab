@@ -1,0 +1,308 @@
+{
+  "50": {
+    "macro_f1": {
+      "n_seeds": 5,
+      "mean": 0.532224,
+      "std": 0.014787,
+      "median": 0.538238,
+      "min": 0.505934,
+      "max": 0.541477,
+      "ci_95_lower": 0.513864,
+      "ci_95_upper": 0.550584
+    },
+    "balanced_accuracy": {
+      "n_seeds": 5,
+      "mean": 0.538462,
+      "std": 0.00777,
+      "median": 0.538462,
+      "min": 0.527473,
+      "max": 0.549451,
+      "ci_95_lower": 0.528813,
+      "ci_95_upper": 0.54811
+    },
+    "auroc": {
+      "n_seeds": 5,
+      "mean": 0.542133,
+      "std": 0.012432,
+      "median": 0.542084,
+      "min": 0.526144,
+      "max": 0.560681,
+      "ci_95_lower": 0.526696,
+      "ci_95_upper": 0.557569
+    },
+    "brier_score": {
+      "n_seeds": 5,
+      "mean": 0.248721,
+      "std": 0.000651,
+      "median": 0.248802,
+      "min": 0.24779,
+      "max": 0.249602,
+      "ci_95_lower": 0.247913,
+      "ci_95_upper": 0.249529
+    },
+    "ece": {
+      "n_seeds": 5,
+      "mean": 0.017114,
+      "std": 0.006055,
+      "median": 0.016469,
+      "min": 0.009995,
+      "max": 0.026531,
+      "ci_95_lower": 0.009595,
+      "ci_95_upper": 0.024632
+    },
+    "val_loss": {
+      "n_seeds": 5,
+      "mean": 0.173913,
+      "std": 0.001007,
+      "median": 0.173768,
+      "min": 0.172759,
+      "max": 0.175474,
+      "ci_95_lower": 0.172662,
+      "ci_95_upper": 0.175163
+    },
+    "best_epoch": {
+      "n_seeds": 5,
+      "mean": 6.0,
+      "std": 6.819091,
+      "median": 3.0,
+      "min": 2.0,
+      "max": 18.0,
+      "ci_95_lower": null,
+      "ci_95_upper": null
+    },
+    "epochs_completed": {
+      "n_seeds": 5,
+      "mean": 11.0,
+      "std": 6.819091,
+      "median": 8.0,
+      "min": 7.0,
+      "max": 23.0,
+      "ci_95_lower": null,
+      "ci_95_upper": null
+    },
+    "training_time_s": {
+      "n_seeds": 5,
+      "mean": 109.781803,
+      "std": 69.048834,
+      "median": 79.432177,
+      "min": 69.133416,
+      "max": 231.282949,
+      "ci_95_lower": null,
+      "ci_95_upper": null
+    },
+    "peak_vram_mb": {
+      "n_seeds": 5,
+      "mean": 108.998535,
+      "std": 0.0,
+      "median": 108.998535,
+      "min": 108.998535,
+      "max": 108.998535,
+      "ci_95_lower": null,
+      "ci_95_upper": null
+    }
+  },
+  "100": {
+    "macro_f1": {
+      "n_seeds": 5,
+      "mean": 0.572779,
+      "std": 0.004802,
+      "median": 0.57403,
+      "min": 0.565816,
+      "max": 0.577313,
+      "ci_95_lower": 0.566816,
+      "ci_95_upper": 0.578741
+    },
+    "balanced_accuracy": {
+      "n_seeds": 5,
+      "mean": 0.574725,
+      "std": 0.006265,
+      "median": 0.576923,
+      "min": 0.565934,
+      "max": 0.582418,
+      "ci_95_lower": 0.566947,
+      "ci_95_upper": 0.582504
+    },
+    "auroc": {
+      "n_seeds": 5,
+      "mean": 0.586137,
+      "std": 0.008949,
+      "median": 0.586523,
+      "min": 0.573361,
+      "max": 0.596546,
+      "ci_95_lower": 0.575025,
+      "ci_95_upper": 0.597249
+    },
+    "brier_score": {
+      "n_seeds": 5,
+      "mean": 0.245585,
+      "std": 0.000339,
+      "median": 0.245541,
+      "min": 0.245166,
+      "max": 0.246108,
+      "ci_95_lower": 0.245164,
+      "ci_95_upper": 0.246005
+    },
+    "ece": {
+      "n_seeds": 5,
+      "mean": 0.044998,
+      "std": 0.008482,
+      "median": 0.046256,
+      "min": 0.031553,
+      "max": 0.054279,
+      "ci_95_lower": 0.034466,
+      "ci_95_upper": 0.05553
+    },
+    "val_loss": {
+      "n_seeds": 5,
+      "mean": 0.171277,
+      "std": 0.000885,
+      "median": 0.170924,
+      "min": 0.170497,
+      "max": 0.172771,
+      "ci_95_lower": 0.170179,
+      "ci_95_upper": 0.172376
+    },
+    "best_epoch": {
+      "n_seeds": 5,
+      "mean": 8.0,
+      "std": 3.391165,
+      "median": 7.0,
+      "min": 6.0,
+      "max": 14.0,
+      "ci_95_lower": null,
+      "ci_95_upper": null
+    },
+    "epochs_completed": {
+      "n_seeds": 5,
+      "mean": 13.0,
+      "std": 3.391165,
+      "median": 12.0,
+      "min": 11.0,
+      "max": 19.0,
+      "ci_95_lower": null,
+      "ci_95_upper": null
+    },
+    "training_time_s": {
+      "n_seeds": 5,
+      "mean": 178.319571,
+      "std": 46.196611,
+      "median": 162.235839,
+      "min": 150.809598,
+      "max": 260.093803,
+      "ci_95_lower": null,
+      "ci_95_upper": null
+    },
+    "peak_vram_mb": {
+      "n_seeds": 5,
+      "mean": 108.998535,
+      "std": 0.0,
+      "median": 108.998535,
+      "min": 108.998535,
+      "max": 108.998535,
+      "ci_95_lower": null,
+      "ci_95_upper": null
+    }
+  },
+  "250": {
+    "macro_f1": {
+      "n_seeds": 5,
+      "mean": 0.562714,
+      "std": 0.017207,
+      "median": 0.561039,
+      "min": 0.54493,
+      "max": 0.583371,
+      "ci_95_lower": 0.541349,
+      "ci_95_upper": 0.584079
+    },
+    "balanced_accuracy": {
+      "n_seeds": 5,
+      "mean": 0.572527,
+      "std": 0.011912,
+      "median": 0.571429,
+      "min": 0.554945,
+      "max": 0.587912,
+      "ci_95_lower": 0.557737,
+      "ci_95_upper": 0.587318
+    },
+    "auroc": {
+      "n_seeds": 5,
+      "mean": 0.585992,
+      "std": 0.007804,
+      "median": 0.584954,
+      "min": 0.5765,
+      "max": 0.59389,
+      "ci_95_lower": 0.576302,
+      "ci_95_upper": 0.595682
+    },
+    "brier_score": {
+      "n_seeds": 5,
+      "mean": 0.246401,
+      "std": 0.000288,
+      "median": 0.246412,
+      "min": 0.245998,
+      "max": 0.246785,
+      "ci_95_lower": 0.246044,
+      "ci_95_upper": 0.246759
+    },
+    "ece": {
+      "n_seeds": 5,
+      "mean": 0.047999,
+      "std": 0.015774,
+      "median": 0.050284,
+      "min": 0.026947,
+      "max": 0.069607,
+      "ci_95_lower": 0.028413,
+      "ci_95_upper": 0.067585
+    },
+    "val_loss": {
+      "n_seeds": 5,
+      "mean": 0.171481,
+      "std": 0.000742,
+      "median": 0.171032,
+      "min": 0.170855,
+      "max": 0.172458,
+      "ci_95_lower": 0.17056,
+      "ci_95_upper": 0.172402
+    },
+    "best_epoch": {
+      "n_seeds": 5,
+      "mean": 5.2,
+      "std": 0.83666,
+      "median": 5.0,
+      "min": 4.0,
+      "max": 6.0,
+      "ci_95_lower": null,
+      "ci_95_upper": null
+    },
+    "epochs_completed": {
+      "n_seeds": 5,
+      "mean": 10.2,
+      "std": 0.83666,
+      "median": 10.0,
+      "min": 9.0,
+      "max": 11.0,
+      "ci_95_lower": null,
+      "ci_95_upper": null
+    },
+    "training_time_s": {
+      "n_seeds": 5,
+      "mean": 248.17096,
+      "std": 20.550125,
+      "median": 243.798404,
+      "min": 218.288311,
+      "max": 267.944854,
+      "ci_95_lower": null,
+      "ci_95_upper": null
+    },
+    "peak_vram_mb": {
+      "n_seeds": 5,
+      "mean": 108.998535,
+      "std": 0.0,
+      "median": 108.998535,
+      "min": 108.998535,
+      "max": 108.998535,
+      "ci_95_lower": null,
+      "ci_95_upper": null
+    }
+  }
+}

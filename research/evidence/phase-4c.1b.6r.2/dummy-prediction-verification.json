@@ -1,0 +1,30 @@
+{
+  "verification": {
+    "source_artifact": "research/evidence/phase-4c.1b.6r.1/predictions-dummy-seed42.json",
+    "records": 182,
+    "unique_source_ids": 91,
+    "authentic_count": 91,
+    "ai_edited_count": 91,
+    "partitions": ["inner_validation"],
+    "development_records": 0,
+    "locked_test_records": 0,
+    "sample_id_match": true,
+    "source_id_match": true,
+    "y_true_match": true,
+    "field_standardization": {
+      "original_field": "probability",
+      "standardized_field": "probability_ai_edited",
+      "semantics": "Direct output of predict_proba[:, 1] for class ai_edited (label 1)"
+    },
+    "metrics_recomputed": {
+      "macro_f1": 0.49395551257253384,
+      "balanced_accuracy": 0.49450549450549453,
+      "auroc": 0.49450549450549453,
+      "brier_score": 0.50549450549450547,
+      "ece": 0.50549450549450547
+    },
+    "contract_value": 0.49395551257253384,
+    "tolerance": 1e-12,
+    "status": "VERIFIED_EXACT"
+  }
+}

@@ -1,0 +1,156 @@
+{
+  "phase": "4C.1B.6R.2",
+  "description": "Measured Paired Bootstrap Closure - Test Arithmetic, Leakage Root Cause, Dummy Artifact, Paired Bootstrap, Metadata Contract",
+  "git_head": "1e71aa260e0123a6e76a40972c807975aa24f304",
+  "branch": "research/phase-4c1-learning-curve",
+  "files": [
+    {
+      "name": "environment.json",
+      "type": "phase-report",
+      "bytes": 689,
+      "sha256": "1e6ab8bf5278e6be3468ceb8207f237fa073fee5cd2e662d677f4a44fd75efd1",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "stage1-prediction-receipt.json",
+      "type": "phase-report",
+      "bytes": 845,
+      "sha256": "043bad24416b2cc18d8dbe2083ca275f1c0dfbead27eec92cfa04777c3b3a07b",
+      "generationCommand": "python scripts/research/create_stage1_validation_artifact.py",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "predictions-stage1-seed42-validation-only.json",
+      "type": "phase-report",
+      "bytes": 54706,
+      "sha256": "646434c548eef228836c578503390cbded8c4c1c4a5d56ff3e7abc88f72be35c",
+      "generationCommand": "python scripts/research/create_stage1_validation_artifact.py",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "dummy-prediction-verification.json",
+      "type": "phase-report",
+      "bytes": 954,
+      "sha256": "0c8a5e062a20d43dc83efb311bb25fec958c52929440f3c9f780a5afee4e3c25",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "predictions-dummy-seed42.json",
+      "type": "phase-report",
+      "bytes": 46413,
+      "sha256": "3096f6263ec0e9500157cfa03e5310fdaec9400d5ff850cd7f093e12db87f37e",
+      "generationCommand": "python scripts/research/create_dummy_baseline_artifact.py",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "dummy-baseline-metrics.json",
+      "type": "phase-report",
+      "bytes": 183,
+      "sha256": "2160e971b3b3497122d5d93a12da28a4fdbd3f4c0892493366e64aec953a5f32",
+      "generationCommand": "python scripts/research/create_dummy_baseline_artifact.py",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "paired-bootstrap-distribution-summary.json",
+      "type": "phase-report",
+      "bytes": 1031,
+      "sha256": "f5affa70e50e48aa4b9f5320a09b08da74ef5a47dfbf346831578a1eca12b68c",
+      "generationCommand": "python scripts/research/reproduce_phase_4c1b6r2_statistics.py",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "confidence-intervals.json",
+      "type": "phase-report",
+      "bytes": 2008,
+      "sha256": "be8334fa2e44e414d695820bef51ff8b7b25dbd89d26ef4c0817ddc640d7b746",
+      "generationCommand": "python scripts/research/reproduce_phase_4c1b6r2_statistics.py --verify",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "fault-injection-results.json",
+      "type": "phase-report",
+      "bytes": 2372,
+      "sha256": "7a1a09da8c49ed93afa558ebe98a7cdcd1c48b00fb24e19e1e82079fa4eda404",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "regression-test-summary.json",
+      "type": "phase-report",
+      "bytes": 2212,
+      "sha256": "53e85d86c3bb24525f60916c570300861744eef13feca862ba25869edaf9dd6d",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "metadata-baseline-status.json",
+      "type": "phase-report",
+      "bytes": 918,
+      "sha256": "49968eea7a41fe5572a1007615ae1742b054fc0d8ca3f0a40cbe6556ee3c8f2f",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "stage2-gate-status.json",
+      "type": "phase-report",
+      "bytes": 1557,
+      "sha256": "8771fcd607cab5fe108fef8458ec6c17435b9675f6170fc979d2724f3b124362",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "pytest-collection.txt",
+      "type": "test-report",
+      "bytes": 27405,
+      "sha256": "03999d39e7cc81b0ddc3fdba854e46508551de2ebcd2d75f004f01d08c8fe19e",
+      "generationCommand": "pytest --collect-only ml/tests -v",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "pytest-full-output.txt",
+      "type": "test-report",
+      "bytes": 17005,
+      "sha256": "325dc5070e009197163a5d9177ffa7b1da24953c8a9caf8bcb424598a564e7bf",
+      "generationCommand": "pytest ml/tests -v",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "test-summary.json",
+      "type": "phase-report",
+      "bytes": 3608,
+      "sha256": "237f42c5e370175a71bf3922f48b3bf94f543402ad7bcbca66b4f27521bc3235",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    },
+    {
+      "name": "PHASE_REPORT.md",
+      "type": "phase-report",
+      "bytes": 3008,
+      "sha256": "d31c9015bef4bc2f961398efa6a83a1ef1cbfbe2e0619698c0303501b75b014a",
+      "generationCommand": "automatic",
+      "verificationCommand": "Get-FileHash",
+      "status": "verified"
+    }
+  ],
+  "createdAtUtc": "2026-09-29T11:30:00Z",
+  "manifestSelfExcluded": true,
+  "artifactCount": 16,
+  "directoryFileCount": 17
+}

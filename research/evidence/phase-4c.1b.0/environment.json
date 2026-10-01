@@ -1,0 +1,11 @@
+{
+  "phase": "4C.1B.0",
+  "branch": "research/phase-4c1-learning-curve",
+  "description": "Reconcile smoke bundle evidence before Colab transfer",
+  "pipPath": "D:\\Documents\\forensics-web-lab\\ml\\.venv\\Scripts\\pip.exe",
+  "gitHead": "2e6ce2e0fedaead45dec23b24e9d9c5a5fcf777e",
+  "pythonExecutable": "D:\\Documents\\forensics-web-lab\\ml\\.venv\\Scripts\\python.exe",
+  "virtualEnvironment": true,
+  "timestamp": "2026-09-27T10:17:09Z",
+  "pythonVersion": "3.12.10"
+}

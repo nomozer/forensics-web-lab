@@ -1,0 +1,23 @@
+{
+  "phase": "4C.1A.1",
+  "timestamp": "2026-09-27T02:30:00Z",
+  "repository": "nomozer/forensics-web-lab",
+  "branch": "research/phase-4c1-learning-curve",
+  "base_main": "575a786ca4888352d60eef60df9595b57fc9f713",
+  "foundation_tag": "v0.1.0-research-foundation",
+  "foundation_tag_commit": "575a786ca4888352d60eef60df9595b57fc9f713",
+  "python_version": "3.12.10",
+  "torch_version": "2.14.0+cpu",
+  "torchvision_version": "0.29.0+cpu",
+  "numpy_version": "2.5.3",
+  "pytest_version": "9.1.1",
+  "os": "Windows_NT",
+  "cpu": "Intel/AMD x64",
+  "ram_gb": "UNKNOWN",
+  "gpu": "NONE (CPU-only environment)",
+  "disk_free_gb": "UNKNOWN",
+  "working_tree_clean": true,
+  "git_status_short": "",
+  "branch": "research/phase-4c1-learning-curve",
+  "starting_head": "575a786ca4888352d60eef60df9595b57fc9f713"
+}

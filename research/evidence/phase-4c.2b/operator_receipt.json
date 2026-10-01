@@ -1,0 +1,87 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2B.3.1",
+  "script_name": "phase_4c2_execute_all.sh",
+  "script_path": "scripts/phase_4c2_execute_all.sh",
+  "bytes": 64776,
+  "sha256": "2a967a475c9bdc45515addc7123b8312f2d180b5e21fc735d8e6f7f5f4aa8929",
+  "timestamp_utc": "2026-10-01T07:20:00.000000+00:00",
+  "execution_commit_sha": "9ee7fdbb88fad16167f5790b5105867747801372",
+  "code_archive": {
+    "name": "phase_4c2_code_9ee7fdb.tar.gz",
+    "bytes": 10478136,
+    "sha256": "951e9089582eb60cf3d293c37982a8f3c3b6a3e05fb3ef45f23c666d41bc7d89",
+    "exact_binding_check": "FAIL_CLOSED_BEFORE_TAR_AUDIT"
+  },
+  "canonical_components": {
+    "runner_sha256": "8ef0f0a06c25134a85982536064117a0bfc2eb9d63373c3b4ad6f4a2865783d4",
+    "config_sha256": "5ac7d41859798842aadf53d40fb8e9f2328e6ef46a4d2b1b248915cdee7543a4",
+    "schema_sha256": "dde1c873a43276cdf6bfd2ca459edebe7e8e14f2f02b1c8e8b9fe879936df98f",
+    "dataset_binding_sha256": "dee09f81081466debd554642434a8282e60bef105bb8ff5a5a56c2bfc4f05c07",
+    "requirements_sha256": "81d648002fbf39311fa5a9a735a61318475ee8978fcc5d8456a8deaa12606721"
+  },
+  "dataset_bundle": {
+    "name": "phase_4c1_binary_n250_reusable.tar",
+    "path": "MyDrive/Colab Notebooks/forensics-web-lab/phase_4c1/inputs/phase_4c1_binary_n250_reusable.tar",
+    "bytes": 724633600,
+    "archive_sha256": "d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27",
+    "content_sha256": "c365c812cc814097f11b9e5ed5c82e672015e2ba093f09f975df0a2a01229e9b",
+    "manifest_sha256": "411e35da80843a10f7bb22e33efac8a4d1db70110dbda91cadbbf39532c9312d",
+    "read_only": true
+  },
+  "pretrained_weights": {
+    "identifier": "MobileNet_V3_Small_Weights.IMAGENET1K_V1",
+    "file_name": "mobilenet_v3_small-047dcff4.pth",
+    "file_sha256": "047dcff4addef86ea5bc2eff13c9614dc11f47ab1160d0a71a25e7db994f4e1f",
+    "file_bytes": 10306551,
+    "backbone_state_fingerprint": "d42bb32ad876b9de2b04a6ccd245f76c4d0c6bb3ded74c25261cf14720c7e7d5"
+  },
+  "destructive_path_guard": {
+    "status": "PASS",
+    "method": "assert_safe_delete_target with type-specific validation and assert_safe_ephemeral_dir",
+    "protected_targets": [
+      "/content/phase_4c2_code",
+      "/content/phase_4c2_work",
+      "/content/phase_4c2_bundle"
+    ],
+    "invariants": {
+      "local_inprogress": "direct child of /content/phase_4c2_work/ matching regex ^n(50|100|250)_seed_(42|1337|2025|3407|9001)\\.inprogress$",
+      "stage_part": "direct child of canonical Stage 2 OUTPUT_ROOT matching regex ^\\.publish_n(50|100|250)_seed_(42|1337|2025|3407|9001)\\.part$",
+      "code_dir": "exact match to resolved /content/phase_4c2_code",
+      "no_symlinks": true,
+      "no_drive_deletion": true,
+      "no_stage1_deletion": true,
+      "stale_part_archived": "stale .part directories moved to failed_publish/ without rm -rf"
+    }
+  },
+  "scientific_environment_lock": {
+    "lock_file": "phase4c2_environment_lock.json",
+    "sidecar_file": "phase4c2_environment_lock.sha256",
+    "immutable_across_retries": true,
+    "operator_sha_verified": true,
+    "runtime_observations_dir": "runtime_observations/",
+    "trainable_tensor_contract_bound": true,
+    "normalization_manifest_sha_bound": true,
+    "requirements_sha_bound": true,
+    "exact_lock_verification_enforced": true
+  },
+  "run_verifier": {
+    "schema_validation": "FAIL_CLOSED_JSONSCHEMA",
+    "manifest_verification": "MANDATORY_FAIL_CLOSED (91 inner_val sources, 182 samples, {0,1} pairs, 0 leaks)",
+    "unused_provenance_arguments_removed": true,
+    "environment_lock_binding_documented": true
+  },
+  "disk_capacity_gate": {
+    "status": "PASS",
+    "threshold_bytes": 5368709120,
+    "threshold_gib": 5.0,
+    "formula": "5 GiB threshold (extracted code ~25MB + extracted dataset ~1.5GB + local run ~50MB + safety buffer ~3.38GB)"
+  },
+  "behavioral_test_suite": {
+    "total_operator_tests": 89,
+    "tar_security_fixtures": "10/10 PASS",
+    "section_j_behavioral_tests": "18/18 PASS",
+    "section_k_lock_mutation_tests": "11/11 PASS",
+    "status": "PASS"
+  }
+}

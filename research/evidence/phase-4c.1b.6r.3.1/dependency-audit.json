@@ -1,0 +1,128 @@
+{
+  "dependency_audit": {
+    "python_version": "3.12.10",
+    "pip_check": "No broken requirements found",
+    "direct_dependencies": [
+      {
+        "package": "torch",
+        "installed_version": "2.5.1+cu121",
+        "declaration": "torch>=2.2.0",
+        "environment": "project-runtime",
+        "status": "satisfied",
+        "direct_import": true
+      },
+      {
+        "package": "torchvision",
+        "installed_version": "0.20.1+cu121",
+        "declaration": "torchvision>=0.17.0",
+        "environment": "project-runtime",
+        "status": "satisfied",
+        "direct_import": true
+      },
+      {
+        "package": "numpy",
+        "installed_version": "2.5.3",
+        "declaration": "numpy>=1.26.0",
+        "environment": "project-runtime",
+        "status": "satisfied",
+        "direct_import": true
+      },
+      {
+        "package": "pillow",
+        "installed_version": "12.3.0",
+        "declaration": "pillow>=10.2.0",
+        "environment": "project-runtime",
+        "status": "satisfied",
+        "direct_import": true
+      },
+      {
+        "package": "scikit-learn",
+        "installed_version": "1.9.1",
+        "declaration": "scikit-learn>=1.4.0",
+        "environment": "project-runtime",
+        "status": "satisfied",
+        "direct_import": true
+      },
+      {
+        "package": "scipy",
+        "installed_version": "1.18.1",
+        "declaration": "scipy>=1.12.0",
+        "environment": "project-runtime",
+        "status": "satisfied",
+        "direct_import": true
+      },
+      {
+        "package": "pyyaml",
+        "installed_version": "6.0.3",
+        "declaration": "pyyaml>=6.0",
+        "environment": "project-runtime",
+        "status": "satisfied",
+        "direct_import": true
+      },
+      {
+        "package": "onnx",
+        "installed_version": "1.23.0",
+        "declaration": "onnx>=1.15.0",
+        "environment": "project-runtime",
+        "status": "satisfied",
+        "direct_import": true
+      },
+      {
+        "package": "onnxruntime",
+        "installed_version": "1.30.0",
+        "declaration": "onnxruntime>=1.17.0",
+        "environment": "project-runtime",
+        "status": "satisfied",
+        "direct_import": true
+      },
+      {
+        "package": "psutil",
+        "installed_version": "7.2.2",
+        "declaration": "psutil>=5.9.0",
+        "environment": "colab-runtime",
+        "status": "satisfied",
+        "direct_import": true
+      },
+      {
+        "package": "tqdm",
+        "installed_version": "4.70.1",
+        "declaration": "tqdm>=4.66.0",
+        "environment": "colab-runtime",
+        "status": "satisfied",
+        "direct_import": true
+      },
+      {
+        "package": "pytest",
+        "installed_version": "9.1.1",
+        "declaration": "pytest>=8.0.0",
+        "environment": "test-development",
+        "status": "satisfied",
+        "direct_import": false
+      },
+      {
+        "package": "ruff",
+        "installed_version": "not_installed",
+        "declaration": "ruff>=0.3.0",
+        "environment": "test-development",
+        "status": "missing",
+        "direct_import": false
+      }
+    ],
+    "transitive_dependencies": [
+      "asttokens", "attrs", "cloudpickle", "colorama", "executing", "fastjsonschema",
+      "filelock", "fsspec", "iniconfig", "ipython", "ipython_pygments_lexers",
+      "jedi", "Jinja2", "joblib", "jsonschema", "jsonschema-specifications",
+      "jupyter_core", "MarkupSafe", "matplotlib-inline", "mpmath", "narwhals",
+      "nbformat", "networkx", "packaging", "parso", "platformdirs", "pluggy",
+      "prompt_toolkit", "pure_eval", "Pygments", "referencing", "rpds-py",
+      "setuptools", "stack-data", "sympy", "threadpoolctl", "typing_extensions",
+      "wcwidth"
+    ],
+    "colab_specific_declarations": {
+      "google-colab": ">=1.0.0",
+      "tensorboard": ">=2.15.0"
+    },
+    "pip_check_result": "No broken requirements found",
+    "audit_timestamp_utc": "2026-09-29T06:06:12Z"
+  }
+}

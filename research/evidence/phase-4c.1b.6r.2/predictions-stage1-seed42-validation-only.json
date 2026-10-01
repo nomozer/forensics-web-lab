@@ -1,0 +1,1835 @@
+{
+  "records": [
+    {
+      "sample_id": "000000054931_authentic",
+      "source_id": "000000054931",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.40668919682502747,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000054931_ai_edited",
+      "source_id": "000000054931",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.49278515577316284,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000153797_authentic",
+      "source_id": "000000153797",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.42795413732528687,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000153797_ai_edited",
+      "source_id": "000000153797",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.42167356610298157,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000115898_authentic",
+      "source_id": "000000115898",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.3885214626789093,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000115898_ai_edited",
+      "source_id": "000000115898",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.500184953212738,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000065455_authentic",
+      "source_id": "000000065455",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.423409640789032,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000065455_ai_edited",
+      "source_id": "000000065455",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.4050157070159912,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000046497_authentic",
+      "source_id": "000000046497",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.4954104423522949,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000046497_ai_edited",
+      "source_id": "000000046497",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.6513188481330872,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000384616_authentic",
+      "source_id": "000000384616",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.42114707827568054,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000384616_ai_edited",
+      "source_id": "000000384616",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.614628791809082,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000050006_authentic",
+      "source_id": "000000050006",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.4979401230812073,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000050006_ai_edited",
+      "source_id": "000000050006",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.4975697994232178,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000217614_authentic",
+      "source_id": "000000217614",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 1,
+      "probability_ai_edited": 0.6118147969245911,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000217614_ai_edited",
+      "source_id": "000000217614",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.7349916100502014,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000007281_authentic",
+      "source_id": "000000007281",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.36859896779060364,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000007281_ai_edited",
+      "source_id": "000000007281",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.46028807759284973,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000157365_authentic",
+      "source_id": "000000157365",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5728310942649841,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000157365_ai_edited",
+      "source_id": "000000157365",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5887200832366943,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000272212_authentic",
+      "source_id": "000000272212",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.4515748918056488,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000272212_ai_edited",
+      "source_id": "000000272212",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5819317698478699,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000232692_authentic",
+      "source_id": "000000232692",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 1,
+      "probability_ai_edited": 0.6182140111923218,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000232692_ai_edited",
+      "source_id": "000000232692",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.6322290897369385,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000259382_authentic",
+      "source_id": "000000259382",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5015851855278015,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000259382_ai_edited",
+      "source_id": "000000259382",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.581217348575592,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000138550_authentic",
+      "source_id": "000000138550",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.3557296097278595,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000138550_ai_edited",
+      "source_id": "000000138550",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.4966442584991455,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000576052_authentic",
+      "source_id": "000000576052",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.41964682936668396,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000576052_ai_edited",
+      "source_id": "000000576052",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.39917677640914917,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000567011_authentic",
+      "source_id": "000000567011",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 1,
+      "probability_ai_edited": 0.559812068939209,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000567011_ai_edited",
+      "source_id": "000000567011",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5960404276847839,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000199442_authentic",
+      "source_id": "000000199442",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5643947124481201,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000199442_ai_edited",
+      "source_id": "000000199442",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.6605778336524963,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000566524_authentic",
+      "source_id": "000000566524",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5631735324859619,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000566524_ai_edited",
+      "source_id": "000000566524",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.6142067313194275,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000344888_authentic",
+      "source_id": "000000344888",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.4188326299190521,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000344888_ai_edited",
+      "source_id": "000000344888",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.45650216937065125,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000404249_authentic",
+      "source_id": "000000404249",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.42445069551467896,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000404249_ai_edited",
+      "source_id": "000000404249",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.47102999687194824,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000320425_authentic",
+      "source_id": "000000320425",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.48478883504867554,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000320425_ai_edited",
+      "source_id": "000000320425",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5669957399368286,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000415990_authentic",
+      "source_id": "000000415990",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.4371081292629242,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000415990_ai_edited",
+      "source_id": "000000415990",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.43287885189056396,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000466567_authentic",
+      "source_id": "000000466567",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.31651365756988525,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000466567_ai_edited",
+      "source_id": "000000466567",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.6827706098556519,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000416837_authentic",
+      "source_id": "000000416837",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5104637145996094,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000416837_ai_edited",
+      "source_id": "000000416837",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.6208582520484924,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000389197_authentic",
+      "source_id": "000000389197",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.42087000608444214,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000389197_ai_edited",
+      "source_id": "000000389197",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.585544764995575,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000347693_authentic",
+      "source_id": "000000347693",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5086124539375305,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000347693_ai_edited",
+      "source_id": "000000347693",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.4847211539745331,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000033707_authentic",
+      "source_id": "000000033707",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.28435614705085754,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000033707_ai_edited",
+      "source_id": "000000033707",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5524337887763977,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000033114_authentic",
+      "source_id": "000000033114",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.4590737819671631,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000033114_ai_edited",
+      "source_id": "000000033114",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.4837508201599121,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000079837_authentic",
+      "source_id": "000000079837",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.45074671506881714,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000079837_ai_edited",
+      "source_id": "000000079837",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.44438183307647705,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000515350_authentic",
+      "source_id": "000000515350",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5247767567634583,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000515350_ai_edited",
+      "source_id": "000000515350",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5743563771247864,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000063154_authentic",
+      "source_id": "000000063154",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5981044769287109,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000063154_ai_edited",
+      "source_id": "000000063154",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.6044372916221619,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000036678_authentic",
+      "source_id": "000000036678",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 1,
+      "probability_ai_edited": 0.526680588722229,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000036678_ai_edited",
+      "source_id": "000000036678",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5363209247589111,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000306582_authentic",
+      "source_id": "000000306582",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5311174392700195,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000306582_ai_edited",
+      "source_id": "000000306582",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5591049194335938,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000572388_authentic",
+      "source_id": "000000572388",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 1,
+      "probability_ai_edited": 0.6230388879776001,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000572388_ai_edited",
+      "source_id": "000000572388",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.7326525449752808,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000229753_authentic",
+      "source_id": "000000229753",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.2659902572631836,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000229753_ai_edited",
+      "source_id": "000000229753",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.2890550196170807,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000226883_authentic",
+      "source_id": "000000226883",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.4898512661457062,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000226883_ai_edited",
+      "source_id": "000000226883",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.4553089141845703,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000170613_authentic",
+      "source_id": "000000170613",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.46509653329849243,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000170613_ai_edited",
+      "source_id": "000000170613",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.4102907180786133,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000559099_authentic",
+      "source_id": "000000559099",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5861519575119019,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000559099_ai_edited",
+      "source_id": "000000559099",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.6075636744499207,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000268000_authentic",
+      "source_id": "000000268000",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5943055152893066,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000268000_ai_edited",
+      "source_id": "000000268000",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.6316341757774353,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000471756_authentic",
+      "source_id": "000000471756",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5930712819099426,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000471756_ai_edited",
+      "source_id": "000000471756",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.6800011396408081,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000240754_authentic",
+      "source_id": "000000240754",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.3813898265361786,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000240754_ai_edited",
+      "source_id": "000000240754",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.40553027391433716,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000417876_authentic",
+      "source_id": "000000417876",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.441371351480484,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000417876_ai_edited",
+      "source_id": "000000417876",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.4656827747821808,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000303653_authentic",
+      "source_id": "000000303653",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.4494948387145996,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000303653_ai_edited",
+      "source_id": "000000303653",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.45298922061920166,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000257478_authentic",
+      "source_id": "000000257478",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.4416216313838959,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000257478_ai_edited",
+      "source_id": "000000257478",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.43542495369911194,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000561223_authentic",
+      "source_id": "000000561223",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5092951059341431,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000561223_ai_edited",
+      "source_id": "000000561223",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5032902956008911,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000353051_authentic",
+      "source_id": "000000353051",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.4765215218067169,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000353051_ai_edited",
+      "source_id": "000000353051",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.4903501868247986,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000231125_authentic",
+      "source_id": "000000231125",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 1,
+      "probability_ai_edited": 0.538739025592804,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000231125_ai_edited",
+      "source_id": "000000231125",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.537983238697052,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000373705_authentic",
+      "source_id": "000000373705",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5950484275817871,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000373705_ai_edited",
+      "source_id": "000000373705",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.6590613722801208,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000088265_authentic",
+      "source_id": "000000088265",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5116217732429504,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000088265_ai_edited",
+      "source_id": "000000088265",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5931335687637329,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000286849_authentic",
+      "source_id": "000000286849",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 1,
+      "probability_ai_edited": 0.506321370601654,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000286849_ai_edited",
+      "source_id": "000000286849",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.605790376663208,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000566042_authentic",
+      "source_id": "000000566042",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.28285348415374756,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000566042_ai_edited",
+      "source_id": "000000566042",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.41173169016838074,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000283412_authentic",
+      "source_id": "000000283412",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.3793109655380249,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000283412_ai_edited",
+      "source_id": "000000283412",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.3921966254711151,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000521601_authentic",
+      "source_id": "000000521601",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.4921099543571472,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000521601_ai_edited",
+      "source_id": "000000521601",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.4605497121810913,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000327306_authentic",
+      "source_id": "000000327306",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.4799639880657196,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000327306_ai_edited",
+      "source_id": "000000327306",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.4896453022956848,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000074457_authentic",
+      "source_id": "000000074457",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.255829393863678,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000074457_ai_edited",
+      "source_id": "000000074457",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.3003447651863098,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000230450_authentic",
+      "source_id": "000000230450",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.31632718443870544,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000230450_ai_edited",
+      "source_id": "000000230450",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.369931697845459,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000257566_authentic",
+      "source_id": "000000257566",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 1,
+      "probability_ai_edited": 0.6257882714271545,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000257566_ai_edited",
+      "source_id": "000000257566",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5848795175552368,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000450488_authentic",
+      "source_id": "000000450488",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.45996028184890747,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000450488_ai_edited",
+      "source_id": "000000450488",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.516318678855896,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000161879_authentic",
+      "source_id": "000000161879",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.47088682651519775,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000161879_ai_edited",
+      "source_id": "000000161879",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.4661679267883301,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000219440_authentic",
+      "source_id": "000000219440",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 1,
+      "probability_ai_edited": 0.54405677318573,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000219440_ai_edited",
+      "source_id": "000000219440",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5047422647476196,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000349860_authentic",
+      "source_id": "000000349860",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.4860996901988983,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000349860_ai_edited",
+      "source_id": "000000349860",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5227909684181213,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000464824_authentic",
+      "source_id": "000000464824",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.3138125538825989,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000464824_ai_edited",
+      "source_id": "000000464824",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.30248910188674927,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000502168_authentic",
+      "source_id": "000000502168",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.4233644902706146,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000502168_ai_edited",
+      "source_id": "000000502168",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5842474699020386,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000569972_authentic",
+      "source_id": "000000569972",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.41316545009613037,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000569972_ai_edited",
+      "source_id": "000000569972",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.4230664074420929,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000418281_authentic",
+      "source_id": "000000418281",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 1,
+      "probability_ai_edited": 0.623803973197937,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000418281_ai_edited",
+      "source_id": "000000418281",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.6817665100097656,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000476258_authentic",
+      "source_id": "000000476258",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.4002944529056549,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000476258_ai_edited",
+      "source_id": "000000476258",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.502609372138977,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000099810_authentic",
+      "source_id": "000000099810",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 1,
+      "probability_ai_edited": 0.6483575105667114,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000099810_ai_edited",
+      "source_id": "000000099810",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.6519222259521484,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000322211_authentic",
+      "source_id": "000000322211",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.3808382749557495,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000322211_ai_edited",
+      "source_id": "000000322211",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.388831228017807,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000191672_authentic",
+      "source_id": "000000191672",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.41263556480407715,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000191672_ai_edited",
+      "source_id": "000000191672",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.4825059473514557,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000475904_authentic",
+      "source_id": "000000475904",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.405558317899704,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000475904_ai_edited",
+      "source_id": "000000475904",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.412789911031723,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000490470_authentic",
+      "source_id": "000000490470",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.42155617475509644,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000490470_ai_edited",
+      "source_id": "000000490470",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.4193632900714874,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000100274_authentic",
+      "source_id": "000000100274",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.4518282115459442,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000100274_ai_edited",
+      "source_id": "000000100274",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.45172756910324097,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000275058_authentic",
+      "source_id": "000000275058",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5598645210266113,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000275058_ai_edited",
+      "source_id": "000000275058",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.571469783782959,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000066926_authentic",
+      "source_id": "000000066926",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 1,
+      "probability_ai_edited": 0.7095841765403748,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000066926_ai_edited",
+      "source_id": "000000066926",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.6817267537117004,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000545958_authentic",
+      "source_id": "000000545958",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5245296359062195,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000545958_ai_edited",
+      "source_id": "000000545958",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5881388783454895,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000258793_authentic",
+      "source_id": "000000258793",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5504266619682312,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000258793_ai_edited",
+      "source_id": "000000258793",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5015980005264282,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000420472_authentic",
+      "source_id": "000000420472",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.3609858453273773,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000420472_ai_edited",
+      "source_id": "000000420472",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5098891854286194,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000338986_authentic",
+      "source_id": "000000338986",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5264276266098022,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000338986_ai_edited",
+      "source_id": "000000338986",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.562574565410614,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000515982_authentic",
+      "source_id": "000000515982",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5778942108154297,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000515982_ai_edited",
+      "source_id": "000000515982",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5826897621154785,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000528862_authentic",
+      "source_id": "000000528862",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.39578092098236084,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000528862_ai_edited",
+      "source_id": "000000528862",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.3929748237133026,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000344059_authentic",
+      "source_id": "000000344059",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 1,
+      "probability_ai_edited": 0.6102937459945679,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000344059_ai_edited",
+      "source_id": "000000344059",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.502423107624054,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000563603_authentic",
+      "source_id": "000000563603",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.36884570121765137,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000563603_ai_edited",
+      "source_id": "000000563603",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5118300914764404,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000396580_authentic",
+      "source_id": "000000396580",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5072112679481506,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000396580_ai_edited",
+      "source_id": "000000396580",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.49619656801223755,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000092177_authentic",
+      "source_id": "000000092177",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5648636221885681,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000092177_ai_edited",
+      "source_id": "000000092177",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5136573314666748,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000342006_authentic",
+      "source_id": "000000342006",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 1,
+      "probability_ai_edited": 0.6826980113983154,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000342006_ai_edited",
+      "source_id": "000000342006",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.6895330548286438,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000214753_authentic",
+      "source_id": "000000214753",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5362785458564758,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000214753_ai_edited",
+      "source_id": "000000214753",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.4881426692008972,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000036861_authentic",
+      "source_id": "000000036861",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.35404953360557556,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000036861_ai_edited",
+      "source_id": "000000036861",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.4126497805118561,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000125472_authentic",
+      "source_id": "000000125472",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.321053147315979,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000125472_ai_edited",
+      "source_id": "000000125472",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.31001099944114685,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000572620_authentic",
+      "source_id": "000000572620",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 1,
+      "probability_ai_edited": 0.6563531160354614,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000572620_ai_edited",
+      "source_id": "000000572620",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.6553111672401428,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000234807_authentic",
+      "source_id": "000000234807",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.4695455729961395,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000234807_ai_edited",
+      "source_id": "000000234807",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 0,
+      "probability_ai_edited": 0.45008307695388794,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000539445_authentic",
+      "source_id": "000000539445",
+      "partition": "inner_validation",
+      "y_true": 0,
+      "y_pred": 0,
+      "probability_ai_edited": 0.4519343376159668,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    },
+    {
+      "sample_id": "000000539445_ai_edited",
+      "source_id": "000000539445",
+      "partition": "inner_validation",
+      "y_true": 1,
+      "y_pred": 1,
+      "probability_ai_edited": 0.5584672689437866,
+      "seed": 42,
+      "method": "Frozen_MobileNetV3_Small_Stage1"
+    }
+  ],
+  "summary": {
+    "total_records": 182,
+    "unique_source_ids": 91,
+    "authentic_count": 91,
+    "ai_edited_count": 91,
+    "partitions": [
+      "inner_validation"
+    ],
+    "development_records": 0,
+    "locked_test_records": 0
+  }
+}

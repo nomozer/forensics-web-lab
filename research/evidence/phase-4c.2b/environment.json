@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "4C.2B",
+  "timestamp": "2026-10-01T05:42:07.647710+00:00",
+  "timestamp_utc": "2026-10-01T05:42:07.647710+00:00",
+  "execution_commit_sha": "9ee7fdbb88fad16167f5790b5105867747801372",
+  "branch": "research/phase-4c1-learning-curve",
+  "system": {
+    "os": "Windows 11",
+    "python_version": "3.12.10",
+    "torch_version": "2.4.1+cpu",
+    "torchvision_version": "0.19.1+cpu",
+    "cuda_available": false,
+    "environment_type": "local_audit_and_packaging"
+  },
+  "target_remote_environment": {
+    "platform": "Google Colab",
+    "gpu_capability": "NVIDIA CUDA >= 8GB VRAM (Tesla T4 preferred comparison, L4, V100, A100 compatible)",
+    "python_version": "Capability-based Python >= 3.10 (observed Colab runtime: Python 3.13.15)",
+    "torch_version": "Preinstalled Colab PyTorch with CUDA (reinstall forbidden)",
+    "dataset_root": "MyDrive/Colab Notebooks/forensics-web-lab/phase_4c1/inputs/phase_4c1_binary_n250_reusable.tar (read-only)",
+    "stage2_namespace": "MyDrive/Colab Notebooks/forensics-web-lab/phase_4c2/"
+  }
+}

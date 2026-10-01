@@ -1,0 +1,26 @@
+{
+  "clean_import_check": {
+    "python_executable": "C:\\\\Users\\\\Bunny\\\\AppData\\\\Local\\\\Temp\\\\forensics-clean-verify\\\\Scripts\\\\python.exe",
+    "imports": {
+      "torch": "2.14.0",
+      "torchvision": "0.29.0",
+      "numpy": "2.5.3",
+      "PIL": "12.3.0",
+      "sklearn": "1.9.1",
+      "scipy": "1.18.1",
+      "yaml": "6.0.3",
+      "onnx": "1.23.0",
+      "onnxruntime": "1.30.0",
+      "psutil": "7.2.2",
+      "tqdm": "4.70.1"
+    },
+    "dev_imports": {
+      "pytest": "9.1.1",
+      "nbformat": "5.11.1",
+      "IPython": "9.17.1"
+    },
+    "ruff_available": true,
+    "ruff_version": "0.16.9",
+    "status": "ALL_IMPORTS_PASS"
+  }
+}

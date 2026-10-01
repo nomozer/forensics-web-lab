@@ -1,0 +1,42 @@
+{
+  "macro_f1": {
+    "recomputed": 0.566831184528606,
+    "reported": 0.566831184528606,
+    "match": true
+  },
+  "balanced_accuracy": {
+    "recomputed": 0.5673758865248226,
+    "reported": 0.5673758865248226,
+    "match": true
+  },
+  "auroc": {
+    "recomputed": 0.6094763844877018,
+    "reported": 0.6094763844877018,
+    "match": true
+  },
+  "brier_score": {
+    "recomputed": 0.2406275521823904,
+    "reported": 0.2406275521823904,
+    "match": true
+  },
+  "ece": {
+    "recomputed": 0.028542817431561472,
+    "reported": 0.028542773837738844,
+    "match": true
+  },
+  "confusion_matrix": [
+    [
+      85,
+      56
+    ],
+    [
+      66,
+      75
+    ]
+  ],
+  "class_distribution": [
+    141,
+    141
+  ],
+  "total_samples": 282
+}

@@ -1,0 +1,16 @@
+{
+  "status": "NOT_MEASURED",
+  "reason": "No metadata-only model implementation available in the current codebase. The original run_receipt.json used a placeholder value of 0.5 for metadata baseline Macro-F1.",
+  "placeholder_value": 0.5,
+  "label": "PLACEHOLDER",
+  "gate_participation": false,
+  "requirements_for_measurement": [
+    "Implement metadata feature extraction (EXIF, C2PA, XMP)",
+    "Train logistic regression or similar on metadata features from development_train",
+    "Evaluate on inner_validation with same protocol as Stage 1",
+    "Generate predictions.csv for metadata model",
+    "Compute Macro-F1 on inner_validation"
+  ],
+  "impact_on_stage2_gate": "Stage 2 gate cannot be fully verified until metadata baseline is MEASURED. Current status: INSUFFICIENT_EVIDENCE.",
+  "planned_implementation": "Phase 4C.2 (multimodal fusion) will implement metadata baseline"
+}

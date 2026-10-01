@@ -1,0 +1,36 @@
+{
+  "prior_evidence_corrections": {
+    "phase_4c.1b.6r.3.1_corrections": [
+      {
+        "artifact": "clean-environment-verification.json",
+        "issue": "Windows paths not properly escaped in JSON",
+        "fix": "Escaped backslashes in paths",
+        "timestamp_utc": "2026-09-29T06:15:00Z"
+      },
+      {
+        "artifact": "environment.json",
+        "issue": "git_head pointed to wrong commit (5611b87 instead of 13dfa82)",
+        "fix": "Corrected git_head to 13dfa8274ac1e5390c1fda97738bcb97ea285379",
+        "timestamp_utc": "2026-09-29T06:15:00Z"
+      },
+      {
+        "artifact": "PHASE_REPORT.md",
+        "issue": "Prior manifest counts incorrect (14→13 vs actual 15→14)",
+        "fix": "Corrected to: prior phase 15 entries with 1 duplicate → 14 unique; current phase 9 artifacts + 1 self-excluded manifest",
+        "timestamp_utc": "2026-09-29T06:15:00Z"
+      }
+    ],
+    "notebook_hash_correction": {
+      "file_sha256": "f26576cb70b6c892faaade7b225872d4bafbcfe1424b64df29564dd9e1cd28b9",
+      "git_blob_oid": "17c913e4b8589d86de89b39ba15c4f77f1b2624a",
+      "note": "Previous audit used git hash instead of file SHA-256"
+    },
+    "root_cause_wording_correction": {
+      "before": "buggy filter logic if row[partition] == partition and (partition != inner_validation or row[lc_n50] == True) automatically selects development rows when partition == inner_validation",
+      "after": "Historical script run_smoke_local.py never in git. Fault injection is SYNTHETIC_SYMPTOM_REPRODUCTION combining development_train (lc_n50=true) and all inner_validation rows.",
+      "rootCauseStatus": "HISTORICAL_EXECUTION_PATH_UNAVAILABLE",
+      "observedSymptomStatus": "VERIFIED",
+      "faultInjectionStatus": "SYNTHETIC_SYMPTOM_REPRODUCTION"
+    }
+  }
+}

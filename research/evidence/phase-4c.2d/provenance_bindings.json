@@ -1,0 +1,31 @@
+{
+  "timestamp_utc": "2026-10-01T14:29:25.083392+00:00",
+  "phase": "Phase 4C.2D",
+  "provenance_model": "two_step_functional_and_evidence_seal",
+  "phase4c2d_functional_commit": "e24d0ec65d97fe139c3a4efd0ac03c836b3e9aa9",
+  "audited_through_commit": "e24d0ec65d97fe139c3a4efd0ac03c836b3e9aa9",
+  "evidence_seal_semantics": {
+    "audited_through_commit": "e24d0ec65d97fe139c3a4efd0ac03c836b3e9aa9",
+    "hotfix_content_commit": "c8bcc0be16155a8da004a43c2617b048035a01af",
+    "seal_resolution": "The enclosing Git commit is the terminal evidence-seal commit. Its own SHA is intentionally not embedded in this file to avoid circular hash dependency."
+  },
+  "dataset_binding": {
+    "canonical_bundle_name": "phase_4c1_binary_n250_reusable.tar",
+    "archive_sha256": "d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27",
+    "content_sha256": "c365c812cc814097f11b9e5ed5c82e672015e2ba093f09f975df0a2a01229e9b",
+    "manifest_sha256": "411e35da80843a10f7bb22e33efac8a4d1db70110dbda91cadbbf39532c9312d"
+  },
+  "canonical_commits": {
+    "stage1_evidence_base": "f6eb57df121dbfc908ec1731d55bbe3c87dc5453",
+    "stage2_preregistration": "1d67007967dad18cf82c3104b6d6fbfc0b97e3f9",
+    "stage2_colab_snapshot": "9ee7fdbb88fad16167f5790b5105867747801372",
+    "stage2_ingest_audit": "d8e25f8b4dfcf975877843475d4b8f047530e37b",
+    "paired_analysis_base": "2a634e5a9c0494cf3e7894a7374b3303d7339798",
+    "lineage_reconciliation": "16ea0b1d7772f5ecaed1bcc4437713202123c6c3",
+    "phase4c2d_functional_commit": "e24d0ec65d97fe139c3a4efd0ac03c836b3e9aa9"
+  },
+  "selected_protocol": "stage1_frozen_backbone_linear_probe",
+  "post_hoc_decision": true,
+  "locked_test_accesses": 0,
+  "new_training_runs": 0
+}

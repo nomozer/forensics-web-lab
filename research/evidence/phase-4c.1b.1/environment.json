@@ -1,0 +1,14 @@
+{
+  "virtualEnvironment": true,
+  "pythonExecutable": "D:\\Documents\\forensics-web-lab\\ml\\.venv\\Scripts\\python.exe",
+  "phase": "4C.1B.1",
+  "cudaAvailable": false,
+  "branch": "research/phase-4c1-learning-curve",
+  "pipPath": "D:\\Documents\\forensics-web-lab\\ml\\.venv\\Scripts\\pip.exe",
+  "torchvisionVersion": "0.29.0+cpu",
+  "timestamp": "2026-09-27T21:30:00Z",
+  "torchVersion": "2.14.0+cpu",
+  "description": "Pre-upload integrity closure",
+  "pythonVersion": "3.12.10",
+  "git_head": "c8fc4f851506dc2b5f3202a9fb7501a09c4a90e4"
+}

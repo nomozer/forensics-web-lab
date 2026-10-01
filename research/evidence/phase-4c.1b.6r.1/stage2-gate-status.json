@@ -1,0 +1,38 @@
+{
+  "stage1_macro_f1": 0.565816,
+  "dummy_baseline_macro_f1": 0.493956,
+  "metadata_baseline_macro_f1": null,
+  "gate_conditions": {
+    "stage1_gt_dummy_point": true,
+    "stage1_gt_dummy_ci_lower_gt_0": true,
+    "stage1_gt_dummy_ci_lower_value": 0.110,
+    "stage1_gt_metadata_point": null,
+    "stage1_gt_metadata_ci_lower": null,
+    "stage1_minus_metadata_point": null,
+    "stage1_minus_metadata_ci": null
+  },
+  "gate_conditions_point_estimates": {
+    "stage1_gt_dummy": true,
+    "stage1_gt_metadata": null
+  },
+  "gate_conditions_ci": {
+    "stage1_minus_dummy_ci_lower_gt_0": true,
+    "stage1_minus_metadata_ci_lower_gt_0": null
+  },
+  "gate_passed_point_estimates": null,
+  "gate_passed_ci": null,
+  "single_seed_limitation": true,
+  "verdict": "INSUFFICIENT_EVIDENCE",
+  "reasoning": "Stage 1 Macro-F1 (0.5658) exceeds Dummy baseline (0.494) on validation set. Bootstrap CI lower bound > 0 for Stage 1 vs Dummy comparison. However, metadata baseline is NOT_MEASURED (HISTORICAL_PLACEHOLDER_EXCLUDED_FROM_GATE). Stage 2 gate cannot be fully verified until metadata baseline is measured with real model. Also single-seed limitation: no training-seed variance measured. Only source-level sampling uncertainty captured by bootstrap.",
+  "confidence_intervals": {
+    "stage1_macro_f1_ci": "[0.521961, 0.609319]",
+    "stage1_minus_dummy_ci": "[0.110, 0.198]",
+    "stage1_minus_metadata_ci": "NOT_MEASURED"
+  },
+  "next_actions": [
+    "Implement metadata baseline model (Phase 4C.2)",
+    "Run multi-seed Stage 1 (5 seeds per protocol)",
+    "Compute bootstrap CI for Stage 1 vs Metadata difference",
+    "Only then evaluate Stage 2 eligibility"
+  ]
+}

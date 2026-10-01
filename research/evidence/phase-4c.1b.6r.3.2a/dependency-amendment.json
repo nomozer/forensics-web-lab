@@ -1,0 +1,38 @@
+{
+  "dependency_amendment": {
+    "requirements_dev_txt_created": true,
+    "requirements_dev_txt_content": "-r requirements.txt\nnbformat>=5.10,<6\nipython>=8,<10",
+    "dependency_audit_update": {
+      "nbformat": {
+        "status": "DECLARED_AND_VERIFIED",
+        "previous": "MISSING_BLOCKING",
+        "notes": "Added to requirements-dev.txt"
+      },
+      "ipython": {
+        "status": "DECLARED_AND_VERIFIED",
+        "previous": "MISSING_BLOCKING",
+        "notes": "Added to requirements-dev.txt"
+      },
+      "google.colab": {
+        "status": "RUNTIME_PROVIDED",
+        "notes": "Provided by Colab runtime"
+      },
+      "tensorboard": {
+        "status": "OPTIONAL_NOT_EXECUTED",
+        "notes": "Optional for Colab; not used by current runner"
+      },
+      "ruff": {
+        "status": "DECLARED_AND_VERIFIED_WITH_PREEXISTING_LINT_DEBT",
+        "notes": "ruff check ml has 483 errors; classified as KNOWN_PREEXISTING_NONBLOCKING_LINT_DEBT; does not block training"
+      }
+    },
+    "ruff_lint_debt": {
+      "total_errors": 483,
+      "fixable": 352,
+      "unsafe_fixes": 32,
+      "classification": "KNOWN_PREEXISTING_NONBLOCKING_LINT_DEBT",
+      "training_gate_participation": false,
+      "notes": "Lint debt does not block Phase 4C.1 training; ruff is installed and runs but exit code != 0 is expected"
+    }
+  }
+}

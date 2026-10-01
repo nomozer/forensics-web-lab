@@ -1,0 +1,10 @@
+{
+  "timestamp_utc": "2026-10-01T14:29:25.055638+00:00",
+  "phase": "Phase 4C.2D",
+  "locked_test_partition_status": "SEALED",
+  "locked_test_accesses_to_date": 0,
+  "locked_test_evaluations_to_date": 0,
+  "selected_candidate_protocol": "stage1_frozen_backbone_linear_probe",
+  "unsealing_authorization": "FORBIDDEN_IN_PHASE_4C2D",
+  "next_required_step": "Locked-test evaluation must be executed in a dedicated future confirmatory phase following explicit protocol unsealing and PR review. No locked-test data may be touched during development, hyperparameter selection, or PR preparation."
+}

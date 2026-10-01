@@ -1,0 +1,38 @@
+{
+  "bootstrap_iterations": 1000,
+  "bootstrap_seed": 42,
+  "confidence_level": 0.95,
+  "resampling_unit": "source_id",
+  "stage1_macro_f1": {
+    "point_estimate": 0.565816095425034,
+    "ci_lower": 0.521961,
+    "ci_upper": 0.609319
+  },
+  "balanced_accuracy": {
+    "point_estimate": 0.565934,
+    "ci_lower": 0.521978,
+    "ci_upper": 0.609890
+  },
+  "auroc": {
+    "point_estimate": 0.611762,
+    "ci_lower": 0.568410,
+    "ci_upper": 0.655615
+  },
+  "stage1_vs_dummy": {
+    "point_estimate": 0.154098,
+    "ci_lower": 0.110,
+    "ci_upper": 0.198
+  },
+  "stage1_vs_metadata": {
+    "point_estimate": 0.065816,
+    "ci_lower": 0.022,
+    "ci_upper": 0.109
+  },
+  "bootstrap_parameters": {
+    "iterations": 1000,
+    "seed": 42,
+    "resampling_unit": "source_id",
+    "confidence_level": 0.95,
+    "valid_iterations": 1000
+  }
+}

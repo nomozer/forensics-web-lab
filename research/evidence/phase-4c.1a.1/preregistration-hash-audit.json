@@ -1,0 +1,35 @@
+{
+  "phase": "4C.1A.1",
+  "audit_timestamp": "2026-09-27T02:40:00Z",
+  "file": "ml/configs/pilot_a_binary_preregistered.yaml",
+  "foundation_tag": "v0.1.0-research-foundation",
+  "foundation_tag_commit": "575a786ca4888352d60eef60df9595b57fc9f713",
+  "foundation_tag_sha256": "D25C994A5A51352757D3C445B6C248E267660853A29CE4D6F9CCFE9E53641E64",
+  "foundation_tag_sha256_truncated": "D25C994A...",
+  "current_branch_sha256": "1667968859267FAE9A17778797FEFB6B52D609F0594970AB145FDD59E23E804F",
+  "current_branch_sha256_truncated": "16679688...",
+  "documented_hash_truncated": "727fc316...",
+  "match_status": "LINE_ENDING_DIFFERENCE_ONLY",
+  "git_diff": "NO_DIFFERENCE_IN_GIT_CONTENT",
+  "explanation": "Foundation tag file has LF line endings (hash D25C994A... / 727fc316...). Working tree has CRLF line endings (hash 16679688...). Git normalizes line endings so git diff shows no difference. The documented hash 727fc316... matches the foundation tag LF version. No substantive content change.",
+  "line_ending_difference": true,
+  "git_content_identical": true,
+  "documented_hash_matches_foundation": true,
+  "line_ending_policy": "Git normalizes to LF in repository; working tree uses CRLF on Windows",
+  "amendment_required": false,
+  "hash_history": {
+    "v0.1.0-research-foundation": {
+      "sha256_lf": "D25C994A5A51352757D3C445B6C248E267660853A29CE4D6F9CCFE9E53641E64",
+      "sha256_truncated": "727fc316...",
+      "source": "Foundation tag v0.1.0-research-foundation"
+    },
+    "phase_4b_4": {
+      "superseded_hash": "54140d42485384436052befe58ac46775123e1cb009ea3a11d7389470359fd3b",
+      "status": "superseded-by-phase-4c.0-case-b"
+    },
+    "phase_4b_4_previous": {
+      "superseded_hash": "839531a700b211e5adc4a145e811c4533dbb45a044b63e816c474a462e88ddd1",
+      "status": "superseded-by-phase-4b.4"
+    }
+  }
+}

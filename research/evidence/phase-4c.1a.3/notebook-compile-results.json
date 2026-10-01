@@ -1,0 +1,27 @@
+{
+  "notebook": {
+    "total_cells": 15,
+    "markdown_cells": 1,
+    "code_cells": 14,
+    "compile_results": {
+      "cell_1": "PASS",
+      "cell_2": "PASS",
+      "cell_3": "PASS",
+      "cell_4": "PASS",
+      "cell_5": "PASS",
+      "cell_6": "PASS",
+      "cell_7": "PASS",
+      "cell_8": "PASS",
+      "cell_9": "PASS",
+      "cell_10": "PASS",
+      "cell_11": "PASS",
+      "cell_12": "PASS",
+      "cell_13": "PASS",
+      "cell_14": "PASS"
+    },
+    "execute_assignments": 1,
+    "stage2_training_invocations": 0,
+    "credentials_in_clone_url": false,
+    "gpu_gate_conditional": true
+  }
+}

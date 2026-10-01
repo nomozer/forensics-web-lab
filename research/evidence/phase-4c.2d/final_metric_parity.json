@@ -1,0 +1,200 @@
+{
+  "timestamp_utc": "2026-10-01T14:29:25.055638+00:00",
+  "tolerance": 1e-06,
+  "runs_checked": 15,
+  "stage1_lineage_parity": "15/15 MATCH",
+  "stage2_lineage_parity": "15/15 MATCH",
+  "csv_vs_raw_parity": "15/15 MATCH",
+  "tests_vs_summary_parity": "3/3 COHORTS MATCH",
+  "overall_parity_verdict": "FINAL_PARITY_VERIFIED",
+  "runs": [
+    {
+      "sample_size": 50,
+      "seed": 42,
+      "stage1_macro_f1": 0.5414772029003319,
+      "stage2_macro_f1": 0.5549316185128159,
+      "delta_macro_f1": 0.01345441561248406,
+      "stage1_parity": "MATCH",
+      "stage2_parity": "MATCH",
+      "delta_parity": "MATCH"
+    },
+    {
+      "sample_size": 50,
+      "seed": 1337,
+      "stage1_macro_f1": 0.5370639534883721,
+      "stage2_macro_f1": 0.5546089005710142,
+      "delta_macro_f1": 0.017544947082642093,
+      "stage1_parity": "MATCH",
+      "stage2_parity": "MATCH",
+      "delta_parity": "MATCH"
+    },
+    {
+      "sample_size": 50,
+      "seed": 2025,
+      "stage1_macro_f1": 0.5382384922073215,
+      "stage2_macro_f1": 0.5379593810444874,
+      "delta_macro_f1": -0.0002791111628340781,
+      "stage1_parity": "MATCH",
+      "stage2_parity": "MATCH",
+      "delta_parity": "MATCH"
+    },
+    {
+      "sample_size": 50,
+      "seed": 3407,
+      "stage1_macro_f1": 0.5059343434343435,
+      "stage2_macro_f1": 0.5208062221953212,
+      "delta_macro_f1": 0.01487187876097773,
+      "stage1_parity": "MATCH",
+      "stage2_parity": "MATCH",
+      "delta_parity": "MATCH"
+    },
+    {
+      "sample_size": 50,
+      "seed": 9001,
+      "stage1_macro_f1": 0.5384057971014493,
+      "stage2_macro_f1": 0.5398158264398314,
+      "delta_macro_f1": 0.0014100293383820794,
+      "stage1_parity": "MATCH",
+      "stage2_parity": "MATCH",
+      "delta_parity": "MATCH"
+    },
+    {
+      "sample_size": 100,
+      "seed": 42,
+      "stage1_macro_f1": 0.577313286884244,
+      "stage2_macro_f1": 0.5659209612655858,
+      "delta_macro_f1": -0.011392325618658217,
+      "stage1_parity": "MATCH",
+      "stage2_parity": "MATCH",
+      "delta_parity": "MATCH"
+    },
+    {
+      "sample_size": 100,
+      "seed": 1337,
+      "stage1_macro_f1": 0.565816095425034,
+      "stage2_macro_f1": 0.5750276514686002,
+      "delta_macro_f1": 0.009211556043566271,
+      "stage1_parity": "MATCH",
+      "stage2_parity": "MATCH",
+      "delta_parity": "MATCH"
+    },
+    {
+      "sample_size": 100,
+      "seed": 2025,
+      "stage1_macro_f1": 0.5740296057630931,
+      "stage2_macro_f1": 0.6093121693121692,
+      "delta_macro_f1": 0.03528256354907611,
+      "stage1_parity": "MATCH",
+      "stage2_parity": "MATCH",
+      "delta_parity": "MATCH"
+    },
+    {
+      "sample_size": 100,
+      "seed": 3407,
+      "stage1_macro_f1": 0.5701308139534884,
+      "stage2_macro_f1": 0.5603864734299517,
+      "delta_macro_f1": -0.009744340523536676,
+      "stage1_parity": "MATCH",
+      "stage2_parity": "MATCH",
+      "delta_parity": "MATCH"
+    },
+    {
+      "sample_size": 100,
+      "seed": 9001,
+      "stage1_macro_f1": 0.5766035227650382,
+      "stage2_macro_f1": 0.5722613924243811,
+      "delta_macro_f1": -0.004342130340657113,
+      "stage1_parity": "MATCH",
+      "stage2_parity": "MATCH",
+      "delta_parity": "MATCH"
+    },
+    {
+      "sample_size": 250,
+      "seed": 42,
+      "stage1_macro_f1": 0.5769103040183559,
+      "stage2_macro_f1": 0.5578231292517006,
+      "delta_macro_f1": -0.019087174766655224,
+      "stage1_parity": "MATCH",
+      "stage2_parity": "MATCH",
+      "delta_parity": "MATCH"
+    },
+    {
+      "sample_size": 250,
+      "seed": 1337,
+      "stage1_macro_f1": 0.5473214285714285,
+      "stage2_macro_f1": 0.5671951219512195,
+      "delta_macro_f1": 0.019873693379790947,
+      "stage1_parity": "MATCH",
+      "stage2_parity": "MATCH",
+      "delta_parity": "MATCH"
+    },
+    {
+      "sample_size": 250,
+      "seed": 2025,
+      "stage1_macro_f1": 0.5449297731131347,
+      "stage2_macro_f1": 0.5687867318994431,
+      "delta_macro_f1": 0.023856958786308335,
+      "stage1_parity": "MATCH",
+      "stage2_parity": "MATCH",
+      "delta_parity": "MATCH"
+    },
+    {
+      "sample_size": 250,
+      "seed": 3407,
+      "stage1_macro_f1": 0.583371486127644,
+      "stage2_macro_f1": 0.5869019156856218,
+      "delta_macro_f1": 0.0035304295579777767,
+      "stage1_parity": "MATCH",
+      "stage2_parity": "MATCH",
+      "delta_parity": "MATCH"
+    },
+    {
+      "sample_size": 250,
+      "seed": 9001,
+      "stage1_macro_f1": 0.561038961038961,
+      "stage2_macro_f1": 0.5648700178555215,
+      "delta_macro_f1": 0.0038310568165604852,
+      "stage1_parity": "MATCH",
+      "stage2_parity": "MATCH",
+      "delta_parity": "MATCH"
+    }
+  ],
+  "cohorts": [
+    {
+      "cohort": "N=50",
+      "sample_size": 50,
+      "mean_delta_macro_f1": 0.009400431926330378,
+      "std_delta_macro_f1": 0.008219560956277504,
+      "t_statistic": 2.557314790527889,
+      "paired_t_raw_p": 0.0628164783728038,
+      "paired_t_holm_p": 0.1884494351184114,
+      "perm_raw_p": 0.125,
+      "perm_holm_p": 0.375,
+      "parity_verdict": "MATCH"
+    },
+    {
+      "cohort": "N=100",
+      "sample_size": 100,
+      "mean_delta_macro_f1": 0.0038030646219580745,
+      "std_delta_macro_f1": 0.01937128612069834,
+      "t_statistic": 0.43899568487795504,
+      "paired_t_raw_p": 0.6833364013004907,
+      "paired_t_holm_p": 0.8925016707533232,
+      "perm_raw_p": 0.875,
+      "perm_holm_p": 0.875,
+      "parity_verdict": "MATCH"
+    },
+    {
+      "cohort": "N=250",
+      "sample_size": 250,
+      "mean_delta_macro_f1": 0.006400992754796464,
+      "std_delta_macro_f1": 0.016961101081733862,
+      "t_statistic": 0.8438753388848604,
+      "paired_t_raw_p": 0.4462508353766616,
+      "paired_t_holm_p": 0.8925016707533232,
+      "perm_raw_p": 0.3125,
+      "perm_holm_p": 0.625,
+      "parity_verdict": "MATCH"
+    }
+  ]
+}

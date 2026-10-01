@@ -1,0 +1,431 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.1.1, pluggy-1.6.0 -- D:\Documents\forensics-web-lab\ml\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Documents\forensics-web-lab\ml
+configfile: pyproject.toml
+plugins: platformdirs-4.12.0
+collecting ... collected 153 items
+
+<Dir ml>
+  <Dir tests>
+    <Module test_acquisition_safety.py>
+      Comprehensive offline test suite for Phase 4A.4:
+      - Free-disk preflight check.
+      - Plan schema and anti-leakage validation.
+      - Approval hash verification gate.
+      - Part-file writing, atomic renaming, and resume detection.
+      - Content-Length and Checksum mismatch guards.
+      - Idempotent rerun verification.
+      - Safe zip extraction (Zip slip path traversal & unsafe symlinks).
+      - Staging directory isolation and acquisition receipt generation.
+      - Zero-leakage grouping by source_id with variant_id and mask_id.
+      - Cardinality audit verification.
+      - Matched-pair scientific claim wording guard.
+      - Paired stratified bootstrap guard.
+      <Function test_free_disk_preflight_check>
+        Verifies that disk usage check correctly identifies sufficient vs insufficient free disk space.
+      <Function test_plan_schema_validation>
+        Validates that valid plan passes schema check, while malformed plans are rejected.
+      <Function test_approval_hash_mismatch_blocks_execution>
+        Ensures execution is strictly blocked when --approved-plan-sha256 is missing or mismatched.
+      <Function test_part_file_and_atomic_completion>
+        Verifies that download uses .part file during transfer and atomically renames upon completion.
+      <Function test_resume_supported_and_resets_when_unsupported>
+        Verifies that .part file resumes when supported and overwrites when resumeSupported is false.
+      <Function test_content_length_mismatch_detected>
+        Verifies that Content-Length mismatch aborts and removes .part file.
+      <Function test_checksum_mismatch_detected>
+        Verifies that SHA-256 mismatch aborts and removes .part file.
+      <Function test_idempotent_rerun>
+        Verifies that running download when target file already exists and matches hash skips re-download.
+      <Function test_safe_extract_zip_prevents_path_traversal>
+        Verifies that safe_extract_zip blocks Zip Slip path traversal attempts.
+      <Function test_safe_extract_zip_prevents_unsafe_symlink>
+        Verifies that safe_extract_zip blocks symlink archive members.
+      <Function test_staging_isolation_and_acquisition_receipt>
+        Verifies that mock execution uses staging directory and produces an auditable acquisition-receipt.json.
+      <Function test_group_split_by_source_id_with_variants>
+        Verifies that all variant_id and mask_id with the same source_id reside in the same split (zero leakage).
+      <Function test_unverified_cardinality_audit>
+        Verifies that tgif-cardinality-audit.json distinguishes verified, estimated, and unverified.
+      <Function test_matched_pair_calibrated_wording_guard>
+        Enforces scientific honesty: bans absolute shortcut elimination claims across code and docs.
+      <Function test_paired_bootstrap_guard_statistically_sound>
+        Verifies that paired stratified bootstrap CI guard accepts when lower CI > 0 and rejects when lower CI <= 0.
+      <Function test_full_plan_sha256_invariance>
+        Enforces plan invariance: pilot-a-tgif.v1.json SHA-256 must match exactly.
+      <Function test_component_selection_single_component_and_isolation>
+        Verifies that --component tgif-masks isolates download only to masks and ignores orig and sd2-sp.
+      <Function test_nonexistent_component_rejected>
+        Verifies that specifying a component not in the plan exits with non-zero code.
+      <Function test_unapproved_components_locked_in_live_execution>
+        Verifies that tgif-orig and tgif-sd2-sp are locked and blocked from live network execution.
+      <Function test_content_length_exceeding_hard_ceiling_aborts>
+        Verifies that if Content-Length exceeds max_download_bytes, download aborts before reading body.
+      <Function test_streaming_exceeding_hard_ceiling_aborts_and_cleans_part>
+        Verifies that chunked streaming exceeding max_download_bytes halts and removes .part file.
+      <Function test_hostname_restricted_redirect_handler>
+        Verifies HostnameRestrictedRedirectHandler allows approved hostname and blocks unauthorized redirect.
+      <Function test_unauthorized_initial_hostname_blocked>
+        Verifies that download_file_safely rejects unauthorized initial hostnames.
+    <Module test_contamination_guard.py>
+      Tests for Dual-Track Contamination Guards and Synthetic Smoke Fixture (ADR-0006).
+      <Function test_official_dataset_registry_validation>
+      <Function test_reject_research_dataset_in_product_track>
+      <Function test_reject_fixture_dataset_in_product_track>
+      <Function test_reject_blocked_dataset>
+      <Function test_accept_research_dataset_in_research_track>
+      <Function test_accept_synthetic_smoke_in_fixture_track>
+      <Function test_genimage_metadata_only_run>
+      <Function test_external_dataset_execute_locked_without_approval>
+      <Function test_local_fixture_execute_succeeds_with_zero_network>
+      <Function test_synthetic_smoke_fixture_generation_and_provenance>
+    <Module test_eval_leakage_regression.py>
+      Regression tests for evaluation loader partition filtering (EVAL-LEAK-001 fix).
+      These tests ensure the evaluation loader correctly filters partitions and prevents
+      data leakage between training and validation sets.
+      <Function test_discover_source_instances_partitions>
+        Test that discover_source_instances_from_manifest correctly loads all partitions.
+      <Function test_development_validation_no_overlap>
+        Test that development_train and inner_validation source_ids don't overlap.
+      <Function test_build_instances_for_training_filters_correctly>
+        Test that build_instances_for_training correctly filters by partition and lc_n50.
+      <Function test_create_data_loaders_validation_only_inner_validation>
+        Test that create_data_loaders only uses inner_validation for validation.
+      <Function test_evaluation_loader_rejects_mixed_partition>
+        Test that evaluation fails when given mixed partition data.
+      <Function test_validation_source_count>
+        Test that validation source count matches manifest.
+      <Function test_training_source_count>
+        Test that training source count matches N=50 (lc_n50=True).
+    <Module test_evidence_reproducer.py>
+      Tests for evidence reproduction runner and invariant failure detection (Phase 4B.4).
+      
+      Verifies that scripts/reproduce-phase-4b3-evidence.py correctly catches:
+      - Wrong Git HEAD
+      - 1-byte alteration in an archive
+      - Missing rows in manifest
+      - Non-existent image paths
+      - Cross-partition source overlap
+      - Runtime version mismatches
+      - Machine-local path leaks
+      <Function test_reproducer_detects_wrong_head>
+        Verifies that wrong Git HEAD is detected.
+      <Function test_reproducer_detects_archive_one_byte_alteration>
+        Verifies that altering an archive by 1 byte is detected by checksum mismatch.
+      <Function test_reproducer_detects_manifest_missing_rows>
+        Verifies that manifest with fewer than 684 rows raises assertion error.
+      <Function test_reproducer_detects_nonexistent_image_paths>
+        Verifies that missing authentic or edited image paths are detected.
+      <Function test_reproducer_detects_cross_partition_source_overlap>
+        Verifies that overlapping source IDs between partitions are caught.
+      <Function test_reproducer_detects_machine_local_paths>
+        Verifies that machine-local paths (D:\, C:\, file:///) are detected.
+      <Function test_reproducer_runtime_version_detection>
+        Verifies that measure_runtime_environment captures real versions.
+    <Module test_locked_test_guard.py>
+      Tests for Role-Based Locked-Test Access Guard (Phase 4B.3).
+      <Function test_training_loader_rejected_from_locked_test>
+        Verifies that training loader is strictly rejected with PermissionError.
+      <Function test_development_evaluator_rejected_from_locked_test>
+        Verifies that development / inner-val evaluator is rejected with PermissionError.
+      <Function test_final_evaluator_missing_binding_rejected>
+        Verifies that final evaluator without an experiment lock binding is rejected.
+      <Function test_final_evaluator_invalid_binding_rejected>
+        Verifies that final evaluator with incomplete or corrupted hashes is rejected.
+      <Function test_final_evaluator_tampered_seal_rejected>
+        Verifies that if locked split seal doesn't match canonical frozen seal, access is rejected.
+      <Function test_final_evaluator_valid_binding_granted>
+        Verifies that final evaluator with a complete, valid binding is granted access.
+      <Function test_filter_partition_records_enforces_rules>
+        Verifies that filter_partition_records filters correctly and guards locked_test records.
+    <Module test_model_pipeline.py>
+      <Function test_mobilenetv3_forward_shape>
+      <Function test_focal_loss_computation>
+      <Function test_manifest_csv_roundtrip>
+      <Function test_group_split_prevents_leakage>
+      <Function test_temperature_scaler_and_ece>
+    <Module test_option_p_protocol.py>
+      Unit tests for Phase 4B.2 Option P acquisition, security gates, and split freeze:
+      - Safe tar extraction (Tar Slip path traversal, absolute path, unsafe escaping symlink).
+      - Remote metadata drift detection.
+      - Archive idempotency and integrity reuse.
+      - Deterministic nested split invariants (N=50 subset N=100 subset N=250).
+      - Source-level isolation (zero cross-split overlap).
+      - Locked-test seal stability.
+      - Two-class runnable vs three-class blocked coverage guard.
+      <Function test_safe_extract_tar_prevents_tar_slip>
+        Verifies that safe_extract_tar rejects archives containing path traversal (Tar Slip).
+      <Function test_safe_extract_tar_prevents_absolute_path>
+        Verifies that safe_extract_tar rejects archives containing absolute paths.
+      <Function test_safe_extract_tar_prevents_escaping_symlink>
+        Verifies that safe_extract_tar rejects symlinks pointing outside target extraction directory.
+      <Function test_safe_extract_tar_valid_extraction>
+        Verifies that benign tar archives extract cleanly and return correct prospective paths.
+      <Function test_deterministic_nested_split_invariants>
+        Verifies Phase 4B.2 partitioning invariants:
+        - development_pool = 341 sources partitioned into 250 train and 91 inner-val.
+        - locked_test = 343 sources.
+        - Zero overlap across all partitions.
+        - Nested learning curves: N=50 subset N=100 subset N=250.
+        - Determinism across seeds.
+      <Function test_class_coverage_guard_rejects_three_class>
+        Verifies that Option P allows two-class binary training but blocks three-class pipeline.
+      <Function test_option_p_dry_run_zero_network>
+        Verifies that acquire.py with --option option-p in dry-run mode issues zero network requests.
+      <Function test_remote_metadata_drift_detection>
+        Verifies that remote metadata drift in Content-Length halts acquisition.
+      <Function test_locked_test_access_guard>
+        Verifies that locked_test partition is strictly isolated from training data loaders.
+      <Function test_pairability_canonical_matching_parsers>
+        Verifies parsing of authentic, AI-edited, and mask filenames across all resolutions.
+      <Function test_resume_and_idempotency_behavior>
+        Verifies that download_file_safely reuses an already verified archive.
+    <Module test_pair_aware_loader.py>
+      Tests for Pair-Aware Data Loader, Variant Imbalance Control, and Source-Level Aggregation (Phase 4B.3).
+      <Function test_equal_source_contribution_and_class_balance>
+        Verifies Strategy A invariant:
+        - Exactly 1 authentic and 1 edited variant per unique source_id per epoch.
+        - Exact 1:1 balance between authentic and ai_edited.
+        - Total samples per epoch == 2 * num_sources.
+      <Function test_deterministic_variant_selection_with_same_seed>
+        Verifies that the same seed and epoch produce the identical sample sequence.
+      <Function test_variant_cycling_across_epochs>
+        Verifies that edited variants cycle across successive epochs so all variants get trained over time.
+      <Function test_no_source_leakage_across_partitions>
+        Verifies that instances partitioned into train, val, test share zero source_ids.
+      <Function test_metric_aggregation_by_source_id>
+        Verifies that predictions across multiple variants are aggregated to source_id level,
+        and returns exact statistical units for primary metric evaluation.
+      <Function test_discover_source_instances_on_actual_manifest>
+        Verifies that discover_source_instances_from_manifest correctly reads option-p manifest.
+        Requires local Option P manifest (excluded from Git).
+      <Function test_stable_offset_across_pythonhashseeds>
+        Verifies that compute_stable_source_offset and PairAwareSampler produce
+        the EXACT same sample sequences across different Python processes with different PYTHONHASHSEED.
+      <Function test_authentic_and_edited_pairs_share_resolution_bucket>
+        Verifies that in every sampled pair, authentic and edited samples share the exact same resolution bucket.
+      <Function test_balanced_resolution_and_edit_types_over_epochs>
+        Verifies that:
+        1. Over 3 epochs, each source's authentic samples cycle through native, 512, 1024 evenly.
+        2. Over 6 epochs, each source's edited samples cycle through bbox and segm evenly (3 bbox, 3 segm).
+      <Function test_identical_preprocessing_contract>
+        Verifies that both classes (authentic and ai_edited) share identical preprocessing contracts:
+        - Same input dimensions
+        - Same normalization constants
+        - No class-conditional transform branching
+    <Module test_phase4c0_gates.py>
+      Targeted Tests for Phase 4C.0 Gates and Invariants.
+      Verifies:
+      1. Pixel geometry from real files (Case B confirmation).
+      2. Real variant mapping structure.
+      3. Resolution-matched pairing on real disk assets.
+      4. Stable sampler cross-process determinism.
+      5. Baseline feature leakage guard (Metadata & DSP).
+      6. Frozen-backbone gradient isolation.
+      7. Locked-test access denial.
+      8. Network byte ceiling enforcement.
+      9. Checkpoint receipt and Research Track isolation.
+      <Function test_real_pixel_geometry_audit>
+        Verifies that the pixel-geometry audit confirmed Case B with 100% native match rate.
+      <Function test_real_variant_mapping_structure>
+        Verifies that real-variant-map.json correctly indexes all 684 sources.
+      <Function test_real_data_resolution_matched_pairing>
+        Verifies that PairAwareSampler produces 100% resolution-matched pairs on real disk assets.
+        Requires local Option P manifest and image files (excluded from Git).
+      <Function test_stable_sampler_across_subprocesses>
+        Verifies that sampler output is identical across processes with different PYTHONHASHSEED.
+        Uses synthetic fixture data instead of research manifest to remain hermetic.
+      <Function test_baseline_feature_leakage_guard>
+        Verifies that stage0 baselines recorded feature leakage guard and uninformative metadata AUROC.
+      <Function test_frozen_backbone_gradient_isolation>
+        Verifies that frozen backbone has zero gradients during backpropagation.
+      <Function test_locked_test_guard_denial>
+        Verifies that LockedTestAccessGuard strictly denies training and development access.
+      <Function test_network_byte_ceiling_enforcement>
+        Verifies that pretrained weights receipt records compliance with 12 MiB ceiling.
+      <Function test_checkpoint_metadata_contract_hermetic>
+        Hermetic verification of checkpoint metadata contracts without requiring binary artifact.
+        Checks receipt/binding JSON structure, paths, and Git isolation policy.
+      <Function test_checkpoint_receipt_and_research_isolation>
+        Verifies checkpoint receipt integrity and research track isolation from Git.
+        Requires local research checkpoint artifact (excluded from Git).
+    <Module test_phase4c0a_reconciliation.py>
+      Targeted tests for Phase 4C.0a reconciliation and main-readiness gates.
+      <Function test_checkpoint_architecture_matches_binding>
+        Verify that checkpoint physical tensors match authoritative smoke binding.
+        Requires local research checkpoint artifact (excluded from Git).
+      <Function test_loss_name_matches_training_implementation>
+        Verify loss function name is consistently BCEWithLogitsLoss across code and config.
+      <Function test_metric_reproduction_tolerance>
+        Verify checkpoint re-evaluation matches original recorded smoke metrics.
+      <Function test_paired_aggregation_by_source_and_label>
+        Verify inner_validation paired evaluation structure: 91 sources -> 182 balanced units.
+      <Function test_bootstrap_grouping_by_source_id>
+        Verify that source-level bootstrap preserves joint pair linkage (authentic & edited together).
+      <Function test_stage0_prediction_artifact_hashes>
+        Verify Stage 0 authoritative table has valid SHA-256 hashes and expected bounds.
+      <Function test_resource_labels_distinguish_heap_and_rss>
+        Verify memory profile explicitly distinguishes python heap peak vs unmeasured RSS.
+      <Function test_locked_test_access_remains_zero>
+        Verify locked-test evaluations count is zero across all artifacts.
+    <Module test_phase_4c1_bundle.py>
+      Bundle exporter and validator tests for Phase 4C.1.
+      Tests smoke bundle creation, validation, and fault injection.
+      <Class TestSmokeBundleCreation>
+        Tests for smoke bundle creation.
+        <Function test_select_smoke_source_ids>
+          Test N=50 source selection from development_train.
+        <Function test_create_smoke_bundle_structure>
+          Test smoke bundle has correct structure.
+        <Function test_smoke_manifest_content>
+          Test smoke manifest has correct rows and no locked_test.
+      <Class TestBundleReceipt>
+        Tests for bundle receipt creation.
+        <Function test_create_bundle_receipt>
+          Test bundle receipt has all required fields.
+      <Class TestValidator>
+        Tests for bundle validator.
+        <Function test_validate_locked_test_exclusion_passes>
+          Test validator passes when no locked_test in bundle.
+        <Function test_validate_locked_test_exclusion_fails_on_row>
+          Test validator fails when locked_test row in manifest.
+        <Function test_validate_bundle_receipt>
+          Test bundle receipt validation.
+        <Function test_validate_bundle_receipt_fails_on_hash_mismatch>
+          Test receipt validation fails on hash mismatch.
+      <Class TestFaultInjection>
+        Fault injection tests for bundle validation.
+        <Function test_missing_image_file>
+          Test validator catches missing image file.
+        <Function test_modified_image_byte>
+          Test validator catches modified image byte via SHA256.
+        <Function test_cross_partition_source_overlap>
+          Test validator detects dev/val source overlap.
+        <Function test_invalid_yaml>
+          Test validator catches invalid YAML.
+      <Class TestExporterCLI>
+        Tests for exporter CLI.
+        <Function test_exporter_dry_run>
+          Test exporter dry-run works.
+        <Function test_exporter_execute>
+          Test exporter execute creates bundle.
+        <Function test_validator_on_smoke_bundle>
+          Test validator passes on smoke bundle.
+    <Module test_phase_4c1_notebook.py>
+      Notebook compilation tests for Phase 4C.1 Colab notebook.
+      Uses IPython TransformerManager to convert shell magics and compile each code cell.
+      <Function test_notebook_loads>
+        Test that notebook loads without JSON errors.
+      <Function test_notebook_cell_count>
+        Test exact cell count and types.
+      <Function test_single_execute_assignment>
+        Test EXECUTE = False appears exactly once as assignment.
+      <Function test_no_stage2_training_invocation>
+        Test Stage 2 cell does not invoke training runner.
+      <Function test_no_credentials_in_clone_url>
+        Test git clone URL doesn't contain credentials after reset.
+      <Function test_gpu_gate_conditional_on_execute>
+        Test GPU gate only runs when EXECUTE=True.
+      <Function test_required_cells_present>
+        Test all 14 required cells are present.
+      <Function test_code_cells_compile>
+        Test each code cell compiles after IPython magic transformation.
+    <Module test_phase_4c1_runner.py>
+      Training runner tests for Phase 4C.1.
+      Tests CLI, integration (CPU fixture), and fault injection.
+      <Class TestRunnerImports>
+        Test runner imports correctly.
+        <Function test_imports>
+          Test all required modules can be imported.
+        <Function test_no_duplicate_functions>
+          Test no duplicate function definitions.
+      <Class TestUtilityFunctions>
+        Test utility functions.
+        <Function test_set_seed>
+          Test seed setting.
+        <Function test_compute_sha256>
+          Test SHA256 computation.
+        <Function test_save_checkpoint>
+          Test checkpoint saving.
+      <Class TestDataLoading>
+        Test data loading functions.
+        <Function test_build_instances_for_training>
+          Test instance building from bundle manifest.
+        <Function test_create_data_loaders>
+          Test data loader creation.
+      <Class TestBaselines>
+        Test baseline functions.
+        <Function test_run_dummy_baseline>
+          Test dummy baseline returns expected structure.
+        <Function test_run_metadata_baseline>
+          Test metadata baseline returns expected structure.
+      <Class TestCLI>
+        Test CLI argument parsing.
+        <Function test_cli_help>
+          Test CLI help works.
+        <Function test_cli_missing_required_args>
+          Test CLI fails with missing required args.
+      <Class TestFaultInjection>
+        Fault injection tests for runner.
+        <Function test_runner_failure_on_missing_checkpoint>
+          Test runner handles missing checkpoint gracefully.
+        <Function test_runner_cuda_check>
+          Test runner checks CUDA availability.
+      <Class TestIntegrationFixture>
+        Technical fixture run on CPU (not scientific training).
+        <Function test_smoke_run_cpu_fixture>
+          Technical fixture: run training for 1 epoch on CPU to verify pipeline.
+          
+          This is a TECHNICAL FIXTURE RUN, not a scientific training run.
+          It verifies the pipeline executes without errors.
+        <Function test_pipeline_structure>
+          Test pipeline components connect correctly.
+    <Module test_pilot_protocol.py>
+      Unit tests for Scientific Pilot Protocol, Label Semantics Gate, and Anti-Shortcut Invariants (Phase 4A.3).
+      <Function test_label_taxonomy_strictly_three_classes>
+        Enforces that the scientific classification taxonomy contains exactly authentic, fully_generated, ai_edited.
+      <Function test_tgif_fr_cannot_be_mapped_to_fully_generated>
+        Enforces scientific rule: TGIF fr (fully regenerated) canvas is conditioned on real photo and CANNOT be fully_generated.
+      <Function test_tgif_sp_mapped_to_ai_edited>
+        Enforces that spliced inpainting components (-sp) must be mapped to ai_edited.
+      <Function test_pilot_configs_pass_validation>
+        Validates that all committed pilot configuration files in ml/configs/ pass validation.
+      <Function test_manifest_group_isolation_no_source_id_leakage>
+        Enforces zero data leakage: no source_id can appear in more than one split.
+      <Function test_duplicate_rejection_and_isolation>
+        Verifies that exact duplicate SHA256 hashes and identical near-duplicate hashes are detectable.
+      <Function test_research_only_license_enforcement>
+        Verifies that research-only datasets (TGIF, GenImage) are blocked from being routed into product track.
+      <Function test_acquisition_dry_run_zero_bytes_invariance>
+        Verifies that running pilot dry-runs reports exit code 0 and downloads exactly 0 bytes.
+    <Module test_small_data_protocol.py>
+      Unit tests for Small-Data Feasibility, Source ID Audit, and Learning Curve Protocol (Phase 4B.1).
+      <Function test_previous_parser_within_train_category_collision>
+        Tests that parser 1 correctly extracts COCO ID but merges distinct category inpainting instances in train.
+      <Function test_canonical_dual_key_parser_integrity>
+        Tests Parser 3 canonical dual-key extraction on various TGIF mask formats.
+      <Function test_zero_cross_split_source_id_collision>
+        Verifies that across local masks manifest, train/val/test are strictly disjoint.
+        Requires local mask manifest (excluded from Git).
+      <Function test_variant_grouping_and_instance_count>
+        Verifies that 31,238 masks map to exactly 3,124 category inpainting task instances.
+        Requires local mask manifest (excluded from Git).
+      <Function test_small_data_options_selection>
+        Verifies small-data-options.json schema, byte calculations, and recommendation.
+      <Function test_learning_curve_config_validates>
+        Verifies that the pre-registered learning curve YAML config passes validation.
+      <Function test_learning_curve_capacity_overflow_rejected>
+        Enforces scientific gate: sample size exceeding training pool cannot be runnable.
+      <Function test_unsupported_three_class_activation_rejected>
+        Enforces that Pilot A cannot accept fully_generated label.
+      <Function test_independent_unit_declaration_enforced>
+        Enforces that independent_statistical_unit must strictly be source_id.
+
+============================== warnings summary ===============================
+ml\tests\test_phase_4c1_runner.py:331
+  D:\Documents\forensics-web-lab\ml\tests\test_phase_4c1_runner.py:331: PytestUnknownMarkWarning: Unknown pytest.mark.integration - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.integration
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 153 tests collected in 9.52s =========================

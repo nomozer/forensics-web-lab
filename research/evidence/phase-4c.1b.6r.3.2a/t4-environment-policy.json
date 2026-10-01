@@ -1,0 +1,21 @@
+{
+  "t4_environment_policy": {
+    "policy": "All five seeds run in the same T4 runtime session. Before training, record Python version, CUDA version, GPU model, torch version, torchvision version, and pip freeze. Seed 42 run creates the first environment lock. Seeds 1337, 2025, 3407, 9001 must match this lock. On Colab reconnect, rebuild environment from lock before continuing. Each receipt includes SHA-256 of environment lock. Local GTX 1650 smoke run is EXPLORATORY_LOCAL_SMOKE and not part of T4 aggregate.",
+    "pre_training_lock": {
+      "python_version": null,
+      "cuda_version": null,
+      "gpu_model": null,
+      "torch_version": null,
+      "torchvision_version": null,
+      "pip_freeze_sha256": null,
+      "timestamp_utc": null,
+      "status": "PENDING_T4_PREFLIGHT"
+    },
+    "seed_42_lock_creation": true,
+    "seed_1337_2025_3407_9001_must_match_lock": true,
+    "reconnect_policy": "Rebuild environment from lock before continuing after Colab reconnect",
+    "receipt_contains_lock_sha256": true,
+    "local_gtx1650_smoke_excluded_from_aggregate": true,
+    "label": "EXPLORATORY_LOCAL_SMOKE"
+  }
+}

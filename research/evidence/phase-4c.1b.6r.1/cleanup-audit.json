@@ -1,0 +1,28 @@
+{
+  "cleanup_audit": {
+    "phase": "4C.1B.6R.1",
+    "timestamp_utc": "2026-09-28T07:00:00Z",
+    "repository_root_scripts_removed": [
+      "check_lines.py",
+      "fix_ledger_final.py",
+      "fix_ledger_short.py",
+      "fix_status_ledger.py",
+      "update_code_index.py",
+      "update_state_phase6.py"
+    ],
+    "untracked_files_classification": {
+      "PROJECT_SOURCE": 0,
+      "REPRODUCIBILITY_SCRIPT": 2,
+      "PHASE_EVIDENCE": 0,
+      "LOCAL_RESEARCH_ARTIFACT": 0,
+      "TEMPORARY_ONE_TIME_SCRIPT": 0
+    },
+    "new_scripts_created": [
+      "scripts/research/create_dummy_baseline_artifact.py",
+      "scripts/research/reproduce_phase_4c1b6r1_statistics.py"
+    ],
+    "evidence_directory": "research/evidence/phase-4c.1b.6r.1/",
+    "git_status_clean": true,
+    "dataset_archive_checkpoint_outside_git": true
+  }
+}
