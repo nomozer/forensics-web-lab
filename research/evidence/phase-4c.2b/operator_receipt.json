@@ -1,16 +1,23 @@
 {
   "schema_version": "1.0.0",
-  "phase": "Phase 4C.2B",
+  "phase": "Phase 4C.2B.2",
   "script_name": "phase_4c2_execute_all.sh",
   "script_path": "scripts/phase_4c2_execute_all.sh",
-  "bytes": 33633,
-  "sha256": "c460a5485cfd779b6db6b851108e5a386abd6bc4afdc8adf548cd16fdcea3fa2",
-  "timestamp_utc": "2026-10-01T05:42:07.647710+00:00",
+  "bytes": 51501,
+  "sha256": "fafabdec41eea74b40e0846e8d09bdc19bd02a6c26deccd13b9cd251bc2c58d7",
+  "timestamp_utc": "2026-10-01T06:21:00.000000+00:00",
   "execution_commit_sha": "9ee7fdbb88fad16167f5790b5105867747801372",
   "code_archive": {
     "name": "phase_4c2_code_9ee7fdb.tar.gz",
     "bytes": 10478136,
-    "sha256": "951e9089582eb60cf3d293c37982a8f3c3b6a3e05fb3ef45f23c666d41bc7d89"
+    "sha256": "951e9089582eb60cf3d293c37982a8f3c3b6a3e05fb3ef45f23c666d41bc7d89",
+    "exact_binding_check": "FAIL_CLOSED_BEFORE_TAR_AUDIT"
+  },
+  "canonical_components": {
+    "runner_sha256": "8ef0f0a06c25134a85982536064117a0bfc2eb9d63373c3b4ad6f4a2865783d4",
+    "config_sha256": "5ac7d41859798842aadf53d40fb8e9f2328e6ef46a4d2b1b248915cdee7543a4",
+    "schema_sha256": "dde1c873a43276cdf6bfd2ca459edebe7e8e14f2f02b1c8e8b9fe879936df98f",
+    "dataset_binding_sha256": "dee09f81081466debd554642434a8282e60bef105bb8ff5a5a56c2bfc4f05c07"
   },
   "dataset_bundle": {
     "name": "phase_4c1_binary_n250_reusable.tar",
@@ -27,6 +34,38 @@
     "file_sha256": "047dcff4addef86ea5bc2eff13c9614dc11f47ab1160d0a71a25e7db994f4e1f",
     "file_bytes": 10306551,
     "backbone_state_fingerprint": "d42bb32ad876b9de2b04a6ccd245f76c4d0c6bb3ded74c25261cf14720c7e7d5"
+  },
+  "destructive_path_guard": {
+    "status": "PASS",
+    "method": "assert_safe_ephemeral_dir resolving real canonical path",
+    "protected_targets": [
+      "/content/phase_4c2_code",
+      "/content/phase_4c2_work",
+      "/content/phase_4c2_bundle"
+    ],
+    "blocked_patterns": [
+      "/",
+      "/content",
+      "/content/drive",
+      "phase_4c1",
+      "execution_79bb115",
+      "symlinks into forbidden zones"
+    ]
+  },
+  "scientific_environment_lock": {
+    "lock_file": "phase4c2_environment_lock.json",
+    "sidecar_file": "phase4c2_environment_lock.sha256",
+    "immutable_across_retries": true,
+    "runtime_observations_dir": "runtime_observations/"
+  },
+  "run_verifier_hardening": {
+    "status": "PASS",
+    "schema_validation": "stage2-receipt.v1.schema.json",
+    "checksums_coverage": "EXACT_REQUIRED_FILES_COVERAGE",
+    "trainable_inventory_check": "EXACT_7_TENSORS",
+    "optimizer_groups_check": "EXACT_2_GROUPS",
+    "batchnorm_policy_check": "FROZEN_FEATURES_EVAL",
+    "predictions_check": "182_SAMPLES_91_BALANCED_PAIRS_ZERO_DEV_LOCK_LEAK"
   },
   "matrix": {
     "sample_sizes": [
@@ -45,36 +84,13 @@
     "stage": "partial_finetune",
     "treatment_designation": "pre-registered partial fine-tuning protocol"
   },
-  "canonical_runner_command_template": "python -m ml.training.run_phase_4c2 --config <config> --bundle <bundle> --sample-size <N> --seed <seed> --stage partial_finetune --device cuda --train-partition development_train --eval-partition inner_validation --output <output_dir>",
-  "runtime_policy": {
-    "gpu_policy": "compatible",
-    "min_vram_gb": 8.0,
-    "supported_gpus": [
-      "Tesla T4",
-      "L4",
-      "V100",
-      "A100",
-      "CUDA compatible >= 8GB"
-    ]
+  "source_deployment_parity": {
+    "source_file": "scripts/phase_4c2_execute_all.sh",
+    "deployment_file": "forensics-web-lab-local-artifacts/phase_4c2/inputs/phase_4c2_execute_all.sh",
+    "bytes_match": true,
+    "sha256_match": true,
+    "lf_line_endings": true,
+    "no_bom": true
   },
-  "resume_and_publishing": {
-    "strategy": "atomic_replace_via_part_staging",
-    "local_inprogress_pattern": "/content/phase_4c2_work/n<N>_seed_<seed>.inprogress",
-    "drive_part_pattern": "<output_root>/.publish_n<N>_seed_<seed>.part",
-    "drive_final_pattern": "<output_root>/n<N>_seed_<seed>"
-  },
-  "status": "READY_FOR_USER_COLAB_PREFLIGHT_RETRY",
-  "tar_security_audit": {
-    "status": "PASS",
-    "method": "Quoted heredoc (<<'PY') passing CODE_ARCHIVE via sys.argv[1]",
-    "path_traversal_detection": "PurePosixPath & PureWindowsPath absolute & traversal check",
-    "behavioral_fixtures_evaluated": 10,
-    "behavioral_fixtures_passed": 10,
-    "subprocess_runner": "Real Bash subprocess"
-  },
-  "preflight_retry_policy": {
-    "status": "PASS",
-    "action": "Archive prior OPERATOR_FAILURE.json to logs/OPERATOR_FAILURE_archived_<timestamp>.json and reset status to in_progress",
-    "preserves_completed_runs": true
-  }
+  "status": "READY_FOR_USER_COLAB_PREFLIGHT_RETRY"
 }

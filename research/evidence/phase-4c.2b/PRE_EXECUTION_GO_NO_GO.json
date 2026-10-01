@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
-  "phase": "Phase 4C.2B",
-  "timestamp_utc": "2026-10-01T05:42:07.647710+00:00",
+  "phase": "Phase 4C.2B.2",
+  "timestamp_utc": "2026-10-01T06:30:00.000000+00:00",
   "verdict": "READY_FOR_USER_COLAB_PREFLIGHT_RETRY",
   "status_summary": {
     "training_runs_in_phase": 0,
@@ -31,30 +31,34 @@
     "canonical_operator_verified": {
       "status": "PASS",
       "script_name": "phase_4c2_execute_all.sh",
-      "bytes": 33633,
-      "sha256": "c460a5485cfd779b6db6b851108e5a386abd6bc4afdc8adf548cd16fdcea3fa2",
+      "bytes": 51501,
+      "sha256": "fafabdec41eea74b40e0846e8d09bdc19bd02a6c26deccd13b9cd251bc2c58d7",
       "bash_syntax": "PASS (bash -n)",
       "modes": [
         "--preflight-only",
         "--execute"
       ],
       "tar_safety_audit": "PASS (10/10 behavioral fixtures evaluated via Bash subprocess)",
-      "preflight_retry_policy": "PASS (archives prior OPERATOR_FAILURE.json to logs/ and resets to in_progress)"
+      "destructive_path_guard": "PASS (assert_safe_ephemeral_dir)",
+      "immutable_scientific_lock": "PASS (phase4c2_environment_lock.json)",
+      "verifier_hardening": "PASS (strict checksums, 7 trainable tensors, 2 opt groups, 182-sample prediction audit)"
     },
     "canonical_notebook_verified": {
       "status": "PASS",
       "notebook_name": "phase_4c2_finetuning_colab.ipynb",
-      "bytes": 13085,
-      "sha256": "b4522254462f9ee83b04f30078411a37fc04c993ee1206967cb97fcbc81cfa2d",
+      "bytes": 14665,
+      "sha256": "3dc02978d234de5eca376cbd91298a69fac72c76c019ef6b4d104fea228d3f15",
       "cells": 5,
       "execute_default": false,
       "atomic_restaging": "PASS",
+      "exact_archive_binding": "PASS (phase_4c2_code_9ee7fdb.tar.gz without glob)",
+      "exact_execution_dir_audit": "PASS (execution_9ee7fdb without rglob)",
       "python_runtime_capability": "PASS (Python >= 3.10 capability check, Colab 3.13.15 verified)"
     },
     "unit_and_contract_tests": {
       "status": "PASS",
-      "stage2_operator_tests": "41/41 PASS (including 10 TAR security behavioral fixtures)",
-      "stage2_notebook_tests": "4/4 PASS",
+      "stage2_operator_tests": "60/60 PASS (including 10 TAR security behavioral fixtures, path guards, and verifiers)",
+      "stage2_notebook_tests": "6/6 PASS (including exact archive binding and exact execution dir)",
       "stage2_contract_tests": "14/14 PASS",
       "stage2_prereg_tests": "9/9 PASS",
       "typescript_continuity_tests": "70/70 PASS",

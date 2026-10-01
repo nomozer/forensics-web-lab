@@ -1,10 +1,10 @@
 {
   "schema_version": "1.0.0",
-  "phase": "Phase 4C.2B",
+  "phase": "Phase 4C.2B.2",
   "notebook_name": "phase_4c2_finetuning_colab.ipynb",
   "path": "notebooks/phase_4c2_finetuning_colab.ipynb",
-  "bytes": 13085,
-  "sha256": "b4522254462f9ee83b04f30078411a37fc04c993ee1206967cb97fcbc81cfa2d",
+  "bytes": 14665,
+  "sha256": "3dc02978d234de5eca376cbd91298a69fac72c76c019ef6b4d104fea228d3f15",
   "cell_count": 5,
   "cell_types": [
     "markdown",
@@ -14,16 +14,23 @@
     "code"
   ],
   "execute_default": false,
-  "timestamp_utc": "2026-10-01T05:42:07.647710+00:00",
-  "associated_operator_sha256": "c460a5485cfd779b6db6b851108e5a386abd6bc4afdc8adf548cd16fdcea3fa2",
+  "timestamp_utc": "2026-10-01T06:21:00.000000+00:00",
+  "associated_operator_sha256": "fafabdec41eea74b40e0846e8d09bdc19bd02a6c26deccd13b9cd251bc2c58d7",
+  "associated_operator_bytes": 51501,
   "associated_code_archive_sha256": "951e9089582eb60cf3d293c37982a8f3c3b6a3e05fb3ef45f23c666d41bc7d89",
+  "associated_code_archive_name": "phase_4c2_code_9ee7fdb.tar.gz",
+  "associated_code_archive_bytes": 10478136,
+  "exact_execution_short_sha": "9ee7fdb",
   "invariants": {
+    "exact_archive_binding": true,
+    "no_archive_glob": true,
+    "exact_execution_directory_audit": true,
+    "no_execution_dir_glob": true,
     "streaming_hash": true,
     "read_only_inputs": true,
     "no_input_mkdir": true,
-    "error_reporting": "fail_closed_with_console_tail",
+    "error_reporting": "fail_closed_with_exact_dir_logs",
     "atomic_restaging": true,
     "python_runtime_capability_check": "assert sys.version_info >= (3, 10)"
-  },
-  "associated_operator_bytes": 33633
+  }
 }

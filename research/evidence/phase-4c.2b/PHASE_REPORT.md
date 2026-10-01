@@ -1,9 +1,11 @@
-# Phase 4C.2B & 4C.2B.1 — Resumable 15-Run Colab Operator for Stage 2 & Tar-Safety Quoting Hotfix
+# Phase 4C.2B, 4C.2B.1 & 4C.2B.2 — Resumable 15-Run Colab Operator for Stage 2, Tar-Safety Quoting Hotfix & Verifier Hardening
 
 ## Phase Summary
 Packaged and verified the Stage 2 partial fine-tuning runner and dependencies into an autonomous, resumable Google Colab execution suite for the 15-run paired matrix ($N \in \{50, 100, 250\} \times 5$ seeds: 42, 1337, 2025, 3407, 9001). Reconciled the scheduler configuration differential between Stage 1 and Stage 2 (`same = false`), sealed the exact pretrained backbone weights (`MobileNet_V3_Small_Weights.IMAGENET1K_V1`) into a self-contained execution snapshot archive, and built a canonical 5-cell Colab notebook defaulting to `EXECUTE = False` (`--preflight-only`).
 
 In **Phase 4C.2B.1**, diagnosed and resolved a live Google Colab runtime failure (`SyntaxError: unterminated string literal` at `code_staging_and_verification`) caused by unquoted Bash heredoc expansion of backslashes. All embedded Python blocks were converted to quoted heredocs (`<<'PY'`) with parameters passed via `sys.argv`. Built a comprehensive behavioral test suite evaluating 10 TAR security fixtures via real Bash subprocess execution. Added failure archiving and retry support, extraction path defense, and atomic operator restaging.
+
+In **Phase 4C.2B.2**, hardened execution provenance and verifier contracts across operator and launcher notebook. Bound exact canonical archive constants and component hashes with streaming SHA-256 checks; added post-extraction CRLF to LF normalization for cross-platform bitwise parity; implemented `assert_safe_ephemeral_dir` destructive path guard before any `rm -rf`; decoupled immutable scientific environment lock from dynamic runtime observations; comprehensive run verifier audit (schema, checksums coverage, 7 trainable tensors, 2 optimizer groups, frozen BN, 182-sample prediction cohort); and hardened launcher notebook with exact archive/directory bindings and atomic verification.
 
 Zero new research training runs, zero locked-test accesses, zero Stage 1 modifications, and zero Stage 2 research invocations were executed in this wave.
 
@@ -205,15 +207,66 @@ Guarantees verified:
 
 ---
 
-## 7. Resealed Artifacts & Checksums
+---
+
+## 7. Phase 4C.2B.2 Hardening: Execution Provenance, Path Guards, and Verifiers
+
+### 7.1. Exact Code Archive Binding & Component Verification
+- Eliminated dynamic archive discovery (`find ... | head -n 1`).
+- Bound exact canonical constants:
+  - `CANONICAL_CODE_ARCHIVE_NAME = "phase_4c2_code_9ee7fdb.tar.gz"`
+  - `CANONICAL_CODE_ARCHIVE_BYTES = 10478136`
+  - `CANONICAL_CODE_ARCHIVE_SHA256 = "951e9089582eb60cf3d293c37982a8f3c3b6a3e05fb3ef45f23c666d41bc7d89"`
+  - `FULL_EXECUTION_COMMIT_SHA = "9ee7fdbb88fad16167f5790b5105867747801372"`
+- Verified size and streaming 1 MiB SHA-256 before invoking the TAR security audit.
+- Implemented post-extraction line ending normalization (`CRLF -> LF` for text files in `$CODE_DIR`) to resolve Windows git tar packaging differences and guarantee bitwise equality for extracted files:
+  - `run_phase_4c2.py`: `8ef0f0a06c25134a85982536064117a0bfc2eb9d63373c3b4ad6f4a2865783d4`
+  - `phase_4c2_stage2_finetuning.yaml`: `5ac7d41859798842aadf53d40fb8e9f2328e6ef46a4d2b1b248915cdee7543a4`
+  - `stage2-receipt.v1.schema.json`: `dde1c873a43276cdf6bfd2ca459edebe7e8e14f2f02b1c8e8b9fe879936df98f`
+  - `dataset_binding.json`: `dee09f81081466debd554642434a8282e60bef105bb8ff5a5a56c2bfc4f05c07`
+  - Binary pretrained weights file remains untouched: `047dcff4addef86ea5bc2eff13c9614dc11f47ab1160d0a71a25e7db994f4e1f`.
+
+### 7.2. Destructive Path Guard (`assert_safe_ephemeral_dir`)
+- Wrapped all `rm -rf` operations with `assert_safe_ephemeral_dir` helper.
+- Uses `pwd -P` and Python realpath resolution to fail closed if the target directory:
+  - is empty or unassigned;
+  - matches `/`, `/content`, `/content/drive`;
+  - lies inside Google Drive or Stage 1 directories (`phase_4c1`);
+  - targets persistent Stage 2 execution root (`execution_`);
+  - is a symlink resolving into forbidden zones.
+
+### 7.3. Scientific Environment Lock vs Runtime Observations
+- Decoupled the immutable scientific environment lock from transient runtime observations:
+  - `phase4c2_environment_lock.json` and its sidecar `.sha256` are created strictly during preflight and verified without overwrite on retry or resume.
+  - Per-execution dynamic system states are recorded separately under `runtime_observations/runtime_<UTC>.json` without mutating scientific baseline contracts.
+
+### 7.4. Run Verifier Hardening (`verify_run_artifacts`)
+Hardened the run verifier with comprehensive checks:
+1. **Schema Validation**: Validates `run_receipt.json` against `stage2-receipt.v1.schema.json`.
+2. **Checksums Coverage**: Ensures `checksums.json` covers all required artifact files.
+3. **Model Checkpoint Integrity**: Verifies checkpoint file existence, positive size, and exact SHA-256 match.
+4. **Trainable Parameter Inventory**: Enforces exact match against the 7-tensor allowlist (204,674 numel).
+5. **Optimizer Groups**: Verifies exact 2 differential optimizer groups.
+6. **BatchNorm Policy**: Verifies frozen eval mode and buffer invariance for `features.0-11`.
+7. **Prediction Cohort Validation**: Audits `predictions.json` for exactly 182 validation samples, exactly 91 unique source IDs appearing twice with label pair `{0, 1}`, and 0 dev or locked-test sample leaks.
+
+### 7.5. Launcher Notebook Hardening
+- Replaced dynamic globbing with exact binding to `DRIVE_INPUT_DIR / "phase_4c2_code_9ee7fdb.tar.gz"`.
+- Added pre-staging Drive size and streaming SHA-256 validation.
+- Enforced atomic staging via `.part` with byte count and SHA-256 verification before `os.replace()`.
+- Replaced recursive `rglob` and globbing in error reporting and run audit with direct binding to `DRIVE_OUTPUT_DIR / f"execution_{CANONICAL_EXECUTION_SHORT_SHA}"`.
+
+---
+
+## 8. Resealed Artifacts & Checksums
 
 ### Exactly Two Files to Re-Upload:
 1. `scripts/phase_4c2_execute_all.sh` (Upload to Drive `phase_4c2/inputs/`)
-   - **Bytes**: 33,633
-   - **SHA-256**: `c460a5485cfd779b6db6b851108e5a386abd6bc4afdc8adf548cd16fdcea3fa2`
+   - **Bytes**: 51,501
+   - **SHA-256**: `fafabdec41eea74b40e0846e8d09bdc19bd02a6c26deccd13b9cd251bc2c58d7`
 2. `notebooks/phase_4c2_finetuning_colab.ipynb` (Upload to Drive `phase_4c2/`)
-   - **Bytes**: 13,085
-   - **SHA-256**: `b4522254462f9ee83b04f30078411a37fc04c993ee1206967cb97fcbc81cfa2d`
+   - **Bytes**: 14,665
+   - **SHA-256**: `3dc02978d234de5eca376cbd91298a69fac72c76c019ef6b4d104fea228d3f15`
 
 ### Immutable Artifacts (NOT Re-Uploaded):
 - `phase_4c2_code_9ee7fdb.tar.gz`: 10,478,136 bytes, SHA-256 `951e9089582eb60cf3d293c37982a8f3c3b6a3e05fb3ef45f23c666d41bc7d89` (IMMUTABLE).
@@ -221,7 +274,7 @@ Guarantees verified:
 
 ---
 
-## 8. Python Runtime Documentation & Capability Architecture
+## 9. Python Runtime Documentation & Capability Architecture
 - **Observed Colab Runtime**: Python 3.13.15 (with preinstalled PyTorch CUDA).
 - **Runtime Policy**: Capability-based target (`Python >= 3.10`, verified on Python 3.13.15).
 - **Notebook Preflight Guard**:
@@ -233,17 +286,18 @@ Guarantees verified:
 
 ---
 
-## 9. Verification & Quality Gates
+## 10. Verification & Quality Gates
 - `bash -n scripts/phase_4c2_execute_all.sh`: PASS (exit code 0).
-- `test_phase_4c2_operator.py`: 41/41 PASS (including 10 TAR security behavioral fixtures).
-- `test_phase_4c2_notebook.py`: 4/4 PASS.
+- `test_phase_4c2_operator.py`: 60/60 PASS (including 10 TAR security behavioral fixtures, path guards, component hash checks, and verifiers).
+- `test_phase_4c2_notebook.py`: 6/6 PASS (including exact archive binding and exact execution dir).
 - `test_phase_4c2_implementation_contract.py`: 14/14 PASS.
 - `test_phase_4c2_preregistration.py`: 9/9 PASS.
+- `ml/tests` full pytest suite: 367 passed, 1 skipped.
 - `git ls-files models/research/pretrained/mobilenet_v3_small-047dcff4.pth`: PASS (empty string, 0 tracked weight files).
 
 ---
 
-## 10. Accounting & Invariants
+## 11. Accounting & Invariants
 - `training_runs_in_wave`: 0
 - `stage2_research_invocations`: 0
 - `locked_test_accesses`: 0

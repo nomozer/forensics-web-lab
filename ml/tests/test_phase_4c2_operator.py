@@ -90,12 +90,26 @@ def setup_mock_stage2_run(
     missing_files: list[str] | None = None,
     corrupt_checksum: bool = False,
     status: str = "completed",
+    config_hash: str = "5ac7d41859798842aadf53d40fb8e9f2328e6ef46a4d2b1b248915cdee7543a4",
+    weights_file_sha: str = CANONICAL_WEIGHTS_FILE_SHA,
+    backbone_fingerprint: str = CANONICAL_BACKBONE_FINGERPRINT,
+    dataset_archive_sha: str = CANONICAL_BUNDLE_ARCHIVE_SHA,
+    checkpoint_sha: str | None = None,
+    trainable_inventory: list[dict] | None = None,
+    optimizer_groups: list[dict] | None = None,
+    batchnorm_policy: dict | None = None,
+    predictions_data_override: dict | None = None,
+    omit_from_checksums: list[str] | None = None,
+    extra_in_checksums: list[str] | None = None,
+    corrupt_env_binding: bool = False,
 ) -> Path:
     run_dir = base_dir / f"n{sample_size}_seed_{seed}"
     run_dir.mkdir(parents=True, exist_ok=True)
 
     # 1. best_checkpoint.pt
-    (run_dir / "best_checkpoint.pt").write_bytes(b"MOCK_STAGE2_CHECKPOINT_DATA")
+    ckpt_bytes = b"MOCK_STAGE2_CHECKPOINT_DATA"
+    (run_dir / "best_checkpoint.pt").write_bytes(ckpt_bytes)
+    actual_ckpt_sha = hashlib.sha256(ckpt_bytes).hexdigest()
 
     # 2. epoch_history.json
     epoch_hist = [{"epoch": i, "val_loss": 0.5 - i * 0.01, "val_macro_f1": 0.55 + i * 0.005} for i in range(1, 10)]
@@ -108,12 +122,17 @@ def setup_mock_stage2_run(
     if leak_lock_sources:
         val_sids[1] = "lock_0001"
 
-    preds_data = {
-        "targets": [0] * (val_sample_count // 2) + [1] * (val_sample_count // 2),
-        "predictions": [0] * (val_sample_count // 2) + [1] * (val_sample_count // 2),
-        "probabilities": [0.1] * (val_sample_count // 2) + [0.9] * (val_sample_count // 2),
-        "source_ids": val_sids * 2,
-    }
+    if predictions_data_override is not None:
+        preds_data = predictions_data_override
+    else:
+        # Balanced: each of 91 sources has exactly label pair {0, 1}
+        # First 91 entries: label 0; next 91 entries: label 1
+        preds_data = {
+            "targets": [0] * (val_sample_count // 2) + [1] * (val_sample_count // 2),
+            "predictions": [0] * (val_sample_count // 2) + [1] * (val_sample_count // 2),
+            "probabilities": [0.1] * (val_sample_count // 2) + [0.9] * (val_sample_count // 2),
+            "source_ids": val_sids * 2,
+        }
     (run_dir / "predictions.json").write_text(json.dumps(preds_data, indent=2), encoding="utf-8")
 
     # 4. training_history.csv
@@ -138,18 +157,22 @@ def setup_mock_stage2_run(
 
     # 6. environment.json
     env_data = {"python": "3.12.10", "torch": "2.2.0", "cuda": True, "gpu_name": "Tesla T4"}
-    (run_dir / "environment.json").write_text(json.dumps(env_data, indent=2), encoding="utf-8")
+    env_bytes = json.dumps(env_data, indent=2).encode("utf-8")
+    (run_dir / "environment.json").write_bytes(env_bytes)
 
     # 7. environment-binding.json
+    env_sha = hashlib.sha256(env_bytes).hexdigest()
+    if corrupt_env_binding:
+        env_sha = "00" * 32
     env_binding = {
         "run_id": f"phase4c2-stage2-n{sample_size}-seed{seed}",
-        "environment_sha256": hashlib.sha256(json.dumps(env_data).encode()).hexdigest(),
+        "environment_sha256": env_sha,
         "timestamp_utc": "2026-10-01T00:00:00Z",
     }
     (run_dir / "environment-binding.json").write_text(json.dumps(env_binding, indent=2), encoding="utf-8")
 
     # 8. trainable-parameter-inventory.json
-    inventory = [
+    canonical_inventory = [
         {"name": "features.12.0.weight", "shape": [576, 96, 1, 1], "numel": 55296},
         {"name": "features.12.1.weight", "shape": [576], "numel": 576},
         {"name": "features.12.1.bias", "shape": [576], "numel": 576},
@@ -158,9 +181,23 @@ def setup_mock_stage2_run(
         {"name": "classifier.3.weight", "shape": [2, 256], "numel": 512},
         {"name": "classifier.3.bias", "shape": [2], "numel": 2},
     ]
-    (run_dir / "trainable-parameter-inventory.json").write_text(json.dumps(inventory, indent=2), encoding="utf-8")
+    inv = trainable_inventory if trainable_inventory is not None else canonical_inventory
+    (run_dir / "trainable-parameter-inventory.json").write_text(json.dumps(inv, indent=2), encoding="utf-8")
 
     # 9. run_receipt.json
+    canonical_opt_groups = [
+        {"group_name": "backbone_features_12", "param_names": ["features.12.0.weight"], "learning_rate": 5e-5, "weight_decay": 1e-4, "tensor_count": 3, "numel": 56448},
+        {"group_name": "classifier_head", "param_names": ["classifier.0.weight"], "learning_rate": 5e-4, "weight_decay": 1e-4, "tensor_count": 4, "numel": 148226},
+    ]
+    opt_grp = optimizer_groups if optimizer_groups is not None else canonical_opt_groups
+
+    canonical_bn = {
+        "frozen_features_eval": True,
+        "reapply_after_train": True,
+        "unfrozen_features_12_bn_train": True,
+    }
+    bn_pol = batchnorm_policy if batchnorm_policy is not None else canonical_bn
+
     receipt_data = {
         "run_id": f"phase4c2-stage2-n{sample_size}-seed{seed}",
         "timestamp_utc": "2026-10-01T00:00:00Z",
@@ -171,25 +208,24 @@ def setup_mock_stage2_run(
         "status": status,
         "initialization_policy": init_policy,
         "pretrained_weights_identifier": "MobileNet_V3_Small_Weights.DEFAULT",
+        "pretrained_weights_file_sha256": weights_file_sha,
+        "pretrained_weights_state_fingerprint": backbone_fingerprint,
         "parent_checkpoint_path": parent_path,
         "parent_checkpoint_hash": parent_hash,
         "classifier_initialization_evidence": "seeded_torch_init_at_model_creation",
         "device": "cuda",
         "gpu_name": "Tesla T4",
         "gpu_vram_gb": 15.0,
-        "config_hash": "a" * 64,
-        "dataset_archive_sha256": CANONICAL_BUNDLE_ARCHIVE_SHA,
+        "config_hash": config_hash,
+        "dataset_archive_sha256": dataset_archive_sha,
         "dataset_content_sha256": CANONICAL_BUNDLE_CONTENT_SHA,
         "dataset_manifest_sha256": CANONICAL_BUNDLE_MANIFEST_SHA,
-        "exact_trainable_tensor_inventory": inventory,
+        "exact_trainable_tensor_inventory": inv,
         "trainable_parameters_count": trainable_count,
         "frozen_parameters_count": frozen_count,
         "total_parameters_count": trainable_count + frozen_count,
-        "optimizer_parameter_groups": [
-            {"group_name": "backbone_features_12", "param_names": ["features.12.0.weight"], "learning_rate": 5e-5, "weight_decay": 1e-4, "tensor_count": 3, "numel": 56448},
-            {"group_name": "classifier_head", "param_names": ["classifier.0.weight"], "learning_rate": 5e-4, "weight_decay": 1e-4, "tensor_count": 4, "numel": 148226},
-        ],
-        "batchnorm_policy": {"frozen_features_eval": True, "reapply_after_train": True, "unfrozen_features_12_bn_train": True},
+        "optimizer_parameter_groups": opt_grp,
+        "batchnorm_policy": bn_pol,
         "epochs_completed": 9,
         "best_epoch": 8,
         "best_val_macro_f1": 0.58,
@@ -198,7 +234,7 @@ def setup_mock_stage2_run(
         "metadata_baseline": {"macro_f1": 0.5, "macro_f1_mean": 0.5, "macro_f1_std": 0.0},
         "training_time_seconds": 120.0,
         "peak_vram_mb": 115.0,
-        "checkpoint_sha256": hashlib.sha256(b"MOCK_STAGE2_CHECKPOINT_DATA").hexdigest(),
+        "checkpoint_sha256": checkpoint_sha if checkpoint_sha is not None else actual_ckpt_sha,
         "validation_source_count": val_source_count,
         "validation_sample_count": val_sample_count,
         "locked_test_access": locked_access,
@@ -210,10 +246,16 @@ def setup_mock_stage2_run(
     checksums = {}
     for f in run_dir.iterdir():
         if f.is_file() and f.name != "checksums.json":
+            if omit_from_checksums and f.name in omit_from_checksums:
+                continue
             checksums[f.name] = {
                 "size_bytes": f.stat().st_size,
                 "sha256": hashlib.sha256(f.read_bytes()).hexdigest(),
             }
+    if extra_in_checksums:
+        for ext in extra_in_checksums:
+            checksums[ext] = {"size_bytes": 100, "sha256": "ab" * 32}
+
     if corrupt_checksum:
         checksums["best_checkpoint.pt"]["sha256"] = "00" * 32
 
@@ -677,8 +719,8 @@ class TestTarSafetyAuditBehavioral:
 def test_extraction_security_contract_in_operator():
     """Verify operator enforces clean extraction and rejects root/Drive/Stage1 targets."""
     text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
-    assert "CODE_DIR_CANONICAL=$(mkdir -p \"$CODE_DIR\" && cd \"$CODE_DIR\" && pwd -P)" in text
-    assert 'if [ "$CODE_DIR_CANONICAL" = "/content" ] || [ "$CODE_DIR_CANONICAL" = "/content/drive" ]' in text
+    assert "assert_safe_ephemeral_dir" in text
+    assert 'assert_safe_ephemeral_dir "$CODE_DIR" "/content/phase_4c2_code"' in text
     assert 'rm -rf "$CODE_DIR"' in text
     assert 'mkdir -p "$CODE_DIR"' in text
     assert 'if ! tar -xzf "$CODE_ARCHIVE" -C "$CODE_DIR"; then' in text
@@ -692,3 +734,350 @@ def test_preflight_retry_resets_failure_and_archives_log():
     assert 'cp "$OUTPUT_ROOT/OPERATOR_FAILURE.json" "$LOGS_DIR/OPERATOR_FAILURE_archived_${ARCHIVE_TIMESTAMP}.json"' in text
     assert 'rm -f "$OUTPUT_ROOT/OPERATOR_FAILURE.json"' in text
     assert '"status": "in_progress"' in text
+
+
+# ==============================================================================
+# Phase 4C.2B.2 Final Execution Provenance & Verifier Hardening Tests (36 - 60)
+# ==============================================================================
+
+DEPLOYMENT_OPERATOR_SCRIPT = (
+    REPO_ROOT.parent
+    / "forensics-web-lab-local-artifacts"
+    / "phase_4c2"
+    / "inputs"
+    / "phase_4c2_execute_all.sh"
+)
+
+
+def test_36_source_deployment_parity():
+    """36. Canonical source and deployment operator scripts are bitwise identical."""
+    assert OPERATOR_SCRIPT.exists(), "Source operator missing"
+    assert DEPLOYMENT_OPERATOR_SCRIPT.exists(), "Deployment operator missing"
+
+    src_bytes = OPERATOR_SCRIPT.read_bytes()
+    dst_bytes = DEPLOYMENT_OPERATOR_SCRIPT.read_bytes()
+
+    assert len(src_bytes) == len(dst_bytes), f"Byte length mismatch: {len(src_bytes)} != {len(dst_bytes)}"
+    src_sha = hashlib.sha256(src_bytes).hexdigest()
+    dst_sha = hashlib.sha256(dst_bytes).hexdigest()
+    assert src_sha == dst_sha, f"SHA-256 mismatch: {src_sha} != {dst_sha}"
+    assert not dst_bytes.startswith(b"\xef\xbb\xbf"), "Deployment script contains UTF-8 BOM"
+    assert b"\r" not in dst_bytes, "Deployment script contains CRLF line endings"
+
+
+def test_37_wrong_code_archive_filename_fails():
+    """37. Operator fails-closed if code archive filename does not match CANONICAL_CODE_ARCHIVE_NAME."""
+    text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
+    assert 'CANONICAL_CODE_ARCHIVE_NAME="phase_4c2_code_9ee7fdb.tar.gz"' in text
+    assert 'if [ "$ARCHIVE_NAME" != "$CANONICAL_CODE_ARCHIVE_NAME" ]; then' in text
+
+
+def test_38_wrong_archive_bytes_fails(tmp_path):
+    """38. Code archive byte size mismatch triggers fail-closed error."""
+    script_text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
+    byte_check_code = extract_python_snippet(script_text, "# 2.2 Verify code archive exact bytes")
+
+    dummy_arch = tmp_path / "phase_4c2_code_9ee7fdb.tar.gz"
+    dummy_arch.write_bytes(b"WRONG_SIZE")
+
+    cmd = [sys.executable, "-c", byte_check_code, str(dummy_arch), "10478136", "951e9089582eb60cf3d293c37982a8f3c3b6a3e05fb3ef45f23c666d41bc7d89"]
+    res = subprocess.run(cmd, capture_output=True, text=True)
+    assert res.returncode != 0
+    assert "byte size mismatch" in res.stderr
+
+
+def test_39_corrupt_archive_same_size_fails(tmp_path):
+    """39. Corrupt code archive with identical byte size fails streaming SHA-256 check."""
+    script_text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
+    byte_check_code = extract_python_snippet(script_text, "# 2.2 Verify code archive exact bytes")
+
+    dummy_arch = tmp_path / "phase_4c2_code_9ee7fdb.tar.gz"
+    # Write exactly 10478136 zero bytes
+    dummy_arch.write_bytes(b"\x00" * 10478136)
+
+    cmd = [sys.executable, "-c", byte_check_code, str(dummy_arch), "10478136", "951e9089582eb60cf3d293c37982a8f3c3b6a3e05fb3ef45f23c666d41bc7d89"]
+    res = subprocess.run(cmd, capture_output=True, text=True)
+    assert res.returncode != 0
+    assert "SHA-256 mismatch" in res.stderr
+
+
+def test_40_43_canonical_component_hash_failures(tmp_path):
+    """40-43. Modification in runner, config, schema, or dataset binding fails post-extraction check."""
+    script_text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
+    comp_check_code = extract_python_snippet(script_text, "# 2.6 Verify exact SHA-256 of all canonical components")
+
+    r = tmp_path / "runner.py"
+    c = tmp_path / "config.yaml"
+    s = tmp_path / "schema.json"
+    d = tmp_path / "dataset_binding.json"
+
+    r.write_text("VALID_RUNNER", encoding="utf-8")
+    c.write_text("VALID_CONFIG", encoding="utf-8")
+    s.write_text("VALID_SCHEMA", encoding="utf-8")
+    d.write_text("VALID_BINDING", encoding="utf-8")
+
+    r_sha = hashlib.sha256(r.read_bytes()).hexdigest()
+    c_sha = hashlib.sha256(c.read_bytes()).hexdigest()
+    s_sha = hashlib.sha256(s.read_bytes()).hexdigest()
+    d_sha = hashlib.sha256(d.read_bytes()).hexdigest()
+
+    # 40. Wrong runner hash
+    cmd = [sys.executable, "-c", comp_check_code, str(r), "00" * 32, str(c), c_sha, str(s), s_sha, str(d), d_sha]
+    assert subprocess.run(cmd, capture_output=True, text=True).returncode != 0
+
+    # 41. Wrong config hash
+    cmd = [sys.executable, "-c", comp_check_code, str(r), r_sha, str(c), "00" * 32, str(s), s_sha, str(d), d_sha]
+    assert subprocess.run(cmd, capture_output=True, text=True).returncode != 0
+
+    # 42. Wrong schema hash
+    cmd = [sys.executable, "-c", comp_check_code, str(r), r_sha, str(c), c_sha, str(s), "00" * 32, str(d), d_sha]
+    assert subprocess.run(cmd, capture_output=True, text=True).returncode != 0
+
+    # 43. Wrong dataset-binding hash
+    cmd = [sys.executable, "-c", comp_check_code, str(r), r_sha, str(c), c_sha, str(s), s_sha, str(d), "00" * 32]
+    assert subprocess.run(cmd, capture_output=True, text=True).returncode != 0
+
+
+def test_44_47_destructive_path_guard_fault_injections(tmp_path):
+    """44-47. Destructive path guard rejects /content/drive, symlinks, roots, and Stage 1 targets."""
+    script_text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
+    guard_code = extract_python_snippet(script_text, "assert_safe_ephemeral_dir()")
+
+    def run_guard(target: str, expected: str = "/content/phase_4c2_code", out_root: str = "/content/drive/MyDrive/Colab Notebooks/forensics-web-lab/phase_4c2/runs/execution_9ee7fdb"):
+        return subprocess.run([sys.executable, "-c", guard_code, target, expected, out_root], capture_output=True, text=True)
+
+    # 44. Target under /content/drive
+    res = run_guard("/content/drive/MyDrive/test")
+    assert res.returncode != 0
+
+    # 45. Target is root or /content
+    assert run_guard("/").returncode != 0
+    assert run_guard("/content").returncode != 0
+
+    # 46. Target targets Stage 1 namespace
+    assert run_guard("/content/drive/MyDrive/Colab Notebooks/forensics-web-lab/phase_4c1/runs").returncode != 0
+    assert run_guard("/content/drive/MyDrive/Colab Notebooks/forensics-web-lab/phase_4c2/runs/execution_79bb115").returncode != 0
+
+    # 47. Empty path or path mismatch
+    assert run_guard("").returncode != 0
+    assert run_guard("/content/phase_4c2_other", expected="/content/phase_4c2_code").returncode != 0
+
+
+def test_48_environment_scientific_lock_creation_during_preflight(tmp_path):
+    """48. Preflight mode establishes immutable scientific lock and sidecar with required fields."""
+    script_text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
+    lock_func_code = extract_python_snippet(script_text, 'echo "[*] Creating immutable scientific environment lock')
+
+    lock_file = tmp_path / "phase4c2_environment_lock.json"
+    lock_sha_file = tmp_path / "phase4c2_environment_lock.sha256"
+
+    cmd = [
+        sys.executable, "-c", lock_func_code,
+        str(lock_file),
+        str(lock_sha_file),
+        "9ee7fdbb88fad16167f5790b5105867747801372",
+        "phase_4c2_code_9ee7fdb.tar.gz",
+        "10478136",
+        "951e9089582eb60cf3d293c37982a8f3c3b6a3e05fb3ef45f23c666d41bc7d89",
+        "8ef0f0a06c25134a85982536064117a0bfc2eb9d63373c3b4ad6f4a2865783d4",
+        "5ac7d41859798842aadf53d40fb8e9f2328e6ef46a4d2b1b248915cdee7543a4",
+        "dde1c873a43276cdf6bfd2ca459edebe7e8e14f2f02b1c8e8b9fe879936df98f",
+        "dee09f81081466debd554642434a8282e60bef105bb8ff5a5a56c2bfc4f05c07",
+        CANONICAL_BUNDLE_ARCHIVE_SHA,
+        CANONICAL_BUNDLE_CONTENT_SHA,
+        CANONICAL_BUNDLE_MANIFEST_SHA,
+        str(CANONICAL_BUNDLE_BYTES),
+        CANONICAL_WEIGHTS_FILE_SHA,
+        str(CANONICAL_WEIGHTS_FILE_BYTES),
+        CANONICAL_BACKBONE_FINGERPRINT,
+        "operator_sha_test",
+    ]
+    res = subprocess.run(cmd, capture_output=True, text=True)
+    assert res.returncode == 0, f"Lock creation failed: {res.stderr}"
+    assert lock_file.exists()
+    assert lock_sha_file.exists()
+
+    lock = json.loads(lock_file.read_text(encoding="utf-8"))
+    assert lock["full_execution_commit_sha"] == "9ee7fdbb88fad16167f5790b5105867747801372"
+    assert lock["code_archive"]["filename"] == "phase_4c2_code_9ee7fdb.tar.gz"
+    assert lock["code_archive"]["bytes"] == 10478136
+    assert lock["code_archive"]["sha256"] == "951e9089582eb60cf3d293c37982a8f3c3b6a3e05fb3ef45f23c666d41bc7d89"
+    assert len(lock["run_matrix"]) == 3
+
+
+def test_49_immutable_lock_retry_does_not_overwrite(tmp_path):
+    """49. Retrying execution verifies existing lock without overwriting; sidecar mismatch fails."""
+    script_text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
+    verify_lock_code = extract_python_snippet(script_text, 'echo "[*] Verifying existing immutable scientific environment lock..."')
+
+    lock_file = tmp_path / "phase4c2_environment_lock.json"
+    lock_sha_file = tmp_path / "phase4c2_environment_lock.sha256"
+
+    # Create initial valid lock
+    test_48_environment_scientific_lock_creation_during_preflight(tmp_path)
+    orig_lock_bytes = lock_file.read_bytes()
+
+    cmd = [
+        sys.executable, "-c", verify_lock_code,
+        str(lock_file),
+        str(lock_sha_file),
+        "9ee7fdbb88fad16167f5790b5105867747801372",
+        "951e9089582eb60cf3d293c37982a8f3c3b6a3e05fb3ef45f23c666d41bc7d89",
+        "8ef0f0a06c25134a85982536064117a0bfc2eb9d63373c3b4ad6f4a2865783d4",
+        "5ac7d41859798842aadf53d40fb8e9f2328e6ef46a4d2b1b248915cdee7543a4",
+        "dde1c873a43276cdf6bfd2ca459edebe7e8e14f2f02b1c8e8b9fe879936df98f",
+        "dee09f81081466debd554642434a8282e60bef105bb8ff5a5a56c2bfc4f05c07",
+        CANONICAL_BUNDLE_ARCHIVE_SHA,
+        CANONICAL_WEIGHTS_FILE_SHA,
+        CANONICAL_BACKBONE_FINGERPRINT,
+    ]
+    res = subprocess.run(cmd, capture_output=True, text=True)
+    assert res.returncode == 0, f"Verify existing lock failed: {res.stderr}"
+    assert lock_file.read_bytes() == orig_lock_bytes, "Lock file was modified!"
+
+    # Corrupt sidecar -> must fail
+    lock_sha_file.write_text("00" * 32 + "  phase4c2_environment_lock.json\n", encoding="utf-8")
+    res_bad = subprocess.run(cmd, capture_output=True, text=True)
+    assert res_bad.returncode != 0
+
+
+def test_50_compatible_different_gpu_runtime_observation(tmp_path):
+    """50. Runtime observation records dynamic GPU, VRAM, and pip-freeze without touching scientific lock."""
+    script_text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
+    obs_code = extract_python_snippet(script_text, "record_runtime_observation()", start_token="<<'PY'", end_token="\nPY\n")
+
+    obs_file = tmp_path / "runtime_observation.json"
+    cmd = [sys.executable, "-c", obs_code, str(obs_file), "2026-10-01T00:00:00Z", "execute", "NVIDIA L4", "24.0"]
+    res = subprocess.run(cmd, capture_output=True, text=True)
+    assert res.returncode == 0, f"Observation failed: {res.stderr}"
+    assert obs_file.exists()
+
+    obs = json.loads(obs_file.read_text(encoding="utf-8"))
+    assert obs["gpu_name"] == "NVIDIA L4"
+    assert obs["gpu_vram_gb"] == 24.0
+    assert obs["execution_mode"] == "execute"
+
+
+def test_51_missing_checksums_coverage_fails(tmp_path):
+    """51. Missing coverage in checksums.json triggers fail-closed validation error."""
+    verif_code = extract_verification_python_code(OPERATOR_SCRIPT.read_text(encoding="utf-8"))
+    # Omit epoch_history.json from checksums.json
+    run_dir = setup_mock_stage2_run(tmp_path, 50, 42, omit_from_checksums=["epoch_history.json"])
+    res = run_verification_code(verif_code, run_dir, 50, 42)
+    assert res.returncode != 0
+    assert "Checksums coverage mismatch" in res.stderr
+
+
+def test_52_invalid_receipt_schema_fails(tmp_path):
+    """52. Invalid receipt schema (e.g. missing required field or wrong run_id) fails validation."""
+    verif_code = extract_verification_python_code(OPERATOR_SCRIPT.read_text(encoding="utf-8"))
+    run_dir = setup_mock_stage2_run(tmp_path, 50, 42)
+    receipt_p = run_dir / "run_receipt.json"
+    data = json.loads(receipt_p.read_text(encoding="utf-8"))
+    del data["trainable_parameters_count"]
+    receipt_p.write_text(json.dumps(data), encoding="utf-8")
+    # Update checksums
+    csums = json.loads((run_dir / "checksums.json").read_text(encoding="utf-8"))
+    csums["run_receipt.json"]["sha256"] = hashlib.sha256(receipt_p.read_bytes()).hexdigest()
+    csums["run_receipt.json"]["size_bytes"] = receipt_p.stat().st_size
+    (run_dir / "checksums.json").write_text(json.dumps(csums), encoding="utf-8")
+
+    res = run_verification_code(verif_code, run_dir, 50, 42)
+    assert res.returncode != 0
+
+
+def test_53_wrong_checkpoint_hash_fails(tmp_path):
+    """53. Checkpoint SHA-256 mismatch between receipt and actual checkpoint fails verification."""
+    verif_code = extract_verification_python_code(OPERATOR_SCRIPT.read_text(encoding="utf-8"))
+    run_dir = setup_mock_stage2_run(tmp_path, 50, 42, checkpoint_sha="00" * 32)
+    res = run_verification_code(verif_code, run_dir, 50, 42)
+    assert res.returncode != 0
+    assert "checkpoint_sha256 mismatch" in res.stderr
+
+
+def test_54_wrong_trainable_inventory_fails(tmp_path):
+    """54. Trainable tensor inventory not matching exact 7 tensors fails verification."""
+    verif_code = extract_verification_python_code(OPERATOR_SCRIPT.read_text(encoding="utf-8"))
+    bad_inv = [{"name": "features.12.0.weight", "shape": [576, 96, 1, 1], "numel": 55296}]  # Only 1 tensor
+    run_dir = setup_mock_stage2_run(tmp_path, 50, 42, trainable_inventory=bad_inv)
+    res = run_verification_code(verif_code, run_dir, 50, 42)
+    assert res.returncode != 0
+
+
+def test_55_wrong_optimizer_groups_fails(tmp_path):
+    """55. Optimizer parameter groups not matching exact 2 groups fails verification."""
+    verif_code = extract_verification_python_code(OPERATOR_SCRIPT.read_text(encoding="utf-8"))
+    bad_opt = [{"group_name": "all_params", "learning_rate": 1e-4}]
+    run_dir = setup_mock_stage2_run(tmp_path, 50, 42, optimizer_groups=bad_opt)
+    res = run_verification_code(verif_code, run_dir, 50, 42)
+    assert res.returncode != 0
+
+
+def test_56_wrong_batchnorm_policy_fails(tmp_path):
+    """56. BatchNorm policy not keeping frozen features in eval mode fails verification."""
+    verif_code = extract_verification_python_code(OPERATOR_SCRIPT.read_text(encoding="utf-8"))
+    bad_bn = {"frozen_features_eval": False, "reapply_after_train": True, "unfrozen_features_12_bn_train": True}
+    run_dir = setup_mock_stage2_run(tmp_path, 50, 42, batchnorm_policy=bad_bn)
+    res = run_verification_code(verif_code, run_dir, 50, 42)
+    assert res.returncode != 0
+
+
+def test_57_wrong_code_config_dataset_hashes_in_receipt_fails(tmp_path):
+    """57. Receipt with mismatched config_hash or dataset_archive_sha256 fails verification."""
+    verif_code = extract_verification_python_code(OPERATOR_SCRIPT.read_text(encoding="utf-8"))
+    # Wrong config hash
+    run_dir = setup_mock_stage2_run(tmp_path, 50, 42, config_hash="00" * 32)
+    res = run_verification_code(verif_code, run_dir, 50, 42)
+    assert res.returncode != 0
+
+    # Wrong dataset archive sha
+    run_dir2 = setup_mock_stage2_run(tmp_path, 50, 42, dataset_archive_sha="00" * 32)
+    res2 = run_verification_code(verif_code, run_dir2, 50, 42)
+    assert res2.returncode != 0
+
+
+def test_58_prediction_array_length_mismatch_fails(tmp_path):
+    """58. Predictions JSON with length != 182 fails verification."""
+    verif_code = extract_verification_python_code(OPERATOR_SCRIPT.read_text(encoding="utf-8"))
+    bad_preds = {
+        "targets": [0] * 50 + [1] * 50,
+        "predictions": [0] * 50 + [1] * 50,
+        "probabilities": [0.5] * 100,
+        "source_ids": [f"src_{i:04d}" for i in range(50)] * 2,
+    }
+    run_dir = setup_mock_stage2_run(tmp_path, 50, 42, predictions_data_override=bad_preds)
+    res = run_verification_code(verif_code, run_dir, 50, 42)
+    assert res.returncode != 0
+
+
+def test_59_source_appearing_once_or_three_times_fails(tmp_path):
+    """59. Any source appearing once or 3 times instead of exactly twice fails verification."""
+    verif_code = extract_verification_python_code(OPERATOR_SCRIPT.read_text(encoding="utf-8"))
+    sids = [f"src_{i:04d}" for i in range(91)] * 2
+    sids[0] = sids[1]  # src_0001 now appears 3 times, src_0000 appears 1 time
+    bad_preds = {
+        "targets": [0] * 91 + [1] * 91,
+        "predictions": [0] * 91 + [1] * 91,
+        "probabilities": [0.5] * 182,
+        "source_ids": sids,
+    }
+    run_dir = setup_mock_stage2_run(tmp_path, 50, 42, predictions_data_override=bad_preds)
+    res = run_verification_code(verif_code, run_dir, 50, 42)
+    assert res.returncode != 0
+
+
+def test_60_source_without_label_pair_0_1_fails(tmp_path):
+    """60. Any source not having both label 0 and label 1 fails verification."""
+    verif_code = extract_verification_python_code(OPERATOR_SCRIPT.read_text(encoding="utf-8"))
+    # Invert one target so that src_0000 has targets {0, 0}
+    bad_targets = [0] * 91 + [1] * 91
+    bad_targets[91] = 0  # index 91 corresponds to src_0000 in second half
+    bad_preds = {
+        "targets": bad_targets,
+        "predictions": [0] * 91 + [1] * 91,
+        "probabilities": [0.5] * 182,
+        "source_ids": [f"src_{i:04d}" for i in range(91)] * 2,
+    }
+    run_dir = setup_mock_stage2_run(tmp_path, 50, 42, predictions_data_override=bad_preds)
+    res = run_verification_code(verif_code, run_dir, 50, 42)
+    assert res.returncode != 0

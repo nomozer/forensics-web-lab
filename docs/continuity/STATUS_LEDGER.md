@@ -1,3 +1,16 @@
+## Phase 4C.2B — Final Execution Provenance & Verifier Hardening (Phase 4C.2B.2)
+
+- **Muc tieu**: Harden operator and launcher contracts before Colab preflight retry: bound exact code archive constants, CRLF->LF extraction normalizer, assert_safe_ephemeral_dir destructive path guard, decoupled scientific env lock, strict run verifier, and exact notebook bindings. Zero training runs.
+- **Starting commit**: 1925d2c (Phase 4C.2B.1 ending)
+- **Branch**: research/phase-4c1-learning-curve
+- **Thay đổi chính**: (1) Bound exact archive constants (`phase_4c2_code_9ee7fdb.tar.gz`, 10,478,136 bytes, SHA-256 `951e9089...`, commit `9ee7fdb...`), eliminating dynamic discovery. (2) Added post-extraction text CRLF->LF normalizer in `$CODE_DIR` ensuring bitwise SHA match for runner, config, schema, and dataset binding. (3) Added `assert_safe_ephemeral_dir` guard before any `rm -rf`, rejecting root, `/content`, `/content/drive`, Stage 1, and persistent output dirs. (4) Decoupled immutable scientific lock (`phase4c2_environment_lock.json`) from dynamic runtime observations (`runtime_observations/`). (5) Hardened `verify_run_artifacts()` with schema, checksums coverage, 7 trainable tensors (204,674 params), 2 opt groups, frozen BN policy, and 182-sample prediction audit. (6) Hardened launcher notebook with exact archive binding, atomic staging, and exact execution dir. (7) Operator `scripts/phase_4c2_execute_all.sh` (51,501 bytes, SHA-256 `fafabdec...`) and notebook (14,665 bytes, SHA-256 `3dc02978...`) resealed.
+- **Kiểm tra**: 60/60 operator tests pass, 6/6 notebook tests pass, 14/14 Stage 2 contract tests pass, 9/9 Stage 2 prereg tests pass, 367 full ML pytest pass, 70/70 TS pass, typecheck 0, build OK, continuity check PASS.
+- **Kết quả**: PRE_EXECUTION_GO_NO_GO verdict READY_FOR_USER_COLAB_PREFLIGHT_RETRY. Training runs = 0, locked-test = 0, Stage 1 writes = 0.
+- **Evidence**: research/evidence/phase-4c.2b/ (operator_receipt.json, notebook_receipt.json, execution_snapshot_receipt.json, pretrained_weights_binding.json, PRE_EXECUTION_GO_NO_GO.json, environment.json, PHASE_REPORT.md).
+- **Quyết định tiếp theo**: User re-uploads only 2 files (`phase_4c2_execute_all.sh` to `inputs/`, `phase_4c2_finetuning_colab.ipynb` to `phase_4c2/`) and executes preflight retry on Colab GPU runtime.
+
+---
+
 ## Phase 4C.2B — Build Resumable Operator & Fix Quoting (Phase 4C.2B.1)
 
 - **Muc tieu**: Resolve Google Colab runtime failure (SyntaxError: unterminated string literal) caused by unquoted heredoc `<<PY` backslash expansion in `scripts/phase_4c2_execute_all.sh`. Reseal operator and notebook artifacts. Zero training runs.
