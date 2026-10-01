@@ -1,0 +1,198 @@
+# Phase 4C.2 Stage 2 Fine-Tuning Execution & Preregistration Configuration
+# Formal Preregistration for Partial Backbone Unfreezing Experiment
+# Derived from Pilot A learning curve outcomes (Phase 4C.1D.2 canonical evidence commit f6eb57d)
+
+schema_version: "1.0.0"
+config_id: "phase_4c2_stage2_finetuning"
+pilot_id: "pilot_tgif_edit"
+pilot_branch: "Pilot A"
+title: "Phase 4C.2 Stage 2 Fine-Tuning: Partial Backbone Unfreezing (Option P, N=50,100,250)"
+scientific_status: "preregistered_protocol"
+license_track: "research-only"
+
+independent_statistical_unit: "source_id"
+enforce_source_isolation: true
+forbid_masks_as_independent_samples: true
+no_fr_to_fully_generated: true
+
+stage_1_parent_evidence:
+  parent_phase: "Phase 4C.1D.2"
+  parent_commit_sha: "f6eb57df121dbfc908ec1731d55bbe3c87dc5453"
+  evidence_directory: "research/evidence/phase-4c.1d/"
+  baseline_metrics:
+    n50_macro_f1: 0.5322
+    n100_macro_f1: 0.5728
+    n250_macro_f1: 0.5627
+    n100_minus_n50_delta: 0.0406
+    n250_minus_n100_delta: -0.0101
+  linear_probe_conclusion: "Plateau at N=100 in frozen configuration; justifies testing partial unfreezing hypothesis without proving bottleneck in advance."
+
+dataset_binding:
+  binding_file: "research/evidence/phase-4c.2a/dataset_binding.json"
+  canonical_bundle_name: "phase_4c1_binary_n250_reusable.tar"
+  archive_sha256: "d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27"
+  content_sha256: "c365c812cc814097f11b9e5ed5c82e672015e2ba093f09f975df0a2a01229e9b"
+  manifest_sha256: "411e35da80843a10f7bb22e33efac8a4d1db70110dbda91cadbbf39532c9312d"
+  read_only: true
+  prohibit_new_dataset_generation: true
+
+namespace_isolation:
+  drive_output_root: "MyDrive/Colab Notebooks/forensics-web-lab/phase_4c2/"
+  local_artifact_root: "D:\\Documents\\forensics-web-lab-local-artifacts\\phase_4c2\\"
+  forbidden_output_targets:
+    - "phase_4c1/runs/execution_79bb115/"
+    - "phase_4c1/runs/"
+  planned_artifacts:
+    config: "ml/configs/phase_4c2_stage2_finetuning.yaml"
+    evidence_dir: "research/evidence/phase-4c.2a/"
+    environment_lock: "phase4c2_environment_lock.json"
+    notebook_launcher: "notebooks/phase_4c2_finetuning_colab.ipynb"
+
+intervention_definition:
+  control_group:
+    name: "Stage 1 (Frozen Backbone Linear Probe)"
+    state: "Completed 15 canonical runs on Colab T4"
+    trainable_modules: ["classifier"]
+    trainable_parameters: 148226
+  treatment_group:
+    name: "Stage 2 (Partial Fine-Tuning: Head + Last Convolution Block)"
+    description: "Unfreeze classifier head and features.12 (Conv2dNormActivation: 1x1 conv + batchnorm) with differential learning rates"
+    architecture: "MobileNetV3Forensics(num_classes=2)"
+    unfrozen_modules:
+      - "features.12"
+      - "classifier"
+    frozen_modules:
+      - "features.0"
+      - "features.1"
+      - "features.2"
+      - "features.3"
+      - "features.4"
+      - "features.5"
+      - "features.6"
+      - "features.7"
+      - "features.8"
+      - "features.9"
+      - "features.10"
+      - "features.11"
+    trainable_parameter_allowlist:
+      - name: "features.12.0.weight"
+        shape: [576, 96, 1, 1]
+        numel: 55296
+      - name: "features.12.1.weight"
+        shape: [576]
+        numel: 576
+      - name: "features.12.1.bias"
+        shape: [576]
+        numel: 576
+      - name: "classifier.0.weight"
+        shape: [256, 576]
+        numel: 147456
+      - name: "classifier.0.bias"
+        shape: [256]
+        numel: 256
+      - name: "classifier.3.weight"
+        shape: [2, 256]
+        numel: 512
+      - name: "classifier.3.bias"
+        shape: [2]
+        numel: 2
+    parameter_accounting:
+      trainable_parameters: 204674
+      frozen_parameters: 870560
+      total_parameters: 1075234
+      trainable_percentage: 19.035
+    invariance_constraint: "No simultaneous modification of architecture, dataset, augmentation, or loss function. Only partial unfreezing and differential learning rate are evaluated."
+
+hyperparameters:
+  optimizer: "AdamW"
+  learning_rate_backbone: 0.00005
+  learning_rate_head: 0.0005
+  weight_decay: 0.0001
+  scheduler: "CosineAnnealingLR"
+  scheduler_params:
+    T_max: 20
+    eta_min: 0.000001
+  batch_size: 32
+  max_epochs: 20
+  early_stopping_patience: 5
+  primary_checkpoint_metric: "inner_val_macro_f1"
+  gradient_clipping_max_norm: 1.0
+  loss_function: "FocalLoss"
+  loss_params:
+    gamma: 2.0
+    label_smoothing: 0.05
+    reduction: "mean"
+  mixed_precision: "fp32"
+  preprocessing:
+    input_size: [224, 224]
+    normalize_mean: [0.485, 0.456, 0.406]
+    normalize_std: [0.229, 0.224, 0.225]
+    interpolation: "bicubic"
+  augmentation: "none_canonical_deterministic"
+  deterministic_settings:
+    torch_deterministic: true
+    cudnn_benchmark: false
+    pythonhashseed: 0
+    stable_offset_algorithm: "sha256_64bit_integer"
+  gpu_policy:
+    policy: "compatible"
+    min_vram_gb: 8.0
+    hardcode_t4_only: false
+    supported_architectures:
+      - "Tesla T4"
+      - "NVIDIA L4"
+      - "Tesla V100"
+      - "NVIDIA A100"
+      - "CUDA_COMPATIBLE_GENERIC"
+
+experiment_matrix:
+  sample_sizes:
+    - n_sources: 50
+      status: "runnable"
+      cohort_dev_samples: 100
+      cohort_val_samples: 182
+    - n_sources: 100
+      status: "runnable"
+      cohort_dev_samples: 200
+      cohort_val_samples: 182
+    - n_sources: 250
+      status: "runnable"
+      cohort_dev_samples: 500
+      cohort_val_samples: 182
+  random_seeds: [42, 1337, 2025, 3407, 9001]
+  total_runs: 15
+  pairing_structure: "Strict 1-to-1 paired comparison with Stage 1 on identical (N, seed) cell"
+  tuning_restriction: "Strictly forbid exploratory hyperparameter adjustments on individual seeds prior to batch execution"
+
+preregistered_analysis_plan:
+  primary_endpoint:
+    id: "paired_delta_macro_f1"
+    definition: "Stage 2 Macro-F1 minus Stage 1 Macro-F1 evaluated on the identical 91 inner_validation sources"
+  secondary_endpoints:
+    - "balanced_accuracy"
+    - "auroc"
+    - "runner_reported_validation_loss"
+    - "brier_score"
+    - "ece"
+    - "training_time_seconds"
+    - "peak_vram_mb"
+  statistical_testing:
+    summary_reporting: "Mean, standard deviation, and 95% confidence interval (t-distribution df=4) per sample size N"
+    paired_seed_analysis: "Paired difference per seed across 5 matched seeds"
+    paired_t_test_designation: "exploratory"
+    permutation_test:
+      type: "exact_two_sided_sign_flip"
+      resolution_limit: 0.0625
+      caveat: "With n=5, minimum resolution is 2/32 = 0.0625; mathematically cannot achieve alpha < 0.05 despite unanimous 5/5 positive direction"
+    multiple_testing_correction: "Holm-Bonferroni correction across the 3 registered sample sizes (N=50, 100, 250)"
+  calibration_protocol:
+    temperature_scaling: "Option to evaluate on an independent calibration split or via nested cross-fitting"
+    data_leakage_guard: "Forbidden to fit temperature parameter on model selection data and report calibration on the same data"
+    miscalibration_diagnosis: "Reliability diagram or signed calibration error required before asserting overconfidence vs underconfidence"
+
+execution_gate:
+  requires_explicit_user_approval: true
+  preregistration_status: "SEALED_PREREGISTERED"
+  training_runs_in_phase: 0
+  locked_test_evaluations: 0
+  stage_2_invocations: 0

@@ -1,0 +1,27 @@
+{
+  "timestamp": "2026-10-01T02:45:00.000000Z",
+  "phase": "4C.2A",
+  "description": "Preregister Stage 2 fine-tuning experiment, dataset binding, trainable parameter allowlist, and hyperparameter lock",
+  "audited_through_commit": "f6eb57df121dbfc908ec1731d55bbe3c87dc5453",
+  "branch": "research/phase-4c1-learning-curve",
+  "stage2_target_environment": {
+    "platform": "Google Colab",
+    "gpu_policy": "capability_based",
+    "gpu_target": "NVIDIA Tesla T4, L4, V100, A100 or CUDA compatible",
+    "min_vram_gb": 8.0,
+    "runs_planned": 15,
+    "runs_executed": 0,
+    "runs_completed": 0
+  },
+  "local_preregistration_environment": {
+    "platform": "Windows 11 (AMD64)",
+    "gpu": "NVIDIA GeForce GTX 1650",
+    "gpu_vram_gb": 3.99969482421875,
+    "cuda_version": "12.1",
+    "python_version": "3.12.10",
+    "torch_version": "2.5.1+cu121",
+    "torchvision_version": "0.20.1+cu121",
+    "purpose": "Preregistration design, dataset binding, layer allowlist verification, and test assertion"
+  },
+  "previous_phase": "4C.1D.2"
+}
