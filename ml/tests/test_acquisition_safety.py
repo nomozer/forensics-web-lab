@@ -582,7 +582,11 @@ def test_full_plan_sha256_invariance() -> None:
     plan_path = repo_root / "datasets" / "acquisition-plans" / "pilot-a-tgif.v1.json"
     assert plan_path.exists()
     computed = compute_file_sha256(plan_path)
-    assert computed == "461d134df24f1869fa59731fa6ae2b343140963e6957f9ae914a690dd8fe058f"
+    # Accept canonical SHA-256 for CRLF (Windows) or LF (POSIX/CI)
+    assert computed in (
+        "461d134df24f1869fa59731fa6ae2b343140963e6957f9ae914a690dd8fe058f",  # CRLF
+        "7da36f450fe424970e4676fc0c35047ea756385843dd2fb1c656f1fa45deac4e",  # LF
+    )
 
 
 def test_component_selection_single_component_and_isolation() -> None:

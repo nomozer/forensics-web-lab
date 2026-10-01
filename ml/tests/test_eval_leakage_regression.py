@@ -11,6 +11,9 @@ Tests are based on:
 """
 
 import pytest
+
+pytestmark = pytest.mark.requires_research_artifact
+
 import json
 import csv
 import numpy as np
