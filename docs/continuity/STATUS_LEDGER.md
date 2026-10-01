@@ -1,3 +1,16 @@
+## Phase 4C.2D — Correct Variability Narrative and Seal PR Evidence (Phase 4C.2D.1)
+
+- **Muc tieu**: Correct drafting error regarding cohort N=100 seed variability in Phase 4C.2D evidence; calculate exact sample standard deviations directly from raw paired metrics; harden regression test suite with fault injection and non-confirmatory wording guards; seal Phase 4C.2D evidence using two-step provenance model without circular SHA self-reference.
+- **Starting commit**: e24d0ec (Phase 4C.2D functional commit)
+- **Branch**: research/phase-4c2-finetuning
+- **Thay đổi chính**: (1) Replaced drafted statement in `FINAL_MODEL_SELECTION.json` and `PHASE_REPORT.md` with exact sample standard deviations ($ddof=1$): Stage 1 Macro-F1 SD = `0.004802230617102873`, Stage 2 Macro-F1 SD = `0.01915920444456796`, Paired-delta SD = `0.019371286120698345`, SD ratio $\approx 3.989647$ (~3.99). (2) Clarified variance finding is exploratory development evidence rather than confirmatory conclusion due to $n=5$ seeds. (3) Added 3 regression tests in `test_phase_4c2d_model_selection.py` verifying exact SD parity, detecting swapped delta/N50 SDs, and guarding against affirmative confirmatory claims (13/13 PASS). (4) Recorded two-step provenance in `provenance_bindings.json` (functional commit `e24d0ec`, evidence seal commit pending).
+- **Kiểm tra**: 13/13 Phase 4C.2D tests pass, 40/40 Phase 4C.2C tests pass, 480/481 full ML pytest pass (1 skipped), 70/70 TS pass, typecheck 0 errors, build OK, continuity check PASS.
+- **Kết quả**: Verdict READY_FOR_PR_REVIEW. Selected protocol remains stage1_frozen_backbone_linear_probe. Three exact SDs verified: S1=0.004802, S2=0.019159, delta=0.019371. Training runs = 0, GPU calls = 0, locked-test access = 0.
+- **Evidence**: research/evidence/phase-4c.2d/ (PHASE_REPORT.md, FINAL_MODEL_SELECTION.json, final_metric_parity.json, stage1_metric_lineage.csv/json, locked_test_readiness.json, environment.json, provenance_bindings.json).
+- **Quyết định tiếp theo**: Ready for PR review into `main`. Locked-test remains sealed (0 accesses).
+
+---
+
 ## Phase 4C.2D — Final Model-Selection Gate and PR Closure
 
 - **Muc tieu**: Finalize Stage 1 vs Stage 2 model selection decision with scientific integrity; verify cross-artifact numerical parity ($< 10^{-6}$); audit Stage 1 metric lineage and runner reload contract; standardize calibration phrasing across evidence; freeze protocol for future evaluation while maintaining locked-test strictly sealed (0 accesses); prepare branch `research/phase-4c2-finetuning` for PR review into `main`. Zero new training runs, zero GPU calls, zero locked-test access, zero auto-merge.

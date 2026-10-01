@@ -1,8 +1,8 @@
 # Trạng thái Hiện tại: Forensics Web Lab (Current State)
 
 > **Tài liệu đọc đầu tiên bắt buộc cho mọi phiên làm việc AI mới.**<br>
-> **Documented through substantive commit**: `9ee7fdb`<br>
-> **Phase hoàn thành gần nhất**: Phase 4C.2D — Final Model-Selection Gate and PR Closure<br>
+> **Documented through substantive commit**: `e24d0ec`<br>
+> **Phase hoàn thành gần nhất**: Phase 4C.2D.1 — Correct Variability Narrative and Seal PR Evidence (Phase 4C.2D)<br>
 > **Branch**: `research/phase-4c2-finetuning`<br>
 > **Base main commit**: `460f6d5` (bảo toàn nguyên vẹn, không commit trực tiếp)<br>
 > **Working tree**: clean<br>
@@ -226,6 +226,8 @@
 ---
 
 ## 9. Công việc Đang thực hiện & Công việc Tiếp theo
+
+* **Đã hoàn thành (Phase 4C.2D.1 — Correct Variability Narrative and Seal PR Evidence)**: Sửa lỗi soạn thảo văn bản nháp về độ biến thiên theo seed tại cohort N=100. (1) Thay thế phát biểu nhầm lẫn cũ bằng 3 độ lệch chuẩn mẫu chính xác ($ddof=1$) tính trực tiếp từ 5 raw paired runs N=100: Stage 1 Macro-F1 SD = `0.004802230617102873`, Stage 2 Macro-F1 SD = `0.01915920444456796`, Paired-delta SD = `0.019371286120698345`, tỉ số SD $\approx 3.989647$ (xấp xỉ 3.99). (2) Làm rõ phát biểu: đây là bằng chứng mang tính khám phá (exploratory), không phải kết luận confirmatory về variance do chỉ có 5 seeds. (3) Bổ sung 3 regression tests trong `ml/tests/test_phase_4c2d_model_selection.py` (13/13 PASS) xác minh parity chính xác $< 10^{-6}$, phát hiện việc dùng nhầm paired-delta SD hoặc SD của cohort N=50, và cấm phát biểu confirmatory về variance. (4) Cập nhật `provenance_bindings.json` theo mô hình two-step provenance (`phase4c2d_functional_commit`: `e24d0ec`, `evidence_seal_commit` sẽ được niêm phong sau hotfix). Phán quyết: `READY_FOR_PR_REVIEW`. 0 training runs mới, 0 GPU calls, 0 locked-test access.
 
 * **Đã hoàn thành (Phase 4C.2D — Final Model-Selection Gate and PR Closure)**: Thực hiện cổng chọn mô hình cuối cùng giữa Stage 1 (frozen backbone linear probe) và Stage 2 (pre-registered partial fine-tuning protocol). (1) Xây dựng công cụ tự động `scripts/research/finalize_phase_4c2d_model_selection.py` kiểm toán độc lập 15 runs Stage 1 và đối soát parity chéo 30 runs trên mọi artifacts với sai số $\le 10^{-6}$ (100% verified). (2) Kiểm toán lineage Stage 1 xác minh hợp đồng reload `best_checkpoint.pt` trong `run_phase_4c1.py` (dòng 586–594) trước khi tính final metrics. (3) Chuẩn hóa phát biểu calibration trong báo cáo Phase 4C.2C và 4C.2C.1 loại bỏ các khẳng định tuyệt đối. (4) Ra quyết định chọn mô hình: do Stage 2 không cho thấy sự vượt trội có ý nghĩa thống kê trên bất kỳ cohort nào (toàn bộ 95% CIs cắt 0, mọi Holm $p > 0.05$), tăng +38.1% tham số huấn luyện và có phương sai hạt giống lớn tại $N=100$, nguyên tắc Ockham bảo thủ chọn **Stage 1 (Frozen Backbone Linear Probe)** làm candidate protocol chính thức cho đánh giá locked-test tương lai; ghi nhận rõ `post_hoc_decision: true` và `preregistered_rule_present: false`. (5) Niêm phong trạng thái locked-test (`locked_test_partition_status = "SEALED"`, 0 accesses). (6) Hoàn thiện báo cáo Phase 4C.2D và test suite 10 unit tests (`ml/tests/test_phase_4c2d_model_selection.py`, 10/10 PASS). Phán quyết: `READY_FOR_PR_REVIEW`. 0 huấn luyện mới, 0 GPU inference, 0 locked-test access, 0 merge main tự động.
 

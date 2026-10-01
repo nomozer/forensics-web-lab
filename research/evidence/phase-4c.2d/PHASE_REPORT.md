@@ -23,7 +23,7 @@ Căn cứ trên toàn bộ bằng chứng thực nghiệm đối chứng ghép c
 ### Cơ sở Khoa học:
 - **Không đạt ý nghĩa thống kê**: Mọi khoảng tin cậy 95% Student's t đều cắt 0 (N50: $[-0.0008, +0.0196]$, N100: $[-0.0202, +0.0279]$, N250: $[-0.0146, +0.0275]$); mọi giá trị $p$ (thô và hiệu chỉnh Holm-Bonferroni, parametric paired t lẫn exact permutation) đều $> 0.05$.
 - **Tính kinh tế tham số (Parameter Efficiency)**: Stage 1 chỉ cập nhật $148,226$ tham số ở classification head, bảo tồn toàn vẹn đặc trưng MobileNetV3. Stage 2 mở thêm block `features.12` cập nhật $204,674$ tham số (+38.1% tham số) nhưng chỉ mang lại mức tăng trung bình không đáng kể $+0.0066$ Macro-F1.
-- **Độ ổn định phương sai**: Tại $N=100$, Stage 2 kém hơn Stage 1 ở 3/5 seeds. Độ lệch chuẩn của Stage 2 ($0.0194$) cao gấp đôi Stage 1 ($0.0082$).
+- **Độ ổn định phương sai**: Tại $N=100$, Stage 2 kém hơn Stage 1 ở 3/5 seeds. Độ lệch chuẩn Macro-F1 giữa các seed của Stage 2 là 0.019159, cao hơn Stage 1 là 0.004802 (xấp xỉ 3.99 lần), cho thấy độ biến thiên theo seed lớn hơn trong thí nghiệm này. Paired-delta SD là 0.019371. Đây là bằng chứng phát triển mô hình mang tính khám phá (exploratory), không phải kết luận confirmatory về variance do chỉ có 5 seeds.
 - **Nguyên tắc khoa học thận trọng (Ockham's Razor)**: Khi một can thiệp tinh chỉnh phức tạp hơn không chứng minh được sự vượt trội rõ rệt và có ý nghĩa thống kê so với baseline đơn giản hơn, mô hình đơn giản và ít tham số hơn (Stage 1) được giữ làm mô hình chính thức.
 
 ---

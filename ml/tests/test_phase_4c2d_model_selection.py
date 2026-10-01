@@ -243,3 +243,166 @@ def test_runner_contract_trace_stage1_checkpoint_reload():
     assert "model.load_state_dict(checkpoint[\"model_state_dict\"])" in code
     assert "final_metrics = evaluate(model, val_loader, device, criterion)" in code
     assert "predictions_data = collect_predictions(model, val_loader, device)" in code
+
+
+# -----------------------------------------------------------------------------
+# Test 11: Cohort N=100 Seed Variability Exact Sample SD Parity
+# -----------------------------------------------------------------------------
+def test_cohort_n100_variability_exact_sample_sd_parity():
+    """Computes Stage 1 SD, Stage 2 SD, and paired-delta SD directly from raw metrics.
+
+    Verifies:
+      - Stage 1 Macro-F1 sample SD == 0.004802230617102873 (tolerance < 1e-6)
+      - Stage 2 Macro-F1 sample SD == 0.01915920444456796 (tolerance < 1e-6)
+      - Paired-delta sample SD == 0.019371286120698345 (tolerance < 1e-6)
+      - Stage 2 / Stage 1 SD ratio == 3.989647... (approx 3.99)
+      - FINAL_MODEL_SELECTION.json and PHASE_REPORT.md accurately reflect these exact values.
+    """
+    paired_csv = EVIDENCE_DIR_4C2C / "paired_run_metrics.csv"
+    assert paired_csv.is_file(), f"Missing {paired_csv}"
+
+    with open(paired_csv, "r", encoding="utf-8") as f:
+        rows = list(csv.DictReader(f))
+
+    n100_rows = [r for r in rows if int(r["sample_size"]) == 100]
+    assert len(n100_rows) == 5, f"Expected 5 runs for N=100, got {len(n100_rows)}"
+
+    s1_vals = np.array([float(r["stage1_macro_f1"]) for r in n100_rows])
+    s2_vals = np.array([float(r["stage2_macro_f1"]) for r in n100_rows])
+    delta_vals = np.array([float(r["delta_macro_f1"]) for r in n100_rows])
+
+    s1_sd = float(np.std(s1_vals, ddof=1))
+    s2_sd = float(np.std(s2_vals, ddof=1))
+    delta_sd = float(np.std(delta_vals, ddof=1))
+    ratio = s2_sd / s1_sd
+
+    EXPECTED_S1_SD = 0.004802230617102873
+    EXPECTED_S2_SD = 0.01915920444456796
+    EXPECTED_DELTA_SD = 0.019371286120698345
+    EXPECTED_RATIO = 3.9896468895795083
+
+    assert abs(s1_sd - EXPECTED_S1_SD) < 1e-6, f"S1 SD {s1_sd} != {EXPECTED_S1_SD}"
+    assert abs(s2_sd - EXPECTED_S2_SD) < 1e-6, f"S2 SD {s2_sd} != {EXPECTED_S2_SD}"
+    assert abs(delta_sd - EXPECTED_DELTA_SD) < 1e-6, f"Delta SD {delta_sd} != {EXPECTED_DELTA_SD}"
+    assert abs(ratio - EXPECTED_RATIO) < 1e-3, f"Ratio {ratio} != {EXPECTED_RATIO}"
+
+    # Verify appearance in FINAL_MODEL_SELECTION.json
+    decision_p = EVIDENCE_DIR_4C2D / "FINAL_MODEL_SELECTION.json"
+    assert decision_p.is_file()
+    decision_json = json.loads(decision_p.read_text(encoding="utf-8"))
+    variability_narrative_json = decision_json["decision_basis"]["statistical_uncertainty_and_seed_variability"]
+
+    assert "0.019159" in variability_narrative_json, "Stage 2 SD 0.019159 missing from JSON"
+    assert "0.004802" in variability_narrative_json, "Stage 1 SD 0.004802 missing from JSON"
+    assert "0.019371" in variability_narrative_json, "Paired-delta SD 0.019371 missing from JSON"
+    assert "3.99" in variability_narrative_json or "3.989" in variability_narrative_json, "Ratio 3.99 missing from JSON"
+
+    # Verify appearance in PHASE_REPORT.md
+    report_p = EVIDENCE_DIR_4C2D / "PHASE_REPORT.md"
+    assert report_p.is_file()
+    report_text = report_p.read_text(encoding="utf-8")
+
+    assert "0.019159" in report_text, "Stage 2 SD 0.019159 missing from PHASE_REPORT.md"
+    assert "0.004802" in report_text, "Stage 1 SD 0.004802 missing from PHASE_REPORT.md"
+    assert "0.019371" in report_text, "Paired-delta SD 0.019371 missing from PHASE_REPORT.md"
+    assert "3.99" in report_text or "3.989" in report_text, "Ratio 3.99 missing from PHASE_REPORT.md"
+
+
+# -----------------------------------------------------------------------------
+# Test 12: Cohort N=100 Variability Fault Injections & Fail-Closed Detection
+# -----------------------------------------------------------------------------
+def test_cohort_n100_variability_fault_injection_detects_swapped_sds():
+    """Ensures that confusing paired-delta SD for stage SD or N=50 SD for N=100 fails closed."""
+    paired_csv = EVIDENCE_DIR_4C2C / "paired_run_metrics.csv"
+    with open(paired_csv, "r", encoding="utf-8") as f:
+        rows = list(csv.DictReader(f))
+
+    n100_rows = [r for r in rows if int(r["sample_size"]) == 100]
+    n50_rows = [r for r in rows if int(r["sample_size"]) == 50]
+
+    s1_100_sd = float(np.std([float(r["stage1_macro_f1"]) for r in n100_rows], ddof=1))
+    s2_100_sd = float(np.std([float(r["stage2_macro_f1"]) for r in n100_rows], ddof=1))
+    delta_100_sd = float(np.std([float(r["delta_macro_f1"]) for r in n100_rows], ddof=1))
+
+    s1_50_sd = float(np.std([float(r["stage1_macro_f1"]) for r in n50_rows], ddof=1))
+    delta_50_sd = float(np.std([float(r["delta_macro_f1"]) for r in n50_rows], ddof=1))
+
+    TOLERANCE = 1e-6
+
+    def audit_variability_sds(s1_tested, s2_tested, delta_tested):
+        errors = []
+        if abs(s1_tested - s1_100_sd) > TOLERANCE:
+            errors.append(f"Stage 1 SD mismatch: tested={s1_tested}, actual={s1_100_sd}")
+        if abs(s2_tested - s2_100_sd) > TOLERANCE:
+            errors.append(f"Stage 2 SD mismatch: tested={s2_tested}, actual={s2_100_sd}")
+        if abs(delta_tested - delta_100_sd) > TOLERANCE:
+            errors.append(f"Paired-delta SD mismatch: tested={delta_tested}, actual={delta_100_sd}")
+        if errors:
+            raise ValueError("; ".join(errors))
+
+    # Base case: true numbers must pass
+    audit_variability_sds(s1_100_sd, s2_100_sd, delta_100_sd)
+
+    # Fault 1: Using paired-delta SD in place of Stage 2 SD (diff = ~0.000212 > 1e-6)
+    with pytest.raises(ValueError, match="Stage 2 SD mismatch"):
+        audit_variability_sds(s1_100_sd, delta_100_sd, delta_100_sd)
+
+    # Fault 2: Using paired-delta SD in place of Stage 1 SD (diff = ~0.014569 > 1e-6)
+    with pytest.raises(ValueError, match="Stage 1 SD mismatch"):
+        audit_variability_sds(delta_100_sd, s2_100_sd, delta_100_sd)
+
+    # Fault 3: Using N=50 paired-delta SD (0.008220) in place of N=100 Stage 1 SD (0.004802)
+    with pytest.raises(ValueError, match="Stage 1 SD mismatch"):
+        audit_variability_sds(delta_50_sd, s2_100_sd, delta_100_sd)
+
+    # Fault 4: Using N=50 Stage 1 SD (0.0148) in place of N=100 Stage 1 SD
+    with pytest.raises(ValueError, match="Stage 1 SD mismatch"):
+        audit_variability_sds(s1_50_sd, s2_100_sd, delta_100_sd)
+
+    # Fault 5: Old drafting errors: s2 = 0.0194, s1 = 0.0082 (both must fail closed)
+    with pytest.raises(ValueError, match="Stage 1 SD mismatch.*Stage 2 SD mismatch"):
+        audit_variability_sds(0.0082, 0.0194, delta_100_sd)
+
+
+# -----------------------------------------------------------------------------
+# Test 13: Variability Narrative Prohibits Confirmatory Claims for n=5 Seeds
+# -----------------------------------------------------------------------------
+def test_variability_narrative_prohibits_confirmatory_claims():
+    """Ensures variance comparisons on n=5 seeds are qualified as exploratory and not confirmatory."""
+    decision_p = EVIDENCE_DIR_4C2D / "FINAL_MODEL_SELECTION.json"
+    report_p = EVIDENCE_DIR_4C2D / "PHASE_REPORT.md"
+
+    decision_data = json.loads(decision_p.read_text(encoding="utf-8"))
+    report_text = report_p.read_text(encoding="utf-8")
+
+    # Extract the specific variance text in JSON
+    json_var_text = decision_data["decision_basis"]["statistical_uncertainty_and_seed_variability"]
+
+    # Extract the specific variance line in Markdown
+    md_var_line = ""
+    for line in report_text.splitlines():
+        if "Độ ổn định phương sai" in line:
+            md_var_line = line
+            break
+    assert md_var_line, "Missing 'Độ ổn định phương sai' section in PHASE_REPORT.md"
+
+    # Affirmative confirmatory claims are strictly prohibited
+    affirmative_patterns = [
+        r"bằng chứng confirmatory về (?:phương sai|variance)",
+        r"(?<!không phải )kết luận confirmatory về (?:phương sai|variance)",
+        r"(?<!rather than a )(?<!not a )confirmatory conclusion on variance",
+        r"(?<!not )(?<!no )confirmatory evidence (?:of|for) variance",
+    ]
+
+    for pat in affirmative_patterns:
+        assert not re.search(pat, json_var_text, re.IGNORECASE), f"Prohibited affirmative pattern '{pat}' in JSON"
+        assert not re.search(pat, md_var_line, re.IGNORECASE), f"Prohibited affirmative pattern '{pat}' in Markdown"
+
+    # Must contain explicit negation and exploratory qualification
+    assert "rather than a confirmatory conclusion on variance" in json_var_text
+    assert "exploratory" in json_var_text
+    assert "n=5 seeds" in json_var_text
+
+    assert "không phải kết luận confirmatory về variance" in md_var_line
+    assert "mang tính khám phá" in md_var_line
+    assert "5 seeds" in md_var_line

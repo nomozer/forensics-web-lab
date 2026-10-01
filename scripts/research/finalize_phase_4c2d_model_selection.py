@@ -311,8 +311,10 @@ def generate_final_model_selection_decision(
             ),
             "statistical_uncertainty_and_seed_variability": (
                 "For n=5 seeds, the exact sign-flip permutation test has a minimum mathematical resolution of 0.0625. "
-                "At N=100, Stage 2 was inferior to Stage 1 on 3 out of 5 seeds. Seed-level variance in Stage 2 "
-                "was substantially higher than Stage 1 (std = 0.0194 vs 0.0082), indicating elevated instability."
+                "At N=100, Stage 2 was inferior to Stage 1 on 3 out of 5 seeds. Across seeds at N=100, Stage 2 Macro-F1 "
+                "sample standard deviation is 0.019159, higher than Stage 1 at 0.004802 (ratio approximately 3.99), "
+                "indicating greater seed-level variability in this experiment (paired-delta SD is 0.019371). "
+                "This is exploratory model-development evidence rather than a confirmatory conclusion on variance due to n=5 seeds."
             ),
             "architectural_parsimony_and_parameter_efficiency": (
                 "Stage 1 frozen linear probe updates strictly 148,226 parameters in the classification head, "
@@ -374,15 +376,15 @@ def generate_phase_report_markdown(
     lines = [
         "# Phase 4C.2D — Final Model-Selection Gate and PR Closure Report",
         "",
-        "> **Giai đoạn**: Phase 4C.2D  ",
-        "> **Mục tiêu**: Hoàn tất quyết định lựa chọn mô hình Stage 1 vs Stage 2 một cách trung thực khoa học; kiểm toán lineage và parity nhị phân 30 runs; chuẩn hóa ngữ nghĩa hiệu chuẩn; đóng băng protocol chính cho locked-test; chuẩn bị PR closure vào main.  ",
-        "> **Branch**: `research/phase-4c2-finetuning`  ",
-        "> **Evaluation Partition**: `inner_validation` ($91$ unique sources, $182$ balanced samples).  ",
-        "> **Niêm phong Locked-Test**: $0$ truy cập, $0$ evaluation, giữ nguyên trạng thái niêm phong tuyệt đối.  ",
-        "> **Huấn luyện mới**: $0$ lượt chạy (0 GPU calls).  ",
-        "> **Sửa đổi raw artifacts**: $0$ tệp thô bị sửa đổi (raw Colab/local outputs 100% byte-identical).  ",
-        f"> **Quyết định Mô hình**: **`{decision['selected_protocol']}`** (Protocol được chọn)  ",
-        f"> **Phán quyết cuối cùng**: **`READY_FOR_PR_REVIEW`**  ",
+        "> **Giai đoạn**: Phase 4C.2D<br>",
+        "> **Mục tiêu**: Hoàn tất quyết định lựa chọn mô hình Stage 1 vs Stage 2 một cách trung thực khoa học; kiểm toán lineage và parity nhị phân 30 runs; chuẩn hóa ngữ nghĩa hiệu chuẩn; đóng băng protocol chính cho locked-test; chuẩn bị PR closure vào main.<br>",
+        "> **Branch**: `research/phase-4c2-finetuning`<br>",
+        "> **Evaluation Partition**: `inner_validation` ($91$ unique sources, $182$ balanced samples).<br>",
+        "> **Niêm phong Locked-Test**: $0$ truy cập, $0$ evaluation, giữ nguyên trạng thái niêm phong tuyệt đối.<br>",
+        "> **Huấn luyện mới**: $0$ lượt chạy (0 GPU calls).<br>",
+        "> **Sửa đổi raw artifacts**: $0$ tệp thô bị sửa đổi (raw Colab/local outputs 100% byte-identical).<br>",
+        f"> **Quyết định Mô hình**: **`{decision['selected_protocol']}`** (Protocol được chọn)<br>",
+        "> **Phán quyết cuối cùng**: **`READY_FOR_PR_REVIEW`**",
         "",
         "---",
         "",
@@ -397,7 +399,13 @@ def generate_phase_report_markdown(
         "### Cơ sở Khoa học:",
         "- **Không đạt ý nghĩa thống kê**: Mọi khoảng tin cậy 95% Student's t đều cắt 0 (N50: $[-0.0008, +0.0196]$, N100: $[-0.0202, +0.0279]$, N250: $[-0.0146, +0.0275]$); mọi giá trị $p$ (thô và hiệu chỉnh Holm-Bonferroni, parametric paired t lẫn exact permutation) đều $> 0.05$.",
         "- **Tính kinh tế tham số (Parameter Efficiency)**: Stage 1 chỉ cập nhật $148,226$ tham số ở classification head, bảo tồn toàn vẹn đặc trưng MobileNetV3. Stage 2 mở thêm block `features.12` cập nhật $204,674$ tham số (+38.1% tham số) nhưng chỉ mang lại mức tăng trung bình không đáng kể $+0.0066$ Macro-F1.",
-        "- **Độ ổn định phương sai**: Tại $N=100$, Stage 2 kém hơn Stage 1 ở 3/5 seeds. Độ lệch chuẩn của Stage 2 ($0.0194$) cao gấp đôi Stage 1 ($0.0082$).",
+        (
+            "- **Độ ổn định phương sai**: Tại $N=100$, Stage 2 kém hơn Stage 1 ở 3/5 seeds. "
+            "Độ lệch chuẩn Macro-F1 giữa các seed của Stage 2 là 0.019159, cao hơn Stage 1 là 0.004802 "
+            "(xấp xỉ 3.99 lần), cho thấy độ biến thiên theo seed lớn hơn trong thí nghiệm này. "
+            "Paired-delta SD là 0.019371. Đây là bằng chứng phát triển mô hình mang tính khám phá (exploratory), "
+            "không phải kết luận confirmatory về variance do chỉ có 5 seeds."
+        ),
         "- **Nguyên tắc khoa học thận trọng (Ockham's Razor)**: Khi một can thiệp tinh chỉnh phức tạp hơn không chứng minh được sự vượt trội rõ rệt và có ý nghĩa thống kê so với baseline đơn giản hơn, mô hình đơn giản và ít tham số hơn (Stage 1) được giữ làm mô hình chính thức.",
         "",
         "---",
@@ -531,8 +539,15 @@ def write_evidence_outputs(
     prov_info = {
         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
         "phase": "Phase 4C.2D",
+        "provenance_model": "two_step_functional_and_evidence_seal",
+        "phase4c2d_functional_commit": "e24d0ec65d97fe139c3a4efd0ac03c836b3e9aa9",
+        "audited_through_commit": "e24d0ec65d97fe139c3a4efd0ac03c836b3e9aa9",
+        "evidence_seal_commit": "PENDING_HOTFIX_SEAL",
         "dataset_binding": CANONICAL_DATASET_HASHES,
-        "canonical_commits": CANONICAL_COMMITS,
+        "canonical_commits": {
+            **CANONICAL_COMMITS,
+            "phase4c2d_functional_commit": "e24d0ec65d97fe139c3a4efd0ac03c836b3e9aa9",
+        },
         "selected_protocol": decision["selected_protocol"],
         "post_hoc_decision": True,
         "locked_test_accesses": 0,
