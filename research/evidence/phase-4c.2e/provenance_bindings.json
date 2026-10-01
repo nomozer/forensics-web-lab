@@ -1,0 +1,26 @@
+{
+  "timestamp_utc": "2026-10-01T17:35:00.000000+00:00",
+  "phase": "Phase 4C.2E",
+  "provenance_layers": {
+    "integration_main_baseline": "143e02cac2d2fa7a49b34f94271f2e19378a9c0f",
+    "candidate_stage1_training_snapshot": "79bb11527d900fd387de1f41f2010c4152b7fea7",
+    "historical_stage2_snapshot": "9ee7fdbb88fad16167f5790b5105867747801372"
+  },
+  "dataset_binding": {
+    "canonical_bundle_name": "phase_4c1_binary_n250_reusable.tar",
+    "archive_sha256": "d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27",
+    "content_sha256": "c365c812cc814097f11b9e5ed5c82e672015e2ba093f09f975df0a2a01229e9b",
+    "manifest_sha256": "411e35da80843a10f7bb22e33efac8a4d1db70110dbda91cadbbf39532c9312d"
+  },
+  "locked_test_seal": "519e7a0e6815e781d1cefa95971e5221ac1f25656837374d8dc4ba41401fded9",
+  "selected_protocol": "stage1_frozen_backbone_linear_probe",
+  "sample_size": 250,
+  "seeds": [42, 1337, 2025, 3407, 9001],
+  "checkpoint_count": 5,
+  "locked_test_partition_status": "SEALED",
+  "locked_test_accesses": 0,
+  "completed_unsealing_sessions": 0,
+  "completed_model_evaluations": 0,
+  "new_training_runs": 0,
+  "verdict": "READY_FOR_HUMAN_UNSEALING_APPROVAL"
+}

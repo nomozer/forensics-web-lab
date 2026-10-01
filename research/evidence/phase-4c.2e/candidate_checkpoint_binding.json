@@ -1,0 +1,80 @@
+{
+  "timestamp_utc": "2026-10-01T17:35:00.000000+00:00",
+  "phase": "Phase 4C.2E",
+  "protocol": "stage1_frozen_backbone_linear_probe",
+  "sample_size": 250,
+  "selection_reason": "maximum_development_data",
+  "selection_narrative": "Cohort N=250 was selected based on the maximum-development-data principle, as it represents the largest registered training sample size available before opening the locked-test partition. It was not chosen based on inner-validation scores (where N=100 exhibited a slightly higher mean). This prospective policy was frozen post model development but strictly prior to locked-test unsealing.",
+  "seeds": [42, 1337, 2025, 3407, 9001],
+  "best_seed_selection": false,
+  "ensemble_created": false,
+  "new_training_runs": 0,
+  "retrained_with_inner_val": false,
+  "runner_snapshot_sha": "79bb11527d900fd387de1f41f2010c4152b7fea7",
+  "config_hash": "e03c07dae05a2402416abb0c60480a8cd0a35d060de3bb138a09d0bec0a85dc9",
+  "dataset_hashes": {
+    "canonical_bundle_name": "phase_4c1_binary_n250_reusable.tar",
+    "archive_sha256": "d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27",
+    "content_sha256": "c365c812cc814097f11b9e5ed5c82e672015e2ba093f09f975df0a2a01229e9b",
+    "manifest_sha256": "411e35da80843a10f7bb22e33efac8a4d1db70110dbda91cadbbf39532c9312d"
+  },
+  "status": "completed",
+  "locked_test_access": 0,
+  "checkpoints": [
+    {
+      "seed": 42,
+      "run_id": "phase4c1-stage1-n250-seed42",
+      "relative_checkpoint_reference": "phase_4c1/runs/extracted_15_runs/n250_seed_42/best_checkpoint.pt",
+      "checkpoint_bytes": 5627375,
+      "checkpoint_sha256": "c941f42ed00adb098962ddb43c0f2f7d897e48e20957cddc0c491243f8730c92",
+      "best_epoch": 6,
+      "stage": "frozen",
+      "status": "completed",
+      "locked_test_access": 0
+    },
+    {
+      "seed": 1337,
+      "run_id": "phase4c1-stage1-n250-seed1337",
+      "relative_checkpoint_reference": "phase_4c1/runs/extracted_15_runs/n250_seed_1337/best_checkpoint.pt",
+      "checkpoint_bytes": 5627375,
+      "checkpoint_sha256": "69e706f9062f050ccbfd2affb72d63d5dde9d12f02c1e64c762b0ea6719073f1",
+      "best_epoch": 5,
+      "stage": "frozen",
+      "status": "completed",
+      "locked_test_access": 0
+    },
+    {
+      "seed": 2025,
+      "run_id": "phase4c1-stage1-n250-seed2025",
+      "relative_checkpoint_reference": "phase_4c1/runs/extracted_15_runs/n250_seed_2025/best_checkpoint.pt",
+      "checkpoint_bytes": 5627375,
+      "checkpoint_sha256": "92ce5ee986d487fdf14374842067d0684fc7669f5ecb32c7d603f6813942ceee",
+      "best_epoch": 5,
+      "stage": "frozen",
+      "status": "completed",
+      "locked_test_access": 0
+    },
+    {
+      "seed": 3407,
+      "run_id": "phase4c1-stage1-n250-seed3407",
+      "relative_checkpoint_reference": "phase_4c1/runs/extracted_15_runs/n250_seed_3407/best_checkpoint.pt",
+      "checkpoint_bytes": 5627375,
+      "checkpoint_sha256": "4897821ef0a97df9f1c51acde8d4ac01d383aa3a7b9e7ee55bbc3b3108847868",
+      "best_epoch": 4,
+      "stage": "frozen",
+      "status": "completed",
+      "locked_test_access": 0
+    },
+    {
+      "seed": 9001,
+      "run_id": "phase4c1-stage1-n250-seed9001",
+      "relative_checkpoint_reference": "phase_4c1/runs/extracted_15_runs/n250_seed_9001/best_checkpoint.pt",
+      "checkpoint_bytes": 5627375,
+      "checkpoint_sha256": "5f0f8803adcb7eec88d47e398ef8b2002b46e740c263b12abc2ba392822a91c3",
+      "best_epoch": 6,
+      "stage": "frozen",
+      "status": "completed",
+      "locked_test_access": 0
+    }
+  ]
+}
