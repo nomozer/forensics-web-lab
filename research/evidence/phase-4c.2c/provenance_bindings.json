@@ -1,0 +1,16 @@
+{
+  "stage1_execution_commit": "79bb11527d900fd387de1f41f2010c4152b7fea7",
+  "stage1_archive_sha256": "5e775a7708d1555bf22f56dceb5358e26e07dd224c4b6186f575aff4d2b590d5",
+  "stage1_evidence_base": "research/evidence/phase-4c.1d/",
+  "stage2_execution_commit": "9ee7fdbb88fad16167f5790b5105867747801372",
+  "stage2_operator_sha256": "2a967a475c9bdc45515addc7123b8312f2d180b5e21fc735d8e6f7f5f4aa8929",
+  "stage2_archive_sha256": "609a14bbe683a23b82db5fe98ae3954e984393244746d374bccd23e5c78e43e2",
+  "verified_paired_runs": 15,
+  "validation_sources_shared_count": 91,
+  "validation_samples_shared_count": 182,
+  "new_training_runs": 0,
+  "gpu_inference_calls": 0,
+  "locked_test_accesses": 0,
+  "stage1_output_writes": 0,
+  "evaluation_partition": "inner_validation"
+}

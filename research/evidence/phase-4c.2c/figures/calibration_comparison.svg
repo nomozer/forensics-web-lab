@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="420" viewBox="0 0 960 420">
+<rect width="960" height="420" fill="#ffffff"/>
+<text x="480.0" y="32" font-size="18" font-family="Segoe UI, Arial, sans-serif" font-weight="700" fill="#1f2937" text-anchor="middle">Reliability Diagrams: Stage 1 Frozen vs Stage 2 Partial Fine-Tuning</text>
+<text x="480.0" y="52" font-size="12" font-family="Segoe UI, Arial, sans-serif" fill="#6b7280" text-anchor="middle">Mean accuracy vs mean confidence across 5 seeds per bin (diagonal = perfect calibration)</text>
+<text x="210.0" y="76" font-size="14" font-family="Segoe UI, Arial, sans-serif" font-weight="700" fill="#1f2937" text-anchor="middle">Cohort N = 50</text>
+<rect x="80" y="90" width="260" height="260" fill="#f8f9fa" stroke="#e5e7eb" stroke-width="1"/>
+<line x1="80" y1="350" x2="340" y2="90" stroke="#9ca3af" stroke-width="1.5" stroke-dasharray="4,4"/>
+<line x1="80" y1="298.0" x2="340" y2="298.0" stroke="#e5e7eb" stroke-width="1"/>
+<line x1="132.0" y1="90" x2="132.0" y2="350" stroke="#e5e7eb" stroke-width="1"/>
+<line x1="80" y1="246.0" x2="340" y2="246.0" stroke="#e5e7eb" stroke-width="1"/>
+<line x1="184.0" y1="90" x2="184.0" y2="350" stroke="#e5e7eb" stroke-width="1"/>
+<line x1="80" y1="194.0" x2="340" y2="194.0" stroke="#e5e7eb" stroke-width="1"/>
+<line x1="236.0" y1="90" x2="236.0" y2="350" stroke="#e5e7eb" stroke-width="1"/>
+<line x1="80" y1="142.0" x2="340" y2="142.0" stroke="#e5e7eb" stroke-width="1"/>
+<line x1="288.0" y1="90" x2="288.0" y2="350" stroke="#e5e7eb" stroke-width="1"/>
+<circle cx="202.9" cy="230.2" r="4" fill="#2563eb"/>
+<circle cx="215.1" cy="209.3" r="4" fill="#2563eb"/>
+<circle cx="237.6" cy="90.0" r="4" fill="#2563eb"/>
+<polyline points="202.9,230.2 215.1,209.3 237.6,90.0" fill="none" stroke="#2563eb" stroke-width="2"/>
+<rect x="179.8" y="216.5" width="7" height="7" fill="#d97706"/>
+<rect x="199.9" y="229.8" width="7" height="7" fill="#d97706"/>
+<rect x="214.1" y="205.6" width="7" height="7" fill="#d97706"/>
+<rect x="236.0" y="151.5" width="7" height="7" fill="#d97706"/>
+<polyline points="183.3,220.0 203.4,233.3 217.6,209.1 239.5,155.0" fill="none" stroke="#d97706" stroke-width="2"/>
+<text x="210.0" y="374" font-size="11" font-family="Segoe UI, Arial, sans-serif" fill="#1f2937" text-anchor="middle">Confidence</text>
+<text x="52" y="220.0" font-size="11" font-family="Segoe UI, Arial, sans-serif" fill="#1f2937" text-anchor="middle" transform="rotate(-90, 52, 220.0)">Accuracy</text>
+<text x="510.0" y="76" font-size="14" font-family="Segoe UI, Arial, sans-serif" font-weight="700" fill="#1f2937" text-anchor="middle">Cohort N = 100</text>
+<rect x="380" y="90" width="260" height="260" fill="#f8f9fa" stroke="#e5e7eb" stroke-width="1"/>
+<line x1="380" y1="350" x2="640" y2="90" stroke="#9ca3af" stroke-width="1.5" stroke-dasharray="4,4"/>
+<line x1="380" y1="298.0" x2="640" y2="298.0" stroke="#e5e7eb" stroke-width="1"/>
+<line x1="432.0" y1="90" x2="432.0" y2="350" stroke="#e5e7eb" stroke-width="1"/>
+<line x1="380" y1="246.0" x2="640" y2="246.0" stroke="#e5e7eb" stroke-width="1"/>
+<line x1="484.0" y1="90" x2="484.0" y2="350" stroke="#e5e7eb" stroke-width="1"/>
+<line x1="380" y1="194.0" x2="640" y2="194.0" stroke="#e5e7eb" stroke-width="1"/>
+<line x1="536.0" y1="90" x2="536.0" y2="350" stroke="#e5e7eb" stroke-width="1"/>
+<line x1="380" y1="142.0" x2="640" y2="142.0" stroke="#e5e7eb" stroke-width="1"/>
+<line x1="588.0" y1="90" x2="588.0" y2="350" stroke="#e5e7eb" stroke-width="1"/>
+<circle cx="482.7" cy="350.0" r="4" fill="#2563eb"/>
+<circle cx="502.1" cy="239.1" r="4" fill="#2563eb"/>
+<circle cx="517.3" cy="200.0" r="4" fill="#2563eb"/>
+<polyline points="482.7,350.0 502.1,239.1 517.3,200.0" fill="none" stroke="#2563eb" stroke-width="2"/>
+<rect x="476.1" y="239.3" width="7" height="7" fill="#d97706"/>
+<rect x="497.6" y="239.5" width="7" height="7" fill="#d97706"/>
+<rect x="516.1" y="197.2" width="7" height="7" fill="#d97706"/>
+<rect x="538.4" y="187.1" width="7" height="7" fill="#d97706"/>
+<polyline points="479.6,242.8 501.1,243.0 519.6,200.7 541.9,190.6" fill="none" stroke="#d97706" stroke-width="2"/>
+<text x="510.0" y="374" font-size="11" font-family="Segoe UI, Arial, sans-serif" fill="#1f2937" text-anchor="middle">Confidence</text>
+<text x="810.0" y="76" font-size="14" font-family="Segoe UI, Arial, sans-serif" font-weight="700" fill="#1f2937" text-anchor="middle">Cohort N = 250</text>
+<rect x="680" y="90" width="260" height="260" fill="#f8f9fa" stroke="#e5e7eb" stroke-width="1"/>
+<line x1="680" y1="350" x2="940" y2="90" stroke="#9ca3af" stroke-width="1.5" stroke-dasharray="4,4"/>
+<line x1="680" y1="298.0" x2="940" y2="298.0" stroke="#e5e7eb" stroke-width="1"/>
+<line x1="732.0" y1="90" x2="732.0" y2="350" stroke="#e5e7eb" stroke-width="1"/>
+<line x1="680" y1="246.0" x2="940" y2="246.0" stroke="#e5e7eb" stroke-width="1"/>
+<line x1="784.0" y1="90" x2="784.0" y2="350" stroke="#e5e7eb" stroke-width="1"/>
+<line x1="680" y1="194.0" x2="940" y2="194.0" stroke="#e5e7eb" stroke-width="1"/>
+<line x1="836.0" y1="90" x2="836.0" y2="350" stroke="#e5e7eb" stroke-width="1"/>
+<line x1="680" y1="142.0" x2="940" y2="142.0" stroke="#e5e7eb" stroke-width="1"/>
+<line x1="888.0" y1="90" x2="888.0" y2="350" stroke="#e5e7eb" stroke-width="1"/>
+<circle cx="804.2" cy="241.7" r="4" fill="#2563eb"/>
+<circle cx="816.2" cy="200.6" r="4" fill="#2563eb"/>
+<circle cx="837.6" cy="90.0" r="4" fill="#2563eb"/>
+<polyline points="804.2,241.7 816.2,200.6 837.6,90.0" fill="none" stroke="#2563eb" stroke-width="2"/>
+<rect x="744.2" y="346.5" width="7" height="7" fill="#d97706"/>
+<rect x="773.1" y="245.4" width="7" height="7" fill="#d97706"/>
+<rect x="797.7" y="235.3" width="7" height="7" fill="#d97706"/>
+<rect x="815.3" y="196.9" width="7" height="7" fill="#d97706"/>
+<rect x="836.3" y="214.8" width="7" height="7" fill="#d97706"/>
+<polyline points="747.7,350.0 776.6,248.9 801.2,238.8 818.8,200.4 839.8,218.3" fill="none" stroke="#d97706" stroke-width="2"/>
+<text x="810.0" y="374" font-size="11" font-family="Segoe UI, Arial, sans-serif" fill="#1f2937" text-anchor="middle">Confidence</text>
+<line x1="290.0" y1="400" x2="320.0" y2="400" stroke="#2563eb" stroke-width="2"/>
+<circle cx="305.0" cy="400" r="4" fill="#2563eb"/>
+<text x="330.0" y="404" font-size="11" font-family="Segoe UI, Arial, sans-serif" fill="#1f2937">Stage 1 (Frozen)</text>
+<line x1="450.0" y1="400" x2="480.0" y2="400" stroke="#d97706" stroke-width="2"/>
+<rect x="461.5" y="396.5" width="7" height="7" fill="#d97706"/>
+<text x="490.0" y="404" font-size="11" font-family="Segoe UI, Arial, sans-serif" fill="#1f2937">Stage 2 (Fine-Tuning)</text>
+<line x1="630.0" y1="400" x2="660.0" y2="400" stroke="#9ca3af" stroke-width="1.5" stroke-dasharray="4,4"/>
+<text x="670.0" y="404" font-size="11" font-family="Segoe UI, Arial, sans-serif" fill="#6b7280">Perfect Calibration</text>
+</svg>

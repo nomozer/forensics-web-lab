@@ -1,0 +1,30 @@
+{
+  "timestamp": "2026-10-01T12:20:00.000000+00:00",
+  "python_version": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+  "platform_system": "Windows",
+  "platform_release": "11",
+  "numpy_version": "2.5.3",
+  "scipy_version": "scipy.stats",
+  "sklearn_version": "1.9.1",
+  "torch_version": "2.5.1+cu121",
+  "analysis_type": "paired_stage1_vs_stage2_evaluation",
+  "sample_sizes": [
+    50,
+    100,
+    250
+  ],
+  "seeds": [
+    42,
+    1337,
+    2025,
+    3407,
+    9001
+  ],
+  "n_pairs": 15,
+  "primary_endpoint": "delta_macro_f1",
+  "ci_distribution": "student_t",
+  "ci_degrees_of_freedom": 4,
+  "permutation_test": "exact_sign_flip_32_permutations",
+  "multiple_testing_correction": "holm_bonferroni_step_down",
+  "stage2_treatment_designation": "pre-registered partial fine-tuning protocol"
+}

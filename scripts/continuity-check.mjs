@@ -365,21 +365,30 @@ export function checkRepositoryIntegrity(rootDir) {
         const dirPath = path.join(evidenceDir, d.name);
         let timestamp = 0;
         try {
-          const envPath = path.join(dirPath, 'environment.json');
-          if (fs.existsSync(envPath)) {
-            const envContent = fs.readFileSync(envPath, 'utf-8');
-            const env = JSON.parse(envContent);
-            if (env.timestamp) {
-              timestamp = new Date(env.timestamp).getTime();
+          for (const envFile of ['environment.json', 'analysis_environment.json', 'import_audit_summary.json']) {
+            const envPath = path.join(dirPath, envFile);
+            if (fs.existsSync(envPath)) {
+              const envContent = fs.readFileSync(envPath, 'utf-8');
+              const env = JSON.parse(envContent);
+              if (env.timestamp) {
+                timestamp = new Date(env.timestamp).getTime();
+                break;
+              }
             }
           }
         } catch {}
         // Fallback: use git log for the directory
         if (timestamp === 0) {
           try {
-            const { execFileSync } = require('node:child_process');
             const gitLog = execFileSync('git', ['log', '-1', '--format=%ct', '--', dirPath], { cwd: rootDir, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }).trim();
             if (gitLog) timestamp = parseInt(gitLog, 10) * 1000;
+          } catch {}
+        }
+        // Fallback: use filesystem stat mtime
+        if (timestamp === 0) {
+          try {
+            const stat = fs.statSync(dirPath);
+            timestamp = stat.mtimeMs;
           } catch {}
         }
         // Fallback: use phase token parsing for deterministic ordering
