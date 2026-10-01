@@ -11,6 +11,10 @@ Verifies:
   8. Markdown numbers strictly match machine-readable CSV/JSON.
   9. Fail-closed behavior on tolerance violations.
  10. Runner contract trace for Stage 1 checkpoint reload.
+ 11. Cohort N=100 seed variability exact sample SD parity.
+ 12. Cohort N=100 variability fault injections & fail-closed detection.
+ 13. Variability narrative prohibits confirmatory claims for n=5 seeds.
+ 14. Non-circular evidence seal provenance semantics and no pending placeholders.
 """
 
 from __future__ import annotations
@@ -406,3 +410,48 @@ def test_variability_narrative_prohibits_confirmatory_claims():
     assert "không phải kết luận confirmatory về variance" in md_var_line
     assert "mang tính khám phá" in md_var_line
     assert "5 seeds" in md_var_line
+
+
+# -----------------------------------------------------------------------------
+# Test 14: Non-Circular Evidence Seal Provenance
+# -----------------------------------------------------------------------------
+def test_non_circular_evidence_seal_provenance():
+    """Verifies that Phase 4C.2D evidence seal avoids circular hash references.
+
+    Asserts:
+      1. No 'PENDING_HOTFIX_SEAL' string exists in provenance_bindings.json or any evidence.
+      2. No self-referential 'evidence_seal_commit' field in provenance_bindings.json.
+      3. 'evidence_seal_semantics' contains valid 40-char hex SHA-1 for:
+         - audited_through_commit
+         - hotfix_content_commit
+      4. selected_protocol remains 'stage1_frozen_backbone_linear_probe'.
+      5. locked_test_accesses == 0.
+    """
+    prov_p = EVIDENCE_DIR_4C2D / "provenance_bindings.json"
+    assert prov_p.is_file(), f"Missing {prov_p}"
+
+    raw_text = prov_p.read_text(encoding="utf-8")
+    assert "PENDING_HOTFIX_SEAL" not in raw_text, "Found unsealed PENDING_HOTFIX_SEAL placeholder in provenance_bindings.json"
+
+    # Also check no other evidence file in Phase 4C.2D contains PENDING_HOTFIX_SEAL
+    for ep in EVIDENCE_DIR_4C2D.rglob("*"):
+        if ep.is_file() and ep.suffix in [".json", ".csv", ".md"]:
+            content = ep.read_text(encoding="utf-8")
+            assert "PENDING_HOTFIX_SEAL" not in content, f"Found PENDING_HOTFIX_SEAL in {ep.name}"
+
+    prov_data = json.loads(raw_text)
+    assert "evidence_seal_commit" not in prov_data, "Self-referential 'evidence_seal_commit' field must be removed"
+
+    assert "evidence_seal_semantics" in prov_data, "Missing 'evidence_seal_semantics' object"
+    semantics = prov_data["evidence_seal_semantics"]
+
+    sha1_pat = re.compile(r"^[0-9a-f]{40}$")
+    assert sha1_pat.match(semantics.get("audited_through_commit", "")), f"Invalid audited_through_commit SHA: {semantics.get('audited_through_commit')}"
+    assert sha1_pat.match(semantics.get("hotfix_content_commit", "")), f"Invalid hotfix_content_commit SHA: {semantics.get('hotfix_content_commit')}"
+
+    assert semantics["audited_through_commit"] == "e24d0ec65d97fe139c3a4efd0ac03c836b3e9aa9"
+    assert semantics["hotfix_content_commit"] == "c8bcc0be16155a8da004a43c2617b048035a01af"
+    assert "circular hash dependency" in semantics.get("seal_resolution", "").lower()
+
+    assert prov_data["selected_protocol"] == "stage1_frozen_backbone_linear_probe"
+    assert prov_data["locked_test_accesses"] == 0

@@ -1,3 +1,16 @@
+## Phase 4C.2D — Finalize Non-Circular Evidence Seal and Push PR Branch (Phase 4C.2D.2)
+
+- **Muc tieu**: Finalize non-circular evidence seal in `provenance_bindings.json`; replace pending placeholder with explicit provenance semantics without circular hash dependency; verify quality gates; push branch `research/phase-4c2-finetuning` to origin for PR review. Zero new training runs, zero GPU calls, zero locked-test evaluations.
+- **Starting commit**: c8bcc0b (Phase 4C.2D.1 hotfix content commit)
+- **Branch**: research/phase-4c2-finetuning
+- **Thay đổi chính**: (1) Updated `provenance_bindings.json`: replaced `evidence_seal_commit: PENDING_HOTFIX_SEAL` with `evidence_seal_semantics` mapping `audited_through_commit` (`e24d0ec...`), `hotfix_content_commit` (`c8bcc0b...`), and terminal non-circular seal resolution clause. (2) Added regression test `test_non_circular_evidence_seal_provenance` in `test_phase_4c2d_model_selection.py` (14/14 PASS). (3) Verified all quality gates and pushed branch `research/phase-4c2-finetuning` to remote origin.
+- **Kiểm tra**: 14/14 Phase 4C.2D tests pass, full ML pytest pass, 70/70 TS pass, typecheck 0 errors, build OK, continuity check PASS.
+- **Kết quả**: Verdict READY_FOR_PR_REVIEW. Local HEAD matches Remote HEAD. No pending placeholders. Locked-test accesses = 0.
+- **Evidence**: research/evidence/phase-4c.2d/provenance_bindings.json.
+- **Quyết định tiếp theo**: Ready for PR review into `main`. Locked-test partition strictly sealed.
+
+---
+
 ## Phase 4C.2D — Correct Variability Narrative and Seal PR Evidence (Phase 4C.2D.1)
 
 - **Muc tieu**: Correct drafting error regarding cohort N=100 seed variability in Phase 4C.2D evidence; calculate exact sample standard deviations directly from raw paired metrics; harden regression test suite with fault injection and non-confirmatory wording guards; seal Phase 4C.2D evidence using two-step provenance model without circular SHA self-reference.

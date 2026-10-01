@@ -542,7 +542,14 @@ def write_evidence_outputs(
         "provenance_model": "two_step_functional_and_evidence_seal",
         "phase4c2d_functional_commit": "e24d0ec65d97fe139c3a4efd0ac03c836b3e9aa9",
         "audited_through_commit": "e24d0ec65d97fe139c3a4efd0ac03c836b3e9aa9",
-        "evidence_seal_commit": "PENDING_HOTFIX_SEAL",
+        "evidence_seal_semantics": {
+            "audited_through_commit": "e24d0ec65d97fe139c3a4efd0ac03c836b3e9aa9",
+            "hotfix_content_commit": "c8bcc0be16155a8da004a43c2617b048035a01af",
+            "seal_resolution": (
+                "The enclosing Git commit is the terminal evidence-seal commit. "
+                "Its own SHA is intentionally not embedded in this file to avoid circular hash dependency."
+            ),
+        },
         "dataset_binding": CANONICAL_DATASET_HASHES,
         "canonical_commits": {
             **CANONICAL_COMMITS,

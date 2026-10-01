@@ -1,8 +1,8 @@
 # Trạng thái Hiện tại: Forensics Web Lab (Current State)
 
 > **Tài liệu đọc đầu tiên bắt buộc cho mọi phiên làm việc AI mới.**<br>
-> **Documented through substantive commit**: `e24d0ec`<br>
-> **Phase hoàn thành gần nhất**: Phase 4C.2D.1 — Correct Variability Narrative and Seal PR Evidence (Phase 4C.2D)<br>
+> **Documented through substantive commit**: `c8bcc0b`<br>
+> **Phase hoàn thành gần nhất**: Phase 4C.2D.2 — Finalize Non-Circular Evidence Seal and Push PR Branch (Phase 4C.2D)<br>
 > **Branch**: `research/phase-4c2-finetuning`<br>
 > **Base main commit**: `460f6d5` (bảo toàn nguyên vẹn, không commit trực tiếp)<br>
 > **Working tree**: clean<br>
@@ -226,6 +226,8 @@
 ---
 
 ## 9. Công việc Đang thực hiện & Công việc Tiếp theo
+
+* **Đã hoàn thành (Phase 4C.2D.2 — Finalize Non-Circular Evidence Seal and Push PR Branch)**: Hoàn tất niêm phong bằng chứng không tự tham chiếu (non-circular evidence seal) trong `provenance_bindings.json`. (1) Xóa hoàn toàn placeholder `PENDING_HOTFIX_SEAL` và thay bằng đối tượng `evidence_seal_semantics` ghi nhận tường minh `audited_through_commit` (`e24d0ec...`), `hotfix_content_commit` (`c8bcc0b...`) cùng mệnh đề giải quyết niêm phong không tham chiếu vòng tròn. (2) Bổ sung regression test `test_non_circular_evidence_seal_provenance` tại `ml/tests/test_phase_4c2d_model_selection.py` (14/14 PASS). (3) Kiểm tra toàn bộ quality gates (Python tests, TypeScript tests, typecheck, build, continuity check, git diff check) và đẩy nhánh `research/phase-4c2-finetuning` lên remote origin. Phán quyết: `READY_FOR_PR_REVIEW`. Local HEAD trùng khớp Remote HEAD. 0 training runs mới, 0 GPU calls, 0 locked-test access.
 
 * **Đã hoàn thành (Phase 4C.2D.1 — Correct Variability Narrative and Seal PR Evidence)**: Sửa lỗi soạn thảo văn bản nháp về độ biến thiên theo seed tại cohort N=100. (1) Thay thế phát biểu nhầm lẫn cũ bằng 3 độ lệch chuẩn mẫu chính xác ($ddof=1$) tính trực tiếp từ 5 raw paired runs N=100: Stage 1 Macro-F1 SD = `0.004802230617102873`, Stage 2 Macro-F1 SD = `0.01915920444456796`, Paired-delta SD = `0.019371286120698345`, tỉ số SD $\approx 3.989647$ (xấp xỉ 3.99). (2) Làm rõ phát biểu: đây là bằng chứng mang tính khám phá (exploratory), không phải kết luận confirmatory về variance do chỉ có 5 seeds. (3) Bổ sung 3 regression tests trong `ml/tests/test_phase_4c2d_model_selection.py` (13/13 PASS) xác minh parity chính xác $< 10^{-6}$, phát hiện việc dùng nhầm paired-delta SD hoặc SD của cohort N=50, và cấm phát biểu confirmatory về variance. (4) Cập nhật `provenance_bindings.json` theo mô hình two-step provenance (`phase4c2d_functional_commit`: `e24d0ec`, `evidence_seal_commit` sẽ được niêm phong sau hotfix). Phán quyết: `READY_FOR_PR_REVIEW`. 0 training runs mới, 0 GPU calls, 0 locked-test access.
 
