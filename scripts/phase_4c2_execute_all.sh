@@ -76,6 +76,9 @@ EXPECTED_TRAINABLE_PARAMS=204674
 EXPECTED_FROZEN_PARAMS=870560
 EXPECTED_TOTAL_PARAMS=1075234
 
+# Required disk capacity threshold: 5 GiB = 5,368,709,120 bytes
+MIN_DISK_BYTES="${MIN_DISK_BYTES:-5368709120}"
+
 # ------------------------------------------------------------------------------
 # 2. Paths and Directory Resolution
 # ------------------------------------------------------------------------------
@@ -198,6 +201,75 @@ print(f"[+] Destructive path guard PASS: {resolved_posix} == {expected_posix}")
 PY
 }
 
+assert_safe_delete_target() {
+    local target_path="$1"
+    local target_type="$2"
+
+    "$SYS_PY3" - "$target_path" "$target_type" "$OUTPUT_ROOT" "$WORK_DIR" "$CODE_DIR" <<'PY'
+import sys, re
+from pathlib import Path
+
+target_raw = sys.argv[1].strip() if len(sys.argv) > 1 else ""
+target_type = sys.argv[2].strip() if len(sys.argv) > 2 else ""
+output_root_raw = sys.argv[3].strip() if len(sys.argv) > 3 else ""
+work_dir_raw = sys.argv[4].strip() if len(sys.argv) > 4 else ""
+code_dir_raw = sys.argv[5].strip() if len(sys.argv) > 5 else ""
+
+if not target_raw:
+    raise ValueError(f"Safe deletion guard failed: target path is empty for type '{target_type}'")
+
+target = Path(target_raw)
+forbidden_roots = {"/", "/content", "/content/drive", "/home", "/root", "/var", "/tmp", "/etc", "/usr", "/bin", "/sbin", "/boot"}
+
+# Check symlinks on target and all ancestors
+curr = target
+for _ in range(100):
+    if curr.is_symlink():
+        raise ValueError(f"Safe deletion guard failed: {curr} is a symlink")
+    if curr.parent == curr:
+        break
+    curr = curr.parent
+
+resolved = target.resolve()
+resolved_posix = resolved.as_posix()
+
+if resolved_posix in forbidden_roots or target.as_posix() in forbidden_roots:
+    raise ValueError(f"Safe deletion guard failed: target {resolved_posix} is a forbidden root directory")
+
+if resolved_posix == "/content/drive" or resolved_posix.startswith("/content/drive/"):
+    raise ValueError(f"Safe deletion guard failed: target {resolved_posix} is inside /content/drive")
+
+if "phase_4c1" in resolved_posix or "execution_79bb115" in resolved_posix:
+    raise ValueError(f"Safe deletion guard failed: target {resolved_posix} targets Stage 1 namespace")
+
+if target_type == "code_dir":
+    expected_code = Path(code_dir_raw).resolve().as_posix() if code_dir_raw else "/content/phase_4c2_code"
+    if resolved_posix != expected_code:
+        raise ValueError(f"code_dir deletion target mismatch: {resolved_posix} != {expected_code}")
+
+elif target_type == "local_inprogress":
+    expected_work = Path(work_dir_raw).resolve().as_posix() if work_dir_raw else "/content/phase_4c2_work"
+    if resolved.parent.as_posix() != expected_work:
+        raise ValueError(f"local_inprogress parent mismatch: {resolved.parent.as_posix()} != {expected_work}")
+    pattern = r"^n(50|100|250)_seed_(42|1337|2025|3407|9001)\.inprogress$"
+    if not re.match(pattern, target.name):
+        raise ValueError(f"local_inprogress basename mismatch: '{target.name}' does not match pattern {pattern}")
+
+elif target_type == "stage_part":
+    out_resolved = Path(output_root_raw).resolve().as_posix()
+    if resolved.parent.as_posix() != out_resolved:
+        raise ValueError(f"stage_part parent mismatch: {resolved.parent.as_posix()} != {out_resolved}")
+    pattern = r"^\.publish_n(50|100|250)_seed_(42|1337|2025|3407|9001)\.part$"
+    if not re.match(pattern, target.name):
+        raise ValueError(f"stage_part basename mismatch: '{target.name}' does not match pattern {pattern}")
+
+else:
+    raise ValueError(f"Unknown target deletion type: '{target_type}'")
+
+print(f"[+] Safe deletion target guard PASS [{target_type}]: {resolved_posix}")
+PY
+}
+
 LOGS_DIR="$OUTPUT_ROOT/logs"
 DOWNLOAD_DIR="$OUTPUT_ROOT/download"
 mkdir -p "$LOGS_DIR" "$DOWNLOAD_DIR" "$WORK_DIR"
@@ -280,12 +352,13 @@ cat <<EOF > "$OUTPUT_ROOT/OPERATOR_STATUS.json"
 EOF
 
 # ------------------------------------------------------------------------------
-# 5. Step 1: GPU and Capability Preflight
+# 5. Step 1: GPU, Dependencies & Disk Capacity Preflight
 # ------------------------------------------------------------------------------
-CURRENT_STAGE="gpu_capability_check"
-echo "[*] Step 1: Verifying GPU capability and runtime environment..."
+CURRENT_STAGE="gpu_and_dependencies_preflight"
+echo "[*] Step 1: Verifying GPU capability, required dependencies, and disk capacity..."
 
-GPU_INFO_JSON=$($SYS_PY3 - <<'PY'
+# 1.1 GPU verification with proper quotation
+GPU_INFO_JSON=$("$SYS_PY3" - <<'PY'
 import sys, json, torch
 
 if not torch.cuda.is_available():
@@ -341,6 +414,49 @@ if [ "$VRAM_CHECK_OK" != "True" ]; then
 fi
 
 echo "[+] GPU Verified: $GPU_NAME (${VRAM_GB} GB VRAM) — Capability PASS"
+
+# 1.2 Mandatory dependency verification: jsonschema (no automated reinstall)
+"$SYS_PY3" - <<'PY'
+import sys
+try:
+    import jsonschema
+    js_ver = getattr(jsonschema, "__version__", "installed")
+    print(f"[+] Dependency verified: jsonschema ({js_ver}) PASS")
+except ImportError as e:
+    print("[-] FATAL: Required dependency 'jsonschema' is not installed in Python runtime.", file=sys.stderr)
+    print("    Preflight halted. Automated reinstall of packages is forbidden.", file=sys.stderr)
+    sys.exit(6)
+PY
+
+# 1.3 Disk capacity gate (fail-closed before extraction or training)
+DISK_CHECK_TARGET="/content"
+if [ ! -d "$DISK_CHECK_TARGET" ]; then
+    DISK_CHECK_TARGET="$WORK_DIR"
+fi
+
+"$SYS_PY3" - "$DISK_CHECK_TARGET" "$MIN_DISK_BYTES" <<'PY'
+import sys, shutil
+target_path = sys.argv[1]
+required_bytes = int(sys.argv[2])
+
+usage = shutil.disk_usage(target_path)
+available_bytes = usage.free
+avail_gb = available_bytes / (1024 ** 3)
+req_gb = required_bytes / (1024 ** 3)
+
+formula = "5 GiB threshold (extracted code ~25MB + extracted dataset ~1.5GB + local run ~50MB + safety buffer ~3.38GB)"
+passed = available_bytes >= required_bytes
+
+print(f"[*] Disk Capacity Gate on '{target_path}':")
+print(f"    Available: {available_bytes} bytes ({avail_gb:.2f} GiB)")
+print(f"    Required:  {required_bytes} bytes ({req_gb:.2f} GiB)")
+print(f"    Formula:   {formula}")
+print(f"    Status:    {'PASS' if passed else 'FAIL'}")
+
+if not passed:
+    print(f"[-] FATAL: Insufficient disk space on {target_path}: {avail_gb:.2f} GiB < {req_gb:.2f} GiB required", file=sys.stderr)
+    sys.exit(6)
+PY
 
 # ------------------------------------------------------------------------------
 # 6. Step 2: Code Archive Extraction and Verification
@@ -437,8 +553,9 @@ with tarfile.open(archive_path, "r:*") as archive:
 print("[+] Code archive tar safety audit PASS")
 PY
 
-# 2.4 Verify CODE_DIR target security with destructive-path guard before extraction
+# 2.4 Verify CODE_DIR target security with safe deletion guard before extraction
 assert_safe_ephemeral_dir "$CODE_DIR" "/content/phase_4c2_code"
+assert_safe_delete_target "$CODE_DIR" "code_dir"
 
 # Clean and extract code archive into dedicated CODE_DIR
 rm -rf "$CODE_DIR"
@@ -447,25 +564,52 @@ mkdir -p "$CODE_DIR"
 echo "[*] Extracting code archive to $CODE_DIR..."
 if ! tar -xzf "$CODE_ARCHIVE" -C "$CODE_DIR"; then
     echo "[-] FATAL: Failed to extract code archive: $CODE_ARCHIVE" >&2
-    assert_safe_ephemeral_dir "$CODE_DIR" "/content/phase_4c2_code"
+    assert_safe_delete_target "$CODE_DIR" "code_dir"
     rm -rf "$CODE_DIR"
     exit 5
 fi
 
-# 2.5 Normalize text files in CODE_DIR to LF if extracted from Windows-authored archive
-"$SYS_PY3" - "$CODE_DIR" <<'PY'
-import sys
+# 2.5 Normalize text files in CODE_DIR to LF with deterministic normalization manifest
+NORMALIZATION_MANIFEST="$OUTPUT_ROOT/normalized_execution_manifest.json"
+"$SYS_PY3" - "$CODE_DIR" "$NORMALIZATION_MANIFEST" <<'PY'
+import sys, hashlib, json
 from pathlib import Path
 
 code_dir = Path(sys.argv[1])
+norm_manifest_path = Path(sys.argv[2])
 text_exts = {".py", ".yaml", ".yml", ".json", ".sh", ".md", ".csv", ".toml", ".txt"}
-for p in code_dir.rglob("*"):
+changes = []
+
+for p in sorted(code_dir.rglob("*")):
     if p.is_file() and p.suffix.lower() in text_exts:
         raw = p.read_bytes()
         if b"\r\n" in raw:
-            p.write_bytes(raw.replace(b"\r\n", b"\n"))
-print("[+] Normalized code archive text line endings to LF")
+            before_sha = hashlib.sha256(raw).hexdigest()
+            normalized = raw.replace(b"\r\n", b"\n")
+            after_sha = hashlib.sha256(normalized).hexdigest()
+            p.write_bytes(normalized)
+            rel_path = p.relative_to(code_dir).as_posix()
+            changes.append({
+                "path": rel_path,
+                "before_sha256": before_sha,
+                "after_sha256": after_sha,
+                "bytes_before": len(raw),
+                "bytes_after": len(normalized)
+            })
+
+manifest_data = {
+    "schema_version": "1.0.0",
+    "normalization": "CRLF_TO_LF",
+    "modified_files_count": len(changes),
+    "files": changes
+}
+manifest_json = json.dumps(manifest_data, indent=2, sort_keys=True) + "\n"
+norm_manifest_path.write_text(manifest_json, encoding="utf-8", newline="\n")
+norm_sha = hashlib.sha256(manifest_json.encode("utf-8")).hexdigest()
+print(f"[+] Normalized {len(changes)} code archive text files to LF (manifest SHA: {norm_sha[:8]}...)")
 PY
+
+NORMALIZATION_MANIFEST_SHA=$("$SYS_PY3" -c 'import sys, hashlib; print(hashlib.sha256(open(sys.argv[1], "rb").read()).hexdigest())' "$NORMALIZATION_MANIFEST")
 
 CANONICAL_RUNNER="$CODE_DIR/ml/training/run_phase_4c2.py"
 CANONICAL_CONFIG="$CODE_DIR/ml/configs/phase_4c2_stage2_finetuning.yaml"
@@ -700,6 +844,7 @@ ensure_scientific_environment_lock() {
             "$CANONICAL_CODE_ARCHIVE_NAME" \
             "$CANONICAL_CODE_ARCHIVE_BYTES" \
             "$CANONICAL_CODE_ARCHIVE_SHA256" \
+            "$NORMALIZATION_MANIFEST_SHA" \
             "$CANONICAL_RUNNER_SHA" \
             "$CANONICAL_CONFIG_SHA" \
             "$CANONICAL_SCHEMA_SHA" \
@@ -722,6 +867,7 @@ import sys, json, hashlib
     code_name,
     code_bytes,
     code_sha,
+    norm_manifest_sha,
     runner_sha,
     config_sha,
     schema_sha,
@@ -734,7 +880,7 @@ import sys, json, hashlib
     weights_bytes,
     backbone_fingerprint,
     operator_sha,
-) = sys.argv[1:19]
+) = sys.argv[1:20]
 
 lock = {
     "schema_version": "1.0.0",
@@ -744,6 +890,7 @@ lock = {
         "filename": code_name,
         "bytes": int(code_bytes),
         "sha256": code_sha,
+        "normalization_manifest_sha256": norm_manifest_sha,
     },
     "canonical_components": {
         "runner_sha256": runner_sha,
@@ -775,6 +922,21 @@ lock = {
         {"sample_size": 100, "seeds": [42, 1337, 2025, 3407, 9001]},
         {"sample_size": 250, "seeds": [42, 1337, 2025, 3407, 9001]},
     ],
+    "trainable_tensor_inventory_contract": {
+        "tensor_count": 7,
+        "trainable_parameters_count": 204674,
+        "frozen_parameters_count": 870560,
+        "total_parameters_count": 1075234,
+        "names": [
+            "features.12.0.weight",
+            "features.12.1.weight",
+            "features.12.1.bias",
+            "classifier.0.weight",
+            "classifier.0.bias",
+            "classifier.3.weight",
+            "classifier.3.bias"
+        ]
+    }
 }
 
 lock_json = json.dumps(lock, indent=2) + "\n"
@@ -793,14 +955,22 @@ PY
             "$lock_file" \
             "$lock_sha_file" \
             "$FULL_EXECUTION_COMMIT_SHA" \
+            "$CANONICAL_CODE_ARCHIVE_NAME" \
+            "$CANONICAL_CODE_ARCHIVE_BYTES" \
             "$CANONICAL_CODE_ARCHIVE_SHA256" \
+            "$NORMALIZATION_MANIFEST_SHA" \
             "$CANONICAL_RUNNER_SHA" \
             "$CANONICAL_CONFIG_SHA" \
             "$CANONICAL_SCHEMA_SHA" \
             "$CANONICAL_DATASET_BINDING_SHA" \
             "$CANONICAL_BUNDLE_ARCHIVE_SHA" \
+            "$CANONICAL_BUNDLE_CONTENT_SHA" \
+            "$CANONICAL_BUNDLE_MANIFEST_SHA" \
+            "$CANONICAL_BUNDLE_BYTES" \
             "$CANONICAL_WEIGHTS_FILE_SHA" \
+            "$CANONICAL_WEIGHTS_FILE_BYTES" \
             "$CANONICAL_BACKBONE_FINGERPRINT" \
+            "$operator_sha" \
         <<'PY'
 import sys, json, hashlib
 
@@ -808,15 +978,23 @@ import sys, json, hashlib
     lock_file,
     lock_sha_file,
     commit_sha,
+    code_name,
+    code_bytes,
     code_sha,
+    norm_manifest_sha,
     runner_sha,
     config_sha,
     schema_sha,
     dataset_binding_sha,
     bundle_archive_sha,
+    bundle_content_sha,
+    bundle_manifest_sha,
+    bundle_bytes,
     weights_file_sha,
+    weights_bytes,
     backbone_fingerprint,
-) = sys.argv[1:12]
+    operator_sha,
+) = sys.argv[1:20]
 
 with open(lock_file, "rb") as f:
     lock_bytes = f.read()
@@ -827,16 +1005,47 @@ if actual_lock_sha != sidecar_sha:
     raise ValueError(f"Environment lock sidecar hash mismatch: {actual_lock_sha} != {sidecar_sha}")
 
 lock = json.loads(lock_bytes.decode("utf-8"))
+
+# 1. Commit and code archive
 assert lock["full_execution_commit_sha"] == commit_sha, "Commit SHA mismatch in lock"
+assert lock["code_archive"]["filename"] == code_name, "Code archive filename mismatch in lock"
+assert lock["code_archive"]["bytes"] == int(code_bytes), "Code archive byte size mismatch in lock"
 assert lock["code_archive"]["sha256"] == code_sha, "Code archive SHA mismatch in lock"
+if "normalization_manifest_sha256" in lock["code_archive"]:
+    assert lock["code_archive"]["normalization_manifest_sha256"] == norm_manifest_sha, "Normalization manifest SHA mismatch in lock"
+
+# 2. Canonical components
 assert lock["canonical_components"]["runner_sha256"] == runner_sha, "Runner SHA mismatch in lock"
 assert lock["canonical_components"]["config_sha256"] == config_sha, "Config SHA mismatch in lock"
 assert lock["canonical_components"]["schema_sha256"] == schema_sha, "Schema SHA mismatch in lock"
 assert lock["canonical_components"]["dataset_binding_sha256"] == dataset_binding_sha, "Dataset binding SHA mismatch in lock"
+
+# 3. Dataset
 assert lock["dataset"]["archive_sha256"] == bundle_archive_sha, "Dataset archive SHA mismatch in lock"
+assert lock["dataset"]["content_sha256"] == bundle_content_sha, "Dataset content SHA mismatch in lock"
+assert lock["dataset"]["manifest_sha256"] == bundle_manifest_sha, "Dataset manifest SHA mismatch in lock"
+assert lock["dataset"]["bytes"] == int(bundle_bytes), "Dataset byte size mismatch in lock"
+
+# 4. Pretrained weights
 assert lock["pretrained_weights"]["file_sha256"] == weights_file_sha, "Pretrained weights SHA mismatch in lock"
+assert lock["pretrained_weights"]["file_bytes"] == int(weights_bytes), "Pretrained weights bytes mismatch in lock"
 assert lock["pretrained_weights"]["backbone_fingerprint"] == backbone_fingerprint, "Backbone fingerprint mismatch in lock"
+
+# 5. Operator SHA check (Strict fail-closed if operator changed)
+lock_operator_sha = lock.get("operator", {}).get("sha256")
+if lock_operator_sha != operator_sha:
+    raise ValueError(
+        f"Environment lock operator SHA-256 mismatch:\n"
+        f"  Lock was sealed by operator:  {lock_operator_sha}\n"
+        f"  Current executing operator:   {operator_sha}\n"
+        f"FAIL-CLOSED: Operator modified after lock was sealed. Refusing execution without clean preflight."
+    )
+
+# 6. Run matrix and trainable inventory
 assert len(lock["run_matrix"]) == 3, "Run matrix must have 3 cohorts"
+inv_contract = lock.get("trainable_tensor_inventory_contract", {})
+assert inv_contract.get("tensor_count") == 7, "Trainable tensor count mismatch in lock"
+assert inv_contract.get("trainable_parameters_count") == 204674, "Trainable params count mismatch in lock"
 
 print("[+] Immutable scientific environment lock verified PASS (no overwrite)")
 PY
@@ -859,7 +1068,7 @@ if [ "$EXEC_MODE" = "preflight_only" ]; then
   "training_runs_completed": 0,
   "execution_short_sha": "$EXECUTION_SHORT_SHA",
   "timestamp_utc": "$TIMESTAMP_UTC",
-  "verdict": "READY_FOR_USER_COLAB_PREFLIGHT_RETRY"
+  "verdict": "READY_FOR_USER_COLAB_PREFLIGHT"
 }
 EOF
     echo "=============================================================================="
@@ -881,6 +1090,8 @@ record_runtime_observation
 # ------------------------------------------------------------------------------
 # 12. Run Verification Function (Checking 10 Required Artifacts)
 # ------------------------------------------------------------------------------
+# Note: full_execution_commit_sha, code_archive_sha256, and runner_sha256 are
+# verified through the immutable environment lock, as run_receipt.json does not issue them.
 verify_run_artifacts() {
     local target_dir="$1"
     local sample_size="$2"
@@ -892,9 +1103,6 @@ verify_run_artifacts() {
         "$seed" \
         "$BUNDLE_DIR" \
         "$CANONICAL_SCHEMA" \
-        "$CANONICAL_CODE_ARCHIVE_SHA256" \
-        "$FULL_EXECUTION_COMMIT_SHA" \
-        "$CANONICAL_RUNNER_SHA" \
         "$CANONICAL_CONFIG_SHA" \
         "$CANONICAL_SCHEMA_SHA" \
         "$CANONICAL_WEIGHTS_FILE_SHA" \
@@ -906,23 +1114,25 @@ verify_run_artifacts() {
 import sys, os, json, hashlib, csv
 from pathlib import Path
 from collections import Counter
+import jsonschema
 
 target_dir = Path(sys.argv[1])
 sample_size = int(sys.argv[2])
 seed = int(sys.argv[3])
 bundle_dir = Path(sys.argv[4]) if len(sys.argv) > 4 and sys.argv[4] else None
 schema_path = Path(sys.argv[5]) if len(sys.argv) > 5 and sys.argv[5] else None
+if schema_path is None or not schema_path.is_file():
+    candidate_schema = Path("docs/schemas/stage2-receipt.v1.schema.json")
+    if candidate_schema.is_file():
+        schema_path = candidate_schema
 
-code_archive_sha = sys.argv[6] if len(sys.argv) > 6 and sys.argv[6] else "951e9089582eb60cf3d293c37982a8f3c3b6a3e05fb3ef45f23c666d41bc7d89"
-commit_sha = sys.argv[7] if len(sys.argv) > 7 and sys.argv[7] else "9ee7fdbb88fad16167f5790b5105867747801372"
-runner_sha = sys.argv[8] if len(sys.argv) > 8 and sys.argv[8] else "8ef0f0a06c25134a85982536064117a0bfc2eb9d63373c3b4ad6f4a2865783d4"
-config_sha = sys.argv[9] if len(sys.argv) > 9 and sys.argv[9] else "5ac7d41859798842aadf53d40fb8e9f2328e6ef46a4d2b1b248915cdee7543a4"
-schema_sha = sys.argv[10] if len(sys.argv) > 10 and sys.argv[10] else "dde1c873a43276cdf6bfd2ca459edebe7e8e14f2f02b1c8e8b9fe879936df98f"
-weights_sha = sys.argv[11] if len(sys.argv) > 11 and sys.argv[11] else "047dcff4addef86ea5bc2eff13c9614dc11f47ab1160d0a71a25e7db994f4e1f"
-backbone_fingerprint = sys.argv[12] if len(sys.argv) > 12 and sys.argv[12] else "d42bb32ad876b9de2b04a6ccd245f76c4d0c6bb3ded74c25261cf14720c7e7d5"
-bundle_archive_sha = sys.argv[13] if len(sys.argv) > 13 and sys.argv[13] else "d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27"
-bundle_content_sha = sys.argv[14] if len(sys.argv) > 14 and sys.argv[14] else "c365c812cc814097f11b9e5ed5c82e672015e2ba093f09f975df0a2a01229e9b"
-bundle_manifest_sha = sys.argv[15] if len(sys.argv) > 15 and sys.argv[15] else "411e35da80843a10f7bb22e33efac8a4d1db70110dbda91cadbbf39532c9312d"
+config_sha = sys.argv[6] if len(sys.argv) > 6 and sys.argv[6] else "5ac7d41859798842aadf53d40fb8e9f2328e6ef46a4d2b1b248915cdee7543a4"
+schema_sha = sys.argv[7] if len(sys.argv) > 7 and sys.argv[7] else "dde1c873a43276cdf6bfd2ca459edebe7e8e14f2f02b1c8e8b9fe879936df98f"
+weights_sha = sys.argv[8] if len(sys.argv) > 8 and sys.argv[8] else "047dcff4addef86ea5bc2eff13c9614dc11f47ab1160d0a71a25e7db994f4e1f"
+backbone_fingerprint = sys.argv[9] if len(sys.argv) > 9 and sys.argv[9] else "d42bb32ad876b9de2b04a6ccd245f76c4d0c6bb3ded74c25261cf14720c7e7d5"
+bundle_archive_sha = sys.argv[10] if len(sys.argv) > 10 and sys.argv[10] else "d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27"
+bundle_content_sha = sys.argv[11] if len(sys.argv) > 11 and sys.argv[11] else "c365c812cc814097f11b9e5ed5c82e672015e2ba093f09f975df0a2a01229e9b"
+bundle_manifest_sha = sys.argv[12] if len(sys.argv) > 12 and sys.argv[12] else "411e35da80843a10f7bb22e33efac8a4d1db70110dbda91cadbbf39532c9312d"
 
 EXPECTED_TRAINABLE_PARAMS = 204674
 EXPECTED_FROZEN_PARAMS = 870560
@@ -978,15 +1188,20 @@ for fname, meta in csums.items():
 with open(target_dir / "run_receipt.json", "r", encoding="utf-8") as f:
     receipt = json.load(f)
 
-# Schema validation if jsonschema and schema_path exist
-if schema_path and schema_path.is_file():
-    try:
-        import jsonschema
-        with open(schema_path, "r", encoding="utf-8") as sf:
-            schema_data = json.load(sf)
-        jsonschema.validate(instance=receipt, schema=schema_data)
-    except ImportError:
-        pass
+# Mandatory Fail-Closed Schema Validation
+assert schema_path is not None and schema_path.is_file(), f"Canonical schema file missing: {schema_path}"
+schema_bytes = schema_path.read_bytes()
+actual_schema_sha = hashlib.sha256(schema_bytes).hexdigest()
+assert actual_schema_sha == schema_sha, (
+    f"Canonical schema SHA mismatch: {actual_schema_sha} != {schema_sha}"
+)
+
+schema_data = json.loads(schema_bytes.decode("utf-8"))
+# Validate schema structure
+validator_cls = jsonschema.validators.validator_for(schema_data)
+validator_cls.check_schema(schema_data)
+# Validate receipt instance against schema (raises ValidationError on failure)
+jsonschema.validate(instance=receipt, schema=schema_data)
 
 # Checkpoint hash validation
 actual_ckpt_sha = csums["best_checkpoint.pt"]["sha256"]
@@ -1077,7 +1292,6 @@ assert receipt.get("stage1_output_writes") == 0
 with open(target_dir / "predictions.json", "r", encoding="utf-8") as f:
     preds = json.load(f)
 
-# Length checks
 sids = preds.get("source_ids", [])
 targets = preds.get("targets", [])
 predictions = preds.get("predictions", [])
@@ -1102,18 +1316,31 @@ for sid, tgt in zip(sids, targets):
 for sid, label_set in source_labels.items():
     assert label_set == {0, 1}, f"Source {sid} does not have label pair {{0, 1}}: got {label_set}"
 
-# Verify inner_validation source membership matches canonical bundle manifest
-if bundle_dir and (bundle_dir / "manifest_pilot_a_option_p.csv").is_file():
-    manifest_p = bundle_dir / "manifest_pilot_a_option_p.csv"
-    with open(manifest_p, "r", encoding="utf-8") as mf:
-        reader = csv.DictReader(mf)
-        bundle_val_sids = {r["source_id"] for r in reader if r.get("partition") == "inner_validation"}
-        bundle_dev_sids = {r["source_id"] for r in reader if r.get("partition") == "development_train"}
-        bundle_lock_sids = {r["source_id"] for r in reader if r.get("partition") == "locked_test"}
-    val_sids_set = set(counts.keys())
-    assert val_sids_set == bundle_val_sids, "Validation source_ids mismatch canonical bundle manifest"
-    assert len(val_sids_set & bundle_dev_sids) == 0, "Predictions leaked development sources"
-    assert len(val_sids_set & bundle_lock_sids) == 0, "Predictions leaked locked_test sources"
+# Mandatory Fail-Closed Manifest Verification
+assert bundle_dir is not None and bundle_dir.is_dir(), f"Bundle directory missing: {bundle_dir}"
+manifest_p = bundle_dir / "manifest_pilot_a_option_p.csv"
+assert manifest_p.is_file(), f"Canonical manifest file missing: {manifest_p}"
+
+h_man = hashlib.sha256()
+with manifest_p.open("rb") as mf:
+    while chunk := mf.read(1024 * 1024):
+        h_man.update(chunk)
+actual_manifest_sha = h_man.hexdigest()
+assert actual_manifest_sha == bundle_manifest_sha, (
+    f"Manifest SHA mismatch: {actual_manifest_sha} != {bundle_manifest_sha}"
+)
+
+with open(manifest_p, "r", encoding="utf-8") as mf:
+    reader = csv.DictReader(mf)
+    bundle_val_sids = {r["source_id"] for r in reader if r.get("partition") == "inner_validation"}
+    bundle_dev_sids = {r["source_id"] for r in reader if r.get("partition") == "development_train"}
+    bundle_lock_sids = {r["source_id"] for r in reader if r.get("partition") == "locked_test"}
+
+assert len(bundle_val_sids) == 91, f"Expected 91 inner_validation sources in manifest, got {len(bundle_val_sids)}"
+val_sids_set = set(counts.keys())
+assert val_sids_set == bundle_val_sids, "Validation source_ids mismatch canonical bundle manifest"
+assert len(val_sids_set & bundle_dev_sids) == 0, "Predictions leaked development sources"
+assert len(val_sids_set & bundle_lock_sids) == 0, "Predictions leaked locked_test sources"
 
 print(f"[+] Run {target_dir.name} verification PASS")
 PY
@@ -1170,9 +1397,9 @@ for N in "${SAMPLE_SIZES[@]}"; do
             fi
         fi
 
-        # Clean prior local inprogress if any (with destructive guard)
-        assert_safe_ephemeral_dir "$WORK_DIR" "/content/phase_4c2_work"
+        # Clean prior local inprogress if any (with specific target guard)
         if [ -d "$LOCAL_INPROGRESS" ]; then
+            assert_safe_delete_target "$LOCAL_INPROGRESS" "local_inprogress"
             rm -rf "$LOCAL_INPROGRESS"
         fi
         mkdir -p "$LOCAL_INPROGRESS"
@@ -1195,12 +1422,13 @@ for N in "${SAMPLE_SIZES[@]}"; do
         echo "[*] Verifying local artifacts in $LOCAL_INPROGRESS..."
         verify_run_artifacts "$LOCAL_INPROGRESS" "$N" "$seed"
 
-        # Staging to Drive .part
+        # Staging to Drive .part (archive stale part if any, without rm -rf)
         echo "[*] Copying local run to Drive staging: $STAGE_PART_DIR..."
         if [ -d "$STAGE_PART_DIR" ]; then
-            if [[ "$STAGE_PART_DIR" == "$OUTPUT_ROOT/.publish_"*".part" ]]; then
-                rm -rf "$STAGE_PART_DIR"
-            fi
+            FAILED_DIR="$OUTPUT_ROOT/failed_publish"
+            mkdir -p "$FAILED_DIR"
+            TS_SUFF=$(date +%s)
+            mv "$STAGE_PART_DIR" "$FAILED_DIR/${RUN_ID}_stale_part_${TS_SUFF}"
         fi
         cp -r "$LOCAL_INPROGRESS" "$STAGE_PART_DIR"
 
@@ -1212,8 +1440,8 @@ for N in "${SAMPLE_SIZES[@]}"; do
         echo "[*] Atomic rename: $STAGE_PART_DIR -> $FINAL_RUN_DIR"
         mv "$STAGE_PART_DIR" "$FINAL_RUN_DIR"
 
-        # Clean local work
-        assert_safe_ephemeral_dir "$WORK_DIR" "/content/phase_4c2_work"
+        # Clean local work with target guard
+        assert_safe_delete_target "$LOCAL_INPROGRESS" "local_inprogress"
         rm -rf "$LOCAL_INPROGRESS"
 
         COMPLETED_RUNS_COUNT=$((COMPLETED_RUNS_COUNT + 1))
@@ -1251,45 +1479,82 @@ def package_and_hash(archive_name, members):
             h.update(chunk)
     sha = h.hexdigest()
 
-    sidecar = download_dir / f"{archive_name}.sha256"
-    sidecar.write_text(f"{sha}  {archive_name}\n", encoding="utf-8")
-    print(f"    SHA-256 (streaming): {sha}")
+    sidecar_p = download_dir / f"{archive_name}.sha256"
+    sidecar_p.write_text(f"{sha}  {archive_name}\n", encoding="utf-8")
+    print(f"[+] Created {archive_name} ({sha[:8]}...)")
 
-# 1. Cohort archives
-for n in [50, 100, 250]:
-    members = [f"n{n}_seed_{s}" for s in [42, 1337, 2025, 3407, 9001]]
-    package_and_hash(f"n{n}_stage2_results.tar.gz", members)
+# Archive 1: All runs run_receipt.json and metrics.json
+receipt_metrics = []
+for p in output_root.glob("n*_seed_*"):
+    if p.is_dir():
+        if (p / "run_receipt.json").exists():
+            receipt_metrics.append(f"{p.name}/run_receipt.json")
+        if (p / "metrics.json").exists():
+            receipt_metrics.append(f"{p.name}/metrics.json")
+package_and_hash("execution_9ee7fdb_run_receipts_metrics.tar.gz", receipt_metrics)
 
-# 2. All 15 runs
-all_15 = [f"n{n}_seed_{s}" for n in [50, 100, 250] for s in [42, 1337, 2025, 3407, 9001]]
-package_and_hash("phase_4c2_all_15_runs_results.tar.gz", all_15)
+# Archive 2: All runs predictions.json
+predictions = []
+for p in output_root.glob("n*_seed_*"):
+    if p.is_dir() and (p / "predictions.json").exists():
+        predictions.append(f"{p.name}/predictions.json")
+package_and_hash("execution_9ee7fdb_run_predictions.tar.gz", predictions)
 
-# 3. Logs archive
-package_and_hash("phase_4c2_execution_logs.tar.gz", ["logs"])
+# Archive 3: All runs history (epoch_history.json and training_history.csv)
+histories = []
+for p in output_root.glob("n*_seed_*"):
+    if p.is_dir():
+        if (p / "epoch_history.json").exists():
+            histories.append(f"{p.name}/epoch_history.json")
+        if (p / "training_history.csv").exists():
+            histories.append(f"{p.name}/training_history.csv")
+package_and_hash("execution_9ee7fdb_run_histories.tar.gz", histories)
 
-print("[+] All persistent archives created and sealed successfully with streaming hashing")
+# Archive 4: All checkpoints
+checkpoints = []
+for p in output_root.glob("n*_seed_*"):
+    if p.is_dir() and (p / "best_checkpoint.pt").exists():
+        checkpoints.append(f"{p.name}/best_checkpoint.pt")
+package_and_hash("execution_9ee7fdb_run_checkpoints.tar.gz", checkpoints)
+
+# Archive 5: Environment and checksums
+env_checksums = []
+if (output_root / "phase4c2_environment_lock.json").exists():
+    env_checksums.append("phase4c2_environment_lock.json")
+if (output_root / "phase4c2_environment_lock.sha256").exists():
+    env_checksums.append("phase4c2_environment_lock.sha256")
+if (output_root / "normalized_execution_manifest.json").exists():
+    env_checksums.append("normalized_execution_manifest.json")
+for p in output_root.glob("runtime_observations/*.json"):
+    env_checksums.append(f"runtime_observations/{p.name}")
+for p in output_root.glob("n*_seed_*"):
+    if p.is_dir() and (p / "checksums.json").exists():
+        env_checksums.append(f"{p.name}/checksums.json")
+package_and_hash("execution_9ee7fdb_environment_checksums.tar.gz", env_checksums)
 PY
 
 # ------------------------------------------------------------------------------
-# 15. Step 10: Final Operator Completion Record
+# 15. Step 10: Completion and Final Status
 # ------------------------------------------------------------------------------
 CURRENT_STAGE="completed"
 TIMESTAMP_UTC=$(date -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || echo "unknown")
 
 cat <<EOF > "$OUTPUT_ROOT/OPERATOR_STATUS.json"
 {
-  "status": "all_completed",
-  "total_runs": 15,
-  "completed_runs": $COMPLETED_RUNS_COUNT,
+  "status": "completed",
+  "mode": "execute",
+  "stage2_invocations": 1,
+  "training_runs_completed": $COMPLETED_RUNS_COUNT,
   "execution_short_sha": "$EXECUTION_SHORT_SHA",
-  "timestamp_utc": "$TIMESTAMP_UTC"
+  "timestamp_utc": "$TIMESTAMP_UTC",
+  "verdict": "READY_FOR_USER_COLAB_PREFLIGHT"
 }
 EOF
 
 echo "=============================================================================="
-echo "[COMPLETE] ALL 15 STAGE 2 RUNS COMPLETED AND VERIFIED!"
-echo "Total Runs: $COMPLETED_RUNS_COUNT / 15"
-echo "Results Root: $OUTPUT_ROOT"
+echo "[SUCCESS] ALL 15 STAGE 2 FINE-TUNING RUNS COMPLETED AND VERIFIED!"
+echo "Published runs: $COMPLETED_RUNS_COUNT / 15"
+echo "Output Directory: $OUTPUT_ROOT"
 echo "Download Archives: $DOWNLOAD_DIR"
 echo "=============================================================================="
 exit 0

@@ -1,11 +1,11 @@
 {
   "schema_version": "1.0.0",
-  "phase": "Phase 4C.2B.2",
+  "phase": "Phase 4C.2B.3",
   "script_name": "phase_4c2_execute_all.sh",
   "script_path": "scripts/phase_4c2_execute_all.sh",
-  "bytes": 51501,
-  "sha256": "fafabdec41eea74b40e0846e8d09bdc19bd02a6c26deccd13b9cd251bc2c58d7",
-  "timestamp_utc": "2026-10-01T06:21:00.000000+00:00",
+  "bytes": 63087,
+  "sha256": "181ff27bca2500fd6275d729188d0e2fc188f171c6db01cb0a7444a5894a3824",
+  "timestamp_utc": "2026-10-01T07:05:00.000000+00:00",
   "execution_commit_sha": "9ee7fdbb88fad16167f5790b5105867747801372",
   "code_archive": {
     "name": "phase_4c2_code_9ee7fdb.tar.gz",
@@ -37,60 +37,47 @@
   },
   "destructive_path_guard": {
     "status": "PASS",
-    "method": "assert_safe_ephemeral_dir resolving real canonical path",
+    "method": "assert_safe_delete_target with type-specific validation and assert_safe_ephemeral_dir",
     "protected_targets": [
       "/content/phase_4c2_code",
       "/content/phase_4c2_work",
       "/content/phase_4c2_bundle"
     ],
-    "blocked_patterns": [
-      "/",
-      "/content",
-      "/content/drive",
-      "phase_4c1",
-      "execution_79bb115",
-      "symlinks into forbidden zones"
-    ]
+    "invariants": {
+      "local_inprogress": "direct child of /content/phase_4c2_work/ matching regex ^n(50|100|250)_seed_(42|1337|2025|3407|9001)\\.inprogress$",
+      "stage_part": "direct child of canonical Stage 2 OUTPUT_ROOT matching regex ^\\.publish_n(50|100|250)_seed_(42|1337|2025|3407|9001)\\.part$",
+      "code_dir": "exact match to resolved /content/phase_4c2_code",
+      "no_symlinks": true,
+      "no_drive_deletion": true,
+      "no_stage1_deletion": true,
+      "stale_part_archived": "stale .part directories moved to failed_publish/ without rm -rf"
+    }
   },
   "scientific_environment_lock": {
     "lock_file": "phase4c2_environment_lock.json",
     "sidecar_file": "phase4c2_environment_lock.sha256",
     "immutable_across_retries": true,
-    "runtime_observations_dir": "runtime_observations/"
+    "operator_sha_verified": true,
+    "runtime_observations_dir": "runtime_observations/",
+    "trainable_tensor_contract_bound": true,
+    "normalization_manifest_sha_bound": true
   },
-  "run_verifier_hardening": {
+  "run_verifier": {
+    "schema_validation": "FAIL_CLOSED_JSONSCHEMA",
+    "manifest_verification": "MANDATORY_FAIL_CLOSED (91 inner_val sources, 182 samples, {0,1} pairs, 0 leaks)",
+    "unused_provenance_arguments_removed": true,
+    "environment_lock_binding_documented": true
+  },
+  "disk_capacity_gate": {
     "status": "PASS",
-    "schema_validation": "stage2-receipt.v1.schema.json",
-    "checksums_coverage": "EXACT_REQUIRED_FILES_COVERAGE",
-    "trainable_inventory_check": "EXACT_7_TENSORS",
-    "optimizer_groups_check": "EXACT_2_GROUPS",
-    "batchnorm_policy_check": "FROZEN_FEATURES_EVAL",
-    "predictions_check": "182_SAMPLES_91_BALANCED_PAIRS_ZERO_DEV_LOCK_LEAK"
+    "threshold_bytes": 5368709120,
+    "threshold_gib": 5.0,
+    "formula": "5 GiB threshold (extracted code ~25MB + extracted dataset ~1.5GB + local run ~50MB + safety buffer ~3.38GB)"
   },
-  "matrix": {
-    "sample_sizes": [
-      50,
-      100,
-      250
-    ],
-    "seeds": [
-      42,
-      1337,
-      2025,
-      3407,
-      9001
-    ],
-    "total_runs": 15,
-    "stage": "partial_finetune",
-    "treatment_designation": "pre-registered partial fine-tuning protocol"
-  },
-  "source_deployment_parity": {
-    "source_file": "scripts/phase_4c2_execute_all.sh",
-    "deployment_file": "forensics-web-lab-local-artifacts/phase_4c2/inputs/phase_4c2_execute_all.sh",
-    "bytes_match": true,
-    "sha256_match": true,
-    "lf_line_endings": true,
-    "no_bom": true
-  },
-  "status": "READY_FOR_USER_COLAB_PREFLIGHT_RETRY"
+  "behavioral_test_suite": {
+    "total_operator_tests": 78,
+    "tar_security_fixtures": "10/10 PASS",
+    "section_j_behavioral_tests": "18/18 PASS",
+    "status": "PASS"
+  }
 }

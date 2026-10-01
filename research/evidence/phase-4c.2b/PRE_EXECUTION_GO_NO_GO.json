@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0.0",
-  "phase": "Phase 4C.2B.2",
-  "timestamp_utc": "2026-10-01T06:30:00.000000+00:00",
-  "verdict": "READY_FOR_USER_COLAB_PREFLIGHT_RETRY",
+  "phase": "Phase 4C.2B.3",
+  "timestamp_utc": "2026-10-01T07:05:00.000000+00:00",
+  "verdict": "READY_FOR_USER_COLAB_PREFLIGHT",
   "status_summary": {
     "training_runs_in_phase": 0,
     "stage2_research_invocations": 0,
@@ -31,23 +31,24 @@
     "canonical_operator_verified": {
       "status": "PASS",
       "script_name": "phase_4c2_execute_all.sh",
-      "bytes": 51501,
-      "sha256": "fafabdec41eea74b40e0846e8d09bdc19bd02a6c26deccd13b9cd251bc2c58d7",
+      "bytes": 63087,
+      "sha256": "181ff27bca2500fd6275d729188d0e2fc188f171c6db01cb0a7444a5894a3824",
       "bash_syntax": "PASS (bash -n)",
       "modes": [
         "--preflight-only",
         "--execute"
       ],
       "tar_safety_audit": "PASS (10/10 behavioral fixtures evaluated via Bash subprocess)",
-      "destructive_path_guard": "PASS (assert_safe_ephemeral_dir)",
-      "immutable_scientific_lock": "PASS (phase4c2_environment_lock.json)",
-      "verifier_hardening": "PASS (strict checksums, 7 trainable tensors, 2 opt groups, 182-sample prediction audit)"
+      "destructive_path_guard": "PASS (assert_safe_delete_target with type-specific validation and assert_safe_ephemeral_dir)",
+      "immutable_scientific_lock": "PASS (phase4c2_environment_lock.json with operator_sha and trainable inventory bound)",
+      "disk_capacity_gate": "PASS (5 GiB threshold, formula verified)",
+      "verifier_hardening": "PASS (fail-closed jsonschema, mandatory manifest verification, 91 inner_val sources, 182 samples, 0 leaks, unused arguments removed)"
     },
     "canonical_notebook_verified": {
       "status": "PASS",
       "notebook_name": "phase_4c2_finetuning_colab.ipynb",
-      "bytes": 14665,
-      "sha256": "3dc02978d234de5eca376cbd91298a69fac72c76c019ef6b4d104fea228d3f15",
+      "bytes": 14953,
+      "sha256": "2f3e526ef76b66ccc2cef2c5e270d2153244d5c984acdf697aa2a8f63474167c",
       "cells": 5,
       "execute_default": false,
       "atomic_restaging": "PASS",
@@ -57,13 +58,14 @@
     },
     "unit_and_contract_tests": {
       "status": "PASS",
-      "stage2_operator_tests": "60/60 PASS (including 10 TAR security behavioral fixtures, path guards, and verifiers)",
+      "stage2_operator_tests": "78/78 PASS (including 10 TAR security behavioral fixtures, path guards, verifiers, and 18 mandatory behavioral tests)",
       "stage2_notebook_tests": "6/6 PASS (including exact archive binding and exact execution dir)",
       "stage2_contract_tests": "14/14 PASS",
       "stage2_prereg_tests": "9/9 PASS",
+      "full_ml_pytest_suite": "385 passed, 1 skipped",
       "typescript_continuity_tests": "70/70 PASS",
       "production_web_build": "PASS"
     }
   },
-  "next_approved_action": "User uploads updated phase_4c2_execute_all.sh and phase_4c2_finetuning_colab.ipynb to Google Drive, then executes preflight-only retry on Google Colab GPU runtime."
+  "next_approved_action": "User uploads updated phase_4c2_execute_all.sh and phase_4c2_finetuning_colab.ipynb to Google Drive, then executes preflight-only (EXECUTE=False) on Google Colab GPU runtime and sends back [SUCCESS] PREFLIGHT-ONLY CHECKS PASSED log."
 }

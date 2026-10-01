@@ -1,10 +1,10 @@
 {
   "schema_version": "1.0.0",
-  "phase": "Phase 4C.2B.2",
+  "phase": "Phase 4C.2B.3",
   "notebook_name": "phase_4c2_finetuning_colab.ipynb",
   "path": "notebooks/phase_4c2_finetuning_colab.ipynb",
-  "bytes": 14665,
-  "sha256": "3dc02978d234de5eca376cbd91298a69fac72c76c019ef6b4d104fea228d3f15",
+  "bytes": 14953,
+  "sha256": "2f3e526ef76b66ccc2cef2c5e270d2153244d5c984acdf697aa2a8f63474167c",
   "cell_count": 5,
   "cell_types": [
     "markdown",
@@ -14,9 +14,9 @@
     "code"
   ],
   "execute_default": false,
-  "timestamp_utc": "2026-10-01T06:21:00.000000+00:00",
-  "associated_operator_sha256": "fafabdec41eea74b40e0846e8d09bdc19bd02a6c26deccd13b9cd251bc2c58d7",
-  "associated_operator_bytes": 51501,
+  "timestamp_utc": "2026-10-01T07:05:00.000000+00:00",
+  "associated_operator_sha256": "181ff27bca2500fd6275d729188d0e2fc188f171c6db01cb0a7444a5894a3824",
+  "associated_operator_bytes": 63087,
   "associated_code_archive_sha256": "951e9089582eb60cf3d293c37982a8f3c3b6a3e05fb3ef45f23c666d41bc7d89",
   "associated_code_archive_name": "phase_4c2_code_9ee7fdb.tar.gz",
   "associated_code_archive_bytes": 10478136,
@@ -31,6 +31,7 @@
     "no_input_mkdir": true,
     "error_reporting": "fail_closed_with_exact_dir_logs",
     "atomic_restaging": true,
-    "python_runtime_capability_check": "assert sys.version_info >= (3, 10)"
+    "python_runtime_capability_check": "assert sys.version_info >= (3, 10)",
+    "preflight_only_invocation": "--preflight-only when EXECUTE=False"
   }
 }
