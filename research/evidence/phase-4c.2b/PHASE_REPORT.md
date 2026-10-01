@@ -1,4 +1,4 @@
-# Phase 4C.2B, 4C.2B.1, 4C.2B.2, 4C.2B.3 & 4C.2B.3.1 — Resumable 15-Run Colab Operator for Stage 2, Tar-Safety Quoting Hotfix, Verifier Hardening, Preflight Closure & Final Environment-Lock Exactness Hotfix
+# Phase 4C.2B, 4C.2B.1, 4C.2B.2, 4C.2B.3, 4C.2B.3.1 & 4C.2B.3.2 — Resumable 15-Run Colab Operator for Stage 2, Tar-Safety Quoting Hotfix, Verifier Hardening, Preflight Closure & Post-Execution Notebook Audit Reconciliation
 
 ## Phase Summary
 Packaged and verified the Stage 2 partial fine-tuning runner and dependencies into an autonomous, resumable Google Colab execution suite for the 15-run paired matrix ($N \in \{50, 100, 250\} \times 5$ seeds: 42, 1337, 2025, 3407, 9001). Reconciled the scheduler configuration differential between Stage 1 and Stage 2 (`same = false`), sealed the exact pretrained backbone weights (`MobileNet_V3_Small_Weights.IMAGENET1K_V1`) into a self-contained execution snapshot archive, and built a canonical 5-cell Colab notebook defaulting to `EXECUTE = False` (`--preflight-only`).
@@ -38,7 +38,38 @@ In **Phase 4C.2B.3.1 (Hotfix)**:
    - Implemented 11 tests verifying baseline unmodified lock passes and each of 10 targeted field mutations causes fail-closed abort on retry.
    - Total operator tests: 89/89 PASS. Total Stage 2 tests: 89 + 6 = 95/95 PASS.
 
-Zero new research training runs, zero locked-test accesses, zero Stage 1 modifications, and zero Stage 2 research invocations were executed in this wave.
+In **Phase 4C.2B.3.2 (Post-Execution Notebook Audit Reconciliation)**:
+1. **Remote Execution Successfully Completed**:
+   - `OPERATOR_STATUS.json`: `status = completed`, `mode = execute`, `stage2_invocations = 1`, `training_runs_completed = 15`, `execution_short_sha = 9ee7fdb`, `timestamp_utc = 2026-10-01T10:48:24Z`.
+   - 15/15 run receipts confirmed completed with `stage = partial_finetune`, `locked_test_access = 0`, `stage1_output_writes = 0`.
+   - Zero training reruns. Operator script, code archive, weights, receipts, and environment lock remained 100% immutable.
+2. **Root Cause of Post-Execution Audit Failure**:
+   - Cell 4 in the launcher notebook was asserting against an obsolete list of archive names from early drafting (`n50_stage2_results.tar.gz`, `n100_stage2_results.tar.gz`, `n250_stage2_results.tar.gz`, `phase_4c2_execution_logs.tar.gz`, `phase_4c2_all_15_runs_results.tar.gz`).
+   - The executed operator script actually created 5 canonical archives:
+     1. `execution_9ee7fdb_run_receipts_metrics.tar.gz`
+     2. `execution_9ee7fdb_run_predictions.tar.gz`
+     3. `execution_9ee7fdb_run_histories.tar.gz`
+     4. `execution_9ee7fdb_run_checkpoints.tar.gz`
+     5. `execution_9ee7fdb_environment_checksums.tar.gz`
+   - The failure was strictly an artifact naming discrepancy in the notebook audit cell, not a training or runner failure.
+3. **Canonical Notebook Reconciled**:
+   - `notebooks/phase_4c2_finetuning_colab.ipynb` reset to default `EXECUTE = False`.
+   - Cell 4 updated with exact 5 archive names and comprehensive post-execution audit assertions (verifying `OPERATOR_STATUS.json`, 15 run directories, 15 receipts, exact matrix, 0 leaks, 5 archives and sidecar SHA-256 digests).
+   - Stale label note: `OPERATOR_STATUS["verdict"]` was recorded as `"READY_FOR_USER_COLAB_PREFLIGHT"` due to an unedited completion template string; this is documented as an innocuous label bug and excluded from receipt acceptance criteria without post-hoc operator modification.
+4. **Notebook Provenance Distinction**:
+   - State 1 (Canonical pre-execution): `EXECUTE=False`, 14,665 bytes, SHA-256 `1640725837737d46a87237a65f1556f24ac2e76297540cd523ec8a86d0e87de9`.
+   - State 2 (Active execution temporary): `EXECUTE=True`, 14,664 bytes, SHA-256 `e77adb2e2cc73673e2914cd317e1c5bd30293379bbd065859e29ae522987f64b`.
+   - State 3 (Post-execution reconciled canonical): `EXECUTE=False`, 15,668 bytes, SHA-256 `dee8f7c46879584c006419ace8a3e79153211011de304efd15dba00d70dc36e0`.
+5. **User Complete Results Backup Documented**:
+   - File: `execution_9ee7fdb_complete_results.tar.gz`
+   - Bytes: 83,796,910
+   - SHA-256: `609a14bbe683a23b82db5fe98ae3954e984393244746d374bccd23e5c78e43e2`
+   - Sidecar: `execution_9ee7fdb_complete_results.tar.gz.sha256`
+   - Classification: `post_execution_complete_backup` (contains all 10 required artifacts across 15 runs and provenance files; complementary to, does not replace, the 5 canonical operator archives).
+6. **Regression Test Suite Extended**:
+   - 10 new tests added to `ml/tests/test_phase_4c2_notebook.py` covering archive parity and 8 fault injections.
+   - Notebook suite: 16/16 PASS.
+   - Full Stage 2 suite: 89 operator + 16 notebook = 105/105 PASS.
 
 ## Canonical Commits & Provenance
 - **Stage 1 Evidence Base**: `f6eb57df121dbfc908ec1731d55bbe3c87dc5453` (Phase 4C.1D.2)
@@ -184,17 +215,34 @@ Guarantees verified: Zero `SyntaxError`, zero `unterminated string literal`, pro
 
 ---
 
-## 8. Resealed Artifacts & Checksums
+## 8. Artifacts & Checksums Post-Execution
 
-### Exactly Two Files to Re-Upload:
-1. `scripts/phase_4c2_execute_all.sh` (Upload to Drive `phase_4c2/inputs/`)
-   - **Bytes**: 64,776
-   - **SHA-256**: `2a967a475c9bdc45515addc7123b8312f2d180b5e21fc735d8e6f7f5f4aa8929`
-2. `notebooks/phase_4c2_finetuning_colab.ipynb` (Upload to Drive `phase_4c2/`)
-   - **Bytes**: 14,665
-   - **SHA-256**: `1640725837737d46a87237a65f1556f24ac2e76297540cd523ec8a86d0e87de9`
+### Canonical Archives Generated by Operator:
+1. `execution_9ee7fdb_run_receipts_metrics.tar.gz`
+2. `execution_9ee7fdb_run_predictions.tar.gz`
+3. `execution_9ee7fdb_run_histories.tar.gz`
+4. `execution_9ee7fdb_run_checkpoints.tar.gz`
+5. `execution_9ee7fdb_environment_checksums.tar.gz`
 
-### Immutable Artifacts (NOT Re-Uploaded):
+### User Complete Results Backup:
+- **File**: `execution_9ee7fdb_complete_results.tar.gz`
+- **Bytes**: 83,796,910
+- **SHA-256**: `609a14bbe683a23b82db5fe98ae3954e984393244746d374bccd23e5c78e43e2`
+- **Sidecar**: `execution_9ee7fdb_complete_results.tar.gz.sha256`
+- **Classification**: `post_execution_complete_backup`
+
+### Operator Script (Executed, Immutable):
+- **Path**: `scripts/phase_4c2_execute_all.sh`
+- **Bytes**: 64,776
+- **SHA-256**: `2a967a475c9bdc45515addc7123b8312f2d180b5e21fc735d8e6f7f5f4aa8929`
+
+### Canonical Launcher Notebook (Post-Execution Reconciled):
+- **Path**: `notebooks/phase_4c2_finetuning_colab.ipynb`
+- **Bytes**: 15,668
+- **SHA-256**: `dee8f7c46879584c006419ace8a3e79153211011de304efd15dba00d70dc36e0`
+- **Default**: `EXECUTE = False`
+
+### Immutable Input Archives:
 - `phase_4c2_code_9ee7fdb.tar.gz`: 10,478,136 bytes, SHA-256 `951e9089582eb60cf3d293c37982a8f3c3b6a3e05fb3ef45f23c666d41bc7d89` (IMMUTABLE).
 - `phase_4c1_binary_n250_reusable.tar`: 724,633,600 bytes, SHA-256 `d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27` (IMMUTABLE, READ-ONLY).
 
@@ -215,17 +263,18 @@ Guarantees verified: Zero `SyntaxError`, zero `unterminated string literal`, pro
 ## 10. Verification & Quality Gates
 - `bash -n scripts/phase_4c2_execute_all.sh`: PASS (exit code 0).
 - `test_phase_4c2_operator.py`: 89/89 PASS (including 10 TAR security behavioral fixtures, path guards, component hash checks, 18 Section J behavioral tests, and 11 Section K lock mutation tests).
-- `test_phase_4c2_notebook.py`: 6/6 PASS (including exact archive binding, exact execution dir, 5-cell structure, EXECUTE=False).
+- `test_phase_4c2_notebook.py`: 16/16 PASS (including 5-cell structure, EXECUTE=False, exact archive binding, exact execution dir, archive parity, and 8 post-execution audit fault injections).
 - `test_phase_4c2_implementation_contract.py`: 14/14 PASS.
 - `test_phase_4c2_preregistration.py`: 9/9 PASS.
-- `ml/tests` full pytest suite: 396 passed, 1 skipped.
+- `ml/tests` full pytest suite: 406 passed, 1 skipped.
 - `git ls-files models/research/pretrained/mobilenet_v3_small-047dcff4.pth`: PASS (empty string, 0 tracked weight files).
 
 ---
 
 ## 11. Accounting & Invariants
-- `training_runs_in_wave`: 0
-- `stage2_research_invocations`: 0
+- `completed_runs`: 15 / 15
+- `training_runs_in_phase` (reruns): 0
+- `stage2_research_invocations`: 1 (completed)
 - `locked_test_accesses`: 0
 - `stage1_modifications`: 0
-- **Final Verdict**: **`READY_FOR_USER_COLAB_PREFLIGHT`**
+- **Final Verdict**: **`STAGE2_EXECUTION_COMPLETE_NOTEBOOK_AUDIT_RECONCILED`**

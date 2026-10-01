@@ -112,3 +112,232 @@ def test_35_notebook_exact_execution_directory():
     cell_4_src = "".join(nb["cells"][4]["source"])
     assert 'final_exec_dir = DRIVE_OUTPUT_DIR / f"execution_{CANONICAL_EXECUTION_SHORT_SHA}"' in cell_4_src
     assert 'glob("execution_*")' not in cell_4_src
+# ------------------------------------------------------------------------------
+# Phase 4C.2B.3.2 Post-Execution Audit & Archive Parity Tests
+# ------------------------------------------------------------------------------
+
+OPERATOR_SCRIPT = REPO_ROOT / "scripts" / "phase_4c2_execute_all.sh"
+
+
+def extract_operator_package_and_hash_names() -> list[str]:
+    """Extract exact archive names passed to package_and_hash() in the operator."""
+    import re
+    assert OPERATOR_SCRIPT.exists(), f"Operator missing at {OPERATOR_SCRIPT}"
+    op_text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
+    names = re.findall(r'package_and_hash\("([^"]+)"', op_text)
+    return names
+
+
+def extract_notebook_required_archives(nb_json: dict) -> list[str]:
+    """Extract REQUIRED_ARCHIVES list defined in cell 4 of canonical notebook."""
+    import re
+    cell_4_src = "".join(nb_json["cells"][4]["source"])
+    match = re.search(r'REQUIRED_ARCHIVES\s*=\s*\[(.*?)\]', cell_4_src, re.DOTALL)
+    assert match, "REQUIRED_ARCHIVES not found in notebook cell 4"
+    return re.findall(r'"([^"]+\.tar\.gz)"', match.group(1))
+
+
+def create_valid_execution_fixture(base_dir: Path, short_sha: str = "9ee7fdb") -> Path:
+    """Create a fully compliant mock execution output directory with 15 runs and 5 archives."""
+    import hashlib
+    exec_dir = base_dir / f"execution_{short_sha}"
+    exec_dir.mkdir(parents=True, exist_ok=True)
+
+    # 1. OPERATOR_STATUS.json
+    status = {
+        "status": "completed",
+        "mode": "execute",
+        "stage2_invocations": 1,
+        "training_runs_completed": 15,
+        "execution_short_sha": short_sha,
+        "timestamp_utc": "2026-10-01T10:48:24Z",
+        "verdict": "READY_FOR_USER_COLAB_PREFLIGHT",
+    }
+    (exec_dir / "OPERATOR_STATUS.json").write_text(json.dumps(status), encoding="utf-8")
+
+    # 2. download dir with 5 canonical archives & sidecars
+    archive_names = [
+        "execution_9ee7fdb_run_receipts_metrics.tar.gz",
+        "execution_9ee7fdb_run_predictions.tar.gz",
+        "execution_9ee7fdb_run_histories.tar.gz",
+        "execution_9ee7fdb_run_checkpoints.tar.gz",
+        "execution_9ee7fdb_environment_checksums.tar.gz",
+    ]
+    dl_dir = exec_dir / "download"
+    dl_dir.mkdir(parents=True, exist_ok=True)
+    for name in archive_names:
+        arch_file = dl_dir / name
+        arch_file.write_bytes(b"dummy archive payload for " + name.encode("utf-8"))
+        sha = hashlib.sha256(arch_file.read_bytes()).hexdigest()
+        (dl_dir / f"{name}.sha256").write_text(f"{sha}  {name}\n", encoding="utf-8")
+
+    # 3. Exactly 15 runs
+    sample_sizes = (50, 100, 250)
+    seeds = (42, 1337, 2025, 3407, 9001)
+    for size in sample_sizes:
+        for seed in seeds:
+            run_dir = exec_dir / f"n{size}_seed_{seed}"
+            run_dir.mkdir(parents=True, exist_ok=True)
+            receipt = {
+                "status": "completed",
+                "stage": "partial_finetune",
+                "sample_size": size,
+                "seed": seed,
+                "treatment_designation": "pre-registered partial fine-tuning protocol",
+                "trainable_parameters_count": 204674,
+                "validation_source_count": 91,
+                "locked_test_access": 0,
+                "stage1_output_writes": 0,
+            }
+            (run_dir / "run_receipt.json").write_text(json.dumps(receipt), encoding="utf-8")
+
+    return exec_dir
+
+
+def execute_notebook_cell_4(drive_output_dir: Path, short_sha: str = "9ee7fdb"):
+    """Execute cell 4 audit logic in a sandboxed namespace with EXECUTE=True."""
+    import hashlib
+    with open(CANONICAL_NOTEBOOK, "r", encoding="utf-8") as f:
+        nb = json.load(f)
+
+    cell_4_code = "".join(nb["cells"][4]["source"])
+
+    def sha256_file(path, chunk_size=1024 * 1024):
+        digest = hashlib.sha256()
+        with path.open("rb") as stream:
+            for chunk in iter(lambda: stream.read(chunk_size), b""):
+                digest.update(chunk)
+        return digest.hexdigest()
+
+    # Capture/suppress print to avoid Windows charmap encoding issues
+    captured_logs = []
+
+    def safe_print(*args, **kwargs):
+        captured_logs.append(" ".join(str(a) for a in args))
+
+    global_ns = {
+        "EXECUTE": True,
+        "DRIVE_OUTPUT_DIR": drive_output_dir,
+        "CANONICAL_EXECUTION_SHORT_SHA": short_sha,
+        "json": json,
+        "sha256_file": sha256_file,
+        "print": safe_print,
+    }
+    exec(cell_4_code, global_ns)
+    return captured_logs
+
+
+def test_61_archive_names_operator_notebook_parity():
+    """61. REQUIRED_ARCHIVES in notebook matches exact 5 names passed to package_and_hash in operator."""
+    op_names = extract_operator_package_and_hash_names()
+    assert len(op_names) == 5, f"Operator must define exactly 5 archives, got {len(op_names)}: {op_names}"
+
+    with open(CANONICAL_NOTEBOOK, "r", encoding="utf-8") as f:
+        nb = json.load(f)
+
+    nb_names = extract_notebook_required_archives(nb)
+    assert len(nb_names) == 5, f"Notebook must define exactly 5 REQUIRED_ARCHIVES, got {len(nb_names)}: {nb_names}"
+    assert op_names == nb_names, f"Operator and notebook archive names mismatch: {op_names} != {nb_names}"
+
+
+def test_62_post_execution_audit_valid_fixture_passes(tmp_path: Path):
+    """62. Valid execution fixture with 15 runs and 5 archives passes notebook audit without errors."""
+    create_valid_execution_fixture(tmp_path)
+    logs = execute_notebook_cell_4(tmp_path)
+    assert any("[PASS]" in log for log in logs), "Audit did not emit [PASS] log"
+
+
+def test_63_post_execution_audit_fault_old_archives_fails(tmp_path: Path):
+    """63. Fault injection: old archive names (n50_stage2_results, etc.) must fail closed."""
+    exec_dir = create_valid_execution_fixture(tmp_path)
+    dl = exec_dir / "download"
+    for f in dl.glob("*"):
+        f.unlink()
+
+    old_names = [
+        "n50_stage2_results.tar.gz",
+        "n100_stage2_results.tar.gz",
+        "n250_stage2_results.tar.gz",
+        "phase_4c2_execution_logs.tar.gz",
+        "phase_4c2_all_15_runs_results.tar.gz",
+    ]
+    for name in old_names:
+        (dl / name).write_bytes(b"old")
+        (dl / f"{name}.sha256").write_text(f"dummy {name}\n", encoding="utf-8")
+
+    with pytest.raises(AssertionError, match="Thiếu archive"):
+        execute_notebook_cell_4(tmp_path)
+
+
+def test_64_post_execution_audit_fault_missing_archive_fails(tmp_path: Path):
+    """64. Fault injection: missing one of the 5 canonical archives fails closed."""
+    exec_dir = create_valid_execution_fixture(tmp_path)
+    (exec_dir / "download" / "execution_9ee7fdb_run_receipts_metrics.tar.gz").unlink()
+
+    with pytest.raises(AssertionError, match="Thiếu archive"):
+        execute_notebook_cell_4(tmp_path)
+
+
+def test_65_post_execution_audit_fault_missing_sidecar_fails(tmp_path: Path):
+    """65. Fault injection: missing sidecar sha256 file fails closed."""
+    exec_dir = create_valid_execution_fixture(tmp_path)
+    (exec_dir / "download" / "execution_9ee7fdb_run_predictions.tar.gz.sha256").unlink()
+
+    with pytest.raises(AssertionError, match="Thiếu sidecar"):
+        execute_notebook_cell_4(tmp_path)
+
+
+def test_66_post_execution_audit_fault_sha_mismatch_fails(tmp_path: Path):
+    """66. Fault injection: corrupted sidecar checksum fails closed."""
+    exec_dir = create_valid_execution_fixture(tmp_path)
+    bad_sidecar = exec_dir / "download" / "execution_9ee7fdb_run_histories.tar.gz.sha256"
+    bad_sidecar.write_text("0000000000000000000000000000000000000000000000000000000000000000  bad\n", encoding="utf-8")
+
+    with pytest.raises(AssertionError, match="Sai SHA-256"):
+        execute_notebook_cell_4(tmp_path)
+
+
+def test_67_post_execution_audit_fault_status_not_completed_fails(tmp_path: Path):
+    """67. Fault injection: OPERATOR_STATUS status != 'completed' fails closed."""
+    exec_dir = create_valid_execution_fixture(tmp_path)
+    st_file = exec_dir / "OPERATOR_STATUS.json"
+    st = json.loads(st_file.read_text(encoding="utf-8"))
+    st["status"] = "in_progress"
+    st_file.write_text(json.dumps(st), encoding="utf-8")
+
+    with pytest.raises(AssertionError, match="không phải completed"):
+        execute_notebook_cell_4(tmp_path)
+
+
+def test_68_post_execution_audit_fault_incomplete_runs_fails(tmp_path: Path):
+    """68. Fault injection: fewer than 15 run directories fails closed."""
+    import shutil
+    exec_dir = create_valid_execution_fixture(tmp_path)
+    shutil.rmtree(exec_dir / "n250_seed_9001")
+
+    with pytest.raises(AssertionError, match="Kỳ vọng đúng 15 run directories"):
+        execute_notebook_cell_4(tmp_path)
+
+
+def test_69_post_execution_audit_fault_locked_test_access_fails(tmp_path: Path):
+    """69. Fault injection: locked_test_access != 0 in any receipt fails closed."""
+    exec_dir = create_valid_execution_fixture(tmp_path)
+    rc_file = exec_dir / "n50_seed_42" / "run_receipt.json"
+    rc = json.loads(rc_file.read_text(encoding="utf-8"))
+    rc["locked_test_access"] = 1
+    rc_file.write_text(json.dumps(rc), encoding="utf-8")
+
+    with pytest.raises(AssertionError, match="locked_test_access khác 0"):
+        execute_notebook_cell_4(tmp_path)
+
+
+def test_70_post_execution_audit_fault_stage1_writes_fails(tmp_path: Path):
+    """70. Fault injection: stage1_output_writes != 0 in any receipt fails closed."""
+    exec_dir = create_valid_execution_fixture(tmp_path)
+    rc_file = exec_dir / "n100_seed_1337" / "run_receipt.json"
+    rc = json.loads(rc_file.read_text(encoding="utf-8"))
+    rc["stage1_output_writes"] = 2
+    rc_file.write_text(json.dumps(rc), encoding="utf-8")
+
+    with pytest.raises(AssertionError, match="stage1_output_writes khác 0"):
+        execute_notebook_cell_4(tmp_path)

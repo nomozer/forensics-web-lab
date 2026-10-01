@@ -1,3 +1,16 @@
+## Phase 4C.2B — Reconcile Post-Execution Notebook Audit and Preserve Scientific Provenance (Phase 4C.2B.3.2)
+
+- **Muc tieu**: Reconcile post-execution archive contract in launcher notebook cell 4 following 15/15 Stage 2 runs completion. Fix archive naming mismatch without rerunning training or modifying operator. Document 3 notebook states and user complete backup.
+- **Starting commit**: 3f40c17 (Phase 4C.2B.3.1 ending)
+- **Branch**: research/phase-4c2-finetuning
+- **Thay đổi chính**: (1) Root cause identified: cell 4 was asserting on old draft names (`n50_stage2_results.tar.gz`, etc.) while operator created 5 canonical archives (`execution_9ee7fdb_run_receipts_metrics.tar.gz`, `execution_9ee7fdb_run_predictions.tar.gz`, `execution_9ee7fdb_run_histories.tar.gz`, `execution_9ee7fdb_run_checkpoints.tar.gz`, `execution_9ee7fdb_environment_checksums.tar.gz`). (2) Confirmed execution status: 15/15 runs completed, 0 locked-test access, 0 stage 1 writes, 1 stage 2 invocation, 0 training reruns. (3) Updated canonical notebook `notebooks/phase_4c2_finetuning_colab.ipynb` (15,668 bytes, SHA-256 `dee8f7c4...`) with default `EXECUTE = False`, 5 canonical archives, and full post-execution audit (OPERATOR_STATUS, 15 receipts, 5 archives/sidecars). (4) Documented 3 notebook states: pre-execution canonical (`16407258...`), active execution temporary (`e77adb2e...`), and post-execution reconciled (`dee8f7c4...`). (5) Documented user complete backup `execution_9ee7fdb_complete_results.tar.gz` (83,796,910 bytes, SHA-256 `609a14bbe...`) as `post_execution_complete_backup`. (6) Added 10 regression tests to `ml/tests/test_phase_4c2_notebook.py` (archive parity and 8 fault injections, 16/16 notebook tests pass).
+- **Kiểm tra**: 16/16 notebook tests pass, 89/89 operator tests pass (105/105 Stage 2 suite), 14/14 Stage 2 contract tests pass, 9/9 Stage 2 prereg tests pass, 406 full ML pytest pass (1 skipped), 70/70 TS pass, typecheck 0 errors, build OK, continuity check PASS.
+- **Kết quả**: Verdict STAGE2_EXECUTION_COMPLETE_NOTEBOOK_AUDIT_RECONCILED. Completed runs = 15/15, Stage 2 invocations = 1, training reruns = 0, locked-test = 0, Stage 1 writes = 0.
+- **Evidence**: research/evidence/phase-4c.2b/ (operator_receipt.json, notebook_receipt.json, execution_snapshot_receipt.json, pretrained_weights_binding.json, PRE_EXECUTION_GO_NO_GO.json, environment.json, PHASE_REPORT.md).
+- **Quyết định tiếp theo**: Ingest Stage 2 completed runs, compute paired learning curve deltas against Stage 1 frozen baseline, and produce Phase 4C.2C statistical report.
+
+---
+
 ## Phase 4C.2B — Final Environment-Lock Exactness and Report Consistency Hotfix (Phase 4C.2B.3.1)
 
 - **Muc tieu**: Audit and close remaining gaps in Phase 4C.2B.3: standardize canonical pretrained weight constants across evidence, enforce exact assertions across all fields in existing environment lock verification, implement Option 1 requirements provenance binding (`CANONICAL_REQUIREMENTS_SHA="81d648002fbf39311fa5a9a735a61318475ee8978fcc5d8456a8deaa12606721"`), add 11 Section K lock mutation tests, and reseal operator and launcher notebook. Zero training runs, zero locked-test accesses, zero Stage 1 modifications.
