@@ -20,8 +20,6 @@ import tempfile
 from pathlib import Path
 
 import pytest
-
-pytestmark = pytest.mark.requires_research_artifact
 import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -781,6 +779,7 @@ DEPLOYMENT_OPERATOR_SCRIPT = (
 )
 
 
+@pytest.mark.requires_research_artifact
 def test_36_source_deployment_parity():
     """36. Canonical source and deployment operator scripts are bitwise identical."""
     assert OPERATOR_SCRIPT.exists(), "Source operator missing"

@@ -6,8 +6,6 @@ Tests smoke bundle creation, validation, and fault injection.
 
 import pytest
 
-pytestmark = pytest.mark.requires_research_artifact
-
 import tempfile
 import shutil
 import json
@@ -43,6 +41,7 @@ from ml.datasets.validate_phase_4c1_bundle import (
 )
 
 
+@pytest.mark.requires_research_artifact
 class TestSmokeBundleCreation:
     """Tests for smoke bundle creation."""
 
@@ -131,6 +130,7 @@ class TestSmokeBundleCreation:
                 assert r["lc_n50"] == "True"
 
 
+@pytest.mark.requires_research_artifact
 class TestBundleReceipt:
     """Tests for bundle receipt creation."""
 
@@ -180,6 +180,7 @@ class TestBundleReceipt:
             assert receipt["val_source_count"] == 91
 
 
+@pytest.mark.requires_research_artifact
 class TestValidator:
     """Tests for bundle validator."""
 
@@ -295,6 +296,7 @@ class TestValidator:
 class TestFaultInjection:
     """Fault injection tests for bundle validation."""
 
+    @pytest.mark.requires_research_artifact
     def test_missing_image_file(self):
         """Test validator catches missing image file."""
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -314,6 +316,7 @@ class TestFaultInjection:
                                  {"required_columns": ["source_id"]})
             assert result["passed"] is True
 
+    @pytest.mark.requires_research_artifact
     def test_modified_image_byte(self):
         """Test validator catches modified image byte via SHA256."""
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -355,6 +358,7 @@ class TestFaultInjection:
             result = validate_bundle_receipt(output_dir, smoke_only=True)
             assert result["passed"] is False
 
+    @pytest.mark.requires_research_artifact
     def test_cross_partition_source_overlap(self):
         """Test validator detects dev/val source overlap."""
         # This is tested in select_smoke_source_ids test
@@ -375,6 +379,7 @@ class TestFaultInjection:
             assert result["passed"] is False
 
 
+@pytest.mark.requires_research_artifact
 class TestExporterCLI:
     """Tests for exporter CLI."""
 

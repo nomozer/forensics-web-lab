@@ -6,8 +6,6 @@ Tests CLI, integration (CPU fixture), and fault injection.
 
 import pytest
 
-pytestmark = pytest.mark.requires_research_artifact
-
 import tempfile
 import shutil
 import json
@@ -132,6 +130,7 @@ class TestUtilityFunctions:
             assert checkpoint["epoch"] == 0
 
 
+@pytest.mark.requires_research_artifact
 @pytest.mark.skipif(not RUNNER_AVAILABLE, reason="Training runner dependencies not available")
 class TestDataLoading:
     """Test data loading functions."""
@@ -281,6 +280,7 @@ class TestDataLoading:
 class TestBaselines:
     """Test baseline functions."""
 
+    @pytest.mark.requires_research_artifact
     def test_run_dummy_baseline(self):
         """Test dummy baseline returns expected structure."""
         from ml.datasets.export_phase_4c1_bundle import create_smoke_bundle
@@ -353,6 +353,7 @@ class TestCLI:
 class TestFaultInjection:
     """Fault injection tests for runner."""
 
+    @pytest.mark.requires_research_artifact
     def test_runner_failure_on_missing_checkpoint(self):
         """Test runner handles missing checkpoint gracefully."""
         from ml.training.run_phase_4c1 import run_smoke_training
@@ -411,6 +412,7 @@ class TestFaultInjection:
 class TestIntegrationFixture:
     """Technical fixture run on CPU (not scientific training)."""
 
+    @pytest.mark.requires_research_artifact
     @pytest.mark.integration
     def test_smoke_run_cpu_fixture(self):
         """Technical fixture: run training for 1 epoch on CPU to verify pipeline.

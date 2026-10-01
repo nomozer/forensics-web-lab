@@ -11,8 +11,6 @@ from typing import Dict, List, Tuple
 import numpy as np
 import pytest
 
-pytestmark = pytest.mark.requires_research_artifact
-
 from scipy import stats
 
 REPO_ROOT = Path(__file__).parents[2]
@@ -123,6 +121,7 @@ def verify_table2_parity_against_csv(markdown_content: str, csv_rows: List[Dict[
     return True, "Parity verified"
 
 
+@pytest.mark.requires_research_artifact
 class TestPhase4C1DArchiveIngestion:
     """Verifies downloaded archives against SHA-256 sidecars."""
 
@@ -139,6 +138,7 @@ class TestPhase4C1DArchiveIngestion:
             assert actual_sha == expected_sha, f"Hash mismatch for {arch}: expected {expected_sha}, got {actual_sha}"
 
 
+@pytest.mark.requires_research_artifact
 class TestPhase4C1DRunVerification:
     """Verifies that all 15 runs have 9 valid artifacts and satisfy all research invariants."""
 
@@ -196,6 +196,7 @@ class TestPhase4C1DRunVerification:
 class TestPhase4C1DReconciliationAndParity:
     """Verifies that all 15 checkpoint prefixes, tables, summaries, and baselines match raw receipts."""
 
+    @pytest.mark.requires_research_artifact
     def test_15_checkpoint_prefixes_match_raw_receipts(self):
         """Every checkpoint prefix in run_level_metrics.csv must match the raw receipt in extracted_15_runs."""
         csv_path = EVIDENCE_DIR / "run_level_metrics.csv"
