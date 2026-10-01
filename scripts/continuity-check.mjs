@@ -365,13 +365,14 @@ export function checkRepositoryIntegrity(rootDir) {
         const dirPath = path.join(evidenceDir, d.name);
         let timestamp = 0;
         try {
-          for (const envFile of ['environment.json', 'analysis_environment.json', 'import_audit_summary.json']) {
+          for (const envFile of ['environment.json', 'analysis_environment.json', 'import_audit_summary.json', 'cross_phase_discrepancies.json']) {
             const envPath = path.join(dirPath, envFile);
             if (fs.existsSync(envPath)) {
               const envContent = fs.readFileSync(envPath, 'utf-8');
               const env = JSON.parse(envContent);
-              if (env.timestamp) {
-                timestamp = new Date(env.timestamp).getTime();
+              const ts = env.timestamp || env.timestamp_utc;
+              if (ts) {
+                timestamp = new Date(ts).getTime();
                 break;
               }
             }
@@ -391,23 +392,14 @@ export function checkRepositoryIntegrity(rootDir) {
             timestamp = stat.mtimeMs;
           } catch {}
         }
-        // Fallback: use phase token parsing for deterministic ordering
-        let phaseOrder = 0;
-        try {
-          const phaseToken = parsePhaseTokens(d.name).tokens;
-          // Convert to a single number for sorting: major*10000 + minor*100 + patch
-          if (phaseToken.length >= 1) phaseOrder += phaseToken[0] * 10000;
-          if (phaseToken.length >= 2) phaseOrder += (typeof phaseToken[1] === 'number' ? phaseToken[1] : (phaseToken[1].charCodeAt(0) - 96)) * 100;
-          if (phaseToken.length >= 3) phaseOrder += phaseToken[2];
-        } catch {}
-        return { name: d.name, timestamp, phaseOrder };
+        return { name: d.name, timestamp };
       })
-      .filter(d => d.timestamp > 0 || d.phaseOrder > 0)
+      .filter(d => d.timestamp > 0)
       .sort((a, b) => {
         // Primary sort: timestamp (newer first)
         if (a.timestamp !== b.timestamp) return b.timestamp - a.timestamp;
-        // Secondary sort: phaseOrder (higher version first)
-        return b.phaseOrder - a.phaseOrder;
+        // Secondary sort: phase token comparison (higher version first)
+        return comparePhaseTokens(b.name, a.name);
       });
     if (dirs.length > 0) {
       // Sorted descending (newest first), so first element is latest
@@ -511,8 +503,10 @@ export function runContinuityCheck(options = {}) {
 }
 
 // CLI execution if executed directly
-const isDirectExecution = import.meta.url === `file://${process.argv[1].replace(/\\/g, '/')}` ||
-  process.argv[1]?.endsWith('continuity-check.mjs');
+const isDirectExecution = Boolean(process.argv[1]) && (
+  import.meta.url === `file://${process.argv[1].replace(/\\/g, '/')}` ||
+  process.argv[1].endsWith('continuity-check.mjs')
+);
 
 if (isDirectExecution) {
   const options = parseArgs(process.argv.slice(2));

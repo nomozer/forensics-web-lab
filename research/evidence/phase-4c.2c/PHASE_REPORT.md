@@ -103,7 +103,7 @@ Tuân thủ nghiêm ngặt chuẩn ngữ nghĩa thống kê, phân tích hiệu 
 > [!NOTE]
 > **Quan sát Định lượng về Hiệu chuẩn**:
 > 1. **Calibration-in-the-large gần 0**: Sai số trung bình $\text{mean}(p_{\text{positive}} - y)$ dao động trong khoảng $\pm 0.001$ đến $\pm 0.006$, chứng minh xác suất dự đoán trung bình không bị lệch khỏi tỷ lệ cân bằng 50% của nhãn.
-> 2. **Signed confidence calibration gap mang giá trị âm**: Mức chênh lệch trung bình giữa độ tin cậy và độ chính xác thực nghiệm là âm ($-0.013$ đến $-0.048$ ở Stage 1; $-0.016$ đến $-0.038$ ở Stage 2). Điều này chỉ ra xu hướng bảo thủ nhẹ (*mild conservatism / underconfidence*), **bác bỏ giả thuyết overconfidence mang tính hệ thống**.
+> 2. **Signed confidence calibration gap mang giá trị âm**: Không quan sát thấy xu hướng overconfidence trung bình trên inner-validation; signed confidence calibration gap âm gợi ý xu hướng underconfidence nhẹ. Đây là bằng chứng phát triển mô hình, không phải kết luận confirmatory.
 > 3. **Phân bố xác suất**: Xác suất dự đoán của cả hai giai đoạn chủ yếu tập trung hẹp trong khoảng $[0.35, 0.65]$, không rơi vào các vùng cực đoan $[0.0, 0.1]$ hay $[0.9, 1.0]$.
 > 4. **Không fit Temperature Scaling trong phase này**: Để đảm bảo tính trung thực khoa học, Temperature Scaling không được fit trên tập inner-validation vì tập này đã được dùng để lựa chọn checkpoint.
 

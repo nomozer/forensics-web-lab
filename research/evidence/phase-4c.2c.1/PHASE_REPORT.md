@@ -154,7 +154,7 @@ Nhằm đảm bảo sự chặt chẽ về mặt khoa học và toán học, hai
 | **N = 100** | $-0.0016 \pm 0.0066$ | $+0.0059 \pm 0.0123$ | $+0.0076$ | $-0.0450 \pm 0.0085$ | $-0.0375 \pm 0.0224$ | $+0.0075$ | $0.0450 \pm 0.0085$ | $0.0418 \pm 0.0210$ |
 | **N = 250** | $+0.0013 \pm 0.0129$ | $+0.0012 \pm 0.0142$ | $-0.0001$ | $-0.0480 \pm 0.0158$ | $-0.0332 \pm 0.0194$ | $+0.0148$ | $0.0480 \pm 0.0158$ | $0.0421 \pm 0.0122$ |
 
-*Nhận xét*: Signed confidence calibration gap của cả hai giai đoạn đều mang giá trị âm ($-0.01$ đến $-0.05$), phản ánh xu hướng thận trọng nhẹ. **Bác bỏ hoàn toàn giả định overconfidence**.
+*Nhận xét*: Không quan sát thấy xu hướng overconfidence trung bình trên inner-validation; signed confidence calibration gap âm gợi ý xu hướng underconfidence nhẹ. Đây là bằng chứng phát triển mô hình, không phải kết luận confirmatory.
 
 ### 5.3. Cải tiến Biểu đồ Độ tin cậy (Reliability Diagrams)
 Biểu đồ `figures/calibration_comparison.svg` và `.png` đã được nâng cấp toàn diện:
