@@ -2,14 +2,14 @@
 
 > **Tài liệu đọc đầu tiên bắt buộc cho mọi phiên làm việc AI mới.**<br>
 > **Documented through substantive commit**: `9ee7fdb`<br>
-> **Phase hoàn thành gần nhất**: Phase 4C.2C — Paired Stage 1 vs Stage 2 Analysis<br>
+> **Phase hoàn thành gần nhất**: Phase 4C.2C.1 — Reconcile Stage 2 Metric Lineage and Calibration Semantics<br>
 > **Branch**: `research/phase-4c2-finetuning`<br>
 > **Base main commit**: `460f6d5` (bảo toàn nguyên vẹn, không commit trực tiếp)<br>
 > **Working tree**: clean<br>
-> **Remote completed training runs**: 15/15 Stage 1 + 15/15 Stage 2 (100% completed on Colab T4; Stage 2 safely ingested and audited in execution_9ee7fdb; paired analysis completed in Phase 4C.2C)<br>
+> **Remote completed training runs**: 15/15 Stage 1 + 15/15 Stage 2 (100% completed on Colab T4; Stage 2 safely ingested and audited in execution_9ee7fdb; paired analysis and lineage reconciliation completed in Phase 4C.2C and Phase 4C.2C.1; verdict PHASE_4C2C_ANALYSIS_RECONCILED)<br>
 > **Remaining training runs**: 0<br>
 > **Tuyên bố khoa học tối thượng**:<br>
-> **`Stage 1 frozen linear probe vs Stage 2 pre-registered partial fine-tuning protocol evaluated across 15 exact matched pairs (3 cohorts N ∈ {50, 100, 250} × 5 seeds; 91 inner-validation sources, 182 balanced samples); paired Macro-F1 deltas (Stage 2 - Stage 1) are +0.0094 ± 0.0082 (N=50, 95% CI [-0.0008, +0.0196], exploratory paired t p=0.0628, Holm p=0.1884, exact perm p=0.1250), +0.0038 ± 0.0194 (N=100, 95% CI [-0.0202, +0.0279], paired t p=0.6833, Holm p=0.8925, exact perm p=0.8750), and +0.0064 ± 0.0169 (N=250, 95% CI [-0.0147, +0.0275], paired t p=0.4463, Holm p=0.8925, exact perm p=0.3125); all 95% CIs cross 0 and all raw and Holm-adjusted p-values exceed 0.05 (for n=5, exact sign-flip test has minimum mathematical resolution 0.0625); evidence does not demonstrate statistically significant superiority for the Stage 2 protocol on inner-validation; locked-test remains strictly sealed.`**
+> **`Stage 1 frozen linear probe vs Stage 2 pre-registered partial fine-tuning protocol evaluated across 15 exact matched pairs (3 cohorts N ∈ {50, 100, 250} × 5 seeds; 91 inner-validation sources, 182 balanced samples); Stage 2 raw artifact lineage audited across 7 sources with 100% parity verified (receipt == metrics == predictions == epoch_history == checkpoint metadata); Phase 4C.2C.0 Section 7 table discrepancies isolated as manual drafting errors and corrected via PHASE_4C2C0_ERRATUM.md; calibration semantics rigorously separated: calibration-in-the-large (mean(p_positive - y) ≈ ±0.001 to ±0.006) vs signed confidence calibration gap (mean(conf - acc) ≈ -0.01 to -0.05, demonstrating mild conservatism/underconfidence); paired Macro-F1 deltas (Stage 2 - Stage 1) are +0.0094 ± 0.0082 (N=50, 95% CI [-0.0008, +0.0196], exploratory paired t p=0.0628, Holm p=0.1884, exact perm p=0.1250), +0.0038 ± 0.0194 (N=100, 95% CI [-0.0202, +0.0279], paired t p=0.6833, Holm p=0.8925, exact perm p=0.8750), and +0.0064 ± 0.0169 (N=250, 95% CI [-0.0147, +0.0275], paired t p=0.4463, Holm p=0.8925, exact perm p=0.3125); all 95% CIs cross 0 and all raw and Holm-adjusted p-values exceed 0.05; evidence does not demonstrate statistically significant superiority for the Stage 2 protocol on inner-validation; locked-test remains strictly sealed.`**
 
 ---
 

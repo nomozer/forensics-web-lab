@@ -89,20 +89,23 @@ $$\Delta \text{ Macro-F1} = \text{Macro-F1}_{\text{Stage 2}} - \text{Macro-F1}_{
 
 ## 5. Phân tích Hiệu chuẩn (Calibration & Reliability Analysis)
 
-Hiệu chuẩn được đánh giá qua Expected Calibration Error (ECE, 10 bins), Brier score và Signed Calibration Error (SCE $= \frac{1}{N} \sum (\hat{p}_i - y_i)$):
+Tuân thủ nghiêm ngặt chuẩn ngữ nghĩa thống kê, phân tích hiệu chuẩn phân tách rõ ràng hai khái niệm toán học độc lập:
 
-| Sample Size ($N$) | Stage 1 ECE | Stage 2 ECE | $\Delta$ ECE | Stage 1 Brier | Stage 2 Brier | $\Delta$ Brier | Stage 1 SCE | Stage 2 SCE |
-| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **N = 50** | 0.0171 ± 0.0061 | 0.0185 ± 0.0118 | +0.0014 | 0.2487 ± 0.0007 | 0.2481 ± 0.0009 | -0.0007 | -0.0052 | +0.0034 |
-| **N = 100** | 0.0450 ± 0.0085 | 0.0458 ± 0.0206 | +0.0008 | 0.2456 ± 0.0003 | 0.2464 ± 0.0010 | +0.0008 | -0.0016 | +0.0059 |
-| **N = 250** | 0.0480 ± 0.0158 | 0.0421 ± 0.0122 | -0.0059 | 0.2464 ± 0.0003 | 0.2457 ± 0.0008 | -0.0007 | +0.0013 | +0.0012 |
+1. **Calibration-in-the-large**: $\text{mean}(p_{\text{positive}} - y)$, đo lường mức độ sai lệch biên xác suất dương so với tỷ lệ mẫu thực tế (prevalence).
+2. **Signed confidence calibration gap**: $\text{mean}(\text{confidence} - \text{correctness})$, trong đó $\text{confidence} = \max(p, 1-p)$ và $\text{correctness} = \mathbb{I}(\hat{y} = y)$. Chỉ chỉ số này mới phản ánh xu hướng tự tin quá mức (overconfidence $> 0$) hoặc bảo thủ/thiếu tự tin (underconfidence $< 0$).
+
+| Sample Size ($N$) | Stage 1 CITL | Stage 2 CITL | $\Delta$ CITL | Stage 1 Conf Gap | Stage 2 Conf Gap | $\Delta$ Conf Gap | Stage 1 ECE | Stage 2 ECE | $\Delta$ ECE |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **N = 50** | -0.0052 ± 0.0096 | +0.0034 ± 0.0080 | +0.0086 | -0.0138 ± 0.0091 | -0.0167 ± 0.0134 | -0.0029 | 0.0171 ± 0.0061 | 0.0185 ± 0.0118 | +0.0014 |
+| **N = 100** | -0.0016 ± 0.0066 | +0.0059 ± 0.0123 | +0.0075 | -0.0450 ± 0.0085 | -0.0375 ± 0.0224 | +0.0075 | 0.0450 ± 0.0085 | 0.0458 ± 0.0206 | +0.0008 |
+| **N = 250** | +0.0013 ± 0.0129 | +0.0012 ± 0.0142 | -0.0001 | -0.0480 ± 0.0158 | -0.0332 ± 0.0194 | +0.0148 | 0.0480 ± 0.0158 | 0.0421 ± 0.0122 | -0.0059 |
 
 > [!NOTE]
 > **Quan sát Định lượng về Hiệu chuẩn**:
-> 1. **Không có hiện tượng overconfidence cực đoan**: Cả Stage 1 và Stage 2 đều cho ra xác suất dự đoán tập trung hẹp trong khoảng $[0.35, 0.65]$. Hầu như không có dự đoán nào rơi vào các bin cực trị ($[0.0, 0.2]$ hoặc $[0.8, 1.0]$).
-> 2. **Signed Calibration Error gần 0**: Sai số hiệu chuẩn có dấu trung bình chỉ dao động trong khoảng $\pm 0.005$, với cả dấu dương và âm xen kẽ giữa các hạt giống. Điều này bác bỏ nhận định rằng mô hình bị thiên lệch hệ thống theo hướng tự tin quá mức (*systematic overconfidence*) hay thiếu tự tin (*systematic underconfidence*).
-> 3. **Phân bố xác suất**: Stage 2 có xu hướng mở rộng nhẹ độ phân tán xác suất sang bin $[0.3, 0.4]$ và $[0.6, 0.7]$ so với Stage 1, phản ánh sự dịch chuyển nhẹ trong biểu diễn đặc trưng.
-> 4. **Không fit Temperature Scaling trong phase này**: Để đảm bảo tính trung thực khoa học, Temperature Scaling không được áp dụng trên tập inner-validation vì tập này đã được dùng để lựa chọn checkpoint.
+> 1. **Calibration-in-the-large gần 0**: Sai số trung bình $\text{mean}(p_{\text{positive}} - y)$ dao động trong khoảng $\pm 0.001$ đến $\pm 0.006$, chứng minh xác suất dự đoán trung bình không bị lệch khỏi tỷ lệ cân bằng 50% của nhãn.
+> 2. **Signed confidence calibration gap mang giá trị âm**: Mức chênh lệch trung bình giữa độ tin cậy và độ chính xác thực nghiệm là âm ($-0.013$ đến $-0.048$ ở Stage 1; $-0.016$ đến $-0.038$ ở Stage 2). Điều này chỉ ra xu hướng bảo thủ nhẹ (*mild conservatism / underconfidence*), **bác bỏ giả thuyết overconfidence mang tính hệ thống**.
+> 3. **Phân bố xác suất**: Xác suất dự đoán của cả hai giai đoạn chủ yếu tập trung hẹp trong khoảng $[0.35, 0.65]$, không rơi vào các vùng cực đoan $[0.0, 0.1]$ hay $[0.9, 1.0]$.
+> 4. **Không fit Temperature Scaling trong phase này**: Để đảm bảo tính trung thực khoa học, Temperature Scaling không được fit trên tập inner-validation vì tập này đã được dùng để lựa chọn checkpoint.
 
 ---
 
@@ -112,7 +115,7 @@ Tất cả các biểu đồ đều được xuất thành cặp định dạng 
 
 1. **`figures/paired_macro_f1_by_n.svg` / `.png`**: Biểu diễn Macro-F1 ghép cặp theo cỡ mẫu $N$, bao gồm giá trị trung bình từng stage kèm thanh sai số 95% CI (Student's t, df=4) và các đường nối từng seed ghép cặp.
 2. **`figures/delta_macro_f1_by_seed.svg` / `.png`**: Biểu diễn chi tiết mức chênh lệch $\Delta$ Macro-F1 theo từng hạt giống ngẫu nhiên, đường tham chiếu $\Delta=0$, và giá trị trung bình kèm 95% CI của từng cohort.
-3. **`figures/calibration_comparison.svg` / `.png`**: Biểu đồ độ tin cậy (*reliability diagram*) 3 bảng cho $N=50, 100, 250$, so sánh đường cong hiệu chuẩn Stage 1 và Stage 2 đối chiếu với đường chéo hiệu chuẩn hoàn hảo.
+3. **`figures/calibration_comparison.svg` / `.png`**: Biểu đồ độ tin cậy (*reliability diagram*) 3 bảng cho $N=50, 100, 250$, so sánh đường cong hiệu chuẩn Stage 1 và Stage 2 đối chiếu với đường chéo hiệu chuẩn hoàn hảo, bao gồm thanh sai số $\pm 1$ SD thể hiện biến thiên giữa 5 seeds và không nối qua các bin rỗng.
 
 ---
 
@@ -134,7 +137,7 @@ Phân tích đối chứng ghép cặp giữa Stage 1 frozen linear probe và St
 
 1. **Không quan sát thấy sự vượt trội có ý nghĩa thống kê của Stage 2 so với Stage 1 trên tập inner-validation** ($p > 0.05$ trên mọi cỡ mẫu $N$, cả qua t-test thăm dò và exact sign-flip permutation test, trước và sau hiệu chỉnh Holm-Bonferroni).
 2. Mức chênh lệch Macro-F1 ghép cặp trung bình là nhỏ ($+0.0038$ đến $+0.0094$), và khoảng tin cậy 95% đều bao hàm giá trị 0.
-3. Cả hai giao thức đều đạt mức Macro-F1 khoảng $0.56 - 0.58$ ở $N=100$ và $N=250$, vượt qua Dummy baseline ($0.4749$) và Metadata baseline ($0.5000$).
+3. Cả hai giao thức đều đạt mức Macro-F1 khoảng $0.56 - 0.58$ ở $N=100$ và $N=250$, vượt qua Stratified Dummy baseline ($0.4749 \pm 0.0325$ qua 5 seeds trên inner-validation) và uninformative metadata placeholder baseline ($0.5000$). Giá trị 0.5000 là baseline giữ chỗ phi thông tin, không đại diện cho mô hình siêu dữ liệu hoàn chỉnh và không dùng để kết luận siêu dữ liệu vô ích.
 4. Kết quả này phản ánh rằng việc mở khóa tầng `features.12` kết hợp differential learning rate trong khuôn khổ protocol đã đăng ký chưa tạo ra bước nhảy vọt đáng kể về năng lực phân loại trên tập inner-validation so với linear probe đóng băng.
 
 Phán quyết chính thức:

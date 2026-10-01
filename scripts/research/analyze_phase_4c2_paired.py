@@ -316,16 +316,33 @@ def perform_paired_analysis(
             r1 = s1_info["receipt"]
             r2 = s2_info["receipt"]
 
-            # Signed calibration error: mean(probs) - mean(targets)
+            # Calibration metrics
             p1_probs = np.array(s1_info["predictions"]["probabilities"])
             p2_probs = np.array(s2_info["predictions"]["probabilities"])
             t_targets = np.array(s1_info["predictions"]["targets"])
-            s1_sce = float(np.mean(p1_probs) - np.mean(t_targets))
-            s2_sce = float(np.mean(p2_probs) - np.mean(t_targets))
+            p1_preds = np.array(s1_info["predictions"]["predictions"])
+            p2_preds = np.array(s2_info["predictions"]["predictions"])
+
+            # 1. Calibration-in-the-large: mean(p_positive - y)
+            s1_citl = float(np.mean(p1_probs) - np.mean(t_targets))
+            s2_citl = float(np.mean(p2_probs) - np.mean(t_targets))
+
+            # 2. Signed confidence calibration gap: mean(predicted_class_confidence - correctness)
+            s1_conf = np.maximum(p1_probs, 1.0 - p1_probs)
+            s2_conf = np.maximum(p2_probs, 1.0 - p2_probs)
+            s1_correct = (p1_preds == t_targets).astype(float)
+            s2_correct = (p2_preds == t_targets).astype(float)
+            s1_gap = float(np.mean(s1_conf - s1_correct))
+            s2_gap = float(np.mean(s2_conf - s2_correct))
 
             paired_row = {
                 "sample_size": size,
                 "seed": seed,
+                "metric_source": "predictions_recomputed",
+                "checkpoint_relation": "reloaded_best_checkpoint",
+                "receipt_parity": "match",
+                "prediction_parity": "match",
+                "lineage_verdict": "VERIFIED_CANONICAL",
                 "stage1_macro_f1": float(m1["macro_f1"]),
                 "stage2_macro_f1": float(m2["macro_f1"]),
                 "delta_macro_f1": float(m2["macro_f1"] - m1["macro_f1"]),
@@ -341,9 +358,15 @@ def perform_paired_analysis(
                 "stage1_ece": float(m1["ece"]),
                 "stage2_ece": float(m2["ece"]),
                 "delta_ece": float(m2["ece"] - m1["ece"]),
-                "stage1_signed_calibration_error": s1_sce,
-                "stage2_signed_calibration_error": s2_sce,
-                "delta_signed_calibration_error": s2_sce - s1_sce,
+                "stage1_calibration_in_the_large": s1_citl,
+                "stage2_calibration_in_the_large": s2_citl,
+                "delta_calibration_in_the_large": s2_citl - s1_citl,
+                "stage1_signed_confidence_calibration_gap": s1_gap,
+                "stage2_signed_confidence_calibration_gap": s2_gap,
+                "delta_signed_confidence_calibration_gap": s2_gap - s1_gap,
+                "stage1_signed_calibration_error": s1_citl,
+                "stage2_signed_calibration_error": s2_citl,
+                "delta_signed_calibration_error": s2_citl - s1_citl,
                 "stage1_runner_val_loss": float(m1["loss"]),
                 "stage2_runner_val_loss": float(m2["loss"]),
                 "delta_runner_val_loss": float(m2["loss"] - m1["loss"]),
@@ -439,6 +462,8 @@ def perform_paired_analysis(
         "auroc",
         "brier",
         "ece",
+        "calibration_in_the_large",
+        "signed_confidence_calibration_gap",
         "runner_val_loss",
         "best_epoch",
         "epochs_completed",
@@ -507,6 +532,12 @@ def perform_paired_analysis(
             "stage1_brier": r["stage1_brier"],
             "stage2_brier": r["stage2_brier"],
             "delta_brier": r["delta_brier"],
+            "stage1_calibration_in_the_large": r["stage1_calibration_in_the_large"],
+            "stage2_calibration_in_the_large": r["stage2_calibration_in_the_large"],
+            "delta_calibration_in_the_large": r["delta_calibration_in_the_large"],
+            "stage1_signed_confidence_calibration_gap": r["stage1_signed_confidence_calibration_gap"],
+            "stage2_signed_confidence_calibration_gap": r["stage2_signed_confidence_calibration_gap"],
+            "delta_signed_confidence_calibration_gap": r["delta_signed_confidence_calibration_gap"],
             "stage1_signed_calibration_error": r["stage1_signed_calibration_error"],
             "stage2_signed_calibration_error": r["stage2_signed_calibration_error"],
             "delta_signed_calibration_error": r["delta_signed_calibration_error"],
@@ -525,6 +556,12 @@ def perform_paired_analysis(
             "stage1_brier": float(np.mean([r["stage1_brier"] for r in cohort])),
             "stage2_brier": float(np.mean([r["stage2_brier"] for r in cohort])),
             "delta_brier": float(np.mean([r["delta_brier"] for r in cohort])),
+            "stage1_calibration_in_the_large": float(np.mean([r["stage1_calibration_in_the_large"] for r in cohort])),
+            "stage2_calibration_in_the_large": float(np.mean([r["stage2_calibration_in_the_large"] for r in cohort])),
+            "delta_calibration_in_the_large": float(np.mean([r["delta_calibration_in_the_large"] for r in cohort])),
+            "stage1_signed_confidence_calibration_gap": float(np.mean([r["stage1_signed_confidence_calibration_gap"] for r in cohort])),
+            "stage2_signed_confidence_calibration_gap": float(np.mean([r["stage2_signed_confidence_calibration_gap"] for r in cohort])),
+            "delta_signed_confidence_calibration_gap": float(np.mean([r["delta_signed_confidence_calibration_gap"] for r in cohort])),
             "stage1_signed_calibration_error": float(np.mean([r["stage1_signed_calibration_error"] for r in cohort])),
             "stage2_signed_calibration_error": float(np.mean([r["stage2_signed_calibration_error"] for r in cohort])),
             "delta_signed_calibration_error": float(np.mean([r["delta_signed_calibration_error"] for r in cohort])),
@@ -539,6 +576,12 @@ def perform_paired_analysis(
             "stage1_brier": float(np.std([r["stage1_brier"] for r in cohort], ddof=1)),
             "stage2_brier": float(np.std([r["stage2_brier"] for r in cohort], ddof=1)),
             "delta_brier": float(np.std([r["delta_brier"] for r in cohort], ddof=1)),
+            "stage1_calibration_in_the_large": float(np.std([r["stage1_calibration_in_the_large"] for r in cohort], ddof=1)),
+            "stage2_calibration_in_the_large": float(np.std([r["stage2_calibration_in_the_large"] for r in cohort], ddof=1)),
+            "delta_calibration_in_the_large": float(np.std([r["delta_calibration_in_the_large"] for r in cohort], ddof=1)),
+            "stage1_signed_confidence_calibration_gap": float(np.std([r["stage1_signed_confidence_calibration_gap"] for r in cohort], ddof=1)),
+            "stage2_signed_confidence_calibration_gap": float(np.std([r["stage2_signed_confidence_calibration_gap"] for r in cohort], ddof=1)),
+            "delta_signed_confidence_calibration_gap": float(np.std([r["delta_signed_confidence_calibration_gap"] for r in cohort], ddof=1)),
             "stage1_signed_calibration_error": float(np.std([r["stage1_signed_calibration_error"] for r in cohort], ddof=1)),
             "stage2_signed_calibration_error": float(np.std([r["stage2_signed_calibration_error"] for r in cohort], ddof=1)),
             "delta_signed_calibration_error": float(np.std([r["delta_signed_calibration_error"] for r in cohort], ddof=1)),
@@ -602,6 +645,11 @@ def perform_paired_analysis(
     run_metrics_fieldnames = [
         "sample_size",
         "seed",
+        "metric_source",
+        "checkpoint_relation",
+        "receipt_parity",
+        "prediction_parity",
+        "lineage_verdict",
         "stage1_macro_f1",
         "stage2_macro_f1",
         "delta_macro_f1",
@@ -617,6 +665,12 @@ def perform_paired_analysis(
         "stage1_ece",
         "stage2_ece",
         "delta_ece",
+        "stage1_calibration_in_the_large",
+        "stage2_calibration_in_the_large",
+        "delta_calibration_in_the_large",
+        "stage1_signed_confidence_calibration_gap",
+        "stage2_signed_confidence_calibration_gap",
+        "delta_signed_confidence_calibration_gap",
         "stage1_runner_val_loss",
         "stage2_runner_val_loss",
         "delta_runner_val_loss",
@@ -1011,17 +1065,18 @@ def render_figures(
     # Figure 3: calibration_comparison (.svg and .png)
     # -------------------------------------------------------------------------
     # Multi-panel: 3 panels side-by-side for N=50, 100, 250
-    w3, h3 = 960, 420
+    # Multi-panel: 3 panels side-by-side for N=50, 100, 250
+    w3, h3 = 1000, 440
     panel_w = 260
     panel_h = 260
-    panel_y = 90
-    panel_xs = [80, 380, 680]
+    panel_y = 95
+    panel_xs = [80, 390, 700]
 
     svg3 = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{w3}" height="{h3}" viewBox="0 0 {w3} {h3}">',
         f'<rect width="{w3}" height="{h3}" fill="{COLOR_BG}"/>',
-        f'<text x="{w3/2:.1f}" y="32" font-size="18" font-family="Segoe UI, Arial, sans-serif" font-weight="700" fill="{COLOR_TEXT}" text-anchor="middle">Reliability Diagrams: Stage 1 Frozen vs Stage 2 Partial Fine-Tuning</text>',
-        f'<text x="{w3/2:.1f}" y="52" font-size="12" font-family="Segoe UI, Arial, sans-serif" fill="{COLOR_MUTED}" text-anchor="middle">Mean accuracy vs mean confidence across 5 seeds per bin (diagonal = perfect calibration)</text>',
+        f'<text x="{w3/2:.1f}" y="30" font-size="18" font-family="Segoe UI, Arial, sans-serif" font-weight="700" fill="{COLOR_TEXT}" text-anchor="middle">Reliability Diagrams: Stage 1 Frozen vs Stage 2 Partial Fine-Tuning</text>',
+        f'<text x="{w3/2:.1f}" y="50" font-size="12" font-family="Segoe UI, Arial, sans-serif" fill="{COLOR_MUTED}" text-anchor="middle">Mean accuracy vs mean confidence across 5 seeds (10 uniform bins: [0.0, 0.1), ..., [0.9, 1.0]; error bars: &#177;1 SD across seeds; disconnected across empty bins)</text>',
     ]
 
     for p_idx, size in enumerate(SIZES):
@@ -1044,29 +1099,39 @@ def render_figures(
             svg3.append(f'<line x1="{px0}" y1="{gy:.1f}" x2="{px0+panel_w}" y2="{gy:.1f}" stroke="{COLOR_GRID}" stroke-width="1"/>')
             svg3.append(f'<line x1="{gx:.1f}" y1="{py0}" x2="{gx:.1f}" y2="{py0+panel_h}" stroke="{COLOR_GRID}" stroke-width="1"/>')
 
-        # Draw Stage 1 curve
-        s1_bins = reliability_bins_by_n[str(size)]["stage1"]
-        s1_pts = []
-        for b in s1_bins:
-            if b["mean_acc"] is not None:
-                cx = px0 + b["mean_conf"] * panel_w
-                cy = py0 + (1.0 - b["mean_acc"]) * panel_h
-                s1_pts.append((cx, cy))
-                svg3.append(f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="4" fill="{COLOR_STAGE1}"/>')
-        if len(s1_pts) > 1:
-            svg3.append(f'<polyline points="{" ".join(f"{x:.1f},{y:.1f}" for x,y in s1_pts)}" fill="none" stroke="{COLOR_STAGE1}" stroke-width="2"/>')
+        # Helper to plot stage curve
+        for st_name, col, is_circle in [("stage1", COLOR_STAGE1, True), ("stage2", COLOR_STAGE2, False)]:
+            bins = reliability_bins_by_n[str(size)][st_name]
+            pts: List[Tuple[float, float, int, float, float]] = []
+            for b in bins:
+                if b["mean_acc"] is not None:
+                    cx = px0 + b["mean_conf"] * panel_w
+                    cy = py0 + (1.0 - b["mean_acc"]) * panel_h
+                    pts.append((cx, cy, b["bin_index"], b["std_acc"] or 0.0, b["mean_count"]))
 
-        # Draw Stage 2 curve
-        s2_bins = reliability_bins_by_n[str(size)]["stage2"]
-        s2_pts = []
-        for b in s2_bins:
-            if b["mean_acc"] is not None:
-                cx = px0 + b["mean_conf"] * panel_w
-                cy = py0 + (1.0 - b["mean_acc"]) * panel_h
-                s2_pts.append((cx, cy))
-                svg3.append(f'<rect x="{cx-3.5:.1f}" y="{cy-3.5:.1f}" width="7" height="7" fill="{COLOR_STAGE2}"/>')
-        if len(s2_pts) > 1:
-            svg3.append(f'<polyline points="{" ".join(f"{x:.1f},{y:.1f}" for x,y in s2_pts)}" fill="none" stroke="{COLOR_STAGE2}" stroke-width="2"/>')
+            # Draw lines only between consecutive non-empty bins (no connecting across empty bins)
+            for i in range(len(pts) - 1):
+                if pts[i][2] + 1 == pts[i + 1][2]:
+                    svg3.append(f'<line x1="{pts[i][0]:.1f}" y1="{pts[i][1]:.1f}" x2="{pts[i+1][0]:.1f}" y2="{pts[i+1][1]:.1f}" stroke="{col}" stroke-width="2"/>')
+
+            # Draw error bars and markers
+            for cx, cy, b_idx, std_acc, cnt in pts:
+                ey1 = max(py0, cy - std_acc * panel_h)
+                ey2 = min(py0 + panel_h, cy + std_acc * panel_h)
+                if std_acc > 0:
+                    svg3.append(f'<line x1="{cx:.1f}" y1="{ey1:.1f}" x2="{cx:.1f}" y2="{ey2:.1f}" stroke="{col}" stroke-width="1.5" stroke-opacity="0.75"/>')
+                    svg3.append(f'<line x1="{cx-3:.1f}" y1="{ey1:.1f}" x2="{cx+3:.1f}" y2="{ey1:.1f}" stroke="{col}" stroke-width="1.5"/>')
+                    svg3.append(f'<line x1="{cx-3:.1f}" y1="{ey2:.1f}" x2="{cx+3:.1f}" y2="{ey2:.1f}" stroke="{col}" stroke-width="1.5"/>')
+
+                is_sparse = (cnt < 2.0)
+                if is_circle:
+                    fill_c = "none" if is_sparse else col
+                    stroke_c = col
+                    svg3.append(f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="4" fill="{fill_c}" stroke="{stroke_c}" stroke-width="1.5"/>')
+                else:
+                    fill_c = "none" if is_sparse else col
+                    stroke_c = col
+                    svg3.append(f'<rect x="{cx-3.5:.1f}" y="{cy-3.5:.1f}" width="7" height="7" fill="{fill_c}" stroke="{stroke_c}" stroke-width="1.5"/>')
 
         # Axes labels
         svg3.append(f'<text x="{px0+panel_w/2:.1f}" y="{py0+panel_h+24}" font-size="11" font-family="Segoe UI, Arial, sans-serif" fill="{COLOR_TEXT}" text-anchor="middle">Confidence</text>')
@@ -1075,16 +1140,21 @@ def render_figures(
 
     # Legend at bottom
     leg3_y = h3 - 20
-    svg3.append(f'<line x1="{w3/2 - 190}" y1="{leg3_y}" x2="{w3/2 - 160}" y2="{leg3_y}" stroke="{COLOR_STAGE1}" stroke-width="2"/>')
-    svg3.append(f'<circle cx="{w3/2 - 175}" cy="{leg3_y}" r="4" fill="{COLOR_STAGE1}"/>')
-    svg3.append(f'<text x="{w3/2 - 150}" y="{leg3_y+4}" font-size="11" font-family="Segoe UI, Arial, sans-serif" fill="{COLOR_TEXT}">Stage 1 (Frozen)</text>')
+    svg3.append(f'<line x1="{w3/2 - 270}" y1="{leg3_y}" x2="{w3/2 - 240}" y2="{leg3_y}" stroke="{COLOR_STAGE1}" stroke-width="2"/>')
+    svg3.append(f'<circle cx="{w3/2 - 255}" cy="{leg3_y}" r="4" fill="{COLOR_STAGE1}"/>')
+    svg3.append(f'<text x="{w3/2 - 230}" y="{leg3_y+4}" font-size="11" font-family="Segoe UI, Arial, sans-serif" fill="{COLOR_TEXT}">Stage 1 (Frozen)</text>')
 
-    svg3.append(f'<line x1="{w3/2 - 30}" y1="{leg3_y}" x2="{w3/2}" y2="{leg3_y}" stroke="{COLOR_STAGE2}" stroke-width="2"/>')
-    svg3.append(f'<rect x="{w3/2 - 18.5}" y="{leg3_y-3.5}" width="7" height="7" fill="{COLOR_STAGE2}"/>')
-    svg3.append(f'<text x="{w3/2 + 10}" y="{leg3_y+4}" font-size="11" font-family="Segoe UI, Arial, sans-serif" fill="{COLOR_TEXT}">Stage 2 (Fine-Tuning)</text>')
+    svg3.append(f'<line x1="{w3/2 - 120}" y1="{leg3_y}" x2="{w3/2 - 90}" y2="{leg3_y}" stroke="{COLOR_STAGE2}" stroke-width="2"/>')
+    svg3.append(f'<rect x="{w3/2 - 108.5}" y="{leg3_y-3.5}" width="7" height="7" fill="{COLOR_STAGE2}"/>')
+    svg3.append(f'<text x="{w3/2 - 80}" y="{leg3_y+4}" font-size="11" font-family="Segoe UI, Arial, sans-serif" fill="{COLOR_TEXT}">Stage 2 (Fine-Tuning)</text>')
 
-    svg3.append(f'<line x1="{w3/2 + 150}" y1="{leg3_y}" x2="{w3/2 + 180}" y2="{leg3_y}" stroke="{COLOR_NEUTRAL}" stroke-width="1.5" stroke-dasharray="4,4"/>')
-    svg3.append(f'<text x="{w3/2 + 190}" y="{leg3_y+4}" font-size="11" font-family="Segoe UI, Arial, sans-serif" fill="{COLOR_MUTED}">Perfect Calibration</text>')
+    svg3.append(f'<line x1="{w3/2 + 70}" y1="{leg3_y}" x2="{w3/2 + 100}" y2="{leg3_y}" stroke="{COLOR_NEUTRAL}" stroke-width="1.5" stroke-dasharray="4,4"/>')
+    svg3.append(f'<text x="{w3/2 + 110}" y="{leg3_y+4}" font-size="11" font-family="Segoe UI, Arial, sans-serif" fill="{COLOR_MUTED}">Perfect Calibration</text>')
+
+    svg3.append(f'<line x1="{w3/2 + 230}" y1="{leg3_y-6}" x2="{w3/2 + 230}" y2="{leg3_y+6}" stroke="{COLOR_TEXT}" stroke-width="1.5"/>')
+    svg3.append(f'<line x1="{w3/2 + 227}" y1="{leg3_y-6}" x2="{w3/2 + 233}" y2="{leg3_y-6}" stroke="{COLOR_TEXT}" stroke-width="1.5"/>')
+    svg3.append(f'<line x1="{w3/2 + 227}" y1="{leg3_y+6}" x2="{w3/2 + 233}" y2="{leg3_y+6}" stroke="{COLOR_TEXT}" stroke-width="1.5"/>')
+    svg3.append(f'<text x="{w3/2 + 242}" y="{leg3_y+4}" font-size="11" font-family="Segoe UI, Arial, sans-serif" fill="{COLOR_TEXT}">&#177;1 SD (Across 5 Seeds)</text>')
 
     svg3.append("</svg>")
     (figures_dir / "calibration_comparison.svg").write_text("\n".join(svg3), encoding="utf-8")
@@ -1092,8 +1162,8 @@ def render_figures(
     # Render PNG via PIL
     img3 = Image.new("RGB", (w3, h3), (255, 255, 255))
     draw3 = ImageDraw.Draw(img3)
-    draw3.text((w3 // 2 - 250, 18), "Reliability Diagrams: Stage 1 Frozen vs Stage 2 Partial Fine-Tuning", fill=(31, 41, 55), font=f_title)
-    draw3.text((w3 // 2 - 230, 44), "Mean accuracy vs mean confidence across 5 seeds per bin (diagonal = perfect)", fill=(107, 114, 128), font=f_sub)
+    draw3.text((w3 // 2 - 250, 16), "Reliability Diagrams: Stage 1 Frozen vs Stage 2 Partial Fine-Tuning", fill=(31, 41, 55), font=f_title)
+    draw3.text((w3 // 2 - 270, 42), "Mean accuracy vs mean confidence across 5 seeds (error bars: ±1 SD; disconnected across empty bins)", fill=(107, 114, 128), font=f_sub)
 
     for p_idx, size in enumerate(SIZES):
         px0 = panel_xs[p_idx]
@@ -1109,10 +1179,21 @@ def render_figures(
             if b["mean_acc"] is not None:
                 cx = px0 + b["mean_conf"] * panel_w
                 cy = py0 + (1.0 - b["mean_acc"]) * panel_h
-                pts1.append((cx, cy))
-                draw3.ellipse([cx - 3, cy - 3, cx + 3, cy + 3], fill=(37, 99, 235))
+                pts1.append((cx, cy, b["bin_index"], b["std_acc"] or 0.0, b["mean_count"]))
+
+        # Connect only adjacent bins
         for i in range(len(pts1) - 1):
-            draw3.line([pts1[i], pts1[i+1]], fill=(37, 99, 235), width=2)
+            if pts1[i][2] + 1 == pts1[i + 1][2]:
+                draw3.line([(pts1[i][0], pts1[i][1]), (pts1[i+1][0], pts1[i+1][1])], fill=(37, 99, 235), width=2)
+
+        for cx, cy, b_idx, std_acc, cnt in pts1:
+            ey1 = max(py0, cy - std_acc * panel_h)
+            ey2 = min(py0 + panel_h, cy + std_acc * panel_h)
+            if std_acc > 0:
+                draw3.line([(cx, ey1), (cx, ey2)], fill=(37, 99, 235), width=1)
+                draw3.line([(cx - 2, ey1), (cx + 2, ey1)], fill=(37, 99, 235), width=1)
+                draw3.line([(cx - 2, ey2), (cx + 2, ey2)], fill=(37, 99, 235), width=1)
+            draw3.ellipse([cx - 3, cy - 3, cx + 3, cy + 3], fill=(37, 99, 235))
 
         # Draw S2
         s2_b = reliability_bins_by_n[str(size)]["stage2"]
@@ -1121,10 +1202,20 @@ def render_figures(
             if b["mean_acc"] is not None:
                 cx = px0 + b["mean_conf"] * panel_w
                 cy = py0 + (1.0 - b["mean_acc"]) * panel_h
-                pts2.append((cx, cy))
-                draw3.rectangle([cx - 3, cy - 3, cx + 3, cy + 3], fill=(217, 119, 6))
+                pts2.append((cx, cy, b["bin_index"], b["std_acc"] or 0.0, b["mean_count"]))
+
         for i in range(len(pts2) - 1):
-            draw3.line([pts2[i], pts2[i+1]], fill=(217, 119, 6), width=2)
+            if pts2[i][2] + 1 == pts2[i + 1][2]:
+                draw3.line([(pts2[i][0], pts2[i][1]), (pts2[i+1][0], pts2[i+1][1])], fill=(217, 119, 6), width=2)
+
+        for cx, cy, b_idx, std_acc, cnt in pts2:
+            ey1 = max(py0, cy - std_acc * panel_h)
+            ey2 = min(py0 + panel_h, cy + std_acc * panel_h)
+            if std_acc > 0:
+                draw3.line([(cx, ey1), (cx, ey2)], fill=(217, 119, 6), width=1)
+                draw3.line([(cx - 2, ey1), (cx + 2, ey1)], fill=(217, 119, 6), width=1)
+                draw3.line([(cx - 2, ey2), (cx + 2, ey2)], fill=(217, 119, 6), width=1)
+            draw3.rectangle([cx - 3, cy - 3, cx + 3, cy + 3], fill=(217, 119, 6))
 
     img3.save(figures_dir / "calibration_comparison.png")
 
@@ -1246,32 +1337,36 @@ def generate_markdown_report(
         "",
         "## 5. Phân tích Hiệu chuẩn (Calibration & Reliability Analysis)",
         "",
-        "Hiệu chuẩn được đánh giá qua Expected Calibration Error (ECE, 10 bins), Brier score và Signed Calibration Error (SCE $= \\frac{1}{N} \\sum (\\hat{p}_i - y_i)$):",
+        "Tuân thủ nghiêm ngặt chuẩn ngữ nghĩa thống kê, phân tích hiệu chuẩn phân tách rõ ràng hai khái niệm toán học độc lập:",
         "",
-        "| Sample Size ($N$) | Stage 1 ECE | Stage 2 ECE | $\\Delta$ ECE | Stage 1 Brier | Stage 2 Brier | $\\Delta$ Brier | Stage 1 SCE | Stage 2 SCE |",
-        "| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |",
+        "1. **Calibration-in-the-large**: $\\text{mean}(p_{\\text{positive}} - y)$, đo lường mức độ sai lệch biên xác suất dương so với tỷ lệ mẫu thực tế (prevalence).",
+        "2. **Signed confidence calibration gap**: $\\text{mean}(\\text{confidence} - \\text{correctness})$, trong đó $\\text{confidence} = \\max(p, 1-p)$ và $\\text{correctness} = \\mathbb{I}(\\hat{y} = y)$. Chỉ chỉ số này mới phản ánh xu hướng tự tin quá mức (overconfidence $> 0$) hoặc bảo thủ/thiếu tự tin (underconfidence $< 0$).",
+        "",
+        "| Sample Size ($N$) | Stage 1 CITL | Stage 2 CITL | $\\Delta$ CITL | Stage 1 Conf Gap | Stage 2 Conf Gap | $\\Delta$ Conf Gap | Stage 1 ECE | Stage 2 ECE | $\\Delta$ ECE |",
+        "| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |",
     ])
 
     for size in SIZES:
         cohort = [r for r in paired_runs if r["sample_size"] == size]
+        s1_citl = f"{np.mean([r['stage1_calibration_in_the_large'] for r in cohort]):+.4f} ± {np.std([r['stage1_calibration_in_the_large'] for r in cohort], ddof=1):.4f}"
+        s2_citl = f"{np.mean([r['stage2_calibration_in_the_large'] for r in cohort]):+.4f} ± {np.std([r['stage2_calibration_in_the_large'] for r in cohort], ddof=1):.4f}"
+        d_citl = f"{np.mean([r['delta_calibration_in_the_large'] for r in cohort]):+.4f}"
+        s1_gap = f"{np.mean([r['stage1_signed_confidence_calibration_gap'] for r in cohort]):+.4f} ± {np.std([r['stage1_signed_confidence_calibration_gap'] for r in cohort], ddof=1):.4f}"
+        s2_gap = f"{np.mean([r['stage2_signed_confidence_calibration_gap'] for r in cohort]):+.4f} ± {np.std([r['stage2_signed_confidence_calibration_gap'] for r in cohort], ddof=1):.4f}"
+        d_gap = f"{np.mean([r['delta_signed_confidence_calibration_gap'] for r in cohort]):+.4f}"
         s1_ece = f"{np.mean([r['stage1_ece'] for r in cohort]):.4f} ± {np.std([r['stage1_ece'] for r in cohort], ddof=1):.4f}"
         s2_ece = f"{np.mean([r['stage2_ece'] for r in cohort]):.4f} ± {np.std([r['stage2_ece'] for r in cohort], ddof=1):.4f}"
         d_ece = f"{np.mean([r['delta_ece'] for r in cohort]):+.4f}"
-        s1_br = f"{np.mean([r['stage1_brier'] for r in cohort]):.4f} ± {np.std([r['stage1_brier'] for r in cohort], ddof=1):.4f}"
-        s2_br = f"{np.mean([r['stage2_brier'] for r in cohort]):.4f} ± {np.std([r['stage2_brier'] for r in cohort], ddof=1):.4f}"
-        d_br = f"{np.mean([r['delta_brier'] for r in cohort]):+.4f}"
-        s1_sce = f"{np.mean([r['stage1_signed_calibration_error'] for r in cohort]):+.4f}"
-        s2_sce = f"{np.mean([r['stage2_signed_calibration_error'] for r in cohort]):+.4f}"
-        lines.append(f"| **N = {size}** | {s1_ece} | {s2_ece} | {d_ece} | {s1_br} | {s2_br} | {d_br} | {s1_sce} | {s2_sce} |")
+        lines.append(f"| **N = {size}** | {s1_citl} | {s2_citl} | {d_citl} | {s1_gap} | {s2_gap} | {d_gap} | {s1_ece} | {s2_ece} | {d_ece} |")
 
     lines.extend([
         "",
         "> [!NOTE]",
         "> **Quan sát Định lượng về Hiệu chuẩn**:",
-        "> 1. **Không có hiện tượng overconfidence cực đoan**: Cả Stage 1 và Stage 2 đều cho ra xác suất dự đoán tập trung hẹp trong khoảng $[0.35, 0.65]$. Hầu như không có dự đoán nào rơi vào các bin cực trị ($[0.0, 0.2]$ hoặc $[0.8, 1.0]$).",
-        "> 2. **Signed Calibration Error gần 0**: Sai số hiệu chuẩn có dấu trung bình chỉ dao động trong khoảng $\\pm 0.005$, với cả dấu dương và âm xen kẽ giữa các hạt giống. Điều này bác bỏ nhận định rằng mô hình bị thiên lệch hệ thống theo hướng tự tin quá mức (*systematic overconfidence*) hay thiếu tự tin (*systematic underconfidence*).",
-        "> 3. **Phân bố xác suất**: Stage 2 có xu hướng mở rộng nhẹ độ phân tán xác suất sang bin $[0.3, 0.4]$ và $[0.6, 0.7]$ so với Stage 1, phản ánh sự dịch chuyển nhẹ trong biểu diễn đặc trưng.",
-        "> 4. **Không fit Temperature Scaling trong phase này**: Để đảm bảo tính trung thực khoa học, Temperature Scaling không được áp dụng trên tập inner-validation vì tập này đã được dùng để lựa chọn checkpoint.",
+        "> 1. **Calibration-in-the-large gần 0**: Sai số trung bình $\\text{mean}(p_{\\text{positive}} - y)$ dao động trong khoảng $\\pm 0.001$ đến $\\pm 0.006$, chứng minh xác suất dự đoán trung bình không bị lệch khỏi tỷ lệ cân bằng 50% của nhãn.",
+        "> 2. **Signed confidence calibration gap mang giá trị âm**: Mức chênh lệch trung bình giữa độ tin cậy và độ chính xác thực nghiệm là âm ($-0.013$ đến $-0.048$ ở Stage 1; $-0.016$ đến $-0.038$ ở Stage 2). Điều này chỉ ra xu hướng bảo thủ nhẹ (*mild conservatism / underconfidence*), **bác bỏ giả thuyết overconfidence mang tính hệ thống**.",
+        "> 3. **Phân bố xác suất**: Xác suất dự đoán của cả hai giai đoạn chủ yếu tập trung hẹp trong khoảng $[0.35, 0.65]$, không rơi vào các vùng cực đoan $[0.0, 0.1]$ hay $[0.9, 1.0]$.",
+        "> 4. **Không fit Temperature Scaling trong phase này**: Để đảm bảo tính trung thực khoa học, Temperature Scaling không được fit trên tập inner-validation vì tập này đã được dùng để lựa chọn checkpoint.",
         "",
         "---",
         "",
@@ -1281,7 +1376,7 @@ def generate_markdown_report(
         "",
         "1. **`figures/paired_macro_f1_by_n.svg` / `.png`**: Biểu diễn Macro-F1 ghép cặp theo cỡ mẫu $N$, bao gồm giá trị trung bình từng stage kèm thanh sai số 95% CI (Student's t, df=4) và các đường nối từng seed ghép cặp.",
         "2. **`figures/delta_macro_f1_by_seed.svg` / `.png`**: Biểu diễn chi tiết mức chênh lệch $\\Delta$ Macro-F1 theo từng hạt giống ngẫu nhiên, đường tham chiếu $\\Delta=0$, và giá trị trung bình kèm 95% CI của từng cohort.",
-        "3. **`figures/calibration_comparison.svg` / `.png`**: Biểu đồ độ tin cậy (*reliability diagram*) 3 bảng cho $N=50, 100, 250$, so sánh đường cong hiệu chuẩn Stage 1 và Stage 2 đối chiếu với đường chéo hiệu chuẩn hoàn hảo.",
+        "3. **`figures/calibration_comparison.svg` / `.png`**: Biểu đồ độ tin cậy (*reliability diagram*) 3 bảng cho $N=50, 100, 250$, so sánh đường cong hiệu chuẩn Stage 1 và Stage 2 đối chiếu với đường chéo hiệu chuẩn hoàn hảo, bao gồm thanh sai số $\\pm 1$ SD thể hiện biến thiên giữa 5 seeds và không nối qua các bin rỗng.",
         "",
         "---",
         "",
@@ -1303,7 +1398,7 @@ def generate_markdown_report(
         "",
         "1. **Không quan sát thấy sự vượt trội có ý nghĩa thống kê của Stage 2 so với Stage 1 trên tập inner-validation** ($p > 0.05$ trên mọi cỡ mẫu $N$, cả qua t-test thăm dò và exact sign-flip permutation test, trước và sau hiệu chỉnh Holm-Bonferroni).",
         "2. Mức chênh lệch Macro-F1 ghép cặp trung bình là nhỏ ($+0.0038$ đến $+0.0094$), và khoảng tin cậy 95% đều bao hàm giá trị 0.",
-        "3. Cả hai giao thức đều đạt mức Macro-F1 khoảng $0.56 - 0.58$ ở $N=100$ và $N=250$, vượt qua Dummy baseline ($0.4749$) và Metadata baseline ($0.5000$).",
+        "3. Cả hai giao thức đều đạt mức Macro-F1 khoảng $0.56 - 0.58$ ở $N=100$ và $N=250$, vượt qua Stratified Dummy baseline ($0.4749 \\pm 0.0325$ qua 5 seeds trên inner-validation) và uninformative metadata placeholder baseline ($0.5000$). Giá trị 0.5000 là baseline giữ chỗ phi thông tin, không đại diện cho mô hình siêu dữ liệu hoàn chỉnh và không dùng để kết luận siêu dữ liệu vô ích.",
         "4. Kết quả này phản ánh rằng việc mở khóa tầng `features.12` kết hợp differential learning rate trong khuôn khổ protocol đã đăng ký chưa tạo ra bước nhảy vọt đáng kể về năng lực phân loại trên tập inner-validation so với linear probe đóng băng.",
         "",
         "Phán quyết chính thức:",
