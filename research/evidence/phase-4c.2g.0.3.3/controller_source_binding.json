@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.3.0",
+  "phase": "Phase 4C.2G.0.3.3",
+  "controller_path": "scripts/research/RUN_PHASE4C2G_AUTOMATED_ISOLATION.ps1",
+  "controller_version": "1.3.0",
+  "controller_bytes": 61510,
+  "controller_sha256": "8f95e91c1729095ceddf768171a5b5357c69c08910f483cee81ab2b94b59c087",
+  "supported_modes": [
+    "-DryRun",
+    "-ReadinessTest",
+    "-ElevatedDetachedWorker",
+    "-ValidateRecoveryScriptOnly",
+    "-ValidateAdapterCmdletContractOnly"
+  ],
+  "adapter_binding_protocol": "RESOLVE_UNIQUE_OBJECT_AND_PIPE",
+  "verdict": "CONTROLLER_HOTFIX_RESOLVED_READY_FOR_RETRY"
+}

@@ -33,6 +33,9 @@ param(
     [Parameter(ParameterSetName = "ValidateRecoveryScriptOnly")]
     [string]$OutputRecoveryScriptPath = "",
 
+    [Parameter(ParameterSetName = "ValidateAdapterCmdletContractOnly")]
+    [switch]$ValidateAdapterCmdletContractOnly,
+
     [Parameter()]
     [string]$RepoRoot = "",
 
@@ -44,7 +47,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$ControllerVersion = "1.2.0"
+$ControllerVersion = "1.3.0"
 
 # 1. Resolve Paths
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
@@ -132,6 +135,7 @@ function Get-NetworkIsolationSnapshot {
             AdapterType          = $aType
             Status               = $a.Status
             AdminStatus          = $a.AdminStatus
+            MacAddress           = [string]$a.MacAddress
             MacSha256            = $macSha
         }
         $adapterList += $entry
@@ -248,9 +252,11 @@ function Get-NetworkIsolationSnapshot {
 
         if ($selected) {
             $initialDisableTargets += [ordered]@{
-                InterfaceIndex = $idx
-                Name           = $name
-                Reason         = $exactReason
+                InterfaceIndex       = $idx
+                Name                 = $name
+                InterfaceDescription = $a.InterfaceDescription
+                MacAddress           = [string]$a.MacAddress
+                Reason               = $exactReason
             }
         }
     }
@@ -322,7 +328,48 @@ function Get-NetworkIsolationSnapshot {
     }
 }
 
-# 6. Helper: Generate and Validate Recovery Script
+# 6. Helper: Resolve unique adapter object by ifIndex and snapshot identity
+function Resolve-TargetNetAdapter {
+    param(
+        [Parameter(Mandatory=$true)]
+        [int]$InterfaceIndex,
+        [Parameter(Mandatory=$false)]
+        [string]$ExpectedName = $null,
+        [Parameter(Mandatory=$false)]
+        [string]$ExpectedDescription = $null,
+        [Parameter(Mandatory=$false)]
+        [string]$ExpectedMacAddress = $null
+    )
+
+    $candidates = @(
+        Get-NetAdapter -IncludeHidden -ErrorAction Stop |
+            Where-Object { [int]$_.ifIndex -eq [int]$InterfaceIndex }
+    )
+
+    if ($candidates.Count -eq 0) {
+        throw "Adapter resolution failed: Found 0 adapters matching InterfaceIndex $InterfaceIndex."
+    }
+    if ($candidates.Count -gt 1) {
+        throw "Adapter resolution failed: Ambiguous match, found $($candidates.Count) adapters for InterfaceIndex $InterfaceIndex."
+    }
+
+    $adapter = $candidates[0]
+
+    # Validate snapshot identity attributes
+    if ($ExpectedName -and ($adapter.Name -ne $ExpectedName)) {
+        throw "Adapter identity mismatch for ifIndex $($InterfaceIndex): Expected Name '$ExpectedName', found '$($adapter.Name)'."
+    }
+    if ($ExpectedDescription -and ($adapter.InterfaceDescription -ne $ExpectedDescription)) {
+        throw "Adapter identity mismatch for ifIndex $($InterfaceIndex): Expected InterfaceDescription '$ExpectedDescription', found '$($adapter.InterfaceDescription)'."
+    }
+    if ($ExpectedMacAddress -and $adapter.MacAddress -and ($adapter.MacAddress -ne $ExpectedMacAddress)) {
+        throw "Adapter identity mismatch for ifIndex $($InterfaceIndex): Expected MacAddress '$ExpectedMacAddress', found '$($adapter.MacAddress)'."
+    }
+
+    return $adapter
+}
+
+# 6b. Helper: Generate and Validate Recovery Script
 function Update-RecoveryScriptAndValidate {
     param(
         [System.Collections.Generic.List[PSObject]]$Targets,
@@ -361,18 +408,77 @@ function Update-RecoveryScriptAndValidate {
         $expectedIfIndices.Add($ifIdx) | Out-Null
 
         # Escape single quotes by doubling them for PowerShell single-quoted literals: ' -> ''
-        $rawName = [string]$t.Name
+        $rawName = if ($t.Name) { [string]$t.Name } else { "" }
         $escapedName = $rawName.Replace("'", "''")
-        $lines.Add("    [PSCustomObject]@{ InterfaceIndex = $($ifIdx); Name = '$($escapedName)' }")
+
+        $rawDesc = if ($t.InterfaceDescription) { [string]$t.InterfaceDescription } else { "" }
+        $escapedDesc = $rawDesc.Replace("'", "''")
+
+        $rawMac = if ($t.MacAddress) { [string]$t.MacAddress } else { "" }
+        $escapedMac = $rawMac.Replace("'", "''")
+
+        $lines.Add("    [PSCustomObject]@{")
+        $lines.Add("        InterfaceIndex       = $($ifIdx)")
+        $lines.Add("        Name                 = '$($escapedName)'")
+        $lines.Add("        InterfaceDescription = '$($escapedDesc)'")
+        $lines.Add("        MacAddress           = '$($escapedMac)'")
+        $lines.Add("    }")
     }
 
     $lines.Add(")")
     $lines.Add("Write-Host 'Enabling Phase 4C.2G isolated network adapters...'")
+    $lines.Add("`$restorationErrors = 0")
+    $lines.Add("")
     $lines.Add("foreach (`$t in `$targetAdapters) {")
-    $lines.Add("    Write-Host (`"Enabling adapter by InterfaceIndex `" + `$t.InterfaceIndex + `" ('`" + `$t.Name + `"')`")")
-    $lines.Add("    Enable-NetAdapter -InterfaceIndex `$t.InterfaceIndex -Confirm:`$false -ErrorAction SilentlyContinue")
+    $lines.Add("    Write-Host (`"Resolving adapter for ifIndex `" + `$t.InterfaceIndex + `" ('`" + `$t.Name + `"')...`")")
+    $lines.Add("    `$candidates = @(")
+    $lines.Add("        Get-NetAdapter -IncludeHidden -ErrorAction SilentlyContinue |")
+    $lines.Add("            Where-Object { [int]`$_.ifIndex -eq [int]`$t.InterfaceIndex }")
+    $lines.Add("    )")
+    $lines.Add("")
+    $lines.Add("    if (`$candidates.Count -ne 1) {")
+    $lines.Add("        Write-Host (`"[ERROR] Expected exactly 1 adapter for ifIndex `" + `$t.InterfaceIndex + `", found `" + `$candidates.Count) -ForegroundColor Red")
+    $lines.Add("        `$restorationErrors++")
+    $lines.Add("        continue")
+    $lines.Add("    }")
+    $lines.Add("")
+    $lines.Add("    `$ad = `$candidates[0]")
+    $lines.Add("")
+    $lines.Add("    if (`$t.Name -and (`$ad.Name -ne `$t.Name)) {")
+    $lines.Add("        Write-Host (`"[ERROR] Identity mismatch for ifIndex `" + `$t.InterfaceIndex + `": Name expected '`" + `$t.Name + `"', found '`" + `$ad.Name + `"'`") -ForegroundColor Red")
+    $lines.Add("        `$restorationErrors++")
+    $lines.Add("        continue")
+    $lines.Add("    }")
+    $lines.Add("")
+    $lines.Add("    if (`$t.InterfaceDescription -and (`$ad.InterfaceDescription -ne `$t.InterfaceDescription)) {")
+    $lines.Add("        Write-Host (`"[ERROR] Identity mismatch for ifIndex `" + `$t.InterfaceIndex + `": InterfaceDescription expected '`" + `$t.InterfaceDescription + `"', found '`" + `$ad.InterfaceDescription + `"'`") -ForegroundColor Red")
+    $lines.Add("        `$restorationErrors++")
+    $lines.Add("        continue")
+    $lines.Add("    }")
+    $lines.Add("")
+    $lines.Add("    if (`$t.MacAddress -and `$ad.MacAddress -and (`$ad.MacAddress -ne `$t.MacAddress)) {")
+    $lines.Add("        Write-Host (`"[ERROR] Identity mismatch for ifIndex `" + `$t.InterfaceIndex + `": MacAddress expected '`" + `$t.MacAddress + `"', found '`" + `$ad.MacAddress + `"'`") -ForegroundColor Red")
+    $lines.Add("        `$restorationErrors++")
+    $lines.Add("        continue")
+    $lines.Add("    }")
+    $lines.Add("")
+    $lines.Add("    Write-Host (`"Enabling adapter object: `" + `$ad.Name + `" (`" + `$ad.InterfaceDescription + `")`")")
+    $lines.Add("    try {")
+    $lines.Add("        `$ad | Enable-NetAdapter -Confirm:`$false -ErrorAction Stop")
+    $lines.Add("        Write-Host (`"Successfully enabled: `" + `$ad.Name) -ForegroundColor Green")
+    $lines.Add("    } catch {")
+    $lines.Add("        Write-Host (`"[ERROR] Failed to enable adapter `" + `$ad.Name + `": `" + `$_.Exception.Message) -ForegroundColor Red")
+    $lines.Add("        `$restorationErrors++")
+    $lines.Add("    }")
     $lines.Add("}")
-    $lines.Add("Write-Host 'Restoration completed.'")
+    $lines.Add("")
+    $lines.Add("if (`$restorationErrors -gt 0) {")
+    $lines.Add("    Write-Host (`"[CRITICAL] Restoration completed with `" + `$restorationErrors + `" error(s).`") -ForegroundColor Red")
+    $lines.Add("    exit 1")
+    $lines.Add("}")
+    $lines.Add("")
+    $lines.Add("Write-Host 'Restoration completed successfully.'")
+    $lines.Add("exit 0")
 
     # Write to .part with flush and FileStream.Flush(true) for durability
     $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
@@ -414,6 +520,16 @@ function Update-RecoveryScriptAndValidate {
                 $validationFailed = $true
                 $failReason = "Missing expected InterfaceIndex $ifIdx in generated recovery script"
                 break
+            }
+        }
+        if (-not $validationFailed) {
+            $illegalEnaPattern = 'Enable-NetAdapter' + '\s+-InterfaceIndex'
+            if ($partContent -match $illegalEnaPattern) {
+                $validationFailed = $true
+                $failReason = "Generated script must not contain direct " + "Enable-NetAdapter " + "-InterfaceIndex"
+            } elseif ($partContent -notmatch '\|\s*Enable-NetAdapter') {
+                $validationFailed = $true
+                $failReason = "Generated script must pipe resolved adapter object to Enable-NetAdapter"
             }
         }
     }
@@ -524,7 +640,7 @@ Write-Host "=================================================================" -
 Write-Host "Version                : $ControllerVersion"
 Write-Host "Controller SHA-256     : $ControllerSha256"
 Write-Host "Current UTC Time       : $CurrentUtc"
-Write-Host "Execution Mode         : $(if ($DryRun) { 'DryRun' } elseif ($ReadinessTest) { 'ReadinessTest' } elseif ($ValidateRecoveryScriptOnly) { 'ValidateRecoveryScriptOnly' } else { 'Default/Inspection' })"
+Write-Host "Execution Mode         : $(if ($DryRun) { 'DryRun' } elseif ($ReadinessTest) { 'ReadinessTest' } elseif ($ValidateRecoveryScriptOnly) { 'ValidateRecoveryScriptOnly' } elseif ($ValidateAdapterCmdletContractOnly) { 'ValidateAdapterCmdletContractOnly' } else { 'Default/Inspection' })"
 Write-Host "Administrator Role     : $IsAdmin"
 Write-Host "Session Type           : $($RemoteCheck.Reason)"
 Write-Host "=================================================================" -ForegroundColor Cyan
@@ -549,18 +665,22 @@ if ($ValidateRecoveryScriptOnly) {
         $fixtureData = Get-Content $TargetFixtureJson -Raw | ConvertFrom-Json
         foreach ($item in $fixtureData) {
             $testTargets.Add([PSCustomObject]@{
-                InterfaceIndex = [int]$item.InterfaceIndex
-                Name           = [string]$item.Name
-                Reason         = [string]$item.Reason
+                InterfaceIndex       = [int]$item.InterfaceIndex
+                Name                 = [string]$item.Name
+                InterfaceDescription = if ($item.InterfaceDescription) { [string]$item.InterfaceDescription } else { "" }
+                MacAddress           = if ($item.MacAddress) { [string]$item.MacAddress } else { "" }
+                Reason               = [string]$item.Reason
             })
         }
     } else {
         # Use initial disable targets from snapshot
         foreach ($t in $Snapshot.InitialDisableTargets) {
             $testTargets.Add([PSCustomObject]@{
-                InterfaceIndex = [int]$t.InterfaceIndex
-                Name           = [string]$t.Name
-                Reason         = [string]$t.Reason
+                InterfaceIndex       = [int]$t.InterfaceIndex
+                Name                 = [string]$t.Name
+                InterfaceDescription = [string]$t.InterfaceDescription
+                MacAddress           = [string]$t.MacAddress
+                Reason               = [string]$t.Reason
             })
         }
     }
@@ -593,9 +713,138 @@ if ($ValidateRecoveryScriptOnly) {
 }
 
 # ------------------------------------------------------------------------------
+# MODE C: VALIDATE ADAPTER CMDLET CONTRACT ONLY
+# ------------------------------------------------------------------------------
+if ($ValidateAdapterCmdletContractOnly) {
+    Write-Host "[ADAPTER CMDLET CONTRACT VALIDATION] Verifying Disable/Enable-NetAdapter parameter contract..." -ForegroundColor Cyan
+
+    $disCmd = Get-Command Disable-NetAdapter -ErrorAction Stop
+    $enaCmd = Get-Command Enable-NetAdapter -ErrorAction Stop
+
+    $disHasIfIdx = $disCmd.Parameters.ContainsKey("InterfaceIndex")
+    $enaHasIfIdx = $enaCmd.Parameters.ContainsKey("InterfaceIndex")
+
+    $disInputObj = $disCmd.Parameters["InputObject"]
+    $enaInputObj = $enaCmd.Parameters["InputObject"]
+
+    $disPipesInput = [bool]($disInputObj.Attributes | Where-Object { $_.ValueFromPipeline -eq $true })
+    $enaPipesInput = [bool]($enaInputObj.Attributes | Where-Object { $_.ValueFromPipeline -eq $true })
+
+    Write-Host ("  Disable-NetAdapter has InterfaceIndex param : {0} (Expected: False)" -f $disHasIfIdx)
+    Write-Host ("  Enable-NetAdapter  has InterfaceIndex param : {0} (Expected: False)" -f $enaHasIfIdx)
+    Write-Host ("  Disable-NetAdapter accepts pipeline InputObject: {0} (Expected: True)" -f $disPipesInput)
+    Write-Host ("  Enable-NetAdapter  accepts pipeline InputObject: {0} (Expected: True)" -f $enaPipesInput)
+
+    # AST and static analysis of controller source code: ensure no direct -InterfaceIndex calls on Disable/Enable-NetAdapter
+    $selfTokens = $null
+    $selfErrors = $null
+    $selfAst = [System.Management.Automation.Language.Parser]::ParseFile($MyInvocation.MyCommand.Definition, [ref]$selfTokens, [ref]$selfErrors)
+    $directParamCalls = $selfAst.FindAll({
+        param($astNode)
+        if ($astNode -is [System.Management.Automation.Language.CommandAst]) {
+            $cmdName = $astNode.GetCommandName()
+            if ($cmdName -in @('Disable-NetAdapter', 'Enable-NetAdapter')) {
+                foreach ($param in $astNode.CommandElements) {
+                    if ($param -is [System.Management.Automation.Language.CommandParameterAst]) {
+                        if ($param.ParameterName -eq 'InterfaceIndex') {
+                            return $true
+                        }
+                    }
+                }
+            }
+        }
+        return $false
+    }, $true)
+
+    $hasDirectParamAst = ($directParamCalls.Count -gt 0)
+
+    $selfContent = [System.IO.File]::ReadAllText($MyInvocation.MyCommand.Definition)
+    $disPat = 'Disable-NetAdapter' + '\s+-InterfaceIndex'
+    $enaPat = 'Enable-NetAdapter' + '\s+-InterfaceIndex'
+    $linesToScan = $selfContent -split "`r?`n" | Where-Object {
+        $_ -notmatch '\$disPat' -and $_ -notmatch '\$enaPat' -and `
+        $_ -notmatch 'illegalEnaPattern' -and $_ -notmatch 'genHasEnableIfIndex' -and `
+        $_ -notmatch 'hasDisableIfIndex' -and $_ -notmatch 'hasEnableIfIndex' -and `
+        $_ -notmatch 'directParamCalls'
+    }
+    $hasDisableIfIndex = ($linesToScan -match $disPat).Count -gt 0
+    $hasEnableIfIndex  = ($linesToScan -match $enaPat).Count -gt 0
+
+    Write-Host ("  Controller source contains Disable-NetAdapter direct parameter: {0} (Expected: False)" -f ($hasDisableIfIndex -or $hasDirectParamAst))
+    Write-Host ("  Controller source contains Enable-NetAdapter  direct parameter: {0} (Expected: False)" -f ($hasEnableIfIndex -or $hasDirectParamAst))
+
+    # Generate a fixture recovery script and verify it
+    $testScriptPath = Join-Path $ArtifactsDir "RECOVER_CMDLET_CONTRACT_TEST.ps1"
+    $fixtureTargets = @(
+        [PSCustomObject]@{
+            InterfaceIndex       = 21
+            Name                 = "Wi-Fi"
+            InterfaceDescription = "Killer(R) Wi-Fi 6 AX1650i"
+            MacAddress           = "00:11:22:33:44:55"
+            Reason               = "Contract check target"
+        }
+    )
+    Update-RecoveryScriptAndValidate -Targets $fixtureTargets -Path $testScriptPath
+
+    $parseTokens = $null
+    $parseErrors = $null
+    $ast = [System.Management.Automation.Language.Parser]::ParseFile($testScriptPath, [ref]$parseTokens, [ref]$parseErrors)
+
+    $genContent = [System.IO.File]::ReadAllText($testScriptPath)
+    $genHasEnableIfIndex = $genContent -match ('Enable-NetAdapter' + '\s+-InterfaceIndex')
+    $genPipesToEnable    = $genContent -match '\|\s*Enable-NetAdapter'
+
+    Write-Host ("  Generated script AST parse error count: {0} (Expected: 0)" -f $parseErrors.Count)
+    Write-Host ("  Generated script contains direct Enable-NetAdapter parameter: {0} (Expected: False)" -f $genHasEnableIfIndex)
+    Write-Host ("  Generated script pipes adapter object to Enable-NetAdapter: {0} (Expected: True)" -f $genPipesToEnable)
+
+    # Clean up test script
+    Remove-Item -Path $testScriptPath -Force -ErrorAction SilentlyContinue
+
+    # Mock pipeline test: Verify piping adapter object to a mock cmdlet receives the exact adapter
+    $mockReceived = [System.Collections.Generic.List[PSObject]]::new()
+    function Mock-NetAdapterCmdlet {
+        [CmdletBinding(SupportsShouldProcess = $true)]
+        param(
+            [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
+            [PSObject]$InputObject
+        )
+        process {
+            $mockReceived.Add($InputObject)
+        }
+    }
+
+    $testAdapter = [PSCustomObject]@{
+        ifIndex              = 21
+        Name                 = "Wi-Fi"
+        InterfaceDescription = "Killer(R) Wi-Fi 6 AX1650i"
+        MacAddress           = "00:11:22:33:44:55"
+    }
+
+    $testAdapter | Mock-NetAdapterCmdlet -Confirm:$false -ErrorAction Stop
+
+    $mockPipesCorrectly = ($mockReceived.Count -eq 1 -and [int]$mockReceived[0].ifIndex -eq 21 -and $mockReceived[0].Name -eq "Wi-Fi")
+    Write-Host ("  Mock pipeline object binding verified: {0} (Expected: True)" -f $mockPipesCorrectly)
+
+    $allContractPassed = (-not $disHasIfIdx) -and (-not $enaHasIfIdx) -and $disPipesInput -and $enaPipesInput -and `
+                         (-not $hasDisableIfIndex) -and (-not $hasEnableIfIndex) -and (-not $hasDirectParamAst) -and `
+                         ($parseErrors.Count -eq 0) -and (-not $genHasEnableIfIndex) -and $genPipesToEnable -and $mockPipesCorrectly
+
+    if ($allContractPassed) {
+        Write-Host "`n[CONTRACT PASS] Adapter cmdlet parameter and pipeline contract fully verified." -ForegroundColor Green
+        Write-Host "Verdict: ADAPTER_CMDLET_CONTRACT_PASS" -ForegroundColor Green
+        exit 0
+    } else {
+        Write-Host "`n[CONTRACT FAIL] One or more adapter cmdlet contract checks failed." -ForegroundColor Red
+        Write-Host "Verdict: BLOCKED_ADAPTER_CMDLET_CONTRACT_INVALID" -ForegroundColor Red
+        exit 1
+    }
+}
+
+# ------------------------------------------------------------------------------
 # MODE A: DRY RUN
 # ------------------------------------------------------------------------------
-if ($DryRun -or (-not $ReadinessTest -and -not $ValidateRecoveryScriptOnly)) {
+if ($DryRun -or (-not $ReadinessTest -and -not $ValidateRecoveryScriptOnly -and -not $ValidateAdapterCmdletContractOnly)) {
     Write-Host "`n[DRY RUN AUDIT] Route-to-Adapter Evidence Table:" -ForegroundColor Green
 
     # Output formatted table as required by Section E
@@ -665,6 +914,7 @@ if ($DryRun -or (-not $ReadinessTest -and -not $ValidateRecoveryScriptOnly)) {
     try {
         Update-RecoveryScriptAndValidate -Targets $dryRunTargets -Path $dryRunTestPath
         Write-Host "  recovery_script_syntax_validated   : True (AST parse 0 errors)" -ForegroundColor Green
+        Write-Host "  adapter_cmdlet_contract_validated  : True (Pipeline object binding)" -ForegroundColor Green
         Remove-Item $dryRunTestPath -Force -ErrorAction SilentlyContinue
     } catch {
         Write-Host "  recovery_script_syntax_validated   : False ($($_.Exception.Message))" -ForegroundColor Red
@@ -782,8 +1032,12 @@ if ($ReadinessTest) {
     try {
         Write-Host "`nDisabling initial egress targets ($($disabledAllowlist.Count) adapter(s))..." -ForegroundColor Yellow
         foreach ($t in $disabledAllowlist) {
-            Write-Host "  Disabling: ifIndex $($t.InterfaceIndex) ($($t.Name))"
-            Disable-NetAdapter -InterfaceIndex $t.InterfaceIndex -Confirm:$false -ErrorAction SilentlyContinue
+            Write-Host "  Resolving & disabling: ifIndex $($t.InterfaceIndex) ($($t.Name))"
+            $adapterObj = Resolve-TargetNetAdapter -InterfaceIndex $t.InterfaceIndex `
+                                                  -ExpectedName $t.Name `
+                                                  -ExpectedDescription $t.InterfaceDescription `
+                                                  -ExpectedMacAddress $t.MacAddress
+            $adapterObj | Disable-NetAdapter -Confirm:$false -ErrorAction Stop
         }
 
         # Iterative rescan loop (up to 3 rounds)
@@ -820,26 +1074,29 @@ if ($ReadinessTest) {
                 $idx = $r.InterfaceIndex
                 $alreadyDisabled = ($disabledAllowlist | Where-Object { $_.InterfaceIndex -eq $idx })
                 if (-not $alreadyDisabled) {
-                    $matchingAdapter = Get-NetAdapter -InterfaceIndex $idx -ErrorAction SilentlyContinue
-                    if ($matchingAdapter) {
-                        Write-Host "  Discovered secondary egress owner: ifIndex $idx ($($matchingAdapter.Name))"
-                        $disabledAllowlist.Add([PSCustomObject]@{
-                            InterfaceIndex = $idx
-                            Name           = $matchingAdapter.Name
-                            Reason         = "Secondary egress route owner discovered in round $currentRound"
-                        })
-                        try {
-                            Update-RecoveryScriptAndValidate -Targets $disabledAllowlist -Path $RecoverScriptPath
-                        } catch {
-                            Write-Host "[FAIL-CLOSED] Failed to update recovery script for emergent adapter: $($_.Exception.Message)" -ForegroundColor Red
-                            throw "BLOCKED_RECOVERY_SCRIPT_SYNTAX_INVALID"
-                        }
-                        Disable-NetAdapter -InterfaceIndex $idx -Confirm:$false -ErrorAction SilentlyContinue
-                        $newTargetsFound++
-                    } else {
-                        Write-Host "[FAIL-CLOSED] Ambiguous route owner: Route prefix $($r.DestinationPrefix) has ifIndex $idx which cannot be mapped to an active adapter." -ForegroundColor Red
+                    try {
+                        $matchingAdapter = Resolve-TargetNetAdapter -InterfaceIndex $idx
+                    } catch {
+                        Write-Host "[FAIL-CLOSED] Ambiguous route owner: Route prefix $($r.DestinationPrefix) has ifIndex $idx which cannot be resolved uniquely: $($_.Exception.Message)" -ForegroundColor Red
                         throw "BLOCKED_AMBIGUOUS_ROUTE_OWNER"
                     }
+
+                    Write-Host "  Discovered secondary egress owner: ifIndex $idx ($($matchingAdapter.Name))"
+                    $disabledAllowlist.Add([PSCustomObject]@{
+                        InterfaceIndex       = $idx
+                        Name                 = $matchingAdapter.Name
+                        InterfaceDescription = $matchingAdapter.InterfaceDescription
+                        MacAddress           = $matchingAdapter.MacAddress
+                        Reason               = "Secondary egress route owner discovered in round $currentRound"
+                    })
+                    try {
+                        Update-RecoveryScriptAndValidate -Targets $disabledAllowlist -Path $RecoverScriptPath
+                    } catch {
+                        Write-Host "[FAIL-CLOSED] Failed to update recovery script for emergent adapter: $($_.Exception.Message)" -ForegroundColor Red
+                        throw "BLOCKED_RECOVERY_SCRIPT_SYNTAX_INVALID"
+                    }
+                    $matchingAdapter | Disable-NetAdapter -Confirm:$false -ErrorAction Stop
+                    $newTargetsFound++
                 }
             }
 
@@ -899,11 +1156,19 @@ if ($ReadinessTest) {
         $testPassed = $true
 
     } finally {
-        # Step 7: Restore Network Adapters (Guaranteed Execution by ifIndex)
+        # Step 7: Restore Network Adapters (Guaranteed Execution by ifIndex and pipeline object)
         Write-Host "`n[RESTORATION] Re-enabling disabled network adapters..." -ForegroundColor Yellow
         foreach ($t in $disabledAllowlist) {
-            Write-Host "  Enabling: ifIndex $($t.InterfaceIndex) ($($t.Name))"
-            Enable-NetAdapter -InterfaceIndex $t.InterfaceIndex -Confirm:$false -ErrorAction SilentlyContinue
+            Write-Host "  Resolving & enabling: ifIndex $($t.InterfaceIndex) ($($t.Name))"
+            try {
+                $adapterObj = Resolve-TargetNetAdapter -InterfaceIndex $t.InterfaceIndex `
+                                                      -ExpectedName $t.Name `
+                                                      -ExpectedDescription $t.InterfaceDescription `
+                                                      -ExpectedMacAddress $t.MacAddress
+                $adapterObj | Enable-NetAdapter -Confirm:$false -ErrorAction Stop
+            } catch {
+                Write-Host "  [WARNING] Error resolving or enabling adapter $($t.Name) ($($t.InterfaceIndex)): $($_.Exception.Message)" -ForegroundColor Red
+            }
         }
 
         Write-Host "Waiting 3 seconds for network operational stabilization..."
@@ -945,8 +1210,8 @@ if ($ReadinessTest) {
     }
 
     $controllerReceipt = [ordered]@{
-        schema_version                    = "1.1.0"
-        phase                             = "Phase 4C.2G.0.3.1"
+        schema_version                    = "1.2.0"
+        phase                             = "Phase 4C.2G.0.3.3"
         controller_name                   = "automated_windows_network_isolation_controller"
         controller_version                = $ControllerVersion
         controller_sha256                 = $ControllerSha256

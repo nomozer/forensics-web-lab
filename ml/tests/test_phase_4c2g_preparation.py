@@ -818,8 +818,8 @@ class TestPhase4C2G03AutomatedIsolationController:
 
     REPO_ROOT = Path(__file__).resolve().parent.parent.parent
     CONTROLLER_PATH = REPO_ROOT / "scripts" / "research" / "RUN_PHASE4C2G_AUTOMATED_ISOLATION.ps1"
-    EXPECTED_CONTROLLER_BYTES = 47146
-    EXPECTED_CONTROLLER_SHA256 = "ba7a3d430f5bec49fdc95155890b9b5df86a3eac5237adf12e7ec7c94411b462"
+    EXPECTED_CONTROLLER_BYTES = 61510
+    EXPECTED_CONTROLLER_SHA256 = "8f95e91c1729095ceddf768171a5b5357c69c08910f483cee81ab2b94b59c087"
 
     def test_g53_controller_script_integrity_and_prohibited_tokens_scan(self):
         """Controller script exists, matches exact size and hash, and contains zero prohibited commands."""
@@ -1416,13 +1416,13 @@ class TestPhase4C2G032RecoveryScriptSyntaxAndInterruption:
         assert res.returncode == 0
         content = output_script.read_text(encoding="utf-8")
 
-        assert "InterfaceIndex = 21" in content
-        assert "InterfaceIndex = 12" in content
+        assert re.search(r"InterfaceIndex\s*=\s*21\b", content)
+        assert re.search(r"InterfaceIndex\s*=\s*12\b", content)
         # Disallowed/internal adapters must not appear
-        assert "InterfaceIndex = 5" not in content
-        assert "InterfaceIndex = 16" not in content
-        assert "InterfaceIndex = 18" not in content
-        assert "InterfaceIndex = 56" not in content
+        assert not re.search(r"InterfaceIndex\s*=\s*5\b", content)
+        assert not re.search(r"InterfaceIndex\s*=\s*16\b", content)
+        assert not re.search(r"InterfaceIndex\s*=\s*18\b", content)
+        assert not re.search(r"InterfaceIndex\s*=\s*56\b", content)
 
     def test_g75_mocked_execution_only_enables_isolated_adapters(self, tmp_path):
         """Mocked execution of recovery script only calls Enable-NetAdapter on exact target allowlist."""
@@ -1433,16 +1433,24 @@ class TestPhase4C2G032RecoveryScriptSyntaxAndInterruption:
             shell=True, capture_output=True, text=True
         )
         assert res.returncode == 0
+        content = output_script.read_text(encoding="utf-8")
+        expected_indices = [int(m) for m in re.findall(r"InterfaceIndex\s*=\s*(\d+)", content)]
+        assert len(expected_indices) >= 1
 
-        # Mock Enable-NetAdapter to record invoked indices
+        # Mock Enable-NetAdapter to record invoked indices via pipeline
         mock_runner = tmp_path / "run_mock.ps1"
         invoked_file = tmp_path / "invoked.txt"
         invoked_file_str = str(invoked_file).replace("\\", "/")
         mock_runner.write_text(
-            f"$global:EnabledIndices = @()\n"
-            f"function Enable-NetAdapter {{ param([int]$InterfaceIndex, [switch]$Confirm, [string]$ErrorAction) $global:EnabledIndices += $InterfaceIndex }}\n"
-            f". \"{output_script}\"\n"
-            f"($global:EnabledIndices -join ',') | Set-Content -Path \"{invoked_file_str}\"\n",
+            f"function Mock-Enable-NetAdapter {{\n"
+            f"    [CmdletBinding(SupportsShouldProcess = $true)]\n"
+            f"    param([Parameter(Mandatory = $true, ValueFromPipeline = $true)][PSObject]$InputObject)\n"
+            f"    process {{\n"
+            f"        \"$($InputObject.ifIndex)\" | Add-Content -Path \"{invoked_file_str}\"\n"
+            f"    }}\n"
+            f"}}\n"
+            f"Set-Alias -Name Enable-NetAdapter -Value Mock-Enable-NetAdapter -Scope Global\n"
+            f". \"{output_script}\"\n",
             encoding="utf-8"
         )
         exec_res = subprocess.run(
@@ -1450,9 +1458,10 @@ class TestPhase4C2G032RecoveryScriptSyntaxAndInterruption:
             shell=True, capture_output=True, text=True
         )
         assert exec_res.returncode == 0
+        assert invoked_file.exists(), f"Mock execution failed to produce invoked file. stdout: {exec_res.stdout}"
         invoked_text = invoked_file.read_text(encoding="utf-8").strip()
-        invoked = [int(x.strip()) for x in invoked_text.split(",") if x.strip()]
-        assert set(invoked) == {21, 12}
+        invoked = [int(x.strip()) for x in invoked_text.splitlines() if x.strip()]
+        assert set(invoked) == set(expected_indices)
 
     def test_g76_generated_script_contains_zero_network_probes(self, tmp_path):
         """Generated recovery script strictly contains 0 outbound network requests or socket calls."""
@@ -1473,7 +1482,7 @@ class TestPhase4C2G032RecoveryScriptSyntaxAndInterruption:
         content = self.CONTROLLER_PATH.read_text(encoding="utf-8")
         update_call = content.find("Update-RecoveryScriptAndValidate -Targets $disabledAllowlist -Path $RecoverScriptPath")
         schtasks_create = content.find("schtasks.exe /create /tn $WatchdogTaskName")
-        disable_call = content.find("Disable-NetAdapter -InterfaceIndex $t.InterfaceIndex")
+        disable_call = content.find("| Disable-NetAdapter")
 
         assert update_call != -1
         assert schtasks_create != -1
@@ -1522,17 +1531,215 @@ class TestPhase4C2G032RecoveryScriptSyntaxAndInterruption:
                 assert "10:54:30" not in text, f"Erroneous timestamp 10:54:30 found in {p}"
 
     def test_g82_interrupted_run_classification_and_historical_receipt_separation(self):
-        """Interrupted run is classified as terminated at syntax gate; historical receipt from Phase 4C.2G.0.2B is separated."""
+        """Interrupted run is classified as terminated at parameter binding error; historical receipts separated."""
         readiness_receipt = self.REPO_ROOT / "data" / "research" / "local-artifacts" / "phase-4c.2g" / "automated_isolation_readiness_receipt.json"
         assert not readiness_receipt.exists(), "Readiness receipt must not exist for interrupted attempt"
 
         log_path = self.REPO_ROOT / "data" / "research" / "local-artifacts" / "phase-4c.2g" / "automated_isolation_worker.log"
         if log_path.exists():
             log_text = log_path.read_text(encoding="utf-8")
-            assert "Recovery script syntax validation failed" in log_text
+            assert "A parameter cannot be found that matches parameter name 'InterfaceIndex'" in log_text or "Recovery script syntax validation failed" in log_text
 
     def test_g83_scientific_invariants_and_zero_real_counters(self):
         """ml/evaluation/ remains bitwise frozen; all scientific counters strictly zero."""
         eval_dir = self.REPO_ROOT / "ml" / "evaluation"
         assert eval_dir.exists()
         assert FINAL_EFFECTIVE_EVALUATOR_COMMIT == "3cf75c2bf0c9835dd58897b7b36982732cab40ab"
+
+
+# ==============================================================================
+# 8. Phase 4C.2G.0.3.3: Adapter Cmdlet Parameter Resolution & Failed Attempt Evidence
+# ==============================================================================
+
+class TestPhase4C2G033AdapterCmdletContractAndFailedAttempt:
+    """Verifies that Disable/Enable-NetAdapter never receive direct -InterfaceIndex,
+    adapter resolution requires exactly one match with verified identity,
+    and the latest failed-attempt evidence is accurately recorded.
+    """
+
+    REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+    CONTROLLER_PATH = REPO_ROOT / "scripts" / "research" / "RUN_PHASE4C2G_AUTOMATED_ISOLATION.ps1"
+
+    def test_g84_no_direct_interfaceindex_on_cmdlets(self):
+        """Controller source contains zero direct -InterfaceIndex calls on Disable-NetAdapter and Enable-NetAdapter."""
+        content = self.CONTROLLER_PATH.read_text(encoding="utf-8")
+        dis_pat = r"Disable-NetAdapter\s+-InterfaceIndex"
+        ena_pat = r"Enable-NetAdapter\s+-InterfaceIndex"
+
+        # Filter out lines that are testing or checking for the pattern
+        lines = content.splitlines()
+        offending_lines = []
+        for line in lines:
+            stripped = line.strip()
+            if any(term in stripped for term in ["disPat", "enaPat", "illegalEnaPattern", "genHasEnableIfIndex", "hasDisableIfIndex", "hasEnableIfIndex", "directParamCalls"]):
+                continue
+            if re.search(dis_pat, stripped) or re.search(ena_pat, stripped):
+                offending_lines.append(stripped)
+
+        assert len(offending_lines) == 0, f"Found direct -InterfaceIndex usage in controller: {offending_lines}"
+
+    def test_g85_adapter_resolution_single_match_success(self):
+        """Simulated Resolve-TargetNetAdapter returns adapter object when exactly 1 match exists with matching identity."""
+        def resolve_target(candidates: List[Dict[str, Any]], expected_if_index: int, expected_name: str = None, expected_desc: str = None, expected_mac: str = None):
+            filtered = [c for c in candidates if c.get("ifIndex") == expected_if_index]
+            if len(filtered) == 0:
+                raise ValueError(f"Found 0 adapters matching InterfaceIndex {expected_if_index}")
+            if len(filtered) > 1:
+                raise ValueError(f"Ambiguous match, found {len(filtered)} adapters for InterfaceIndex {expected_if_index}")
+            adapter = filtered[0]
+            if expected_name and adapter.get("Name") != expected_name:
+                raise ValueError(f"Identity mismatch: Name expected '{expected_name}', found '{adapter.get('Name')}'")
+            if expected_desc and adapter.get("InterfaceDescription") != expected_desc:
+                raise ValueError(f"Identity mismatch: InterfaceDescription expected '{expected_desc}', found '{adapter.get('InterfaceDescription')}'")
+            if expected_mac and adapter.get("MacAddress") and adapter.get("MacAddress") != expected_mac:
+                raise ValueError(f"Identity mismatch: MacAddress expected '{expected_mac}', found '{adapter.get('MacAddress')}'")
+            return adapter
+
+        candidates = [
+            {"ifIndex": 21, "Name": "Wi-Fi", "InterfaceDescription": "Killer AX1650i", "MacAddress": "00-11-22-33-44-55"},
+            {"ifIndex": 14, "Name": "Radmin VPN", "InterfaceDescription": "Famatech Radmin", "MacAddress": "02-50-3E-FD-70-BD"},
+        ]
+        res = resolve_target(candidates, 21, expected_name="Wi-Fi", expected_desc="Killer AX1650i", expected_mac="00-11-22-33-44-55")
+        assert res["ifIndex"] == 21
+        assert res["Name"] == "Wi-Fi"
+
+    def test_g86_adapter_resolution_zero_and_multiple_match_fail_closed(self):
+        """Adapter resolution strictly fails closed with 0 candidates or ambiguous >1 candidates."""
+        def resolve_target(candidates: List[Dict[str, Any]], expected_if_index: int):
+            filtered = [c for c in candidates if c.get("ifIndex") == expected_if_index]
+            if len(filtered) == 0:
+                raise ValueError(f"Found 0 adapters matching InterfaceIndex {expected_if_index}")
+            if len(filtered) > 1:
+                raise ValueError(f"Ambiguous match, found {len(filtered)} adapters for InterfaceIndex {expected_if_index}")
+            return filtered[0]
+
+        # 0 matches
+        with pytest.raises(ValueError, match="Found 0 adapters"):
+            resolve_target([], 99)
+
+        # >1 matches
+        ambiguous = [
+            {"ifIndex": 10, "Name": "Ethernet 1"},
+            {"ifIndex": 10, "Name": "Ethernet 2"},
+        ]
+        with pytest.raises(ValueError, match="Ambiguous match"):
+            resolve_target(ambiguous, 10)
+
+    def test_g87_adapter_identity_mismatch_fails_closed(self):
+        """Adapter resolution strictly fails closed if Name, InterfaceDescription, or MacAddress differs from snapshot."""
+        def check_identity(adapter: Dict[str, Any], exp_name: str = None, exp_desc: str = None, exp_mac: str = None):
+            if exp_name and adapter.get("Name") != exp_name:
+                raise ValueError("Name mismatch")
+            if exp_desc and adapter.get("InterfaceDescription") != exp_desc:
+                raise ValueError("Desc mismatch")
+            if exp_mac and adapter.get("MacAddress") and adapter.get("MacAddress") != exp_mac:
+                raise ValueError("Mac mismatch")
+            return True
+
+        ad = {"ifIndex": 21, "Name": "Wi-Fi", "InterfaceDescription": "Realtek", "MacAddress": "AA-BB"}
+
+        with pytest.raises(ValueError, match="Name mismatch"):
+            check_identity(ad, exp_name="Ethernet")
+
+        with pytest.raises(ValueError, match="Desc mismatch"):
+            check_identity(ad, exp_name="Wi-Fi", exp_desc="Intel")
+
+        with pytest.raises(ValueError, match="Mac mismatch"):
+            check_identity(ad, exp_name="Wi-Fi", exp_desc="Realtek", exp_mac="CC-DD")
+
+        assert check_identity(ad, exp_name="Wi-Fi", exp_desc="Realtek", exp_mac="AA-BB") is True
+
+    def test_g88_generated_recovery_script_uses_pipeline_object(self, tmp_path):
+        """Generated recovery script pipes adapter object to Enable-NetAdapter and has 0 syntax errors."""
+        output_script = tmp_path / "RECOVER_TEST_PIPE.ps1"
+        res = subprocess.run(
+            f"powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"{self.CONTROLLER_PATH}\" "
+            f"-ValidateRecoveryScriptOnly -OutputRecoveryScriptPath \"{output_script}\"",
+            shell=True, capture_output=True, text=True
+        )
+        assert res.returncode == 0
+        content = output_script.read_text(encoding="utf-8")
+
+        assert "| Enable-NetAdapter" in content
+        assert "Enable-NetAdapter -InterfaceIndex" not in content
+
+        # AST Parse verification
+        parse_cmd = (
+            f"powershell.exe -NoProfile -Command '$tokens = $null; $errors = $null; "
+            f"[System.Management.Automation.Language.Parser]::ParseFile(\"{output_script}\", [ref]$tokens, [ref]$errors); "
+            f"if ($errors.Count -gt 0) {{ throw $errors[0] }} else {{ \"AST_OK\" }}'"
+        )
+        parse_res = subprocess.run(parse_cmd, shell=True, capture_output=True, text=True)
+        assert parse_res.returncode == 0
+        assert "AST_OK" in parse_res.stdout
+
+    def test_g89_mocked_execution_only_affects_targeted_adapters(self, tmp_path):
+        """Mocked execution of recovery script verifies pipeline object passing and target isolation allowlist."""
+        output_script = tmp_path / "RECOVER_TEST_MOCK_PIPE.ps1"
+        res = subprocess.run(
+            f"powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"{self.CONTROLLER_PATH}\" "
+            f"-ValidateRecoveryScriptOnly -OutputRecoveryScriptPath \"{output_script}\"",
+            shell=True, capture_output=True, text=True
+        )
+        assert res.returncode == 0
+        content = output_script.read_text(encoding="utf-8")
+        expected_indices = [int(m) for m in re.findall(r"InterfaceIndex\s*=\s*(\d+)", content)]
+        assert len(expected_indices) >= 1
+
+        mock_runner = tmp_path / "run_mock_pipe.ps1"
+        invoked_file = tmp_path / "invoked_pipe.txt"
+        invoked_file_str = str(invoked_file).replace("\\", "/")
+        mock_runner.write_text(
+            f"function Mock-Enable-NetAdapter {{\n"
+            f"    [CmdletBinding(SupportsShouldProcess = $true)]\n"
+            f"    param([Parameter(Mandatory = $true, ValueFromPipeline = $true)][PSObject]$InputObject)\n"
+            f"    process {{\n"
+            f"        \"$($InputObject.ifIndex)\" | Add-Content -Path \"{invoked_file_str}\"\n"
+            f"    }}\n"
+            f"}}\n"
+            f"Set-Alias -Name Enable-NetAdapter -Value Mock-Enable-NetAdapter -Scope Global\n"
+            f". \"{output_script}\"\n",
+            encoding="utf-8"
+        )
+        exec_res = subprocess.run(
+            f"powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"{mock_runner}\"",
+            shell=True, capture_output=True, text=True
+        )
+        assert exec_res.returncode == 0
+        assert invoked_file.exists()
+        invoked = [int(x.strip()) for x in invoked_file.read_text(encoding="utf-8").strip().splitlines() if x.strip()]
+        assert set(invoked) == set(expected_indices)
+
+    def test_g90_validate_adapter_cmdlet_contract_only_execution(self):
+        """Executing controller with -ValidateAdapterCmdletContractOnly succeeds without mutating network state."""
+        cmd = (
+            f"powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"{self.CONTROLLER_PATH}\" "
+            f"-ValidateAdapterCmdletContractOnly"
+        )
+        res = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+        assert res.returncode == 0, f"Contract check failed: {res.stderr}\n{res.stdout}"
+        assert "Verdict: ADAPTER_CMDLET_CONTRACT_PASS" in res.stdout
+        assert "Disable-NetAdapter has InterfaceIndex param : False" in res.stdout
+        assert "Enable-NetAdapter  has InterfaceIndex param : False" in res.stdout
+        assert "Disable-NetAdapter accepts pipeline InputObject: True" in res.stdout
+        assert "Enable-NetAdapter  accepts pipeline InputObject: True" in res.stdout
+
+    def test_g91_failed_attempt_parameter_binding_evidence(self):
+        """Audits latest failed attempt log: parameter binding error occurred, watchdog created, 0 disabled."""
+        log_path = self.REPO_ROOT / "data" / "research" / "local-artifacts" / "phase-4c.2g" / "automated_isolation_worker.log"
+        assert log_path.exists()
+        log_text = log_path.read_text(encoding="utf-8")
+
+        assert "A parameter cannot be found that matches parameter name 'InterfaceIndex'" in log_text
+        assert "Phase4C2G_Emergency_Network_Recovery" in log_text
+        assert "[WATCHDOG REGISTERED] Scheduled task created." in log_text
+
+        # Ensure historical offline verifier receipt is not confused with current attempt
+        readiness_receipt = self.REPO_ROOT / "data" / "research" / "local-artifacts" / "phase-4c.2g" / "automated_isolation_readiness_receipt.json"
+        assert not readiness_receipt.exists(), "Readiness receipt must not exist for failed attempt"
+
+    def test_g92_scientific_invariants_and_zero_real_counters(self):
+        """Evaluator remains strictly frozen; zero real evaluations, unsealing, inference, or locked-test accesses."""
+        assert FINAL_EFFECTIVE_EVALUATOR_COMMIT == "3cf75c2bf0c9835dd58897b7b36982732cab40ab"
+        eval_dir = self.REPO_ROOT / "ml" / "evaluation"
+        assert eval_dir.exists()

@@ -1,3 +1,16 @@
+## Phase 4C.2G.0.3.3 — Resolve Adapter Cmdlet Parameter Binding and Pipe Adapter Objects
+
+- **Muc tieu**: Resolve `ParameterBindingException` in `Disable-NetAdapter` and `Enable-NetAdapter` caused by missing `-InterfaceIndex` parameter; implement `Resolve-TargetNetAdapter` requiring exactly one match and verified snapshot identity; rewrite generated recovery script to use pipeline object binding; introduce non-mutating `-ValidateAdapterCmdletContractOnly` mode; audit failed run; establish readiness retry state. Locked-test sealed (0 accesses).
+- **Starting commit**: d7c3b27 (Phase 4C.2G.0.3.2 seal)
+- **Branch**: research/phase-4c2g-locked-test-execution
+- **Thay đổi chính**: (1) Upgraded `scripts/research/RUN_PHASE4C2G_AUTOMATED_ISOLATION.ps1` to v1.3.0 (61,510 bytes, SHA-256 `8f95e91c...`) with `Resolve-TargetNetAdapter`, object pipeline piping to cmdlets, `-ValidateAdapterCmdletContractOnly` mode, and pipeline-safe recovery script generation. (2) Quarantined faulty 792-byte script (SHA-256 `a2a123cd...`) to `failed_recovery_scripts/`. (3) Audited latest interrupted run: watchdog created, disable attempted, 0 actually disabled, offline verifier not invoked. (4) Added 9 regression tests (`test_g84` to `test_g92`) in `ml/tests/test_phase_4c2g_preparation.py` (92/92 PASS).
+- **Kiểm tra**: 92/92 preparation tests PASS, 519 ML suite tests PASS, workspace packages PASS, typecheck 0 errors, build OK, continuity check PASS, git diff clean.
+- **Kết quả**: Adapter cmdlet contract verdict: `ADAPTER_CMDLET_CONTRACT_PASS`; DryRun inspection verdict: `DRY_RUN_INSPECTION_PASS`; Readiness status: `READY_FOR_SINGLE_UAC_READINESS_RETRY`. Real counters strictly 0 (accesses=0, unsealing_sessions=0, model_evaluations=0, evaluation_attempts=0, cpu_inference_calls=0, gpu_inference_calls=0, new_training_runs=0).
+- **Evidence**: `research/evidence/phase-4c.2g.0.3.3/` (PHASE_REPORT.md, adapter_cmdlet_contract_audit.json, interrupted_attempt_parameter_binding_audit.json, adapter_resolution_contract.json, controller_source_binding.json, provenance_bindings.json, environment.json).
+- **Quyết định tiếp theo**: System ready for single-UAC elevation readiness retry via `LAUNCH_PHASE4C2G_READINESS.cmd` when requested by user.
+
+---
+
 ## Phase 4C.2G.0.3.2 — Fix Generated Recovery Script Syntax and Correct Interruption Evidence
 
 - **Muc tieu**: Fix PowerShell AST syntax failure in generated `RECOVER_NETWORK.ps1` (`'-' operator` error); quarantine faulty 615-byte file; harden generator with atomic `.part` staging, `fileStream.Flush($true)`, AST parse before move, and allowlist validation; correct audit timestamp conversion (`02:54:30Z == 09:54:30 UTC+7`); test production generator fixture; establish readiness retry state. Locked-test sealed (0 accesses).

@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.3.3",
+  "function_name": "Resolve-TargetNetAdapter",
+  "controller_path": "scripts/research/RUN_PHASE4C2G_AUTOMATED_ISOLATION.ps1",
+  "parameters": {
+    "InterfaceIndex": {
+      "type": "[int]",
+      "mandatory": true
+    },
+    "ExpectedName": {
+      "type": "[string]",
+      "mandatory": false
+    },
+    "ExpectedDescription": {
+      "type": "[string]",
+      "mandatory": false
+    },
+    "ExpectedMacAddress": {
+      "type": "[string]",
+      "mandatory": false
+    }
+  },
+  "resolution_query": "Get-NetAdapter -IncludeHidden -ErrorAction Stop | Where-Object { [int]$_.ifIndex -eq [int]$InterfaceIndex }",
+  "cardinality_invariants": {
+    "count_zero": "throw Adapter resolution failed: Found 0 adapters matching InterfaceIndex",
+    "count_multiple": "throw Adapter resolution failed: Ambiguous match, found N adapters",
+    "count_exactly_one": "pass"
+  },
+  "identity_invariants": {
+    "name_mismatch": "throw Adapter identity mismatch: Name",
+    "description_mismatch": "throw Adapter identity mismatch: InterfaceDescription",
+    "mac_mismatch": "throw Adapter identity mismatch: MacAddress"
+  },
+  "cmdlet_binding_mechanism": "Pipe resolved single CimInstance object to cmdlet: $adapterObj | Disable-NetAdapter / $adapterObj | Enable-NetAdapter"
+}

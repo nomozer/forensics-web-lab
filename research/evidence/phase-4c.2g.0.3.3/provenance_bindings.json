@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.3.3",
+  "generated_at_utc": "2026-10-02T10:45:00.000000+00:00",
+  "evidence_file_count": 6,
+  "files": [
+    {
+      "path": "research/evidence/phase-4c.2g.0.3.3/adapter_cmdlet_contract_audit.json",
+      "bytes": 1152,
+      "sha256": "45545a3fc103096cac4074eec236f36ad2c9e92b801fd9a16f5b12874649ab9a"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.3.3/adapter_resolution_contract.json",
+      "bytes": 1362,
+      "sha256": "2590580d291780eb8866d5b01e91a07592fa3c1d123129a0c8f58a2bff71dd2e"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.3.3/controller_source_binding.json",
+      "bytes": 608,
+      "sha256": "b9fb8beed8fef9f8078381be8ca369ad221ca37fa3d9bfe0a181fcb35b863d73"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.3.3/environment.json",
+      "bytes": 1434,
+      "sha256": "da826011350bd0f65abf895779026fd14a81ef5f800a3677453310e04186e33b"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.3.3/interrupted_attempt_parameter_binding_audit.json",
+      "bytes": 1312,
+      "sha256": "bb7e0017d200f48c35af02091079a756cb986ee435cfe38a5def25a06692ae7d"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.3.3/PHASE_REPORT.md",
+      "bytes": 6269,
+      "sha256": "6dbe4570a16f96f12539b66a1cb2319762389f24f5a8511c5cfb855b92ee045d"
+    }
+  ]
+}
