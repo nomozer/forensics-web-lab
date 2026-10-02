@@ -1,3 +1,16 @@
+## Phase 4C.2G.0.3 — Build and Verify an Automated Windows Network-Isolation Controller
+
+- **Muc tieu**: Automate temporary Windows network isolation via standalone PowerShell controller; remote session fail-closed detection; 10-minute Scheduled Task recovery watchdog; try/finally exact adapter restoration; integrate offline verifier wrapper; dry-run & non-elevated verification. Locked-test sealed (0 accesses).
+- **Starting commit**: aa2bc01 (Phase 4C.2G.0.2B seal)
+- **Branch**: research/phase-4c2g-locked-test-execution
+- **Thay đổi chính**: (1) Built scripts/research/RUN_PHASE4C2G_AUTOMATED_ISOLATION.ps1 (24,255 bytes, SHA-256 2ba8e03..., -DryRun, -ReadinessTest, -ElevatedDetachedWorker). (2) Remote session detection rejects RDP/SSH/WinRM/CI with BLOCKED_REMOTE_SESSION_NETWORK_ISOLATION_UNSAFE. (3) 10-minute Scheduled Task watchdog Phase4C2G_Emergency_Network_Recovery with RECOVER_NETWORK.ps1. (4) Try/finally exact allowlist restoration. (5) Added 10 tests (test_g53 to test_g62) in ml/tests/test_phase_4c2g_preparation.py (62/62 PASS).
+- **Kiểm tra**: 62/62 preparation tests PASS, full ML suite PASS, packages tests PASS, typecheck 0 errors, build OK, continuity check PASS, git diff clean.
+- **Kết quả**: Dry-run verdict: DRY_RUN_INSPECTION_PASS; Non-elevated readiness verdict: USER_UAC_CONFIRMATION_REQUIRED. Real counters strictly 0 (accesses=0, unsealing_sessions=0, model_evaluations=0, evaluation_attempts=0, cpu_inference_calls=0, gpu_inference_calls=0, new_training_runs=0).
+- **Evidence**: research/evidence/phase-4c.2g.0.3/ (PHASE_REPORT.md, automated_isolation_controller_binding.json, controller_dry_run_receipt.json, controller_security_audit.json, recovery_watchdog_contract.json, provenance_bindings.json, environment.json).
+- **Quyết định tiếp theo**: Await user elevated execution with UAC confirmation or manual runbook execution to perform temporary network isolation and standalone offline verification.
+
+---
+
 ## Phase 4C.2G.0.2B — Correct Timestamp Root-Cause Wording and Prepare the Exact Offline Command
 
 - **Muc tieu**: Eliminate speculative unproven root-cause narrative; classify timestamp error as MANUAL_OR_STATIC_TIMESTAMP_WITHOUT_RUNTIME_CLOCK_BINDING (historical mechanism INDETERMINATE); construct PowerShell offline wrapper RUN_PHASE4C2G_OFFLINE_VERIFIER.ps1 with real host paths; issue OFFLINE_USER_RUNBOOK.md. Locked-test sealed (0 accesses).

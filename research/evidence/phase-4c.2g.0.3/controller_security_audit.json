@@ -1,0 +1,63 @@
+{
+  "timestamp_utc": "2026-10-02T01:53:04.030482+00:00",
+  "generated_at_utc": "2026-10-02T01:53:04.030482+00:00",
+  "clock_source": "SYSTEM_UTC_RUNTIME",
+  "timezone_aware": true,
+  "timestamp_future_check": "PASS",
+  "phase": "Phase 4C.2G.0.3",
+  "audit_name": "automated_isolation_controller_security_audit",
+  "static_scan_prohibited_commands": {
+    "Invoke-WebRequest": "ABSENT",
+    "curl": "ABSENT",
+    "wget": "ABSENT",
+    "ping": "ABSENT",
+    "Test-NetConnection": "ABSENT",
+    "System.Net.Sockets": "ABSENT",
+    "evaluator_cli_invocation": "ABSENT",
+    "mount_commands": "ABSENT",
+    "hardcoded_credentials": "ABSENT"
+  },
+  "architectural_safety_guards": {
+    "remote_session_detection": {
+      "policy": "fail_closed",
+      "verdict_on_remote": "BLOCKED_REMOTE_SESSION_NETWORK_ISOLATION_UNSAFE",
+      "prohibited_sessions": [
+        "RDP",
+        "SSH",
+        "WinRM",
+        "CI_runner",
+        "Cloud_automation"
+      ]
+    },
+    "recovery_watchdog": {
+      "policy": "fail_closed_if_unavailable",
+      "verdict_on_failure": "BLOCKED_RECOVERY_WATCHDOG_NOT_AVAILABLE",
+      "mechanism": "10_minute_elevated_scheduled_task"
+    },
+    "passive_isolation_verification": {
+      "policy": "zero_outbound_probes",
+      "probes_sent": 0,
+      "dns_lookups": 0,
+      "http_requests": 0,
+      "verdict_on_incomplete": "BLOCKED_NETWORK_ISOLATION_INCOMPLETE"
+    },
+    "restoration_guarantee": {
+      "mechanism": "try_finally_block",
+      "adapter_policy": "exact_disabled_allowlist_only",
+      "protected_devices": [
+        "loopback",
+        "disconnected_adapters",
+        "initially_disabled_adapters"
+      ]
+    }
+  },
+  "real_counters": {
+    "locked_test_real_accesses": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "cpu_inference_calls": 0,
+    "gpu_inference_calls": 0,
+    "new_training_runs": 0
+  }
+}

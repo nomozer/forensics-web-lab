@@ -2,14 +2,14 @@
 
 > **Tài liệu đọc đầu tiên bắt buộc cho mọi phiên làm việc AI mới.**<br>
 > **Documented through substantive commit**: `0eac1b80c2e368ef3aa9335238629cfe0cbea64c`<br>
-> **Phase hoàn thành gần nhất**: Phase 4C.2G.0.2B — Correct Timestamp Root-Cause Wording and Prepare the Exact Offline Command<br>
+> **Phase hoàn thành gần nhất**: Phase 4C.2G.0.3 — Build and Verify an Automated Windows Network-Isolation Controller<br>
 > **Branch**: `research/phase-4c2g-locked-test-execution`<br>
 > **Base main commit**: `8a379665bc8db3722a46618e47db4806a6ea7244` (PR #4 merge commit; bảo toàn nguyên vẹn, không commit trực tiếp)<br>
 > **Parent Phase 4C.2F commit**: `35f430f410c77247b1e8bb9bb9559ac615b0cd5b`<br>
 > **Final effective evaluator commit**: `3cf75c2bf0c9835dd58897b7b36982732cab40ab`<br>
 > **Execution package commit**: `2826a8274cb89ec548d6fac5c8ae50c1c2836202`<br>
-> **Actual execution network isolation**: `USER_PHYSICAL_ACTION_REQUIRED` (passive inspection detected default Internet route on host; physical adapter disconnect or loopback namespace required)<br>
-> **Pre-physical disconnection gate verdict**: `READY_FOR_USER_PHYSICAL_NETWORK_DISCONNECTION`<br>
+> **Actual execution network isolation**: `AUTOMATED_CONTROLLER_READY_UAC_REQUIRED` (automated controller validated in DryRun; elevated execution required for live readiness test)<br>
+> **Controller readiness verdict**: `USER_UAC_CONFIRMATION_REQUIRED`<br>
 > **Real counters**: locked_test_real_accesses = 0, completed_real_unsealing_sessions = 0, completed_real_model_evaluations = 0, evaluation_attempts = 0, cpu_inference_calls = 0, gpu_inference_calls = 0, new_training_runs = 0<br>
 > **Remote completed training runs**: 15/15 Stage 1 + 15/15 Stage 2 (100% completed on Colab T4; Stage 2 safely ingested and audited in execution_9ee7fdb; paired analysis and lineage reconciliation completed in Phase 4C.2C and Phase 4C.2C.1; final model selection gate completed in Phase 4C.2D; verdict READY_FOR_PR_REVIEW)<br>
 > **Remaining training runs**: 0<br>

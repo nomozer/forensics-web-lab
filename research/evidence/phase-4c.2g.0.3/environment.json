@@ -1,0 +1,36 @@
+{
+  "timestamp_utc": "2026-10-02T01:53:04.030482+00:00",
+  "generated_at_utc": "2026-10-02T01:53:04.030482+00:00",
+  "observation_started_at_utc": "2026-10-02T01:50:00.000000+00:00",
+  "observation_completed_at_utc": "2026-10-02T01:53:04.030482+00:00",
+  "clock_source": "SYSTEM_UTC_RUNTIME",
+  "timezone_aware": true,
+  "timestamp_future_check": "PASS",
+  "phase": "Phase 4C.2G.0.3",
+  "environment_type": "AUTOMATED_NETWORK_ISOLATION_CONTROLLER",
+  "os": "Windows-10-10.0.26100-SP0",
+  "python_version": "3.12.10",
+  "git": {
+    "branch": "research/phase-4c2g-locked-test-execution",
+    "commit": "aa2bc01d83fe81506b35ed902c6831cfee9b0ad5",
+    "dirty": true,
+    "effective_evaluator_commit": "3cf75c2bf0c9835dd58897b7b36982732cab40ab",
+    "execution_package_commit": "2826a8274cb89ec548d6fac5c8ae50c1c2836202"
+  },
+  "controller_details": {
+    "controller_path": "scripts/research/RUN_PHASE4C2G_AUTOMATED_ISOLATION.ps1",
+    "controller_sha256": "2ba8e03170680b8c46780cf5f81b04426ea2ab7660f107ca951bf83668841952",
+    "controller_bytes": 24255,
+    "dry_run_verdict": "DRY_RUN_INSPECTION_PASS",
+    "uac_verdict": "USER_UAC_CONFIRMATION_REQUIRED"
+  },
+  "real_counters": {
+    "locked_test_real_accesses": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "cpu_inference_calls": 0,
+    "gpu_inference_calls": 0,
+    "new_training_runs": 0
+  }
+}
