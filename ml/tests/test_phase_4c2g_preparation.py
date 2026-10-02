@@ -596,8 +596,10 @@ class TestPhase4C2G02OfflineRuntimeVerification:
 class TestPhase4C2G02ATimestampAndOfflineVerifier:
     """Test suite verifying UTC timestamp exactness and standalone offline runtime verifier."""
 
+    REPO_ROOT = Path(".")
     P02_DIR = Path("research/evidence/phase-4c.2g.0.2")
     P02A_DIR = Path("research/evidence/phase-4c.2g.0.2a")
+    P02B_DIR = Path("research/evidence/phase-4c.2g.0.2b")
     VERIFIER_SCRIPT = Path("scripts/research/verify_phase_4c2g_offline_runtime.py")
     EXPECTED_VERIFIER_BYTES = 16208
     EXPECTED_VERIFIER_SHA256 = "c15c217d865361abb29c076b74864c19c2e18fc8c02534c198fe405885c94e9a"
@@ -721,8 +723,86 @@ class TestPhase4C2G02ATimestampAndOfflineVerifier:
         assert gate["real_counters"]["locked_test_real_accesses"] == 0
 
     def test_g48_timestamp_correction_audit_verdict(self):
-        """TIMESTAMP_CORRECTION_AUDIT.json documents root cause and zero remaining future timestamps."""
+        """TIMESTAMP_CORRECTION_AUDIT.json documents indeterminate root cause and zero remaining future timestamps."""
         audit = json.loads((self.P02A_DIR / "TIMESTAMP_CORRECTION_AUDIT.json").read_text(encoding="utf-8"))
-        assert audit["root_cause_investigation"]["identified_root_cause"] == "LOCAL_TIME_STAMPED_WITH_UTC_OFFSET"
+        assert audit["root_cause_investigation"]["identified_root_cause"] == "MANUAL_OR_STATIC_TIMESTAMP_WITHOUT_RUNTIME_CLOCK_BINDING"
+        assert audit["root_cause_investigation"]["classification"] == "MANUAL_OR_STATIC_TIMESTAMP_WITHOUT_RUNTIME_CLOCK_BINDING"
+        assert audit["root_cause_investigation"]["historical_mechanism"] == "INDETERMINATE"
         assert audit["verification_verdict"]["future_timestamps_remaining"] == 0
         assert audit["audit_findings"]["future_timestamps_remaining"] == 0
+
+    def test_g49_prohibit_unproven_utc7_root_cause_claim(self):
+        """No evidence or audit file asserts unproven '02:55 local UTC+7' as exact root cause."""
+        prohibited_phrases = [
+            "local time ~02:55 UTC+7 mistakenly stamped",
+            "02:55:00 UTC+7) was incorrectly stamped",
+            "LOCAL_TIME_STAMPED_WITH_UTC_OFFSET",
+        ]
+        evidence_files = list(self.P02A_DIR.glob("*.*")) + [
+            self.REPO_ROOT / "docs" / "continuity" / "STATUS_LEDGER.md",
+            self.REPO_ROOT / "docs" / "continuity" / "CURRENT_STATE.md",
+        ]
+        for f in evidence_files:
+            content = f.read_text(encoding="utf-8")
+            for phrase in prohibited_phrases:
+                assert phrase not in content, f"File {f.name} contains prohibited speculative claim: '{phrase}'"
+
+    def test_g50_mathematical_disproof_of_local_hypothesis_and_exact_classifications(self):
+        """Verify mathematical disproof of 02:55 UTC+7 hypothesis and exact required fields."""
+        from datetime import datetime, timezone, timedelta
+
+        # Mathematical verification: 02:55 UTC+7 must convert to 19:55 UTC previous day
+        tz_utc7 = timezone(timedelta(hours=7))
+        dt_local = datetime(2026, 10, 2, 2, 55, 0, tzinfo=tz_utc7)
+        dt_utc = dt_local.astimezone(timezone.utc)
+
+        assert dt_utc.day == 1
+        assert dt_utc.hour == 19
+        assert dt_utc.minute == 55
+        assert dt_utc.isoformat() == "2026-10-01T19:55:00+00:00"
+
+        # Check required fields in audit
+        audit = json.loads((self.P02A_DIR / "TIMESTAMP_CORRECTION_AUDIT.json").read_text(encoding="utf-8"))
+        assert audit["audit_findings"]["stale_timestamp"].startswith("2026-10-02T02:55:00")
+        assert audit["audit_findings"]["actual_comparison_timestamp"].startswith("2026-10-02T01:05:48")
+        assert audit["audit_findings"]["future_skew_seconds"] == 6552
+        assert audit["audit_findings"]["classification"] == "MANUAL_OR_STATIC_TIMESTAMP_WITHOUT_RUNTIME_CLOCK_BINDING"
+        assert audit["audit_findings"]["historical_mechanism"] == "INDETERMINATE"
+        assert audit["audit_findings"]["future_timestamps_remaining"] == 0
+
+    def test_g51_offline_wrapper_contract_and_zero_placeholders(self):
+        """RUN_PHASE4C2G_OFFLINE_VERIFIER.ps1 exists, contains zero placeholders, and adheres to safety constraints."""
+        wrapper_path = self.REPO_ROOT / "scripts" / "research" / "RUN_PHASE4C2G_OFFLINE_VERIFIER.ps1"
+        assert wrapper_path.exists(), "Offline wrapper script missing"
+        content = wrapper_path.read_text(encoding="utf-8")
+
+        # Zero placeholders
+        assert "<DETACHED_WORKTREE>" not in content
+        assert "<CHECKPOINT_ROOT>" not in content
+        assert "<EMPTY_OUTPUT_DIR>" not in content
+        assert "<EMPTY_MOUNTPOINT>" not in content
+        assert "<LOCAL_RECEIPT_PATH>" not in content
+
+        # Safety constraints: no evaluator, no locked-test mount, no adapter manipulation
+        assert "run_phase_4c2f_evaluator.py" not in content
+        assert "locked_test_evaluator.py" not in content
+        assert "Disable-NetAdapter" not in content
+        assert "Enable-NetAdapter" not in content
+        assert "verify_phase_4c2g_offline_runtime.py" in content
+        assert "DO NOT RUN WHILE NETWORK IS CONNECTED" in content
+
+    def test_g52_offline_runbook_eleven_steps(self):
+        """OFFLINE_USER_RUNBOOK.md exists and contains all 11 required operational steps."""
+        runbook_path = self.REPO_ROOT / "research" / "evidence" / "phase-4c.2g.0.2b" / "OFFLINE_USER_RUNBOOK.md"
+        assert runbook_path.exists(), "Offline runbook missing"
+        content = runbook_path.read_text(encoding="utf-8")
+
+        for step_num in range(1, 12):
+            assert f"{step_num}." in content, f"Step {step_num} missing in runbook"
+
+        assert "PowerShell" in content
+        assert "Ethernet" in content
+        assert "Wi-Fi" in content
+        assert "VPN" in content
+        assert "Bluetooth" in content
+        assert "UNMOUNTED" in content

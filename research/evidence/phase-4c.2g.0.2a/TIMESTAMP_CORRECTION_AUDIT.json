@@ -9,8 +9,11 @@
   "phase": "Phase 4C.2G.0.2A",
   "audit_name": "utc_evidence_timestamp_exactness_audit",
   "root_cause_investigation": {
-    "identified_root_cause": "LOCAL_TIME_STAMPED_WITH_UTC_OFFSET",
-    "details": "During Phase 4C.2G.0.2 generation, local host time (approximately 02:55:00 UTC+7) was incorrectly stamped with '+00:00' UTC offset instead of converting to actual UTC (which was 19:55:00 UTC on 2026-10-01). When verified at 2026-10-02T01:05:48Z, the recorded timestamp appeared ~1h 49m in the future.",
+    "identified_root_cause": "MANUAL_OR_STATIC_TIMESTAMP_WITHOUT_RUNTIME_CLOCK_BINDING",
+    "classification": "MANUAL_OR_STATIC_TIMESTAMP_WITHOUT_RUNTIME_CLOCK_BINDING",
+    "historical_mechanism": "INDETERMINATE",
+    "details": "The stale timestamp was produced without a verifiable runtime UTC clock binding and appeared 6,552 seconds in the future when independently checked. Available evidence does not establish whether it originated from local-time relabeling, a manually entered value, or another clock conversion error. The exact historical mechanism is therefore classified as indeterminate.",
+    "mathematical_disproof_of_naive_hypothesis": "The naive hypothesis that 02:55 was a local UTC+7 time relabeled with +00:00 is mathematically unsound: 02:55:00 UTC+7 converts to 19:55:00 UTC of the previous day, which is over 5 hours prior to the actual comparison time of 01:05:48 UTC.",
     "prohibited_patterns_eliminated": [
       "Hardcoded timestamp literals",
       "Naive datetime.now() without timezone",
@@ -20,13 +23,17 @@
   },
   "audit_findings": {
     "stale_future_timestamp": "2026-10-02T02:55:00.000000+00:00",
+    "stale_timestamp": "2026-10-02T02:55:00.000000+00:00",
     "actual_observation_time_utc": "2026-10-02T01:05:48.000000+00:00",
+    "actual_comparison_timestamp": "2026-10-02T01:05:48.000000+00:00",
     "observation_window_utc": {
       "started_at": "2026-10-02T01:04:45.000000+00:00",
       "completed_at": "2026-10-02T01:05:48.000000+00:00"
     },
     "future_skew_seconds": 6552,
     "future_timestamps_remaining": 0,
+    "classification": "MANUAL_OR_STATIC_TIMESTAMP_WITHOUT_RUNTIME_CLOCK_BINDING",
+    "historical_mechanism": "INDETERMINATE",
     "regenerated_artifacts_count": 10,
     "regenerated_artifacts": [
       "research/evidence/phase-4c.2g.0.2/CHECKPOINT_STAGING_VERIFICATION.json",

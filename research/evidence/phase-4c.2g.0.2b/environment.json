@@ -1,0 +1,38 @@
+{
+  "timestamp_utc": "2026-10-02T01:27:03.664665+00:00",
+  "generated_at_utc": "2026-10-02T01:27:03.664665+00:00",
+  "observation_started_at_utc": "2026-10-02T01:26:00.000000+00:00",
+  "observation_completed_at_utc": "2026-10-02T01:27:03.664665+00:00",
+  "clock_source": "SYSTEM_UTC_RUNTIME",
+  "timezone_aware": true,
+  "timestamp_future_check": "PASS",
+  "phase": "Phase 4C.2G.0.2B",
+  "environment_type": "STANDALONE_OFFLINE_VERIFICATION_PREPARATION",
+  "os": "Windows-10-10.0.26100-SP0",
+  "python_version": "3.10.11",
+  "git": {
+    "branch": "research/phase-4c2g-locked-test-execution",
+    "commit": "1af0b2ed4b6bdf4d8558a2e23f1c590c0f5489f9",
+    "dirty": true,
+    "effective_evaluator_commit": "3cf75c2bf0c9835dd58897b7b36982732cab40ab",
+    "execution_package_commit": "2826a8274cb89ec548d6fac5c8ae50c1c2836202"
+  },
+  "wrapper_details": {
+    "wrapper_path": "scripts/research/RUN_PHASE4C2G_OFFLINE_VERIFIER.ps1",
+    "verifier_script": "scripts/research/verify_phase_4c2g_offline_runtime.py",
+    "execution_worktree": "../forensics-web-lab-offline-execution",
+    "checkpoint_root": "../forensics-web-lab-local-artifacts/phase_4c1/runs/extracted_15_runs",
+    "output_dir": "data/research/evaluation-outputs/phase_4c2g",
+    "planned_mountpoint": "data/research/locked-test-mount",
+    "receipt_destination": "data/research/local-artifacts/phase-4c.2g/offline_verifier_execution_receipt.json"
+  },
+  "real_counters": {
+    "locked_test_real_accesses": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "cpu_inference_calls": 0,
+    "gpu_inference_calls": 0,
+    "new_training_runs": 0
+  }
+}

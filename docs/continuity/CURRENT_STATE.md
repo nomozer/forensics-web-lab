@@ -2,7 +2,7 @@
 
 > **Tài liệu đọc đầu tiên bắt buộc cho mọi phiên làm việc AI mới.**<br>
 > **Documented through substantive commit**: `0eac1b80c2e368ef3aa9335238629cfe0cbea64c`<br>
-> **Phase hoàn thành gần nhất**: Phase 4C.2G.0.2A — Correct UTC Evidence Timestamps and Build a Standalone Offline Verifier<br>
+> **Phase hoàn thành gần nhất**: Phase 4C.2G.0.2B — Correct Timestamp Root-Cause Wording and Prepare the Exact Offline Command<br>
 > **Branch**: `research/phase-4c2g-locked-test-execution`<br>
 > **Base main commit**: `8a379665bc8db3722a46618e47db4806a6ea7244` (PR #4 merge commit; bảo toàn nguyên vẹn, không commit trực tiếp)<br>
 > **Parent Phase 4C.2F commit**: `35f430f410c77247b1e8bb9bb9559ac615b0cd5b`<br>

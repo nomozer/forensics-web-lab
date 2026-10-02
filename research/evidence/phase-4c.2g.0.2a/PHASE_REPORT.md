@@ -15,9 +15,10 @@
 
 ## 1. Điều Tra Root Cause và Chuẩn Hóa Timestamp
 
-1. **Nguyên nhân gốc rễ (Root Cause)**:
-   - Trong phiên làm việc Phase 4C.2G.0.2, thời gian cục bộ của máy phát triển (khoảng `02:55:00 UTC+7`) đã bị gắn thủ công hậu tố `+00:00` mà không thực hiện phép trừ độ lệch múi giờ 7 tiếng sang UTC thực tế (khoảng `19:55:00 UTC` ngày trước đó).
-   - Khi được đối chiếu tại thời điểm `2026-10-02T01:05:48Z`, timestamp ghi nhận nằm trong tương lai xấp xỉ 1 giờ 49 phút.
+1. **Phân loại và Điều tra Root Cause**:
+   - **Phân loại**: `MANUAL_OR_STATIC_TIMESTAMP_WITHOUT_RUNTIME_CLOCK_BINDING` (Cơ chế lịch sử: `INDETERMINATE`).
+   - **Wording chuẩn**: “The stale timestamp was produced without a verifiable runtime UTC clock binding and appeared 6,552 seconds in the future when independently checked. Available evidence does not establish whether it originated from local-time relabeling, a manually entered value, or another clock conversion error. The exact historical mechanism is therefore classified as indeterminate.”
+   - **Bác bỏ toán học giả thuyết gắn nhãn local UTC+7**: Thời điểm `02:55:00 UTC+7` quy đổi thành `19:55:00 UTC` của ngày hôm trước (`2026-10-01`), lệch hơn 5 giờ so với thời điểm quan sát thực tế `2026-10-02T01:05:48Z`. Do đó, không được coi giả thuyết này là nguyên nhân đã được chứng minh.
 2. **Quy tắc bất biến mới**:
    - Cấm triệt để hardcode giờ, cấm `datetime.now()` không có timezone, cấm gắn thủ công `+00:00` vào local time.
    - Mọi timestamp runtime bắt buộc sinh qua `datetime.now(timezone.utc).isoformat()`.

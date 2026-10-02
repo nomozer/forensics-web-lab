@@ -1,0 +1,37 @@
+{
+  "timestamp_utc": "2026-10-02T01:27:03.664665+00:00",
+  "generated_at_utc": "2026-10-02T01:27:03.664665+00:00",
+  "observation_started_at_utc": "2026-10-02T01:26:00.000000+00:00",
+  "observation_completed_at_utc": "2026-10-02T01:27:03.664665+00:00",
+  "clock_source": "SYSTEM_UTC_RUNTIME",
+  "timezone_aware": true,
+  "timestamp_future_check": "PASS",
+  "phase": "Phase 4C.2G.0.2B",
+  "binding_name": "phase_4c2g02b_offline_verification_runbook_binding",
+  "files": {
+    "run_phase4c2g_offline_verifier_ps1": {
+      "path": "scripts/research/RUN_PHASE4C2G_OFFLINE_VERIFIER.ps1",
+      "bytes": 5480,
+      "sha256": "e475c4a402bfec5993e5b462d98563b00145c63732f5770dfff08483263bbb4e"
+    },
+    "offline_user_runbook_md": {
+      "path": "research/evidence/phase-4c.2g.0.2b/OFFLINE_USER_RUNBOOK.md",
+      "bytes": 2701,
+      "sha256": "c7c52a396d62f927e128e01937320ad12714c0480a2f89a66873a3d82d0aa7ab"
+    },
+    "verify_phase_4c2g_offline_runtime_py": {
+      "path": "scripts/research/verify_phase_4c2g_offline_runtime.py",
+      "bytes": 16208,
+      "sha256": "c15c217d865361abb29c076b74864c19c2e18fc8c02534c198fe405885c94e9a"
+    }
+  },
+  "real_counters": {
+    "locked_test_real_accesses": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "cpu_inference_calls": 0,
+    "gpu_inference_calls": 0,
+    "new_training_runs": 0
+  }
+}

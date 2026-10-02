@@ -1,9 +1,22 @@
+## Phase 4C.2G.0.2B — Correct Timestamp Root-Cause Wording and Prepare the Exact Offline Command
+
+- **Muc tieu**: Eliminate speculative unproven root-cause narrative; classify timestamp error as MANUAL_OR_STATIC_TIMESTAMP_WITHOUT_RUNTIME_CLOCK_BINDING (historical mechanism INDETERMINATE); construct PowerShell offline wrapper RUN_PHASE4C2G_OFFLINE_VERIFIER.ps1 with real host paths; issue OFFLINE_USER_RUNBOOK.md. Locked-test sealed (0 accesses).
+- **Starting commit**: 1af0b2e (Phase 4C.2G.0.2A seal)
+- **Branch**: research/phase-4c2g-locked-test-execution
+- **Thay đổi chính**: (1) Root cause wording replaced with standard indeterminate classification; mathematically disproved naive local UTC+7 assumption. (2) Built scripts/research/RUN_PHASE4C2G_OFFLINE_VERIFIER.ps1 (5,480 bytes, SHA-256 e475c4a..., 0 placeholders, exit codes 0/2/1). (3) Authored research/evidence/phase-4c.2g.0.2b/OFFLINE_USER_RUNBOOK.md (11 operational steps). (4) Added 4 regression tests (test_g49 to test_g52) in ml/tests/test_phase_4c2g_preparation.py (52/52 PASS).
+- **Kiểm tra**: 52/52 preparation tests PASS, full ML suite PASS, packages tests PASS, typecheck 0 errors, build OK, continuity check PASS, git diff clean.
+- **Kết quả**: Verdict: READY_FOR_USER_PHYSICAL_NETWORK_DISCONNECTION. All real counters strictly 0 (accesses=0, unsealing_sessions=0, model_evaluations=0, evaluation_attempts=0, cpu_inference_calls=0, gpu_inference_calls=0, new_training_runs=0).
+- **Evidence**: research/evidence/phase-4c.2g.0.2b/ (PHASE_REPORT.md, OFFLINE_USER_RUNBOOK.md, provenance_bindings.json, environment.json).
+- **Quyết định tiếp theo**: Await user physical network adapter disconnection before executing standalone offline verifier wrapper on execution host.
+
+---
+
 ## Phase 4C.2G.0.2A — Correct UTC Evidence Timestamps and Build a Standalone Offline Verifier
 
 - **Muc tieu**: Investigate and correct UTC timestamp skew in Phase 4C.2G.0.2; regenerate all 10 artifacts with verified runtime UTC timestamps (no future skew); implement standalone offline runtime verifier CLI with atomic receipts; verify passive network check. Locked-test sealed (0 accesses).
 - **Starting commit**: 0eac1b8 (Phase 4C.2G.0.2 seal)
 - **Branch**: research/phase-4c2g-locked-test-execution
-- **Thay đổi chính**: (1) Root cause identified: local time ~02:55 UTC+7 mistakenly stamped with +00:00 offset (~1h 49m in future). (2) Regenerated all 10 artifacts in phase-4c.2g.0.2 with exact observation UTC (01:05:48Z, 0 future timestamps). (3) Implemented standalone verifier scripts/research/verify_phase_4c2g_offline_runtime.py (16,208 bytes, SHA-256 c15c217..., standard library only, 0 socket probes). (4) Added 10 regression tests (test_g39 to test_g48) in ml/tests/test_phase_4c2g_preparation.py (93/93 PASS). (5) Emitted Phase 4C.2G.0.2A evidence package (verdict READY_FOR_USER_PHYSICAL_NETWORK_DISCONNECTION).
+- **Thay đổi chính**: (1) Timestamp investigation: classified as MANUAL_OR_STATIC_TIMESTAMP_WITHOUT_RUNTIME_CLOCK_BINDING (historical mechanism INDETERMINATE; 6,552s future skew; naive local UTC+7 assumption disproven). (2) Regenerated all 10 artifacts in phase-4c.2g.0.2 with exact observation UTC (01:05:48Z, 0 future timestamps). (3) Implemented standalone verifier scripts/research/verify_phase_4c2g_offline_runtime.py (16,208 bytes, SHA-256 c15c217..., standard library only, 0 socket probes). (4) Added 10 regression tests (test_g39 to test_g48) in ml/tests/test_phase_4c2g_preparation.py (93/93 PASS). (5) Emitted Phase 4C.2G.0.2A evidence package (verdict READY_FOR_USER_PHYSICAL_NETWORK_DISCONNECTION).
 - **Kiểm tra**: 93/93 evaluator & preparation tests PASS, 465/465 unit pytest PASS, 13/13 continuity test PASS, 34/34 TS test PASS, typecheck 0 errors, build OK, continuity check PASS, git diff clean.
 - **Kết quả**: Pre-physical disconnection gate verdict: READY_FOR_USER_PHYSICAL_NETWORK_DISCONNECTION. All real counters strictly 0 (accesses=0, unsealing_sessions=0, model_evaluations=0, evaluation_attempts=0, cpu_inference_calls=0, gpu_inference_calls=0, new_training_runs=0).
 - **Evidence**: research/evidence/phase-4c.2g.0.2a/ (PHASE_REPORT.md, TIMESTAMP_CORRECTION_AUDIT.json, offline_verifier_source_binding.json, offline_verifier_test_receipt.json, PRE_PHYSICAL_DISCONNECTION_GATE.json, provenance_bindings.json, environment.json).
