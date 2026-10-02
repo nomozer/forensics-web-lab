@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.4",
+  "classification": "MEASURED_LIVE_READINESS_RETRY_NO_LOCKED_TEST_ACCESS",
+  "started_at_utc": "2026-10-02T15:38:59.678473+00:00",
+  "completed_at_utc": "2026-10-02T15:39:20.418446+00:00",
+  "controller": {
+    "version": "1.4.0",
+    "sha256": "16bcc151455a0cf892fab7d0d6d6dfbfd6153cda3b22c69ba8154de667afb170",
+    "receipt_path": "data/research/local-artifacts/phase-4c.2g/automated_isolation_readiness_receipt.json",
+    "receipt_bytes": 12827,
+    "receipt_sha256": "52b824a19805162a6787dea30b48001f08db9dff589c07028c9494851a226369",
+    "verdict": "AUTOMATED_ISOLATION_READINESS_TEST_PASS_NETWORK_RESTORED"
+  },
+  "offline_verifier": {
+    "receipt_path": "data/research/local-artifacts/phase-4c.2g/offline_verifier_execution_receipt.json",
+    "receipt_bytes": 8728,
+    "receipt_sha256": "bb4fa62a2051130e7579d12b6619ec84bb4a5b27c89411cafd341e347ebef170",
+    "receipt_timestamp_valid": true,
+    "exit_code": 0,
+    "verdict": "READY_FOR_HUMAN_AUTHORIZATION_REVIEW"
+  },
+  "worker_log": {
+    "path": "data/research/local-artifacts/phase-4c.2g/automated_isolation_worker.log",
+    "bytes": 4982,
+    "sha256": "896df935a0822e0dd915e83f3fc5ab34664ed6e115d86781ca4ad582c9a4303c"
+  },
+  "isolation": {
+    "isolation_verified": true,
+    "remaining_active_default_routes": 0,
+    "proxy_detected": false,
+    "active_egress_adapters": [],
+    "active_vpn_egress_owners": [],
+    "unidentified_active_egress_route_owners": [],
+    "persistent_routes_ignored": [
+      "0.0.0.0          0.0.0.0         26.0.0.1    9256"
+    ],
+    "outbound_probes_sent": 0
+  },
+  "restoration": {
+    "network_restored": true,
+    "restoration_result": "RESTORED_VERIFIED",
+    "wifi_admin_status": "Up",
+    "wifi_operational_status": "Up",
+    "radmin_admin_status": "Up",
+    "radmin_operational_status": "Up",
+    "watchdog_cleanup_verified": true,
+    "scheduled_task_absent_after_run": true
+  },
+  "real_counters": {
+    "locked_test_real_accesses": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "cpu_inference_calls": 0,
+    "gpu_inference_calls": 0,
+    "new_training_runs": 0
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.4",
+  "audited_at_utc": "2026-10-02T15:42:01.7574453+00:00",
+  "classification": "PRE_UNSEALING_STATIC_AUDIT_ZERO_LOCKED_TEST_ACCESS",
+  "execution_package": {
+    "commit": "2826a8274cb89ec548d6fac5c8ae50c1c2836202",
+    "tree_clean": true,
+    "archive_path": "data/research/local-artifacts/phase-4c.2g/phase_4c2g_locked_test_evaluator_2826a82.tar.gz",
+    "archive_bytes": 29823,
+    "archive_sha256": "5ab922a2ec2aa3871b375ca6123b1591e74d29ed5001c191be532ac219ce891b",
+    "archive_member_count": 24
+  },
+  "formal_cli": {
+    "path": "ml/evaluation/run_phase_4c2f_evaluator.py",
+    "bytes": 5739,
+    "sha256": "37ed02ff44d8c523150ebb968d2777bba9c2dee8597b3df60efa1fb5bd1e9041",
+    "execute_checkpoint_evaluation_call_count": 0,
+    "torch_import_count": 0,
+    "preflight_checks_present": true,
+    "terminal_stop_message": "Phase 4C.2F scope: Evaluator built and sealed, but locked-test execution is unauthorized.",
+    "returns_success_without_real_evaluation": true
+  },
+  "engine": {
+    "path": "ml/evaluation/locked_test_evaluator.py",
+    "bytes": 47708,
+    "sha256": "b311e010535600781e52014fb6b675d32d78a558c5fe7e67bd3ec00b6989a5e1",
+    "execute_checkpoint_evaluation_interface_present": true,
+    "real_inference_function_implementation_present": false,
+    "real_locked_test_loader_implementation_present": false,
+    "formal_five_checkpoint_orchestration_present": false
+  },
+  "archive_capabilities": {
+    "contains_ml_training_module": false,
+    "contains_ml_dataset_loader": false,
+    "contains_phase_4c2g_execution_driver": false,
+    "contains_only_preflight_evaluator_surface": true
+  },
+  "windows_runtime_contract_gaps": {
+    "sealed_network_check_accepts_current_controller_isolation_verified_receipt": false,
+    "sealed_read_only_mount_check_has_windows_verification_path": false
+  },
+  "blocker": {
+    "code": "BLOCKED_BEFORE_UNSEALING_SEALED_EXECUTION_IMPLEMENTATION_ABSENT",
+    "reason": "The sealed package can validate authorization, environment, checkpoints, and interface contracts, but cannot load locked-test samples, execute model inference, orchestrate five checkpoint evaluations, or produce the preregistered real summary.",
+    "scientific_safety_action": "Do not create or consume a one-session authorization artifact and do not mount or read locked-test until a complete execution driver is implemented, tested without locked-test, cryptographically sealed, and explicitly re-authorized."
+  },
+  "real_counters": {
+    "locked_test_real_accesses": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "cpu_inference_calls": 0,
+    "gpu_inference_calls": 0,
+    "new_training_runs": 0
+  }
+}

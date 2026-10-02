@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.4",
+  "generated_at_utc": "2026-10-02T15:42:01.7574453+00:00",
+  "evidence_seal_semantics": {
+    "starting_commit": "24284f6024c8df00233dd7633e34b7acdbab35fd",
+    "binding_model": "non-circular",
+    "statement": "The listed files bind the measured readiness retry and static pre-unsealing execution-surface audit; this provenance file intentionally excludes its own digest."
+  },
+  "evidence_file_count": 4,
+  "files": [
+    {
+      "path": "research/evidence/phase-4c.2g.0.4/environment.json",
+      "bytes": 1235,
+      "sha256": "8b584b999001796867387d0db8ff45fc956ce9d2f8dc87a000ad189920951dcb"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.4/PHASE_REPORT.md",
+      "bytes": 4292,
+      "sha256": "0307972d6f80d286cef461ece269eb00855f39e6608f78711eb4fdbee8482f5e"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.4/readiness_retry_receipt_binding.json",
+      "bytes": 2219,
+      "sha256": "f480c621694634e20fbbc24fbfac456f4b44c2931d5cb03e94f93f09df20448c"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.4/sealed_execution_surface_audit.json",
+      "bytes": 2773,
+      "sha256": "97353dffd80b0a855773938de55c1c57a692a80084485d8ce261ba5e3b50a223"
+    }
+  ]
+}
