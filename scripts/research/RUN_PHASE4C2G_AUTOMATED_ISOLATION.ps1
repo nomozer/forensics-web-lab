@@ -5,10 +5,12 @@
     Automates temporary passive network isolation on Windows hosts for Phase 4C.2G offline verification.
     Features:
     - Remote session detection and fail-closed safety (blocks execution over RDP, SSH, WinRM, CI).
-    - Elevation check with detached UAC worker dispatch.
-    - Pre-isolation adapter and route snapshot.
-    - One-shot Scheduled Task recovery watchdog (10 minutes) before any adapter modification.
-    - try/finally isolation and exact adapter restoration.
+    - Elevation check with single-UAC detached worker dispatch.
+    - Minimal adapter selection based strictly on ifIndex and route ownership.
+    - Loopback, host-only (VMnet1), and internal virtual switches (WSL, Default Switch) protected by default.
+    - 15-minute Scheduled Task recovery watchdog with syntax verification and query read-back.
+    - Iterative fail-closed isolation with ambiguous route owner detection.
+    - try/finally isolation and exact adapter restoration by ifIndex.
     - Passive offline inspection and invocation of RUN_PHASE4C2G_OFFLINE_VERIFIER.ps1.
     - Zero outbound network probes (no ICMP probes, no DNS lookups, no raw sockets, no HTTP calls).
     - Zero evaluator or locked-test access.
@@ -33,7 +35,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$ControllerVersion = "1.0.0"
+$ControllerVersion = "1.1.0"
 
 # 1. Resolve Paths
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
@@ -83,14 +85,29 @@ function Test-IsAdministrator {
     return $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 }
 
-# 4. Snapshot Adapters and Routes
+# 4. Helper: Determine Adapter Type
+function Get-AdapterType {
+    param([string]$Name, [string]$Desc)
+    if ($Name -match "Loopback" -or $Desc -match "Loopback") { return "Loopback" }
+    if ($Name -match "VMnet1\b" -or $Desc -match "VMnet1\b") { return "Host-Only Virtual Network (VMware)" }
+    if ($Name -match "VMnet\d+" -or $Desc -match "VMnet\d+") { return "Virtual Network (VMware)" }
+    if ($Name -match "WSL" -or $Desc -match "WSL") { return "Internal Virtual Switch (WSL)" }
+    if ($Name -match "Default Switch" -or $Desc -match "Default Switch") { return "Internal Virtual Switch (Hyper-V)" }
+    if ($Name -match "vEthernet" -or $Desc -match "Hyper-V") { return "Virtual Network (Hyper-V)" }
+    if ($Name -match "VPN|Tunnel|WireGuard" -or $Desc -match "VPN|Tunnel|WireGuard|TAP|TUN|Famatech|Radmin") { return "VPN / Tunnel" }
+    if ($Name -match "Wi-Fi|Wireless" -or $Desc -match "Wi-Fi|Wireless|802\.11") { return "Physical Wi-Fi" }
+    if ($Name -match "Bluetooth" -or $Desc -match "Bluetooth") { return "Bluetooth PAN" }
+    if ($Name -match "Ethernet" -or $Desc -match "Ethernet|Gigabit|PCIe") { return "Physical Ethernet" }
+    return "Other Network Interface"
+}
+
+# 5. Snapshot Adapters and Routes (Minimal Selection by ifIndex & Route Ownership)
 function Get-NetworkIsolationSnapshot {
     $snapshotTime = [System.DateTime]::UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.ffffff+00:00")
     $adapterList = @()
-    $egressCandidates = @()
-    $protectedAdapters = @()
-
     $rawAdapters = Get-NetAdapter -ErrorAction SilentlyContinue
+    $adapterMap = @{}
+
     foreach ($a in $rawAdapters) {
         $macSha = ""
         if ($a.MacAddress) {
@@ -98,61 +115,247 @@ function Get-NetworkIsolationSnapshot {
             $shaObj = [System.Security.Cryptography.SHA256]::Create()
             $macSha = -join ($shaObj.ComputeHash($macBytes) | ForEach-Object { "{0:x2}" -f $_ })
         }
-
-        $adapterEntry = [ordered]@{
+        $aType = Get-AdapterType -Name $a.Name -Desc $a.InterfaceDescription
+        $entry = [ordered]@{
             Name                 = $a.Name
             InterfaceIndex       = $a.InterfaceIndex
             InterfaceDescription = $a.InterfaceDescription
+            AdapterType          = $aType
             Status               = $a.Status
             AdminStatus          = $a.AdminStatus
             MacSha256            = $macSha
         }
-        $adapterList += $adapterEntry
-
-        # Selection criteria: only adapters that are currently Up
-        if ($a.Status -eq "Up" -and $a.Name -notmatch "Loopback") {
-            $egressCandidates += $a.Name
-        } else {
-            $protectedAdapters += $a.Name
-        }
+        $adapterList += $entry
+        $adapterMap[$a.InterfaceIndex] = $entry
     }
 
+    # Gather IPv4 default routes
     $ipv4Routes = @()
     try {
         $rawRoutes = Get-NetRoute -DestinationPrefix "0.0.0.0/0" -ErrorAction SilentlyContinue
         foreach ($r in $rawRoutes) {
             $ipv4Routes += [ordered]@{
-                InterfaceAlias  = $r.InterfaceAlias
-                InterfaceIndex  = $r.InterfaceIndex
-                NextHop         = $r.NextHop
-                RouteMetric     = $r.RouteMetric
+                DestinationPrefix = "0.0.0.0/0"
+                InterfaceAlias    = $r.InterfaceAlias
+                InterfaceIndex    = $r.InterfaceIndex
+                NextHop           = $r.NextHop
+                RouteMetric       = $r.RouteMetric
             }
         }
     } catch {}
 
+    # Gather IPv6 default routes
     $ipv6Routes = @()
     try {
         $rawRoutes6 = Get-NetRoute -DestinationPrefix "::/0" -ErrorAction SilentlyContinue
         foreach ($r in $rawRoutes6) {
             $ipv6Routes += [ordered]@{
-                InterfaceAlias  = $r.InterfaceAlias
-                InterfaceIndex  = $r.InterfaceIndex
-                NextHop         = $r.NextHop
+                DestinationPrefix = "::/0"
+                InterfaceAlias    = $r.InterfaceAlias
+                InterfaceIndex    = $r.InterfaceIndex
+                NextHop           = $r.NextHop
+                RouteMetric       = $r.RouteMetric
             }
         }
     } catch {}
 
+    # Map route owners and track unidentified routes
+    $defaultRouteOwners = @{}
+    $unidentifiedRoutes = @()
+
+    foreach ($r in ($ipv4Routes + $ipv6Routes)) {
+        $idx = $r.InterfaceIndex
+        if ($adapterMap.ContainsKey($idx)) {
+            if (-not $defaultRouteOwners.ContainsKey($idx)) {
+                $defaultRouteOwners[$idx] = @()
+            }
+            $defaultRouteOwners[$idx] += $r
+        } else {
+            $unidentifiedRoutes += $r
+        }
+    }
+
+    # Evaluate each adapter strictly by evidenced ownership
+    $evaluatedAdapters = @()
+    $initialDisableTargets = @()
+    $protectedInternalAdapters = @()
+    $protectedDisconnected = @()
+
+    foreach ($a in $adapterList) {
+        $idx = $a.InterfaceIndex
+        $name = $a.Name
+        $type = $a.AdapterType
+        $status = $a.Status
+        $selected = $false
+        $exactReason = ""
+        $protectedReason = ""
+
+        # Condition 1 & 2: Active default route owner
+        if ($defaultRouteOwners.ContainsKey($idx)) {
+            $routes = $defaultRouteOwners[$idx]
+            $routeDescs = $routes | ForEach-Object { "$($_.DestinationPrefix) via $($_.NextHop) metric $($_.RouteMetric)" }
+            $selected = $true
+            $exactReason = "Owns active default route: $($routeDescs -join '; ')"
+        }
+        # Condition 3: Active VPN/tunnel adapter with non-loopback egress route
+        elseif ($status -eq "Up" -and $type -eq "VPN / Tunnel") {
+            $vpnRoutes = @(Get-NetRoute -InterfaceIndex $idx -ErrorAction SilentlyContinue | Where-Object {
+                $_.DestinationPrefix -notmatch "^(127\.|::1|ff00|224\.|255\.)"
+            })
+            if ($vpnRoutes.Count -gt 0) {
+                $selected = $true
+                $exactReason = "Active VPN/tunnel interface owning $(vpnRoutes.Count) non-loopback egress route(s)"
+            } else {
+                $protectedReason = "VPN/tunnel adapter has no active egress route"
+            }
+        }
+
+        # If not selected, classify protection reason
+        if (-not $selected) {
+            if ($status -ne "Up") {
+                $protectedReason = "Disconnected or disabled adapter preserved without modification"
+                $protectedDisconnected += $name
+            } elseif ($type -eq "Loopback") {
+                $protectedReason = "Loopback interface protected from isolation"
+            } elseif ($type -like "*Virtual*" -or $type -like "*Host-Only*" -or $name -like "VMnet*" -or $name -like "*WSL*" -or $name -like "*Default Switch*") {
+                $protectedReason = "Internal/virtual adapter with no default or egress route ownership"
+                $protectedInternalAdapters += $name
+            } else {
+                $protectedReason = "Adapter has no active default or egress route ownership"
+            }
+        }
+
+        $evalEntry = [ordered]@{
+            InterfaceIndex          = $idx
+            Name                    = $name
+            AdapterType             = $type
+            Status                  = $status
+            AdminStatus             = $a.AdminStatus
+            SelectedForDisable      = $selected
+            ExactSelectionReason    = $exactReason
+            ProtectedReason         = $protectedReason
+        }
+        $evaluatedAdapters += $evalEntry
+
+        if ($selected) {
+            $initialDisableTargets += [ordered]@{
+                InterfaceIndex = $idx
+                Name           = $name
+                Reason         = $exactReason
+            }
+        }
+    }
+
+    # Build detailed route-to-adapter table records
+    $routeTableRecords = @()
+    foreach ($a in $evaluatedAdapters) {
+        $idx = $a.InterfaceIndex
+        if ($defaultRouteOwners.ContainsKey($idx)) {
+            foreach ($r in $defaultRouteOwners[$idx]) {
+                $routeTableRecords += [ordered]@{
+                    destination_prefix    = $r.DestinationPrefix
+                    next_hop              = $r.NextHop
+                    route_metric          = $r.RouteMetric
+                    ifIndex               = $idx
+                    adapter_name          = $a.Name
+                    adapter_type          = $a.AdapterType
+                    operational_status    = $a.Status
+                    selected_for_disable  = $a.SelectedForDisable
+                    exact_selection_reason= $a.ExactSelectionReason
+                    protected_reason      = $a.ProtectedReason
+                }
+            }
+        } else {
+            $routeTableRecords += [ordered]@{
+                destination_prefix    = "N/A"
+                next_hop              = "N/A"
+                route_metric          = "N/A"
+                ifIndex               = $idx
+                adapter_name          = $a.Name
+                adapter_type          = $a.AdapterType
+                operational_status    = $a.Status
+                selected_for_disable  = $a.SelectedForDisable
+                exact_selection_reason= $a.ExactSelectionReason
+                protected_reason      = $a.ProtectedReason
+            }
+        }
+    }
+
+    foreach ($ur in $unidentifiedRoutes) {
+        $routeTableRecords += [ordered]@{
+            destination_prefix    = $ur.DestinationPrefix
+            next_hop              = $ur.NextHop
+            route_metric          = $ur.RouteMetric
+            ifIndex               = $ur.InterfaceIndex
+            adapter_name          = "UNIDENTIFIED"
+            adapter_type          = "UNKNOWN"
+            operational_status    = "UNKNOWN"
+            selected_for_disable  = $false
+            exact_selection_reason= ""
+            protected_reason      = "Route owner cannot be identified"
+        }
+    }
+
     return [ordered]@{
-        SnapshotUtc        = $snapshotTime
-        Adapters           = $adapterList
-        EgressAllowlist    = $egressCandidates
-        ProtectedAdapters  = $protectedAdapters
-        IPv4DefaultRoutes  = $ipv4Routes
-        IPv6DefaultRoutes  = $ipv6Routes
+        SnapshotUtc                     = $snapshotTime
+        Adapters                        = $evaluatedAdapters
+        RawAdapters                     = $adapterList
+        IPv4DefaultRoutes               = $ipv4Routes
+        IPv6DefaultRoutes               = $ipv6Routes
+        DefaultRouteOwnerCount          = $defaultRouteOwners.Keys.Count
+        InitialDisableTargets           = $initialDisableTargets
+        InitialDisableTargetCount       = $initialDisableTargets.Count
+        ProtectedInternalAdapterCount   = $protectedInternalAdapters.Count
+        ProtectedDisconnectedCount      = $protectedDisconnected.Count
+        UnidentifiedEgressRoutesCount   = $unidentifiedRoutes.Count
+        UnidentifiedRoutes              = $unidentifiedRoutes
+        RouteTableRecords               = $routeTableRecords
     }
 }
 
-# 5. Passive Network Check
+# 6. Helper: Generate and Validate Recovery Script
+function Update-RecoveryScriptAndValidate {
+    param([System.Collections.Generic.List[PSObject]]$Targets, [string]$Path)
+    $lines = @(
+        "# Emergency Network Recovery Script - Generated by Phase 4C.2G Controller",
+        "# Generated at: " + [System.DateTime]::UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.ffffff+00:00"),
+        "`$targetAdapters = @("
+    )
+    foreach ($t in $Targets) {
+        $lines += "    [PSCustomObject]@{ InterfaceIndex = $($t.InterfaceIndex); Name = `"$($t.Name)`" },"
+    }
+    $lines += @(
+        ")",
+        "Write-Host 'Enabling Phase 4C.2G isolated network adapters...'",
+        "foreach (`$t in `$targetAdapters) {",
+        "    Write-Host `"Enabling adapter by InterfaceIndex `$(`$t.InterfaceIndex) (`$(`$t.Name))`"",
+        "    Enable-NetAdapter -InterfaceIndex `$t.InterfaceIndex -Confirm:`$false -ErrorAction SilentlyContinue",
+        "}",
+        "Write-Host 'Restoration completed.'"
+    )
+    [System.IO.File]::WriteAllLines($Path, $lines, [System.Text.Encoding]::UTF8)
+
+    # Validate syntax via built-in Language Parser
+    $parseTokens = $null
+    $parseErrors = $null
+    [System.Management.Automation.Language.Parser]::ParseFile($Path, [ref]$parseTokens, [ref]$parseErrors)
+    if ($parseErrors.Count -gt 0) {
+        throw "Recovery script syntax validation failed: $($parseErrors[0].Message)"
+    }
+}
+
+# 7. Helper: Verify Scheduled Task Watchdog via Read-Back
+function Test-WatchdogTaskVerified {
+    param([string]$TaskName)
+    try {
+        $queryOut = & schtasks.exe /query /tn $TaskName 2>&1
+        return ($LASTEXITCODE -eq 0)
+    } catch {
+        return $false
+    }
+}
+
+# 8. Passive Network Check
 function Test-PassiveIsolation {
     $proxySet = [bool]($env:HTTP_PROXY -or $env:HTTPS_PROXY -or $env:ALL_PROXY)
     $hasDefaultRoute = $false
@@ -168,23 +371,35 @@ function Test-PassiveIsolation {
         }
     } catch {}
 
-    $upAdapters = @()
+    # Check for connected egress adapters (adapters with default route or physical status)
+    $remainingDefaultRoutes = @()
     try {
-        $upAdapters = @(Get-NetAdapter -ErrorAction SilentlyContinue | Where-Object { $_.Status -eq "Up" } | Select-Object -ExpandProperty Name)
+        $rem4 = Get-NetRoute -DestinationPrefix "0.0.0.0/0" -ErrorAction SilentlyContinue
+        if ($rem4) { $remainingDefaultRoutes += $rem4 }
+        $rem6 = Get-NetRoute -DestinationPrefix "::/0" -ErrorAction SilentlyContinue
+        if ($rem6) { $remainingDefaultRoutes += $rem6 }
     } catch {}
 
+    $connectedEgressAdapters = @()
+    if ($remainingDefaultRoutes.Count -gt 0) {
+        $hasDefaultRoute = $true
+        foreach ($r in $remainingDefaultRoutes) {
+            $connectedEgressAdapters += "$($r.InterfaceAlias) (ifIndex $($r.InterfaceIndex))"
+        }
+    }
+
     return [ordered]@{
-        IsIsolated            = ((-not $proxySet) -and (-not $hasDefaultRoute) -and ($upAdapters.Count -eq 0))
+        IsIsolated            = ((-not $proxySet) -and (-not $hasDefaultRoute) -and ($connectedEgressAdapters.Count -eq 0))
         ProxyDetected         = $proxySet
         DefaultRouteDetected  = $hasDefaultRoute
-        ConnectedAdapters     = $upAdapters
+        ConnectedAdapters     = $connectedEgressAdapters
         OutboundProbesSent    = 0
         DnsLookupsPerformed   = 0
         HttpRequestsSent      = 0
     }
 }
 
-# 6. Atomic Receipt Writer (using Python for exact .part -> fsync -> os.replace)
+# 9. Atomic Receipt Writer (using .part -> Move-Item for atomic replacement)
 function Write-ReceiptAtomic {
     param([string]$Path, [hashtable]$Data)
     $jsonStr = $Data | ConvertTo-Json -Depth 10
@@ -201,7 +416,7 @@ function Write-ReceiptAtomic {
     Move-Item -Path $partPath -Destination $Path -Force
 }
 
-# 7. Compute Script SHA-256
+# 10. Compute Script SHA-256
 $ScriptContent = [System.IO.File]::ReadAllBytes($MyInvocation.MyCommand.Definition)
 $Sha256 = [System.Security.Cryptography.SHA256]::Create()
 $ControllerSha256 = -join ($Sha256.ComputeHash($ScriptContent) | ForEach-Object { "{0:x2}" -f $_ })
@@ -239,16 +454,50 @@ $Snapshot = Get-NetworkIsolationSnapshot
 # MODE A: DRY RUN
 # ------------------------------------------------------------------------------
 if ($DryRun -or (-not $ReadinessTest)) {
-    Write-Host "`n[DRY RUN AUDIT] Network Adapter Inventory:" -ForegroundColor Green
-    foreach ($a in $Snapshot.Adapters) {
-        $flag = if ($Snapshot.EgressAllowlist -contains $a.Name) { "[EGRESS TARGET]" } else { "[PROTECTED]" }
-        Write-Host ("  {0,-16} {1,-32} Status: {2,-12} Admin: {3}" -f $flag, $a.Name, $a.Status, $a.AdminStatus)
+    Write-Host "`n[DRY RUN AUDIT] Route-to-Adapter Evidence Table:" -ForegroundColor Green
+
+    # Output formatted table as required by Section E
+    $tableToDisplay = @()
+    foreach ($row in $Snapshot.RouteTableRecords) {
+        $tableToDisplay += [PSCustomObject]@{
+            "destination_prefix"    = $row.destination_prefix
+            "next_hop"              = $row.next_hop
+            "route_metric"          = $row.route_metric
+            "ifIndex"               = $row.ifIndex
+            "adapter_name"          = $row.adapter_name
+            "adapter_type"          = $row.adapter_type
+            "operational_status"    = $row.operational_status
+            "selected_for_disable"  = $row.selected_for_disable
+            "exact_selection_reason"= $row.exact_selection_reason
+            "protected_reason"      = $row.protected_reason
+        }
+    }
+    $tableToDisplay | Format-Table -Property destination_prefix, next_hop, route_metric, ifIndex, adapter_name, adapter_type, operational_status, selected_for_disable, exact_selection_reason, protected_reason -AutoSize | Out-String -Width 240 | Write-Host
+
+    Write-Host "[DRY RUN METRICS] Summary Counters:" -ForegroundColor Green
+    Write-Host ("  default_route_owner_count          : {0}" -f $Snapshot.DefaultRouteOwnerCount)
+    Write-Host ("  initial_disable_target_count       : {0}" -f $Snapshot.InitialDisableTargetCount)
+    Write-Host ("  protected_internal_adapter_count   : {0}" -f $Snapshot.ProtectedInternalAdapterCount)
+    Write-Host ("  unidentified_egress_routes_count   : {0}" -f $Snapshot.UnidentifiedEgressRoutesCount)
+
+    # Fail closed if unidentified egress route exists
+    if ($Snapshot.UnidentifiedEgressRoutesCount -gt 0) {
+        Write-Host "`n[FAIL-CLOSED] Unidentified egress routes detected without matching adapter!" -ForegroundColor Red
+        Write-Host "Verdict: BLOCKED_UNIDENTIFIED_EGRESS_ROUTES" -ForegroundColor Red
+        exit 1
     }
 
-    Write-Host "`nEgress Adapters to be temporarily disabled : $($Snapshot.EgressAllowlist.Count)"
-    Write-Host "Protected Adapters (never modified)          : $($Snapshot.ProtectedAdapters.Count)"
-    Write-Host "Default IPv4 Routes Detected                : $($Snapshot.IPv4DefaultRoutes.Count)"
-    Write-Host "Default IPv6 Routes Detected                : $($Snapshot.IPv6DefaultRoutes.Count)"
+    # Strict invariant check: internal-only adapters must not be selected without route evidence
+    foreach ($a in $Snapshot.Adapters) {
+        if ($a.SelectedForDisable -and ($a.Name -like "VMnet1*" -or $a.Name -like "*WSL*" -or $a.Name -like "*Default Switch*")) {
+            $hasRoute = ($Snapshot.IPv4DefaultRoutes + $Snapshot.IPv6DefaultRoutes | Where-Object { $_.InterfaceIndex -eq $a.InterfaceIndex })
+            if (-not $hasRoute) {
+                Write-Host "`n[FAIL-CLOSED] Internal adapter $($a.Name) was selected without route evidence!" -ForegroundColor Red
+                Write-Host "Verdict: BLOCKED_INTERNAL_ADAPTER_INCORRECTLY_SELECTED" -ForegroundColor Red
+                exit 1
+            }
+        }
+    }
 
     # Test Watchdog Capability
     $watchdogTest = $false
@@ -258,16 +507,18 @@ if ($DryRun -or (-not $ReadinessTest)) {
     } catch {
         $watchdogTest = $false
     }
-    Write-Host "Scheduled Task Subsystem Available          : $watchdogTest"
-    Write-Host "Recovery Script Destination                  : $RecoverScriptPath"
+    Write-Host ("  scheduled_task_subsystem_available : {0}" -f $watchdogTest)
+    Write-Host ("  recovery_script_destination        : {0}" -f $RecoverScriptPath)
 
     Write-Host "`nDry-Run Verdict: DRY_RUN_INSPECTION_PASS" -ForegroundColor Green
-    Write-Host "Host is ready for elevated automated network isolation readiness testing."
+    Write-Host "Host is verified ready for single-UAC elevated readiness testing." -ForegroundColor Cyan
+    Write-Host "Exact command for elevated execution:" -ForegroundColor White
+    Write-Host ("  powershell.exe -NoProfile -ExecutionPolicy Bypass -File `"{0}`" -ReadinessTest" -f $MyInvocation.MyCommand.Definition) -ForegroundColor Yellow
     exit 0
 }
 
 # ------------------------------------------------------------------------------
-# MODE B: READINESS TEST (TEMPORARY ISOLATION -> VERIFIER -> RESTORATION)
+# MODE B: READINESS TEST (ELEVATED SINGLE-UAC ISOLATION -> VERIFICATION -> RESTORATION)
 # ------------------------------------------------------------------------------
 if ($ReadinessTest) {
     # Check Administrator Elevation
@@ -276,10 +527,8 @@ if ($ReadinessTest) {
         Write-Host "Elevated Administrator privileges are required to temporarily toggle network adapters." -ForegroundColor Yellow
 
         $workerArgs = "-NoProfile -ExecutionPolicy Bypass -File `"$($MyInvocation.MyCommand.Definition)`" -ReadinessTest -ElevatedDetachedWorker -RepoRoot `"$RepoRoot`" -ReceiptPath `"$ReceiptPath`""
-        $spawned = $false
         try {
             Start-Process powershell.exe -Verb RunAs -ArgumentList $workerArgs -ErrorAction Stop
-            $spawned = $true
             Write-Host "Elevated detached worker process launched. Please click 'Yes' on the Windows UAC confirmation dialog." -ForegroundColor Green
         } catch {
             Write-Host "[NOTICE] Background session cannot directly spawn interactive UAC window ($($_.Exception.Message))." -ForegroundColor Yellow
@@ -300,46 +549,38 @@ if ($ReadinessTest) {
 
     Write-Host "`n[READINESS TEST] Operating with confirmed Administrator privileges." -ForegroundColor Green
 
-    $Allowlist = $Snapshot.EgressAllowlist
-    if ($Allowlist.Count -eq 0) {
-        Write-Host "[WARN] No active egress adapters detected. System may already be offline." -ForegroundColor Yellow
+    # Build active disabled allowlist
+    $disabledAllowlist = [System.Collections.Generic.List[PSObject]]::new()
+    foreach ($t in $Snapshot.InitialDisableTargets) {
+        $disabledAllowlist.Add([PSCustomObject]@{
+            InterfaceIndex = $t.InterfaceIndex
+            Name           = $t.Name
+            Reason         = $t.Reason
+        })
     }
 
-    # Step 1: Create Recovery Script
-    Write-Host "Generating emergency recovery script at: $RecoverScriptPath"
-    $recoverLines = @(
-        "# Emergency Network Recovery Script - Generated by Phase 4C.2G Controller",
-        "# Generated at: $CurrentUtc",
-        "`$adapters = @("
-    )
-    foreach ($name in $Allowlist) {
-        $recoverLines += "    `"$name`","
+    if ($disabledAllowlist.Count -eq 0) {
+        Write-Host "[WARN] No active egress route owners detected. System may already be offline." -ForegroundColor Yellow
     }
-    $recoverLines += @(
-        ")",
-        "Write-Host 'Enabling Phase 4C.2G isolated network adapters...'",
-        "foreach (`$a in `$adapters) {",
-        "    Write-Host `"Enabling adapter: `$a`"",
-        "    Enable-NetAdapter -Name `$a -Confirm:`$false -ErrorAction SilentlyContinue",
-        "}",
-        "Write-Host 'Restoration completed.'"
-    )
-    [System.IO.File]::WriteAllLines($RecoverScriptPath, $recoverLines, [System.Text.Encoding]::UTF8)
+
+    # Step 1: Create Recovery Script with syntax check
+    Write-Host "Generating emergency recovery script at: $RecoverScriptPath"
+    Update-RecoveryScriptAndValidate -Targets $disabledAllowlist -Path $RecoverScriptPath
 
     $recoverBytes = [System.IO.File]::ReadAllBytes($RecoverScriptPath)
     $RecoverScriptSha256 = -join ($Sha256.ComputeHash($recoverBytes) | ForEach-Object { "{0:x2}" -f $_ })
 
-    # Step 2: Register Scheduled Task Watchdog (10 minutes in future)
-    $TriggerTime = (Get-Date).AddMinutes(10).ToString("HH:mm")
+    # Step 2: Register Scheduled Task Watchdog (15 minutes in future)
+    $TriggerTime = (Get-Date).AddMinutes(15).ToString("HH:mm")
     $TaskCommand = "powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$RecoverScriptPath`""
-    Write-Host "Registering recovery watchdog scheduled task '$WatchdogTaskName' for $TriggerTime..."
+    Write-Host "Registering recovery watchdog scheduled task '$WatchdogTaskName' for $TriggerTime (15-min timeout)..."
 
     $taskCreated = $false
     try {
         $createOut = & schtasks.exe /create /tn $WatchdogTaskName /tr $TaskCommand /sc once /st $TriggerTime /f /rl HIGHEST 2>&1
         if ($LASTEXITCODE -eq 0) {
             $taskCreated = $true
-            Write-Host "[WATCHDOG READY] Scheduled task created successfully." -ForegroundColor Green
+            Write-Host "[WATCHDOG REGISTERED] Scheduled task created." -ForegroundColor Green
         } else {
             Write-Host "[WATCHDOG ERROR] schtasks returned error: $createOut" -ForegroundColor Red
         }
@@ -353,34 +594,95 @@ if ($ReadinessTest) {
         exit 1
     }
 
+    # Step 3: Strictly verify watchdog via read-back query
+    Write-Host "Verifying watchdog scheduled task via query read-back..."
+    $watchdogVerified = Test-WatchdogTaskVerified -TaskName $WatchdogTaskName
+    if (-not $watchdogVerified) {
+        Write-Host "[BLOCKED] Watchdog task read-back verification failed." -ForegroundColor Red
+        Write-Host "Verdict: BLOCKED_RECOVERY_WATCHDOG_NOT_AVAILABLE" -ForegroundColor Red
+        exit 1
+    }
+    Write-Host "[WATCHDOG VERIFIED] Watchdog task existence confirmed." -ForegroundColor Green
+
     $isolationVerifiedTime = $null
     $verifierReceiptSha = $null
     $testPassed = $false
     $restorationResult = "PENDING"
 
-    # Step 3: Isolation and Verification Execution Block
+    # Step 4: Iterative Isolation and Verification Execution Block
     try {
-        Write-Host "`nDisabling egress adapters ($($Allowlist.Count) target adapters)..." -ForegroundColor Yellow
-        foreach ($name in $Allowlist) {
-            Write-Host "  Disabling: $name"
-            Disable-NetAdapter -Name $name -Confirm:$false -ErrorAction SilentlyContinue
+        Write-Host "`nDisabling initial egress targets ($($disabledAllowlist.Count) adapter(s))..." -ForegroundColor Yellow
+        foreach ($t in $disabledAllowlist) {
+            Write-Host "  Disabling: ifIndex $($t.InterfaceIndex) ($($t.Name))"
+            Disable-NetAdapter -InterfaceIndex $t.InterfaceIndex -Confirm:$false -ErrorAction SilentlyContinue
         }
 
-        Write-Host "Waiting 3 seconds for network state stabilization..."
-        Start-Sleep -Seconds 3
+        # Iterative rescan loop (up to 3 rounds)
+        $maxRounds = 3
+        $currentRound = 1
+        $isolationAchieved = $false
 
-        # Step 4: Passive Isolation Check
-        Write-Host "Performing passive network isolation inspection..."
-        $passive = Test-PassiveIsolation
-        if (-not $passive.IsIsolated) {
-            Write-Host "[ERROR] Passive network check failed: Egress or default route still detected!" -ForegroundColor Red
-            Write-Host "Connected adapters: $($passive.ConnectedAdapters -join ', ')" -ForegroundColor Red
-            Write-Host "Default route detected: $($passive.DefaultRouteDetected)" -ForegroundColor Red
+        while ($currentRound -le $maxRounds) {
+            Write-Host "Waiting 3 seconds for route table stabilization (Round $currentRound)..."
+            Start-Sleep -Seconds 3
+
+            # Check remaining default routes
+            $remainingRoutes = @()
+            try {
+                $rem4 = Get-NetRoute -DestinationPrefix "0.0.0.0/0" -ErrorAction SilentlyContinue
+                if ($rem4) { $remainingRoutes += $rem4 }
+                $rem6 = Get-NetRoute -DestinationPrefix "::/0" -ErrorAction SilentlyContinue
+                if ($rem6) { $remainingRoutes += $rem6 }
+            } catch {}
+
+            if ($remainingRoutes.Count -eq 0) {
+                $passive = Test-PassiveIsolation
+                if ($passive.IsIsolated) {
+                    $isolationAchieved = $true
+                    break
+                }
+            }
+
+            Write-Host "[NOTICE] Egress routes still present after round $currentRound ($($remainingRoutes.Count) route(s))." -ForegroundColor Yellow
+
+            # Identify remaining route owners
+            $newTargetsFound = 0
+            foreach ($r in $remainingRoutes) {
+                $idx = $r.InterfaceIndex
+                $alreadyDisabled = ($disabledAllowlist | Where-Object { $_.InterfaceIndex -eq $idx })
+                if (-not $alreadyDisabled) {
+                    $matchingAdapter = Get-NetAdapter -InterfaceIndex $idx -ErrorAction SilentlyContinue
+                    if ($matchingAdapter) {
+                        Write-Host "  Discovered secondary egress owner: ifIndex $idx ($($matchingAdapter.Name))"
+                        $disabledAllowlist.Add([PSCustomObject]@{
+                            InterfaceIndex = $idx
+                            Name           = $matchingAdapter.Name
+                            Reason         = "Secondary egress route owner discovered in round $currentRound"
+                        })
+                        Update-RecoveryScriptAndValidate -Targets $disabledAllowlist -Path $RecoverScriptPath
+                        Disable-NetAdapter -InterfaceIndex $idx -Confirm:$false -ErrorAction SilentlyContinue
+                        $newTargetsFound++
+                    } else {
+                        Write-Host "[FAIL-CLOSED] Ambiguous route owner: Route prefix $($r.DestinationPrefix) has ifIndex $idx which cannot be mapped to an active adapter." -ForegroundColor Red
+                        throw "BLOCKED_AMBIGUOUS_ROUTE_OWNER"
+                    }
+                }
+            }
+
+            if ($newTargetsFound -eq 0) {
+                Write-Host "[FAIL-CLOSED] Route owner ambiguity or passive check incomplete." -ForegroundColor Red
+                throw "BLOCKED_AMBIGUOUS_ROUTE_OWNER"
+            }
+
+            $currentRound++
+        }
+
+        if (-not $isolationAchieved) {
             throw "BLOCKED_NETWORK_ISOLATION_INCOMPLETE"
         }
 
         $isolationVerifiedTime = [System.DateTime]::UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.ffffff+00:00")
-        Write-Host "[ISOLATION VERIFIED] Zero connected adapters and zero default routes verified passively." -ForegroundColor Green
+        Write-Host "[ISOLATION VERIFIED] Zero connected egress adapters and zero default routes verified passively." -ForegroundColor Green
 
         # Step 5: Invoke Offline Verifier Wrapper
         Write-Host "`nInvoking Offline Verifier Wrapper: $VerifierWrapperPath" -ForegroundColor Cyan
@@ -423,11 +725,11 @@ if ($ReadinessTest) {
         $testPassed = $true
 
     } finally {
-        # Step 7: Restore Network Adapters (Guaranteed Execution)
+        # Step 7: Restore Network Adapters (Guaranteed Execution by ifIndex)
         Write-Host "`n[RESTORATION] Re-enabling disabled network adapters..." -ForegroundColor Yellow
-        foreach ($name in $Allowlist) {
-            Write-Host "  Enabling: $name"
-            Enable-NetAdapter -Name $name -Confirm:$false -ErrorAction SilentlyContinue
+        foreach ($t in $disabledAllowlist) {
+            Write-Host "  Enabling: ifIndex $($t.InterfaceIndex) ($($t.Name))"
+            Enable-NetAdapter -InterfaceIndex $t.InterfaceIndex -Confirm:$false -ErrorAction SilentlyContinue
         }
 
         Write-Host "Waiting 3 seconds for network operational stabilization..."
@@ -435,10 +737,10 @@ if ($ReadinessTest) {
 
         # Verify Restoration
         $stillDisabled = @()
-        foreach ($name in $Allowlist) {
-            $curr = Get-NetAdapter -Name $name -ErrorAction SilentlyContinue
+        foreach ($t in $disabledAllowlist) {
+            $curr = Get-NetAdapter -InterfaceIndex $t.InterfaceIndex -ErrorAction SilentlyContinue
             if ($curr -and $curr.AdminStatus -eq "Disabled") {
-                $stillDisabled += $name
+                $stillDisabled += "$($t.Name) (ifIndex $($t.InterfaceIndex))"
             }
         }
 
@@ -446,7 +748,7 @@ if ($ReadinessTest) {
             Write-Host "[RESTORATION SUCCESS] All isolated adapters successfully re-enabled." -ForegroundColor Green
             $restorationResult = "RESTORED_VERIFIED"
 
-            # Remove Watchdog Scheduled Task
+            # Remove Watchdog Scheduled Task only after verified restoration
             Write-Host "Removing scheduled task watchdog '$WatchdogTaskName'..."
             & schtasks.exe /delete /tn $WatchdogTaskName /f 2>$null | Out-Null
             Write-Host "Watchdog scheduled task removed."
@@ -469,8 +771,8 @@ if ($ReadinessTest) {
     }
 
     $controllerReceipt = [ordered]@{
-        schema_version                    = "1.0.0"
-        phase                             = "Phase 4C.2G.0.3"
+        schema_version                    = "1.1.0"
+        phase                             = "Phase 4C.2G.0.3.1"
         controller_name                   = "automated_windows_network_isolation_controller"
         controller_version                = $ControllerVersion
         controller_sha256                 = $ControllerSha256
@@ -478,7 +780,7 @@ if ($ReadinessTest) {
         isolation_verified_at_utc         = $isolationVerifiedTime
         network_restored_at_utc           = $networkRestoredTime
         pre_isolation_adapter_snapshot    = $Snapshot.Adapters
-        exact_disabled_adapter_allowlist  = $Allowlist
+        exact_disabled_adapter_allowlist  = $disabledAllowlist
         passive_offline_checks            = [ordered]@{
             outbound_probes_sent  = 0
             dns_lookups_performed = 0
@@ -489,6 +791,7 @@ if ($ReadinessTest) {
         watchdog_metadata                 = [ordered]@{
             scheduled_task_name       = $WatchdogTaskName
             trigger_time_utc          = $TriggerTime
+            timeout_minutes           = 15
             recovery_script_path      = $RecoverScriptPath
             recovery_script_sha256    = $RecoverScriptSha256
             watchdog_auto_cleaned     = ($restorationResult -eq "RESTORED_VERIFIED")

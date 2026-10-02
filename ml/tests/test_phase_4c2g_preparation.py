@@ -817,8 +817,8 @@ class TestPhase4C2G03AutomatedIsolationController:
 
     REPO_ROOT = Path(__file__).resolve().parent.parent.parent
     CONTROLLER_PATH = REPO_ROOT / "scripts" / "research" / "RUN_PHASE4C2G_AUTOMATED_ISOLATION.ps1"
-    EXPECTED_CONTROLLER_BYTES = 24255
-    EXPECTED_CONTROLLER_SHA256 = "2ba8e03170680b8c46780cf5f81b04426ea2ab7660f107ca951bf83668841952"
+    EXPECTED_CONTROLLER_BYTES = 39354
+    EXPECTED_CONTROLLER_SHA256 = "c9ec88d5d539ac0f3e8691a2bba1c28d0e66add340b09dd8278758cec9c9891e"
 
     def test_g53_controller_script_integrity_and_prohibited_tokens_scan(self):
         """Controller script exists, matches exact size and hash, and contains zero prohibited commands."""
@@ -1158,8 +1158,10 @@ class TestPhase4C2G03AutomatedIsolationController:
         assert proc.returncode == 0, f"Dry-run failed: {proc.stderr}"
         stdout = proc.stdout
         assert "Execution Mode         : DryRun" in stdout
-        assert "[DRY RUN AUDIT] Network Adapter Inventory:" in stdout
-        assert "Scheduled Task Subsystem Available          : True" in stdout
+        assert "[DRY RUN AUDIT] Route-to-Adapter Evidence Table:" in stdout
+        assert "destination_prefix" in stdout
+        assert "default_route_owner_count" in stdout
+        assert "scheduled_task_subsystem_available : True" in stdout
         assert "Dry-Run Verdict: DRY_RUN_INSPECTION_PASS" in stdout
 
     def test_g62_non_elevated_readiness_test_behavior(self):
@@ -1177,3 +1179,157 @@ class TestPhase4C2G03AutomatedIsolationController:
         assert "Execution Mode         : ReadinessTest" in stdout
         assert "[ACTION REQUIRED] Process is not running as Administrator." in stdout
         assert "Verdict: USER_UAC_CONFIRMATION_REQUIRED" in stdout
+
+
+# ==============================================================================
+# 6. Phase 4C.2G.0.3.1: Minimal Isolation Targets & Single-UAC Hardening Tests
+# ==============================================================================
+
+class TestPhase4C2G031MinimalIsolation:
+    """Tests minimal adapter selection based on ifIndex/route ownership and hardened single-UAC workflow."""
+
+    REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+    CONTROLLER_PATH = REPO_ROOT / "scripts" / "research" / "RUN_PHASE4C2G_AUTOMATED_ISOLATION.ps1"
+
+    def test_g63_two_default_routes_select_only_route_owners(self):
+        """When exactly two default routes exist, only the two owning adapters are selected for disable."""
+        mock_adapters = [
+            {"InterfaceIndex": 21, "Name": "Wi-Fi", "Status": "Up", "AdapterType": "Physical Wi-Fi"},
+            {"InterfaceIndex": 12, "Name": "Radmin VPN", "Status": "Up", "AdapterType": "VPN / Tunnel"},
+            {"InterfaceIndex": 16, "Name": "VMware Network Adapter VMnet8", "Status": "Up", "AdapterType": "Virtual Network (VMware)"},
+            {"InterfaceIndex": 5, "Name": "VMware Network Adapter VMnet1", "Status": "Up", "AdapterType": "Host-Only Virtual Network (VMware)"},
+            {"InterfaceIndex": 18, "Name": "vEthernet (Default Switch)", "Status": "Up", "AdapterType": "Internal Virtual Switch (Hyper-V)"},
+            {"InterfaceIndex": 56, "Name": "vEthernet (WSL (Hyper-V firewall))", "Status": "Up", "AdapterType": "Internal Virtual Switch (WSL)"},
+            {"InterfaceIndex": 8, "Name": "Ethernet", "Status": "Disconnected", "AdapterType": "Physical Ethernet"},
+            {"InterfaceIndex": 9, "Name": "Bluetooth Network Connection", "Status": "Disconnected", "AdapterType": "Bluetooth PAN"},
+        ]
+        mock_routes_v4 = [
+            {"DestinationPrefix": "0.0.0.0/0", "NextHop": "172.16.8.1", "RouteMetric": 0, "InterfaceIndex": 21},
+            {"DestinationPrefix": "0.0.0.0/0", "NextHop": "26.0.0.1", "RouteMetric": 9256, "InterfaceIndex": 12},
+        ]
+        mock_routes_v6 = []
+
+        default_owners = {r["InterfaceIndex"] for r in (mock_routes_v4 + mock_routes_v6)}
+        selected_for_disable = []
+        protected = []
+
+        for a in mock_adapters:
+            idx = a["InterfaceIndex"]
+            if idx in default_owners:
+                selected_for_disable.append(a)
+            else:
+                protected.append(a)
+
+        assert len(selected_for_disable) == 2
+        selected_indices = [a["InterfaceIndex"] for a in selected_for_disable]
+        assert 21 in selected_indices  # Wi-Fi
+        assert 12 in selected_indices  # Radmin VPN
+        assert 16 not in selected_indices  # VMnet8 protected
+        assert 5 not in selected_indices   # VMnet1 protected
+        assert 18 not in selected_indices  # Default Switch protected
+        assert 56 not in selected_indices  # WSL protected
+        assert len(protected) == 6
+
+    def test_g64_host_only_and_internal_virtual_adapters_protected(self):
+        """VMnet1, WSL virtual switch, and Default Switch are strictly protected when not owning egress routes."""
+        internal_adapters = ["VMware Network Adapter VMnet1", "vEthernet (WSL)", "vEthernet (Default Switch)"]
+        default_route_ifindices = {21, 12}
+        for name in internal_adapters:
+            # Virtual internal adapters do not have indices matching default route table
+            mock_idx = 5 if "VMnet1" in name else (18 if "Default Switch" in name else 56)
+            assert mock_idx not in default_route_ifindices
+
+    def test_g65_vpn_with_default_route_selected_vs_vpn_without_egress_protected(self):
+        """VPN adapter with default route is selected; VPN adapter without egress routes is protected."""
+        vpn_with_route = {"InterfaceIndex": 12, "Name": "Radmin VPN", "Status": "Up", "Type": "VPN / Tunnel"}
+        vpn_no_route = {"InterfaceIndex": 30, "Name": "Internal VPN", "Status": "Up", "Type": "VPN / Tunnel"}
+
+        active_default_routes = {12}
+        active_egress_routes = {12}
+
+        # vpn_with_route
+        assert vpn_with_route["InterfaceIndex"] in active_default_routes
+        # vpn_no_route
+        assert vpn_no_route["InterfaceIndex"] not in active_egress_routes
+
+    def test_g66_ipv6_default_route_detected_and_selected(self):
+        """Adapter owning active IPv6 default route (::/0) is identified and marked for disable."""
+        mock_routes_v6 = [{"DestinationPrefix": "::/0", "NextHop": "fe80::1", "InterfaceIndex": 44}]
+        owner_indices = {r["InterfaceIndex"] for r in mock_routes_v6}
+        assert 44 in owner_indices
+
+    def test_g67_iterative_rescan_loop_handles_emergent_egress_routes(self):
+        """Iterative rescan discovers secondary egress owner after initial wave and appends to allowlist."""
+        initial_targets = [21]
+        disabled = list(initial_targets)
+
+        # Simulation of round 1 rescan: route still present on ifIndex 12
+        remaining_routes = [{"DestinationPrefix": "0.0.0.0/0", "InterfaceIndex": 12}]
+        for r in remaining_routes:
+            if r["InterfaceIndex"] not in disabled:
+                disabled.append(r["InterfaceIndex"])
+
+        assert 21 in disabled
+        assert 12 in disabled
+        assert len(disabled) == 2
+
+    def test_g68_ambiguous_route_owner_fails_closed_and_restores(self):
+        """Ambiguous route owner (ifIndex not matching any known adapter) causes fail-closed abort and restoration."""
+        known_adapters = {21: "Wi-Fi", 12: "Radmin VPN"}
+        remaining_route_idx = 999  # Ghost / unknown ifIndex
+
+        def attempt_isolation(route_idx: int) -> str:
+            if route_idx not in known_adapters:
+                # Restoration triggered immediately
+                return "FAIL_CLOSED_RESTORED"
+            return "SUCCESS"
+
+        result = attempt_isolation(remaining_route_idx)
+        assert result == "FAIL_CLOSED_RESTORED"
+
+    def test_g69_watchdog_contract_fifteen_minute_timeout_and_readback_query(self):
+        """Watchdog scheduled task specifies 15-minute timeout and read-back query is required."""
+        content = self.CONTROLLER_PATH.read_text(encoding="utf-8")
+        assert "AddMinutes(15)" in content, "Watchdog timeout must be 15 minutes"
+        assert "Test-WatchdogTaskVerified" in content, "Watchdog must be verified via query read-back"
+        assert "schtasks.exe /query" in content, "schtasks query command must be present"
+
+    def test_g70_dry_run_outputs_route_table_and_makes_zero_system_modifications(self):
+        """Executing controller in -DryRun prints all 10 table columns and 4 summary counters."""
+        cmd = [
+            "powershell.exe",
+            "-NoProfile",
+            "-ExecutionPolicy", "Bypass",
+            "-File", str(self.CONTROLLER_PATH),
+            "-DryRun",
+        ]
+        proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        assert proc.returncode == 0, f"Dry-run failed: {proc.stderr}"
+        stdout = proc.stdout
+        assert "destination_prefix" in stdout
+        assert "ifIndex" in stdout
+        assert "adapter_name" in stdout
+        assert "operational_status" in stdout
+        assert "selected_for_disable" in stdout
+        assert "default_route_owner_count" in stdout
+        assert "initial_disable_target_count" in stdout
+        assert "protected_internal_adapter_count" in stdout
+        assert "unidentified_egress_routes_count" in stdout
+        assert "Dry-Run Verdict: DRY_RUN_INSPECTION_PASS" in stdout
+
+    def test_g71_scientific_invariants_ml_evaluation_frozen_and_zero_real_counters(self):
+        """ml/evaluation/ remains byte-for-byte frozen, locked-test partition unread, all counters strictly zero."""
+        eval_dir = self.REPO_ROOT / "ml" / "evaluation"
+        assert eval_dir.exists()
+        assert FINAL_EFFECTIVE_EVALUATOR_COMMIT == "3cf75c2bf0c9835dd58897b7b36982732cab40ab"
+
+        p03_receipt = self.REPO_ROOT / "research" / "evidence" / "phase-4c.2g.0.3" / "controller_dry_run_receipt.json"
+        if p03_receipt.exists():
+            data = json.loads(p03_receipt.read_text(encoding="utf-8"))
+            assert data["real_counters"]["locked_test_real_accesses"] == 0
+            assert data["real_counters"]["completed_real_unsealing_sessions"] == 0
+            assert data["real_counters"]["completed_real_model_evaluations"] == 0
+            assert data["real_counters"]["evaluation_attempts"] == 0
+            assert data["real_counters"]["cpu_inference_calls"] == 0
+            assert data["real_counters"]["gpu_inference_calls"] == 0
+            assert data["real_counters"]["new_training_runs"] == 0

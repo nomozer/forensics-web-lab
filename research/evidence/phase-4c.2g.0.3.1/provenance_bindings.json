@@ -1,0 +1,55 @@
+{
+  "timestamp_utc": "2026-10-02T02:15:32.620118+00:00",
+  "generated_at_utc": "2026-10-02T02:15:32.620118+00:00",
+  "clock_source": "SYSTEM_UTC_RUNTIME",
+  "timezone_aware": true,
+  "timestamp_future_check": "PASS",
+  "phase": "Phase 4C.2G.0.3.1",
+  "binding_name": "phase_4c2g031_minimal_isolation_provenance_binding",
+  "files": {
+    "run_phase4c2g_automated_isolation_ps1": {
+      "path": "scripts/research/RUN_PHASE4C2G_AUTOMATED_ISOLATION.ps1",
+      "bytes": 39354,
+      "sha256": "c9ec88d5d539ac0f3e8691a2bba1c28d0e66add340b09dd8278758cec9c9891e"
+    },
+    "minimal_adapter_selection_contract_json": {
+      "path": "research/evidence/phase-4c.2g.0.3.1/minimal_adapter_selection_contract.json",
+      "bytes": 1665,
+      "sha256": "fbad1599101c526bbe495cc98fc2331f79bc712b487f80dac1640e8612ae1750"
+    },
+    "route_to_adapter_dry_run_receipt_json": {
+      "path": "research/evidence/phase-4c.2g.0.3.1/route_to_adapter_dry_run_receipt.json",
+      "bytes": 2859,
+      "sha256": "dc1d57c8b2a4abf0036badcae102d25f9beab1fb1aea6f427eb4ed7f4307a40d"
+    },
+    "recovery_watchdog_contract_json": {
+      "path": "research/evidence/phase-4c.2g.0.3.1/recovery_watchdog_contract.json",
+      "bytes": 1465,
+      "sha256": "7e08ef68766817e5ebad665cbf60b0810858768e89a7831169da1a2a174f7baa"
+    },
+    "controller_security_audit_json": {
+      "path": "research/evidence/phase-4c.2g.0.3.1/controller_security_audit.json",
+      "bytes": 2017,
+      "sha256": "7da7b4a41be33216b366f36b88cd4ba0445e6205656d8236c35321a5862f1291"
+    },
+    "environment_json": {
+      "path": "research/evidence/phase-4c.2g.0.3.1/environment.json",
+      "bytes": 1560,
+      "sha256": "d0d9a4328cbbdb65856614d3ddc31126f7c6d386d92db780b5cc532e402c15b6"
+    },
+    "phase_report_md": {
+      "path": "research/evidence/phase-4c.2g.0.3.1/PHASE_REPORT.md",
+      "bytes": 6836,
+      "sha256": "c5daa61285a31e98c7bf43e1ecd634d010b8529236eadc5a5542efbf25429dc3"
+    }
+  },
+  "real_counters": {
+    "locked_test_real_accesses": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "cpu_inference_calls": 0,
+    "gpu_inference_calls": 0,
+    "new_training_runs": 0
+  }
+}

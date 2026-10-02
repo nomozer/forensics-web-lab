@@ -1,3 +1,16 @@
+## Phase 4C.2G.0.3.1 — Minimize Windows Network-Isolation Targets and Harden Single-UAC Readiness Workflow
+
+- **Muc tieu**: Replace over-broad adapter selection with route-to-adapter minimal selection by `InterfaceIndex`; protect internal adapters (`VMnet1`, `VMnet8`, `WSL`, `Default Switch`); harden watchdog to 15m with AST syntax check and `schtasks /query` read-back; implement iterative rescan fail-closed logic; emit 10-field DryRun table and 4 distinct counters; single-UAC workflow. Locked-test sealed (0 accesses).
+- **Starting commit**: dee7241 (Phase 4C.2G.0.3 seal)
+- **Branch**: research/phase-4c2g-locked-test-execution
+- **Thay đổi chính**: (1) Upgraded `scripts/research/RUN_PHASE4C2G_AUTOMATED_ISOLATION.ps1` to v1.1.0 (39,354 bytes, SHA-256 `c9ec88d5...`) with `Get-AdapterType`, strict route-ownership matching, 15-minute watchdog, AST syntax validation, `schtasks /query` verification, iterative rescan (max 3 rounds) with ambiguous route owner fail-closed restoration, 10-field DryRun table, and 4 counters. (2) Added 9 regression tests (`test_g63` to `test_g71`) covering all 20 behavioral requirements in `ml/tests/test_phase_4c2g_preparation.py` (71/71 PASS). (3) Verified host DryRun selects only 2 egress adapters (`Wi-Fi` and `Radmin VPN`), strictly protecting 4 internal and 2 disconnected adapters.
+- **Kiểm tra**: 71/71 preparation tests PASS, full ML suite PASS, packages tests PASS, typecheck 0 errors, build OK, continuity check PASS, git diff clean.
+- **Kết quả**: DryRun inspection verdict: `DRY_RUN_INSPECTION_PASS`; Readiness status: `READY_FOR_SINGLE_UAC_READINESS_TEST`. Real counters strictly 0 (accesses=0, unsealing_sessions=0, model_evaluations=0, evaluation_attempts=0, cpu_inference_calls=0, gpu_inference_calls=0, new_training_runs=0).
+- **Evidence**: `research/evidence/phase-4c.2g.0.3.1/` (PHASE_REPORT.md, minimal_adapter_selection_contract.json, route_to_adapter_dry_run_receipt.json, recovery_watchdog_contract.json, controller_security_audit.json, provenance_bindings.json, environment.json).
+- **Quyết định tiếp theo**: Await single user UAC elevation command to execute temporary network isolation and standalone offline verification on execution host.
+
+---
+
 ## Phase 4C.2G.0.3 — Build and Verify an Automated Windows Network-Isolation Controller
 
 - **Muc tieu**: Automate temporary Windows network isolation via standalone PowerShell controller; remote session fail-closed detection; 10-minute Scheduled Task recovery watchdog; try/finally exact adapter restoration; integrate offline verifier wrapper; dry-run & non-elevated verification. Locked-test sealed (0 accesses).

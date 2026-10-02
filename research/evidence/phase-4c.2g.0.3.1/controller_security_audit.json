@@ -1,0 +1,62 @@
+{
+  "timestamp_utc": "2026-10-02T02:15:32.620118+00:00",
+  "generated_at_utc": "2026-10-02T02:15:32.620118+00:00",
+  "clock_source": "SYSTEM_UTC_RUNTIME",
+  "timezone_aware": true,
+  "timestamp_future_check": "PASS",
+  "phase": "Phase 4C.2G.0.3.1",
+  "audit_name": "automated_isolation_controller_security_audit",
+  "static_scan_prohibited_commands": {
+    "Invoke-WebRequest": "ABSENT",
+    "curl": "ABSENT",
+    "wget": "ABSENT",
+    "ping": "ABSENT",
+    "Test-NetConnection": "ABSENT",
+    "System.Net.Sockets": "ABSENT",
+    "evaluator_cli_invocation": "ABSENT",
+    "mount_commands": "ABSENT",
+    "hardcoded_credentials": "ABSENT"
+  },
+  "architectural_safety_guards": {
+    "minimal_isolation_policy": {
+      "status": "ENFORCED",
+      "primary_key": "InterfaceIndex",
+      "over_broad_selection_eliminated": true
+    },
+    "remote_session_detection": {
+      "policy": "fail_closed",
+      "verdict_on_remote": "BLOCKED_REMOTE_SESSION_NETWORK_ISOLATION_UNSAFE",
+      "prohibited_sessions": [
+        "RDP",
+        "SSH",
+        "WinRM",
+        "CI_runner",
+        "Cloud_automation"
+      ]
+    },
+    "watchdog_precondition": {
+      "timeout_minutes": 15,
+      "readback_query_verified": true,
+      "verdict_on_failure": "BLOCKED_RECOVERY_WATCHDOG_NOT_AVAILABLE"
+    },
+    "iterative_rescan_loop": {
+      "max_rounds": 3,
+      "ambiguous_route_owner_handling": "FAIL_CLOSED_IMMEDIATE_RESTORATION",
+      "verdict_on_ambiguity": "BLOCKED_AMBIGUOUS_ROUTE_OWNER"
+    },
+    "restoration_guarantee": {
+      "mechanism": "try_finally_block",
+      "adapter_key": "InterfaceIndex",
+      "cleanup_timing": "watchdog deleted ONLY after verified restoration"
+    }
+  },
+  "real_counters": {
+    "locked_test_real_accesses": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "cpu_inference_calls": 0,
+    "gpu_inference_calls": 0,
+    "new_training_runs": 0
+  }
+}
