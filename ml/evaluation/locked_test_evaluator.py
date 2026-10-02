@@ -50,6 +50,7 @@ from ml.evaluation.confirmatory_metrics import (
     logits_to_probabilities,
     predict_classes,
 )
+from ml.evaluation.phase_4c2g_io import atomic_write_json
 
 # Canonical Commit Bindings
 BASE_MAIN_COMMIT = "8a379665bc8db3722a46618e47db4806a6ea7244"
@@ -432,12 +433,27 @@ class LockedTestEvaluator:
                 f"evaluator is at effective commit '{expected_effective_commit}'."
             )
 
-        # Evaluator component hashes verification
+        # Evaluator component hashes verification. Phase 4C.2G source bindings
+        # extend the original three components with the real driver, model/data
+        # loaders, atomic I/O, Windows guards, schema, and orchestrator.
         comp_hashes = auth_data.get("evaluator_component_hashes", {})
-        for comp_name in ["confirmatory_metrics", "locked_test_evaluator", "run_evaluator_cli"]:
-            expected_comp_hash = source_binding.get("components", {}).get(comp_name, {}).get("sha256")
+        all_components = source_binding.get("components", {})
+        authorization_component_names = source_binding.get(
+            "authorization_component_names",
+            ["confirmatory_metrics", "locked_test_evaluator", "run_evaluator_cli"],
+        )
+        expected_components = {
+            name: all_components[name] for name in authorization_component_names
+        }
+        if set(comp_hashes) != set(expected_components):
+            raise PermissionError(
+                "Evaluator component key set mismatch: "
+                f"got {sorted(comp_hashes)}, expected {sorted(expected_components)}."
+            )
+        for comp_name, component_metadata in expected_components.items():
+            expected_comp_hash = component_metadata.get("sha256")
             actual_comp_hash = comp_hashes.get(comp_name)
-            if expected_comp_hash and actual_comp_hash != expected_comp_hash:
+            if not expected_comp_hash or actual_comp_hash != expected_comp_hash:
                 raise PermissionError(
                     f"Evaluator component hash mismatch for '{comp_name}': got '{actual_comp_hash}', expected '{expected_comp_hash}'."
                 )
@@ -899,14 +915,8 @@ class LockedTestEvaluator:
                 f"Prediction count mismatch for seed {seed}: got {len(records)}, expected {EXPECTED_LOCKED_TEST_SAMPLES}"
             )
 
-        # Step 5: Write predictions to .part, flush and fsync
-        with open(part_file, "w", encoding="utf-8") as f:
-            json.dump(predictions_payload, f, indent=2)
-            f.flush()
-            os.fsync(f.fileno())
-
-        # Step 6: Atomic rename
-        os.replace(part_file, pred_file)
+        # Step 5 & 6: .part -> flush -> fsync -> atomic replace
+        atomic_write_json(pred_file, predictions_payload)
 
         # Step 7 & 8: Increment completed_model_evaluations and log EVALUATION_COMPLETED
         self.ledger.record_event(
@@ -942,10 +952,7 @@ class LockedTestEvaluator:
             "tip_entry_hash": self.ledger.tip_entry_hash,
             "status": "COMPLETED",
         }
-        with open(receipt_file, "w", encoding="utf-8") as f:
-            json.dump(receipt, f, indent=2)
-            f.flush()
-            os.fsync(f.fileno())
+        atomic_write_json(receipt_file, receipt)
 
         return receipt
 
@@ -1065,10 +1072,7 @@ class LockedTestEvaluator:
         }
 
         summary_file = self.output_dir / "synthetic_dry_run_summary.json"
-        with open(summary_file, "w", encoding="utf-8") as f:
-            json.dump(summary_payload, f, indent=2)
-            f.flush()
-            os.fsync(f.fileno())
+        atomic_write_json(summary_file, summary_payload)
 
         self.ledger.record_event(
             event_type="SESSION_CLOSE",

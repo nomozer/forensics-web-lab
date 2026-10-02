@@ -11,13 +11,13 @@
   "files": [
     {
       "path": "research/evidence/phase-4c.2g.0.4/environment.json",
-      "bytes": 1235,
-      "sha256": "8b584b999001796867387d0db8ff45fc956ce9d2f8dc87a000ad189920951dcb"
+      "bytes": 1298,
+      "sha256": "47099964d673fa15a657635be15f8e9535c8687b4014bbb668e9439494a0255f"
     },
     {
       "path": "research/evidence/phase-4c.2g.0.4/PHASE_REPORT.md",
-      "bytes": 4292,
-      "sha256": "0307972d6f80d286cef461ece269eb00855f39e6608f78711eb4fdbee8482f5e"
+      "bytes": 4294,
+      "sha256": "db97ab10cab178d4314b53371ca44a91600d833739c87ae9b2f5823323acf0a6"
     },
     {
       "path": "research/evidence/phase-4c.2g.0.4/readiness_retry_receipt_binding.json",

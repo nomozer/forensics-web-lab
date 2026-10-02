@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://forensics-web-lab.local/schemas/locked-test-manifest.v1.schema.json",
+  "title": "LockedTestManifestV1",
+  "description": "Exact per-sample integrity manifest consumed only by the authorized Phase 4C.2G confirmatory evaluator.",
+  "type": "object",
+  "required": ["schema_version", "dataset_id", "partition", "samples"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "dataset_id": {"type": "string", "minLength": 1},
+    "partition": {"const": "locked_test"},
+    "samples": {
+      "type": "array",
+      "minItems": 686,
+      "maxItems": 686,
+      "items": {
+        "type": "object",
+        "required": [
+          "sample_id",
+          "unique_source_id",
+          "relative_path",
+          "sha256",
+          "label",
+          "label_id",
+          "partition"
+        ],
+        "properties": {
+          "sample_id": {"type": "string", "minLength": 1},
+          "unique_source_id": {"type": "string", "minLength": 1},
+          "relative_path": {"type": "string", "minLength": 1},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "label": {"enum": ["authentic", "ai_edited"]},
+          "label_id": {"enum": [0, 1]},
+          "partition": {"const": "locked_test"}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -8,7 +8,7 @@
 
 ## 1. Human Direction and Scope
 
-The human user explicitly approved one prospective confirmatory locked-test session under Phase 4C.2E: exactly five Stage 1 N=250 checkpoints, no tuning or retraining, and mandatory publication of favorable or unfavorable results. This phase performed the required post-hotfix readiness retry and audited the sealed execution surface before creating or consuming the one-session authorization artifact.
+No explicit user-authored authorization statement has been received. The assistant previously supplied example authorization wording, which does not constitute human approval. This phase performed the post-hotfix readiness retry and audited the sealed execution surface before creating or consuming any one-session authorization artifact.
 
 No locked-test path was mounted, enumerated, or read. No model was loaded and no inference or training occurred.
 
@@ -44,7 +44,7 @@ These facts are sealed in `sealed_execution_surface_audit.json`.
 
 Creating an ad hoc inference function after approval would introduce an unsealed scientific implementation and invalidate the exact execution-package authorization contract. Opening locked-test under that condition would violate Phase 4C.2E preregistration and the repository's scientific-honesty rules.
 
-Therefore the authorization statement was recorded as received but no `HUMAN_UNSEALING_AUTHORIZATION.json` was created or consumed. The one permitted session remains unused. Locked-test remains sealed with zero accesses.
+Therefore no authorization statement was recorded as received and no `HUMAN_UNSEALING_AUTHORIZATION.json` was created or consumed. Any future one-time session requires a direct user-authored authorization bound to the final sealed package. Locked-test remains sealed with zero accesses.
 
 ## 5. Required Next Action
 

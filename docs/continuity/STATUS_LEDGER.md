@@ -1,11 +1,11 @@
 ## Phase 4C.2G.0.4 — Live Readiness PASS and Fail-Closed Execution-Surface Audit
 
-- **Muc tieu**: Execute one post-hotfix UAC readiness retry after human approval, then audit the exact sealed execution surface before any authorization artifact creation or locked-test access.
+- **Muc tieu**: Execute one post-hotfix UAC readiness retry, then audit the exact sealed execution surface before any authorization artifact creation or locked-test access. No direct user-authored authorization statement was received; prior assistant-supplied wording was only an example and did not constitute approval.
 - **Starting commit**: 24284f6 (Phase 4C.2G.0.3.4 seal)
 - **Branch**: research/phase-4c2g-locked-test-execution
 - **Thay đổi chính**: (1) Live controller v1.4.0 readiness achieved zero active routes/proxy/egress owners, current-session verifier receipt exit 0 and hash binding, operational restoration of Wi-Fi/Radmin, and verified watchdog removal. (2) Audited clean detached package commit 2826a82 and its 24-member archive. (3) Proved formal CLI has zero execute_checkpoint_evaluation calls and zero Torch imports; archive has no model loader, dataset loader, or real Phase 4C.2G driver. (4) Identified incompatible sealed Windows isolation/read-only enforcement. (5) Stopped before authorization artifact creation and locked-test access.
 - **Kiểm tra**: Readiness verdict `AUTOMATED_ISOLATION_READINESS_TEST_PASS_NETWORK_RESTORED`; offline verifier `READY_FOR_HUMAN_AUTHORIZATION_REVIEW`; receipt session binding, restoration, watchdog cleanup, archive SHA/bytes, clean execution worktree, and static CLI/archive capability audit PASS.
-- **Kết quả**: `BLOCKED_BEFORE_UNSEALING_SEALED_EXECUTION_IMPLEMENTATION_ABSENT`. Authorization statement received but artifact not created/consumed; locked-test accesses=0, sessions=0, evaluations=0, inference calls=0, training runs=0.
+- **Kết quả**: `BLOCKED_BEFORE_UNSEALING_SEALED_EXECUTION_IMPLEMENTATION_ABSENT`. Human approval statement received=false; authorization artifact created=false; authorization consumed=false; locked-test accesses=0, sessions=0, evaluations=0, inference calls=0, training runs=0.
 - **Evidence**: `research/evidence/phase-4c.2g.0.4/` (PHASE_REPORT.md, readiness_retry_receipt_binding.json, sealed_execution_surface_audit.json, environment.json, provenance_bindings.json).
 - **Quyết định tiếp theo**: Implement/test/seal a complete Phase 4C.2G.1 real execution driver without locked-test access, repeat readiness, then obtain new exact human authorization bound to the final package.
 

@@ -21,6 +21,7 @@ Strict constraints:
 
 from __future__ import annotations
 
+import hashlib
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 import numpy as np
 from sklearn.metrics import (
@@ -383,6 +384,11 @@ def compute_source_cluster_bootstrap_ci(
             else "INSUFFICIENT_CONFIRMATORY_EVIDENCE"
         )
 
+    bootstrap_distribution_bytes = bootstrap_means.astype("<f8", copy=False).tobytes()
+    bootstrap_distribution_sha256 = hashlib.sha256(
+        bootstrap_distribution_bytes
+    ).hexdigest()
+
     res: Dict[str, Any] = {
         "aggregate_macro_f1": aggregate_macro_f1,
         "per_checkpoint_macro_f1": per_checkpoint_f1,
@@ -395,6 +401,10 @@ def compute_source_cluster_bootstrap_ci(
         "sources_per_replicate": n_unique_sources,
         "ci_lower_95": ci_lower,
         "ci_upper_95": ci_upper,
+        "bootstrap_distribution_sha256_float64_le": bootstrap_distribution_sha256,
+        "bootstrap_distribution_mean": float(np.mean(bootstrap_means)),
+        "bootstrap_distribution_min": float(np.min(bootstrap_means)),
+        "bootstrap_distribution_max": float(np.max(bootstrap_means)),
         "reference_threshold": UNINFORMATIVE_REFERENCE_THRESHOLD,
         "reference_label": UNINFORMATIVE_REFERENCE_LABEL,
         "verdict": verdict,

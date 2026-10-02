@@ -14,10 +14,10 @@
     "effective_evaluator_commit": "3cf75c2bf0c9835dd58897b7b36982732cab40ab"
   },
   "authorization": {
-    "human_approval_statement_received": true,
+    "human_approval_statement_received": false,
     "authorization_artifact_created": false,
     "authorization_consumed": false,
-    "reason_not_created": "Execution surface audit failed before unsealing; exact executable package must be sealed and re-authorized first."
+    "reason_not_created": "No explicit user-authored authorization statement has been received. The assistant previously supplied example authorization wording, which does not constitute human approval."
   },
   "real_counters": {
     "locked_test_real_accesses": 0,
