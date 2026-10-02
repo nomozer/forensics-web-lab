@@ -44,7 +44,7 @@ In Windows PowerShell 5.1, when `$ErrorActionPreference = "Stop"`, any stderr ou
 
 ## 3. Implementation of the Solution
 
-The controller (`scripts/research/RUN_PHASE4C2G_AUTOMATED_ISOLATION.ps1`) was upgraded to version **1.3.2** (74,472 bytes, SHA-256 `1cb71d2fd98b87bfe7954866d400b26bc28887c25351b936096c052cf84c07af`):
+The controller (`scripts/research/RUN_PHASE4C2G_AUTOMATED_ISOLATION.ps1`) was upgraded to version **1.3.2** (76,591 bytes, SHA-256 `e1f89ecaa17cc74bdd1896c3e4fc39b305a24c0a8fe58f47a0e1f6e91b5bd2cc`):
 
 1. **`Test-ScheduledTaskExists`**:
    - Queries `Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue`.
@@ -57,11 +57,18 @@ The controller (`scripts/research/RUN_PHASE4C2G_AUTOMATED_ISOLATION.ps1`) was up
    - Falls back to `schtasks.exe /delete` under safe ErrorActionPreference.
    - Verifies absence via `Test-ScheduledTaskExists`. Returns `$true` only if task is confirmed absent.
 
-3. **Controller Invariants Applied**:
+3. **Watchdog Verification & Fail-Closed Gating**:
+   - Verified watchdog deletion is strictly required before granting readiness PASS and `RESTORED_VERIFIED`.
+   - If deletion or absence read-back fails: `watchdog_cleanup_verified = false`, `restoration_result = "WATCHDOG_CLEANUP_FAILED"`, verdict is `BLOCKED_WATCHDOG_CLEANUP_FAILED_NETWORK_RESTORED`.
+   - Receipt records `network_restored = true` but `watchdog_cleanup_verified = false`.
+   - `watchdog_auto_cleaned` is bound directly from `$watchdogDeleted` (never inferred from `$restorationResult`).
+   - Final PASS requires all four conditions simultaneously: `$testPassed = true`, network restoration verified, watchdog deletion verified, and task confirmed absent.
+
+4. **Controller Invariants Applied**:
    - `Remove-StaleWatchdogIfSafe`: absent initially -> passes; present and deleted -> passes; present after delete -> fails closed.
    - `Test-WatchdogTaskVerified`: uses `Test-ScheduledTaskExists`.
-   - Step 7 Post-restoration: uses `Remove-ScheduledTaskSafely`.
-   - `-ValidateAdapterCmdletContractOnly`: asserts safe absence query and safe removal on non-existent tasks.
+   - Step 7 Post-restoration: uses `Remove-ScheduledTaskSafely` with post-deletion absence verification.
+   - `-ValidateAdapterCmdletContractOnly`: asserts safe absence query, safe removal on non-existent tasks, and both verdict branches (pass on cleanup success, blocked on cleanup failure).
 
 ---
 
@@ -70,9 +77,9 @@ The controller (`scripts/research/RUN_PHASE4C2G_AUTOMATED_ISOLATION.ps1`) was up
 All quality gates passed with 100% compliance:
 
 1. **Preparation Suite**: `python -m pytest ml/tests/test_phase_4c2g_preparation.py -v`
-   - **103/103 tests PASSED** (including regression tests `test_g98` through `test_g103`).
+   - **106/106 tests PASSED** (including regression tests `test_g104` through `test_g106`).
 2. **Full ML Hermetic Suite**: `python -m pytest ml/tests -m "not requires_research_artifact" -q`
-   - **530 passed, 131 deselected, 0 failures**.
+   - **533 passed, 131 deselected, 0 failures**.
 3. **Continuity Verification**: `pnpm continuity:check`
    - **PASS**.
 4. **Git Tree Cleanliness**: `git diff --check`

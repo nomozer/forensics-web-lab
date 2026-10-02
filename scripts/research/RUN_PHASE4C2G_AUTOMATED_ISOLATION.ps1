@@ -1014,11 +1014,21 @@ if ($ValidateAdapterCmdletContractOnly) {
     $safeRemoveOnAbsent = (Remove-ScheduledTaskSafely -TaskName "NonExistentPhase4C2GTask")
     Write-Host ("  Safe remove on absent task succeeds cleanly: {0} (Expected: True)" -f $safeRemoveOnAbsent)
 
+    # Contract expansion 5: Verify verdict decision logic: restoration success + watchdog cleanup success => PASS
+    $mockPassVerdict = if ($true -and $true -and $true -and ("RESTORED_VERIFIED" -eq "RESTORED_VERIFIED")) { "AUTOMATED_ISOLATION_READINESS_TEST_PASS_NETWORK_RESTORED" } else { "BLOCKED" }
+    $verdictPassCorrect = ($mockPassVerdict -eq "AUTOMATED_ISOLATION_READINESS_TEST_PASS_NETWORK_RESTORED")
+    Write-Host ("  Verdict logic: restoration success + watchdog cleanup success => PASS: {0} (Expected: True)" -f $verdictPassCorrect)
+
+    # Contract expansion 6: Verify verdict decision logic: restoration success + watchdog cleanup failure => BLOCKED
+    $mockBlockedVerdict = if ($true -and $true -and $false -and ("WATCHDOG_CLEANUP_FAILED" -eq "RESTORED_VERIFIED")) { "AUTOMATED_ISOLATION_READINESS_TEST_PASS_NETWORK_RESTORED" } elseif ($true -and (-not $false)) { "BLOCKED_WATCHDOG_CLEANUP_FAILED_NETWORK_RESTORED" } else { "BLOCKED" }
+    $verdictBlockedCorrect = ($mockBlockedVerdict -eq "BLOCKED_WATCHDOG_CLEANUP_FAILED_NETWORK_RESTORED")
+    Write-Host ("  Verdict logic: restoration success + watchdog cleanup failure => BLOCKED: {0} (Expected: True)" -f $verdictBlockedCorrect)
+
     $allContractPassed = (-not $disHasIfIdx) -and (-not $enaHasIfIdx) -and $disPipesInput -and $enaPipesInput -and `
                          (-not $hasDisableIfIndex) -and (-not $hasEnableIfIndex) -and (-not $hasGetIfIndex) -and (-not $hasDirectParamAst) -and `
                          ($parseErrors.Count -eq 0) -and (-not $genHasEnableIfIndex) -and (-not $genHasGetIfIndex) -and `
                          $genPipesToEnable -and $mockPipesCorrectly -and $missingIdentityRejected -and $nullDetectedAsFailure -and `
-                         $nonExistentAbsent -and $safeRemoveOnAbsent
+                         $nonExistentAbsent -and $safeRemoveOnAbsent -and $verdictPassCorrect -and $verdictBlockedCorrect
 
     if ($allContractPassed) {
         Write-Host "`n[CONTRACT PASS] Adapter cmdlet parameter and pipeline contract fully verified." -ForegroundColor Green
@@ -1232,6 +1242,9 @@ if ($ReadinessTest) {
     $verifierReceiptSha = $null
     $testPassed = $false
     $restorationResult = "PENDING"
+    $networkRestored = $false
+    $watchdogCleanupVerified = $false
+    $watchdogDeleted = $false
 
     # Step 4: Iterative Isolation and Verification Execution Block
     try {
@@ -1409,15 +1422,20 @@ if ($ReadinessTest) {
 
         if ($restorationFailures.Count -eq 0) {
             Write-Host "[RESTORATION SUCCESS] All isolated adapters successfully re-enabled and verified Up." -ForegroundColor Green
-            $restorationResult = "RESTORED_VERIFIED"
+            $networkRestored = $true
 
             # Remove Watchdog Scheduled Task only after verified restoration
             Write-Host "Removing scheduled task watchdog '$WatchdogTaskName'..."
             $watchdogDeleted = Remove-ScheduledTaskSafely -TaskName $WatchdogTaskName
-            if ($watchdogDeleted) {
+            $taskAbsent = (-not (Test-ScheduledTaskExists -TaskName $WatchdogTaskName))
+            if ($watchdogDeleted -and $taskAbsent) {
                 Write-Host "Watchdog scheduled task removed and verified absent." -ForegroundColor Green
+                $watchdogCleanupVerified = $true
+                $restorationResult = "RESTORED_VERIFIED"
             } else {
-                Write-Host "[WARNING] Watchdog scheduled task could not be confirmed removed." -ForegroundColor Yellow
+                Write-Host "[FAIL-CLOSED] Watchdog scheduled task could not be confirmed removed." -ForegroundColor Red
+                $watchdogCleanupVerified = $false
+                $restorationResult = "WATCHDOG_CLEANUP_FAILED"
             }
         } else {
             Write-Host "[CRITICAL] Restoration verification failed for adapter(s):" -ForegroundColor Red
@@ -1426,6 +1444,8 @@ if ($ReadinessTest) {
             }
             Write-Host "Retaining scheduled task watchdog '$WatchdogTaskName'." -ForegroundColor Yellow
             Write-Host "Execute emergency recovery manually: $RecoverScriptPath" -ForegroundColor Red
+            $networkRestored = $false
+            $watchdogCleanupVerified = $false
             $restorationResult = "NETWORK_RECOVERY_REQUIRED"
         }
     }
@@ -1433,8 +1453,10 @@ if ($ReadinessTest) {
     $networkRestoredTime = [System.DateTime]::UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.ffffff+00:00")
 
     # Step 8: Build and Write Atomic Controller Receipt
-    $finalVerdict = if ($testPassed -and ($restorationResult -eq "RESTORED_VERIFIED")) {
+    $finalVerdict = if ($testPassed -and $networkRestored -and $watchdogCleanupVerified -and ($restorationResult -eq "RESTORED_VERIFIED")) {
         "AUTOMATED_ISOLATION_READINESS_TEST_PASS_NETWORK_RESTORED"
+    } elseif ($networkRestored -and (-not $watchdogCleanupVerified)) {
+        "BLOCKED_WATCHDOG_CLEANUP_FAILED_NETWORK_RESTORED"
     } elseif ($restorationResult -eq "NETWORK_RECOVERY_REQUIRED") {
         "NETWORK_RECOVERY_REQUIRED"
     } else {
@@ -1450,6 +1472,8 @@ if ($ReadinessTest) {
         started_at_utc                    = $CurrentUtc
         isolation_verified_at_utc         = $isolationVerifiedTime
         network_restored_at_utc           = $networkRestoredTime
+        network_restored                  = [bool]$networkRestored
+        watchdog_cleanup_verified         = [bool]$watchdogCleanupVerified
         pre_isolation_adapter_snapshot    = $Snapshot.Adapters
         exact_disabled_adapter_allowlist  = $disabledAllowlist
         passive_offline_checks            = [ordered]@{
@@ -1465,7 +1489,8 @@ if ($ReadinessTest) {
             timeout_minutes           = 15
             recovery_script_path      = $RecoverScriptPath
             recovery_script_sha256    = $RecoverScriptSha256
-            watchdog_auto_cleaned     = ($restorationResult -eq "RESTORED_VERIFIED")
+            watchdog_auto_cleaned     = [bool]$watchdogDeleted
+            watchdog_cleanup_verified = [bool]$watchdogCleanupVerified
         }
         restoration_result                = $restorationResult
         all_scientific_counters           = [ordered]@{

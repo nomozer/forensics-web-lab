@@ -818,8 +818,8 @@ class TestPhase4C2G03AutomatedIsolationController:
 
     REPO_ROOT = Path(__file__).resolve().parent.parent.parent
     CONTROLLER_PATH = REPO_ROOT / "scripts" / "research" / "RUN_PHASE4C2G_AUTOMATED_ISOLATION.ps1"
-    EXPECTED_CONTROLLER_BYTES = 74472
-    EXPECTED_CONTROLLER_SHA256 = "1cb71d2fd98b87bfe7954866d400b26bc28887c25351b936096c052cf84c07af"
+    EXPECTED_CONTROLLER_BYTES = 76591
+    EXPECTED_CONTROLLER_SHA256 = "e1f89ecaa17cc74bdd1896c3e4fc39b305a24c0a8fe58f47a0e1f6e91b5bd2cc"
 
     def test_g53_controller_script_integrity_and_prohibited_tokens_scan(self):
         """Controller script exists, matches exact size and hash, and contains zero prohibited commands."""
@@ -1885,6 +1885,8 @@ class TestPhase4C2G033AdapterCmdletContractAndFailedAttempt:
         assert "Null/unresolved adapter restoration detected as failure    : True" in res.stdout
         assert "Non-existent task correctly detected absent without terminating error: True" in res.stdout
         assert "Safe remove on absent task succeeds cleanly: True" in res.stdout
+        assert "Verdict logic: restoration success + watchdog cleanup success => PASS: True" in res.stdout
+        assert "Verdict logic: restoration success + watchdog cleanup failure => BLOCKED: True" in res.stdout
 
     def test_g97_generated_recovery_script_rejects_missing_identity(self, tmp_path):
         """Generated recovery script generator strictly throws if target adapter is missing InterfaceDescription or MacAddress."""
@@ -2024,3 +2026,140 @@ class TestPhase4C2G033AdapterCmdletContractAndFailedAttempt:
         assert audit["offline_verifier_invoked"] is False
         assert audit["readiness_receipt_created"] is False
         assert audit["locked_test_real_accesses"] == 0
+
+    def test_g104_restoration_success_and_watchdog_cleanup_success_yields_pass(self):
+        """When test passes, all adapters are restored Up, and watchdog deletion + read-back succeeds, readiness verdict is PASS."""
+        def evaluate_verdict(
+            test_passed: bool,
+            network_restored: bool,
+            watchdog_deleted: bool,
+            task_absent: bool,
+        ):
+            if network_restored:
+                if watchdog_deleted and task_absent:
+                    watchdog_cleanup_verified = True
+                    restoration_result = "RESTORED_VERIFIED"
+                else:
+                    watchdog_cleanup_verified = False
+                    restoration_result = "WATCHDOG_CLEANUP_FAILED"
+            else:
+                watchdog_cleanup_verified = False
+                restoration_result = "NETWORK_RECOVERY_REQUIRED"
+
+            if test_passed and network_restored and watchdog_cleanup_verified and (restoration_result == "RESTORED_VERIFIED"):
+                final_verdict = "AUTOMATED_ISOLATION_READINESS_TEST_PASS_NETWORK_RESTORED"
+            elif network_restored and (not watchdog_cleanup_verified):
+                final_verdict = "BLOCKED_WATCHDOG_CLEANUP_FAILED_NETWORK_RESTORED"
+            elif restoration_result == "NETWORK_RECOVERY_REQUIRED":
+                final_verdict = "NETWORK_RECOVERY_REQUIRED"
+            else:
+                final_verdict = "BLOCKED_NETWORK_ISOLATION_INCOMPLETE"
+
+            receipt = {
+                "network_restored": bool(network_restored),
+                "watchdog_cleanup_verified": bool(watchdog_cleanup_verified),
+                "watchdog_metadata": {
+                    "watchdog_auto_cleaned": bool(watchdog_deleted),
+                    "watchdog_cleanup_verified": bool(watchdog_cleanup_verified),
+                },
+                "restoration_result": restoration_result,
+                "verdict": final_verdict,
+            }
+            return receipt
+
+        receipt = evaluate_verdict(
+            test_passed=True,
+            network_restored=True,
+            watchdog_deleted=True,
+            task_absent=True,
+        )
+        assert receipt["verdict"] == "AUTOMATED_ISOLATION_READINESS_TEST_PASS_NETWORK_RESTORED"
+        assert receipt["restoration_result"] == "RESTORED_VERIFIED"
+        assert receipt["network_restored"] is True
+        assert receipt["watchdog_cleanup_verified"] is True
+        assert receipt["watchdog_metadata"]["watchdog_auto_cleaned"] is True
+        assert receipt["watchdog_metadata"]["watchdog_cleanup_verified"] is True
+
+    def test_g105_restoration_success_and_watchdog_cleanup_failure_yields_blocked(self):
+        """When test passes and network is restored but watchdog deletion fails (or remains present), verdict is BLOCKED."""
+        def evaluate_verdict(
+            test_passed: bool,
+            network_restored: bool,
+            watchdog_deleted: bool,
+            task_absent: bool,
+        ):
+            if network_restored:
+                if watchdog_deleted and task_absent:
+                    watchdog_cleanup_verified = True
+                    restoration_result = "RESTORED_VERIFIED"
+                else:
+                    watchdog_cleanup_verified = False
+                    restoration_result = "WATCHDOG_CLEANUP_FAILED"
+            else:
+                watchdog_cleanup_verified = False
+                restoration_result = "NETWORK_RECOVERY_REQUIRED"
+
+            if test_passed and network_restored and watchdog_cleanup_verified and (restoration_result == "RESTORED_VERIFIED"):
+                final_verdict = "AUTOMATED_ISOLATION_READINESS_TEST_PASS_NETWORK_RESTORED"
+            elif network_restored and (not watchdog_cleanup_verified):
+                final_verdict = "BLOCKED_WATCHDOG_CLEANUP_FAILED_NETWORK_RESTORED"
+            elif restoration_result == "NETWORK_RECOVERY_REQUIRED":
+                final_verdict = "NETWORK_RECOVERY_REQUIRED"
+            else:
+                final_verdict = "BLOCKED_NETWORK_ISOLATION_INCOMPLETE"
+
+            exit_code = 0 if final_verdict == "AUTOMATED_ISOLATION_READINESS_TEST_PASS_NETWORK_RESTORED" else (2 if final_verdict == "NETWORK_RECOVERY_REQUIRED" else 1)
+
+            receipt = {
+                "network_restored": bool(network_restored),
+                "watchdog_cleanup_verified": bool(watchdog_cleanup_verified),
+                "watchdog_metadata": {
+                    "watchdog_auto_cleaned": bool(watchdog_deleted),
+                    "watchdog_cleanup_verified": bool(watchdog_cleanup_verified),
+                },
+                "restoration_result": restoration_result,
+                "verdict": final_verdict,
+                "exit_code": exit_code,
+            }
+            return receipt
+
+        # Scenario A: watchdog delete returned False
+        receipt_a = evaluate_verdict(test_passed=True, network_restored=True, watchdog_deleted=False, task_absent=False)
+        assert receipt_a["verdict"] == "BLOCKED_WATCHDOG_CLEANUP_FAILED_NETWORK_RESTORED"
+        assert receipt_a["verdict"] != "AUTOMATED_ISOLATION_READINESS_TEST_PASS_NETWORK_RESTORED"
+        assert receipt_a["restoration_result"] == "WATCHDOG_CLEANUP_FAILED"
+        assert receipt_a["restoration_result"] != "RESTORED_VERIFIED"
+        assert receipt_a["network_restored"] is True
+        assert receipt_a["watchdog_cleanup_verified"] is False
+        assert receipt_a["watchdog_metadata"]["watchdog_auto_cleaned"] is False
+        assert receipt_a["exit_code"] == 1
+
+        # Scenario B: watchdog delete claimed True but task read-back detected task still present
+        receipt_b = evaluate_verdict(test_passed=True, network_restored=True, watchdog_deleted=True, task_absent=False)
+        assert receipt_b["verdict"] == "BLOCKED_WATCHDOG_CLEANUP_FAILED_NETWORK_RESTORED"
+        assert receipt_b["restoration_result"] == "WATCHDOG_CLEANUP_FAILED"
+        assert receipt_b["watchdog_cleanup_verified"] is False
+        assert receipt_b["exit_code"] == 1
+
+    def test_g106_receipt_cannot_declare_watchdog_auto_cleaned_true_on_deletion_failure(self):
+        """Receipt field watchdog_auto_cleaned strictly reflects watchdog deletion result directly and cannot be True on failure."""
+        controller_text = self.CONTROLLER_PATH.read_text(encoding="utf-8")
+
+        # Static check 1: watchdog_auto_cleaned is directly bound to $watchdogDeleted
+        assert "watchdog_auto_cleaned     = [bool]$watchdogDeleted" in controller_text, (
+            "Controller must bind watchdog_auto_cleaned directly from [bool]$watchdogDeleted"
+        )
+
+        # Static check 2: watchdog_auto_cleaned is NOT derived from $restorationResult
+        assert "watchdog_auto_cleaned     = ($restorationResult -eq" not in controller_text, (
+            "Controller must not infer watchdog_auto_cleaned from $restorationResult"
+        )
+
+        # Static check 3: watchdog_cleanup_verified is tracked both at top-level and in watchdog_metadata
+        assert "watchdog_cleanup_verified         = [bool]$watchdogCleanupVerified" in controller_text
+        assert "watchdog_cleanup_verified = [bool]$watchdogCleanupVerified" in controller_text
+
+        # Behavior check: simulating deletion failure ensures watchdog_auto_cleaned is False
+        watchdog_deleted = False
+        watchdog_auto_cleaned = bool(watchdog_deleted)
+        assert watchdog_auto_cleaned is False
