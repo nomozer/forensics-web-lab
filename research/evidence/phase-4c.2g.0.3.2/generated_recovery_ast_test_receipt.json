@@ -1,0 +1,60 @@
+{
+  "timestamp_utc": "2026-10-02T03:08:50.554507+00:00",
+  "generated_at_utc": "2026-10-02T03:08:50.554507+00:00",
+  "clock_source": "SYSTEM_UTC_RUNTIME",
+  "timezone_aware": true,
+  "timestamp_future_check": "PASS",
+  "phase": "Phase 4C.2G.0.3.2",
+  "artifact_name": "generated_recovery_ast_test_receipt",
+  "test_suite": "ml/tests/test_phase_4c2g_preparation.py::TestPhase4C2G032RecoveryScriptSyntaxAndInterruption",
+  "tests_count": 12,
+  "tests_status": "ALL_PASSED",
+  "generator_cli_mode": "-ValidateRecoveryScriptOnly",
+  "ast_validation": {
+    "parser_type": "System.Management.Automation.Language.Parser",
+    "parse_errors_count": 0,
+    "ast_valid": true
+  },
+  "fixture_test_cases": [
+    {
+      "name": "Wi-Fi",
+      "InterfaceIndex": 21,
+      "description": "Standard wireless adapter"
+    },
+    {
+      "name": "Radmin VPN",
+      "InterfaceIndex": 12,
+      "description": "VPN tunnel adapter with space in name"
+    },
+    {
+      "name": "Adapter With Multiple Spaces",
+      "InterfaceIndex": 99,
+      "description": "Complex space escaping"
+    },
+    {
+      "name": "O'Reilly Secure Tunnel",
+      "InterfaceIndex": 88,
+      "description": "Single quote escaping test"
+    }
+  ],
+  "invariants_verified": {
+    "zero_ast_parse_errors": true,
+    "timestamps_strictly_in_literals_or_runtime": true,
+    "strict_allowlist_preservation": true,
+    "zero_disallowed_adapters_in_script": true,
+    "mocked_execution_only_enables_isolated_adapters": true,
+    "zero_outbound_network_requests": true,
+    "syntax_failure_precedes_schtasks_and_disable": true,
+    "stale_invalid_script_quarantined": true,
+    "atomic_staging_via_part_file": true
+  },
+  "real_counters": {
+    "locked_test_real_accesses": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "cpu_inference_calls": 0,
+    "gpu_inference_calls": 0,
+    "new_training_runs": 0
+  }
+}

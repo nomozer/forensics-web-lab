@@ -1,0 +1,40 @@
+{
+  "timestamp_utc": "2026-10-02T03:08:50.554507+00:00",
+  "generated_at_utc": "2026-10-02T03:08:50.554507+00:00",
+  "clock_source": "SYSTEM_UTC_RUNTIME",
+  "timezone_aware": true,
+  "timestamp_future_check": "PASS",
+  "phase": "Phase 4C.2G.0.3.2",
+  "artifact_name": "recovery_script_root_cause",
+  "incident_summary": "The elevated Phase 4C.2G ReadinessTest fail-closed prior to watchdog creation and prior to disabling any network adapters due to a PowerShell AST parser error in the generated RECOVER_NETWORK.ps1.",
+  "verdict": "BLOCKED_RECOVERY_SCRIPT_SYNTAX_INVALID",
+  "canonical_root_cause": {
+    "parser_error_message": "You must provide a value expression following the '-' operator.",
+    "mechanism": "In Update-RecoveryScriptAndValidate, the recovery script generator constructed an array literal @(...) where string concatenation without parentheses was split across two expressions: a comment string on line 2, and an unquoted raw ISO-8601 timestamp string (2026-10-02T...) on line 3. The PowerShell parser interpreted 2026-10-02... as numeric subtraction expressions containing the '-' operator, failing due to missing operands or invalid syntax. Furthermore, trailing commas in array initializers caused 'Missing expression after \",\"' errors.",
+    "user_action_causality": "REJECTED. The termination was NOT caused by the user closing CMD windows. The controller executed fail-closed logic strictly at Step 1 within Update-RecoveryScriptAndValidate prior to watchdog task creation and prior to disabling any network adapter."
+  },
+  "faulty_script_forensic_metadata": {
+    "path": "data/research/local-artifacts/phase-4c.2g/failed_recovery_scripts/RECOVER_NETWORK_20261002_025006_syntax_error.ps1",
+    "size_bytes": 615,
+    "sha256": "0e320236e731a9227d711326cbf5b7c5f9f6ce33caaf4e6f3d8575ab7e006778",
+    "quarantined": true,
+    "committed_to_git": false
+  },
+  "generator_remediation": [
+    "All timestamps in generated recovery script are strictly in comments (#), single-quoted string literals ('...'), or runtime [DateTime]::UtcNow.ToString('o') calls.",
+    "Zero raw/unquoted ISO timestamps.",
+    "Doubled single-quote escaping (' -> '') for adapter names.",
+    "Atomic staging: write to .part, flush and fsync, parse AST with [System.Management.Automation.Language.Parser]::ParseFile.",
+    "Atomic rename to destination only when parseErrors.Count == 0 and allowlist passes.",
+    "Automated quarantine of invalid generated scripts into failed_recovery_scripts/ with failure verdict BLOCKED_RECOVERY_SCRIPT_SYNTAX_INVALID."
+  ],
+  "real_counters": {
+    "locked_test_real_accesses": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "cpu_inference_calls": 0,
+    "gpu_inference_calls": 0,
+    "new_training_runs": 0
+  }
+}

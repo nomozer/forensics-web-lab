@@ -1,3 +1,16 @@
+## Phase 4C.2G.0.3.2 — Fix Generated Recovery Script Syntax and Correct Interruption Evidence
+
+- **Muc tieu**: Fix PowerShell AST syntax failure in generated `RECOVER_NETWORK.ps1` (`'-' operator` error); quarantine faulty 615-byte file; harden generator with atomic `.part` staging, `fileStream.Flush($true)`, AST parse before move, and allowlist validation; correct audit timestamp conversion (`02:54:30Z == 09:54:30 UTC+7`); test production generator fixture; establish readiness retry state. Locked-test sealed (0 accesses).
+- **Starting commit**: 21f86ec (Phase 4C.2G.0.3.1 seal)
+- **Branch**: research/phase-4c2g-locked-test-execution
+- **Thay đổi chính**: (1) Upgraded `scripts/research/RUN_PHASE4C2G_AUTOMATED_ISOLATION.ps1` to v1.2.0 (47,146 bytes, SHA-256 `ba7a3d43...`) with `-ValidateRecoveryScriptOnly`, `.part` staging, AST validation via `[Parser]::ParseFile`, automated quarantine of syntax-invalid scripts, single-quote escaping, and recovery check in `-DryRun`. (2) Quarantined faulty 615-byte script (SHA-256 `0e320236...`) to `failed_recovery_scripts/`. (3) Corrected timezone arithmetic in audit (`02:54:30Z -> 09:54:30 UTC+7`) and prohibited erroneous hour 10 representation. (4) Added 12 regression tests (`test_g72` to `test_g83`) in `ml/tests/test_phase_4c2g_preparation.py` (83/83 PASS).
+- **Kiểm tra**: 83/83 preparation tests PASS, full ML suite PASS, packages tests PASS, typecheck 0 errors, build OK, continuity check PASS, git diff clean.
+- **Kết quả**: Interrupted run verdict: `FAIL_CLOSED_SAFE_PRIOR_TO_ISOLATION` (watchdog=false, adapters_disabled=0); Generator AST verdict: `AST_PARSE_ZERO_ERRORS`; Readiness status: `READY_FOR_SINGLE_UAC_READINESS_RETRY`. Real counters strictly 0 (accesses=0, unsealing_sessions=0, model_evaluations=0, evaluation_attempts=0, cpu_inference_calls=0, gpu_inference_calls=0, new_training_runs=0).
+- **Evidence**: `research/evidence/phase-4c.2g.0.3.2/` (PHASE_REPORT.md, recovery_script_root_cause.json, generated_recovery_ast_test_receipt.json, interrupted_attempt_audit.json, timestamp_correction.json, controller_source_binding.json, provenance_bindings.json, environment.json).
+- **Quyết định tiếp theo**: System ready for single-UAC elevation readiness retry via `LAUNCH_PHASE4C2G_READINESS.cmd` when requested by user.
+
+---
+
 ## Phase 4C.2G.0.3.1 — Minimize Windows Network-Isolation Targets and Harden Single-UAC Readiness Workflow
 
 - **Muc tieu**: Replace over-broad adapter selection with route-to-adapter minimal selection by `InterfaceIndex`; protect internal adapters (`VMnet1`, `VMnet8`, `WSL`, `Default Switch`); harden watchdog to 15m with AST syntax check and `schtasks /query` read-back; implement iterative rescan fail-closed logic; emit 10-field DryRun table and 4 distinct counters; single-UAC workflow. Locked-test sealed (0 accesses).

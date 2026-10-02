@@ -1,0 +1,36 @@
+{
+  "timestamp_utc": "2026-10-02T03:08:50.554507+00:00",
+  "generated_at_utc": "2026-10-02T03:08:50.554507+00:00",
+  "clock_source": "SYSTEM_UTC_RUNTIME",
+  "timezone_aware": true,
+  "timestamp_future_check": "PASS",
+  "phase": "Phase 4C.2G.0.3.2",
+  "environment_type": "HARDENED_RECOVERY_GENERATOR_CONTROLLER",
+  "os": "Windows-11-10.0.26100",
+  "python_version": "3.12.10",
+  "git": {
+    "branch": "research/phase-4c2g-locked-test-execution",
+    "commit": "21f86ec216dfb8ba93440042bc66a4fbb2593c9e",
+    "dirty": true,
+    "effective_evaluator_commit": "3cf75c2bf0c9835dd58897b7b36982732cab40ab",
+    "execution_package_commit": "2826a8274cb89ec548d6fac5c8ae50c1c2836202"
+  },
+  "controller_details": {
+    "controller_path": "scripts/research/RUN_PHASE4C2G_AUTOMATED_ISOLATION.ps1",
+    "controller_sha256": "ba7a3d430f5bec49fdc95155890b9b5df86a3eac5237adf12e7ec7c94411b462",
+    "controller_bytes": 47146,
+    "controller_version": "1.2.0",
+    "dry_run_verdict": "DRY_RUN_INSPECTION_PASS",
+    "recovery_ast_verdict": "AST_PARSE_ZERO_ERRORS",
+    "phase_verdict": "READY_FOR_SINGLE_UAC_READINESS_RETRY"
+  },
+  "real_counters": {
+    "locked_test_real_accesses": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "cpu_inference_calls": 0,
+    "gpu_inference_calls": 0,
+    "new_training_runs": 0
+  }
+}

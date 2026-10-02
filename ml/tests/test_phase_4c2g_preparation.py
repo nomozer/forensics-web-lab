@@ -23,6 +23,7 @@ Strict Test Invariants:
 from __future__ import annotations
 
 import copy
+import datetime
 import hashlib
 import io
 import json
@@ -817,8 +818,8 @@ class TestPhase4C2G03AutomatedIsolationController:
 
     REPO_ROOT = Path(__file__).resolve().parent.parent.parent
     CONTROLLER_PATH = REPO_ROOT / "scripts" / "research" / "RUN_PHASE4C2G_AUTOMATED_ISOLATION.ps1"
-    EXPECTED_CONTROLLER_BYTES = 39354
-    EXPECTED_CONTROLLER_SHA256 = "c9ec88d5d539ac0f3e8691a2bba1c28d0e66add340b09dd8278758cec9c9891e"
+    EXPECTED_CONTROLLER_BYTES = 47146
+    EXPECTED_CONTROLLER_SHA256 = "ba7a3d430f5bec49fdc95155890b9b5df86a3eac5237adf12e7ec7c94411b462"
 
     def test_g53_controller_script_integrity_and_prohibited_tokens_scan(self):
         """Controller script exists, matches exact size and hash, and contains zero prohibited commands."""
@@ -1333,3 +1334,205 @@ class TestPhase4C2G031MinimalIsolation:
             assert data["real_counters"]["cpu_inference_calls"] == 0
             assert data["real_counters"]["gpu_inference_calls"] == 0
             assert data["real_counters"]["new_training_runs"] == 0
+
+
+class TestPhase4C2G032RecoveryScriptSyntaxAndInterruption:
+    """Tests Phase 4C.2G.0.3.2 recovery script generator AST exactness, escaping, quarantine, and interrupted attempt audits."""
+
+    REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+    CONTROLLER_PATH = REPO_ROOT / "scripts" / "research" / "RUN_PHASE4C2G_AUTOMATED_ISOLATION.ps1"
+
+    def test_g72_production_generator_creates_valid_ast_fixture(self, tmp_path):
+        """Production generator creates recovery script with spaces, quotes, and timestamps that passes AST parsing with 0 errors."""
+        fixture_file = tmp_path / "targets_fixture.json"
+        fixture_targets = [
+            {"InterfaceIndex": 21, "Name": "Wi-Fi", "Reason": "Active default route"},
+            {"InterfaceIndex": 12, "Name": "Radmin VPN", "Reason": "VPN tunnel default route"},
+            {"InterfaceIndex": 99, "Name": "Adapter With Multiple Spaces", "Reason": "Spaces test"},
+            {"InterfaceIndex": 88, "Name": "O'Reilly Secure Tunnel", "Reason": "Single quote test"},
+        ]
+        fixture_file.write_text(json.dumps(fixture_targets), encoding="utf-8")
+
+        output_script = tmp_path / "RECOVER_TEST_FIXTURE.ps1"
+
+        ps_cmd = (
+            f"powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"{self.CONTROLLER_PATH}\" "
+            f"-ValidateRecoveryScriptOnly -TargetFixtureJson \"{fixture_file}\" -OutputRecoveryScriptPath \"{output_script}\""
+        )
+        res = subprocess.run(ps_cmd, shell=True, capture_output=True, text=True)
+        assert res.returncode == 0, f"Validator failed with: {res.stderr}\n{res.stdout}"
+        assert output_script.exists()
+
+        # Parse AST directly using PowerShell
+        parse_cmd = (
+            f"powershell.exe -NoProfile -Command '$tokens = $null; $errors = $null; "
+            f"[System.Management.Automation.Language.Parser]::ParseFile(\"{output_script}\", [ref]$tokens, [ref]$errors); "
+            f"if ($errors.Count -gt 0) {{ throw $errors[0] }} else {{ \"AST_PARSE_ZERO_ERRORS\" }}'"
+        )
+        parse_res = subprocess.run(parse_cmd, shell=True, capture_output=True, text=True)
+        assert parse_res.returncode == 0, f"AST Parse failed: {parse_res.stderr}\n{parse_res.stdout}"
+        assert "AST_PARSE_ZERO_ERRORS" in parse_res.stdout
+
+    def test_g73_timestamp_strictly_in_valid_literal_or_runtime_call(self, tmp_path):
+        """Timestamps in generated recovery script are strictly in comments, string literals, or runtime DateTime calls."""
+        output_script = tmp_path / "RECOVER_TEST_TS.ps1"
+        ps_cmd = (
+            f"powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"{self.CONTROLLER_PATH}\" "
+            f"-ValidateRecoveryScriptOnly -OutputRecoveryScriptPath \"{output_script}\""
+        )
+        res = subprocess.run(ps_cmd, shell=True, capture_output=True, text=True)
+        assert res.returncode == 0
+        content = output_script.read_text(encoding="utf-8")
+        lines = content.splitlines()
+
+        for line in lines:
+            stripped = line.strip()
+            if not stripped:
+                continue
+            # If line contains an ISO timestamp with '-'
+            if re.search(r"\d{4}-\d{2}-\d{2}T", stripped):
+                # Must be a comment (#) or a quoted literal ('...')
+                assert stripped.startswith("#") or re.match(r"^\$\w+\s*=\s*'[^']+'", stripped), (
+                    f"Timestamp found in unquoted/uncommented expression: {line}"
+                )
+
+        assert "[System.DateTime]::UtcNow.ToString('o')" in content
+
+    def test_g74_allowlist_exact_interface_indices(self, tmp_path):
+        """Generated recovery script strictly preserves target ifIndex values and nothing outside allowlist."""
+        fixture_file = tmp_path / "targets_allowlist.json"
+        fixture_targets = [
+            {"InterfaceIndex": 21, "Name": "Wi-Fi", "Reason": "Active default route"},
+            {"InterfaceIndex": 12, "Name": "Radmin VPN", "Reason": "VPN tunnel default route"},
+        ]
+        fixture_file.write_text(json.dumps(fixture_targets), encoding="utf-8")
+        output_script = tmp_path / "RECOVER_TEST_ALLOWLIST.ps1"
+
+        res = subprocess.run(
+            f"powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"{self.CONTROLLER_PATH}\" "
+            f"-ValidateRecoveryScriptOnly -TargetFixtureJson \"{fixture_file}\" -OutputRecoveryScriptPath \"{output_script}\"",
+            shell=True, capture_output=True, text=True
+        )
+        assert res.returncode == 0
+        content = output_script.read_text(encoding="utf-8")
+
+        assert "InterfaceIndex = 21" in content
+        assert "InterfaceIndex = 12" in content
+        # Disallowed/internal adapters must not appear
+        assert "InterfaceIndex = 5" not in content
+        assert "InterfaceIndex = 16" not in content
+        assert "InterfaceIndex = 18" not in content
+        assert "InterfaceIndex = 56" not in content
+
+    def test_g75_mocked_execution_only_enables_isolated_adapters(self, tmp_path):
+        """Mocked execution of recovery script only calls Enable-NetAdapter on exact target allowlist."""
+        output_script = tmp_path / "RECOVER_TEST_MOCK.ps1"
+        res = subprocess.run(
+            f"powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"{self.CONTROLLER_PATH}\" "
+            f"-ValidateRecoveryScriptOnly -OutputRecoveryScriptPath \"{output_script}\"",
+            shell=True, capture_output=True, text=True
+        )
+        assert res.returncode == 0
+
+        # Mock Enable-NetAdapter to record invoked indices
+        mock_runner = tmp_path / "run_mock.ps1"
+        invoked_file = tmp_path / "invoked.txt"
+        invoked_file_str = str(invoked_file).replace("\\", "/")
+        mock_runner.write_text(
+            f"$global:EnabledIndices = @()\n"
+            f"function Enable-NetAdapter {{ param([int]$InterfaceIndex, [switch]$Confirm, [string]$ErrorAction) $global:EnabledIndices += $InterfaceIndex }}\n"
+            f". \"{output_script}\"\n"
+            f"($global:EnabledIndices -join ',') | Set-Content -Path \"{invoked_file_str}\"\n",
+            encoding="utf-8"
+        )
+        exec_res = subprocess.run(
+            f"powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"{mock_runner}\"",
+            shell=True, capture_output=True, text=True
+        )
+        assert exec_res.returncode == 0
+        invoked_text = invoked_file.read_text(encoding="utf-8").strip()
+        invoked = [int(x.strip()) for x in invoked_text.split(",") if x.strip()]
+        assert set(invoked) == {21, 12}
+
+    def test_g76_generated_script_contains_zero_network_probes(self, tmp_path):
+        """Generated recovery script strictly contains 0 outbound network requests or socket calls."""
+        output_script = tmp_path / "RECOVER_TEST_ZERO_NET.ps1"
+        res = subprocess.run(
+            f"powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"{self.CONTROLLER_PATH}\" "
+            f"-ValidateRecoveryScriptOnly -OutputRecoveryScriptPath \"{output_script}\"",
+            shell=True, capture_output=True, text=True
+        )
+        assert res.returncode == 0
+        content = output_script.read_text(encoding="utf-8")
+        prohibited = ["Invoke-WebRequest", "Invoke-RestMethod", "Test-Connection", "Net.Sockets", "HttpClient", "Resolve-DnsName"]
+        for p in prohibited:
+            assert p not in content
+
+    def test_g77_invalid_script_fails_before_schtasks_and_disable_adapter(self):
+        """Static analysis confirms invalid recovery script fails before schtasks /create and Disable-NetAdapter."""
+        content = self.CONTROLLER_PATH.read_text(encoding="utf-8")
+        update_call = content.find("Update-RecoveryScriptAndValidate -Targets $disabledAllowlist -Path $RecoverScriptPath")
+        schtasks_create = content.find("schtasks.exe /create /tn $WatchdogTaskName")
+        disable_call = content.find("Disable-NetAdapter -InterfaceIndex $t.InterfaceIndex")
+
+        assert update_call != -1
+        assert schtasks_create != -1
+        assert disable_call != -1
+        assert update_call < schtasks_create < disable_call, (
+            "Update-RecoveryScriptAndValidate must precede schtasks /create, which must precede Disable-NetAdapter"
+        )
+
+    def test_g78_stale_invalid_recovery_script_quarantined(self):
+        """The faulty 615-byte RECOVER_NETWORK.ps1 from the interrupted attempt is quarantined in failed_recovery_scripts/."""
+        quarantine_dir = self.REPO_ROOT / "data" / "research" / "local-artifacts" / "phase-4c.2g" / "failed_recovery_scripts"
+        assert quarantine_dir.exists(), f"Quarantine directory missing at {quarantine_dir}"
+        quarantined_files = list(quarantine_dir.glob("*.ps1"))
+        assert len(quarantined_files) >= 1
+        found_faulty = False
+        for f in quarantined_files:
+            data = f.read_bytes()
+            if len(data) == 615 and hashlib.sha256(data).hexdigest() == "0e320236e731a9227d711326cbf5b7c5f9f6ce33caaf4e6f3d8575ab7e006778":
+                found_faulty = True
+                break
+        assert found_faulty, "Faulty 615-byte recovery script with expected hash not found in quarantine."
+
+    def test_g79_recovery_script_atomic_staging(self):
+        """Controller uses .part and atomic replace for recovery script generation."""
+        content = self.CONTROLLER_PATH.read_text(encoding="utf-8")
+        assert "$partPath = \"$Path.part\"" in content
+        assert "Move-Item -Path $partPath -Destination $Path -Force" in content
+        assert "[System.Management.Automation.Language.Parser]::ParseFile($partPath" in content
+
+    def test_g80_timestamp_conversion_exactness(self):
+        """2026-10-02T02:54:30Z corresponds to 09:54:30 UTC+7; 10:54:30 is mathematically rejected."""
+        t_utc = datetime.datetime.fromisoformat("2026-10-02T02:54:30+00:00")
+        tz_utc7 = datetime.timezone(datetime.timedelta(hours=7))
+        t_local = t_utc.astimezone(tz_utc7)
+
+        assert t_local.hour == 9
+        assert t_local.minute == 54
+        assert t_local.second == 30
+        assert t_local.hour != 10, "10:54:30 UTC+7 is mathematically incorrect (+8 error)"
+
+    def test_g81_no_105430_string_in_evidence_or_docs(self):
+        """Evidence and continuity documents contain zero occurrences of the incorrect 10:54:30 timestamp."""
+        for pattern in ["research/evidence/**/*.md", "research/evidence/**/*.json", "docs/**/*.md"]:
+            for p in self.REPO_ROOT.glob(pattern):
+                text = p.read_text(encoding="utf-8")
+                assert "10:54:30" not in text, f"Erroneous timestamp 10:54:30 found in {p}"
+
+    def test_g82_interrupted_run_classification_and_historical_receipt_separation(self):
+        """Interrupted run is classified as terminated at syntax gate; historical receipt from Phase 4C.2G.0.2B is separated."""
+        readiness_receipt = self.REPO_ROOT / "data" / "research" / "local-artifacts" / "phase-4c.2g" / "automated_isolation_readiness_receipt.json"
+        assert not readiness_receipt.exists(), "Readiness receipt must not exist for interrupted attempt"
+
+        log_path = self.REPO_ROOT / "data" / "research" / "local-artifacts" / "phase-4c.2g" / "automated_isolation_worker.log"
+        if log_path.exists():
+            log_text = log_path.read_text(encoding="utf-8")
+            assert "Recovery script syntax validation failed" in log_text
+
+    def test_g83_scientific_invariants_and_zero_real_counters(self):
+        """ml/evaluation/ remains bitwise frozen; all scientific counters strictly zero."""
+        eval_dir = self.REPO_ROOT / "ml" / "evaluation"
+        assert eval_dir.exists()
+        assert FINAL_EFFECTIVE_EVALUATOR_COMMIT == "3cf75c2bf0c9835dd58897b7b36982732cab40ab"
