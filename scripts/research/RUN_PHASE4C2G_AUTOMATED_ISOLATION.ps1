@@ -47,7 +47,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$ControllerVersion = "1.3.1"
+$ControllerVersion = "1.3.2"
 
 # 1. Resolve Paths
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
@@ -369,15 +369,70 @@ function Resolve-TargetNetAdapter {
     return $adapter
 }
 
-# 6b. Helper: Safe cleanup of stale watchdog task before registering new one
+# 6b. Helper: Query Scheduled Task without terminating on native stderr
+function Test-ScheduledTaskExists {
+    param([string]$TaskName)
+
+    # 1. Try native ScheduledTasks module first
+    if (Get-Command Get-ScheduledTask -ErrorAction SilentlyContinue) {
+        $task = Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue
+        return [bool]$task
+    }
+
+    # 2. Fallback to schtasks.exe with safe ErrorActionPreference handling
+    $origPref = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = "SilentlyContinue"
+        $null = & schtasks.exe /query /tn $TaskName 2>$null
+        return ($LASTEXITCODE -eq 0)
+    } catch {
+        return $false
+    } finally {
+        $ErrorActionPreference = $origPref
+    }
+}
+
+# 6c. Helper: Delete Scheduled Task safely and verify read-back absence
+function Remove-ScheduledTaskSafely {
+    param([string]$TaskName)
+
+    # If task doesn't exist, it is already absent
+    if (-not (Test-ScheduledTaskExists -TaskName $TaskName)) {
+        return $true
+    }
+
+    # 1. Try native Unregister-ScheduledTask cmdlet first
+    if (Get-Command Unregister-ScheduledTask -ErrorAction SilentlyContinue) {
+        try {
+            Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false -ErrorAction SilentlyContinue
+        } catch {}
+    }
+
+    # If still present, fallback to schtasks.exe /delete
+    if (Test-ScheduledTaskExists -TaskName $TaskName) {
+        $origPref = $ErrorActionPreference
+        try {
+            $ErrorActionPreference = "SilentlyContinue"
+            $null = & schtasks.exe /delete /tn $TaskName /f 2>$null
+        } catch {} finally {
+            $ErrorActionPreference = $origPref
+        }
+    }
+
+    # Read-back verification: task must be absent now
+    $stillExists = Test-ScheduledTaskExists -TaskName $TaskName
+    return (-not $stillExists)
+}
+
+# 6d. Helper: Safe cleanup of stale watchdog task before registering new one
 function Remove-StaleWatchdogIfSafe {
     param(
         [string]$TaskName = "Phase4C2G_Emergency_Network_Recovery",
         [System.Collections.Generic.List[PSObject]]$Targets = $null
     )
 
-    & schtasks.exe /query /tn $TaskName 2>$null | Out-Null
-    if ($LASTEXITCODE -ne 0) {
+    $taskExists = Test-ScheduledTaskExists -TaskName $TaskName
+    if (-not $taskExists) {
         Write-Host "No stale watchdog scheduled task '$TaskName' detected."
         return $true
     }
@@ -418,13 +473,10 @@ function Remove-StaleWatchdogIfSafe {
         }
     }
 
-    # All conditions satisfied: Delete the stale task
+    # All conditions satisfied: Delete the stale task using safe deletion helper
     Write-Host "Prerequisites satisfied: all egress adapters verified Up and zero active controller processes. Deleting stale watchdog task..." -ForegroundColor Yellow
-    & schtasks.exe /delete /tn $TaskName /f 2>$null | Out-Null
-
-    # Verify task has disappeared
-    & schtasks.exe /query /tn $TaskName 2>$null | Out-Null
-    if ($LASTEXITCODE -eq 0) {
+    $deleted = Remove-ScheduledTaskSafely -TaskName $TaskName
+    if (-not $deleted) {
         Write-Host "[BLOCKED] Failed to delete stale watchdog scheduled task '$TaskName'. Task still present." -ForegroundColor Red
         throw "BLOCKED_STALE_WATCHDOG_CLEANUP_FAILED"
     }
@@ -620,12 +672,7 @@ function Update-RecoveryScriptAndValidate {
 # 7. Helper: Verify Scheduled Task Watchdog via Read-Back
 function Test-WatchdogTaskVerified {
     param([string]$TaskName)
-    try {
-        $queryOut = & schtasks.exe /query /tn $TaskName 2>&1
-        return ($LASTEXITCODE -eq 0)
-    } catch {
-        return $false
-    }
+    return (Test-ScheduledTaskExists -TaskName $TaskName)
 }
 
 # 8. Passive Network Check
@@ -959,10 +1006,19 @@ if ($ValidateAdapterCmdletContractOnly) {
     $mockPipesCorrectly = ($mockReceived.Count -eq 1 -and [int]$mockReceived[0].ifIndex -eq 21 -and $mockReceived[0].Name -eq "Wi-Fi")
     Write-Host ("  Mock pipeline object binding verified: {0} (Expected: True)" -f $mockPipesCorrectly)
 
+    # Contract expansion 3: Verify Test-ScheduledTaskExists does not throw terminating error on non-existent task
+    $nonExistentAbsent = (-not (Test-ScheduledTaskExists -TaskName "NonExistentPhase4C2GTask"))
+    Write-Host ("  Non-existent task correctly detected absent without terminating error: {0} (Expected: True)" -f $nonExistentAbsent)
+
+    # Contract expansion 4: Verify Remove-ScheduledTaskSafely on absent task succeeds cleanly
+    $safeRemoveOnAbsent = (Remove-ScheduledTaskSafely -TaskName "NonExistentPhase4C2GTask")
+    Write-Host ("  Safe remove on absent task succeeds cleanly: {0} (Expected: True)" -f $safeRemoveOnAbsent)
+
     $allContractPassed = (-not $disHasIfIdx) -and (-not $enaHasIfIdx) -and $disPipesInput -and $enaPipesInput -and `
                          (-not $hasDisableIfIndex) -and (-not $hasEnableIfIndex) -and (-not $hasGetIfIndex) -and (-not $hasDirectParamAst) -and `
                          ($parseErrors.Count -eq 0) -and (-not $genHasEnableIfIndex) -and (-not $genHasGetIfIndex) -and `
-                         $genPipesToEnable -and $mockPipesCorrectly -and $missingIdentityRejected -and $nullDetectedAsFailure
+                         $genPipesToEnable -and $mockPipesCorrectly -and $missingIdentityRejected -and $nullDetectedAsFailure -and `
+                         $nonExistentAbsent -and $safeRemoveOnAbsent
 
     if ($allContractPassed) {
         Write-Host "`n[CONTRACT PASS] Adapter cmdlet parameter and pipeline contract fully verified." -ForegroundColor Green
@@ -1357,8 +1413,12 @@ if ($ReadinessTest) {
 
             # Remove Watchdog Scheduled Task only after verified restoration
             Write-Host "Removing scheduled task watchdog '$WatchdogTaskName'..."
-            & schtasks.exe /delete /tn $WatchdogTaskName /f 2>$null | Out-Null
-            Write-Host "Watchdog scheduled task removed."
+            $watchdogDeleted = Remove-ScheduledTaskSafely -TaskName $WatchdogTaskName
+            if ($watchdogDeleted) {
+                Write-Host "Watchdog scheduled task removed and verified absent." -ForegroundColor Green
+            } else {
+                Write-Host "[WARNING] Watchdog scheduled task could not be confirmed removed." -ForegroundColor Yellow
+            }
         } else {
             Write-Host "[CRITICAL] Restoration verification failed for adapter(s):" -ForegroundColor Red
             foreach ($rf in $restorationFailures) {
