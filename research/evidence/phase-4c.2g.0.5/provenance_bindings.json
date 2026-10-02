@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.5",
+  "generated_at_utc": "2026-10-02T20:35:06.2736784Z",
+  "evidence_seal_semantics": {
+    "effective_execution_commit": "5cf84a33641b7bc7a232fcd602b89671c63bb2ad",
+    "execution_package_commit": "5cf84a33641b7bc7a232fcd602b89671c63bb2ad",
+    "binding_model": "functional_commit_then_non_circular_terminal_evidence_seal",
+    "statement": "The functional execution surface is immutable at the effective commit. This terminal evidence commit adds only tests, schema, evidence, and continuity records; this provenance file intentionally excludes its own digest."
+  },
+  "evidence_file_count": 7,
+  "files": [
+    {
+      "path": "research/evidence/phase-4c.2g.0.5/authorization_provenance_correction.json",
+      "bytes": 1213,
+      "sha256": "b896955d647915b3de6cfe5a191d7dc3de86edcb15cd802f6c2ec185be7835e4"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.5/effective_execution_commit_receipt.json",
+      "bytes": 822,
+      "sha256": "66e48c0a43418c28db5c3d9c67987d52b71b947bf8dd8f9466909738d873448f"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.5/environment.json",
+      "bytes": 1543,
+      "sha256": "eb5b825bf28dae38fbdb554b6cfb670d915fd79b1c9429ffac27186ecac9f3d1"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.5/evaluator_source_binding.json",
+      "bytes": 5286,
+      "sha256": "2334c9ae504787bc314a1323ad3fe8a165375bd747f98c6794528d1269238b41"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.5/PHASE_REPORT.md",
+      "bytes": 5222,
+      "sha256": "8f9e1e6d339065ecf764d5dcc9122b55756d7318460799a8e14d5c1e847de908"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.5/sealed_package_receipt.json",
+      "bytes": 1389,
+      "sha256": "62f2d24eaebdcb10c7273cae38e10d55a9520b0361e7e56151835422bdc1f052"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.5/test_summary.json",
+      "bytes": 1814,
+      "sha256": "b44c64e6bafe2d48bcd0f29c826f883e1634fb12dcfae15688f0445a7db02262"
+    }
+  ],
+  "real_counters": {
+    "locked_test_real_accesses": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "cpu_inference_calls": 0,
+    "gpu_inference_calls": 0,
+    "new_training_runs": 0
+  }
+}

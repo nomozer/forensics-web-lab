@@ -11,6 +11,7 @@ import hashlib
 import subprocess
 import io
 import tarfile
+import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -781,3 +782,134 @@ def test_package_auditor_rejects_links_and_binary_weights(tmp_path: Path) -> Non
         tar.addfile(member, io.BytesIO(payload))
     with pytest.raises(ValueError, match="binary forbidden"):
         audit_package(weights_archive)
+
+
+def test_complete_package_is_deterministic_self_contained_and_data_free(
+    tmp_path: Path,
+) -> None:
+    from scripts.research.build_phase4c2g_execution_package import (
+        PACKAGE_SOURCE_MEMBERS,
+        build_package,
+    )
+
+    effective_commit = "5cf84a33641b7bc7a232fcd602b89671c63bb2ad"
+    source_binding = (
+        REPO_ROOT
+        / "research/evidence/phase-4c.2g.0.5/evaluator_source_binding.json"
+    )
+    first_path = tmp_path / "first.tar.gz"
+    second_path = tmp_path / "second.tar.gz"
+    first = build_package(
+        repo_root=REPO_ROOT,
+        output_path=first_path,
+        effective_execution_commit=effective_commit,
+        execution_package_commit=effective_commit,
+        source_binding_path=source_binding,
+    )
+    second = build_package(
+        repo_root=REPO_ROOT,
+        output_path=second_path,
+        effective_execution_commit=effective_commit,
+        execution_package_commit=effective_commit,
+        source_binding_path=source_binding,
+    )
+    assert first.sha256 == second.sha256
+    assert first.bytes == second.bytes
+    assert set(PACKAGE_SOURCE_MEMBERS) <= set(first.members)
+    assert {"PACKAGE_MANIFEST.json", "runtime_source_binding.json"} <= set(
+        first.members
+    )
+    assert all(
+        not name.lower().endswith(
+            (".pt", ".pth", ".ckpt", ".onnx", ".png", ".jpg", ".webp")
+        )
+        for name in first.members
+    )
+
+    extracted = tmp_path / "extracted"
+    extracted.mkdir()
+    with tarfile.open(first_path, "r:gz") as archive:
+        archive.extractall(extracted, filter="data")
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            (
+                "import ml.evaluation.run_phase_4c2g_confirmatory as d; "
+                "import ml.evaluation.phase_4c2g_dataset; "
+                "import ml.evaluation.phase_4c2g_model; "
+                "assert callable(d.run_five_checkpoint_orchestration)"
+            ),
+        ],
+        cwd=extracted,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+
+
+def test_authorization_v2_locks_effective_commit_and_exact_components(
+    tmp_path: Path,
+) -> None:
+    from ml.evaluation.locked_test_evaluator import LockedTestEvaluator
+
+    schema_path = (
+        REPO_ROOT / "docs/schemas/human-unsealing-authorization.v2.schema.json"
+    )
+    source_binding = (
+        REPO_ROOT
+        / "research/evidence/phase-4c.2g.0.5/evaluator_source_binding.json"
+    )
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    properties = schema["properties"]
+    authorization = {
+        "status": "AUTHORIZED",
+        "authorization_id": "fixture-auth-v2-001",
+        "authorized_by": "Synthetic Test Fixture",
+        "authorized_at_utc": "2026-10-02T20:00:00Z",
+        "candidate_protocol": "stage1_frozen_backbone_linear_probe",
+        "sample_size": 250,
+        "exact_seeds": properties["exact_seeds"]["const"],
+        "checkpoint_sha256s": properties["checkpoint_sha256s"]["const"],
+        "evaluator_effective_commit": properties["evaluator_effective_commit"][
+            "const"
+        ],
+        "evaluator_component_hashes": properties["evaluator_component_hashes"][
+            "const"
+        ],
+        "maximum_unsealing_sessions": 1,
+        "maximum_model_evaluation_attempts": 5,
+        "expiry_policy": {"policy": "single_session_only"},
+        "authorization_purpose": "Synthetic schema validation only; no data access.",
+        "no_tuning_acknowledgment": True,
+        "execution_package_commit": properties["execution_package_commit"]["const"],
+        "execution_package_tree_clean": True,
+        "sealed_package_sha256": "a" * 64,
+        "sealed_package_bytes": 1,
+        "locked_test_manifest_sha256": "b" * 64,
+        "locked_test_manifest_schema_sha256": properties[
+            "locked_test_manifest_schema_sha256"
+        ]["const"],
+        "locked_test_split_seal": properties["locked_test_split_seal"]["const"],
+    }
+    fixture_path = tmp_path / "synthetic_authorization_fixture.json"
+    fixture_path.write_text(json.dumps(authorization), encoding="utf-8")
+
+    verified = LockedTestEvaluator.verify_human_authorization(
+        fixture_path,
+        schema_path=schema_path,
+        source_binding_path=source_binding,
+        current_time_utc=datetime(2026, 10, 2, 20, 1, tzinfo=timezone.utc),
+        bypass_git_checks=True,
+    )
+    assert verified["status"] == "AUTHORIZED"
+    assert (
+        verified["evaluator_effective_commit"]
+        == "5cf84a33641b7bc7a232fcd602b89671c63bb2ad"
+    )
+    assert set(verified["evaluator_component_hashes"]) == set(
+        json.loads(source_binding.read_text(encoding="utf-8"))[
+            "authorization_component_names"
+        ]
+    )

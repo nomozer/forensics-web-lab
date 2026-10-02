@@ -1,0 +1,140 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://forensics-web-lab.local/schemas/human-unsealing-authorization.v2.schema.json",
+  "title": "HumanUnsealingAuthorizationV2",
+  "description": "One-time authorization bound to the complete Phase 4C.2G execution surface and exact final sealed archive.",
+  "type": "object",
+  "required": [
+    "status",
+    "authorization_id",
+    "authorized_by",
+    "authorized_at_utc",
+    "candidate_protocol",
+    "sample_size",
+    "exact_seeds",
+    "checkpoint_sha256s",
+    "evaluator_effective_commit",
+    "evaluator_component_hashes",
+    "maximum_unsealing_sessions",
+    "maximum_model_evaluation_attempts",
+    "expiry_policy",
+    "authorization_purpose",
+    "no_tuning_acknowledgment",
+    "execution_package_commit",
+    "execution_package_tree_clean",
+    "sealed_package_sha256",
+    "sealed_package_bytes",
+    "locked_test_manifest_sha256",
+    "locked_test_manifest_schema_sha256",
+    "locked_test_split_seal"
+  ],
+  "properties": {
+    "status": {"const": "AUTHORIZED"},
+    "authorization_id": {"type": "string", "pattern": "^[a-zA-Z0-9_-]{8,64}$"},
+    "authorized_by": {"type": "string", "minLength": 3},
+    "authorized_at_utc": {"type": "string", "format": "date-time"},
+    "candidate_protocol": {"const": "stage1_frozen_backbone_linear_probe"},
+    "sample_size": {"const": 250},
+    "exact_seeds": {"const": [42, 1337, 2025, 3407, 9001]},
+    "checkpoint_sha256s": {
+      "type": "object",
+      "properties": {
+        "42": {"type": "string"},
+        "1337": {"type": "string"},
+        "2025": {"type": "string"},
+        "3407": {"type": "string"},
+        "9001": {"type": "string"}
+      },
+      "const": {
+        "42": "c941f42ed00adb098962ddb43c0f2f7d897e48e20957cddc0c491243f8730c92",
+        "1337": "69e706f9062f050ccbfd2affb72d63d5dde9d12f02c1e64c762b0ea6719073f1",
+        "2025": "92ce5ee986d487fdf14374842067d0684fc7669f5ecb32c7d603f6813942ceee",
+        "3407": "4897821ef0a97df9f1c51acde8d4ac01d383aa3a7b9e7ee55bbc3b3108847868",
+        "9001": "5f0f8803adcb7eec88d47e398ef8b2002b46e740c263b12abc2ba392822a91c3"
+      },
+      "additionalProperties": false
+    },
+    "evaluator_effective_commit": {
+      "const": "5cf84a33641b7bc7a232fcd602b89671c63bb2ad"
+    },
+    "evaluator_component_hashes": {
+      "type": "object",
+      "properties": {
+        "confirmatory_metrics": {"type": "string"},
+        "locked_test_evaluator": {"type": "string"},
+        "phase_4c2g_dataset": {"type": "string"},
+        "phase_4c2g_io": {"type": "string"},
+        "phase_4c2g_model": {"type": "string"},
+        "phase_4c2g_windows": {"type": "string"},
+        "run_confirmatory_cli": {"type": "string"},
+        "model_architecture": {"type": "string"},
+        "locked_test_manifest_schema": {"type": "string"},
+        "windows_authorized_session_orchestrator": {"type": "string"}
+      },
+      "const": {
+        "confirmatory_metrics": "706d120b0f8f00228d352b7ef300a701f0aefbe32de720c33db00145a4b68c3c",
+        "locked_test_evaluator": "dd4f359c0c41d1caef953a345b7ff09817a9f2a17369781278e27c2fe650d902",
+        "phase_4c2g_dataset": "b7db181e57b402b2756d720b3ca1d8100dae87b10b14dc1826b73139ac46b18d",
+        "phase_4c2g_io": "21a3e3dd9885456077ca658e82b9e35c01cc4c5167014b9bca2d13ee8245466b",
+        "phase_4c2g_model": "0b14080e51888fe26f82dd78265deb0149a0454639d96b9493745e78c65d9404",
+        "phase_4c2g_windows": "e4ab78c5d4479dab0463b0b73f99997331492364d74bf11fd06e06c8fa7b666f",
+        "run_confirmatory_cli": "0729fd9722b81879a1b332ac0f1a19ac8c2f560da5c24ba79772036e0f0922ac",
+        "model_architecture": "6b56162c63f27ebb60470f36b9121c538952650c08c14e3e77f5b1524d08dc55",
+        "locked_test_manifest_schema": "86036e52513bcbf0a9dd62f7b78fe9c87e47144c35275c19cc5c032046bd5646",
+        "windows_authorized_session_orchestrator": "cf595cd2997546ff97ce2bc709c51eccb99b01c996fce07bc2c792e1c1fc9ff8"
+      },
+      "additionalProperties": false
+    },
+    "maximum_unsealing_sessions": {"const": 1},
+    "maximum_model_evaluation_attempts": {"const": 5},
+    "expiry_policy": {
+      "type": "object",
+      "properties": {
+        "policy": {
+          "enum": ["single_session_only", "explicit_expiry_timestamp", "explicit_no_expiry"]
+        },
+        "expires_at_utc": {"type": ["string", "null"]}
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "policy": {"const": "single_session_only"},
+            "expires_at_utc": {"type": "null"}
+          },
+          "required": ["policy"]
+        },
+        {
+          "properties": {
+            "policy": {"const": "explicit_expiry_timestamp"},
+            "expires_at_utc": {"type": "string", "format": "date-time"}
+          },
+          "required": ["policy", "expires_at_utc"]
+        },
+        {
+          "properties": {
+            "policy": {"const": "explicit_no_expiry"},
+            "expires_at_utc": {"type": "null"}
+          },
+          "required": ["policy", "expires_at_utc"]
+        }
+      ],
+      "additionalProperties": false
+    },
+    "authorization_purpose": {"type": "string", "minLength": 10},
+    "no_tuning_acknowledgment": {"const": true},
+    "execution_package_commit": {
+      "const": "5cf84a33641b7bc7a232fcd602b89671c63bb2ad"
+    },
+    "execution_package_tree_clean": {"const": true},
+    "sealed_package_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "sealed_package_bytes": {"type": "integer", "minimum": 1},
+    "locked_test_manifest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "locked_test_manifest_schema_sha256": {
+      "const": "86036e52513bcbf0a9dd62f7b78fe9c87e47144c35275c19cc5c032046bd5646"
+    },
+    "locked_test_split_seal": {
+      "const": "519e7a0e6815e781d1cefa95971e5221ac1f25656837374d8dc4ba41401fded9"
+    }
+  },
+  "additionalProperties": false
+}

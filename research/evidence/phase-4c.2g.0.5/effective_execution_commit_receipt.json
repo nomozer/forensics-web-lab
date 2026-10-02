@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.5",
+  "generated_at_utc": "2026-10-02T20:26:56.7409559Z",
+  "branch": "research/phase-4c2g-locked-test-execution",
+  "base_main_commit": "8a379665bc8db3722a46618e47db4806a6ea7244",
+  "effective_evaluator_commit": "5cf84a33641b7bc7a232fcd602b89671c63bb2ad",
+  "execution_package_commit": "5cf84a33641b7bc7a232fcd602b89671c63bb2ad",
+  "superseded_effective_evaluator_commit": "3cf75c2bf0c9835dd58897b7b36982732cab40ab",
+  "binding_model": "functional_commit_then_non_circular_terminal_evidence_seal",
+  "runtime_surface_changed_after_effective_commit": false,
+  "source_binding": {
+    "path": "research/evidence/phase-4c.2g.0.5/evaluator_source_binding.json",
+    "bytes": 5286,
+    "sha256": "2334c9ae504787bc314a1323ad3fe8a165375bd747f98c6794528d1269238b41"
+  }
+}

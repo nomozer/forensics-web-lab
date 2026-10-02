@@ -1,3 +1,16 @@
+## Phase 4C.2G.0.5 — Correct Authorization Provenance and Complete Sealed Confirmatory Execution Driver
+
+- **Mục tiêu**: Correct false approval provenance and build/test/seal the complete real Phase 4C.2G driver without locked-test access, authorization creation, readiness/UAC, training, or scientific inference.
+- **Starting commit**: 720078e; **effective execution commit**: 5cf84a3; **branch**: research/phase-4c2g-locked-test-execution.
+- **Thay đổi chính**: Corrected Phase 4C.2G.0.4 to no user-authored authorization; implemented exact 343-source/686-sample manifest loader, Stage 1 model/checkpoint loader, canonical five-checkpoint driver, atomic outputs, bootstrap digest, Windows same-session isolation/read-only guards, future authorized-session orchestrator, and deterministic package builder.
+- **Package**: 25 regular members, 44,955 bytes, SHA-256 `243f157302778c7da34a737b1925c8db4f157ad461b2878b415929561189981b`; no credentials, dataset, checkpoints/weights, locked-test artifacts, or authorization artifact.
+- **Kiểm tra**: Phase 4C.2G 16/16 PASS; Phase 4C.2F 45/45 PASS; Phase 4C.2E 30/30 PASS; hermetic ML 566 PASS/131 deselected; workspace 57 PASS plus continuity checker 13 PASS; typecheck/build PASS; terminal continuity/diff gates PASS.
+- **Kết quả**: `READY_FOR_FINAL_PACKAGE_READINESS_TEST`; authorization received/created/consumed=false; every real counter remains 0.
+- **Evidence**: `research/evidence/phase-4c.2g.0.5/`.
+- **Quyết định tiếp theo**: Run only the final package-bound readiness test; a later unsealing still requires fresh direct human authorization bound to the exact sealed archive.
+
+---
+
 ## Phase 4C.2G.0.4 — Live Readiness PASS and Fail-Closed Execution-Surface Audit
 
 - **Muc tieu**: Execute one post-hotfix UAC readiness retry, then audit the exact sealed execution surface before any authorization artifact creation or locked-test access. No direct user-authored authorization statement was received; prior assistant-supplied wording was only an example and did not constitute approval.

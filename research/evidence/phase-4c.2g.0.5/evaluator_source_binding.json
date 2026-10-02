@@ -1,0 +1,61 @@
+{
+  "schema_version": "2.0.0",
+  "timestamp_utc": "2026-10-02T20:19:41.0460272+00:00",
+  "phase": "Phase 4C.2G.0.5",
+  "contract_name": "complete_confirmatory_execution_source_binding",
+  "branch": "research/phase-4c2g-locked-test-execution",
+  "base_main_commit": "8a37966ea6ea55f58b589515f0c10bebae495b3a",
+  "superseded_effective_evaluator_commit": "3cf75c2bf0c9835dd58897b7b36982732cab40ab",
+  "effective_evaluator_commit": "5cf84a33641b7bc7a232fcd602b89671c63bb2ad",
+  "execution_package_commit": "5cf84a33641b7bc7a232fcd602b89671c63bb2ad",
+  "binding_model": "functional_commit_then_non_circular_terminal_evidence_seal",
+  "authorization_schema": {
+    "relative_path": "docs/schemas/human-unsealing-authorization.v2.schema.json",
+    "bytes": 5841,
+    "sha256": "9b9fd1c07e2e2b9311ba93b2d4ae296fa0beaa97393ca22c3c01b198092ddb20"
+  },
+  "authorization_component_names": [
+    "confirmatory_metrics",
+    "locked_test_evaluator",
+    "phase_4c2g_dataset",
+    "phase_4c2g_io",
+    "phase_4c2g_model",
+    "phase_4c2g_windows",
+    "run_confirmatory_cli",
+    "model_architecture",
+    "locked_test_manifest_schema",
+    "windows_authorized_session_orchestrator"
+  ],
+  "components": {
+    "requirements": {"relative_path": "ml/requirements.txt", "bytes": 198, "sha256": "0427133a42b9778f9e609c627e90bb39975e1f53a316b34c1ecd919efc0ad493"},
+    "evaluation_package_init": {"relative_path": "ml/evaluation/__init__.py", "bytes": 345, "sha256": "d4756aab0e302a0b8f1d03330ef70b9309f8b7aab6a920bdadc1a2423928b495"},
+    "calibration_support": {"relative_path": "ml/evaluation/calibration.py", "bytes": 1870, "sha256": "0f7d3f10e60d71d8c872408d93d6ee3841bb49243749bcde786ce232828a4492"},
+    "confirmatory_metrics": {"relative_path": "ml/evaluation/confirmatory_metrics.py", "bytes": 15704, "sha256": "706d120b0f8f00228d352b7ef300a701f0aefbe32de720c33db00145a4b68c3c"},
+    "locked_test_evaluator": {"relative_path": "ml/evaluation/locked_test_evaluator.py", "bytes": 48119, "sha256": "dd4f359c0c41d1caef953a345b7ff09817a9f2a17369781278e27c2fe650d902"},
+    "legacy_metrics_support": {"relative_path": "ml/evaluation/metrics.py", "bytes": 3306, "sha256": "599cb91687013aa0a473d70a4dd8a7d15f8dac9d35ed184613084a2375bf80c2"},
+    "phase_4c2g_dataset": {"relative_path": "ml/evaluation/phase_4c2g_dataset.py", "bytes": 7482, "sha256": "b7db181e57b402b2756d720b3ca1d8100dae87b10b14dc1826b73139ac46b18d"},
+    "phase_4c2g_io": {"relative_path": "ml/evaluation/phase_4c2g_io.py", "bytes": 1116, "sha256": "21a3e3dd9885456077ca658e82b9e35c01cc4c5167014b9bca2d13ee8245466b"},
+    "phase_4c2g_model": {"relative_path": "ml/evaluation/phase_4c2g_model.py", "bytes": 4447, "sha256": "0b14080e51888fe26f82dd78265deb0149a0454639d96b9493745e78c65d9404"},
+    "phase_4c2g_windows": {"relative_path": "ml/evaluation/phase_4c2g_windows.py", "bytes": 5112, "sha256": "e4ab78c5d4479dab0463b0b73f99997331492364d74bf11fd06e06c8fa7b666f"},
+    "run_confirmatory_cli": {"relative_path": "ml/evaluation/run_phase_4c2g_confirmatory.py", "bytes": 20779, "sha256": "0729fd9722b81879a1b332ac0f1a19ac8c2f560da5c24ba79772036e0f0922ac"},
+    "training_package_init": {"relative_path": "ml/training/__init__.py", "bytes": 208, "sha256": "2c5b7c1a8691b84e765372559a35d2afcaa8471504e3939373dc00c160e20d4f"},
+    "loss_support": {"relative_path": "ml/training/loss.py", "bytes": 1666, "sha256": "c50d0ca2e38da2c7efc7cbf1be0606b1e2543688f61b25d348924191119da00b"},
+    "model_architecture": {"relative_path": "ml/training/mobilenetv3_forensics.py", "bytes": 2017, "sha256": "6b56162c63f27ebb60470f36b9121c538952650c08c14e3e77f5b1524d08dc55"},
+    "locked_test_manifest_schema": {"relative_path": "docs/schemas/locked-test-manifest.v1.schema.json", "bytes": 1412, "sha256": "86036e52513bcbf0a9dd62f7b78fe9c87e47144c35275c19cc5c032046bd5646"},
+    "windows_authorized_session_orchestrator": {"relative_path": "scripts/research/RUN_PHASE4C2G_AUTHORIZED_SESSION.ps1", "bytes": 14588, "sha256": "cf595cd2997546ff97ce2bc709c51eccb99b01c996fce07bc2c792e1c1fc9ff8"},
+    "preregistration": {"relative_path": "research/evidence/phase-4c.2e/LOCKED_TEST_PREREGISTRATION.json", "bytes": 2684, "sha256": "3c6bfbec3398c1f9a6f133db862e97410c867a849fbaa6ad3456c4c442eec884"},
+    "checkpoint_binding": {"relative_path": "research/evidence/phase-4c.2e/candidate_checkpoint_binding.json", "bytes": 3599, "sha256": "3800da70a2795f844f053616a9608ff2d1fafcefdb79ecd51fafb8907398ec2a"},
+    "metrics_plan": {"relative_path": "research/evidence/phase-4c.2e/confirmatory_metrics_plan.json", "bytes": 3337, "sha256": "9e0bc779c74e81f8af4d3503abe2827f720e5c8539b3970e160bfd9f28c7dc83"},
+    "unsealing_protocol": {"relative_path": "research/evidence/phase-4c.2e/unsealing_protocol.json", "bytes": 2590, "sha256": "9b8994da7e8a7c42598ab555e00a5e9ad4e8b41458dbc606f020f75fd56e3855"},
+    "source_provenance_split_lock": {"relative_path": "research/evidence/phase-4b.2/split-lock.json", "bytes": 8354, "sha256": "04cbaebd5485470b07d83c9492726fae6c1fafffec4e072f51aff051ca841dc7"}
+  },
+  "real_counters": {
+    "locked_test_real_accesses": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "cpu_inference_calls": 0,
+    "gpu_inference_calls": 0,
+    "new_training_runs": 0
+  }
+}

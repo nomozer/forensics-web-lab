@@ -1,0 +1,64 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.5",
+  "generated_at_utc": "2026-10-02T20:35:06.2736784Z",
+  "python_executable": "ml/.venv/Scripts/python.exe",
+  "gates": [
+    {
+      "command": "python -m pytest ml/tests/test_phase_4c2g_execution.py -v",
+      "result": "PASS",
+      "passed": 16,
+      "failed": 0
+    },
+    {
+      "command": "python -m pytest ml/tests/test_phase_4c2f_evaluator.py -v",
+      "result": "PASS",
+      "passed": 45,
+      "failed": 0
+    },
+    {
+      "command": "python -m pytest ml/tests/test_phase_4c2e_preregistration.py -v",
+      "result": "PASS",
+      "passed": 30,
+      "failed": 0
+    },
+    {
+      "command": "python -m pytest ml/tests -m \"not requires_research_artifact\" -q",
+      "result": "PASS",
+      "passed": 566,
+      "failed": 0,
+      "deselected": 131,
+      "warnings": 3,
+      "environment_note": "The first sandboxed attempt had 555 passes and 11 Git Bash launch failures caused by Windows Access denied. The complete command was rerun outside the sandbox and passed 566/566; no code change was made between those attempts."
+    },
+    {
+      "command": "pnpm test",
+      "result": "PASS",
+      "workspace_tests": 57,
+      "continuity_checker_tests": 13
+    },
+    {
+      "command": "pnpm typecheck",
+      "result": "PASS"
+    },
+    {
+      "command": "pnpm build",
+      "result": "PASS",
+      "warnings": 1,
+      "warning_note": "Existing Vite chunk-size warning; build completed successfully."
+    },
+    {
+      "command": "pnpm continuity:check",
+      "result": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "result": "PASS"
+    }
+  ],
+  "contract_validation_only": {
+    "windows_authorized_session_orchestrator": "PASS",
+    "readiness_or_uac_run": false,
+    "scientific_inference_run": false
+  }
+}
