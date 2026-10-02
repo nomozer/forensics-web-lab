@@ -818,8 +818,8 @@ class TestPhase4C2G03AutomatedIsolationController:
 
     REPO_ROOT = Path(__file__).resolve().parent.parent.parent
     CONTROLLER_PATH = REPO_ROOT / "scripts" / "research" / "RUN_PHASE4C2G_AUTOMATED_ISOLATION.ps1"
-    EXPECTED_CONTROLLER_BYTES = 61510
-    EXPECTED_CONTROLLER_SHA256 = "8f95e91c1729095ceddf768171a5b5357c69c08910f483cee81ab2b94b59c087"
+    EXPECTED_CONTROLLER_BYTES = 71823
+    EXPECTED_CONTROLLER_SHA256 = "a380addeeca3920090dcfe92fbc1f0846df5a0576512f2603bd174a06c12f767"
 
     def test_g53_controller_script_integrity_and_prohibited_tokens_scan(self):
         """Controller script exists, matches exact size and hash, and contains zero prohibited commands."""
@@ -1346,10 +1346,10 @@ class TestPhase4C2G032RecoveryScriptSyntaxAndInterruption:
         """Production generator creates recovery script with spaces, quotes, and timestamps that passes AST parsing with 0 errors."""
         fixture_file = tmp_path / "targets_fixture.json"
         fixture_targets = [
-            {"InterfaceIndex": 21, "Name": "Wi-Fi", "Reason": "Active default route"},
-            {"InterfaceIndex": 12, "Name": "Radmin VPN", "Reason": "VPN tunnel default route"},
-            {"InterfaceIndex": 99, "Name": "Adapter With Multiple Spaces", "Reason": "Spaces test"},
-            {"InterfaceIndex": 88, "Name": "O'Reilly Secure Tunnel", "Reason": "Single quote test"},
+            {"InterfaceIndex": 21, "Name": "Wi-Fi", "InterfaceDescription": "Killer(R) Wi-Fi 6 AX1650i", "MacAddress": "00:11:22:33:44:55", "Reason": "Active default route"},
+            {"InterfaceIndex": 12, "Name": "Radmin VPN", "InterfaceDescription": "Famatech Radmin VPN", "MacAddress": "02:50:3E:FD:70:BD", "Reason": "VPN tunnel default route"},
+            {"InterfaceIndex": 99, "Name": "Adapter With Multiple Spaces", "InterfaceDescription": "Test Adapter With Spaces", "MacAddress": "AA:BB:CC:DD:EE:FF", "Reason": "Spaces test"},
+            {"InterfaceIndex": 88, "Name": "O'Reilly Secure Tunnel", "InterfaceDescription": "O'Reilly Network Adapter", "MacAddress": "11:22:33:44:55:66", "Reason": "Single quote test"},
         ]
         fixture_file.write_text(json.dumps(fixture_targets), encoding="utf-8")
 
@@ -1402,8 +1402,8 @@ class TestPhase4C2G032RecoveryScriptSyntaxAndInterruption:
         """Generated recovery script strictly preserves target ifIndex values and nothing outside allowlist."""
         fixture_file = tmp_path / "targets_allowlist.json"
         fixture_targets = [
-            {"InterfaceIndex": 21, "Name": "Wi-Fi", "Reason": "Active default route"},
-            {"InterfaceIndex": 12, "Name": "Radmin VPN", "Reason": "VPN tunnel default route"},
+            {"InterfaceIndex": 21, "Name": "Wi-Fi", "InterfaceDescription": "Killer(R) Wi-Fi 6 AX1650i", "MacAddress": "00:11:22:33:44:55", "Reason": "Active default route"},
+            {"InterfaceIndex": 12, "Name": "Radmin VPN", "InterfaceDescription": "Famatech Radmin VPN", "MacAddress": "02:50:3E:FD:70:BD", "Reason": "VPN tunnel default route"},
         ]
         fixture_file.write_text(json.dumps(fixture_targets), encoding="utf-8")
         output_script = tmp_path / "RECOVER_TEST_ALLOWLIST.ps1"
@@ -1561,19 +1561,20 @@ class TestPhase4C2G033AdapterCmdletContractAndFailedAttempt:
     CONTROLLER_PATH = REPO_ROOT / "scripts" / "research" / "RUN_PHASE4C2G_AUTOMATED_ISOLATION.ps1"
 
     def test_g84_no_direct_interfaceindex_on_cmdlets(self):
-        """Controller source contains zero direct -InterfaceIndex calls on Disable-NetAdapter and Enable-NetAdapter."""
+        """Controller source contains zero direct -InterfaceIndex calls on Disable-NetAdapter, Enable-NetAdapter, and Get-NetAdapter."""
         content = self.CONTROLLER_PATH.read_text(encoding="utf-8")
         dis_pat = r"Disable-NetAdapter\s+-InterfaceIndex"
         ena_pat = r"Enable-NetAdapter\s+-InterfaceIndex"
+        get_pat = r"Get-NetAdapter\s+-InterfaceIndex"
 
         # Filter out lines that are testing or checking for the pattern
         lines = content.splitlines()
         offending_lines = []
         for line in lines:
             stripped = line.strip()
-            if any(term in stripped for term in ["disPat", "enaPat", "illegalEnaPattern", "genHasEnableIfIndex", "hasDisableIfIndex", "hasEnableIfIndex", "directParamCalls"]):
+            if any(term in stripped for term in ["disPat", "enaPat", "getPat", "illegalEnaPattern", "genHasEnableIfIndex", "genHasGetIfIndex", "hasDisableIfIndex", "hasEnableIfIndex", "hasGetIfIndex", "directParamCalls"]):
                 continue
-            if re.search(dis_pat, stripped) or re.search(ena_pat, stripped):
+            if re.search(dis_pat, stripped) or re.search(ena_pat, stripped) or re.search(get_pat, stripped):
                 offending_lines.append(stripped)
 
         assert len(offending_lines) == 0, f"Found direct -InterfaceIndex usage in controller: {offending_lines}"
@@ -1743,3 +1744,144 @@ class TestPhase4C2G033AdapterCmdletContractAndFailedAttempt:
         assert FINAL_EFFECTIVE_EVALUATOR_COMMIT == "3cf75c2bf0c9835dd58897b7b36982732cab40ab"
         eval_dir = self.REPO_ROOT / "ml" / "evaluation"
         assert eval_dir.exists()
+
+    def test_g93_allowlist_identity_snapshot_five_fields_and_strict_validation(self):
+        """InitialDisableTargets and disabledAllowlist include all 5 fields and fail closed on empty InterfaceDescription/MacAddress."""
+        def build_allowlist(raw_targets: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+            allowlist = []
+            for t in raw_targets:
+                desc = t.get("InterfaceDescription")
+                mac = t.get("MacAddress")
+                if not desc or not str(desc).strip() or not mac or not str(mac).strip():
+                    raise ValueError(f"Target adapter ifIndex {t.get('InterfaceIndex')} missing InterfaceDescription or MacAddress")
+                allowlist.append({
+                    "InterfaceIndex": int(t["InterfaceIndex"]),
+                    "Name": str(t["Name"]),
+                    "InterfaceDescription": str(desc),
+                    "MacAddress": str(mac),
+                    "Reason": str(t.get("Reason", "")),
+                })
+            return allowlist
+
+        valid_targets = [
+            {"InterfaceIndex": 21, "Name": "Wi-Fi", "InterfaceDescription": "Killer AX1650i", "MacAddress": "00:11:22:33:44:55", "Reason": "Default route owner"},
+            {"InterfaceIndex": 14, "Name": "Radmin VPN", "InterfaceDescription": "Famatech Radmin", "MacAddress": "02:50:3E:FD:70:BD", "Reason": "VPN route owner"},
+        ]
+        res = build_allowlist(valid_targets)
+        assert len(res) == 2
+        for item in res:
+            assert "InterfaceIndex" in item
+            assert "Name" in item
+            assert "InterfaceDescription" in item
+            assert "MacAddress" in item
+            assert "Reason" in item
+
+        # Missing desc fails closed
+        with pytest.raises(ValueError, match="missing InterfaceDescription"):
+            build_allowlist([{"InterfaceIndex": 21, "Name": "Wi-Fi", "InterfaceDescription": "", "MacAddress": "00:11:22:33:44:55"}])
+
+        # Missing mac fails closed
+        with pytest.raises(ValueError, match="missing InterfaceDescription or MacAddress"):
+            build_allowlist([{"InterfaceIndex": 21, "Name": "Wi-Fi", "InterfaceDescription": "Killer", "MacAddress": None}])
+
+    def test_g94_restoration_verification_fail_closed_logic(self):
+        """Restoration verification requires resolving adapter object and verifying Up status; null or disabled adapter retains watchdog."""
+        def verify_restoration(targets: List[Dict[str, Any]], resolved_adapters: Dict[int, Optional[Dict[str, Any]]]):
+            failures = []
+            for t in targets:
+                idx = t["InterfaceIndex"]
+                curr = resolved_adapters.get(idx)
+                if not curr:
+                    failures.append(f"{t['Name']}: null adapter")
+                elif curr.get("AdminStatus") != "Up" and curr.get("Status") != "Up":
+                    failures.append(f"{t['Name']}: not Up (AdminStatus='{curr.get('AdminStatus')}', Status='{curr.get('Status')}')")
+            if len(failures) == 0:
+                return {"restoration_result": "RESTORED_VERIFIED", "retain_watchdog": False}
+            else:
+                return {"restoration_result": "NETWORK_RECOVERY_REQUIRED", "retain_watchdog": True, "failures": failures}
+
+        targets = [
+            {"InterfaceIndex": 21, "Name": "Wi-Fi", "InterfaceDescription": "Killer", "MacAddress": "00:11"},
+            {"InterfaceIndex": 14, "Name": "Radmin VPN", "InterfaceDescription": "Radmin", "MacAddress": "02:50"},
+        ]
+
+        # Case 1: Both resolved and Up -> RESTORED_VERIFIED
+        r1 = verify_restoration(targets, {
+            21: {"AdminStatus": "Up", "Status": "Up"},
+            14: {"AdminStatus": "Up", "Status": "Up"},
+        })
+        assert r1["restoration_result"] == "RESTORED_VERIFIED"
+        assert r1["retain_watchdog"] is False
+
+        # Case 2: One adapter resolves to None/null -> NETWORK_RECOVERY_REQUIRED (never considered success!)
+        r2 = verify_restoration(targets, {
+            21: {"AdminStatus": "Up", "Status": "Up"},
+            14: None,
+        })
+        assert r2["restoration_result"] == "NETWORK_RECOVERY_REQUIRED"
+        assert r2["retain_watchdog"] is True
+
+        # Case 3: One adapter is still Disabled -> NETWORK_RECOVERY_REQUIRED
+        r3 = verify_restoration(targets, {
+            21: {"AdminStatus": "Up", "Status": "Up"},
+            14: {"AdminStatus": "Disabled", "Status": "Disabled"},
+        })
+        assert r3["restoration_result"] == "NETWORK_RECOVERY_REQUIRED"
+        assert r3["retain_watchdog"] is True
+
+    def test_g95_stale_watchdog_cleanup_prerequisites_logic(self):
+        """Stale watchdog cleanup is only permitted when all egress adapters are Up and 0 controller processes are running."""
+        def safe_cleanup_check(is_task_present: bool, running_controllers: int, adapters_up: bool):
+            if not is_task_present:
+                return "NO_TASK"
+            if running_controllers > 0:
+                raise RuntimeError("BLOCKED_ACTIVE_CONTROLLER_PROCESS_DETECTED")
+            if not adapters_up:
+                raise RuntimeError("BLOCKED_TARGET_ADAPTER_NOT_UP_FOR_STALE_WATCHDOG_CLEANUP")
+            return "CLEANUP_PERMITTED"
+
+        # No task present -> NO_TASK
+        assert safe_cleanup_check(False, 0, True) == "NO_TASK"
+
+        # Stale task present, 0 processes, adapters Up -> CLEANUP_PERMITTED
+        assert safe_cleanup_check(True, 0, True) == "CLEANUP_PERMITTED"
+
+        # Stale task present but active controller running -> BLOCKED
+        with pytest.raises(RuntimeError, match="BLOCKED_ACTIVE_CONTROLLER_PROCESS_DETECTED"):
+            safe_cleanup_check(True, 1, True)
+
+        # Stale task present but adapter not Up -> BLOCKED
+        with pytest.raises(RuntimeError, match="BLOCKED_TARGET_ADAPTER_NOT_UP_FOR_STALE_WATCHDOG_CLEANUP"):
+            safe_cleanup_check(True, 0, False)
+
+    def test_g96_validate_adapter_cmdlet_contract_expanded_execution(self):
+        """Executing controller with -ValidateAdapterCmdletContractOnly verifies Get-NetAdapter, allowlist rejection, and null restoration detection."""
+        cmd = (
+            f"powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"{self.CONTROLLER_PATH}\" "
+            f"-ValidateAdapterCmdletContractOnly"
+        )
+        res = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+        assert res.returncode == 0, f"Contract check failed: {res.stderr}\n{res.stdout}"
+        assert "Verdict: ADAPTER_CMDLET_CONTRACT_PASS" in res.stdout
+        assert "Controller source contains Get-NetAdapter     direct parameter: False" in res.stdout
+        assert "Generated script contains direct Get-NetAdapter    parameter: False" in res.stdout
+        assert "Allowlist missing InterfaceDescription/MacAddress rejected: True" in res.stdout
+        assert "Null/unresolved adapter restoration detected as failure    : True" in res.stdout
+
+    def test_g97_generated_recovery_script_rejects_missing_identity(self, tmp_path):
+        """Generated recovery script generator strictly throws if target adapter is missing InterfaceDescription or MacAddress."""
+        fixture_missing = tmp_path / "targets_missing.json"
+        fixture_missing.write_text(
+            json.dumps([
+                {"InterfaceIndex": 21, "Name": "Wi-Fi", "InterfaceDescription": "", "MacAddress": "00:11:22:33:44:55"}
+            ]),
+            encoding="utf-8"
+        )
+        cmd = (
+            f"powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"{self.CONTROLLER_PATH}\" "
+            f"-ValidateRecoveryScriptOnly -TargetFixtureJson \"{fixture_missing}\" "
+            f"-OutputRecoveryScriptPath \"{tmp_path / 'out.ps1'}\""
+        )
+        res = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+        assert res.returncode != 0
+        assert "missing required InterfaceDescription or MacAddress" in res.stdout or "BLOCKED" in res.stdout

@@ -47,7 +47,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$ControllerVersion = "1.3.0"
+$ControllerVersion = "1.3.1"
 
 # 1. Resolve Paths
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
@@ -362,14 +362,78 @@ function Resolve-TargetNetAdapter {
     if ($ExpectedDescription -and ($adapter.InterfaceDescription -ne $ExpectedDescription)) {
         throw "Adapter identity mismatch for ifIndex $($InterfaceIndex): Expected InterfaceDescription '$ExpectedDescription', found '$($adapter.InterfaceDescription)'."
     }
-    if ($ExpectedMacAddress -and $adapter.MacAddress -and ($adapter.MacAddress -ne $ExpectedMacAddress)) {
+    if ($ExpectedMacAddress -and ($adapter.MacAddress -ne $ExpectedMacAddress)) {
         throw "Adapter identity mismatch for ifIndex $($InterfaceIndex): Expected MacAddress '$ExpectedMacAddress', found '$($adapter.MacAddress)'."
     }
 
     return $adapter
 }
 
-# 6b. Helper: Generate and Validate Recovery Script
+# 6b. Helper: Safe cleanup of stale watchdog task before registering new one
+function Remove-StaleWatchdogIfSafe {
+    param(
+        [string]$TaskName = "Phase4C2G_Emergency_Network_Recovery",
+        [System.Collections.Generic.List[PSObject]]$Targets = $null
+    )
+
+    & schtasks.exe /query /tn $TaskName 2>$null | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "No stale watchdog scheduled task '$TaskName' detected."
+        return $true
+    }
+
+    Write-Host "Detected existing scheduled task '$TaskName'. Checking prerequisites for safe cleanup..."
+
+    # Check 1: No other controller/verifier/worker process is running
+    $currentPid = $PID
+    $activeProcesses = @(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object {
+        $_.ProcessId -ne $currentPid -and
+        $_.Name -like "*powershell*" -and
+        ($_.CommandLine -like "*RUN_PHASE4C2G_AUTOMATED_ISOLATION*" -or `
+         $_.CommandLine -like "*RUN_PHASE4C2G_OFFLINE_VERIFIER*" -or `
+         $_.CommandLine -like "*RECOVER_NETWORK*")
+    })
+
+    if ($activeProcesses.Count -gt 0) {
+        Write-Host "[FAIL-CLOSED] Cannot safely clean up stale watchdog: active controller/verifier processes detected ($($activeProcesses.Count))." -ForegroundColor Red
+        throw "BLOCKED_ACTIVE_CONTROLLER_PROCESS_DETECTED"
+    }
+
+    # Check 2: All target egress adapters must be Up
+    if ($Targets -and $Targets.Count -gt 0) {
+        foreach ($t in $Targets) {
+            try {
+                $adapterObj = Resolve-TargetNetAdapter -InterfaceIndex $t.InterfaceIndex `
+                                                      -ExpectedName $t.Name `
+                                                      -ExpectedDescription $t.InterfaceDescription `
+                                                      -ExpectedMacAddress $t.MacAddress
+                if (-not $adapterObj -or ($adapterObj.AdminStatus -ne "Up" -and $adapterObj.Status -ne "Up")) {
+                    Write-Host "[FAIL-CLOSED] Cannot safely clean up stale watchdog: target adapter ifIndex $($t.InterfaceIndex) ($($t.Name)) is not Up." -ForegroundColor Red
+                    throw "BLOCKED_TARGET_ADAPTER_NOT_UP_FOR_STALE_WATCHDOG_CLEANUP"
+                }
+            } catch {
+                Write-Host "[FAIL-CLOSED] Cannot safely clean up stale watchdog: failed to resolve/verify adapter ifIndex $($t.InterfaceIndex): $($_.Exception.Message)" -ForegroundColor Red
+                throw "BLOCKED_TARGET_ADAPTER_UNRESOLVED_FOR_STALE_WATCHDOG_CLEANUP"
+            }
+        }
+    }
+
+    # All conditions satisfied: Delete the stale task
+    Write-Host "Prerequisites satisfied: all egress adapters verified Up and zero active controller processes. Deleting stale watchdog task..." -ForegroundColor Yellow
+    & schtasks.exe /delete /tn $TaskName /f 2>$null | Out-Null
+
+    # Verify task has disappeared
+    & schtasks.exe /query /tn $TaskName 2>$null | Out-Null
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "[BLOCKED] Failed to delete stale watchdog scheduled task '$TaskName'. Task still present." -ForegroundColor Red
+        throw "BLOCKED_STALE_WATCHDOG_CLEANUP_FAILED"
+    }
+
+    Write-Host "[WATCHDOG CLEANED] Stale watchdog scheduled task successfully removed." -ForegroundColor Green
+    return $true
+}
+
+# 6c. Helper: Generate and Validate Recovery Script
 function Update-RecoveryScriptAndValidate {
     param(
         [System.Collections.Generic.List[PSObject]]$Targets,
@@ -406,6 +470,10 @@ function Update-RecoveryScriptAndValidate {
     foreach ($t in $Targets) {
         $ifIdx = [int]$t.InterfaceIndex
         $expectedIfIndices.Add($ifIdx) | Out-Null
+
+        if ([string]::IsNullOrWhiteSpace($t.InterfaceDescription) -or [string]::IsNullOrWhiteSpace($t.MacAddress)) {
+            throw "Target adapter ifIndex $ifIdx missing required InterfaceDescription or MacAddress."
+        }
 
         # Escape single quotes by doubling them for PowerShell single-quoted literals: ' -> ''
         $rawName = if ($t.Name) { [string]$t.Name } else { "" }
@@ -735,7 +803,7 @@ if ($ValidateAdapterCmdletContractOnly) {
     Write-Host ("  Disable-NetAdapter accepts pipeline InputObject: {0} (Expected: True)" -f $disPipesInput)
     Write-Host ("  Enable-NetAdapter  accepts pipeline InputObject: {0} (Expected: True)" -f $enaPipesInput)
 
-    # AST and static analysis of controller source code: ensure no direct -InterfaceIndex calls on Disable/Enable-NetAdapter
+    # AST and static analysis of controller source code: ensure no direct -InterfaceIndex calls on Disable/Enable/Get-NetAdapter
     $selfTokens = $null
     $selfErrors = $null
     $selfAst = [System.Management.Automation.Language.Parser]::ParseFile($MyInvocation.MyCommand.Definition, [ref]$selfTokens, [ref]$selfErrors)
@@ -743,7 +811,7 @@ if ($ValidateAdapterCmdletContractOnly) {
         param($astNode)
         if ($astNode -is [System.Management.Automation.Language.CommandAst]) {
             $cmdName = $astNode.GetCommandName()
-            if ($cmdName -in @('Disable-NetAdapter', 'Enable-NetAdapter')) {
+            if ($cmdName -in @('Disable-NetAdapter', 'Enable-NetAdapter', 'Get-NetAdapter')) {
                 foreach ($param in $astNode.CommandElements) {
                     if ($param -is [System.Management.Automation.Language.CommandParameterAst]) {
                         if ($param.ParameterName -eq 'InterfaceIndex') {
@@ -761,17 +829,20 @@ if ($ValidateAdapterCmdletContractOnly) {
     $selfContent = [System.IO.File]::ReadAllText($MyInvocation.MyCommand.Definition)
     $disPat = 'Disable-NetAdapter' + '\s+-InterfaceIndex'
     $enaPat = 'Enable-NetAdapter' + '\s+-InterfaceIndex'
+    $getPat = 'Get-NetAdapter' + '\s+-InterfaceIndex'
     $linesToScan = $selfContent -split "`r?`n" | Where-Object {
-        $_ -notmatch '\$disPat' -and $_ -notmatch '\$enaPat' -and `
+        $_ -notmatch '\$disPat' -and $_ -notmatch '\$enaPat' -and $_ -notmatch '\$getPat' -and `
         $_ -notmatch 'illegalEnaPattern' -and $_ -notmatch 'genHasEnableIfIndex' -and `
-        $_ -notmatch 'hasDisableIfIndex' -and $_ -notmatch 'hasEnableIfIndex' -and `
+        $_ -notmatch 'hasDisableIfIndex' -and $_ -notmatch 'hasEnableIfIndex' -and $_ -notmatch 'hasGetIfIndex' -and `
         $_ -notmatch 'directParamCalls'
     }
     $hasDisableIfIndex = ($linesToScan -match $disPat).Count -gt 0
     $hasEnableIfIndex  = ($linesToScan -match $enaPat).Count -gt 0
+    $hasGetIfIndex     = ($linesToScan -match $getPat).Count -gt 0
 
     Write-Host ("  Controller source contains Disable-NetAdapter direct parameter: {0} (Expected: False)" -f ($hasDisableIfIndex -or $hasDirectParamAst))
     Write-Host ("  Controller source contains Enable-NetAdapter  direct parameter: {0} (Expected: False)" -f ($hasEnableIfIndex -or $hasDirectParamAst))
+    Write-Host ("  Controller source contains Get-NetAdapter     direct parameter: {0} (Expected: False)" -f ($hasGetIfIndex -or $hasDirectParamAst))
 
     # Generate a fixture recovery script and verify it
     $testScriptPath = Join-Path $ArtifactsDir "RECOVER_CMDLET_CONTRACT_TEST.ps1"
@@ -792,14 +863,76 @@ if ($ValidateAdapterCmdletContractOnly) {
 
     $genContent = [System.IO.File]::ReadAllText($testScriptPath)
     $genHasEnableIfIndex = $genContent -match ('Enable-NetAdapter' + '\s+-InterfaceIndex')
+    $genHasGetIfIndex    = $genContent -match ('Get-NetAdapter' + '\s+-InterfaceIndex')
     $genPipesToEnable    = $genContent -match '\|\s*Enable-NetAdapter'
 
     Write-Host ("  Generated script AST parse error count: {0} (Expected: 0)" -f $parseErrors.Count)
     Write-Host ("  Generated script contains direct Enable-NetAdapter parameter: {0} (Expected: False)" -f $genHasEnableIfIndex)
+    Write-Host ("  Generated script contains direct Get-NetAdapter    parameter: {0} (Expected: False)" -f $genHasGetIfIndex)
     Write-Host ("  Generated script pipes adapter object to Enable-NetAdapter: {0} (Expected: True)" -f $genPipesToEnable)
 
     # Clean up test script
     Remove-Item -Path $testScriptPath -Force -ErrorAction SilentlyContinue
+
+    # Contract expansion 1: Verify missing InterfaceDescription or MacAddress in allowlist is strictly rejected
+    $testMissingDesc = [System.Collections.Generic.List[PSObject]]::new()
+    $testMissingDesc.Add([PSCustomObject]@{
+        InterfaceIndex       = 21
+        Name                 = "Wi-Fi"
+        InterfaceDescription = ""
+        MacAddress           = "00:11:22:33:44:55"
+        Reason               = "Contract check missing desc"
+    })
+    $caughtMissingDesc = $false
+    try {
+        Update-RecoveryScriptAndValidate -Targets $testMissingDesc -Path $testScriptPath
+    } catch {
+        $caughtMissingDesc = $true
+    }
+
+    $testMissingMac = [System.Collections.Generic.List[PSObject]]::new()
+    $testMissingMac.Add([PSCustomObject]@{
+        InterfaceIndex       = 21
+        Name                 = "Wi-Fi"
+        InterfaceDescription = "Killer(R) Wi-Fi"
+        MacAddress           = ""
+        Reason               = "Contract check missing mac"
+    })
+    $caughtMissingMac = $false
+    try {
+        Update-RecoveryScriptAndValidate -Targets $testMissingMac -Path $testScriptPath
+    } catch {
+        $caughtMissingMac = $true
+    }
+    $missingIdentityRejected = ($caughtMissingDesc -and $caughtMissingMac)
+    Write-Host ("  Allowlist missing InterfaceDescription/MacAddress rejected: {0} (Expected: True)" -f $missingIdentityRejected)
+
+    # Contract expansion 2: Verify null or non-existent adapter restoration is strictly detected as failure
+    $testNullTarget = @([PSCustomObject]@{
+        InterfaceIndex       = 99999
+        Name                 = "NonExistentAdapter"
+        InterfaceDescription = "NonExistent"
+        MacAddress           = "00:00:00:00:00:00"
+        Reason               = "Null restoration test"
+    })
+    $nullRestorationFailures = @()
+    foreach ($t in $testNullTarget) {
+        try {
+            $curr = Resolve-TargetNetAdapter -InterfaceIndex $t.InterfaceIndex `
+                                             -ExpectedName $t.Name `
+                                             -ExpectedDescription $t.InterfaceDescription `
+                                             -ExpectedMacAddress $t.MacAddress
+            if (-not $curr) {
+                $nullRestorationFailures += "$($t.Name) (ifIndex $($t.InterfaceIndex)): adapter resolution returned null"
+            } elseif ($curr.AdminStatus -ne "Up" -and $curr.Status -ne "Up") {
+                $nullRestorationFailures += "$($t.Name) (ifIndex $($t.InterfaceIndex)): Neither AdminStatus nor Status is 'Up'"
+            }
+        } catch {
+            $nullRestorationFailures += "$($t.Name) (ifIndex $($t.InterfaceIndex)): resolution failed ($($_.Exception.Message))"
+        }
+    }
+    $nullDetectedAsFailure = ($nullRestorationFailures.Count -gt 0)
+    Write-Host ("  Null/unresolved adapter restoration detected as failure    : {0} (Expected: True)" -f $nullDetectedAsFailure)
 
     # Mock pipeline test: Verify piping adapter object to a mock cmdlet receives the exact adapter
     $mockReceived = [System.Collections.Generic.List[PSObject]]::new()
@@ -827,8 +960,9 @@ if ($ValidateAdapterCmdletContractOnly) {
     Write-Host ("  Mock pipeline object binding verified: {0} (Expected: True)" -f $mockPipesCorrectly)
 
     $allContractPassed = (-not $disHasIfIdx) -and (-not $enaHasIfIdx) -and $disPipesInput -and $enaPipesInput -and `
-                         (-not $hasDisableIfIndex) -and (-not $hasEnableIfIndex) -and (-not $hasDirectParamAst) -and `
-                         ($parseErrors.Count -eq 0) -and (-not $genHasEnableIfIndex) -and $genPipesToEnable -and $mockPipesCorrectly
+                         (-not $hasDisableIfIndex) -and (-not $hasEnableIfIndex) -and (-not $hasGetIfIndex) -and (-not $hasDirectParamAst) -and `
+                         ($parseErrors.Count -eq 0) -and (-not $genHasEnableIfIndex) -and (-not $genHasGetIfIndex) -and `
+                         $genPipesToEnable -and $mockPipesCorrectly -and $missingIdentityRejected -and $nullDetectedAsFailure
 
     if ($allContractPassed) {
         Write-Host "`n[CONTRACT PASS] Adapter cmdlet parameter and pipeline contract fully verified." -ForegroundColor Green
@@ -904,10 +1038,16 @@ if ($DryRun -or (-not $ReadinessTest -and -not $ValidateRecoveryScriptOnly -and 
     # Validate recovery script generation and AST in DryRun without modifying production recovery script
     $dryRunTargets = [System.Collections.Generic.List[PSObject]]::new()
     foreach ($t in $Snapshot.InitialDisableTargets) {
+        if ([string]::IsNullOrWhiteSpace($t.InterfaceDescription) -or [string]::IsNullOrWhiteSpace($t.MacAddress)) {
+            Write-Host "[FAIL-CLOSED] Target adapter ifIndex $($t.InterfaceIndex) missing InterfaceDescription or MacAddress" -ForegroundColor Red
+            throw "BLOCKED_TARGET_ADAPTER_IDENTITY_INCOMPLETE"
+        }
         $dryRunTargets.Add([PSCustomObject]@{
-            InterfaceIndex = [int]$t.InterfaceIndex
-            Name           = [string]$t.Name
-            Reason         = [string]$t.Reason
+            InterfaceIndex       = [int]$t.InterfaceIndex
+            Name                 = [string]$t.Name
+            InterfaceDescription = [string]$t.InterfaceDescription
+            MacAddress           = [string]$t.MacAddress
+            Reason               = [string]$t.Reason
         })
     }
     $dryRunTestPath = Join-Path $ArtifactsDir "RECOVER_NETWORK_DRYRUN_TEST.ps1"
@@ -962,13 +1102,19 @@ if ($ReadinessTest) {
 
     Write-Host "`n[READINESS TEST] Operating with confirmed Administrator privileges." -ForegroundColor Green
 
-    # Build active disabled allowlist
+    # Build active disabled allowlist with full 5 identity fields
     $disabledAllowlist = [System.Collections.Generic.List[PSObject]]::new()
     foreach ($t in $Snapshot.InitialDisableTargets) {
+        if ([string]::IsNullOrWhiteSpace($t.InterfaceDescription) -or [string]::IsNullOrWhiteSpace($t.MacAddress)) {
+            Write-Host "[FAIL-CLOSED] Target adapter ifIndex $($t.InterfaceIndex) missing InterfaceDescription or MacAddress" -ForegroundColor Red
+            throw "BLOCKED_TARGET_ADAPTER_IDENTITY_INCOMPLETE"
+        }
         $disabledAllowlist.Add([PSCustomObject]@{
-            InterfaceIndex = $t.InterfaceIndex
-            Name           = $t.Name
-            Reason         = $t.Reason
+            InterfaceIndex       = [int]$t.InterfaceIndex
+            Name                 = [string]$t.Name
+            InterfaceDescription = [string]$t.InterfaceDescription
+            MacAddress           = [string]$t.MacAddress
+            Reason               = [string]$t.Reason
         })
     }
 
@@ -989,7 +1135,10 @@ if ($ReadinessTest) {
     $recoverBytes = [System.IO.File]::ReadAllBytes($RecoverScriptPath)
     $RecoverScriptSha256 = -join ($Sha256.ComputeHash($recoverBytes) | ForEach-Object { "{0:x2}" -f $_ })
 
-    # Step 2: Register Scheduled Task Watchdog (15 minutes in future)
+    # Step 2: Clean up any stale Scheduled Task Watchdog prior to registering new watchdog
+    Remove-StaleWatchdogIfSafe -TaskName $WatchdogTaskName -Targets $disabledAllowlist
+
+    # Step 2b: Register Scheduled Task Watchdog (15 minutes in future)
     $TriggerTime = (Get-Date).AddMinutes(15).ToString("HH:mm")
     $TaskCommand = "powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$RecoverScriptPath`""
     Write-Host "Registering recovery watchdog scheduled task '$WatchdogTaskName' for $TriggerTime (15-min timeout)..."
@@ -1033,6 +1182,10 @@ if ($ReadinessTest) {
         Write-Host "`nDisabling initial egress targets ($($disabledAllowlist.Count) adapter(s))..." -ForegroundColor Yellow
         foreach ($t in $disabledAllowlist) {
             Write-Host "  Resolving & disabling: ifIndex $($t.InterfaceIndex) ($($t.Name))"
+            if ([string]::IsNullOrWhiteSpace($t.InterfaceDescription) -or [string]::IsNullOrWhiteSpace($t.MacAddress)) {
+                Write-Host "[FAIL-CLOSED] Target adapter ifIndex $($t.InterfaceIndex) missing InterfaceDescription or MacAddress prior to disable" -ForegroundColor Red
+                throw "BLOCKED_TARGET_ADAPTER_IDENTITY_INCOMPLETE"
+            }
             $adapterObj = Resolve-TargetNetAdapter -InterfaceIndex $t.InterfaceIndex `
                                                   -ExpectedName $t.Name `
                                                   -ExpectedDescription $t.InterfaceDescription `
@@ -1082,11 +1235,15 @@ if ($ReadinessTest) {
                     }
 
                     Write-Host "  Discovered secondary egress owner: ifIndex $idx ($($matchingAdapter.Name))"
+                    if ([string]::IsNullOrWhiteSpace($matchingAdapter.InterfaceDescription) -or [string]::IsNullOrWhiteSpace($matchingAdapter.MacAddress)) {
+                        Write-Host "[FAIL-CLOSED] Emergent target adapter ifIndex $idx missing InterfaceDescription or MacAddress" -ForegroundColor Red
+                        throw "BLOCKED_TARGET_ADAPTER_IDENTITY_INCOMPLETE"
+                    }
                     $disabledAllowlist.Add([PSCustomObject]@{
-                        InterfaceIndex       = $idx
-                        Name                 = $matchingAdapter.Name
-                        InterfaceDescription = $matchingAdapter.InterfaceDescription
-                        MacAddress           = $matchingAdapter.MacAddress
+                        InterfaceIndex       = [int]$idx
+                        Name                 = [string]$matchingAdapter.Name
+                        InterfaceDescription = [string]$matchingAdapter.InterfaceDescription
+                        MacAddress           = [string]$matchingAdapter.MacAddress
                         Reason               = "Secondary egress route owner discovered in round $currentRound"
                     })
                     try {
@@ -1174,17 +1331,28 @@ if ($ReadinessTest) {
         Write-Host "Waiting 3 seconds for network operational stabilization..."
         Start-Sleep -Seconds 3
 
-        # Verify Restoration
-        $stillDisabled = @()
+        # Verify Restoration with Resolve-TargetNetAdapter and fail-closed status check
+        $restorationFailures = @()
         foreach ($t in $disabledAllowlist) {
-            $curr = Get-NetAdapter -InterfaceIndex $t.InterfaceIndex -ErrorAction SilentlyContinue
-            if ($curr -and $curr.AdminStatus -eq "Disabled") {
-                $stillDisabled += "$($t.Name) (ifIndex $($t.InterfaceIndex))"
+            try {
+                $curr = Resolve-TargetNetAdapter -InterfaceIndex $t.InterfaceIndex `
+                                                 -ExpectedName $t.Name `
+                                                 -ExpectedDescription $t.InterfaceDescription `
+                                                 -ExpectedMacAddress $t.MacAddress
+                if (-not $curr) {
+                    $restorationFailures += "$($t.Name) (ifIndex $($t.InterfaceIndex)): adapter resolution returned null"
+                } elseif ($curr.AdminStatus -ne "Up" -and $curr.Status -ne "Up") {
+                    $restorationFailures += "$($t.Name) (ifIndex $($t.InterfaceIndex)): AdminStatus='$($curr.AdminStatus)', Status='$($curr.Status)' (expected Up)"
+                } else {
+                    Write-Host "  Verified restored & Up: ifIndex $($t.InterfaceIndex) ($($t.Name)) [AdminStatus: $($curr.AdminStatus), Status: $($curr.Status)]" -ForegroundColor Green
+                }
+            } catch {
+                $restorationFailures += "$($t.Name) (ifIndex $($t.InterfaceIndex)): resolution failed ($($_.Exception.Message))"
             }
         }
 
-        if ($stillDisabled.Count -eq 0) {
-            Write-Host "[RESTORATION SUCCESS] All isolated adapters successfully re-enabled." -ForegroundColor Green
+        if ($restorationFailures.Count -eq 0) {
+            Write-Host "[RESTORATION SUCCESS] All isolated adapters successfully re-enabled and verified Up." -ForegroundColor Green
             $restorationResult = "RESTORED_VERIFIED"
 
             # Remove Watchdog Scheduled Task only after verified restoration
@@ -1192,7 +1360,11 @@ if ($ReadinessTest) {
             & schtasks.exe /delete /tn $WatchdogTaskName /f 2>$null | Out-Null
             Write-Host "Watchdog scheduled task removed."
         } else {
-            Write-Host "[CRITICAL] Failed to re-enable adapters: $($stillDisabled -join ', ')" -ForegroundColor Red
+            Write-Host "[CRITICAL] Restoration verification failed for adapter(s):" -ForegroundColor Red
+            foreach ($rf in $restorationFailures) {
+                Write-Host "  - $rf" -ForegroundColor Red
+            }
+            Write-Host "Retaining scheduled task watchdog '$WatchdogTaskName'." -ForegroundColor Yellow
             Write-Host "Execute emergency recovery manually: $RecoverScriptPath" -ForegroundColor Red
             $restorationResult = "NETWORK_RECOVERY_REQUIRED"
         }
