@@ -1,13 +1,13 @@
 {
   "schema_version": "1.0.0",
   "phase": "Phase 4C.2G.0.3.3",
-  "generated_at_utc": "2026-10-02T10:45:00.000000+00:00",
-  "evidence_file_count": 6,
+  "generated_at_utc": "2026-10-02T14:15:00.000000+00:00",
+  "evidence_file_count": 8,
   "files": [
     {
       "path": "research/evidence/phase-4c.2g.0.3.3/adapter_cmdlet_contract_audit.json",
-      "bytes": 1152,
-      "sha256": "45545a3fc103096cac4074eec236f36ad2c9e92b801fd9a16f5b12874649ab9a"
+      "bytes": 1419,
+      "sha256": "948604d70a3926788275976c264b426f5e56271a75f53a8767ecf44b14648d88"
     },
     {
       "path": "research/evidence/phase-4c.2g.0.3.3/adapter_resolution_contract.json",
@@ -16,8 +16,8 @@
     },
     {
       "path": "research/evidence/phase-4c.2g.0.3.3/controller_source_binding.json",
-      "bytes": 608,
-      "sha256": "b9fb8beed8fef9f8078381be8ca369ad221ca37fa3d9bfe0a181fcb35b863d73"
+      "bytes": 764,
+      "sha256": "0e0af45b8a5952dbd41f02abd5c9bc521adbaa285faf9fe6b56f77616ad1719b"
     },
     {
       "path": "research/evidence/phase-4c.2g.0.3.3/environment.json",
@@ -30,9 +30,19 @@
       "sha256": "bb7e0017d200f48c35af02091079a756cb986ee435cfe38a5def25a06692ae7d"
     },
     {
+      "path": "research/evidence/phase-4c.2g.0.3.3/passive_route_source_disagreement_attempt_audit.json",
+      "bytes": 1428,
+      "sha256": "e2446552efa54340753e110c73f968b3d35f095dfd1c0e97710a5e16e415ac94"
+    },
+    {
       "path": "research/evidence/phase-4c.2g.0.3.3/PHASE_REPORT.md",
-      "bytes": 6269,
-      "sha256": "6dbe4570a16f96f12539b66a1cb2319762389f24f5a8511c5cfb855b92ee045d"
+      "bytes": 7302,
+      "sha256": "20ac701402f9dd7256163fad9ad214686c8262b3f0f7f7f176dbefd11f29e25f"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.3.3/stale_watchdog_cleanup_attempt_audit.json",
+      "bytes": 1534,
+      "sha256": "6bf1ab215ce128671678c0a447d4358832b88429155f1c7c88f69d48d812ea43"
     }
   ]
 }

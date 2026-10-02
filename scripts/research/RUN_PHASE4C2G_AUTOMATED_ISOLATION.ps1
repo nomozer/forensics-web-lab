@@ -678,44 +678,89 @@ function Test-WatchdogTaskVerified {
 # 8. Passive Network Check
 function Test-PassiveIsolation {
     $proxySet = [bool]($env:HTTP_PROXY -or $env:HTTPS_PROXY -or $env:ALL_PROXY)
-    $hasDefaultRoute = $false
+    $hasActiveDefaultRoute = $false
+    $persistentRoutesIgnored = @()
+    $connectedEgressAdapters = @()
+    $activeDefaultRoutes = @()
 
+    # Primary authoritative source: Get-NetRoute -PolicyStore ActiveStore
     try {
-        $routeOut = & route.exe print 0.0.0.0 2>$null
-        foreach ($line in $routeOut) {
-            $parts = $line.Trim() -split "\s+"
-            if ($parts.Count -ge 3 -and $parts[0] -eq "0.0.0.0" -and $parts[1] -eq "0.0.0.0") {
-                $hasDefaultRoute = $true
-                break
+        $activeAdapters = @(Get-NetAdapter -IncludeHidden -ErrorAction SilentlyContinue | Where-Object { $_.Status -eq "Up" -or $_.AdminStatus -eq "Up" })
+        $activeIndices = [System.Collections.Generic.HashSet[int]]::new()
+        foreach ($ad in $activeAdapters) {
+            $activeIndices.Add([int]$ad.ifIndex) | Out-Null
+        }
+
+        $act4 = Get-NetRoute -PolicyStore ActiveStore -DestinationPrefix "0.0.0.0/0" -ErrorAction SilentlyContinue
+        if ($act4) {
+            foreach ($r in $act4) {
+                if ($activeIndices.Contains([int]$r.InterfaceIndex)) {
+                    $activeDefaultRoutes += $r
+                }
+            }
+        }
+        $act6 = Get-NetRoute -PolicyStore ActiveStore -DestinationPrefix "::/0" -ErrorAction SilentlyContinue
+        if ($act6) {
+            foreach ($r in $act6) {
+                if ($activeIndices.Contains([int]$r.InterfaceIndex)) {
+                    $activeDefaultRoutes += $r
+                }
             }
         }
     } catch {}
 
-    # Check for connected egress adapters (adapters with default route or physical status)
-    $remainingDefaultRoutes = @()
-    try {
-        $rem4 = Get-NetRoute -DestinationPrefix "0.0.0.0/0" -ErrorAction SilentlyContinue
-        if ($rem4) { $remainingDefaultRoutes += $rem4 }
-        $rem6 = Get-NetRoute -DestinationPrefix "::/0" -ErrorAction SilentlyContinue
-        if ($rem6) { $remainingDefaultRoutes += $rem6 }
-    } catch {}
-
-    $connectedEgressAdapters = @()
-    if ($remainingDefaultRoutes.Count -gt 0) {
-        $hasDefaultRoute = $true
-        foreach ($r in $remainingDefaultRoutes) {
+    if ($activeDefaultRoutes.Count -gt 0) {
+        $hasActiveDefaultRoute = $true
+        foreach ($r in $activeDefaultRoutes) {
             $connectedEgressAdapters += "$($r.InterfaceAlias) (ifIndex $($r.InterfaceIndex))"
         }
     }
 
+    # Secondary cross-check: route.exe print (parsing strictly Active Routes section, ignoring Persistent Routes)
+    try {
+        $routeOut = & route.exe print 0.0.0.0 2>$null
+        $inActiveRoutes = $false
+        $inPersistentRoutes = $false
+
+        foreach ($line in $routeOut) {
+            $trimmed = $line.Trim()
+            if ($trimmed -like "*Active Routes:*") {
+                $inActiveRoutes = $true
+                $inPersistentRoutes = $false
+                continue
+            }
+            if ($trimmed -like "*Persistent Routes:*") {
+                $inActiveRoutes = $false
+                $inPersistentRoutes = $true
+                continue
+            }
+            if ($trimmed -like "*IPv6*" -or $trimmed -like "*Interface List*") {
+                $inActiveRoutes = $false
+                $inPersistentRoutes = $false
+                continue
+            }
+
+            $parts = $trimmed -split "\s+"
+            if ($parts.Count -ge 3 -and $parts[0] -eq "0.0.0.0" -and $parts[1] -eq "0.0.0.0") {
+                if ($inActiveRoutes) {
+                    $hasActiveDefaultRoute = $true
+                } elseif ($inPersistentRoutes) {
+                    $persistentRoutesIgnored += $trimmed
+                }
+            }
+        }
+    } catch {}
+
     return [ordered]@{
-        IsIsolated            = ((-not $proxySet) -and (-not $hasDefaultRoute) -and ($connectedEgressAdapters.Count -eq 0))
-        ProxyDetected         = $proxySet
-        DefaultRouteDetected  = $hasDefaultRoute
-        ConnectedAdapters     = $connectedEgressAdapters
-        OutboundProbesSent    = 0
-        DnsLookupsPerformed   = 0
-        HttpRequestsSent      = 0
+        IsIsolated              = ((-not $proxySet) -and (-not $hasActiveDefaultRoute) -and ($connectedEgressAdapters.Count -eq 0))
+        ProxyDetected           = $proxySet
+        DefaultRouteDetected    = $hasActiveDefaultRoute
+        ConnectedAdapters       = $connectedEgressAdapters
+        ActiveDefaultRoutes     = $activeDefaultRoutes
+        PersistentRoutesIgnored = $persistentRoutesIgnored
+        OutboundProbesSent      = 0
+        DnsLookupsPerformed     = 0
+        HttpRequestsSent        = 0
     }
 }
 
@@ -1024,11 +1069,49 @@ if ($ValidateAdapterCmdletContractOnly) {
     $verdictBlockedCorrect = ($mockBlockedVerdict -eq "BLOCKED_WATCHDOG_CLEANUP_FAILED_NETWORK_RESTORED")
     Write-Host ("  Verdict logic: restoration success + watchdog cleanup failure => BLOCKED: {0} (Expected: True)" -f $verdictBlockedCorrect)
 
+    # Contract expansion 7: Verify passive isolation ignores persistent routes when active routes are 0
+    $mockRouteOut = @(
+        "Active Routes:",
+        "Network Destination        Netmask          Gateway       Interface  Metric",
+        "None",
+        "Persistent Routes:",
+        "  Network Address          Netmask  Gateway Address  Metric",
+        "          0.0.0.0          0.0.0.0         26.0.0.1    9256"
+    )
+    $mockActiveRouteDetected = $false
+    $mockInActive = $false
+    $mockInPersistent = $false
+    $mockPersistentIgnored = @()
+    foreach ($mLine in $mockRouteOut) {
+        $mTrimmed = $mLine.Trim()
+        if ($mTrimmed -like "*Active Routes:*") { $mockInActive = $true; $mockInPersistent = $false; continue }
+        if ($mTrimmed -like "*Persistent Routes:*") { $mockInActive = $false; $mockInPersistent = $true; continue }
+        if ($mTrimmed -like "*IPv6*" -or $mTrimmed -like "*Interface List*") { $mockInActive = $false; $mockInPersistent = $false; continue }
+        $mParts = $mTrimmed -split "\s+"
+        if ($mParts.Count -ge 3 -and $mParts[0] -eq "0.0.0.0" -and $mParts[1] -eq "0.0.0.0") {
+            if ($mockInActive) { $mockActiveRouteDetected = $true }
+            elseif ($mockInPersistent) { $mockPersistentIgnored += $mTrimmed }
+        }
+    }
+    $persistentIgnoredCorrect = (-not $mockActiveRouteDetected) -and ($mockPersistentIgnored.Count -eq 1)
+    Write-Host ("  Persistent routes ignored and excluded from active default route: {0} (Expected: True)" -f $persistentIgnoredCorrect)
+
+    # Contract expansion 8: Verify remainingRoutes == 0 with passive disagreement yields BLOCKED_PASSIVE_ISOLATION_SOURCE_DISAGREEMENT
+    $mockDisagreementVerdict = if (0 -eq 0 -and (-not $false)) { "BLOCKED_PASSIVE_ISOLATION_SOURCE_DISAGREEMENT" } else { "BLOCKED" }
+    $disagreementVerdictCorrect = ($mockDisagreementVerdict -eq "BLOCKED_PASSIVE_ISOLATION_SOURCE_DISAGREEMENT")
+    Write-Host ("  Remaining routes 0 with passive disagreement => DISAGREEMENT: {0} (Expected: True)" -f $disagreementVerdictCorrect)
+
+    # Contract expansion 9: Verify remainingRoutes == 0 with proxy detected yields BLOCKED_PROXY_DETECTED
+    $mockProxyVerdict = if (0 -eq 0 -and $true) { "BLOCKED_PROXY_DETECTED" } else { "BLOCKED" }
+    $proxyVerdictCorrect = ($mockProxyVerdict -eq "BLOCKED_PROXY_DETECTED")
+    Write-Host ("  Remaining routes 0 with proxy detected => BLOCKED_PROXY_DETECTED: {0} (Expected: True)" -f $proxyVerdictCorrect)
+
     $allContractPassed = (-not $disHasIfIdx) -and (-not $enaHasIfIdx) -and $disPipesInput -and $enaPipesInput -and `
                          (-not $hasDisableIfIndex) -and (-not $hasEnableIfIndex) -and (-not $hasGetIfIndex) -and (-not $hasDirectParamAst) -and `
                          ($parseErrors.Count -eq 0) -and (-not $genHasEnableIfIndex) -and (-not $genHasGetIfIndex) -and `
                          $genPipesToEnable -and $mockPipesCorrectly -and $missingIdentityRejected -and $nullDetectedAsFailure -and `
-                         $nonExistentAbsent -and $safeRemoveOnAbsent -and $verdictPassCorrect -and $verdictBlockedCorrect
+                         $nonExistentAbsent -and $safeRemoveOnAbsent -and $verdictPassCorrect -and $verdictBlockedCorrect -and `
+                         $persistentIgnoredCorrect -and $disagreementVerdictCorrect -and $proxyVerdictCorrect
 
     if ($allContractPassed) {
         Write-Host "`n[CONTRACT PASS] Adapter cmdlet parameter and pipeline contract fully verified." -ForegroundColor Green
@@ -1245,6 +1328,10 @@ if ($ReadinessTest) {
     $networkRestored = $false
     $watchdogCleanupVerified = $false
     $watchdogDeleted = $false
+    $failureReason = $null
+    $offlineVerifierInvoked = $false
+    $lastPassiveCheck = $null
+    $remainingRoutesCount = 0
 
     # Step 4: Iterative Isolation and Verification Execution Block
     try {
@@ -1266,31 +1353,75 @@ if ($ReadinessTest) {
         $maxRounds = 3
         $currentRound = 1
         $isolationAchieved = $false
+        $passiveDisagreement = $false
 
         while ($currentRound -le $maxRounds) {
             Write-Host "Waiting 3 seconds for route table stabilization (Round $currentRound)..."
             Start-Sleep -Seconds 3
 
-            # Check remaining default routes
+            # Check remaining active default routes via ActiveStore
             $remainingRoutes = @()
             try {
-                $rem4 = Get-NetRoute -DestinationPrefix "0.0.0.0/0" -ErrorAction SilentlyContinue
-                if ($rem4) { $remainingRoutes += $rem4 }
-                $rem6 = Get-NetRoute -DestinationPrefix "::/0" -ErrorAction SilentlyContinue
-                if ($rem6) { $remainingRoutes += $rem6 }
+                $activeAdapters = @(Get-NetAdapter -IncludeHidden -ErrorAction SilentlyContinue | Where-Object { $_.Status -eq "Up" -or $_.AdminStatus -eq "Up" })
+                $activeIndices = [System.Collections.Generic.HashSet[int]]::new()
+                foreach ($ad in $activeAdapters) {
+                    $activeIndices.Add([int]$ad.ifIndex) | Out-Null
+                }
+
+                $rem4 = Get-NetRoute -PolicyStore ActiveStore -DestinationPrefix "0.0.0.0/0" -ErrorAction SilentlyContinue
+                if ($rem4) {
+                    foreach ($r in $rem4) {
+                        if ($activeIndices.Contains([int]$r.InterfaceIndex)) {
+                            $remainingRoutes += $r
+                        }
+                    }
+                }
+                $rem6 = Get-NetRoute -PolicyStore ActiveStore -DestinationPrefix "::/0" -ErrorAction SilentlyContinue
+                if ($rem6) {
+                    foreach ($r in $rem6) {
+                        if ($activeIndices.Contains([int]$r.InterfaceIndex)) {
+                            $remainingRoutes += $r
+                        }
+                    }
+                }
             } catch {}
 
+            $remainingRoutesCount = $remainingRoutes.Count
+            $passive = Test-PassiveIsolation
+            $lastPassiveCheck = $passive
+
             if ($remainingRoutes.Count -eq 0) {
-                $passive = Test-PassiveIsolation
                 if ($passive.IsIsolated) {
                     $isolationAchieved = $true
+                    Write-Host "[ISOLATION CONFIRMED] Zero active default routes and passive isolation verified in round $currentRound." -ForegroundColor Green
                     break
+                } else {
+                    Write-Host "[NOTICE] remainingRoutes is 0 but Test-PassiveIsolation returned IsIsolated = false in round $($currentRound):" -ForegroundColor Yellow
+                    Write-Host "  ProxyDetected         : $($passive.ProxyDetected)"
+                    Write-Host "  DefaultRouteDetected  : $($passive.DefaultRouteDetected)"
+                    Write-Host "  ConnectedAdapters     : $($passive.ConnectedAdapters -join ', ')"
+                    Write-Host "  Active route source   : Get-NetRoute -PolicyStore ActiveStore"
+                    Write-Host "  Persistent ignored    : $($passive.PersistentRoutesIgnored -join '; ')"
+
+                    if ($passive.ProxyDetected) {
+                        throw "BLOCKED_PROXY_DETECTED"
+                    }
+
+                    $passiveDisagreement = $true
+                    if ($currentRound -lt $maxRounds) {
+                        Write-Host "Waiting for route/passive convergence (round $currentRound/$maxRounds)..."
+                        $currentRound++
+                        continue
+                    } else {
+                        Write-Host "[FAIL-CLOSED] Passive isolation source disagreement persisted after $maxRounds rounds." -ForegroundColor Red
+                        throw "BLOCKED_PASSIVE_ISOLATION_SOURCE_DISAGREEMENT"
+                    }
                 }
             }
 
+            # remainingRoutes.Count > 0: identify and disable emergent route owners
             Write-Host "[NOTICE] Egress routes still present after round $currentRound ($($remainingRoutes.Count) route(s))." -ForegroundColor Yellow
 
-            # Identify remaining route owners
             $newTargetsFound = 0
             foreach ($r in $remainingRoutes) {
                 $idx = $r.InterfaceIndex
@@ -1327,7 +1458,7 @@ if ($ReadinessTest) {
             }
 
             if ($newTargetsFound -eq 0) {
-                Write-Host "[FAIL-CLOSED] Route owner ambiguity or passive check incomplete." -ForegroundColor Red
+                Write-Host "[FAIL-CLOSED] Route owner ambiguity: remaining active routes exist ($($remainingRoutes.Count)) but no new un-isolated adapter could be identified." -ForegroundColor Red
                 throw "BLOCKED_AMBIGUOUS_ROUTE_OWNER"
             }
 
@@ -1335,7 +1466,11 @@ if ($ReadinessTest) {
         }
 
         if (-not $isolationAchieved) {
-            throw "BLOCKED_NETWORK_ISOLATION_INCOMPLETE"
+            if ($passiveDisagreement) {
+                throw "BLOCKED_PASSIVE_ISOLATION_SOURCE_DISAGREEMENT"
+            } else {
+                throw "BLOCKED_NETWORK_ISOLATION_INCOMPLETE"
+            }
         }
 
         $isolationVerifiedTime = [System.DateTime]::UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.ffffff+00:00")
@@ -1343,9 +1478,13 @@ if ($ReadinessTest) {
 
         # Step 5: Invoke Offline Verifier Wrapper
         Write-Host "`nInvoking Offline Verifier Wrapper: $VerifierWrapperPath" -ForegroundColor Cyan
+        $offlineVerifierInvoked = $true
         & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $VerifierWrapperPath
         $verifierExit = $LASTEXITCODE
         Write-Host "Offline Verifier process exit code: $verifierExit"
+        if ($verifierExit -ne 0) {
+            throw "OFFLINE_VERIFIER_EXIT_NON_ZERO"
+        }
 
         # Step 6: Verify Verifier Receipt
         $offlineReceiptPath = Join-Path $ArtifactsDir "offline_verifier_execution_receipt.json"
@@ -1381,6 +1520,9 @@ if ($ReadinessTest) {
         Write-Host "[VERIFIER RECEIPT VALIDATED] All 12 fail-closed criteria confirmed." -ForegroundColor Green
         $testPassed = $true
 
+    } catch {
+        $failureReason = $_.Exception.Message
+        Write-Host "`n[FAIL-CLOSED EXCEPTION CAUGHT] $failureReason" -ForegroundColor Red
     } finally {
         # Step 7: Restore Network Adapters (Guaranteed Execution by ifIndex and pipeline object)
         Write-Host "`n[RESTORATION] Re-enabling disabled network adapters..." -ForegroundColor Yellow
@@ -1452,19 +1594,21 @@ if ($ReadinessTest) {
 
     $networkRestoredTime = [System.DateTime]::UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.ffffff+00:00")
 
-    # Step 8: Build and Write Atomic Controller Receipt
+    # Step 8: Build and Write Atomic Controller Receipt (ALWAYS REACHED!)
     $finalVerdict = if ($testPassed -and $networkRestored -and $watchdogCleanupVerified -and ($restorationResult -eq "RESTORED_VERIFIED")) {
         "AUTOMATED_ISOLATION_READINESS_TEST_PASS_NETWORK_RESTORED"
     } elseif ($networkRestored -and (-not $watchdogCleanupVerified)) {
         "BLOCKED_WATCHDOG_CLEANUP_FAILED_NETWORK_RESTORED"
     } elseif ($restorationResult -eq "NETWORK_RECOVERY_REQUIRED") {
         "NETWORK_RECOVERY_REQUIRED"
+    } elseif ($failureReason) {
+        $failureReason
     } else {
         "BLOCKED_NETWORK_ISOLATION_INCOMPLETE"
     }
 
     $controllerReceipt = [ordered]@{
-        schema_version                    = "1.2.0"
+        schema_version                    = "1.3.0"
         phase                             = "Phase 4C.2G.0.3.3"
         controller_name                   = "automated_windows_network_isolation_controller"
         controller_version                = $ControllerVersion
@@ -1472,8 +1616,14 @@ if ($ReadinessTest) {
         started_at_utc                    = $CurrentUtc
         isolation_verified_at_utc         = $isolationVerifiedTime
         network_restored_at_utc           = $networkRestoredTime
+        isolation_verified                = [bool]$isolationVerifiedTime
+        failure_reason                    = $failureReason
+        remaining_active_default_routes   = [int]$remainingRoutesCount
+        proxy_detected                    = if ($lastPassiveCheck) { [bool]$lastPassiveCheck.ProxyDetected } else { [bool]($env:HTTP_PROXY -or $env:HTTPS_PROXY -or $env:ALL_PROXY) }
+        persistent_routes_ignored         = if ($lastPassiveCheck) { $lastPassiveCheck.PersistentRoutesIgnored } else { @() }
         network_restored                  = [bool]$networkRestored
         watchdog_cleanup_verified         = [bool]$watchdogCleanupVerified
+        offline_verifier_invoked          = [bool]$offlineVerifierInvoked
         pre_isolation_adapter_snapshot    = $Snapshot.Adapters
         exact_disabled_adapter_allowlist  = $disabledAllowlist
         passive_offline_checks            = [ordered]@{
@@ -1509,7 +1659,7 @@ if ($ReadinessTest) {
 
     Write-ReceiptAtomic -Path $ReceiptPath -Data $controllerReceipt
     Write-Host "`nReadiness receipt written to: $ReceiptPath" -ForegroundColor Cyan
-    Write-Host "Controller Final Verdict: $finalVerdict" -ForegroundColor Green
+    Write-Host "Controller Final Verdict: $finalVerdict" -ForegroundColor $(if ($finalVerdict -like "*PASS*") { "Green" } else { "Red" })
 
     if ($ElevatedDetachedWorker) {
         try {

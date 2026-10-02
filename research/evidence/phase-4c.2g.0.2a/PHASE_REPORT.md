@@ -33,8 +33,8 @@
 
 Đã triển khai script độc lập:
 `scripts/research/verify_phase_4c2g_offline_runtime.py`
-- **Kích thước**: 16,208 bytes
-- **SHA-256**: `c15c217d865361abb29c076b74864c19c2e18fc8c02534c198fe405885c94e9a`
+- **Kích thước**: 17,335 bytes
+- **SHA-256**: `757f4e4cfc4ca0c9fdbd283b819a4ee410258455418c7ba340fba8b4491574f7`
 - **Đặc tính kỹ thuật**:
   - Hoàn toàn chỉ dùng Python standard library (`argparse`, `hashlib`, `json`, `os`, `platform`, `subprocess`, `sys`, `datetime`).
   - Tuyệt đối không mở socket, không DNS lookup, không HTTP probe, không pip install.

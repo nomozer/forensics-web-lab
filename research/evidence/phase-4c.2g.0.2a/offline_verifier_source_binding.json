@@ -10,8 +10,8 @@
   "binding_name": "standalone_offline_verifier_source_binding",
   "source_script": {
     "relative_path": "scripts/research/verify_phase_4c2g_offline_runtime.py",
-    "byte_count": 16208,
-    "sha256": "c15c217d865361abb29c076b74864c19c2e18fc8c02534c198fe405885c94e9a",
+    "byte_count": 17335,
+    "sha256": "757f4e4cfc4ca0c9fdbd283b819a4ee410258455418c7ba340fba8b4491574f7",
     "language": "python3",
     "dependencies": "standard_library_only"
   },

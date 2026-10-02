@@ -98,22 +98,46 @@ def inspect_passive_network() -> dict:
         "all_proxy": os.environ.get("ALL_PROXY", ""),
         "default_route_detected": False,
         "connected_network_adapters": [],
+        "persistent_routes_ignored": [],
         "active_vpn_detected": False,
     }
 
     # Check Windows route print
     if platform.system() == "Windows":
+        active_routes_detected = False
+        persistent_routes = []
         try:
             route_out = subprocess.check_output(
                 ["route", "print", "0.0.0.0"],
                 text=True,
                 stderr=subprocess.DEVNULL,
             )
+            in_active_routes = False
+            in_persistent_routes = False
             for line in route_out.splitlines():
-                parts = line.strip().split()
+                stripped = line.strip()
+                if "Active Routes:" in stripped:
+                    in_active_routes = True
+                    in_persistent_routes = False
+                    continue
+                elif "Persistent Routes:" in stripped:
+                    in_active_routes = False
+                    in_persistent_routes = True
+                    continue
+                elif stripped.startswith("IPv6") or stripped.startswith("Interface List"):
+                    in_active_routes = False
+                    in_persistent_routes = False
+                    continue
+
+                parts = stripped.split()
                 if len(parts) >= 3 and parts[0] == "0.0.0.0" and parts[1] == "0.0.0.0":
-                    results["default_route_detected"] = True
-                    break
+                    if in_active_routes:
+                        active_routes_detected = True
+                    elif in_persistent_routes:
+                        persistent_routes.append(stripped)
+
+            results["default_route_detected"] = active_routes_detected
+            results["persistent_routes_ignored"] = persistent_routes
         except Exception:
             pass
 
@@ -299,6 +323,7 @@ def verify_offline_runtime(
         "has_proxy": has_proxy,
         "default_route_detected": has_default_route,
         "connected_network_adapters": net_info["connected_network_adapters"],
+        "persistent_routes_ignored": net_info.get("persistent_routes_ignored", []),
         "passive_checks": net_info,
     }
 

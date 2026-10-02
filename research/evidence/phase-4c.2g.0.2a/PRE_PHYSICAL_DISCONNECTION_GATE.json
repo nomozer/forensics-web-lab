@@ -10,7 +10,7 @@
   "gate_name": "pre_physical_disconnection_gate",
   "effective_evaluator_commit": "3cf75c2bf0c9835dd58897b7b36982732cab40ab",
   "execution_package_commit": "2826a8274cb89ec548d6fac5c8ae50c1c2836202",
-  "verifier_source_sha256": "c15c217d865361abb29c076b74864c19c2e18fc8c02534c198fe405885c94e9a",
+  "verifier_source_sha256": "757f4e4cfc4ca0c9fdbd283b819a4ee410258455418c7ba340fba8b4491574f7",
   "gate_checks": {
     "detached_worktree_commit_exact": "PASS",
     "worktree_cleanliness": "PASS",

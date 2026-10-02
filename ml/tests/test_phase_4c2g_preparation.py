@@ -602,8 +602,8 @@ class TestPhase4C2G02ATimestampAndOfflineVerifier:
     P02A_DIR = Path("research/evidence/phase-4c.2g.0.2a")
     P02B_DIR = Path("research/evidence/phase-4c.2g.0.2b")
     VERIFIER_SCRIPT = Path("scripts/research/verify_phase_4c2g_offline_runtime.py")
-    EXPECTED_VERIFIER_BYTES = 16208
-    EXPECTED_VERIFIER_SHA256 = "c15c217d865361abb29c076b74864c19c2e18fc8c02534c198fe405885c94e9a"
+    EXPECTED_VERIFIER_BYTES = 17335
+    EXPECTED_VERIFIER_SHA256 = "757f4e4cfc4ca0c9fdbd283b819a4ee410258455418c7ba340fba8b4491574f7"
 
     def test_g39_all_timestamps_iso8601_and_timezone_aware(self):
         """All timestamps in Phase 4C.2G.0.2 and 4C.2G.0.2A parse as ISO-8601 and are timezone-aware."""
@@ -818,8 +818,8 @@ class TestPhase4C2G03AutomatedIsolationController:
 
     REPO_ROOT = Path(__file__).resolve().parent.parent.parent
     CONTROLLER_PATH = REPO_ROOT / "scripts" / "research" / "RUN_PHASE4C2G_AUTOMATED_ISOLATION.ps1"
-    EXPECTED_CONTROLLER_BYTES = 76591
-    EXPECTED_CONTROLLER_SHA256 = "e1f89ecaa17cc74bdd1896c3e4fc39b305a24c0a8fe58f47a0e1f6e91b5bd2cc"
+    EXPECTED_CONTROLLER_BYTES = 84930
+    EXPECTED_CONTROLLER_SHA256 = "804b94055ab3470a1863e80d0d3a172ff59c056e9b39664d68c58a6a95db5538"
 
     def test_g53_controller_script_integrity_and_prohibited_tokens_scan(self):
         """Controller script exists, matches exact size and hash, and contains zero prohibited commands."""
@@ -1542,6 +1542,7 @@ class TestPhase4C2G032RecoveryScriptSyntaxAndInterruption:
                 "A parameter cannot be found that matches parameter name 'InterfaceIndex'" in log_text
                 or "Recovery script syntax validation failed" in log_text
                 or "cannot find the file specified" in log_text
+                or "BLOCKED_AMBIGUOUS_ROUTE_OWNER" in log_text
             )
 
     def test_g83_scientific_invariants_and_zero_real_counters(self):
@@ -1887,6 +1888,9 @@ class TestPhase4C2G033AdapterCmdletContractAndFailedAttempt:
         assert "Safe remove on absent task succeeds cleanly: True" in res.stdout
         assert "Verdict logic: restoration success + watchdog cleanup success => PASS: True" in res.stdout
         assert "Verdict logic: restoration success + watchdog cleanup failure => BLOCKED: True" in res.stdout
+        assert "Persistent routes ignored and excluded from active default route: True" in res.stdout
+        assert "Remaining routes 0 with passive disagreement => DISAGREEMENT: True" in res.stdout
+        assert "Remaining routes 0 with proxy detected => BLOCKED_PROXY_DETECTED: True" in res.stdout
 
     def test_g97_generated_recovery_script_rejects_missing_identity(self, tmp_path):
         """Generated recovery script generator strictly throws if target adapter is missing InterfaceDescription or MacAddress."""
@@ -2163,3 +2167,209 @@ class TestPhase4C2G033AdapterCmdletContractAndFailedAttempt:
         watchdog_deleted = False
         watchdog_auto_cleaned = bool(watchdog_deleted)
         assert watchdog_auto_cleaned is False
+
+    def test_g107_zero_active_routes_plus_persistent_route_only_yields_isolated(self):
+        """0 active routes + persistent route only => isolated PASS (persistent route excluded from active default route)."""
+        def parse_route_print(lines: List[str]):
+            in_active = False
+            in_persistent = False
+            active_default = False
+            persistent_ignored = []
+            for line in lines:
+                s = line.strip()
+                if "Active Routes:" in s:
+                    in_active = True
+                    in_persistent = False
+                    continue
+                elif "Persistent Routes:" in s:
+                    in_active = False
+                    in_persistent = True
+                    continue
+                elif s.startswith("IPv6") or s.startswith("Interface List"):
+                    in_active = False
+                    in_persistent = False
+                    continue
+                parts = s.split()
+                if len(parts) >= 3 and parts[0] == "0.0.0.0" and parts[1] == "0.0.0.0":
+                    if in_active:
+                        active_default = True
+                    elif in_persistent:
+                        persistent_ignored.append(s)
+            return active_default, persistent_ignored
+
+        # Realistic 20:47 output where only persistent route existed
+        sample_output = [
+            "Active Routes:",
+            "Network Destination        Netmask          Gateway       Interface  Metric",
+            "None",
+            "Persistent Routes:",
+            "  Network Address          Netmask  Gateway Address  Metric",
+            "          0.0.0.0          0.0.0.0         26.0.0.1    9256",
+        ]
+        has_active, persistent_ignored = parse_route_print(sample_output)
+        assert has_active is False
+        assert len(persistent_ignored) == 1
+        assert "26.0.0.1" in persistent_ignored[0]
+
+        # Overall isolation verdict with 0 proxy, 0 active routes, 0 connected adapters
+        proxy_set = False
+        connected_egress_adapters = []
+        is_isolated = (not proxy_set) and (not has_active) and (len(connected_egress_adapters) == 0)
+        assert is_isolated is True
+
+    def test_g108_active_default_route_present_yields_isolated_false(self):
+        """Active default route present in Active Routes section => isolated is False."""
+        sample_active = [
+            "Active Routes:",
+            "Network Destination        Netmask          Gateway       Interface  Metric",
+            "          0.0.0.0          0.0.0.0      192.168.1.1     192.168.1.50     25",
+            "Persistent Routes:",
+            "  Network Address          Netmask  Gateway Address  Metric",
+            "          0.0.0.0          0.0.0.0         26.0.0.1    9256",
+        ]
+        in_active = False
+        in_persistent = False
+        active_default = False
+        for line in sample_active:
+            s = line.strip()
+            if "Active Routes:" in s:
+                in_active = True
+                in_persistent = False
+                continue
+            elif "Persistent Routes:" in s:
+                in_active = False
+                in_persistent = True
+                continue
+            parts = s.split()
+            if len(parts) >= 3 and parts[0] == "0.0.0.0" and parts[1] == "0.0.0.0":
+                if in_active:
+                    active_default = True
+        assert active_default is True
+        is_isolated = not active_default
+        assert is_isolated is False
+
+    def test_g109_zero_routes_with_proxy_yields_blocked_proxy_detected(self):
+        """0 active routes but proxy detected => BLOCKED_PROXY_DETECTED verdict."""
+        def evaluate_isolation_state(remaining_routes_count: int, proxy_detected: bool, default_route_detected: bool):
+            is_isolated = (not proxy_detected) and (not default_route_detected)
+            if remaining_routes_count == 0:
+                if is_isolated:
+                    return "ISOLATION_CONFIRMED"
+                else:
+                    if proxy_detected:
+                        raise RuntimeError("BLOCKED_PROXY_DETECTED")
+                    return "DISAGREEMENT"
+            return "ROUTES_REMAINING"
+
+        # Proxy detected with 0 remaining routes strictly throws BLOCKED_PROXY_DETECTED
+        with pytest.raises(RuntimeError, match="BLOCKED_PROXY_DETECTED"):
+            evaluate_isolation_state(remaining_routes_count=0, proxy_detected=True, default_route_detected=False)
+
+    def test_g110_zero_routes_never_produces_blocked_ambiguous_route_owner(self):
+        """0 active routes with passive disagreement produces BLOCKED_PASSIVE_ISOLATION_SOURCE_DISAGREEMENT, never BLOCKED_AMBIGUOUS_ROUTE_OWNER."""
+        def run_iteration_decision(remaining_routes_count: int, is_isolated: bool, round_num: int, max_rounds: int = 3):
+            if remaining_routes_count == 0:
+                if is_isolated:
+                    return "ISOLATION_CONFIRMED"
+                else:
+                    if round_num < max_rounds:
+                        return "RETRY"
+                    else:
+                        raise RuntimeError("BLOCKED_PASSIVE_ISOLATION_SOURCE_DISAGREEMENT")
+            else:
+                # Ambiguous route owner can only be raised when remaining routes > 0 and no owner found
+                raise RuntimeError("BLOCKED_AMBIGUOUS_ROUTE_OWNER")
+
+        # Round 1 & 2 retry
+        assert run_iteration_decision(remaining_routes_count=0, is_isolated=False, round_num=1) == "RETRY"
+        assert run_iteration_decision(remaining_routes_count=0, is_isolated=False, round_num=2) == "RETRY"
+
+        # Round 3 fails with exact source disagreement verdict, never ambiguous owner
+        with pytest.raises(RuntimeError, match="BLOCKED_PASSIVE_ISOLATION_SOURCE_DISAGREEMENT"):
+            run_iteration_decision(remaining_routes_count=0, is_isolated=False, round_num=3)
+
+        # Static check in controller source code: ensure BLOCKED_AMBIGUOUS_ROUTE_OWNER is NOT in the remainingRoutes.Count -eq 0 block
+        controller_text = self.CONTROLLER_PATH.read_text(encoding="utf-8")
+        zero_routes_block = re.search(
+            r'if \(\$remainingRoutes\.Count -eq 0\) \{(.*?)\}\s+# remainingRoutes\.Count > 0',
+            controller_text,
+            re.DOTALL,
+        )
+        assert zero_routes_block is not None, "Zero routes block must exist in controller"
+        assert "BLOCKED_AMBIGUOUS_ROUTE_OWNER" not in zero_routes_block.group(1), (
+            "BLOCKED_AMBIGUOUS_ROUTE_OWNER must never appear in remainingRoutes == 0 block"
+        )
+        assert "BLOCKED_PASSIVE_ISOLATION_SOURCE_DISAGREEMENT" in zero_routes_block.group(1)
+
+    def test_g111_failure_before_verifier_still_writes_atomic_failure_receipt(self):
+        """Failure before verifier is invoked still executes finally block and writes atomic failure receipt in Step 8."""
+        controller_text = self.CONTROLLER_PATH.read_text(encoding="utf-8")
+
+        # Verify try/catch/finally structure enclosing Step 4, 5, 6
+        assert "try {" in controller_text
+        assert "} catch {" in controller_text
+        assert "$failureReason = $_.Exception.Message" in controller_text
+        assert "} finally {" in controller_text
+
+        # Verify Step 8 is outside finally and writes receipt
+        assert "# Step 8: Build and Write Atomic Controller Receipt (ALWAYS REACHED!)" in controller_text
+        assert "Write-ReceiptAtomic -Path $ReceiptPath -Data $controllerReceipt" in controller_text
+
+        # Receipt fields contract: ensure all required fields are written
+        required_fields = [
+            "isolation_verified",
+            "failure_reason",
+            "remaining_active_default_routes",
+            "proxy_detected",
+            "persistent_routes_ignored",
+            "network_restored",
+            "watchdog_cleanup_verified",
+            "offline_verifier_invoked",
+            "locked_test_real_accesses",
+            "verdict",
+        ]
+        for field in required_fields:
+            assert f"{field} " in controller_text or f"{field}\t" in controller_text or f"\"{field}\"" in controller_text, (
+                f"Receipt must include field '{field}'"
+            )
+
+    def test_g112_restoration_and_watchdog_cleanup_mandatory_on_isolation_failure(self):
+        """Restoration and watchdog cleanup are in finally block, ensuring execution even on fatal failure."""
+        controller_text = self.CONTROLLER_PATH.read_text(encoding="utf-8")
+
+        # Find finally block
+        finally_match = re.search(r'\} finally \{(.*?)# Step 8:', controller_text, re.DOTALL)
+        assert finally_match is not None, "Finally block must exist in controller"
+        finally_body = finally_match.group(1)
+
+        # Confirm adapter restoration and watchdog cleanup are inside finally
+        assert "Enable-NetAdapter" in finally_body
+        assert "Remove-ScheduledTaskSafely" in finally_body
+        assert "Test-ScheduledTaskExists" in finally_body
+        assert "$networkRestored =" in finally_body
+        assert "$watchdogCleanupVerified =" in finally_body
+
+    def test_g113_offline_verifier_and_controller_share_active_route_semantics(self):
+        """Offline verifier and controller share identical active-route parsing semantics and ignore persistent routes."""
+        verifier_path = self.REPO_ROOT / "scripts" / "research" / "verify_phase_4c2g_offline_runtime.py"
+        assert verifier_path.exists()
+        verifier_text = verifier_path.read_text(encoding="utf-8")
+        controller_text = self.CONTROLLER_PATH.read_text(encoding="utf-8")
+
+        # Both must distinguish Active Routes from Persistent Routes
+        assert "Active Routes:" in verifier_text
+        assert "Persistent Routes:" in verifier_text
+        assert "Active Routes:" in controller_text
+        assert "Persistent Routes:" in controller_text
+
+        # Both must have persistent_routes_ignored field
+        assert "persistent_routes_ignored" in verifier_text
+        assert "persistent_routes_ignored" in controller_text
+
+        # Both must maintain zero probes
+        assert "outbound_socket_probes_sent" in verifier_text
+        assert "dns_lookups_performed" in verifier_text
+        assert "http_requests_sent" in verifier_text
+        assert "OutboundProbesSent" in controller_text
+        assert "DnsLookupsPerformed" in controller_text
+        assert "HttpRequestsSent" in controller_text

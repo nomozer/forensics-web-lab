@@ -21,8 +21,8 @@
     },
     "verify_phase_4c2g_offline_runtime_py": {
       "path": "scripts/research/verify_phase_4c2g_offline_runtime.py",
-      "bytes": 16208,
-      "sha256": "c15c217d865361abb29c076b74864c19c2e18fc8c02534c198fe405885c94e9a"
+      "bytes": 17335,
+      "sha256": "757f4e4cfc4ca0c9fdbd283b819a4ee410258455418c7ba340fba8b4491574f7"
     }
   },
   "real_counters": {
