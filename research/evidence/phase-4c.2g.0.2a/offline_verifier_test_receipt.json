@@ -1,0 +1,142 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.2A",
+  "verifier_name": "standalone_offline_runtime_verifier",
+  "synthetic_only": true,
+  "clock_source": "SYSTEM_UTC_RUNTIME",
+  "timezone_aware": true,
+  "timestamp_future_check": "PASS",
+  "observation_started_at_utc": "2026-10-02T01:08:56.000000+00:00",
+  "observation_completed_at_utc": "2026-10-02T01:09:00.000000+00:00",
+  "generated_at_utc": "2026-10-02T01:10:00.000000+00:00",
+  "verdict": "USER_PHYSICAL_ACTION_REQUIRED",
+  "errors": [],
+  "checks": {
+    "worktree_head": {
+      "status": "PASS",
+      "commit": "2826a8274cb89ec548d6fac5c8ae50c1c2836202"
+    },
+    "worktree_cleanliness": {
+      "status": "PASS",
+      "porcelain": "CLEAN"
+    },
+    "evaluator_components": {
+      "status": "PASS",
+      "components": {
+        "ml/evaluation/confirmatory_metrics.py": {
+          "status": "PASS",
+          "sha256": "bacbb9dc0a230359f1c3bbaece1ce8c19e30ddafa807313480d173a808bde808",
+          "bytes": 15199
+        },
+        "ml/evaluation/locked_test_evaluator.py": {
+          "status": "PASS",
+          "sha256": "b311e010535600781e52014fb6b675d32d78a558c5fe7e67bd3ec00b6989a5e1",
+          "bytes": 47708
+        },
+        "ml/evaluation/run_phase_4c2f_evaluator.py": {
+          "status": "PASS",
+          "sha256": "37ed02ff44d8c523150ebb968d2777bba9c2dee8597b3df60efa1fb5bd1e9041",
+          "bytes": 5739
+        },
+        "docs/schemas/human-unsealing-authorization.v1.schema.json": {
+          "status": "PASS",
+          "sha256": "15291643b2ca2b3d6e3c135957db140e33f7cc65bc11aebc4668f3e105af6734",
+          "bytes": 6143
+        }
+      }
+    },
+    "checkpoints": {
+      "status": "PASS",
+      "torch_load_count": 0,
+      "inference_calls": 0,
+      "results": {
+        "seed_42": {
+          "status": "PASS",
+          "sha256": "c941f42ed00adb098962ddb43c0f2f7d897e48e20957cddc0c491243f8730c92",
+          "bytes": 5627375,
+          "model_loaded": false,
+          "inference_run": false
+        },
+        "seed_1337": {
+          "status": "PASS",
+          "sha256": "69e706f9062f050ccbfd2affb72d63d5dde9d12f02c1e64c762b0ea6719073f1",
+          "bytes": 5627375,
+          "model_loaded": false,
+          "inference_run": false
+        },
+        "seed_2025": {
+          "status": "PASS",
+          "sha256": "92ce5ee986d487fdf14374842067d0684fc7669f5ecb32c7d603f6813942ceee",
+          "bytes": 5627375,
+          "model_loaded": false,
+          "inference_run": false
+        },
+        "seed_3407": {
+          "status": "PASS",
+          "sha256": "4897821ef0a97df9f1c51acde8d4ac01d383aa3a7b9e7ee55bbc3b3108847868",
+          "bytes": 5627375,
+          "model_loaded": false,
+          "inference_run": false
+        },
+        "seed_9001": {
+          "status": "PASS",
+          "sha256": "5f0f8803adcb7eec88d47e398ef8b2002b46e740c263b12abc2ba392822a91c3",
+          "bytes": 5627375,
+          "model_loaded": false,
+          "inference_run": false
+        }
+      }
+    },
+    "dependencies": {
+      "pip_check": "PASS",
+      "pip_freeze_sha256": "0e11c90b41f22f3f302a4c1a9860c6e3ffba109d6e465f361d447f71a3709a0c",
+      "pip_freeze_match": true
+    },
+    "network_isolation": {
+      "status": "USER_PHYSICAL_ACTION_REQUIRED",
+      "has_proxy": false,
+      "default_route_detected": true,
+      "connected_network_adapters": ["ACTIVE_ADAPTER_PRESENT"],
+      "passive_checks": {
+        "outbound_socket_probes_sent": 0,
+        "dns_lookups_performed": 0,
+        "http_requests_sent": 0,
+        "http_proxy": "",
+        "https_proxy": "",
+        "all_proxy": "",
+        "default_route_detected": true,
+        "active_vpn_detected": false
+      }
+    },
+    "filesystem": {
+      "output_dir_writable": true,
+      "paths_disjoint": true,
+      "planned_mountpoint_empty": true,
+      "locked_test_mount_state": "UNMOUNTED",
+      "canary_write_performed": false,
+      "read_only_mount_verification": "PENDING_HUMAN_AUTHORIZATION"
+    },
+    "authorization": {
+      "authorization_artifact_exists": false,
+      "status": "PENDING_HUMAN_APPROVAL"
+    },
+    "real_counters": {
+      "locked_test_real_accesses": 0,
+      "completed_real_unsealing_sessions": 0,
+      "completed_real_model_evaluations": 0,
+      "evaluation_attempts": 0,
+      "cpu_inference_calls": 0,
+      "gpu_inference_calls": 0,
+      "new_training_runs": 0
+    }
+  },
+  "real_counters": {
+    "locked_test_real_accesses": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "cpu_inference_calls": 0,
+    "gpu_inference_calls": 0,
+    "new_training_runs": 0
+  }
+}

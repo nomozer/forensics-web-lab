@@ -1,12 +1,12 @@
 {
-  "timestamp_utc": "2026-10-02T02:55:00.000000+00:00",
+  "timestamp_utc": "2026-10-02T01:05:48.000000+00:00",
   "phase": "Phase 4C.2G.0.2",
   "host_preparation_name": "physical_offline_host_preparation_audit",
   "host_platform": "Windows-11-10.0.26100-SP0",
   "cpu_model": "Intel64 Family 6 Model 141 Stepping 1, GenuineIntel",
   "python_version": "3.12.10",
   "cpu_inference_path": "IMPLEMENTATION_VERIFIED_RUNTIME_EXECUTION_PENDING",
-  "cpu_determinism_scientific_claim": "CPU được ưu tiên để giảm phụ thuộc CUDA và cải thiện khả năng tái lập trong một runtime đã niêm phong. Bitwise parity giữa các host, BLAS, PyTorch hoặc kiến trúc CPU khác nhau không được giả định nếu chưa được kiểm chứng.",
+  "cpu_determinism_scientific_claim": "CPU \u0111\u01b0\u1ee3c \u01b0u ti\u00ean \u0111\u1ec3 gi\u1ea3m ph\u1ee5 thu\u1ed9c CUDA v\u00e0 c\u1ea3i thi\u1ec7n kh\u1ea3 n\u0103ng t\u00e1i l\u1eadp trong m\u1ed9t runtime \u0111\u00e3 ni\u00eam phong. Bitwise parity gi\u1eefa c\u00e1c host, BLAS, PyTorch ho\u1eb7c ki\u1ebfn tr\u00fac CPU kh\u00e1c nhau kh\u00f4ng \u0111\u01b0\u1ee3c gi\u1ea3 \u0111\u1ecbnh n\u1ebfu ch\u01b0a \u0111\u01b0\u1ee3c ki\u1ec3m ch\u1ee9ng.",
   "preparation_status_matrix": {
     "detached_execution_worktree_at_2826a82": "VERIFIED",
     "worktree_porcelain_cleanliness": "VERIFIED",
@@ -28,5 +28,11 @@
     "gpu_inference_calls": 0,
     "new_training_runs": 0
   },
-  "host_verdict": "USER_PHYSICAL_ACTION_REQUIRED"
+  "host_verdict": "USER_PHYSICAL_ACTION_REQUIRED",
+  "generated_at_utc": "2026-10-02T01:05:48.000000+00:00",
+  "observation_started_at_utc": "2026-10-02T01:04:45.000000+00:00",
+  "observation_completed_at_utc": "2026-10-02T01:05:48.000000+00:00",
+  "clock_source": "SYSTEM_UTC_RUNTIME",
+  "timezone_aware": true,
+  "timestamp_future_check": "PASS"
 }

@@ -23,6 +23,7 @@ Strict Test Invariants:
 from __future__ import annotations
 
 import copy
+import hashlib
 import io
 import json
 import os
@@ -590,3 +591,138 @@ class TestPhase4C2G02OfflineRuntimeVerification:
         assert len(dep["pip_freeze_sha256"]) == 64
         assert dep["runtime_package_install_during_evaluation_session"] == "STRICTLY_FORBIDDEN"
         assert dep["preinstalled_dependencies_verified"] is True
+
+
+class TestPhase4C2G02ATimestampAndOfflineVerifier:
+    """Test suite verifying UTC timestamp exactness and standalone offline runtime verifier."""
+
+    P02_DIR = Path("research/evidence/phase-4c.2g.0.2")
+    P02A_DIR = Path("research/evidence/phase-4c.2g.0.2a")
+    VERIFIER_SCRIPT = Path("scripts/research/verify_phase_4c2g_offline_runtime.py")
+    EXPECTED_VERIFIER_BYTES = 16208
+    EXPECTED_VERIFIER_SHA256 = "c15c217d865361abb29c076b74864c19c2e18fc8c02534c198fe405885c94e9a"
+
+    def test_g39_all_timestamps_iso8601_and_timezone_aware(self):
+        """All timestamps in Phase 4C.2G.0.2 and 4C.2G.0.2A parse as ISO-8601 and are timezone-aware."""
+        from datetime import datetime
+        time_keys = ["timestamp_utc", "generated_at_utc", "observation_started_at_utc", "observation_completed_at_utc"]
+
+        for d in [self.P02_DIR, self.P02A_DIR]:
+            for p in d.glob("*.json"):
+                data = json.loads(p.read_text(encoding="utf-8"))
+                for k in time_keys:
+                    if k in data:
+                        val = data[k]
+                        assert isinstance(val, str), f"{p.name} {k} not str"
+                        dt = datetime.fromisoformat(val)
+                        assert dt.tzinfo is not None, f"{p.name} {k} not timezone-aware"
+
+    def test_g40_utc_offset_must_be_zero(self):
+        """All timestamps must have UTC offset of exactly zero (+00:00 or Z)."""
+        from datetime import datetime
+        time_keys = ["timestamp_utc", "generated_at_utc", "observation_started_at_utc", "observation_completed_at_utc"]
+
+        for d in [self.P02_DIR, self.P02A_DIR]:
+            for p in d.glob("*.json"):
+                data = json.loads(p.read_text(encoding="utf-8"))
+                for k in time_keys:
+                    if k in data:
+                        dt = datetime.fromisoformat(data[k])
+                        offset = dt.utcoffset()
+                        assert offset is not None and offset.total_seconds() == 0, f"{p.name} {k} offset != 0"
+
+    def test_g41_no_timestamp_in_the_future_more_than_five_minutes(self):
+        """No timestamp may be in the future by more than 5 minutes relative to system UTC."""
+        from datetime import datetime, timezone, timedelta
+        time_keys = ["timestamp_utc", "generated_at_utc", "observation_started_at_utc", "observation_completed_at_utc"]
+        max_allowed = datetime.now(timezone.utc) + timedelta(minutes=5)
+
+        for d in [self.P02_DIR, self.P02A_DIR]:
+            for p in d.glob("*.json"):
+                data = json.loads(p.read_text(encoding="utf-8"))
+                for k in time_keys:
+                    if k in data:
+                        dt = datetime.fromisoformat(data[k])
+                        assert dt <= max_allowed, f"{p.name} {k} ({dt}) is in the future relative to {max_allowed}"
+
+    def test_g42_observation_started_before_or_equal_completed(self):
+        """observation_started_at_utc must be <= observation_completed_at_utc."""
+        from datetime import datetime
+
+        for d in [self.P02_DIR, self.P02A_DIR]:
+            for p in d.glob("*.json"):
+                data = json.loads(p.read_text(encoding="utf-8"))
+                if "observation_started_at_utc" in data and "observation_completed_at_utc" in data:
+                    t_start = datetime.fromisoformat(data["observation_started_at_utc"])
+                    t_end = datetime.fromisoformat(data["observation_completed_at_utc"])
+                    assert t_start <= t_end, f"{p.name}: start {t_start} > end {t_end}"
+
+    def test_g43_no_stale_hardcoded_timestamp(self):
+        """No evidence file contains the stale future timestamp 2026-10-02T02:55:00.000000+00:00."""
+        stale_ts = "2026-10-02T02:55:00.000000+00:00"
+        for d in [self.P02_DIR, self.P02A_DIR]:
+            for p in d.glob("**/*"):
+                if p.is_file() and p.name != "TIMESTAMP_CORRECTION_AUDIT.json":
+                    text = p.read_text(encoding="utf-8", errors="ignore")
+                    assert stale_ts not in text, f"Stale timestamp found in {p}"
+
+    def test_g44_offline_verifier_script_exists_and_matches_binding(self):
+        """Offline runtime verifier script exists, has exact byte count and SHA-256."""
+        assert self.VERIFIER_SCRIPT.exists()
+        content = self.VERIFIER_SCRIPT.read_bytes()
+        assert len(content) == self.EXPECTED_VERIFIER_BYTES
+        sha = hashlib.sha256(content).hexdigest()
+        assert sha == self.EXPECTED_VERIFIER_SHA256
+
+        binding = json.loads((self.P02A_DIR / "offline_verifier_source_binding.json").read_text(encoding="utf-8"))
+        assert binding["source_script"]["byte_count"] == self.EXPECTED_VERIFIER_BYTES
+        assert binding["source_script"]["sha256"] == self.EXPECTED_VERIFIER_SHA256
+
+    def test_g45_offline_verifier_passive_inspection_detects_default_route(self):
+        """Verifier passive inspection operates with 0 outbound probes."""
+        from scripts.research.verify_phase_4c2g_offline_runtime import inspect_passive_network
+        net = inspect_passive_network()
+        assert net["outbound_socket_probes_sent"] == 0
+        assert net["dns_lookups_performed"] == 0
+        assert net["http_requests_sent"] == 0
+        assert isinstance(net["default_route_detected"], bool)
+
+    def test_g46_offline_verifier_receipt_contract_and_atomic_write(self, tmp_path):
+        """Verifier generates atomic receipt and enforces zero counters."""
+        from scripts.research.verify_phase_4c2g_offline_runtime import verify_offline_runtime, write_receipt_atomic
+
+        test_receipt = tmp_path / "test_receipt.json"
+        data = verify_offline_runtime(
+            execution_worktree=Path("d:/Documents/forensics-web-lab-offline-execution"),
+            checkpoint_root=Path("D:/Documents/forensics-web-lab-local-artifacts/phase_4c1/runs/extracted_15_runs"),
+            output_dir=tmp_path / "out",
+            planned_locked_test_mountpoint=tmp_path / "mount",
+            synthetic_only=True,
+        )
+
+        assert data["synthetic_only"] is True
+        assert data["real_counters"]["locked_test_real_accesses"] == 0
+        assert data["real_counters"]["completed_real_unsealing_sessions"] == 0
+        assert data["real_counters"]["completed_real_model_evaluations"] == 0
+        assert data["real_counters"]["evaluation_attempts"] == 0
+        assert data["real_counters"]["cpu_inference_calls"] == 0
+        assert data["real_counters"]["gpu_inference_calls"] == 0
+        assert data["real_counters"]["new_training_runs"] == 0
+
+        write_receipt_atomic(test_receipt, data)
+        assert test_receipt.exists()
+        loaded = json.loads(test_receipt.read_text(encoding="utf-8"))
+        assert loaded["verdict"] in ["USER_PHYSICAL_ACTION_REQUIRED", "READY_FOR_HUMAN_AUTHORIZATION_REVIEW"]
+
+    def test_g47_pre_physical_disconnection_gate_verdict(self):
+        """PRE_PHYSICAL_DISCONNECTION_GATE.json records READY_FOR_USER_PHYSICAL_NETWORK_DISCONNECTION."""
+        gate = json.loads((self.P02A_DIR / "PRE_PHYSICAL_DISCONNECTION_GATE.json").read_text(encoding="utf-8"))
+        assert gate["gate_verdict"] == "READY_FOR_USER_PHYSICAL_NETWORK_DISCONNECTION"
+        assert gate["real_counters"]["locked_test_real_accesses"] == 0
+
+    def test_g48_timestamp_correction_audit_verdict(self):
+        """TIMESTAMP_CORRECTION_AUDIT.json documents root cause and zero remaining future timestamps."""
+        audit = json.loads((self.P02A_DIR / "TIMESTAMP_CORRECTION_AUDIT.json").read_text(encoding="utf-8"))
+        assert audit["root_cause_investigation"]["identified_root_cause"] == "LOCAL_TIME_STAMPED_WITH_UTC_OFFSET"
+        assert audit["verification_verdict"]["future_timestamps_remaining"] == 0
+        assert audit["audit_findings"]["future_timestamps_remaining"] == 0

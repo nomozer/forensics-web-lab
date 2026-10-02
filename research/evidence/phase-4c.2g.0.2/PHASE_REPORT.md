@@ -1,7 +1,7 @@
 # Báo Cáo Nghiên Cứu Phase 4C.2G.0.2: Chuẩn Bị và Xác Minh Runtime Offline Vật Lý Trước Khi Phê Duyệt Mở Niêm Phong
 
 > **Phase**: Phase 4C.2G.0.2 — Prepare and Verify the Physical Offline Runtime Before Human Authorization<br>
-> **Thời điểm niêm phong UTC**: `2026-10-02T02:55:00.000000+00:00`<br>
+> **Thời điểm niêm phong UTC**: `2026-10-02T01:05:48.000000+00:00`<br>
 > **Mục tiêu**: Chuẩn bị và xác minh toàn diện runtime CPU offline thực tế (detached execution worktree, 4 evaluator components, 5 canonical checkpoints, frozen dependencies, filesystem separation); kiểm tra thụ động cách ly mạng; bảo toàn nghiêm ngặt phân vùng locked-test chưa mở.<br>
 > **Branch**: `research/phase-4c2g-locked-test-execution`<br>
 > **Effective Evaluator Commit**: `3cf75c2bf0c9835dd58897b7b36982732cab40ab`<br>

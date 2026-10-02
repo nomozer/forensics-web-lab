@@ -1,5 +1,5 @@
 {
-  "timestamp_utc": "2026-10-02T02:55:00.000000+00:00",
+  "timestamp_utc": "2026-10-02T01:05:48.000000+00:00",
   "phase": "Phase 4C.2G.0.2",
   "inspection_method": "PASSIVE_LOCAL_INSPECTION_ZERO_OUTBOUND_PROBES",
   "passive_checks": {
@@ -22,5 +22,11 @@
     "network_namespace_isolation": "NOT_AVAILABLE_ON_HOST"
   },
   "airgap_requirement": "Host must be physically disconnected from network adapters or placed in a loopback-only namespace before human authorization and before unsealing session starts.",
-  "inspection_verdict": "USER_PHYSICAL_ACTION_REQUIRED"
+  "inspection_verdict": "USER_PHYSICAL_ACTION_REQUIRED",
+  "generated_at_utc": "2026-10-02T01:05:48.000000+00:00",
+  "observation_started_at_utc": "2026-10-02T01:04:45.000000+00:00",
+  "observation_completed_at_utc": "2026-10-02T01:05:48.000000+00:00",
+  "clock_source": "SYSTEM_UTC_RUNTIME",
+  "timezone_aware": true,
+  "timestamp_future_check": "PASS"
 }

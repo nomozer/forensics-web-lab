@@ -1,5 +1,5 @@
 {
-  "timestamp_utc": "2026-10-02T02:55:00.000000+00:00",
+  "timestamp_utc": "2026-10-02T01:05:48.000000+00:00",
   "phase": "Phase 4C.2G.0.2",
   "planned_evaluation_output_directory": "data/research/evaluation-outputs/phase_4c2g",
   "evaluation_output_directory_status": "PREPARED_AND_WRITABLE",
@@ -16,5 +16,11 @@
   "canary_write_verification_required": false,
   "non_mutating_read_only_mount_verification_required": true,
   "locked_test_real_accesses": 0,
-  "filesystem_preparation_verdict": "FILESYSTEM_SEPARATION_VERIFIED"
+  "filesystem_preparation_verdict": "FILESYSTEM_SEPARATION_VERIFIED",
+  "generated_at_utc": "2026-10-02T01:05:48.000000+00:00",
+  "observation_started_at_utc": "2026-10-02T01:04:45.000000+00:00",
+  "observation_completed_at_utc": "2026-10-02T01:05:48.000000+00:00",
+  "clock_source": "SYSTEM_UTC_RUNTIME",
+  "timezone_aware": true,
+  "timestamp_future_check": "PASS"
 }

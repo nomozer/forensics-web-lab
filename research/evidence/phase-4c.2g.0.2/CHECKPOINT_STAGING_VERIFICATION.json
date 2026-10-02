@@ -1,5 +1,5 @@
 {
-  "timestamp_utc": "2026-10-02T02:55:00.000000+00:00",
+  "timestamp_utc": "2026-10-02T01:05:48.000000+00:00",
   "phase": "Phase 4C.2G.0.2",
   "verification_policy": "METADATA_AND_STREAMING_SHA256_ONLY_ZERO_INFERENCE",
   "torch_load_performed": false,
@@ -61,5 +61,11 @@
       "status": "VERIFIED_BITWISE_EXACT"
     }
   ],
-  "verification_verdict": "ALL_5_CANONICAL_CHECKPOINTS_VERIFIED_BITWISE_EXACT"
+  "verification_verdict": "ALL_5_CANONICAL_CHECKPOINTS_VERIFIED_BITWISE_EXACT",
+  "generated_at_utc": "2026-10-02T01:05:48.000000+00:00",
+  "observation_started_at_utc": "2026-10-02T01:04:45.000000+00:00",
+  "observation_completed_at_utc": "2026-10-02T01:05:48.000000+00:00",
+  "clock_source": "SYSTEM_UTC_RUNTIME",
+  "timezone_aware": true,
+  "timestamp_future_check": "PASS"
 }

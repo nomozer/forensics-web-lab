@@ -1,25 +1,25 @@
 {
-  "timestamp_utc": "2026-10-02T01:05:48.000000+00:00",
-  "phase": "Phase 4C.2G.0.2",
+  "timestamp_utc": "2026-10-02T01:10:00.000000+00:00",
+  "generated_at_utc": "2026-10-02T01:10:00.000000+00:00",
+  "observation_started_at_utc": "2026-10-02T01:08:56.000000+00:00",
+  "observation_completed_at_utc": "2026-10-02T01:10:00.000000+00:00",
+  "clock_source": "SYSTEM_UTC_RUNTIME",
+  "timezone_aware": true,
+  "timestamp_future_check": "PASS",
+  "phase": "Phase 4C.2G.0.2A",
   "protocol": "stage1_frozen_backbone_linear_probe",
   "sample_size": 250,
   "effective_evaluator_commit": "3cf75c2bf0c9835dd58897b7b36982732cab40ab",
   "execution_package_commit": "2826a8274cb89ec548d6fac5c8ae50c1c2836202",
-  "hotfix_reconciliation_commit": "54572ae4d6e11dc49110932a0d79e4685a335a0a",
+  "offline_verifier_binding": {
+    "script_path": "scripts/research/verify_phase_4c2g_offline_runtime.py",
+    "bytes": 16208,
+    "sha256": "c15c217d865361abb29c076b74864c19c2e18fc8c02534c198fe405885c94e9a"
+  },
   "preferred_execution_mode": {
     "mode": "CLEAN_DETACHED_GIT_CHECKOUT",
     "required_commit": "2826a8274cb89ec548d6fac5c8ae50c1c2836202",
     "required_tree_clean": true
-  },
-  "archive_binding": {
-    "archive_filename": "phase_4c2g_locked_test_evaluator_2826a82.tar.gz",
-    "archive_bytes": 29823,
-    "archive_sha256": "5ab922a2ec2aa3871b375ca6123b1591e74d29ed5001c191be532ac219ce891b",
-    "archive_member_count": 24
-  },
-  "dependency_environment_binding": {
-    "pip_freeze_sha256": "0e11c90b41f22f3f302a4c1a9860c6e3ffba109d6e465f361d447f71a3709a0c",
-    "pip_check_status": "PASS_NO_BROKEN_REQUIREMENTS"
   },
   "evaluator_components": {
     "confirmatory_metrics_py": {
@@ -46,36 +46,26 @@
   "candidate_checkpoints": [
     {
       "seed": 42,
-      "run_id": "phase4c1-stage1-n250-seed42",
-      "logical_reference": "phase_4c1/runs/extracted_15_runs/n250_seed_42/best_checkpoint.pt",
       "bytes": 5627375,
       "sha256": "c941f42ed00adb098962ddb43c0f2f7d897e48e20957cddc0c491243f8730c92"
     },
     {
       "seed": 1337,
-      "run_id": "phase4c1-stage1-n250-seed1337",
-      "logical_reference": "phase_4c1/runs/extracted_15_runs/n250_seed_1337/best_checkpoint.pt",
       "bytes": 5627375,
       "sha256": "69e706f9062f050ccbfd2affb72d63d5dde9d12f02c1e64c762b0ea6719073f1"
     },
     {
       "seed": 2025,
-      "run_id": "phase4c1-stage1-n250-seed2025",
-      "logical_reference": "phase_4c1/runs/extracted_15_runs/n250_seed_2025/best_checkpoint.pt",
       "bytes": 5627375,
       "sha256": "92ce5ee986d487fdf14374842067d0684fc7669f5ecb32c7d603f6813942ceee"
     },
     {
       "seed": 3407,
-      "run_id": "phase4c1-stage1-n250-seed3407",
-      "logical_reference": "phase_4c1/runs/extracted_15_runs/n250_seed_3407/best_checkpoint.pt",
       "bytes": 5627375,
       "sha256": "4897821ef0a97df9f1c51acde8d4ac01d383aa3a7b9e7ee55bbc3b3108847868"
     },
     {
       "seed": 9001,
-      "run_id": "phase4c1-stage1-n250-seed9001",
-      "logical_reference": "phase_4c1/runs/extracted_15_runs/n250_seed_9001/best_checkpoint.pt",
       "bytes": 5627375,
       "sha256": "5f0f8803adcb7eec88d47e398ef8b2002b46e740c263b12abc2ba392822a91c3"
     }
@@ -88,11 +78,5 @@
     "cpu_inference_calls": 0,
     "gpu_inference_calls": 0,
     "new_training_runs": 0
-  },
-  "generated_at_utc": "2026-10-02T01:05:48.000000+00:00",
-  "observation_started_at_utc": "2026-10-02T01:04:45.000000+00:00",
-  "observation_completed_at_utc": "2026-10-02T01:05:48.000000+00:00",
-  "clock_source": "SYSTEM_UTC_RUNTIME",
-  "timezone_aware": true,
-  "timestamp_future_check": "PASS"
+  }
 }

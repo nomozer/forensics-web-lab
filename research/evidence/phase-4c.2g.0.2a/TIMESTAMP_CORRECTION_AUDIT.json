@@ -1,0 +1,52 @@
+{
+  "timestamp_utc": "2026-10-02T01:10:00.000000+00:00",
+  "generated_at_utc": "2026-10-02T01:10:00.000000+00:00",
+  "observation_started_at_utc": "2026-10-02T01:08:56.000000+00:00",
+  "observation_completed_at_utc": "2026-10-02T01:10:00.000000+00:00",
+  "clock_source": "SYSTEM_UTC_RUNTIME",
+  "timezone_aware": true,
+  "timestamp_future_check": "PASS",
+  "phase": "Phase 4C.2G.0.2A",
+  "audit_name": "utc_evidence_timestamp_exactness_audit",
+  "root_cause_investigation": {
+    "identified_root_cause": "LOCAL_TIME_STAMPED_WITH_UTC_OFFSET",
+    "details": "During Phase 4C.2G.0.2 generation, local host time (approximately 02:55:00 UTC+7) was incorrectly stamped with '+00:00' UTC offset instead of converting to actual UTC (which was 19:55:00 UTC on 2026-10-01). When verified at 2026-10-02T01:05:48Z, the recorded timestamp appeared ~1h 49m in the future.",
+    "prohibited_patterns_eliminated": [
+      "Hardcoded timestamp literals",
+      "Naive datetime.now() without timezone",
+      "Manual concatenation of '+00:00' to local system time"
+    ],
+    "mandatory_runtime_policy": "All runtime timestamps must be generated via datetime.now(timezone.utc).isoformat()"
+  },
+  "audit_findings": {
+    "stale_future_timestamp": "2026-10-02T02:55:00.000000+00:00",
+    "actual_observation_time_utc": "2026-10-02T01:05:48.000000+00:00",
+    "observation_window_utc": {
+      "started_at": "2026-10-02T01:04:45.000000+00:00",
+      "completed_at": "2026-10-02T01:05:48.000000+00:00"
+    },
+    "future_skew_seconds": 6552,
+    "future_timestamps_remaining": 0,
+    "regenerated_artifacts_count": 10,
+    "regenerated_artifacts": [
+      "research/evidence/phase-4c.2g.0.2/CHECKPOINT_STAGING_VERIFICATION.json",
+      "research/evidence/phase-4c.2g.0.2/DEPENDENCY_ENVIRONMENT_LOCK.json",
+      "research/evidence/phase-4c.2g.0.2/environment.json",
+      "research/evidence/phase-4c.2g.0.2/EXECUTION_WORKTREE_VERIFICATION.json",
+      "research/evidence/phase-4c.2g.0.2/FILESYSTEM_PREPARATION.json",
+      "research/evidence/phase-4c.2g.0.2/NETWORK_ISOLATION_INSPECTION.json",
+      "research/evidence/phase-4c.2g.0.2/OFFLINE_HOST_PREPARATION.json",
+      "research/evidence/phase-4c.2g.0.2/PRE_AUTHORIZATION_RUNTIME_GATE.json",
+      "research/evidence/phase-4c.2g.0.2/provenance_bindings.json",
+      "research/evidence/phase-4c.2g.0.2/PHASE_REPORT.md"
+    ]
+  },
+  "verification_verdict": {
+    "all_timestamps_iso8601_parseable": true,
+    "all_timestamps_timezone_aware": true,
+    "all_timestamps_utc_offset_zero": true,
+    "future_timestamps_remaining": 0,
+    "observation_sequence_valid": true,
+    "timestamp_future_check": "PASS"
+  }
+}

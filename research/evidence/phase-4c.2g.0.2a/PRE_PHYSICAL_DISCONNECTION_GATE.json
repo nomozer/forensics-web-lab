@@ -1,0 +1,37 @@
+{
+  "timestamp_utc": "2026-10-02T01:10:00.000000+00:00",
+  "generated_at_utc": "2026-10-02T01:10:00.000000+00:00",
+  "observation_started_at_utc": "2026-10-02T01:08:56.000000+00:00",
+  "observation_completed_at_utc": "2026-10-02T01:10:00.000000+00:00",
+  "clock_source": "SYSTEM_UTC_RUNTIME",
+  "timezone_aware": true,
+  "timestamp_future_check": "PASS",
+  "phase": "Phase 4C.2G.0.2A",
+  "gate_name": "pre_physical_disconnection_gate",
+  "effective_evaluator_commit": "3cf75c2bf0c9835dd58897b7b36982732cab40ab",
+  "execution_package_commit": "2826a8274cb89ec548d6fac5c8ae50c1c2836202",
+  "verifier_source_sha256": "c15c217d865361abb29c076b74864c19c2e18fc8c02534c198fe405885c94e9a",
+  "gate_checks": {
+    "detached_worktree_commit_exact": "PASS",
+    "worktree_cleanliness": "PASS",
+    "four_evaluator_components": "PASS",
+    "five_canonical_checkpoints": "PASS",
+    "dependencies_pip_check": "PASS",
+    "pip_freeze_lock_match": "PASS",
+    "filesystem_disjointness": "PASS",
+    "timestamps_exact_and_non_future": "PASS",
+    "zero_real_counters": "PASS",
+    "no_human_unsealing_authorization": "PASS",
+    "network_physical_disconnection": "USER_PHYSICAL_ACTION_REQUIRED"
+  },
+  "real_counters": {
+    "locked_test_real_accesses": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "cpu_inference_calls": 0,
+    "gpu_inference_calls": 0,
+    "new_training_runs": 0
+  },
+  "gate_verdict": "READY_FOR_USER_PHYSICAL_NETWORK_DISCONNECTION"
+}

@@ -1,7 +1,7 @@
 # Code Index: Forensics Web Lab
 
-> **Thư mục**: `docs/continuity/CODE_INDEX.md`  
-> **Mục đích**: Bản đồ kiến trúc, mã nguồn thực tế và định vị trách nhiệm module cho các phiên làm việc của AI.  
+> **Thư mục**: `docs/continuity/CODE_INDEX.md`
+> **Mục đích**: Bản đồ kiến trúc, mã nguồn thực tế và định vị trách nhiệm module cho các phiên làm việc của AI.
 > **Quy ước**: Toàn bộ đường dẫn trong tài liệu đều là đường dẫn tương đối từ gốc repository.
 
 ---
@@ -25,23 +25,23 @@ graph TD
   Dropzone --> Magic[Defensive Validation: Magic Bytes & Bomb Guard]
   Magic --> Controller[WorkerController.ts]
   Controller --> Worker[forensics.worker.ts]
-  
+
   subgraph Worker_Thread [Web Worker Execution Pipeline]
     Worker --> Canvas[Canvas RGBA Decode & Letterbox]
     Canvas --> Meta[packages/provenance: EXIF / XMP / C2PA]
     Canvas --> DSP[packages/forensics: 2D FFT / DCT / Noise / ELA]
     Canvas --> Inf[packages/inference: ONNX Runtime Session]
-    
+
     Inf --> ModelCheck{Model Available?}
     ModelCheck -->|No| NoModel[Honest No-Model: verdict=uncertain, confidence=null]
     ModelCheck -->|Yes| Inference[Patch Grid Inference & Global Classification]
-    
+
     Meta --> Fusion[FusionCalibrator: Multimodal Evidence Fusion]
     DSP --> Fusion
     Inference --> Fusion
     NoModel --> Fusion
   end
-  
+
   Fusion --> VerdictResult[AnalysisResult Object]
   VerdictResult --> UI[apps/web: Dashboard / ResultVerdictCard / HeatmapViewer]
   VerdictResult --> Report[packages/report: JSON Schema v1 & Printable PDF]
@@ -133,7 +133,9 @@ graph TD
 | **Phase 4C.2 Stage 2 Runner** | `ml/training/run_phase_4c2.py` (dedicated runner for Stage 2 partial fine-tuning with frozen BN policy and differential LRs) | `implemented-and-tested` |
 | **Human Authorization Schema** | `docs/schemas/human-unsealing-authorization.v1.schema.json` (exact seeds `[42, 1337, 2025, 3407, 9001]`, exact checkpoint hashes, exact evaluator hashes, exact `evaluator_effective_commit: 3cf75c2...`, `execution_package_commit: ^[0-9a-f]{40}$`, `execution_package_tree_clean: true`, `additionalProperties: false`, format `date-time` with FormatChecker, expiry policy `oneOf`) | `schema-enforced` |
 | **Phase 4C.2G.0 Confirmatory Evaluator Engine** | `ml/evaluation/locked_test_evaluator.py`, `confirmatory_metrics.py`, `run_phase_4c2f_evaluator.py` (fail-closed prospective evaluator: effective commit binding `3cf75c2bf0c9835dd58897b7b36982732cab40ab`, execution_package_commit and git status porcelain validation, authorization schema SHA self-verification, passive network check, non-invasive mount check, tamper-evident hash-chained ledger, pre-forward reservation `EVALUATION_RESERVED`, crash discrimination `EVALUATION_ATTEMPT_INTERRUPTED`, 10,000-replicate source-cluster bootstrap, argmax tie-breaking first-index semantics, synthetic dry-run verdict `SYNTHETIC_PIPELINE_PASS`) | `implemented-and-tested` |
-| **Phase 4C.2G Preparation & Runtime Test Suite** | `ml/tests/test_phase_4c2g_preparation.py` (38 unit, contract, exactness, security, reconciliation, and offline runtime tests: package commit mismatch, dirty working tree, pending human approval fail-closed, strict schema validity, archive hash mismatch, tar security invariants, prohibited artifact exclusion, passive airgap check with default route and proxy, CPU determinism parity, device invariance, locked-test zero access, no authorized artifact, all real counters zero, GPU inference calls zero, canonical checkpoint hashes exact match, tamper fail-closed, zero stale hashes, zero placeholders, commit distinction, machine-readable receipt fields, canary write false, no unproven bit-parity claims, preferred execution mode clean detached checkout, offline runtime verification, no premature verified claims, exact worktree commit 2826a82, 5 canonical checkpoints bitwise match, zero locked-test paths, zero metrics/predictions, dependency lock pip check PASS) | `implemented-and-tested` |
+| **Phase 4C.2G.0.2A Standalone Offline Verifier** | `scripts/research/verify_phase_4c2g_offline_runtime.py` (fail-closed offline runtime verifier: Python stdlib only, 0 socket, 0 DNS, 0 HTTP, 0 torch/evaluator calls, atomic receipt generation via `.part` and `fsync`, passive network route/adapter inspection, worktree clean status, sealed components SHA-256, 5 canonical checkpoint digests, pip freeze checksum verification, unmounted locked-test confirmation) | `implemented-and-tested` |
+| **Phase 4C.2G.0.2A Evidence Package** | `research/evidence/phase-4c.2g.0.2a/` (PHASE_REPORT.md, TIMESTAMP_CORRECTION_AUDIT.json, offline_verifier_source_binding.json, offline_verifier_test_receipt.json, PRE_PHYSICAL_DISCONNECTION_GATE.json, provenance_bindings.json, environment.json) | `generated-and-verified` |
+| **Phase 4C.2G Preparation & Runtime Test Suite** | `ml/tests/test_phase_4c2g_preparation.py` (48 unit, contract, exactness, security, reconciliation, offline runtime, and timestamp regression tests: package commit mismatch, dirty working tree, pending human approval fail-closed, strict schema validity, archive hash mismatch, tar security invariants, prohibited artifact exclusion, passive airgap check with default route and proxy, CPU determinism parity, device invariance, locked-test zero access, no authorized artifact, all real counters zero, GPU inference calls zero, canonical checkpoint hashes exact match, tamper fail-closed, zero stale hashes, zero placeholders, commit distinction, machine-readable receipt fields, canary write false, no unproven bit-parity claims, preferred execution mode clean detached checkout, offline runtime verification, no premature verified claims, exact worktree commit 2826a82, 5 canonical checkpoints bitwise match, zero locked-test paths, zero metrics/predictions, dependency lock pip check PASS, ISO-8601 UTC parseable, timezone-aware, future timestamp rejection <=5m, observation order, environment name sync, no stale hardcoded 02:55:00 UTC strings, verifier script SHA/size binding, offline receipt contract) | `implemented-and-tested` |
 | **Phase 4C.2G.0.2 Evidence Package** | `research/evidence/phase-4c.2g.0.2/` (PHASE_REPORT.md, OFFLINE_HOST_PREPARATION.json, EXECUTION_WORKTREE_VERIFICATION.json, CHECKPOINT_STAGING_VERIFICATION.json, DEPENDENCY_ENVIRONMENT_LOCK.json, NETWORK_ISOLATION_INSPECTION.json, FILESYSTEM_PREPARATION.json, PRE_AUTHORIZATION_RUNTIME_GATE.json, provenance_bindings.json, environment.json) | `generated-and-verified` |
 | **Phase 4C.2G.0 Evidence Package** | `research/evidence/phase-4c.2g.0/` (PHASE_REPORT.md, EXECUTION_PACKAGE_RECEIPT.json, OFFLINE_RUNTIME_READINESS.json, HUMAN_AUTHORIZATION_REQUEST.json, PRE_AUTHORIZATION_GO_NO_GO.json, provenance_bindings.json, environment.json, HUMAN_APPROVAL_TEMPLATE.md) | `generated-and-verified` |
 | **Phase 4C.2F.2 Evaluator Test Suite** | `ml/tests/test_phase_4c2f_evaluator.py` (45 unit, contract, exactness, and fault-injection tests: 30 base + 15 Phase 4C.2F.2 regression tests for schema const exactness, seed ordering, format checker, expiry oneOf, effective commit lock, pre-hotfix commit rejection, schema SHA self-verification, future timestamp rejection) | `implemented-and-tested` |
@@ -214,13 +216,13 @@ interface AnalysisResult {
 
 ## 6. Sổ Quản lý Metadata (Registries)
 
-* **Model Registry**: `models/registry.json`  
-  - Schema: `docs/schemas/model-registry.v1.schema.json`.  
-  - Trạng thái hiện tại: `status: "not-trained"`, `path: ""`, `sizeBytes: 0`.  
+* **Model Registry**: `models/registry.json`
+  - Schema: `docs/schemas/model-registry.v1.schema.json`.
+  - Trạng thái hiện tại: `status: "not-trained"`, `path: ""`, `sizeBytes: 0`.
   - Kiểm tra toàn vẹn: 7 tiêu chí bắt buộc qua `validateModelRegistry` trong `@forensics/shared`.
-* **Dataset Registry**: `datasets/registry.json`  
-  - Schema: `docs/schemas/dataset-registry.v1.schema.json`.  
-  - 7 datasets đã đăng ký (`genimage`, `tgif`, `tgif2`, `synthetic-smoke`, `sagi-d`, `raid`, `realhd`).  
+* **Dataset Registry**: `datasets/registry.json`
+  - Schema: `docs/schemas/dataset-registry.v1.schema.json`.
+  - 7 datasets đã đăng ký (`genimage`, `tgif`, `tgif2`, `synthetic-smoke`, `sagi-d`, `raid`, `realhd`).
   - Phân luồng: `fixture-only`, `research-only`, `product-eligible`, `blocked`.
 
 ---
