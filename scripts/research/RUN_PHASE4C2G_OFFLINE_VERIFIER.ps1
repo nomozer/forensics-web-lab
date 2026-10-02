@@ -104,7 +104,8 @@ Write-Host "Expected Receipt Path  : $ReceiptPath"
 Write-Host "Verifier Script        : $VerifierScript"
 Write-Host "=================================================================" -ForegroundColor Cyan
 Write-Host "WARNING: DO NOT RUN WHILE NETWORK IS CONNECTED" -ForegroundColor Yellow
-Write-Host "Ensure Ethernet, Wi-Fi, VPN, and Bluetooth PAN are physically disabled." -ForegroundColor Yellow
+Write-Host "Ensure every physical/VPN Internet-egress owner is disabled." -ForegroundColor Yellow
+Write-Host "Protected VMnet1/VMnet8/Hyper-V/WSL switches may remain Up only when they own no active egress route." -ForegroundColor Yellow
 Write-Host "=================================================================" -ForegroundColor Cyan
 
 # 5. Invoke Offline Verifier Script
@@ -127,8 +128,27 @@ if ($VerifierExitCode -eq 0) {
     exit 0
 } elseif ($VerifierExitCode -eq 2) {
     Write-Host "[ACTION REQUIRED] Verdict: USER_PHYSICAL_ACTION_REQUIRED" -ForegroundColor Yellow
-    Write-Host "Host still has an active default route or connected network adapter."
-    Write-Host "Please physically disconnect network adapters and re-run."
+    $reasonSummary = "UNKNOWN_NETWORK_ISOLATION_REASON"
+    if (Test-Path $ReceiptPath) {
+        try {
+            $verifierReceipt = Get-Content -Raw -LiteralPath $ReceiptPath | ConvertFrom-Json
+            $networkIsolation = $verifierReceipt.checks.network_isolation
+            $machineReasons = @($networkIsolation.failure_reasons)
+            if ($machineReasons.Count -gt 0) {
+                $reasonSummary = $machineReasons -join ", "
+            }
+            Write-Host "  Proxy detected                 : $($networkIsolation.has_proxy)"
+            Write-Host "  Active IPv4 default routes     : $(@($networkIsolation.active_ipv4_default_routes).Count)"
+            Write-Host "  Active IPv6 default routes     : $(@($networkIsolation.active_ipv6_default_routes).Count)"
+            Write-Host "  Active VPN egress owners       : $(@($networkIsolation.active_vpn_egress_owners).Count)"
+            Write-Host "  Unidentified active owners     : $(@($networkIsolation.unidentified_active_egress_route_owners).Count)"
+            Write-Host "  Connected adapters (info only) : $(@($networkIsolation.connected_adapters_informational) -join ', ')"
+        } catch {
+            $reasonSummary = "RECEIPT_REASON_PARSE_FAILED"
+        }
+    }
+    Write-Host "Machine-readable isolation reason(s): $reasonSummary"
+    Write-Host "Resolve the reported egress condition and re-run."
     exit 2
 } else {
     Write-Host "[FAILURE] Verifier failed with binding, component, or dependency error." -ForegroundColor Red

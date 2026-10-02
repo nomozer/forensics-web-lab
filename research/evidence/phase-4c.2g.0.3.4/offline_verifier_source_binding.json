@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.3.4",
+  "source_script": {
+    "path": "scripts/research/verify_phase_4c2g_offline_runtime.py",
+    "byte_count": 25556,
+    "sha256": "e4050841c4fcaf906323bc8004fb00e97b026da5191f58044b6b42031b77f70a"
+  },
+  "wrapper_script": {
+    "path": "scripts/research/RUN_PHASE4C2G_OFFLINE_VERIFIER.ps1",
+    "byte_count": 6834,
+    "sha256": "88cff4b32a21c39c34236357b71dbc81eee25eef86832663d07cf797448fe3d6"
+  },
+  "controller_script": {
+    "path": "scripts/research/RUN_PHASE4C2G_AUTOMATED_ISOLATION.ps1",
+    "version": "1.4.0",
+    "byte_count": 99316,
+    "sha256": "16bcc151455a0cf892fab7d0d6d6dfbfd6153cda3b22c69ba8154de667afb170"
+  },
+  "evaluator_code_modified": false,
+  "locked_test_real_accesses": 0
+}

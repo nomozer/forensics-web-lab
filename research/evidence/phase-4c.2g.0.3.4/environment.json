@@ -1,0 +1,40 @@
+{
+  "timestamp_utc": "2026-10-02T15:02:45.5773661+00:00",
+  "generated_at_utc": "2026-10-02T15:02:45.5773661+00:00",
+  "clock_source": "SYSTEM_UTC_RUNTIME",
+  "timezone_aware": true,
+  "timestamp_future_check": "PASS",
+  "phase": "Phase 4C.2G.0.3.4",
+  "environment_type": "HOTFIX_OFFLINE_VERIFIER_EGRESS_RESTORATION_RECEIPT_BINDING",
+  "os": "Windows-11-10.0.26100",
+  "python_version": "3.12.10",
+  "git": {
+    "branch": "research/phase-4c2g-locked-test-execution",
+    "starting_commit": "9f784a017872b88ae6b3929c2e8b2b4892a86457",
+    "base_main_commit": "8a37966ea6ea55f58b589515f0c10bebae495b3a",
+    "effective_evaluator_commit": "3cf75c2bf0c9835dd58897b7b36982732cab40ab",
+    "execution_package_commit": "2826a8274cb89ec548d6fac5c8ae50c1c2836202"
+  },
+  "execution_constraints": {
+    "new_live_readiness_run": false,
+    "uac_requested": false,
+    "locked_test_mounted_or_read": false,
+    "training_or_inference": false,
+    "ml_evaluation_modified": false
+  },
+  "controller_details": {
+    "controller_version": "1.4.0",
+    "adapter_cmdlet_contract_verdict": "ADAPTER_CMDLET_CONTRACT_PASS",
+    "powershell_ast_parse_errors": 0,
+    "phase_verdict": "READY_FOR_SINGLE_UAC_READINESS_RETRY"
+  },
+  "real_counters": {
+    "locked_test_real_accesses": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "cpu_inference_calls": 0,
+    "gpu_inference_calls": 0,
+    "new_training_runs": 0
+  }
+}

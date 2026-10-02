@@ -47,7 +47,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$ControllerVersion = "1.3.2"
+$ControllerVersion = "1.4.0"
 
 # 1. Resolve Paths
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
@@ -145,7 +145,7 @@ function Get-NetworkIsolationSnapshot {
     # Gather IPv4 default routes
     $ipv4Routes = @()
     try {
-        $rawRoutes = Get-NetRoute -DestinationPrefix "0.0.0.0/0" -ErrorAction SilentlyContinue
+        $rawRoutes = Get-NetRoute -PolicyStore ActiveStore -DestinationPrefix "0.0.0.0/0" -ErrorAction SilentlyContinue
         foreach ($r in $rawRoutes) {
             $ipv4Routes += [ordered]@{
                 DestinationPrefix = "0.0.0.0/0"
@@ -160,7 +160,7 @@ function Get-NetworkIsolationSnapshot {
     # Gather IPv6 default routes
     $ipv6Routes = @()
     try {
-        $rawRoutes6 = Get-NetRoute -DestinationPrefix "::/0" -ErrorAction SilentlyContinue
+        $rawRoutes6 = Get-NetRoute -PolicyStore ActiveStore -DestinationPrefix "::/0" -ErrorAction SilentlyContinue
         foreach ($r in $rawRoutes6) {
             $ipv6Routes += [ordered]@{
                 DestinationPrefix = "::/0"
@@ -212,7 +212,7 @@ function Get-NetworkIsolationSnapshot {
         }
         # Condition 3: Active VPN/tunnel adapter with non-loopback egress route
         elseif ($status -eq "Up" -and $type -eq "VPN / Tunnel") {
-            $vpnRoutes = @(Get-NetRoute -InterfaceIndex $idx -ErrorAction SilentlyContinue | Where-Object {
+            $vpnRoutes = @(Get-NetRoute -PolicyStore ActiveStore -InterfaceIndex $idx -ErrorAction SilentlyContinue | Where-Object {
                 $_.DestinationPrefix -notmatch "^(127\.|::1|ff00|224\.|255\.)"
             })
             if ($vpnRoutes.Count -gt 0) {
@@ -462,7 +462,7 @@ function Remove-StaleWatchdogIfSafe {
                                                       -ExpectedName $t.Name `
                                                       -ExpectedDescription $t.InterfaceDescription `
                                                       -ExpectedMacAddress $t.MacAddress
-                if (-not $adapterObj -or ($adapterObj.AdminStatus -ne "Up" -and $adapterObj.Status -ne "Up")) {
+                if (-not $adapterObj -or $adapterObj.AdminStatus -ne "Up" -or $adapterObj.Status -ne "Up") {
                     Write-Host "[FAIL-CLOSED] Cannot safely clean up stale watchdog: target adapter ifIndex $($t.InterfaceIndex) ($($t.Name)) is not Up." -ForegroundColor Red
                     throw "BLOCKED_TARGET_ADAPTER_NOT_UP_FOR_STALE_WATCHDOG_CLEANUP"
                 }
@@ -483,6 +483,141 @@ function Remove-StaleWatchdogIfSafe {
 
     Write-Host "[WATCHDOG CLEANED] Stale watchdog scheduled task successfully removed." -ForegroundColor Green
     return $true
+}
+
+# 6e. Helper: Streaming SHA-256 without loading the complete receipt into memory
+function Get-StreamingFileSha256 {
+    param([Parameter(Mandatory=$true)][string]$Path)
+
+    $stream = [System.IO.File]::OpenRead($Path)
+    $hashAlgorithm = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        return -join ($hashAlgorithm.ComputeHash($stream) | ForEach-Object { "{0:x2}" -f $_ })
+    } finally {
+        $hashAlgorithm.Dispose()
+        $stream.Dispose()
+    }
+}
+
+# 6f. Helper: Bind a verifier receipt to exactly the current invocation window
+function Test-VerifierReceiptSessionBinding {
+    param(
+        [Parameter(Mandatory=$true)][PSObject]$ReceiptJson,
+        [Parameter(Mandatory=$true)][System.DateTimeOffset]$SessionStartedAtUtc,
+        [Parameter(Mandatory=$true)][System.DateTimeOffset]$SessionCompletedAtUtc
+    )
+
+    $observedStart = [System.DateTimeOffset]::MinValue
+    $observedComplete = [System.DateTimeOffset]::MinValue
+    $generatedAt = [System.DateTimeOffset]::MinValue
+    $startValid = [System.DateTimeOffset]::TryParse([string]$ReceiptJson.observation_started_at_utc, [ref]$observedStart)
+    $completeValid = [System.DateTimeOffset]::TryParse([string]$ReceiptJson.observation_completed_at_utc, [ref]$observedComplete)
+    $generatedValid = [System.DateTimeOffset]::TryParse([string]$ReceiptJson.generated_at_utc, [ref]$generatedAt)
+
+    if (-not $startValid -or -not $completeValid -or -not $generatedValid) {
+        return $false
+    }
+
+    return (
+        $observedStart -ge $SessionStartedAtUtc -and
+        $observedStart -le $observedComplete -and
+        $observedComplete -le $SessionCompletedAtUtc -and
+        $generatedAt -ge $observedStart -and
+        $generatedAt -le $SessionCompletedAtUtc
+    )
+}
+
+function Bind-OfflineVerifierReceipt {
+    param(
+        [Parameter(Mandatory=$true)][string]$Path,
+        [Parameter(Mandatory=$true)][System.DateTimeOffset]$SessionStartedAtUtc,
+        [Parameter(Mandatory=$true)][System.DateTimeOffset]$SessionCompletedAtUtc,
+        [Parameter(Mandatory=$true)][int]$ExitCode
+    )
+
+    $binding = [ordered]@{
+        Exists          = $false
+        Sha256          = $null
+        Verdict         = $null
+        ExitCode        = $ExitCode
+        TimestampValid  = $false
+        ReceiptJson     = $null
+        FailureReason   = "OFFLINE_VERIFIER_RECEIPT_MISSING"
+    }
+
+    if (-not (Test-Path -LiteralPath $Path)) {
+        return $binding
+    }
+
+    $binding.Exists = $true
+    $binding.Sha256 = Get-StreamingFileSha256 -Path $Path
+    try {
+        $receiptContent = [System.IO.File]::ReadAllText($Path, [System.Text.Encoding]::UTF8)
+        $receiptJson = $receiptContent | ConvertFrom-Json
+        $binding.ReceiptJson = $receiptJson
+        $binding.Verdict = [string]$receiptJson.verdict
+        $binding.TimestampValid = Test-VerifierReceiptSessionBinding `
+            -ReceiptJson $receiptJson `
+            -SessionStartedAtUtc $SessionStartedAtUtc `
+            -SessionCompletedAtUtc $SessionCompletedAtUtc
+        $binding.FailureReason = if ($binding.TimestampValid) { $null } else { "OFFLINE_VERIFIER_RECEIPT_STALE_OR_OUTSIDE_SESSION" }
+    } catch {
+        $binding.FailureReason = "OFFLINE_VERIFIER_RECEIPT_INVALID_JSON"
+    }
+
+    return $binding
+}
+
+# 6g. Helper: Poll restoration until the required operational state is proven
+function Wait-AdapterOperationalRestoration {
+    param(
+        [Parameter(Mandatory=$true)][PSObject]$Target,
+        [Parameter(Mandatory=$true)][bool]$RequireOperationalUp,
+        [int]$TimeoutSeconds = 60,
+        [int]$PollIntervalSeconds = 2,
+        [scriptblock]$Resolver = $null,
+        [scriptblock]$Sleeper = $null
+    )
+
+    $deadline = [System.DateTimeOffset]::UtcNow.AddSeconds($TimeoutSeconds)
+    $lastAdapter = $null
+    $lastError = $null
+
+    do {
+        try {
+            $curr = if ($Resolver) {
+                & $Resolver $Target
+            } else {
+                Resolve-TargetNetAdapter -InterfaceIndex $Target.InterfaceIndex `
+                                         -ExpectedName $Target.Name `
+                                         -ExpectedDescription $Target.InterfaceDescription `
+                                         -ExpectedMacAddress $Target.MacAddress
+            }
+            $lastAdapter = $curr
+            $isRestored = if ($RequireOperationalUp) {
+                $curr -and ($curr.AdminStatus -eq "Up" -and $curr.Status -eq "Up")
+            } else {
+                $curr -and $curr.AdminStatus -eq "Up"
+            }
+            if ($isRestored) {
+                return [ordered]@{ Success = $true; Adapter = $curr; Error = $null }
+            }
+            $lastError = "AdminStatus='$($curr.AdminStatus)', Status='$($curr.Status)'"
+        } catch {
+            $lastError = $_.Exception.Message
+        }
+
+        if ([System.DateTimeOffset]::UtcNow -ge $deadline) {
+            break
+        }
+        if ($Sleeper) {
+            & $Sleeper $PollIntervalSeconds
+        } else {
+            Start-Sleep -Seconds $PollIntervalSeconds
+        }
+    } while ($true)
+
+    return [ordered]@{ Success = $false; Adapter = $lastAdapter; Error = $lastError }
 }
 
 # 6c. Helper: Generate and Validate Recovery Script
@@ -681,6 +816,10 @@ function Test-PassiveIsolation {
     $hasActiveDefaultRoute = $false
     $persistentRoutesIgnored = @()
     $connectedEgressAdapters = @()
+    $protectedInternalAdapters = @()
+    $connectedAdaptersInformational = @()
+    $activeVpnEgressOwners = @()
+    $unidentifiedActiveEgressRouteOwners = @()
     $activeDefaultRoutes = @()
 
     # Primary authoritative source: Get-NetRoute -PolicyStore ActiveStore
@@ -689,6 +828,11 @@ function Test-PassiveIsolation {
         $activeIndices = [System.Collections.Generic.HashSet[int]]::new()
         foreach ($ad in $activeAdapters) {
             $activeIndices.Add([int]$ad.ifIndex) | Out-Null
+            $connectedAdaptersInformational += [string]$ad.Name
+            $adapterType = Get-AdapterType -Name $ad.Name -Desc $ad.InterfaceDescription
+            if ($adapterType -like "*Virtual*" -or $adapterType -like "*Host-Only*" -or $ad.Name -like "VMnet*" -or $ad.Name -like "*WSL*" -or $ad.Name -like "*Default Switch*") {
+                $protectedInternalAdapters += [string]$ad.Name
+            }
         }
 
         $act4 = Get-NetRoute -PolicyStore ActiveStore -DestinationPrefix "0.0.0.0/0" -ErrorAction SilentlyContinue
@@ -696,6 +840,8 @@ function Test-PassiveIsolation {
             foreach ($r in $act4) {
                 if ($activeIndices.Contains([int]$r.InterfaceIndex)) {
                     $activeDefaultRoutes += $r
+                } else {
+                    $unidentifiedActiveEgressRouteOwners += $r
                 }
             }
         }
@@ -704,7 +850,24 @@ function Test-PassiveIsolation {
             foreach ($r in $act6) {
                 if ($activeIndices.Contains([int]$r.InterfaceIndex)) {
                     $activeDefaultRoutes += $r
+                } else {
+                    $unidentifiedActiveEgressRouteOwners += $r
                 }
+            }
+        }
+
+        # A live VPN/tunnel owner of any non-loopback ActiveStore route is egress evidence.
+        $allActiveRoutes = @(Get-NetRoute -PolicyStore ActiveStore -ErrorAction SilentlyContinue)
+        foreach ($ad in $activeAdapters) {
+            $adapterType = Get-AdapterType -Name $ad.Name -Desc $ad.InterfaceDescription
+            if ($adapterType -ne "VPN / Tunnel") { continue }
+            $vpnRoutes = @($allActiveRoutes | Where-Object {
+                [int]$_.InterfaceIndex -eq [int]$ad.ifIndex -and
+                $_.DestinationPrefix -notmatch "^(127\.|::1|ff00|224\.|255\.)"
+            })
+            if ($vpnRoutes.Count -gt 0) {
+                $activeVpnEgressOwners += [string]$ad.Name
+                $connectedEgressAdapters += "$($ad.Name) (ifIndex $($ad.ifIndex))"
             }
         }
     } catch {}
@@ -715,6 +878,10 @@ function Test-PassiveIsolation {
             $connectedEgressAdapters += "$($r.InterfaceAlias) (ifIndex $($r.InterfaceIndex))"
         }
     }
+    $connectedEgressAdapters = @($connectedEgressAdapters | Select-Object -Unique)
+    $activeVpnEgressOwners = @($activeVpnEgressOwners | Select-Object -Unique)
+    $protectedInternalAdapters = @($protectedInternalAdapters | Select-Object -Unique)
+    $connectedAdaptersInformational = @($connectedAdaptersInformational | Select-Object -Unique)
 
     # Secondary cross-check: route.exe print (parsing strictly Active Routes section, ignoring Persistent Routes)
     try {
@@ -752,10 +919,15 @@ function Test-PassiveIsolation {
     } catch {}
 
     return [ordered]@{
-        IsIsolated              = ((-not $proxySet) -and (-not $hasActiveDefaultRoute) -and ($connectedEgressAdapters.Count -eq 0))
+        IsIsolated              = ((-not $proxySet) -and (-not $hasActiveDefaultRoute) -and ($connectedEgressAdapters.Count -eq 0) -and ($activeVpnEgressOwners.Count -eq 0) -and ($unidentifiedActiveEgressRouteOwners.Count -eq 0))
         ProxyDetected           = $proxySet
         DefaultRouteDetected    = $hasActiveDefaultRoute
         ConnectedAdapters       = $connectedEgressAdapters
+        ActiveEgressAdapters    = $connectedEgressAdapters
+        ProtectedInternalAdapters = $protectedInternalAdapters
+        ConnectedAdaptersInformational = $connectedAdaptersInformational
+        ActiveVpnEgressOwners   = $activeVpnEgressOwners
+        UnidentifiedActiveEgressRouteOwners = $unidentifiedActiveEgressRouteOwners
         ActiveDefaultRoutes     = $activeDefaultRoutes
         PersistentRoutesIgnored = $persistentRoutesIgnored
         OutboundProbesSent      = 0
@@ -1016,8 +1188,8 @@ if ($ValidateAdapterCmdletContractOnly) {
                                              -ExpectedMacAddress $t.MacAddress
             if (-not $curr) {
                 $nullRestorationFailures += "$($t.Name) (ifIndex $($t.InterfaceIndex)): adapter resolution returned null"
-            } elseif ($curr.AdminStatus -ne "Up" -and $curr.Status -ne "Up") {
-                $nullRestorationFailures += "$($t.Name) (ifIndex $($t.InterfaceIndex)): Neither AdminStatus nor Status is 'Up'"
+            } elseif ($curr.AdminStatus -ne "Up" -or $curr.Status -ne "Up") {
+                $nullRestorationFailures += "$($t.Name) (ifIndex $($t.InterfaceIndex)): AdminStatus and operational Status must both be 'Up'"
             }
         } catch {
             $nullRestorationFailures += "$($t.Name) (ifIndex $($t.InterfaceIndex)): resolution failed ($($_.Exception.Message))"
@@ -1106,12 +1278,86 @@ if ($ValidateAdapterCmdletContractOnly) {
     $proxyVerdictCorrect = ($mockProxyVerdict -eq "BLOCKED_PROXY_DETECTED")
     Write-Host ("  Remaining routes 0 with proxy detected => BLOCKED_PROXY_DETECTED: {0} (Expected: True)" -f $proxyVerdictCorrect)
 
+    # Contract expansion 10: AdminStatus Up alone must not satisfy restoration for a pre-isolation Up adapter
+    $disconnectedResolver = {
+        param($Target)
+        return [PSCustomObject]@{ AdminStatus = "Up"; Status = "Disconnected" }
+    }
+    $noSleep = { param($Seconds) }
+    $disconnectedPoll = Wait-AdapterOperationalRestoration `
+        -Target $fixtureTargets[0] `
+        -RequireOperationalUp $true `
+        -TimeoutSeconds 0 `
+        -PollIntervalSeconds 0 `
+        -Resolver $disconnectedResolver `
+        -Sleeper $noSleep
+    $adminOnlyRejected = (-not $disconnectedPoll.Success)
+    Write-Host ("  Restoration poll rejects AdminStatus Up / Status Disconnected: {0} (Expected: True)" -f $adminOnlyRejected)
+
+    # Contract expansion 11: Operational Status returning Up inside the window succeeds
+    $statusQueue = [System.Collections.Generic.Queue[PSObject]]::new()
+    $statusQueue.Enqueue([PSCustomObject]@{ AdminStatus = "Up"; Status = "Disconnected" })
+    $statusQueue.Enqueue([PSCustomObject]@{ AdminStatus = "Up"; Status = "Up" })
+    $recoveringResolver = {
+        param($Target)
+        if ($statusQueue.Count -gt 1) { return $statusQueue.Dequeue() }
+        return $statusQueue.Peek()
+    }
+    $recoveredPoll = Wait-AdapterOperationalRestoration `
+        -Target $fixtureTargets[0] `
+        -RequireOperationalUp $true `
+        -TimeoutSeconds 5 `
+        -PollIntervalSeconds 0 `
+        -Resolver $recoveringResolver `
+        -Sleeper $noSleep
+    $operationalPollAccepted = ($recoveredPoll.Success -and $recoveredPoll.Adapter.Status -eq "Up")
+    Write-Host ("  Restoration poll accepts Status Up inside polling window: {0} (Expected: True)" -f $operationalPollAccepted)
+
+    # Contract expansion 12: Stale receipts are rejected; current non-zero receipts are still hashed and bound
+    $sessionStart = [System.DateTimeOffset]::UtcNow
+    $sessionEnd = $sessionStart.AddSeconds(2)
+    $staleReceipt = [PSCustomObject]@{
+        observation_started_at_utc = $sessionStart.AddMinutes(-5).ToString("o")
+        observation_completed_at_utc = $sessionStart.AddMinutes(-4).ToString("o")
+        generated_at_utc = $sessionStart.AddMinutes(-4).ToString("o")
+        verdict = "USER_PHYSICAL_ACTION_REQUIRED"
+    }
+    $staleReceiptRejected = (-not (Test-VerifierReceiptSessionBinding -ReceiptJson $staleReceipt -SessionStartedAtUtc $sessionStart -SessionCompletedAtUtc $sessionEnd))
+    Write-Host ("  Stale verifier receipt timestamp rejected: {0} (Expected: True)" -f $staleReceiptRejected)
+
+    $bindingFixturePath = Join-Path $ArtifactsDir "OFFLINE_VERIFIER_BINDING_CONTRACT_TEST.json"
+    $currentReceipt = [ordered]@{
+        observation_started_at_utc = $sessionStart.AddMilliseconds(100).ToString("o")
+        observation_completed_at_utc = $sessionStart.AddMilliseconds(200).ToString("o")
+        generated_at_utc = $sessionStart.AddMilliseconds(200).ToString("o")
+        verdict = "USER_PHYSICAL_ACTION_REQUIRED"
+    }
+    [System.IO.File]::WriteAllText($bindingFixturePath, ($currentReceipt | ConvertTo-Json), (New-Object System.Text.UTF8Encoding($false)))
+    try {
+        $nonzeroBinding = Bind-OfflineVerifierReceipt `
+            -Path $bindingFixturePath `
+            -SessionStartedAtUtc $sessionStart `
+            -SessionCompletedAtUtc $sessionEnd `
+            -ExitCode 2
+        $nonzeroReceiptBound = (
+            $nonzeroBinding.Exists -and
+            $nonzeroBinding.TimestampValid -and
+            $nonzeroBinding.Sha256 -match '^[0-9a-f]{64}$' -and
+            $nonzeroBinding.Verdict -eq "USER_PHYSICAL_ACTION_REQUIRED" -and
+            $nonzeroBinding.ExitCode -eq 2
+        )
+    } finally {
+        Remove-Item -LiteralPath $bindingFixturePath -Force -ErrorAction SilentlyContinue
+    }
+    Write-Host ("  Current-session non-zero verifier receipt hashed and bound: {0} (Expected: True)" -f $nonzeroReceiptBound)
+
     $allContractPassed = (-not $disHasIfIdx) -and (-not $enaHasIfIdx) -and $disPipesInput -and $enaPipesInput -and `
                          (-not $hasDisableIfIndex) -and (-not $hasEnableIfIndex) -and (-not $hasGetIfIndex) -and (-not $hasDirectParamAst) -and `
                          ($parseErrors.Count -eq 0) -and (-not $genHasEnableIfIndex) -and (-not $genHasGetIfIndex) -and `
                          $genPipesToEnable -and $mockPipesCorrectly -and $missingIdentityRejected -and $nullDetectedAsFailure -and `
                          $nonExistentAbsent -and $safeRemoveOnAbsent -and $verdictPassCorrect -and $verdictBlockedCorrect -and `
-                         $persistentIgnoredCorrect -and $disagreementVerdictCorrect -and $proxyVerdictCorrect
+                         $persistentIgnoredCorrect -and $disagreementVerdictCorrect -and $proxyVerdictCorrect -and `
+                         $adminOnlyRejected -and $operationalPollAccepted -and $staleReceiptRejected -and $nonzeroReceiptBound
 
     if ($allContractPassed) {
         Write-Host "`n[CONTRACT PASS] Adapter cmdlet parameter and pipeline contract fully verified." -ForegroundColor Green
@@ -1129,6 +1375,7 @@ if ($ValidateAdapterCmdletContractOnly) {
 # ------------------------------------------------------------------------------
 if ($DryRun -or (-not $ReadinessTest -and -not $ValidateRecoveryScriptOnly -and -not $ValidateAdapterCmdletContractOnly)) {
     Write-Host "`n[DRY RUN AUDIT] Route-to-Adapter Evidence Table:" -ForegroundColor Green
+    Write-Host "destination_prefix | next_hop | route_metric | ifIndex | adapter_name | adapter_type | operational_status | selected_for_disable | exact_selection_reason | protected_reason"
 
     # Output formatted table as required by Section E
     $tableToDisplay = @()
@@ -1323,6 +1570,11 @@ if ($ReadinessTest) {
 
     $isolationVerifiedTime = $null
     $verifierReceiptSha = $null
+    $verifierReceiptVerdict = $null
+    $verifierReceiptTimestampValid = $false
+    $verifierExit = $null
+    $verifierSessionStartedAtUtc = $null
+    $verifierSessionCompletedAtUtc = $null
     $testPassed = $false
     $restorationResult = "PENDING"
     $networkRestored = $false
@@ -1479,31 +1731,42 @@ if ($ReadinessTest) {
         # Step 5: Invoke Offline Verifier Wrapper
         Write-Host "`nInvoking Offline Verifier Wrapper: $VerifierWrapperPath" -ForegroundColor Cyan
         $offlineVerifierInvoked = $true
+        $verifierSessionStartedAtUtc = [System.DateTimeOffset]::UtcNow
         & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $VerifierWrapperPath
         $verifierExit = $LASTEXITCODE
+        $verifierSessionCompletedAtUtc = [System.DateTimeOffset]::UtcNow
         Write-Host "Offline Verifier process exit code: $verifierExit"
+
+        # Step 6: Bind and verify the receipt regardless of verifier exit code
+        $offlineReceiptPath = Join-Path $ArtifactsDir "offline_verifier_execution_receipt.json"
+        $receiptBinding = Bind-OfflineVerifierReceipt `
+            -Path $offlineReceiptPath `
+            -SessionStartedAtUtc $verifierSessionStartedAtUtc `
+            -SessionCompletedAtUtc $verifierSessionCompletedAtUtc `
+            -ExitCode $verifierExit
+        $verifierReceiptSha = $receiptBinding.Sha256
+        $verifierReceiptVerdict = $receiptBinding.Verdict
+        $verifierReceiptTimestampValid = [bool]$receiptBinding.TimestampValid
+
+        if ($receiptBinding.FailureReason) {
+            throw $receiptBinding.FailureReason
+        }
+
+        $receiptJson = $receiptBinding.ReceiptJson
         if ($verifierExit -ne 0) {
             throw "OFFLINE_VERIFIER_EXIT_NON_ZERO"
         }
-
-        # Step 6: Verify Verifier Receipt
-        $offlineReceiptPath = Join-Path $ArtifactsDir "offline_verifier_execution_receipt.json"
-        if (-not (Test-Path $offlineReceiptPath)) {
-            throw "Verifier receipt not found at: $offlineReceiptPath"
-        }
-
-        $receiptContent = [System.IO.File]::ReadAllText($offlineReceiptPath, [System.Text.Encoding]::UTF8)
-        $receiptJson = $receiptContent | ConvertFrom-Json
-
-        $rBytes = [System.IO.File]::ReadAllBytes($offlineReceiptPath)
-        $verifierReceiptSha = -join ($Sha256.ComputeHash($rBytes) | ForEach-Object { "{0:x2}" -f $_ })
 
         # Validate Strict Receipt Criteria
         $critFailures = @()
         if ($receiptJson.synthetic_only -ne $false) { $critFailures += "synthetic_only is not false" }
         if ($receiptJson.verdict -ne "READY_FOR_HUMAN_AUTHORIZATION_REVIEW") { $critFailures += "verdict is '$($receiptJson.verdict)'" }
         if ($receiptJson.checks.network_isolation.default_route_detected -ne $false) { $critFailures += "default_route_detected is not false" }
-        if ($receiptJson.checks.network_isolation.connected_network_adapters.Count -ne 0) { $critFailures += "connected_network_adapters not empty" }
+        if (@($receiptJson.checks.network_isolation.active_ipv4_default_routes).Count -ne 0) { $critFailures += "active IPv4 default routes not empty" }
+        if (@($receiptJson.checks.network_isolation.active_ipv6_default_routes).Count -ne 0) { $critFailures += "active IPv6 default routes not empty" }
+        if (@($receiptJson.checks.network_isolation.active_vpn_egress_owners).Count -ne 0) { $critFailures += "active VPN egress owners not empty" }
+        if (@($receiptJson.checks.network_isolation.active_egress_adapters).Count -ne 0) { $critFailures += "active egress adapters not empty" }
+        if (@($receiptJson.checks.network_isolation.unidentified_active_egress_route_owners).Count -ne 0) { $critFailures += "unidentified active egress route owners not empty" }
         if ($receiptJson.checks.worktree_head.commit -ne "2826a8274cb89ec548d6fac5c8ae50c1c2836202") { $critFailures += "worktree HEAD mismatch" }
         if ($receiptJson.checks.worktree_cleanliness.status -ne "PASS") { $critFailures += "worktree not clean" }
         if ($receiptJson.checks.evaluator_components.status -ne "PASS") { $critFailures += "evaluator components failed" }
@@ -1539,26 +1802,28 @@ if ($ReadinessTest) {
             }
         }
 
-        Write-Host "Waiting 3 seconds for network operational stabilization..."
-        Start-Sleep -Seconds 3
-
-        # Verify Restoration with Resolve-TargetNetAdapter and fail-closed status check
+        # Verify restoration by polling exact identity for up to 60 seconds per adapter.
+        # Adapters that were operationally Up before isolation must return to Status=Up;
+        # an initially Disconnected adapter is not required to become operationally Up.
         $restorationFailures = @()
         foreach ($t in $disabledAllowlist) {
-            try {
-                $curr = Resolve-TargetNetAdapter -InterfaceIndex $t.InterfaceIndex `
-                                                 -ExpectedName $t.Name `
-                                                 -ExpectedDescription $t.InterfaceDescription `
-                                                 -ExpectedMacAddress $t.MacAddress
-                if (-not $curr) {
-                    $restorationFailures += "$($t.Name) (ifIndex $($t.InterfaceIndex)): adapter resolution returned null"
-                } elseif ($curr.AdminStatus -ne "Up" -and $curr.Status -ne "Up") {
-                    $restorationFailures += "$($t.Name) (ifIndex $($t.InterfaceIndex)): AdminStatus='$($curr.AdminStatus)', Status='$($curr.Status)' (expected Up)"
-                } else {
-                    Write-Host "  Verified restored & Up: ifIndex $($t.InterfaceIndex) ($($t.Name)) [AdminStatus: $($curr.AdminStatus), Status: $($curr.Status)]" -ForegroundColor Green
-                }
-            } catch {
-                $restorationFailures += "$($t.Name) (ifIndex $($t.InterfaceIndex)): resolution failed ($($_.Exception.Message))"
+            $preIsolationAdapter = @($Snapshot.Adapters | Where-Object { [int]$_.InterfaceIndex -eq [int]$t.InterfaceIndex })
+            if ($preIsolationAdapter.Count -ne 1) {
+                $restorationFailures += "$($t.Name) (ifIndex $($t.InterfaceIndex)): pre-isolation identity could not be resolved uniquely"
+                continue
+            }
+            $requireOperationalUp = ($preIsolationAdapter[0].Status -eq "Up")
+            $pollResult = Wait-AdapterOperationalRestoration `
+                -Target $t `
+                -RequireOperationalUp $requireOperationalUp `
+                -TimeoutSeconds 60 `
+                -PollIntervalSeconds 2
+            if (-not $pollResult.Success) {
+                $expectedState = if ($requireOperationalUp) { "AdminStatus=Up and Status=Up" } else { "AdminStatus=Up" }
+                $restorationFailures += "$($t.Name) (ifIndex $($t.InterfaceIndex)): $($pollResult.Error) (expected $expectedState within 60 seconds)"
+            } else {
+                $curr = $pollResult.Adapter
+                Write-Host "  Verified restored: ifIndex $($t.InterfaceIndex) ($($t.Name)) [AdminStatus: $($curr.AdminStatus), Status: $($curr.Status), required operational Up: $requireOperationalUp]" -ForegroundColor Green
             }
         }
 
@@ -1608,8 +1873,8 @@ if ($ReadinessTest) {
     }
 
     $controllerReceipt = [ordered]@{
-        schema_version                    = "1.3.0"
-        phase                             = "Phase 4C.2G.0.3.3"
+        schema_version                    = "1.4.0"
+        phase                             = "Phase 4C.2G.0.3.4"
         controller_name                   = "automated_windows_network_isolation_controller"
         controller_version                = $ControllerVersion
         controller_sha256                 = $ControllerSha256
@@ -1620,7 +1885,12 @@ if ($ReadinessTest) {
         failure_reason                    = $failureReason
         remaining_active_default_routes   = [int]$remainingRoutesCount
         proxy_detected                    = if ($lastPassiveCheck) { [bool]$lastPassiveCheck.ProxyDetected } else { [bool]($env:HTTP_PROXY -or $env:HTTPS_PROXY -or $env:ALL_PROXY) }
-        persistent_routes_ignored         = if ($lastPassiveCheck) { $lastPassiveCheck.PersistentRoutesIgnored } else { @() }
+        active_egress_adapters             = [object[]]@(if ($lastPassiveCheck) { $lastPassiveCheck.ActiveEgressAdapters } else { @() })
+        protected_internal_adapters        = [object[]]@(if ($lastPassiveCheck) { $lastPassiveCheck.ProtectedInternalAdapters } else { @() })
+        connected_adapters_informational   = [object[]]@(if ($lastPassiveCheck) { $lastPassiveCheck.ConnectedAdaptersInformational } else { @() })
+        active_vpn_egress_owners           = [object[]]@(if ($lastPassiveCheck) { $lastPassiveCheck.ActiveVpnEgressOwners } else { @() })
+        unidentified_active_egress_route_owners = [object[]]@(if ($lastPassiveCheck) { $lastPassiveCheck.UnidentifiedActiveEgressRouteOwners } else { @() })
+        persistent_routes_ignored         = [object[]]@(if ($lastPassiveCheck) { $lastPassiveCheck.PersistentRoutesIgnored } else { @() })
         network_restored                  = [bool]$networkRestored
         watchdog_cleanup_verified         = [bool]$watchdogCleanupVerified
         offline_verifier_invoked          = [bool]$offlineVerifierInvoked
@@ -1633,6 +1903,11 @@ if ($ReadinessTest) {
             isolation_verified    = [bool]$isolationVerifiedTime
         }
         offline_verifier_receipt_sha256   = $verifierReceiptSha
+        offline_verifier_verdict          = $verifierReceiptVerdict
+        offline_verifier_exit_code        = $verifierExit
+        offline_verifier_receipt_timestamp_valid = [bool]$verifierReceiptTimestampValid
+        offline_verifier_session_started_at_utc = if ($verifierSessionStartedAtUtc) { $verifierSessionStartedAtUtc.ToString("o") } else { $null }
+        offline_verifier_session_completed_at_utc = if ($verifierSessionCompletedAtUtc) { $verifierSessionCompletedAtUtc.ToString("o") } else { $null }
         watchdog_metadata                 = [ordered]@{
             scheduled_task_name       = $WatchdogTaskName
             trigger_time_utc          = $TriggerTime

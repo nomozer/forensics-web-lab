@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.3.4",
+  "generated_at_utc": "2026-10-02T15:02:45.5773661+00:00",
+  "evidence_seal_semantics": {
+    "starting_commit": "9f784a017872b88ae6b3929c2e8b2b4892a86457",
+    "binding_model": "non-circular",
+    "statement": "The listed evidence files bind the hotfix content and audited inputs to the immutable starting commit; the provenance file intentionally excludes its own digest."
+  },
+  "evidence_file_count": 5,
+  "files": [
+    {
+      "path": "research/evidence/phase-4c.2g.0.3.4/environment.json",
+      "bytes": 1477,
+      "sha256": "8be88fb7ca722ae6d7a665671f7392966c4728f55911e944c612a6d5ac7808b0"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.3.4/hotfix_contract.json",
+      "bytes": 1597,
+      "sha256": "7937a7cc8a3e59262675a81dfea5341fad865b3d1a1c63329bd608e17eb26e8d"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.3.4/offline_verifier_source_binding.json",
+      "bytes": 764,
+      "sha256": "f7136198df8b9bb00760e04f1fed2f679028ace979aa50d1cbd87efed303fb42"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.3.4/PHASE_REPORT.md",
+      "bytes": 5346,
+      "sha256": "1369d727a3a9f0fac474d4f86bf3041ef03be10ac61f0491aab1b94d0d48c1c9"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.3.4/runtime_attempt_2125_audit.json",
+      "bytes": 2363,
+      "sha256": "767a12d62e6a4327609f8ea1aacfee1e195d38afe5e7e117ea449f8a12cf5f63"
+    }
+  ]
+}

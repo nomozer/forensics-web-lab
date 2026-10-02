@@ -601,9 +601,10 @@ class TestPhase4C2G02ATimestampAndOfflineVerifier:
     P02_DIR = Path("research/evidence/phase-4c.2g.0.2")
     P02A_DIR = Path("research/evidence/phase-4c.2g.0.2a")
     P02B_DIR = Path("research/evidence/phase-4c.2g.0.2b")
+    P034_DIR = Path("research/evidence/phase-4c.2g.0.3.4")
     VERIFIER_SCRIPT = Path("scripts/research/verify_phase_4c2g_offline_runtime.py")
-    EXPECTED_VERIFIER_BYTES = 17335
-    EXPECTED_VERIFIER_SHA256 = "757f4e4cfc4ca0c9fdbd283b819a4ee410258455418c7ba340fba8b4491574f7"
+    EXPECTED_VERIFIER_BYTES = 25556
+    EXPECTED_VERIFIER_SHA256 = "e4050841c4fcaf906323bc8004fb00e97b026da5191f58044b6b42031b77f70a"
 
     def test_g39_all_timestamps_iso8601_and_timezone_aware(self):
         """All timestamps in Phase 4C.2G.0.2 and 4C.2G.0.2A parse as ISO-8601 and are timezone-aware."""
@@ -677,7 +678,7 @@ class TestPhase4C2G02ATimestampAndOfflineVerifier:
         sha = hashlib.sha256(content).hexdigest()
         assert sha == self.EXPECTED_VERIFIER_SHA256
 
-        binding = json.loads((self.P02A_DIR / "offline_verifier_source_binding.json").read_text(encoding="utf-8"))
+        binding = json.loads((self.P034_DIR / "offline_verifier_source_binding.json").read_text(encoding="utf-8"))
         assert binding["source_script"]["byte_count"] == self.EXPECTED_VERIFIER_BYTES
         assert binding["source_script"]["sha256"] == self.EXPECTED_VERIFIER_SHA256
 
@@ -696,8 +697,8 @@ class TestPhase4C2G02ATimestampAndOfflineVerifier:
 
         test_receipt = tmp_path / "test_receipt.json"
         data = verify_offline_runtime(
-            execution_worktree=Path("d:/Documents/forensics-web-lab-offline-execution"),
-            checkpoint_root=Path("D:/Documents/forensics-web-lab-local-artifacts/phase_4c1/runs/extracted_15_runs"),
+            execution_worktree=tmp_path / "missing-execution-worktree",
+            checkpoint_root=tmp_path / "missing-checkpoints",
             output_dir=tmp_path / "out",
             planned_locked_test_mountpoint=tmp_path / "mount",
             synthetic_only=True,
@@ -715,7 +716,8 @@ class TestPhase4C2G02ATimestampAndOfflineVerifier:
         write_receipt_atomic(test_receipt, data)
         assert test_receipt.exists()
         loaded = json.loads(test_receipt.read_text(encoding="utf-8"))
-        assert loaded["verdict"] in ["USER_PHYSICAL_ACTION_REQUIRED", "READY_FOR_HUMAN_AUTHORIZATION_REVIEW"]
+        assert loaded["verdict"] == "BLOCKED_WITH_EXACT_REASON"
+        assert loaded["errors"]
 
     def test_g47_pre_physical_disconnection_gate_verdict(self):
         """PRE_PHYSICAL_DISCONNECTION_GATE.json records READY_FOR_USER_PHYSICAL_NETWORK_DISCONNECTION."""
@@ -818,8 +820,8 @@ class TestPhase4C2G03AutomatedIsolationController:
 
     REPO_ROOT = Path(__file__).resolve().parent.parent.parent
     CONTROLLER_PATH = REPO_ROOT / "scripts" / "research" / "RUN_PHASE4C2G_AUTOMATED_ISOLATION.ps1"
-    EXPECTED_CONTROLLER_BYTES = 84930
-    EXPECTED_CONTROLLER_SHA256 = "804b94055ab3470a1863e80d0d3a172ff59c056e9b39664d68c58a6a95db5538"
+    EXPECTED_CONTROLLER_BYTES = 99316
+    EXPECTED_CONTROLLER_SHA256 = "16bcc151455a0cf892fab7d0d6d6dfbfd6153cda3b22c69ba8154de667afb170"
 
     def test_g53_controller_script_integrity_and_prohibited_tokens_scan(self):
         """Controller script exists, matches exact size and hash, and contains zero prohibited commands."""
@@ -904,31 +906,32 @@ class TestPhase4C2G03AutomatedIsolationController:
         assert "CI Runner" in ci_res["reason"]
 
     def test_g55_egress_adapter_selection_allowlist_and_loopback_protection(self):
-        """Adapter inventory correctly selects active Up adapters while strictly protecting loopback & disabled."""
+        """Adapter selection follows route ownership and protects internal Up adapters."""
         mock_adapters = [
-            {"Name": "Wi-Fi", "Status": "Up", "AdminStatus": "Up"},
-            {"Name": "VMware Network Adapter VMnet8", "Status": "Up", "AdminStatus": "Up"},
-            {"Name": "Radmin VPN", "Status": "Up", "AdminStatus": "Up"},
-            {"Name": "Bluetooth Network Connection", "Status": "Disconnected", "AdminStatus": "Up"},
-            {"Name": "Ethernet", "Status": "Disconnected", "AdminStatus": "Up"},
-            {"Name": "Loopback Pseudo-Interface 1", "Status": "Up", "AdminStatus": "Up"},
-            {"Name": "Hyper-V Virtual Ethernet", "Status": "Disabled", "AdminStatus": "Disabled"},
+            {"ifIndex": 21, "Name": "Wi-Fi", "Status": "Up", "AdminStatus": "Up"},
+            {"ifIndex": 16, "Name": "VMware Network Adapter VMnet8", "Status": "Up", "AdminStatus": "Up"},
+            {"ifIndex": 14, "Name": "Radmin VPN", "Status": "Up", "AdminStatus": "Up"},
+            {"ifIndex": 11, "Name": "Bluetooth Network Connection", "Status": "Disconnected", "AdminStatus": "Up"},
+            {"ifIndex": 10, "Name": "Ethernet", "Status": "Disconnected", "AdminStatus": "Up"},
+            {"ifIndex": 1, "Name": "Loopback Pseudo-Interface 1", "Status": "Up", "AdminStatus": "Up"},
+            {"ifIndex": 2, "Name": "Hyper-V Virtual Ethernet", "Status": "Disabled", "AdminStatus": "Disabled"},
         ]
+        route_owner_indices = {21, 14}
 
         egress_allowlist = []
         protected_adapters = []
 
         for a in mock_adapters:
-            if a["Status"] == "Up" and "Loopback" not in a["Name"]:
+            if a["ifIndex"] in route_owner_indices:
                 egress_allowlist.append(a["Name"])
             else:
                 protected_adapters.append(a["Name"])
 
         assert "Wi-Fi" in egress_allowlist
-        assert "VMware Network Adapter VMnet8" in egress_allowlist
         assert "Radmin VPN" in egress_allowlist
-        assert len(egress_allowlist) == 3
+        assert len(egress_allowlist) == 2
 
+        assert "VMware Network Adapter VMnet8" in protected_adapters
         assert "Loopback Pseudo-Interface 1" in protected_adapters
         assert "Bluetooth Network Connection" in protected_adapters
         assert "Ethernet" in protected_adapters
@@ -967,39 +970,40 @@ class TestPhase4C2G03AutomatedIsolationController:
         assert watchdog_task_name == "Phase4C2G_Emergency_Network_Recovery"
 
     def test_g57_passive_network_isolation_logic_and_incomplete_failure(self):
-        """Passive network inspection fails when proxy, route, or adapter is detected; zero probes sent."""
-        def check_isolation(env_vars: Dict[str, str], has_default_route: bool, up_adapters: List[str]) -> Dict[str, Any]:
+        """Passive isolation fails on proxy/routes/egress owners; connected inventory is informational."""
+        def check_isolation(env_vars: Dict[str, str], has_default_route: bool, active_egress: List[str], connected_info: List[str]) -> Dict[str, Any]:
             proxy_set = bool(env_vars.get("HTTP_PROXY") or env_vars.get("HTTPS_PROXY") or env_vars.get("ALL_PROXY"))
-            is_isolated = (not proxy_set) and (not has_default_route) and (len(up_adapters) == 0)
+            is_isolated = (not proxy_set) and (not has_default_route) and (len(active_egress) == 0)
             return {
                 "is_isolated": is_isolated,
                 "proxy_detected": proxy_set,
                 "default_route_detected": has_default_route,
-                "connected_adapters": up_adapters,
+                "active_egress_adapters": active_egress,
+                "connected_adapters_informational": connected_info,
                 "outbound_probes_sent": 0,
                 "dns_lookups_performed": 0,
                 "http_requests_sent": 0,
             }
 
         # True isolation
-        iso = check_isolation({}, False, [])
+        iso = check_isolation({}, False, [], ["VMnet1", "VMnet8", "WSL", "Default Switch"])
         assert iso["is_isolated"] is True
         assert iso["outbound_probes_sent"] == 0
 
         # Proxy detected
-        iso_proxy = check_isolation({"HTTP_PROXY": "http://127.0.0.1:8080"}, False, [])
+        iso_proxy = check_isolation({"HTTP_PROXY": "http://127.0.0.1:8080"}, False, [], [])
         assert iso_proxy["is_isolated"] is False
         assert iso_proxy["proxy_detected"] is True
 
         # Default route detected
-        iso_route = check_isolation({}, True, [])
+        iso_route = check_isolation({}, True, [], [])
         assert iso_route["is_isolated"] is False
         assert iso_route["default_route_detected"] is True
 
-        # Connected adapter detected
-        iso_adapter = check_isolation({}, False, ["Wi-Fi"])
+        # Active egress owner detected
+        iso_adapter = check_isolation({}, False, ["Wi-Fi"], ["Wi-Fi"])
         assert iso_adapter["is_isolated"] is False
-        assert iso_adapter["connected_adapters"] == ["Wi-Fi"]
+        assert iso_adapter["active_egress_adapters"] == ["Wi-Fi"]
 
     def test_g58_offline_verifier_receipt_twelve_point_validation(self):
         """Receipt verification strictly enforces all 12 fail-closed criteria."""
@@ -1009,7 +1013,12 @@ class TestPhase4C2G03AutomatedIsolationController:
             "checks": {
                 "network_isolation": {
                     "default_route_detected": False,
-                    "connected_network_adapters": [],
+                    "active_ipv4_default_routes": [],
+                    "active_ipv6_default_routes": [],
+                    "active_vpn_egress_owners": [],
+                    "active_egress_adapters": [],
+                    "unidentified_active_egress_route_owners": [],
+                    "connected_adapters_informational": ["VMnet1"],
                 },
                 "worktree_head": {
                     "commit": "2826a8274cb89ec548d6fac5c8ae50c1c2836202",
@@ -1044,8 +1053,16 @@ class TestPhase4C2G03AutomatedIsolationController:
                 crit.append("verdict mismatch")
             if r.get("checks", {}).get("network_isolation", {}).get("default_route_detected") is not False:
                 crit.append("default_route_detected not false")
-            if len(r.get("checks", {}).get("network_isolation", {}).get("connected_network_adapters", ["x"])) != 0:
-                crit.append("connected_network_adapters not empty")
+            network = r.get("checks", {}).get("network_isolation", {})
+            for field in (
+                "active_ipv4_default_routes",
+                "active_ipv6_default_routes",
+                "active_vpn_egress_owners",
+                "active_egress_adapters",
+                "unidentified_active_egress_route_owners",
+            ):
+                if len(network.get(field, ["x"])) != 0:
+                    crit.append(f"{field} not empty")
             if r.get("checks", {}).get("worktree_head", {}).get("commit") != "2826a8274cb89ec548d6fac5c8ae50c1c2836202":
                 crit.append("worktree HEAD mismatch")
             if r.get("checks", {}).get("worktree_cleanliness", {}).get("status") != "PASS":
@@ -1427,9 +1444,17 @@ class TestPhase4C2G032RecoveryScriptSyntaxAndInterruption:
     def test_g75_mocked_execution_only_enables_isolated_adapters(self, tmp_path):
         """Mocked execution of recovery script only calls Enable-NetAdapter on exact target allowlist."""
         output_script = tmp_path / "RECOVER_TEST_MOCK.ps1"
+        fixture_path = tmp_path / "targets.json"
+        fixture_path.write_text(json.dumps([{
+            "InterfaceIndex": 21,
+            "Name": "Wi-Fi",
+            "InterfaceDescription": "Fixture Wi-Fi Adapter",
+            "MacAddress": "00-11-22-33-44-55",
+            "Reason": "Hermetic fixture",
+        }]), encoding="utf-8")
         res = subprocess.run(
             f"powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"{self.CONTROLLER_PATH}\" "
-            f"-ValidateRecoveryScriptOnly -OutputRecoveryScriptPath \"{output_script}\"",
+            f"-ValidateRecoveryScriptOnly -TargetFixtureJson \"{fixture_path}\" -OutputRecoveryScriptPath \"{output_script}\"",
             shell=True, capture_output=True, text=True
         )
         assert res.returncode == 0
@@ -1442,6 +1467,10 @@ class TestPhase4C2G032RecoveryScriptSyntaxAndInterruption:
         invoked_file = tmp_path / "invoked.txt"
         invoked_file_str = str(invoked_file).replace("\\", "/")
         mock_runner.write_text(
+            f"function Mock-Get-NetAdapter {{\n"
+            f"    [CmdletBinding()] param([switch]$IncludeHidden)\n"
+            f"    [PSCustomObject]@{{ ifIndex = 21; Name = 'Wi-Fi'; InterfaceDescription = 'Fixture Wi-Fi Adapter'; MacAddress = '00-11-22-33-44-55' }}\n"
+            f"}}\n"
             f"function Mock-Enable-NetAdapter {{\n"
             f"    [CmdletBinding(SupportsShouldProcess = $true)]\n"
             f"    param([Parameter(Mandatory = $true, ValueFromPipeline = $true)][PSObject]$InputObject)\n"
@@ -1449,6 +1478,7 @@ class TestPhase4C2G032RecoveryScriptSyntaxAndInterruption:
             f"        \"$($InputObject.ifIndex)\" | Add-Content -Path \"{invoked_file_str}\"\n"
             f"    }}\n"
             f"}}\n"
+            f"Set-Alias -Name Get-NetAdapter -Value Mock-Get-NetAdapter -Scope Global\n"
             f"Set-Alias -Name Enable-NetAdapter -Value Mock-Enable-NetAdapter -Scope Global\n"
             f". \"{output_script}\"\n",
             encoding="utf-8"
@@ -1533,17 +1563,14 @@ class TestPhase4C2G032RecoveryScriptSyntaxAndInterruption:
     def test_g82_interrupted_run_classification_and_historical_receipt_separation(self):
         """Interrupted run is classified as terminated at parameter binding error; historical receipts separated."""
         readiness_receipt = self.REPO_ROOT / "data" / "research" / "local-artifacts" / "phase-4c.2g" / "automated_isolation_readiness_receipt.json"
-        assert not readiness_receipt.exists(), "Readiness receipt must not exist for interrupted attempt"
-
-        log_path = self.REPO_ROOT / "data" / "research" / "local-artifacts" / "phase-4c.2g" / "automated_isolation_worker.log"
-        if log_path.exists():
-            log_text = log_path.read_text(encoding="utf-8")
-            assert (
-                "A parameter cannot be found that matches parameter name 'InterfaceIndex'" in log_text
-                or "Recovery script syntax validation failed" in log_text
-                or "cannot find the file specified" in log_text
-                or "BLOCKED_AMBIGUOUS_ROUTE_OWNER" in log_text
-            )
+        assert readiness_receipt.exists(), "Later 21:25 readiness receipt must be preserved"
+        latest = json.loads(readiness_receipt.read_text(encoding="utf-8-sig"))
+        audit = json.loads(
+            (self.REPO_ROOT / "research" / "evidence" / "phase-4c.2g.0.3.3" / "interrupted_attempt_parameter_binding_audit.json").read_text(encoding="utf-8")
+        )
+        assert audit["readiness_receipt_created"] is False
+        assert audit["historical_verifier_receipt_separated"] is True
+        assert datetime.datetime.fromisoformat(latest["started_at_utc"]) > datetime.datetime.fromisoformat(audit["attempt_timestamp_utc"])
 
     def test_g83_scientific_invariants_and_zero_real_counters(self):
         """ml/evaluation/ remains bitwise frozen; all scientific counters strictly zero."""
@@ -1682,9 +1709,17 @@ class TestPhase4C2G033AdapterCmdletContractAndFailedAttempt:
     def test_g89_mocked_execution_only_affects_targeted_adapters(self, tmp_path):
         """Mocked execution of recovery script verifies pipeline object passing and target isolation allowlist."""
         output_script = tmp_path / "RECOVER_TEST_MOCK_PIPE.ps1"
+        fixture_path = tmp_path / "targets.json"
+        fixture_path.write_text(json.dumps([{
+            "InterfaceIndex": 21,
+            "Name": "Wi-Fi",
+            "InterfaceDescription": "Fixture Wi-Fi Adapter",
+            "MacAddress": "00-11-22-33-44-55",
+            "Reason": "Hermetic fixture",
+        }]), encoding="utf-8")
         res = subprocess.run(
             f"powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"{self.CONTROLLER_PATH}\" "
-            f"-ValidateRecoveryScriptOnly -OutputRecoveryScriptPath \"{output_script}\"",
+            f"-ValidateRecoveryScriptOnly -TargetFixtureJson \"{fixture_path}\" -OutputRecoveryScriptPath \"{output_script}\"",
             shell=True, capture_output=True, text=True
         )
         assert res.returncode == 0
@@ -1696,6 +1731,10 @@ class TestPhase4C2G033AdapterCmdletContractAndFailedAttempt:
         invoked_file = tmp_path / "invoked_pipe.txt"
         invoked_file_str = str(invoked_file).replace("\\", "/")
         mock_runner.write_text(
+            f"function Mock-Get-NetAdapter {{\n"
+            f"    [CmdletBinding()] param([switch]$IncludeHidden)\n"
+            f"    [PSCustomObject]@{{ ifIndex = 21; Name = 'Wi-Fi'; InterfaceDescription = 'Fixture Wi-Fi Adapter'; MacAddress = '00-11-22-33-44-55' }}\n"
+            f"}}\n"
             f"function Mock-Enable-NetAdapter {{\n"
             f"    [CmdletBinding(SupportsShouldProcess = $true)]\n"
             f"    param([Parameter(Mandatory = $true, ValueFromPipeline = $true)][PSObject]$InputObject)\n"
@@ -1703,6 +1742,7 @@ class TestPhase4C2G033AdapterCmdletContractAndFailedAttempt:
             f"        \"$($InputObject.ifIndex)\" | Add-Content -Path \"{invoked_file_str}\"\n"
             f"    }}\n"
             f"}}\n"
+            f"Set-Alias -Name Get-NetAdapter -Value Mock-Get-NetAdapter -Scope Global\n"
             f"Set-Alias -Name Enable-NetAdapter -Value Mock-Enable-NetAdapter -Scope Global\n"
             f". \"{output_script}\"\n",
             encoding="utf-8"
@@ -1745,7 +1785,7 @@ class TestPhase4C2G033AdapterCmdletContractAndFailedAttempt:
         assert audit["adapters_actually_disabled"] == 0
         assert audit["watchdog_task_name"] == "Phase4C2G_Emergency_Network_Recovery"
 
-        # Ensure historical offline verifier receipt is not confused with current attempt
+        # The current receipt belongs to a later attempt and must not rewrite this audit.
         readiness_receipt = (
             self.REPO_ROOT
             / "data"
@@ -1754,7 +1794,10 @@ class TestPhase4C2G033AdapterCmdletContractAndFailedAttempt:
             / "phase-4c.2g"
             / "automated_isolation_readiness_receipt.json"
         )
-        assert not readiness_receipt.exists(), "Readiness receipt must not exist for failed attempt"
+        assert readiness_receipt.exists(), "Later 21:25 readiness receipt must be preserved"
+        latest = json.loads(readiness_receipt.read_text(encoding="utf-8-sig"))
+        assert datetime.datetime.fromisoformat(latest["started_at_utc"]) > datetime.datetime.fromisoformat(audit["attempt_timestamp_utc"])
+        assert audit["readiness_receipt_created"] is False
 
     def test_g92_scientific_invariants_and_zero_real_counters(self):
         """Evaluator remains strictly frozen; zero real evaluations, unsealing, inference, or locked-test accesses."""
@@ -2373,3 +2416,139 @@ class TestPhase4C2G033AdapterCmdletContractAndFailedAttempt:
         assert "OutboundProbesSent" in controller_text
         assert "DnsLookupsPerformed" in controller_text
         assert "HttpRequestsSent" in controller_text
+
+    def test_g114_protected_internal_adapters_without_active_routes_pass(self):
+        """The exact 21:25 host fixture is informational, not Internet egress."""
+        from scripts.research.verify_phase_4c2g_offline_runtime import (
+            classify_windows_network_snapshot,
+            evaluate_network_isolation,
+        )
+
+        adapters = [
+            {"ifIndex": 20, "Name": "vEthernet (Default Switch)", "InterfaceDescription": "Hyper-V Virtual Ethernet Adapter", "Status": "Up", "AdminStatus": "Up"},
+            {"ifIndex": 56, "Name": "vEthernet (WSL (Hyper-V firewall))", "InterfaceDescription": "Hyper-V Virtual Ethernet Adapter", "Status": "Up", "AdminStatus": "Up"},
+            {"ifIndex": 16, "Name": "VMware Network Adapter VMnet8", "InterfaceDescription": "VMware Virtual Ethernet Adapter for VMnet8", "Status": "Up", "AdminStatus": "Up"},
+            {"ifIndex": 7, "Name": "VMware Network Adapter VMnet1", "InterfaceDescription": "VMware Virtual Ethernet Adapter for VMnet1", "Status": "Up", "AdminStatus": "Up"},
+        ]
+        classified = classify_windows_network_snapshot(adapters, [])
+        classified.update({"http_proxy": "", "https_proxy": "", "all_proxy": ""})
+
+        assert classified["active_egress_adapters"] == []
+        assert classified["active_ipv4_default_routes"] == []
+        assert classified["active_ipv6_default_routes"] == []
+        assert classified["active_vpn_egress_owners"] == []
+        assert classified["unidentified_active_egress_route_owners"] == []
+        assert classified["protected_internal_adapters"] == [a["Name"] for a in adapters]
+        assert classified["connected_adapters_informational"] == [a["Name"] for a in adapters]
+        assert evaluate_network_isolation(classified)["is_isolated"] is True
+
+    def test_g115_active_vpn_or_default_route_owner_still_fails(self):
+        """An active VPN route owner remains egress even when it is not a default route."""
+        from scripts.research.verify_phase_4c2g_offline_runtime import (
+            classify_windows_network_snapshot,
+            evaluate_network_isolation,
+        )
+
+        adapters = [
+            {"ifIndex": 14, "Name": "Radmin VPN", "InterfaceDescription": "Famatech Radmin VPN Ethernet Adapter", "Status": "Up", "AdminStatus": "Up"},
+        ]
+        routes = [
+            {"InterfaceIndex": 14, "InterfaceAlias": "Radmin VPN", "DestinationPrefix": "26.0.0.0/8", "NextHop": "0.0.0.0", "RouteMetric": 1},
+        ]
+        classified = classify_windows_network_snapshot(adapters, routes)
+        classified.update({"http_proxy": "", "https_proxy": "", "all_proxy": ""})
+
+        assert classified["active_vpn_egress_owners"] == ["Radmin VPN"]
+        assert classified["active_egress_adapters"] == ["Radmin VPN"]
+        assert evaluate_network_isolation(classified)["is_isolated"] is False
+
+    def test_g116_proxy_still_fails_without_routes_or_egress_owners(self):
+        """Proxy configuration independently blocks isolation."""
+        from scripts.research.verify_phase_4c2g_offline_runtime import evaluate_network_isolation
+
+        net = {
+            "http_proxy": "http://127.0.0.1:8080",
+            "https_proxy": "",
+            "all_proxy": "",
+            "active_ipv4_default_routes": [],
+            "active_ipv6_default_routes": [],
+            "active_vpn_egress_owners": [],
+            "active_egress_adapters": [],
+            "unidentified_active_egress_route_owners": [],
+        }
+        result = evaluate_network_isolation(net)
+        assert result["is_isolated"] is False
+        assert result["proxy_detected"] is True
+
+    def test_g117_persistent_route_is_array_and_not_active_egress(self):
+        """Persistent route diagnostics never become active egress evidence."""
+        from scripts.research.verify_phase_4c2g_offline_runtime import parse_windows_route_print
+
+        parsed = parse_windows_route_print(
+            "\n".join(
+                [
+                    "Active Routes:",
+                    "Network Destination Netmask Gateway Interface Metric",
+                    "None",
+                    "Persistent Routes:",
+                    "0.0.0.0 0.0.0.0 26.0.0.1 9256",
+                ]
+            )
+        )
+        assert parsed["active_ipv4_default_routes"] == []
+        assert parsed["persistent_routes_ignored"] == ["0.0.0.0 0.0.0.0 26.0.0.1 9256"]
+        assert isinstance(parsed["persistent_routes_ignored"], list)
+
+    def test_g118_wrapper_never_claims_active_route_when_route_false(self):
+        """Exit-code messaging must be driven by receipt reasons, not a hard-coded route claim."""
+        wrapper = (self.REPO_ROOT / "scripts" / "research" / "RUN_PHASE4C2G_OFFLINE_VERIFIER.ps1").read_text(encoding="utf-8")
+        verifier = (self.REPO_ROOT / "scripts" / "research" / "verify_phase_4c2g_offline_runtime.py").read_text(encoding="utf-8")
+        assert "Host has active default network route" not in wrapper
+        assert "Host has active default network route" not in verifier
+        assert "network_isolation" in wrapper
+        assert "failure_reasons" in verifier
+
+    def test_g119_nonzero_verifier_receipt_is_bound_before_exit_handling(self):
+        """A current-session receipt is hashed and recorded even when verifier exits non-zero."""
+        controller = self.CONTROLLER_PATH.read_text(encoding="utf-8")
+        bind_pos = controller.index("$receiptBinding = Bind-OfflineVerifierReceipt")
+        exit_check_pos = controller.index('if ($verifierExit -ne 0)', bind_pos)
+        assert bind_pos < exit_check_pos
+        assert "Get-StreamingFileSha256" in controller
+        assert "offline_verifier_verdict" in controller
+        assert "offline_verifier_exit_code" in controller
+
+    def test_g120_stale_verifier_receipt_timestamp_is_rejected(self):
+        """Receipt observation timestamps must fall inside the current verifier session."""
+        controller = self.CONTROLLER_PATH.read_text(encoding="utf-8")
+        assert "Test-VerifierReceiptSessionBinding" in controller
+        assert "observation_started_at_utc" in controller
+        assert "observation_completed_at_utc" in controller
+        assert "OFFLINE_VERIFIER_RECEIPT_STALE_OR_OUTSIDE_SESSION" in controller
+
+    def test_g121_admin_up_but_operationally_disconnected_is_not_restored(self):
+        """An adapter that was operationally Up must return to Status=Up, not merely AdminStatus=Up."""
+        controller = self.CONTROLLER_PATH.read_text(encoding="utf-8")
+        assert "Wait-AdapterOperationalRestoration" in controller
+        assert '$curr.AdminStatus -eq "Up" -and $curr.Status -eq "Up"' in controller
+        assert '$curr.AdminStatus -ne "Up" -and $curr.Status -ne "Up"' not in controller
+        assert "NETWORK_RECOVERY_REQUIRED" in controller
+
+    def test_g122_operational_status_poll_success_allows_watchdog_cleanup(self):
+        """Restoration success is gated on polling success before watchdog deletion."""
+        controller = self.CONTROLLER_PATH.read_text(encoding="utf-8")
+        restoration_poll = controller.index("Wait-AdapterOperationalRestoration")
+        watchdog_delete = controller.rindex("Remove-ScheduledTaskSafely")
+        assert restoration_poll < watchdog_delete
+        assert "TimeoutSeconds 60" in controller
+        assert "RESTORED_VERIFIED" in controller
+
+    def test_g123_real_artifacts_preserve_locked_test_zero_access(self):
+        """The audited failed readiness attempt never mounted or read locked-test."""
+        artifacts = self.REPO_ROOT / "data" / "research" / "local-artifacts" / "phase-4c.2g"
+        controller_receipt = json.loads((artifacts / "automated_isolation_readiness_receipt.json").read_text(encoding="utf-8-sig"))
+        verifier_receipt = json.loads((artifacts / "offline_verifier_execution_receipt.json").read_text(encoding="utf-8"))
+        assert controller_receipt["locked_test_real_accesses"] == 0
+        assert controller_receipt["all_scientific_counters"]["locked_test_real_accesses"] == 0
+        assert verifier_receipt["real_counters"]["locked_test_real_accesses"] == 0
+        assert verifier_receipt["checks"]["filesystem"]["locked_test_mount_state"] == "UNMOUNTED"

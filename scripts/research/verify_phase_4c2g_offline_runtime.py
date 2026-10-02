@@ -87,6 +87,160 @@ def compute_streaming_sha256_and_bytes(file_path: Path) -> tuple[str, int]:
     return h.hexdigest(), total_bytes
 
 
+def parse_windows_route_print(route_output: str) -> dict:
+    """Parse route.exe output without treating Persistent Routes as live egress."""
+    active_ipv4_default_routes: list[str] = []
+    persistent_routes_ignored: list[str] = []
+    in_active_routes = False
+    in_persistent_routes = False
+
+    for line in route_output.splitlines():
+        stripped = line.strip()
+        if "Active Routes:" in stripped:
+            in_active_routes = True
+            in_persistent_routes = False
+            continue
+        if "Persistent Routes:" in stripped:
+            in_active_routes = False
+            in_persistent_routes = True
+            continue
+        if stripped.startswith("IPv6") or stripped.startswith("Interface List"):
+            in_active_routes = False
+            in_persistent_routes = False
+            continue
+
+        parts = stripped.split()
+        if len(parts) >= 3 and parts[0] == "0.0.0.0" and parts[1] == "0.0.0.0":
+            if in_active_routes:
+                active_ipv4_default_routes.append(stripped)
+            elif in_persistent_routes:
+                persistent_routes_ignored.append(stripped)
+
+    return {
+        "active_ipv4_default_routes": active_ipv4_default_routes,
+        "persistent_routes_ignored": persistent_routes_ignored,
+    }
+
+
+def _adapter_is_up(adapter: dict) -> bool:
+    return str(adapter.get("Status", "")).lower() == "up" or str(adapter.get("AdminStatus", "")).lower() in {
+        "up",
+        "1",
+    }
+
+
+def _adapter_is_protected_internal(adapter: dict) -> bool:
+    identity = f"{adapter.get('Name', '')} {adapter.get('InterfaceDescription', '')}".lower()
+    return any(
+        marker in identity
+        for marker in (
+            "vmnet1",
+            "vmnet8",
+            "default switch",
+            "wsl",
+        )
+    )
+
+
+def _adapter_is_vpn(adapter: dict) -> bool:
+    identity = f"{adapter.get('Name', '')} {adapter.get('InterfaceDescription', '')}".lower()
+    return any(marker in identity for marker in ("vpn", "tunnel", "wireguard", " radmin", "famatech", " tap", " tun"))
+
+
+def _route_is_non_loopback_egress(route: dict) -> bool:
+    prefix = str(route.get("DestinationPrefix", ""))
+    return not prefix.startswith(("127.", "::1", "ff00", "224.", "255."))
+
+
+def classify_windows_network_snapshot(adapters: list[dict], active_routes: list[dict]) -> dict:
+    """Classify active egress by route ownership; connected state alone is informational."""
+    normalized_adapters = [dict(adapter) for adapter in adapters]
+    normalized_routes = [dict(route) for route in active_routes]
+    adapter_by_index = {
+        int(adapter.get("ifIndex", adapter.get("InterfaceIndex"))): adapter
+        for adapter in normalized_adapters
+        if adapter.get("ifIndex", adapter.get("InterfaceIndex")) is not None
+    }
+    connected_adapters = [str(adapter.get("Name", "")) for adapter in normalized_adapters if _adapter_is_up(adapter)]
+    protected_internal = [
+        str(adapter.get("Name", ""))
+        for adapter in normalized_adapters
+        if _adapter_is_up(adapter) and _adapter_is_protected_internal(adapter)
+    ]
+
+    active_ipv4 = [route for route in normalized_routes if str(route.get("DestinationPrefix", "")) == "0.0.0.0/0"]
+    active_ipv6 = [route for route in normalized_routes if str(route.get("DestinationPrefix", "")) == "::/0"]
+    active_egress_names: list[str] = []
+    active_vpn_names: list[str] = []
+    unidentified_route_owners: list[dict] = []
+
+    for route in active_ipv4 + active_ipv6:
+        raw_index = route.get("InterfaceIndex", route.get("ifIndex"))
+        owner = adapter_by_index.get(int(raw_index)) if raw_index is not None else None
+        if owner is None or not _adapter_is_up(owner):
+            unidentified_route_owners.append(route)
+            continue
+        name = str(owner.get("Name", route.get("InterfaceAlias", "")))
+        if name not in active_egress_names:
+            active_egress_names.append(name)
+
+    for adapter in normalized_adapters:
+        if not _adapter_is_up(adapter) or not _adapter_is_vpn(adapter):
+            continue
+        raw_index = adapter.get("ifIndex", adapter.get("InterfaceIndex"))
+        owned_routes = [
+            route
+            for route in normalized_routes
+            if raw_index is not None
+            and route.get("InterfaceIndex", route.get("ifIndex")) is not None
+            and int(route.get("InterfaceIndex", route.get("ifIndex"))) == int(raw_index)
+            and _route_is_non_loopback_egress(route)
+        ]
+        if owned_routes:
+            name = str(adapter.get("Name", ""))
+            if name not in active_vpn_names:
+                active_vpn_names.append(name)
+            if name not in active_egress_names:
+                active_egress_names.append(name)
+
+    return {
+        "default_route_detected": bool(active_ipv4 or active_ipv6),
+        "active_ipv4_default_routes": active_ipv4,
+        "active_ipv6_default_routes": active_ipv6,
+        "active_vpn_egress_owners": active_vpn_names,
+        "active_vpn_detected": bool(active_vpn_names),
+        "active_egress_adapters": active_egress_names,
+        "protected_internal_adapters": protected_internal,
+        "connected_adapters_informational": connected_adapters,
+        "connected_network_adapters": connected_adapters,
+        "unidentified_active_egress_route_owners": unidentified_route_owners,
+    }
+
+
+def evaluate_network_isolation(net_info: dict) -> dict:
+    """Return the route-owner based isolation verdict and machine-readable reasons."""
+    proxy_detected = bool(net_info.get("http_proxy") or net_info.get("https_proxy") or net_info.get("all_proxy"))
+    failure_reasons: list[str] = []
+    if proxy_detected:
+        failure_reasons.append("PROXY_DETECTED")
+    if net_info.get("active_ipv4_default_routes"):
+        failure_reasons.append("ACTIVE_IPV4_DEFAULT_ROUTE_DETECTED")
+    if net_info.get("active_ipv6_default_routes"):
+        failure_reasons.append("ACTIVE_IPV6_DEFAULT_ROUTE_DETECTED")
+    if net_info.get("active_vpn_egress_owners"):
+        failure_reasons.append("ACTIVE_VPN_EGRESS_OWNER_DETECTED")
+    if net_info.get("unidentified_active_egress_route_owners"):
+        failure_reasons.append("UNIDENTIFIED_ACTIVE_EGRESS_ROUTE_OWNER")
+    if net_info.get("inspection_errors"):
+        failure_reasons.append("PASSIVE_NETWORK_INSPECTION_ERROR")
+
+    return {
+        "is_isolated": not failure_reasons,
+        "proxy_detected": proxy_detected,
+        "failure_reasons": failure_reasons,
+    }
+
+
 def inspect_passive_network() -> dict:
     """Inspect local network settings passively with zero outbound network probes."""
     results = {
@@ -97,62 +251,66 @@ def inspect_passive_network() -> dict:
         "https_proxy": os.environ.get("HTTPS_PROXY", ""),
         "all_proxy": os.environ.get("ALL_PROXY", ""),
         "default_route_detected": False,
+        "active_ipv4_default_routes": [],
+        "active_ipv6_default_routes": [],
+        "active_vpn_egress_owners": [],
+        "active_egress_adapters": [],
+        "protected_internal_adapters": [],
+        "connected_adapters_informational": [],
         "connected_network_adapters": [],
+        "unidentified_active_egress_route_owners": [],
         "persistent_routes_ignored": [],
         "active_vpn_detected": False,
+        "inspection_errors": [],
     }
 
     # Check Windows route print
     if platform.system() == "Windows":
-        active_routes_detected = False
-        persistent_routes = []
+        route_print_parsed = {"active_ipv4_default_routes": [], "persistent_routes_ignored": []}
         try:
             route_out = subprocess.check_output(
                 ["route", "print", "0.0.0.0"],
                 text=True,
                 stderr=subprocess.DEVNULL,
             )
-            in_active_routes = False
-            in_persistent_routes = False
-            for line in route_out.splitlines():
-                stripped = line.strip()
-                if "Active Routes:" in stripped:
-                    in_active_routes = True
-                    in_persistent_routes = False
-                    continue
-                elif "Persistent Routes:" in stripped:
-                    in_active_routes = False
-                    in_persistent_routes = True
-                    continue
-                elif stripped.startswith("IPv6") or stripped.startswith("Interface List"):
-                    in_active_routes = False
-                    in_persistent_routes = False
-                    continue
+            route_print_parsed = parse_windows_route_print(route_out)
+            results["persistent_routes_ignored"] = list(route_print_parsed["persistent_routes_ignored"])
+        except Exception as exc:
+            results["inspection_errors"].append(f"ROUTE_PRINT_QUERY_FAILED: {exc}")
 
-                parts = stripped.split()
-                if len(parts) >= 3 and parts[0] == "0.0.0.0" and parts[1] == "0.0.0.0":
-                    if in_active_routes:
-                        active_routes_detected = True
-                    elif in_persistent_routes:
-                        persistent_routes.append(stripped)
-
-            results["default_route_detected"] = active_routes_detected
-            results["persistent_routes_ignored"] = persistent_routes
-        except Exception:
-            pass
-
-        # Check PowerShell Get-NetAdapter (local query only, no outbound network)
+        # Query adapters and ActiveStore routes together so ownership can be proven.
         try:
-            ps_cmd = 'Get-NetAdapter | Where-Object { $_.Status -eq "Up" } | Select-Object -ExpandProperty Name'
-            adapter_out = subprocess.check_output(
+            ps_cmd = (
+                "$adapters=@(Get-NetAdapter -IncludeHidden -ErrorAction Stop | "
+                "Select-Object ifIndex,Name,InterfaceDescription,Status,AdminStatus);"
+                "$routes=@(Get-NetRoute -PolicyStore ActiveStore -ErrorAction Stop | "
+                "Select-Object InterfaceIndex,InterfaceAlias,DestinationPrefix,NextHop,RouteMetric);"
+                "[PSCustomObject]@{adapters=$adapters;routes=$routes}|ConvertTo-Json -Depth 5 -Compress"
+            )
+            snapshot_out = subprocess.check_output(
                 ["powershell", "-NoProfile", "-Command", ps_cmd],
                 text=True,
                 stderr=subprocess.DEVNULL,
             )
-            adapters = [a.strip() for a in adapter_out.splitlines() if a.strip()]
-            results["connected_network_adapters"] = adapters
-        except Exception:
-            pass
+            snapshot = json.loads(snapshot_out)
+            adapters = snapshot.get("adapters") or []
+            routes = snapshot.get("routes") or []
+            if isinstance(adapters, dict):
+                adapters = [adapters]
+            if isinstance(routes, dict):
+                routes = [routes]
+            results.update(classify_windows_network_snapshot(adapters, routes))
+        except Exception as exc:
+            results["inspection_errors"].append(f"ACTIVE_STORE_OWNERSHIP_QUERY_FAILED: {exc}")
+
+        # route.exe is a secondary cross-check. Any unmatched live route fails closed.
+        if route_print_parsed["active_ipv4_default_routes"] and not results["active_ipv4_default_routes"]:
+            results["active_ipv4_default_routes"] = list(route_print_parsed["active_ipv4_default_routes"])
+            results["unidentified_active_egress_route_owners"].extend(
+                {"source": "route.exe", "route": route}
+                for route in route_print_parsed["active_ipv4_default_routes"]
+            )
+            results["default_route_detected"] = True
     else:
         # Linux passive route check via /proc/net/route
         try:
@@ -161,10 +319,13 @@ def inspect_passive_network() -> dict:
                 for line in route_file.read_text().splitlines()[1:]:
                     fields = line.strip().split()
                     if len(fields) >= 2 and fields[1] == "00000000":
+                        route = {"source": "/proc/net/route", "route": line.strip()}
+                        results["active_ipv4_default_routes"].append(route)
+                        results["unidentified_active_egress_route_owners"].append(route)
                         results["default_route_detected"] = True
                         break
-        except Exception:
-            pass
+        except Exception as exc:
+            results["inspection_errors"].append(f"PROC_ROUTE_QUERY_FAILED: {exc}")
 
     return results
 
@@ -313,17 +474,24 @@ def verify_offline_runtime(
 
     # 6. Passive network isolation
     net_info = inspect_passive_network()
-    has_proxy = bool(net_info["http_proxy"] or net_info["https_proxy"] or net_info["all_proxy"])
-    has_default_route = net_info["default_route_detected"]
-    has_connected_adapters = len(net_info["connected_network_adapters"]) > 0
-
-    is_network_isolated = (not has_proxy) and (not has_default_route) and (not has_connected_adapters)
+    network_evaluation = evaluate_network_isolation(net_info)
+    has_proxy = network_evaluation["proxy_detected"]
+    has_default_route = bool(net_info["active_ipv4_default_routes"] or net_info["active_ipv6_default_routes"])
+    is_network_isolated = network_evaluation["is_isolated"]
     checks["network_isolation"] = {
         "status": "PASS" if is_network_isolated else "USER_PHYSICAL_ACTION_REQUIRED",
         "has_proxy": has_proxy,
         "default_route_detected": has_default_route,
-        "connected_network_adapters": net_info["connected_network_adapters"],
-        "persistent_routes_ignored": net_info.get("persistent_routes_ignored", []),
+        "active_ipv4_default_routes": net_info["active_ipv4_default_routes"],
+        "active_ipv6_default_routes": net_info["active_ipv6_default_routes"],
+        "active_vpn_egress_owners": net_info["active_vpn_egress_owners"],
+        "active_egress_adapters": net_info["active_egress_adapters"],
+        "protected_internal_adapters": net_info["protected_internal_adapters"],
+        "connected_adapters_informational": net_info["connected_adapters_informational"],
+        "connected_network_adapters": net_info["connected_adapters_informational"],
+        "unidentified_active_egress_route_owners": net_info["unidentified_active_egress_route_owners"],
+        "persistent_routes_ignored": list(net_info.get("persistent_routes_ignored", [])),
+        "failure_reasons": network_evaluation["failure_reasons"],
         "passive_checks": net_info,
     }
 
@@ -442,7 +610,8 @@ def main() -> None:
     if receipt_data["verdict"] == "READY_FOR_HUMAN_AUTHORIZATION_REVIEW":
         sys.exit(0)
     elif receipt_data["verdict"] == "USER_PHYSICAL_ACTION_REQUIRED":
-        print("ACTION REQUIRED: Host has active default network route. Disconnect all network adapters physically.")
+        reasons = receipt_data["checks"]["network_isolation"]["failure_reasons"]
+        print(f"ACTION REQUIRED: Network isolation failed for machine-readable reason(s): {', '.join(reasons)}")
         sys.exit(2)
     else:
         print(f"VERIFIER FAILED: {receipt_data['errors']}")
