@@ -230,12 +230,11 @@ def build_package(
         json.dumps(source_binding, indent=2, sort_keys=True) + "\n"
     ).encode("utf-8")
     evaluator_commit = str(source_binding.get("effective_evaluator_commit", ""))
-    bound_execution_commit = str(
-        source_binding.get("effective_execution_commit", evaluator_commit)
-    )
-    if bound_execution_commit != effective_execution_commit:
+    bound_package_commit = str(source_binding.get("execution_package_commit", ""))
+    if bound_package_commit != effective_execution_commit:
         raise ValueError(
-            "Source binding effective execution commit does not match builder input."
+            "Source binding execution package commit does not match effective "
+            "package builder input."
         )
     if source_binding.get("execution_package_commit") != execution_package_commit:
         raise ValueError(
