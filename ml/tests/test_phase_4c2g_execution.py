@@ -1032,6 +1032,72 @@ def test_complete_package_is_deterministic_self_contained_and_data_free(
     assert completed.returncode == 0, completed.stderr
 
 
+def test_mixed_commit_package_contains_exact_preflightable_controller(
+    tmp_path: Path,
+) -> None:
+    from scripts.research.build_phase4c2g_execution_package import build_package
+
+    binding_path = (
+        REPO_ROOT
+        / "research/evidence/phase-4c.2g.0.10/evaluator_source_binding.json"
+    )
+    binding = json.loads(binding_path.read_text(encoding="utf-8"))
+    assert binding["effective_evaluator_commit"] == (
+        "2bbb1109c8ab18c9ff7120ef004acd0ba7074716"
+    )
+    assert binding["orchestrator_hotfix_commit"] == (
+        "597a79af3cc76707edeefcb6dfc1d93f5f0e5ae1"
+    )
+    assert binding["execution_package_commit"] == (
+        "76fbfec84f8fce9b7afd92a266c0d3a7c2f6ca48"
+    )
+
+    archive_path = tmp_path / "phase_4c2g_complete_executor_76fbfec.tar.gz"
+    audit = build_package(
+        repo_root=REPO_ROOT,
+        output_path=archive_path,
+        effective_execution_commit=binding["execution_package_commit"],
+        execution_package_commit=binding["execution_package_commit"],
+        source_binding_path=binding_path,
+    )
+    assert audit.bytes == 52089
+    assert audit.sha256 == (
+        "2301238a1148ff0dd237132c1274c962148d601016fd59220cc876748883ea71"
+    )
+
+    extracted = tmp_path / "mixed-commit-package"
+    extracted.mkdir()
+    with tarfile.open(archive_path, "r:gz") as archive:
+        archive.extractall(extracted, filter="data")
+    controller = (
+        extracted / "scripts/research/RUN_PHASE4C2G_AUTHORIZED_SESSION.ps1"
+    )
+    assert controller.stat().st_size == 37740
+    assert _sha256(controller) == (
+        "878456e7f71c7f8755ad6760d163afe199bfaff5fc793b0ffd0ff2a7359f3047"
+    )
+    completed = subprocess.run(
+        [
+            "powershell.exe",
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-File",
+            str(controller),
+            "-ContractValidationOnly",
+        ],
+        cwd=extracted,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+    contract = json.loads(completed.stdout)
+    assert contract["verdict"] == "AUTHORIZED_SESSION_CONTRACT_VALID"
+    assert contract["adapter_cmdlet_contract"]["direct_interface_index_calls"] == 0
+    assert contract["adapter_cmdlet_contract"]["adapter_mutations"] == 0
+
+
 def test_real_source_binding_matches_every_effective_commit_git_object() -> None:
     from scripts.research.build_phase4c2g_execution_package import (
         PACKAGE_SOURCE_MEMBERS,

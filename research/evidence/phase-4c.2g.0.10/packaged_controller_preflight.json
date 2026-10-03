@@ -1,0 +1,73 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.10",
+  "generated_at_utc": "2026-10-03T19:48:04.8587421Z",
+  "verdict": "EXACT_PACKAGED_CONTROLLER_PREFLIGHT_PASS",
+  "archive": {
+    "filename": "phase_4c2g_complete_executor_76fbfec.tar.gz",
+    "bytes": 52089,
+    "sha256": "2301238a1148ff0dd237132c1274c962148d601016fd59220cc876748883ea71",
+    "member_count": 25
+  },
+  "package_manifest": {
+    "evaluator_effective_commit": "2bbb1109c8ab18c9ff7120ef004acd0ba7074716",
+    "effective_package_build_commit": "76fbfec84f8fce9b7afd92a266c0d3a7c2f6ca48",
+    "execution_package_commit": "76fbfec84f8fce9b7afd92a266c0d3a7c2f6ca48"
+  },
+  "packaged_controller": {
+    "bytes": 37740,
+    "sha256": "878456e7f71c7f8755ad6760d163afe199bfaff5fc793b0ffd0ff2a7359f3047",
+    "git_commit": "597a79af3cc76707edeefcb6dfc1d93f5f0e5ae1",
+    "invalid_direct_interface_index_calls": false
+  },
+  "windows_powershell_5_1": {
+    "output_records": 1,
+    "verdict": "AUTHORIZED_SESSION_CONTRACT_VALID"
+  },
+  "powershell_7": {
+    "output_records": 1,
+    "verdict": "AUTHORIZED_SESSION_CONTRACT_VALID"
+  },
+  "adapter_cmdlet_contract": {
+    "disable_input_object_value_from_pipeline": true,
+    "enable_input_object_value_from_pipeline": true,
+    "direct_interface_index_calls": 0,
+    "include_hidden_resolution": true,
+    "pipeline_whatif_binding_probe": "PASS",
+    "adapter_mutations": 0
+  },
+  "generated_recovery_script_contract": {
+    "windows_powershell_5_1_ast_parse_errors": 0,
+    "direct_interface_index_calls": 0,
+    "pipeline_enable_calls": 1,
+    "fixture_execution": "PASS",
+    "missing_adapter_rejected": true,
+    "duplicate_adapter_rejected": true,
+    "identity_mismatch_rejected": true
+  },
+  "adapter_identity_fixture_contract": {
+    "exact_match": "PASS",
+    "missing_adapter_rejected": true,
+    "duplicate_adapter_rejected": true,
+    "name_mismatch_rejected": true,
+    "description_mismatch_rejected": true,
+    "mac_mismatch_rejected": true,
+    "isolation_pipeline_exercised": true,
+    "recovery_pipeline_exercised": true,
+    "restoration_pipeline_exercised": true
+  },
+  "watchdog_readback_contract": {
+    "bounded_polling": true,
+    "eventual_absence_fixture": "PASS",
+    "timeout_while_present_blocks_pass": true,
+    "restoration_failure_retains_watchdog": true
+  },
+  "safety": {
+    "uac_invoked": false,
+    "network_mutations": 0,
+    "adapter_mutations": 0,
+    "vhdx_mounts": 0,
+    "locked_test_content_reads": 0,
+    "model_evaluations": 0
+  }
+}

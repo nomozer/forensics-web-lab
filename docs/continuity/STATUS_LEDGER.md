@@ -1,3 +1,19 @@
+## Phase 4C.2G.0.10 — Authorized-Session Adapter Hotfix and Package Reseal
+
+- **Mục tiêu**: Repair the sealed executor's Windows adapter parameter binding across isolation, generated recovery, and finally restoration; harden watchdog read-back; reseal and bind an exact package without changing evaluator/scientific artifacts.
+- **Root cause**: At `2bbb110`, the readiness controller already used exact-object pipeline semantics, but the separately authored authorized executor reintroduced 1 direct disable and 2 direct enable `-InterfaceIndex` calls; static-only contract tests missed it.
+- **Hotfix**: Exact ifIndex + Name/InterfaceDescription/MacAddress resolution via `Get-NetAdapter -IncludeHidden`; object pipelines; generated PowerShell 5.1 recovery identity guards; restoration-failure watchdog retention; bounded creation/deletion polling; contract self-tests including redirected child `-WhatIf`.
+- **Commit roles**: evaluator `2bbb110`; orchestrator `597a79a`; execution package `76fbfec`.
+- **Package**: `phase_4c2g_complete_executor_76fbfec.tar.gz`, 52,089 bytes, 25 members, SHA-256 `2301238a1148ff0dd237132c1274c962148d601016fd59220cc876748883ea71`, stored outside Git.
+- **Preflight**: Exact extracted controller PASS on Windows PowerShell 5.1 and PowerShell 7 with one JSON record each; 0 direct adapter parameter calls; recovery/identity/watchdog fixtures PASS; 0 adapter/network/model mutations.
+- **Scientific invariants**: evaluator/checkpoints/manifest unchanged; VHDX present and detached, not copied/rebuilt; custodian session remains 1/686; all evaluation/inference/training counters 0.
+- **Authorization**: New exact request is `PENDING_HUMAN_APPROVAL`; no authorization artifact/signature/consumption, UAC, locked-test read, or inference.
+- **Kết quả**: `READY_FOR_HUMAN_EVALUATOR_AUTHORIZATION`.
+- **Evidence**: `research/evidence/phase-4c.2g.0.10/`.
+- **Quyết định tiếp theo**: Human reviews and explicitly approves or rejects the exact one-session/five-checkpoint request; do not execute before approval.
+
+---
+
 ## Phase 4C.2G.0.9 — Evaluator Authorization Preparation and Windows Runtime Preflight
 
 - **Mục tiêu**: Lock exact evaluator/package/components/schema, five Stage 1 N=250 checkpoints, and the completed manifest commitment; run fixture-only Windows readiness checks; prepare but do not activate the one-session evaluator authorization request.

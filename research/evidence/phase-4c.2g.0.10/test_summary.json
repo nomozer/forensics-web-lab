@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.10",
+  "generated_at_utc": "2026-10-03T19:50:18.6606310Z",
+  "verdict": "READY_FOR_HUMAN_EVALUATOR_AUTHORIZATION",
+  "gates": [
+    {"gate": "red regression before fix", "result": "PASS", "observed_failures": ["direct adapter InterfaceIndex calls present", "contract lacked recovery/identity/watchdog checks"]},
+    {"command": "pytest ml/tests/test_phase_4c2g_execution.py ml/tests/test_phase_4c2f_evaluator.py -q", "result": "PASS", "passed": 72, "warnings": 1, "note": "Pytest cache write warning only; test temp was external and removed."},
+    {"gate": "Windows PowerShell 5.1 source controller contract", "result": "PASS", "output_records": 1},
+    {"gate": "PowerShell 7 source controller contract", "result": "PASS", "output_records": 1},
+    {"gate": "exact packaged controller Windows PowerShell 5.1 contract", "result": "PASS", "output_records": 1},
+    {"gate": "exact packaged controller PowerShell 7 contract", "result": "PASS", "output_records": 1},
+    {"gate": "deterministic final archive reproduction", "result": "PASS", "sha256": "2301238a1148ff0dd237132c1274c962148d601016fd59220cc876748883ea71", "bytes": 52089},
+    {"gate": "cross-document source/package/request binding", "result": "EXECUTION_AUTHORIZATION_BINDING_VERIFIED"},
+    {"gate": "five checkpoint streaming SHA-256", "result": "PASS", "torch_load_calls": 0, "model_forward_count": 0},
+    {"gate": "manifest commitment SHA-256/bytes/cardinality", "result": "PASS"},
+    {"gate": "VHDX metadata", "result": "PASS", "attached": false, "content_reads": 0},
+    {"command": "pnpm test", "result": "PASS", "workspace_tests_passed": 57, "continuity_unit_tests_passed": 13},
+    {"command": "pnpm typecheck", "result": "PASS"},
+    {"command": "pnpm build", "result": "PASS", "note": "Existing Vite chunk-size warning only."},
+    {"command": "pnpm continuity:check", "result": "PASS"},
+    {"command": "git diff --check", "result": "PASS"}
+  ],
+  "safety": {
+    "uac_invoked": false,
+    "network_mutations": 0,
+    "adapter_mutations": 0,
+    "vhdx_mounts": 0,
+    "locked_test_content_reads": 0,
+    "authorization_artifacts_created": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "cpu_inference_calls": 0,
+    "gpu_inference_calls": 0,
+    "new_training_runs": 0
+  }
+}

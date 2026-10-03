@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.10",
+  "generated_at_utc": "2026-10-03T19:50:18.6606310Z",
+  "verdict": "SCIENTIFIC_BINDINGS_UNCHANGED",
+  "evaluator_effective_commit": "2bbb1109c8ab18c9ff7120ef004acd0ba7074716",
+  "evaluator_source_diff": "EMPTY",
+  "checkpoints": [
+    {"seed": 42, "bytes": 5627375, "sha256": "c941f42ed00adb098962ddb43c0f2f7d897e48e20957cddc0c491243f8730c92", "match": true},
+    {"seed": 1337, "bytes": 5627375, "sha256": "69e706f9062f050ccbfd2affb72d63d5dde9d12f02c1e64c762b0ea6719073f1", "match": true},
+    {"seed": 2025, "bytes": 5627375, "sha256": "92ce5ee986d487fdf14374842067d0684fc7669f5ecb32c7d603f6813942ceee", "match": true},
+    {"seed": 3407, "bytes": 5627375, "sha256": "4897821ef0a97df9f1c51acde8d4ac01d383aa3a7b9e7ee55bbc3b3108847868", "match": true},
+    {"seed": 9001, "bytes": 5627375, "sha256": "5f0f8803adcb7eec88d47e398ef8b2002b46e740c263b12abc2ba392822a91c3", "match": true}
+  ],
+  "checkpoint_verification": {"mode": "streaming_sha256_only", "torch_load_calls": 0, "model_forward_count": 0},
+  "manifest_commitment": {"bytes": 174337, "sha256": "9d8564bdd64f5d5965e7f5470b322aa0769f4bf45b78ef8547134b07a71d18e7", "source_count": 343, "sample_count": 686, "match": true},
+  "vhdx": {"bytes": 775946240, "attached": false, "metadata_only": true, "content_reads": 0, "rebuilt": false, "copied": false},
+  "custodian": {"completed_sessions": 1, "files_hashed": 686, "commitment_preserved": true},
+  "real_counters": {"completed_real_unsealing_sessions": 0, "completed_real_model_evaluations": 0, "evaluation_attempts": 0, "cpu_inference_calls": 0, "gpu_inference_calls": 0, "new_training_runs": 0}
+}

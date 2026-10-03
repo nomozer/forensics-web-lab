@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.10",
+  "generated_at_utc": "2026-10-03T19:50:18.6606310Z",
+  "root_cause": "ADAPTER_FIX_NOT_PORTED_FROM_READINESS_CONTROLLER_TO_AUTHORIZED_EXECUTOR",
+  "baseline_commit": "2bbb1109c8ab18c9ff7120ef004acd0ba7074716",
+  "baseline_comparison": {
+    "authorized_executor": {
+      "path": "scripts/research/RUN_PHASE4C2G_AUTHORIZED_SESSION.ps1",
+      "bytes": 16227,
+      "sha256": "646f5278d3f18ff3dc29ec800df3bcb7ee3332b7563d5f3db1086917167da778",
+      "resolve_target_function_count": 0,
+      "direct_disable_interface_index_calls": 1,
+      "direct_enable_interface_index_calls": 2,
+      "pipeline_disable_calls": 0,
+      "pipeline_enable_calls": 0
+    },
+    "already_repaired_readiness_controller": {
+      "path": "scripts/research/RUN_PHASE4C2G_AUTOMATED_ISOLATION.ps1",
+      "bytes": 99316,
+      "sha256": "16bcc151455a0cf892fab7d0d6d6dfbfd6153cda3b22c69ba8154de667afb170",
+      "resolve_target_function_count": 1,
+      "direct_disable_interface_index_calls": 0,
+      "direct_enable_interface_index_calls": 0,
+      "pipeline_disable_calls": 2,
+      "pipeline_enable_calls": 2
+    }
+  },
+  "why_tests_missed_it": "The original authorized-session ContractValidationOnly emitted a static ordered-step declaration and existing tests asserted only that JSON shape. It did not inspect cmdlet metadata, controller AST, generated recovery AST, identity failure cases, pipeline WhatIf binding, or watchdog polling.",
+  "hotfix": {
+    "controller_component_commit": "597a79af3cc76707edeefcb6dfc1d93f5f0e5ae1",
+    "controller_bytes": 37740,
+    "controller_sha256": "878456e7f71c7f8755ad6760d163afe199bfaff5fc793b0ffd0ff2a7359f3047",
+    "isolation": "Resolve exact ifIndex plus Name/InterfaceDescription/MacAddress snapshot, then pipe resolved object to Disable-NetAdapter.",
+    "watchdog_recovery": "Generated PowerShell 5.1 script resolves exact identity through Get-NetAdapter -IncludeHidden and pipes the resolved object to Enable-NetAdapter.",
+    "finally_restoration": "Only successfully disabled identity snapshots are restored; failure retains watchdog and blocks PASS.",
+    "watchdog_readback": "Creation and deletion use bounded polling; timeout blocks PASS."
+  },
+  "scientific_surface_modified": false
+}
