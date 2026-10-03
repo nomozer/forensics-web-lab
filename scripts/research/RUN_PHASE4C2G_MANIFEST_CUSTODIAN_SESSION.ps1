@@ -147,7 +147,7 @@ if ($binding.status -ne "READY_FOR_HUMAN_MANIFEST_CUSTODIAN_APPROVAL") { throw "
 if ($binding.archive.filename -ne $archiveItem.Name -or $binding.archive.sha256 -ne $archiveSha -or [int64]$binding.archive.bytes -ne $archiveItem.Length) { throw "Custodian package archive binding mismatch." }
 if ($authorization.sealed_package_sha256 -ne $binding.archive.sha256 -or [int64]$authorization.sealed_package_bytes -ne [int64]$binding.archive.bytes) { throw "Custodian authorization archive binding mismatch." }
 if ($authorization.custodian_tool_commit -ne $binding.effective_custodian_commit -or $authorization.custodian_package_commit -ne $binding.custodian_package_commit) { throw "Custodian authorization commit binding mismatch." }
-if ($authorization.custodian_component_hashes.PSObject.Properties.Count -ne $binding.authorization_component_hashes.PSObject.Properties.Count) { throw "Custodian component binding mismatch." }
+if (@($authorization.custodian_component_hashes.PSObject.Properties).Count -ne @($binding.authorization_component_hashes.PSObject.Properties).Count) { throw "Custodian component binding mismatch." }
 foreach ($property in $binding.authorization_component_hashes.PSObject.Properties) {
     if ($authorization.custodian_component_hashes.($property.Name) -ne $property.Value) { throw "Custodian component hash mismatch: $($property.Name)" }
 }
