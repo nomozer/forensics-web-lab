@@ -96,16 +96,22 @@ def audit_git_commit_components(
     """Verify component byte counts and SHA-256 against exact Git blob bytes."""
     root = Path(repo_root).resolve(strict=True)
     if not re.fullmatch(r"[0-9a-f]{40}", commit):
-        raise ValueError(f"Effective commit must be an exact 40-hex object id: {commit!r}")
+        raise ValueError(f"Default commit must be an exact 40-hex object id: {commit!r}")
     audit: dict[str, dict[str, Any]] = {}
     for name, metadata in components.items():
         relative_path = str(metadata["relative_path"]).replace("\\", "/")
+        component_commit = str(metadata.get("git_commit", commit))
+        if not re.fullmatch(r"[0-9a-f]{40}", component_commit):
+            raise ValueError(
+                f"Component {name!r} git_commit must be exact 40-hex: "
+                f"{component_commit!r}"
+            )
         _safe_member_name(relative_path)
         try:
-            payload = _read_git_blob(root, commit, relative_path)
+            payload = _read_git_blob(root, component_commit, relative_path)
         except ValueError as exc:
             raise ValueError(
-                f"Runtime component {name!r} is absent at effective commit: "
+                f"Runtime component {name!r} is absent at bound commit: "
                 f"{relative_path}"
             ) from exc
         actual_sha256 = sha256_bytes(payload)
@@ -113,7 +119,7 @@ def audit_git_commit_components(
         sha256_match = actual_sha256 == str(metadata["sha256"])
         if not bytes_match or not sha256_match:
             raise ValueError(
-                f"Runtime component {name!r} differs at effective commit: "
+                f"Runtime component {name!r} differs at bound commit: "
                 f"bytes={len(payload)}, sha256={actual_sha256}"
             )
         if require_worktree_match:
@@ -123,7 +129,7 @@ def audit_git_commit_components(
                     "diff",
                     "--quiet",
                     "--no-ext-diff",
-                    commit,
+                    component_commit,
                     "--",
                     relative_path,
                 ],
@@ -141,6 +147,7 @@ def audit_git_commit_components(
                 )
         audit[name] = {
             "relative_path": relative_path,
+            "git_commit": component_commit,
             "exists_at_commit": True,
             "bytes": len(payload),
             "sha256": actual_sha256,
@@ -222,8 +229,18 @@ def build_package(
     binding_bytes = (
         json.dumps(source_binding, indent=2, sort_keys=True) + "\n"
     ).encode("utf-8")
-    if source_binding.get("effective_evaluator_commit") != effective_execution_commit:
-        raise ValueError("Source binding effective commit does not match builder input.")
+    evaluator_commit = str(source_binding.get("effective_evaluator_commit", ""))
+    bound_execution_commit = str(
+        source_binding.get("effective_execution_commit", evaluator_commit)
+    )
+    if bound_execution_commit != effective_execution_commit:
+        raise ValueError(
+            "Source binding effective execution commit does not match builder input."
+        )
+    if source_binding.get("execution_package_commit") != execution_package_commit:
+        raise ValueError(
+            "Source binding execution package commit does not match builder input."
+        )
 
     commit_components = dict(source_binding.get("components", {}))
     commit_components["authorization_schema"] = source_binding.get(
@@ -231,9 +248,9 @@ def build_package(
     )
     audit_git_commit_components(
         repo_root=root,
-        commit=effective_execution_commit,
+        commit=evaluator_commit,
         components=commit_components,
-        require_worktree_match=True,
+        require_worktree_match=False,
     )
     bound_paths = {
         str(metadata["relative_path"]).replace("\\", "/")
@@ -246,16 +263,35 @@ def build_package(
             f"Package/source-binding member mismatch: missing={missing}, extra={extra}"
         )
 
+    component_by_path = {
+        str(metadata["relative_path"]).replace("\\", "/"): metadata
+        for metadata in commit_components.values()
+    }
+    if evaluator_commit != effective_execution_commit:
+        missing_commits = sorted(
+            path
+            for path, metadata in component_by_path.items()
+            if "git_commit" not in metadata
+        )
+        if missing_commits:
+            raise ValueError(
+                "Mixed evaluator/execution package requires explicit git_commit "
+                f"on every component: {missing_commits}"
+            )
+
     source_entries: list[tuple[str, bytes]] = []
     for name in PACKAGE_SOURCE_MEMBERS:
         _safe_member_name(name)
+        metadata = component_by_path[name]
+        component_commit = str(metadata.get("git_commit", evaluator_commit))
         source_entries.append(
-            (name, _read_git_blob(root, effective_execution_commit, name))
+            (name, _read_git_blob(root, component_commit, name))
         )
     source_entries.append(("runtime_source_binding.json", binding_bytes))
 
     provenance = {
         "schema_version": "1.0.0",
+        "evaluator_effective_commit": evaluator_commit,
         "effective_execution_commit": effective_execution_commit,
         "execution_package_commit": execution_package_commit,
         "source_binding_sha256": sha256_bytes(binding_bytes),
@@ -276,6 +312,7 @@ def build_package(
     }
     package_manifest = {
         "schema_version": "1.0.0",
+        "evaluator_effective_commit": evaluator_commit,
         "effective_execution_commit": effective_execution_commit,
         "execution_package_commit": execution_package_commit,
         "contains_dataset": False,

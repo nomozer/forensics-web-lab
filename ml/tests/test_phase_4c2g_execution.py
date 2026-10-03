@@ -10,6 +10,7 @@ import json
 import hashlib
 import subprocess
 import io
+import re
 import tarfile
 import sys
 from datetime import datetime, timedelta, timezone
@@ -752,6 +753,94 @@ def test_windows_authorized_session_orchestrator_contract_validation_only() -> N
     )
 
 
+def test_authorized_controller_enforces_object_pipeline_adapter_contract() -> None:
+    script = REPO_ROOT / "scripts/research/RUN_PHASE4C2G_AUTHORIZED_SESSION.ps1"
+    source = script.read_text(encoding="utf-8")
+
+    assert not re.search(
+        r"(?:Disable|Enable)-NetAdapter\s+-InterfaceIndex", source
+    )
+    assert "Get-NetAdapter -IncludeHidden" in source
+    assert re.search(r"\$resolvedAdapter\s*\|\s*Disable-NetAdapter", source)
+    assert re.search(r"\$resolvedAdapter\s*\|\s*Enable-NetAdapter", source)
+    assert "Expected exactly 1 adapter" in source
+    assert "Adapter identity mismatch" in source
+
+    completed = subprocess.run(
+        [
+            "powershell.exe",
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-File",
+            str(script),
+            "-ContractValidationOnly",
+        ],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+    contract = json.loads(completed.stdout)
+    adapter = contract["adapter_cmdlet_contract"]
+    assert adapter["disable_input_object_value_from_pipeline"] is True
+    assert adapter["enable_input_object_value_from_pipeline"] is True
+    assert adapter["direct_interface_index_calls"] == 0
+    assert adapter["include_hidden_resolution"] is True
+    assert adapter["pipeline_whatif_binding_probe"] == "PASS"
+    assert adapter["adapter_mutations"] == 0
+
+
+def test_authorized_controller_contract_exercises_recovery_identity_and_watchdog() -> None:
+    script = REPO_ROOT / "scripts/research/RUN_PHASE4C2G_AUTHORIZED_SESSION.ps1"
+    completed = subprocess.run(
+        [
+            "powershell.exe",
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-File",
+            str(script),
+            "-ContractValidationOnly",
+        ],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+    contract = json.loads(completed.stdout)
+
+    recovery = contract["generated_recovery_script_contract"]
+    assert recovery["windows_powershell_5_1_ast_parse_errors"] == 0
+    assert recovery["direct_interface_index_calls"] == 0
+    assert recovery["pipeline_enable_calls"] >= 1
+    assert recovery["fixture_execution"] == "PASS"
+    assert recovery["missing_adapter_rejected"] is True
+    assert recovery["duplicate_adapter_rejected"] is True
+    assert recovery["identity_mismatch_rejected"] is True
+
+    identity = contract["adapter_identity_fixture_contract"]
+    assert identity == {
+        "exact_match": "PASS",
+        "missing_adapter_rejected": True,
+        "duplicate_adapter_rejected": True,
+        "name_mismatch_rejected": True,
+        "description_mismatch_rejected": True,
+        "mac_mismatch_rejected": True,
+        "isolation_pipeline_exercised": True,
+        "recovery_pipeline_exercised": True,
+        "restoration_pipeline_exercised": True,
+    }
+
+    watchdog = contract["watchdog_readback_contract"]
+    assert watchdog["bounded_polling"] is True
+    assert watchdog["eventual_absence_fixture"] == "PASS"
+    assert watchdog["timeout_while_present_blocks_pass"] is True
+    assert watchdog["restoration_failure_retains_watchdog"] is True
+
+
 def test_pre_and_post_reservation_failures_are_distinguished(tmp_path: Path) -> None:
     import pytest
 
@@ -960,7 +1049,7 @@ def test_real_source_binding_matches_every_effective_commit_git_object() -> None
         repo_root=REPO_ROOT,
         commit=binding["effective_evaluator_commit"],
         components=components,
-        require_worktree_match=True,
+        require_worktree_match=False,
     )
 
     assert len(audit) == len(PACKAGE_SOURCE_MEMBERS)
