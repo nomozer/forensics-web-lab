@@ -324,30 +324,48 @@ function Test-InputObjectPipelineBinding {
 }
 
 function Test-PipelineWhatIfBinding {
-    $candidate = $null
+    # Run the probe in a redirected child process because Windows PowerShell 5.1
+    # emits ShouldProcess/WhatIf host text outside normal stream redirection.
+    # The child exit code is the contract signal; its stdout/stderr never pollute
+    # the machine-readable ContractValidationOnly JSON output.
+    $probeScript = @'
+$ErrorActionPreference = "Stop"
+$candidate = $null
+try {
+    $candidate = Get-NetAdapter -IncludeHidden -ErrorAction Stop | Select-Object -First 1
+} catch {}
+if (-not $candidate) {
+    $candidate = New-CimInstance -ClassName MSFT_NetAdapter -Namespace root/StandardCimv2 -ClientOnly -Property @{
+        InterfaceIndex = [uint32]2147483647
+        Name = "Phase4C2G-Contract-Fixture"
+    }
+}
+foreach ($commandName in @("Disable-NetAdapter", "Enable-NetAdapter")) {
     try {
-        $candidate = Get-NetAdapter -IncludeHidden -ErrorAction Stop | Select-Object -First 1
-    } catch {}
-    if (-not $candidate) {
-        $candidate = New-CimInstance -ClassName MSFT_NetAdapter -Namespace root/StandardCimv2 -ClientOnly -Property @{
-            InterfaceIndex = [uint32]2147483647
-            Name = "Phase4C2G-Contract-Fixture"
-        }
+        $candidate | & $commandName -Confirm:$false -WhatIf -ErrorAction Stop
+    } catch {
+        $bindingFailure = (
+            $_.Exception -is [System.Management.Automation.ParameterBindingException] -or
+            $_.FullyQualifiedErrorId -match "NamedParameterNotFound|ParameterBinding"
+        )
+        if ($bindingFailure) { exit 41 }
     }
-    foreach ($commandName in @("Disable-NetAdapter", "Enable-NetAdapter")) {
-        try {
-            $candidate | & $commandName -Confirm:$false -WhatIf -ErrorAction Stop 6>$null | Out-Null
-        } catch {
-            $bindingFailure = (
-                $_.Exception -is [System.Management.Automation.ParameterBindingException] -or
-                $_.FullyQualifiedErrorId -match "NamedParameterNotFound|ParameterBinding"
-            )
-            if ($bindingFailure) { return $false }
-            # Access/cmdlet execution errors occur after successful pipeline binding
-            # in restricted sandboxes. They do not indicate a parameter contract defect.
-        }
-    }
-    return $true
+}
+exit 0
+'@
+    $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($probeScript))
+    $process = New-Object System.Diagnostics.Process
+    $process.StartInfo = New-Object System.Diagnostics.ProcessStartInfo
+    $process.StartInfo.FileName = (Get-Command powershell.exe -ErrorAction Stop).Source
+    $process.StartInfo.Arguments = "-NoProfile -NonInteractive -EncodedCommand $encoded"
+    $process.StartInfo.UseShellExecute = $false
+    $process.StartInfo.RedirectStandardOutput = $true
+    $process.StartInfo.RedirectStandardError = $true
+    $null = $process.Start()
+    $null = $process.StandardOutput.ReadToEnd()
+    $null = $process.StandardError.ReadToEnd()
+    $process.WaitForExit()
+    return ($process.ExitCode -eq 0)
 }
 
 function Get-ControllerAdapterAstContract {
