@@ -12,13 +12,22 @@ import tarfile
 from pathlib import Path
 from typing import Sequence
 
-from scripts.research.build_phase4c2g_execution_package import (
-    PackageAudit,
-    _read_git_blob,
-    audit_git_commit_components,
-    audit_package,
-    sha256_bytes,
-)
+try:
+    from scripts.research.build_phase4c2g_execution_package import (
+        PackageAudit,
+        _read_git_blob,
+        audit_git_commit_components,
+        audit_package,
+        sha256_bytes,
+    )
+except ModuleNotFoundError:  # Direct ``python scripts/research/<builder>.py`` entry.
+    from build_phase4c2g_execution_package import (  # type: ignore[no-redef]
+        PackageAudit,
+        _read_git_blob,
+        audit_git_commit_components,
+        audit_package,
+        sha256_bytes,
+    )
 
 
 CUSTODIAN_PACKAGE_MEMBERS = (
