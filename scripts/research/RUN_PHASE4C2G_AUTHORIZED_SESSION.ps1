@@ -15,6 +15,7 @@ param(
     [string]$PythonExe = "python",
     [string]$PackageArchive,
     [string]$AuthorizationFile,
+    [string]$ExecutionAuthorizationBinding,
     [string]$SourceBinding,
     [string]$AuthorizationSchema,
     [string]$CheckpointDir,
@@ -62,6 +63,7 @@ if ($ContractValidationOnly) {
         }
         output_protocol = ".part -> flush -> fsync -> os.replace"
         retry_after_reservation = "HUMAN_ADJUDICATION_REQUIRED"
+        exact_archive_binding = "external_execution_authorization_binding"
     } | ConvertTo-Json -Depth 8 -Compress
     exit 0
 }
@@ -165,6 +167,7 @@ function Get-WindowsReadOnlyProof {
 $required = [ordered]@{
     PackageArchive = $PackageArchive
     AuthorizationFile = $AuthorizationFile
+    ExecutionAuthorizationBinding = $ExecutionAuthorizationBinding
     SourceBinding = $SourceBinding
     AuthorizationSchema = $AuthorizationSchema
     CheckpointDir = $CheckpointDir
@@ -179,25 +182,47 @@ foreach ($entry in $required.GetEnumerator()) {
 }
 if (-not (Test-Administrator)) { throw "Formal authorized session requires an already elevated local PowerShell console." }
 
+# Step 1: verify authorization and its external canonical binding before mutation
+# or any locked-test mount/read operation.
+$authorization = Get-Content -Raw -LiteralPath $AuthorizationFile | ConvertFrom-Json
+$executionBinding = Get-Content -Raw -LiteralPath $ExecutionAuthorizationBinding | ConvertFrom-Json
+if ($executionBinding.locked_test_manifest_commitment.status -ne "COMMITTED_BEFORE_UNSEALING") {
+    throw "BLOCKED_MANIFEST_COMMITMENT_ABSENT"
+}
+$archiveItem = Get-Item -LiteralPath $PackageArchive
+$archiveSha = (Get-FileHash -Algorithm SHA256 -LiteralPath $PackageArchive).Hash.ToLowerInvariant()
+$bindingArchive = $executionBinding.archive
+if ($bindingArchive.filename -ne $archiveItem.Name -or $bindingArchive.sha256 -ne $archiveSha -or [int64]$bindingArchive.bytes -ne $archiveItem.Length) {
+    throw "External canonical binding does not match the exact final sealed package."
+}
+if ($authorization.sealed_package_sha256 -ne $bindingArchive.sha256) {
+    throw "Authorization sealed_package_sha256 does not match external canonical binding."
+}
+if ([int64]$authorization.sealed_package_bytes -ne [int64]$bindingArchive.bytes) {
+    throw "Authorization sealed_package_bytes does not match external canonical binding."
+}
+if ($authorization.evaluator_effective_commit -ne $executionBinding.effective_execution_commit) {
+    throw "Authorization evaluator_effective_commit does not match external canonical binding."
+}
+if ($authorization.execution_package_commit -ne $executionBinding.execution_package_commit) {
+    throw "Authorization execution_package_commit does not match external canonical binding."
+}
+if ($authorization.locked_test_manifest_sha256 -ne $executionBinding.locked_test_manifest_commitment.sha256) {
+    throw "Authorization locked_test_manifest_sha256 does not match external canonical binding."
+}
+
 $outputFull = [System.IO.Path]::GetFullPath($OutputDir)
 if (Test-Path -LiteralPath $outputFull) {
     if (@(Get-ChildItem -LiteralPath $outputFull -Force).Count -ne 0) { throw "Output directory must be empty." }
 } else {
     [System.IO.Directory]::CreateDirectory($outputFull) | Out-Null
 }
-
-# Step 1: verify authorization and its exact final archive binding before mutation.
-$authorization = Get-Content -Raw -LiteralPath $AuthorizationFile | ConvertFrom-Json
-$archiveItem = Get-Item -LiteralPath $PackageArchive
-$archiveSha = (Get-FileHash -Algorithm SHA256 -LiteralPath $PackageArchive).Hash.ToLowerInvariant()
-if ($authorization.sealed_package_sha256 -ne $archiveSha -or [int64]$authorization.sealed_package_bytes -ne $archiveItem.Length) {
-    throw "Authorization does not bind the exact final sealed package."
-}
 $preflightArgs = @(
     "-m", "ml.evaluation.run_phase_4c2g_confirmatory",
     "--authorization-preflight-only",
     "--authorization-file", $AuthorizationFile,
     "--package-archive", $PackageArchive,
+    "--execution-authorization-binding", $ExecutionAuthorizationBinding,
     "--source-binding", $SourceBinding,
     "--authorization-schema", $AuthorizationSchema,
     "--checkpoint-dir", $CheckpointDir,
@@ -270,6 +295,7 @@ try {
         "-m", "ml.evaluation.run_phase_4c2g_confirmatory",
         "--authorization-file", $AuthorizationFile,
         "--package-archive", $PackageArchive,
+        "--execution-authorization-binding", $ExecutionAuthorizationBinding,
         "--source-binding", $SourceBinding,
         "--authorization-schema", $AuthorizationSchema,
         "--checkpoint-dir", $CheckpointDir,

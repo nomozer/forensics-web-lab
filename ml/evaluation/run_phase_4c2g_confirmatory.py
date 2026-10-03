@@ -301,6 +301,91 @@ def _load_source_binding(path: Path) -> dict[str, Any]:
     return payload
 
 
+def verify_execution_authorization_binding(
+    *,
+    authorization: Mapping[str, Any],
+    binding_path: Path | str,
+    package_archive: Path | str,
+    source_binding: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Cross-check authorization against the external canonical package binding."""
+    binding_file = Path(binding_path).resolve(strict=True)
+    binding = json.loads(binding_file.read_text(encoding="utf-8"))
+    if not isinstance(binding, dict):
+        raise PermissionError("Execution authorization binding root must be an object.")
+
+    manifest_commitment = binding.get("locked_test_manifest_commitment")
+    if not isinstance(manifest_commitment, dict) or manifest_commitment.get(
+        "status"
+    ) != "COMMITTED_BEFORE_UNSEALING":
+        raise PermissionError("BLOCKED_MANIFEST_COMMITMENT_ABSENT")
+
+    archive = Path(package_archive).resolve(strict=True)
+    archive_binding = binding.get("archive")
+    if not isinstance(archive_binding, dict):
+        raise PermissionError("External binding has no canonical archive record.")
+    canonical_archive = {
+        "filename": archive.name,
+        "sha256": sha256_file(archive),
+        "bytes": archive.stat().st_size,
+    }
+    for field, actual in canonical_archive.items():
+        if archive_binding.get(field) != actual:
+            raise PermissionError(
+                f"Canonical archive binding mismatch for archive.{field}."
+            )
+
+    source_components = source_binding.get("components")
+    if binding.get("runtime_components") != source_components:
+        raise PermissionError("External binding runtime_components mismatch source binding.")
+    if binding.get("authorization_schema") != source_binding.get(
+        "authorization_schema"
+    ):
+        raise PermissionError("External binding authorization_schema mismatch.")
+
+    required_matches = {
+        "sealed_package_sha256": archive_binding["sha256"],
+        "sealed_package_bytes": archive_binding["bytes"],
+        "evaluator_effective_commit": binding.get("effective_execution_commit"),
+        "execution_package_commit": binding.get("execution_package_commit"),
+        "locked_test_manifest_sha256": manifest_commitment.get("sha256"),
+    }
+    for field, expected in required_matches.items():
+        if authorization.get(field) != expected:
+            raise PermissionError(
+                f"Authorization field {field!r} does not match external canonical binding."
+            )
+
+    if source_binding.get("effective_evaluator_commit") != binding.get(
+        "effective_execution_commit"
+    ):
+        raise PermissionError("Source binding effective commit mismatch.")
+    if source_binding.get("execution_package_commit") != binding.get(
+        "execution_package_commit"
+    ):
+        raise PermissionError("Source binding package commit mismatch.")
+
+    component_names = source_binding.get("authorization_component_names")
+    if not isinstance(component_names, list) or not component_names:
+        raise PermissionError("Source binding authorization component set is absent.")
+    expected_component_hashes = {
+        name: source_components[name]["sha256"] for name in component_names
+    }
+    if authorization.get("evaluator_component_hashes") != expected_component_hashes:
+        raise PermissionError(
+            "Authorization field 'evaluator_component_hashes' does not match external canonical binding."
+        )
+
+    return {
+        "status": "EXECUTION_AUTHORIZATION_BINDING_VERIFIED",
+        "binding_sha256": sha256_file(binding_file),
+        "archive_sha256": archive_binding["sha256"],
+        "archive_bytes": archive_binding["bytes"],
+        "effective_execution_commit": binding["effective_execution_commit"],
+        "locked_test_manifest_sha256": manifest_commitment["sha256"],
+    }
+
+
 def verify_execution_components(
     source_binding: Mapping[str, Any],
     *,
@@ -336,20 +421,16 @@ def execute_confirmatory_session(args: argparse.Namespace) -> dict[str, Any]:
         source_binding_path=args.source_binding,
         bypass_git_checks=True,
     )
-    expected_commit = source_binding.get("effective_evaluator_commit")
-    if authorization.get("evaluator_effective_commit") != expected_commit:
-        raise PermissionError("Authorization does not bind the effective execution commit.")
-    if authorization.get("execution_package_commit") != source_binding.get(
-        "execution_package_commit"
-    ):
-        raise PermissionError("Authorization does not bind the final execution package commit.")
     package_archive = args.package_archive.resolve(strict=True)
-    package_sha256 = sha256_file(package_archive)
-    package_bytes = package_archive.stat().st_size
-    if authorization.get("sealed_package_sha256") != package_sha256:
-        raise PermissionError("Authorization does not bind the final sealed package SHA-256.")
-    if authorization.get("sealed_package_bytes") != package_bytes:
-        raise PermissionError("Authorization does not bind the final sealed package byte count.")
+    binding_verification = verify_execution_authorization_binding(
+        authorization=authorization,
+        binding_path=args.execution_authorization_binding,
+        package_archive=package_archive,
+        source_binding=source_binding,
+    )
+    expected_commit = binding_verification["effective_execution_commit"]
+    package_sha256 = binding_verification["archive_sha256"]
+    package_bytes = binding_verification["archive_bytes"]
 
     isolation = verify_isolation_receipt(
         args.isolation_receipt,
@@ -385,7 +466,9 @@ def execute_confirmatory_session(args: argparse.Namespace) -> dict[str, Any]:
             locked_test_root=args.locked_test_root,
             manifest_path=args.manifest,
             manifest_schema_path=args.manifest_schema,
-            expected_manifest_sha256=authorization["locked_test_manifest_sha256"],
+            expected_manifest_sha256=binding_verification[
+                "locked_test_manifest_sha256"
+            ],
             expected_schema_sha256=authorization[
                 "locked_test_manifest_schema_sha256"
             ],
@@ -418,6 +501,9 @@ def execute_confirmatory_session(args: argparse.Namespace) -> dict[str, Any]:
                 "effective_evaluator_commit": expected_commit,
                 "sealed_package_sha256": package_sha256,
                 "sealed_package_bytes": package_bytes,
+                "execution_authorization_binding_sha256": binding_verification[
+                    "binding_sha256"
+                ],
                 "isolation_receipt_sha256": isolation["receipt_sha256"],
                 "read_only_receipt_sha256": read_only["receipt_sha256"],
                 "scientific_result": True,
@@ -444,20 +530,18 @@ def execute_authorization_preflight(args: argparse.Namespace) -> dict[str, Any]:
         bypass_git_checks=True,
     )
     package_archive = args.package_archive.resolve(strict=True)
-    required_matches = {
-        "evaluator_effective_commit": source_binding.get("effective_evaluator_commit"),
-        "execution_package_commit": source_binding.get("execution_package_commit"),
-        "sealed_package_sha256": sha256_file(package_archive),
-        "sealed_package_bytes": package_archive.stat().st_size,
-    }
-    for field, expected in required_matches.items():
-        if authorization.get(field) != expected:
-            raise PermissionError(
-                f"Authorization field {field!r} does not match the final package binding."
-            )
+    binding_verification = verify_execution_authorization_binding(
+        authorization=authorization,
+        binding_path=args.execution_authorization_binding,
+        package_archive=package_archive,
+        source_binding=source_binding,
+    )
     return {
         "status": "AUTHORIZATION_AND_FINAL_PACKAGE_BINDING_VERIFIED",
         "authorization_id": authorization["authorization_id"],
+        "execution_authorization_binding_sha256": binding_verification[
+            "binding_sha256"
+        ],
         "locked_test_accesses": 0,
     }
 
@@ -468,6 +552,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--authorization-file", type=Path, required=True)
     parser.add_argument("--package-archive", type=Path, required=True)
+    parser.add_argument(
+        "--execution-authorization-binding", type=Path, required=True
+    )
     parser.add_argument("--source-binding", type=Path, required=True)
     parser.add_argument("--authorization-schema", type=Path, required=True)
     parser.add_argument("--checkpoint-dir", type=Path, required=True)

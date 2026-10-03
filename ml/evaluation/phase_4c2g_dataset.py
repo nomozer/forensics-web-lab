@@ -10,7 +10,7 @@ import hashlib
 import json
 from collections import defaultdict
 from dataclasses import dataclass
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Any, Iterator, Sequence
 
 import jsonschema
@@ -58,10 +58,25 @@ class LockedTestManifest:
         return iter(self.samples)
 
 
-def _resolve_member(root: Path, relative_path: str) -> Path:
-    rel = Path(relative_path)
-    if rel.is_absolute() or ".." in rel.parts:
+def validate_manifest_relative_path(relative_path: str) -> PurePosixPath:
+    """Return a canonical POSIX relative path or reject cross-platform escapes."""
+    posix = PurePosixPath(relative_path)
+    windows = PureWindowsPath(relative_path)
+    if (
+        not relative_path
+        or "\\" in relative_path
+        or posix.is_absolute()
+        or windows.is_absolute()
+        or bool(windows.drive)
+        or ".." in posix.parts
+        or posix == PurePosixPath(".")
+    ):
         raise ValueError(f"Unsafe manifest relative_path: {relative_path!r}")
+    return posix
+
+
+def _resolve_member(root: Path, relative_path: str) -> Path:
+    rel = validate_manifest_relative_path(relative_path)
     candidate = (root / rel).resolve(strict=False)
     try:
         candidate.relative_to(root)
@@ -120,6 +135,7 @@ def load_locked_test_manifest(
 
     seen_sample_ids: set[str] = set()
     seen_relative_paths: set[str] = set()
+    seen_source_label_pairs: set[tuple[str, int]] = set()
     labels_by_source: dict[str, set[int]] = defaultdict(set)
     loaded: list[LockedTestSample] = []
     expected_files: set[Path] = set()
@@ -138,6 +154,11 @@ def load_locked_test_manifest(
             raise ValueError(
                 f"Label mapping mismatch for {sample_id}: {label!r} != {label_id}"
             )
+        source_label_pair = (source_id, label_id)
+        if source_label_pair in seen_source_label_pairs:
+            raise ValueError(
+                f"Duplicate source/label pair: source={source_id!r}, label_id={label_id}"
+            )
 
         sample_path = _resolve_member(root, relative_path)
         if not sample_path.is_file() or sample_path.is_symlink():
@@ -151,6 +172,7 @@ def load_locked_test_manifest(
 
         seen_sample_ids.add(sample_id)
         seen_relative_paths.add(relative_path)
+        seen_source_label_pairs.add(source_label_pair)
         labels_by_source[source_id].add(label_id)
         expected_files.add(sample_path)
         loaded.append(

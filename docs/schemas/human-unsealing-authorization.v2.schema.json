@@ -55,34 +55,35 @@
       "additionalProperties": false
     },
     "evaluator_effective_commit": {
-      "const": "5cf84a33641b7bc7a232fcd602b89671c63bb2ad"
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
     },
     "evaluator_component_hashes": {
       "type": "object",
       "properties": {
-        "confirmatory_metrics": {"type": "string"},
-        "locked_test_evaluator": {"type": "string"},
-        "phase_4c2g_dataset": {"type": "string"},
-        "phase_4c2g_io": {"type": "string"},
-        "phase_4c2g_model": {"type": "string"},
-        "phase_4c2g_windows": {"type": "string"},
-        "run_confirmatory_cli": {"type": "string"},
-        "model_architecture": {"type": "string"},
-        "locked_test_manifest_schema": {"type": "string"},
-        "windows_authorized_session_orchestrator": {"type": "string"}
+        "confirmatory_metrics": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "locked_test_evaluator": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "phase_4c2g_dataset": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "phase_4c2g_io": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "phase_4c2g_model": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "phase_4c2g_windows": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "run_confirmatory_cli": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "model_architecture": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "locked_test_manifest_schema": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "windows_authorized_session_orchestrator": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
       },
-      "const": {
-        "confirmatory_metrics": "706d120b0f8f00228d352b7ef300a701f0aefbe32de720c33db00145a4b68c3c",
-        "locked_test_evaluator": "dd4f359c0c41d1caef953a345b7ff09817a9f2a17369781278e27c2fe650d902",
-        "phase_4c2g_dataset": "b7db181e57b402b2756d720b3ca1d8100dae87b10b14dc1826b73139ac46b18d",
-        "phase_4c2g_io": "21a3e3dd9885456077ca658e82b9e35c01cc4c5167014b9bca2d13ee8245466b",
-        "phase_4c2g_model": "0b14080e51888fe26f82dd78265deb0149a0454639d96b9493745e78c65d9404",
-        "phase_4c2g_windows": "e4ab78c5d4479dab0463b0b73f99997331492364d74bf11fd06e06c8fa7b666f",
-        "run_confirmatory_cli": "0729fd9722b81879a1b332ac0f1a19ac8c2f560da5c24ba79772036e0f0922ac",
-        "model_architecture": "6b56162c63f27ebb60470f36b9121c538952650c08c14e3e77f5b1524d08dc55",
-        "locked_test_manifest_schema": "86036e52513bcbf0a9dd62f7b78fe9c87e47144c35275c19cc5c032046bd5646",
-        "windows_authorized_session_orchestrator": "cf595cd2997546ff97ce2bc709c51eccb99b01c996fce07bc2c792e1c1fc9ff8"
-      },
+      "required": [
+        "confirmatory_metrics",
+        "locked_test_evaluator",
+        "phase_4c2g_dataset",
+        "phase_4c2g_io",
+        "phase_4c2g_model",
+        "phase_4c2g_windows",
+        "run_confirmatory_cli",
+        "model_architecture",
+        "locked_test_manifest_schema",
+        "windows_authorized_session_orchestrator"
+      ],
       "additionalProperties": false
     },
     "maximum_unsealing_sessions": {"const": 1},
@@ -123,7 +124,8 @@
     "authorization_purpose": {"type": "string", "minLength": 10},
     "no_tuning_acknowledgment": {"const": true},
     "execution_package_commit": {
-      "const": "5cf84a33641b7bc7a232fcd602b89671c63bb2ad"
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
     },
     "execution_package_tree_clean": {"const": true},
     "sealed_package_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},

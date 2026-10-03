@@ -10,6 +10,7 @@ import io
 import json
 import os
 import re
+import subprocess
 import tarfile
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
@@ -69,6 +70,84 @@ def sha256_file(path: Path) -> str:
         while chunk := handle.read(1024 * 1024):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _read_git_blob(repo_root: Path, commit: str, relative_path: str) -> bytes:
+    completed = subprocess.run(
+        ["git", "show", f"{commit}:{relative_path}"],
+        cwd=repo_root,
+        capture_output=True,
+        check=False,
+    )
+    if completed.returncode != 0:
+        raise ValueError(
+            f"Package source is absent at effective commit {commit}: {relative_path}"
+        )
+    return completed.stdout
+
+
+def audit_git_commit_components(
+    *,
+    repo_root: Path | str,
+    commit: str,
+    components: dict[str, dict[str, Any]],
+    require_worktree_match: bool = False,
+) -> dict[str, dict[str, Any]]:
+    """Verify component byte counts and SHA-256 against exact Git blob bytes."""
+    root = Path(repo_root).resolve(strict=True)
+    if not re.fullmatch(r"[0-9a-f]{40}", commit):
+        raise ValueError(f"Effective commit must be an exact 40-hex object id: {commit!r}")
+    audit: dict[str, dict[str, Any]] = {}
+    for name, metadata in components.items():
+        relative_path = str(metadata["relative_path"]).replace("\\", "/")
+        _safe_member_name(relative_path)
+        try:
+            payload = _read_git_blob(root, commit, relative_path)
+        except ValueError as exc:
+            raise ValueError(
+                f"Runtime component {name!r} is absent at effective commit: "
+                f"{relative_path}"
+            ) from exc
+        actual_sha256 = sha256_bytes(payload)
+        bytes_match = len(payload) == int(metadata["bytes"])
+        sha256_match = actual_sha256 == str(metadata["sha256"])
+        if not bytes_match or not sha256_match:
+            raise ValueError(
+                f"Runtime component {name!r} differs at effective commit: "
+                f"bytes={len(payload)}, sha256={actual_sha256}"
+            )
+        if require_worktree_match:
+            worktree_check = subprocess.run(
+                [
+                    "git",
+                    "diff",
+                    "--quiet",
+                    "--no-ext-diff",
+                    commit,
+                    "--",
+                    relative_path,
+                ],
+                cwd=root,
+                check=False,
+            )
+            if worktree_check.returncode == 1:
+                raise ValueError(
+                    f"Runtime component {name!r} changed after effective commit: "
+                    f"{relative_path}"
+                )
+            if worktree_check.returncode != 0:
+                raise RuntimeError(
+                    f"Git worktree comparison failed for runtime component {name!r}."
+                )
+        audit[name] = {
+            "relative_path": relative_path,
+            "exists_at_commit": True,
+            "bytes": len(payload),
+            "sha256": actual_sha256,
+            "bytes_match": True,
+            "sha256_match": True,
+        }
+    return audit
 
 
 def _safe_member_name(name: str) -> None:
@@ -139,26 +218,47 @@ def build_package(
     if output.exists() or output.with_name(output.name + ".part").exists():
         raise FileExistsError(f"Refusing to overwrite package or partial package: {output}")
     binding_path = Path(source_binding_path).resolve(strict=True)
-    binding_bytes = binding_path.read_bytes()
-    source_binding = json.loads(binding_bytes.decode("utf-8"))
+    source_binding = json.loads(binding_path.read_text(encoding="utf-8"))
+    binding_bytes = (
+        json.dumps(source_binding, indent=2, sort_keys=True) + "\n"
+    ).encode("utf-8")
     if source_binding.get("effective_evaluator_commit") != effective_execution_commit:
         raise ValueError("Source binding effective commit does not match builder input.")
+
+    commit_components = dict(source_binding.get("components", {}))
+    commit_components["authorization_schema"] = source_binding.get(
+        "authorization_schema", {}
+    )
+    audit_git_commit_components(
+        repo_root=root,
+        commit=effective_execution_commit,
+        components=commit_components,
+        require_worktree_match=True,
+    )
+    bound_paths = {
+        str(metadata["relative_path"]).replace("\\", "/")
+        for metadata in commit_components.values()
+    }
+    if bound_paths != set(PACKAGE_SOURCE_MEMBERS):
+        missing = sorted(set(PACKAGE_SOURCE_MEMBERS) - bound_paths)
+        extra = sorted(bound_paths - set(PACKAGE_SOURCE_MEMBERS))
+        raise ValueError(
+            f"Package/source-binding member mismatch: missing={missing}, extra={extra}"
+        )
 
     source_entries: list[tuple[str, bytes]] = []
     for name in PACKAGE_SOURCE_MEMBERS:
         _safe_member_name(name)
-        path = (root / name).resolve(strict=True)
-        path.relative_to(root)
-        if not path.is_file() or path.is_symlink():
-            raise ValueError(f"Package source must be a regular non-symlink file: {name}")
-        source_entries.append((name, path.read_bytes()))
+        source_entries.append(
+            (name, _read_git_blob(root, effective_execution_commit, name))
+        )
     source_entries.append(("runtime_source_binding.json", binding_bytes))
 
     provenance = {
         "schema_version": "1.0.0",
         "effective_execution_commit": effective_execution_commit,
         "execution_package_commit": execution_package_commit,
-        "source_binding_sha256": sha256_file(binding_path),
+        "source_binding_sha256": sha256_bytes(binding_bytes),
         "source_binding": {
             key: value
             for key, value in source_binding.items()
