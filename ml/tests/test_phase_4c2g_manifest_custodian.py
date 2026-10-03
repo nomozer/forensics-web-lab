@@ -494,6 +494,135 @@ def test_windows_custodian_controller_contract_is_non_mutating_and_model_free() 
     assert "execute_checkpoint_evaluation" not in source
 
 
+def test_windows_custodian_formal_preflight_compares_component_key_counts(
+    tmp_path: Path,
+) -> None:
+    import pytest
+
+    if sys.platform != "win32":
+        pytest.skip("Windows PowerShell controller regression")
+    admin_probe = subprocess.run(
+        [
+            "powershell.exe",
+            "-NoProfile",
+            "-Command",
+            "$i=[Security.Principal.WindowsIdentity]::GetCurrent();"
+            "$p=New-Object Security.Principal.WindowsPrincipal($i);"
+            "$p.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)",
+        ],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    if admin_probe.stdout.strip().lower() == "true":
+        pytest.skip("Formal controller guard test must run without Administrator rights")
+
+    schema = (
+        REPO_ROOT
+        / "docs/schemas/human-manifest-custodian-authorization.v1.schema.json"
+    )
+    archive = tmp_path / "synthetic-custodian-package.tar.gz"
+    archive.write_bytes(b"synthetic package binding fixture")
+    components = {
+        "manifest_sealer": "b" * 64,
+        "windows_custodian_controller": "c" * 64,
+        "custodian_authorization_schema": "d" * 64,
+        "locked_test_manifest_schema": "e" * 64,
+        "split_lock": "f" * 64,
+    }
+    binding = {
+        "status": "READY_FOR_HUMAN_MANIFEST_CUSTODIAN_APPROVAL",
+        "effective_custodian_commit": "a" * 40,
+        "custodian_package_commit": "a" * 40,
+        "archive": {
+            "filename": archive.name,
+            "sha256": _sha256(archive),
+            "bytes": archive.stat().st_size,
+        },
+        "authorization_schema": {"sha256": _sha256(schema)},
+        "authorization_component_hashes": components,
+    }
+    binding_path = tmp_path / "binding.json"
+    binding_path.write_text(json.dumps(binding), encoding="utf-8")
+    authorization = {
+        "status": "AUTHORIZED",
+        "authorization_id": "synthetic-formal-preflight",
+        "authorized_by": "synthetic fixture",
+        "role_separation_mode": "role_separated_automated_custodian_process",
+        "authorized_at_utc": "2026-10-03T00:00:00Z",
+        "authorization_purpose": "create_locked_test_manifest_commitment_only",
+        "maximum_manifest_custodian_sealing_sessions": 1,
+        "custodian_tool_commit": "a" * 40,
+        "custodian_package_commit": "a" * 40,
+        "custodian_component_hashes": components,
+        "sealed_package_sha256": _sha256(archive),
+        "sealed_package_bytes": archive.stat().st_size,
+        "locked_test_split_seal": (
+            "519e7a0e6815e781d1cefa95971e5221ac1f25656837374d8dc4ba41401fded9"
+        ),
+        "no_model_execution_acknowledgment": True,
+        "no_metric_computation_acknowledgment": True,
+        "no_data_modification_acknowledgment": True,
+        "no_manifest_content_disclosure_acknowledgment": True,
+        "data_integrity_access_not_model_evaluation_acknowledgment": True,
+    }
+    authorization_path = tmp_path / "authorization.json"
+    authorization_path.write_text(json.dumps(authorization), encoding="utf-8")
+    output = tmp_path / "must-not-be-created"
+    script = (
+        REPO_ROOT
+        / "scripts/research/RUN_PHASE4C2G_MANIFEST_CUSTODIAN_SESSION.ps1"
+    )
+    wrapper = tmp_path / "invoke-controller.ps1"
+    escaped_script = str(script).replace("'", "''")
+    wrapper.write_text(
+        "Import-Module Microsoft.PowerShell.Utility\n"
+        f"& '{escaped_script}' @args\n"
+        "exit $LASTEXITCODE\n",
+        encoding="utf-8",
+    )
+    completed = subprocess.run(
+        [
+            "powershell.exe",
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-File",
+            str(wrapper),
+            "-ElevatedWorker",
+            "-PythonExe",
+            sys.executable,
+            "-AuthorizationFile",
+            str(authorization_path),
+            "-AuthorizationSchema",
+            str(schema),
+            "-PackageArchive",
+            str(archive),
+            "-PackageBinding",
+            str(binding_path),
+            "-SealerScript",
+            str(REPO_ROOT / "scripts/research/seal_locked_test_manifest.py"),
+            "-ManifestSchema",
+            str(REPO_ROOT / "docs/schemas/locked-test-manifest.v1.schema.json"),
+            "-LockedTestRoot",
+            str(tmp_path / "never-touched-locked-root"),
+            "-OutputRoot",
+            str(output),
+            "-SessionId",
+            "synthetic-formal-preflight",
+        ],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    combined = completed.stdout + completed.stderr
+    assert completed.returncode != 0
+    assert "Elevated worker does not have Administrator privileges" in combined
+    assert "Custodian component binding mismatch" not in combined
+    assert not output.exists()
+
+
 def test_custodian_package_member_allowlist_is_data_and_model_free() -> None:
     from scripts.research.build_phase4c2g_manifest_custodian_package import (
         CUSTODIAN_PACKAGE_MEMBERS,
@@ -523,7 +652,7 @@ def test_custodian_package_rebuild_is_deterministic_from_effective_git_objects(
 
     source_binding = (
         REPO_ROOT
-        / "research/evidence/phase-4c.2g.0.6/custodian_source_binding.json"
+        / "research/evidence/phase-4c.2g.0.7/custodian_source_binding.json"
     )
     binding = json.loads(source_binding.read_text(encoding="utf-8"))
     kwargs = {
@@ -547,7 +676,7 @@ def test_custodian_source_binding_matches_effective_commit_git_objects() -> None
     binding = json.loads(
         (
             REPO_ROOT
-            / "research/evidence/phase-4c.2g.0.6/custodian_source_binding.json"
+            / "research/evidence/phase-4c.2g.0.7/custodian_source_binding.json"
         ).read_text(encoding="utf-8")
     )
     audit = audit_git_commit_components(

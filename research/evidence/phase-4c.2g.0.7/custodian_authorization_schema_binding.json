@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.7",
+  "generated_at_utc": "2026-10-03T14:07:33.2794044Z",
+  "status": "READY_FOR_HUMAN_MANIFEST_CUSTODIAN_APPROVAL",
+  "effective_custodian_commit": "a86888dcee20f74de31ef61e54f224dab643740a",
+  "custodian_package_commit": "a86888dcee20f74de31ef61e54f224dab643740a",
+  "supersedes": {
+    "effective_custodian_commit": "35b356304bc1a8187d3ec2b941b0269928ad1ce5",
+    "archive_sha256": "970484622a52b9632a77f6a60985f34cdba63aff5ed83705e50bb2c433e6a131",
+    "reason": "PowerShell 5.1 vectorized PSObject.Properties.Count and rejected equal five-key component maps before elevation or reservation."
+  },
+  "archive": {
+    "filename": "phase_4c2g_manifest_custodian_a86888d.tar.gz",
+    "sha256": "05e455a594377e7ad153b7e9513fa33fd2639fca4e884776eaa8de827ac8e302",
+    "bytes": 13610,
+    "member_count": 7
+  },
+  "authorization_schema": {
+    "relative_path": "docs/schemas/human-manifest-custodian-authorization.v1.schema.json",
+    "bytes": 3114,
+    "sha256": "e3563d918edd493391a62f2e2e874e7f6d2083afe656ea672259b20504c62b69"
+  },
+  "components": {
+    "manifest_sealer": {"relative_path": "scripts/research/seal_locked_test_manifest.py", "bytes": 21429, "sha256": "c45b2507979d3434ae7b92704dcc858a20a8e79891185d09b3fb9688a7fb6534"},
+    "windows_custodian_controller": {"relative_path": "scripts/research/RUN_PHASE4C2G_MANIFEST_CUSTODIAN_SESSION.ps1", "bytes": 12491, "sha256": "560b914edb924a851d46d4718deecb22f9b71e2d111b3d25d4aba6c64353044a"},
+    "custodian_authorization_schema": {"relative_path": "docs/schemas/human-manifest-custodian-authorization.v1.schema.json", "bytes": 3114, "sha256": "e3563d918edd493391a62f2e2e874e7f6d2083afe656ea672259b20504c62b69"},
+    "locked_test_manifest_schema": {"relative_path": "docs/schemas/locked-test-manifest.v1.schema.json", "bytes": 1412, "sha256": "86036e52513bcbf0a9dd62f7b78fe9c87e47144c35275c19cc5c032046bd5646"},
+    "split_lock": {"relative_path": "research/evidence/phase-4b.2/split-lock.json", "bytes": 7974, "sha256": "9e96234f7cca6a71156d1f5e32c83c44c7e4ac9682a509840848e8d14f2b8ab1"}
+  },
+  "authorization_component_hashes": {
+    "manifest_sealer": "c45b2507979d3434ae7b92704dcc858a20a8e79891185d09b3fb9688a7fb6534",
+    "windows_custodian_controller": "560b914edb924a851d46d4718deecb22f9b71e2d111b3d25d4aba6c64353044a",
+    "custodian_authorization_schema": "e3563d918edd493391a62f2e2e874e7f6d2083afe656ea672259b20504c62b69",
+    "locked_test_manifest_schema": "86036e52513bcbf0a9dd62f7b78fe9c87e47144c35275c19cc5c032046bd5646",
+    "split_lock": "9e96234f7cca6a71156d1f5e32c83c44c7e4ac9682a509840848e8d14f2b8ab1"
+  },
+  "prior_authorization_valid_for_this_package": false,
+  "authorization_artifact_created": false,
+  "role_separation_mode": "role_separated_automated_custodian_process"
+}

@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.7",
+  "generated_at_utc": "2026-10-03T14:07:33.2794044Z",
+  "verdict": "READY_FOR_HUMAN_MANIFEST_CUSTODIAN_REAUTHORIZATION",
+  "gates": {
+    "actual_controller_bug_reproduced": true,
+    "minimal_hotfix_committed": true,
+    "regression_test_passed": true,
+    "exact_git_object_binding": true,
+    "deterministic_data_free_package": true,
+    "read_only_vhdx_prepared_outside_git": true,
+    "read_only_vhdx_currently_dismounted": true,
+    "new_exact_authorization_created": false,
+    "custodian_session_run": false,
+    "manifest_commitment_created": false,
+    "evaluator_run": false
+  },
+  "real_counters": {
+    "vhdx_preparation_access_attempts": 2,
+    "vhdx_preparation_files_hashed": 1372,
+    "custodian_manifest_access_sessions": 0,
+    "custodian_files_hashed": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0
+  },
+  "next_action": "Human must explicitly authorize exactly one manifest-custodian session bound to commit a86888dcee20f74de31ef61e54f224dab643740a and archive SHA-256 05e455a594377e7ad153b7e9513fa33fd2639fca4e884776eaa8de827ac8e302 (13,610 bytes)."
+}

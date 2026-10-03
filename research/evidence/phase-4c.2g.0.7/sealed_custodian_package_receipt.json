@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.7",
+  "generated_at_utc": "2026-10-03T14:07:33.2794044Z",
+  "archive": {
+    "local_path_outside_git": "data/research/local-artifacts/phase-4c.2g.0.7/phase_4c2g_manifest_custodian_a86888d.tar.gz",
+    "filename": "phase_4c2g_manifest_custodian_a86888d.tar.gz",
+    "sha256": "05e455a594377e7ad153b7e9513fa33fd2639fca4e884776eaa8de827ac8e302",
+    "bytes": 13610,
+    "member_count": 7,
+    "deterministic_mtime": 0,
+    "contains_dataset": false,
+    "contains_model": false,
+    "contains_authorization": false,
+    "contains_manifest_content": false
+  },
+  "effective_custodian_commit": "a86888dcee20f74de31ef61e54f224dab643740a",
+  "custodian_package_commit": "a86888dcee20f74de31ef61e54f224dab643740a",
+  "git_object_audit": {"objects": 5, "missing": 0, "hash_mismatches": 0, "worktree_drifts": 0}
+}

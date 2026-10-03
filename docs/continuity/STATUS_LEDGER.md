@@ -1,3 +1,16 @@
+## Phase 4C.2G.0.7 — Manifest Custodian PowerShell 5.1 Preflight Hotfix
+
+- **Mục tiêu**: Diagnose the first authorized custodian attempt, fix only a real execution blocker, and reseal without consuming authorization or running the evaluator.
+- **Observed failure**: Equal five-key component maps were rejected because Windows PowerShell 5.1 rendered `.PSObject.Properties.Count` as `1 1 1 1 1`; failure occurred before output/reservation/root access.
+- **Hotfix**: One-line scalar `@(...).Count` comparison plus real formal-preflight regression test; no protocol, sealer, schema, dataset, checkpoint, model, metric, threshold, or evaluator change.
+- **Effective/package commit**: `a86888d`; archive: 7 members, 13,610 bytes, SHA-256 `05e455a594377e7ad153b7e9513fa33fd2639fca4e884776eaa8de827ac8e302`.
+- **VHDX**: External 343-source/686-sample VHDX prepared and verified Windows `IsReadOnly=True`, then dismounted after controller preflight failure; two preparation copy/hash attempts, 1,372 file hashes total, zero canary writes.
+- **Counters**: custodian sessions/files hashed by sealer = 0/0; unsealing sessions = 0; model evaluations/attempts = 0/0; training = 0.
+- **Kết quả**: Prior authorization remains unconsumed but cannot cover changed bytes; verdict `READY_FOR_HUMAN_MANIFEST_CUSTODIAN_REAUTHORIZATION`.
+- **Evidence**: `research/evidence/phase-4c.2g.0.7/`.
+
+---
+
 ## Phase 4C.2G.0.6 — Build and Seal the Automated Locked-Test Manifest Custodian Workflow
 
 - **Mục tiêu**: Build a prospective, role-separated manifest commitment workflow without UAC/real session, authorization creation, locked-test access, evaluator/model execution, training, or inference.

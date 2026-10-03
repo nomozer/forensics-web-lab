@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.7",
+  "observed_at_utc": "2026-10-03T13:57:14.8211864Z",
+  "original_package_commit": "35b356304bc1a8187d3ec2b941b0269928ad1ce5",
+  "original_error": "Custodian component binding mismatch.",
+  "root_cause": "In Windows PowerShell 5.1, PSObject.Properties.Count enumerated one Count value per property instead of returning the scalar key count. Comparing the two vectors was truthy even for equal five-key maps.",
+  "minimized_observation": {
+    "authorization_direct_count_rendering": "1 1 1 1 1",
+    "binding_direct_count_rendering": "1 1 1 1 1",
+    "authorization_scalar_count": 5,
+    "binding_scalar_count": 5
+  },
+  "fix": "Wrap each PSObject.Properties collection in @() before comparing .Count.",
+  "scope": {
+    "controller_lines_changed": 1,
+    "protocol_changed": false,
+    "sealer_changed": false,
+    "schema_changed": false,
+    "dataset_changed": false,
+    "model_or_metric_changed": false
+  },
+  "execution_boundary": {
+    "vhdx_preparation_access_attempts": 2,
+    "vhdx_preparation_files_hashed": 1372,
+    "vhdx_preparation_completed": true,
+    "vhdx_final_disk_is_read_only": true,
+    "custodian_output_created": false,
+    "custodian_access_reservation_created": false,
+    "authorization_consumed": false,
+    "evaluator_invoked": false
+  },
+  "regression_test": "test_windows_custodian_formal_preflight_compares_component_key_counts",
+  "regression_result": "PASS"
+}
