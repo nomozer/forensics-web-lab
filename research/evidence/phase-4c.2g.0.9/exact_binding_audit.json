@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.9",
+  "generated_at_utc": "2026-10-03T19:06:24.1193805Z",
+  "status": "EXACT_BINDINGS_VERIFIED_MODEL_UNLOADED",
+  "evaluator_effective_commit": "2bbb1109c8ab18c9ff7120ef004acd0ba7074716",
+  "execution_package_commit": "2bbb1109c8ab18c9ff7120ef004acd0ba7074716",
+  "source_binding": "research/evidence/phase-4c.2g.0.5/evaluator_source_binding.json",
+  "git_object_component_audit": {
+    "result": "PASS",
+    "component_count": 21,
+    "worktree_parity": "PASS"
+  },
+  "sealed_archive_audit": {
+    "result": "PASS",
+    "filename": "phase_4c2g_complete_executor_2bbb110.tar.gz",
+    "sha256": "05c32e11064616bf01a748ac7ea0ec5e089a5980463852d430c0b8c788ee7a2b",
+    "bytes": 45818,
+    "member_count": 25
+  },
+  "authorization_schema": {
+    "result": "PASS",
+    "relative_path": "docs/schemas/human-unsealing-authorization.v2.schema.json",
+    "sha256": "ee6e72d198646608c25cd6438737c8d625e8a3ce9c28c2ee5925b8516fcd8512",
+    "bytes": 5454
+  },
+  "checkpoint_hash_only_audit": {
+    "result": "PASS",
+    "torch_load_calls": 0,
+    "model_forward_count": 0,
+    "checkpoints": [
+      {"seed": 42, "bytes": 5627375, "sha256": "c941f42ed00adb098962ddb43c0f2f7d897e48e20957cddc0c491243f8730c92"},
+      {"seed": 1337, "bytes": 5627375, "sha256": "69e706f9062f050ccbfd2affb72d63d5dde9d12f02c1e64c762b0ea6719073f1"},
+      {"seed": 2025, "bytes": 5627375, "sha256": "92ce5ee986d487fdf14374842067d0684fc7669f5ecb32c7d603f6813942ceee"},
+      {"seed": 3407, "bytes": 5627375, "sha256": "4897821ef0a97df9f1c51acde8d4ac01d383aa3a7b9e7ee55bbc3b3108847868"},
+      {"seed": 9001, "bytes": 5627375, "sha256": "5f0f8803adcb7eec88d47e398ef8b2002b46e740c263b12abc2ba392822a91c3"}
+    ]
+  },
+  "manifest_commitment_audit": {
+    "result": "PASS",
+    "sha256": "9d8564bdd64f5d5965e7f5470b322aa0769f4bf45b78ef8547134b07a71d18e7",
+    "bytes": 174337,
+    "source_count": 343,
+    "sample_count": 686,
+    "manifest_contents_published": false
+  },
+  "real_counters": {
+    "locked_test_preparation_accesses": 2,
+    "preparation_files_hashed": 1372,
+    "custodian_manifest_access_sessions": 1,
+    "custodian_files_hashed": 686,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "cpu_inference_calls": 0,
+    "gpu_inference_calls": 0,
+    "new_training_runs": 0
+  }
+}

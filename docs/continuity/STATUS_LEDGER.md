@@ -1,3 +1,17 @@
+## Phase 4C.2G.0.9 — Evaluator Authorization Preparation and Windows Runtime Preflight
+
+- **Mục tiêu**: Lock exact evaluator/package/components/schema, five Stage 1 N=250 checkpoints, and the completed manifest commitment; run fixture-only Windows readiness checks; prepare but do not activate the one-session evaluator authorization request.
+- **Bindings**: Effective/package commit `2bbb110`; archive 45,818 bytes SHA-256 `05c32e11...`; manifest 174,337 bytes SHA-256 `9d8564bd...`, 343 sources/686 samples; all five checkpoints 5,627,375 bytes and hash-matched with 0 Torch loads/model forwards.
+- **Kiểm tra**: evaluator 45/45 PASS; complete execution 24/24 PASS; sealed controller contract-only PASS; VHDX metadata-only check shows present and detached; exact package/component/schema/manifest audits PASS.
+- **Runtime blocker**: Non-mutating `-WhatIf` probes reproduce `NamedParameterNotFound` for `Disable-NetAdapter -InterfaceIndex` and `Enable-NetAdapter -InterfaceIndex`. The sealed controller uses those invalid calls in isolation, generated watchdog, and restoration.
+- **Authorization**: Exact request draft status `PENDING_HUMAN_APPROVAL`, but `approval_actionable=false` and presentation withheld. No authorization artifact, UAC, network mutation, VHDX mount, locked-test read, reservation, inference, metric, or training occurred.
+- **Counters**: preparation accesses/hashes = 2/1,372; custodian sessions/hashes = 1/686; completed unsealing/model evaluations/evaluation attempts/CPU inference/GPU inference/new training = 0/0/0/0/0/0.
+- **Kết quả**: `BLOCKED_SEALED_ORCHESTRATOR_ADAPTER_PARAMETER_BINDING`.
+- **Evidence**: `research/evidence/phase-4c.2g.0.9/`.
+- **Quyết định tiếp theo**: Authorize a narrow orchestrator-only hotfix; add live cmdlet-contract regression; reseal/rebind and repeat preflight; then produce a fresh exact human evaluator authorization request.
+
+---
+
 ## Phase 4C.2G.0.8 — Authorized Manifest Custodian Commitment
 
 - **Mục tiêu**: Materialize the user's exact custodian-only authorization, reuse the prepared VHDX read-only, run exactly one sealed custodian session, and publish redacted commitment/cleanup evidence without evaluator execution.
