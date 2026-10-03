@@ -1,0 +1,67 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.6",
+  "generated_at_utc": "2026-10-03T09:03:39Z",
+  "status": "READY_FOR_HUMAN_MANIFEST_CUSTODIAN_APPROVAL",
+  "evidence_seal_semantics": {
+    "effective_custodian_commit": "35b356304bc1a8187d3ec2b941b0269928ad1ce5",
+    "custodian_package_commit": "35b356304bc1a8187d3ec2b941b0269928ad1ce5",
+    "binding_model": "functional_commit_then_non_circular_terminal_evidence_seal",
+    "statement": "All listed evidence files are bound by byte length and SHA-256; this provenance file intentionally excludes its own digest. No real authorization, custodian session, locked-test access, or evaluator execution occurred."
+  },
+  "evidence_file_count": 9,
+  "files": [
+    {
+      "path": "research/evidence/phase-4c.2g.0.6/custodian_authorization_schema_binding.json",
+      "bytes": 2475,
+      "sha256": "99ed8f1740850f348069761e711503ff8ec54618e962fc45c2af8116b8b8ab6c"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.6/custodian_source_binding.json",
+      "bytes": 1928,
+      "sha256": "004fafee0ab9194a75c745c09de1b5ba8f40c82cd770c32f44f028c0d68b482d"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.6/environment.json",
+      "bytes": 1088,
+      "sha256": "4d1123b914c1003316257aa323400389c97f66f9ece92d57704cf84d4389f44f"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.6/manifest_canonicalization_contract.json",
+      "bytes": 1093,
+      "sha256": "002423682e8a09709bcf2d34cd1439a1c7923b2718656881c2f8e45b417c2e95"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.6/MANIFEST_CUSTODIAN_PROTOCOL_ADDENDUM.json",
+      "bytes": 1195,
+      "sha256": "e0f17d0d7464531042f5a0b5fe54d58cee504902a46ebddf2566a3e6a3e9f9a9"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.6/PHASE_REPORT.md",
+      "bytes": 3506,
+      "sha256": "83ef3c86abd270e83da9143d05c0e9c5f5163ab1ce2b4b617a360b3dd3ca4502"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.6/PRE_CUSTODIAN_GO_NO_GO.json",
+      "bytes": 741,
+      "sha256": "19bdda5eb24d195cc03b59fe6cefd0769831b1a9fc5baedee95ee5bb7467496a"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.6/sealed_custodian_package_receipt.json",
+      "bytes": 896,
+      "sha256": "e84c88237ca0811d554bbe77f84476d1ee8a05cec75c5ea5f1ebaf563c965f95"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.6/test_summary.json",
+      "bytes": 1127,
+      "sha256": "d5d5a499b1a286e081a5e622b93f572f970bf074776a657667d88ef0b79b49fd"
+    }
+  ],
+  "real_counters": {
+    "custodian_manifest_access_sessions": 0,
+    "custodian_files_hashed": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0
+  }
+}

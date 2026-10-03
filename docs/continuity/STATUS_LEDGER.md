@@ -1,3 +1,16 @@
+## Phase 4C.2G.0.6 — Build and Seal the Automated Locked-Test Manifest Custodian Workflow
+
+- **Mục tiêu**: Build a prospective, role-separated manifest commitment workflow without UAC/real session, authorization creation, locked-test access, evaluator/model execution, training, or inference.
+- **Starting commit**: `12df22e`; **effective/package commit**: `35b3563`; **branch**: `research/phase-4c2g-locked-test-execution`.
+- **Thay đổi chính**: Added evaluator-independent streaming sealer, exact 343-source/686-sample guards, NFC deterministic canonicalization, fsync reservation/atomic outputs/interrupted receipt, one-UAC Windows controller contract, custodian authorization schema, and Git-object package builder.
+- **Package**: 7 regular allowlisted members, 13,501 bytes, SHA-256 `970484622a52b9632a77f6a60985f34cdba63aff5ed83705e50bb2c433e6a131`; no dataset, model, authorization, or manifest contents.
+- **Kiểm tra**: Custodian 13/13 PASS; hermetic ML 587 PASS/131 deselected; workspace 57 PASS plus continuity checker unit 13 PASS; typecheck/build PASS.
+- **Kết quả**: `READY_FOR_HUMAN_MANIFEST_CUSTODIAN_APPROVAL`; no independent human custodian claimed; authorization/session/access/hash/evaluator/training/inference all not performed; all real counters remain 0.
+- **Evidence**: `research/evidence/phase-4c.2g.0.6/`.
+- **Quyết định tiếp theo**: Human review and explicit exact-package authorization for one custodian session; evaluator remains blocked until the real external manifest commitment exists.
+
+---
+
 ## Phase 4C.2G.0.5.1 — Finalize Non-Circular Package, Manifest, and Effective-Commit Bindings
 
 - **Mục tiêu**: Audit every package/runtime file at the claimed effective commit, remove circular package binding, harden the locked manifest contract, and reseal without UAC/readiness, authorization creation, locked-test access, training, or inference.

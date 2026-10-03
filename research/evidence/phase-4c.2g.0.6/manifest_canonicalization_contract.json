@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.6",
+  "manifest_filename": "locked_test_manifest.json",
+  "sidecar_filename": "locked_test_manifest.json.sha256",
+  "storage_policy": "custodian_sealed_external_to_git",
+  "encoding": "UTF-8",
+  "unicode_normalization": "NFC",
+  "sample_sort": ["unique_source_id", "label_id", "sample_id"],
+  "object_key_order": "lexicographic_sort_keys_true",
+  "json_separators": [",", ":"],
+  "ensure_ascii": false,
+  "final_newline": false,
+  "dynamic_timestamps_in_hashed_bytes": false,
+  "split_seal_algorithm": {
+    "expression": "sha256(json.dumps(sorted(unique_source_ids)).encode('utf-8'))",
+    "json_dumps_defaults_preserved": true,
+    "expected": "519e7a0e6815e781d1cefa95971e5221ac1f25656837374d8dc4ba41401fded9"
+  },
+  "atomic_publication": [".part", "flush", "fsync", "os.replace"],
+  "manifest_top_level_keys": ["schema_version", "dataset_id", "partition", "samples"],
+  "sample_keys": ["sample_id", "unique_source_id", "relative_path", "sha256", "label", "label_id", "partition"],
+  "git_evidence_excludes_manifest_content": true
+}
