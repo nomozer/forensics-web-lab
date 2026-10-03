@@ -1,32 +1,22 @@
 {
-  "schema_version": "2.0.0",
-  "timestamp_utc": "2026-10-03T07:48:40.0086566Z",
+  "schema_version": "1.0.0",
   "phase": "Phase 4C.2G.0.5.1",
-  "contract_name": "complete_confirmatory_execution_source_binding",
-  "branch": "research/phase-4c2g-locked-test-execution",
-  "base_main_commit": "8a37966ea6ea55f58b589515f0c10bebae495b3a",
-  "superseded_effective_evaluator_commit": "5cf84a33641b7bc7a232fcd602b89671c63bb2ad",
-  "effective_evaluator_commit": "2bbb1109c8ab18c9ff7120ef004acd0ba7074716",
+  "timestamp_utc": "2026-10-03T07:48:40.0086566Z",
+  "status": "BLOCKED_MANIFEST_COMMITMENT_ABSENT",
+  "effective_execution_commit": "2bbb1109c8ab18c9ff7120ef004acd0ba7074716",
   "execution_package_commit": "2bbb1109c8ab18c9ff7120ef004acd0ba7074716",
-  "binding_model": "functional_commit_then_non_circular_terminal_evidence_seal",
+  "archive": {
+    "filename": "phase_4c2g_complete_executor_2bbb110.tar.gz",
+    "sha256": "05c32e11064616bf01a748ac7ea0ec5e089a5980463852d430c0b8c788ee7a2b",
+    "bytes": 45818,
+    "member_count": 25
+  },
   "authorization_schema": {
     "relative_path": "docs/schemas/human-unsealing-authorization.v2.schema.json",
     "bytes": 5454,
     "sha256": "ee6e72d198646608c25cd6438737c8d625e8a3ce9c28c2ee5925b8516fcd8512"
   },
-  "authorization_component_names": [
-    "confirmatory_metrics",
-    "locked_test_evaluator",
-    "phase_4c2g_dataset",
-    "phase_4c2g_io",
-    "phase_4c2g_model",
-    "phase_4c2g_windows",
-    "run_confirmatory_cli",
-    "model_architecture",
-    "locked_test_manifest_schema",
-    "windows_authorized_session_orchestrator"
-  ],
-  "components": {
+  "runtime_components": {
     "requirements": {"relative_path": "ml/requirements.txt", "bytes": 186, "sha256": "aa6408d0c7057641bb71d6433cd6b796a2d1ac45d110b2bc9c61113f02efa617"},
     "evaluation_package_init": {"relative_path": "ml/evaluation/__init__.py", "bytes": 335, "sha256": "b50f5f66202a338f02ecd71302752a71844894d17a56a80fff550a23ffcea199"},
     "calibration_support": {"relative_path": "ml/evaluation/calibration.py", "bytes": 1818, "sha256": "d755008551893446e86f1f33a8ab87fd273564a5eaea5e3bf55e26d2891dab69"},
@@ -48,6 +38,21 @@
     "metrics_plan": {"relative_path": "research/evidence/phase-4c.2e/confirmatory_metrics_plan.json", "bytes": 3264, "sha256": "259bb88067f2465186e466151de1687def89dc9ac288402ae5665de1ef446d1a"},
     "unsealing_protocol": {"relative_path": "research/evidence/phase-4c.2e/unsealing_protocol.json", "bytes": 2539, "sha256": "4ad62ffe03029b5b1bf2a0c9db7e04c884bdf023fef0873c0c65c688c7a977dc"},
     "source_provenance_split_lock": {"relative_path": "research/evidence/phase-4b.2/split-lock.json", "bytes": 7974, "sha256": "9e96234f7cca6a71156d1f5e32c83c44c7e4ac9682a509840848e8d14f2b8ab1"}
+  },
+  "locked_test_manifest_commitment": {
+    "status": "ABSENT",
+    "sha256": null,
+    "searched_sources": [
+      "research/evidence/phase-4c.2e/LOCKED_TEST_PREREGISTRATION.json",
+      "research/evidence/phase-4c.2e/unsealing_protocol.json",
+      "research/evidence/phase-4b.2/split-lock.json",
+      "research/evidence/phase-4c.2e/candidate_checkpoint_binding.json"
+    ],
+    "semantic_distinctions": {
+      "519e7a0e6815e781d1cefa95971e5221ac1f25656837374d8dc4ba41401fded9": "locked source-ID split seal; not a per-sample manifest SHA-256",
+      "411e35da80843a10f7bb22e33efac8a4d1db70110dbda91cadbbf39532c9312d": "development/inner-validation bundle manifest SHA-256; not the locked-test manifest SHA-256"
+    },
+    "required_action": "An independent data custodian must commit the exact per-sample locked-test manifest SHA-256 before any unsealing or locked-test read."
   },
   "real_counters": {
     "locked_test_real_accesses": 0,

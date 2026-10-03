@@ -4,8 +4,10 @@
 **Date**: 2026-10-03 (Asia/Bangkok)
 **Branch**: `research/phase-4c2g-locked-test-execution`
 **Starting commit**: `720078e49a92356f2bc5bdc227709f11e6143cd5`
-**Effective evaluator/execution commit**: `5cf84a33641b7bc7a232fcd602b89671c63bb2ad`
-**Verdict**: `READY_FOR_FINAL_PACKAGE_READINESS_TEST`
+**Historical claimed effective evaluator/execution commit**: `5cf84a33641b7bc7a232fcd602b89671c63bb2ad` (invalidated and superseded by Phase 4C.2G.0.5.1)
+**Corrected verdict**: `BLOCKED_MANIFEST_COMMITMENT_ABSENT`
+
+> **Supersession notice (Phase 4C.2G.0.5.1):** Exact `git show` audit proved that the authorization schema did not exist at `5cf84a3` and several bound byte counts/hashes described working-tree CRLF bytes rather than Git blobs. This report's former READY verdict and no-runtime-drift claim are withdrawn. See `research/evidence/phase-4c.2g.0.5.1/PHASE_REPORT.md`.
 
 ## 1. Authorization Provenance Correction
 
@@ -37,7 +39,7 @@ The deterministic external archive is `data/research/local-artifacts/phase-4c.2g
 - SHA-256: `243f157302778c7da34a737b1925c8db4f157ad461b2878b415929561189981b`
 - members: `25` regular allowlisted files
 
-The archive passed deterministic rebuild, self-contained import, traversal/absolute-path/link/device rejection, and absence checks for credentials, datasets, checkpoints, weights, locked-test artifacts, and authorization artifacts. Authorization schema v2 binds any future authorization to effective commit `5cf84a3`, the exact 10 executable component hashes, the exact five checkpoint bindings, and the exact sealed archive SHA-256/byte count supplied at authorization time.
+The archive passed the checks recorded at the time but is now superseded. Authorization schema v2 validates structure and required fields only. Exact effective-commit, component, archive SHA-256, and byte-count binding is performed by the external canonical `execution_authorization_binding.json` plus runtime cross-document verification; the schema alone does not lock values expressed only by a pattern or minimum.
 
 ## 5. Verification
 
@@ -55,6 +57,6 @@ The first sandboxed full-suite attempt produced 555 passes and 11 environment la
 
 No locked-test path was mounted, browsed, enumerated, extracted, read, or hashed. No real authorization artifact was created or consumed. No readiness/UAC operation, training, or scientific inference occurred. All real counters are zero.
 
-The only next action is a final package-bound readiness test. A later real session still requires fresh direct human authorization bound to the final archive and schema v2; this phase does not grant or imply that authorization.
+The next action is an independent data-custodian commitment of the exact per-sample locked-test manifest SHA-256 before authorization. The locked source split seal is not that manifest commitment.
 
-**Final Verdict**: `READY_FOR_FINAL_PACKAGE_READINESS_TEST`
+**Corrected Final Verdict**: `BLOCKED_MANIFEST_COMMITMENT_ABSENT`

@@ -188,6 +188,93 @@ def test_locked_test_manifest_contract_rejects_checksum_pair_duplicate_missing_a
         )
 
 
+def test_locked_manifest_rejects_duplicate_source_label_pair_explicitly(
+    tmp_path: Path,
+) -> None:
+    import pytest
+
+    from ml.evaluation.phase_4c2g_dataset import load_locked_test_manifest
+
+    root, manifest_path, _, split_seal = _build_synthetic_locked_manifest(tmp_path)
+    schema_path = REPO_ROOT / "docs/schemas/locked-test-manifest.v1.schema.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["samples"][2]["unique_source_id"] = manifest["samples"][0][
+        "unique_source_id"
+    ]
+    manifest_path.write_text(json.dumps(manifest, sort_keys=True), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="Duplicate source/label pair"):
+        load_locked_test_manifest(
+            locked_test_root=root,
+            manifest_path=manifest_path,
+            manifest_schema_path=schema_path,
+            expected_manifest_sha256=_sha256(manifest_path),
+            expected_schema_sha256=_sha256(schema_path),
+            expected_split_seal=split_seal,
+        )
+
+
+def test_manifest_relative_path_contract_rejects_absolute_drive_and_traversal() -> None:
+    import pytest
+
+    from ml.evaluation.phase_4c2g_dataset import validate_manifest_relative_path
+
+    assert validate_manifest_relative_path("samples/source/authentic.png").as_posix() == (
+        "samples/source/authentic.png"
+    )
+    for unsafe in (
+        "/absolute.png",
+        "../escape.png",
+        "samples/../../escape.png",
+        "C:/locked/escape.png",
+        r"C:\locked\escape.png",
+        r"\\server\share\escape.png",
+    ):
+        with pytest.raises(ValueError, match="Unsafe manifest relative_path"):
+            validate_manifest_relative_path(unsafe)
+
+
+def test_locked_manifest_rejects_symlink_escape(tmp_path: Path) -> None:
+    import pytest
+
+    from ml.evaluation.phase_4c2g_dataset import load_locked_test_manifest
+
+    root, manifest_path, _, split_seal = _build_synthetic_locked_manifest(tmp_path)
+    schema_path = REPO_ROOT / "docs/schemas/locked-test-manifest.v1.schema.json"
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    escaped_sample = outside / "authentic.png"
+    escaped_sample.write_bytes(b"outside locked fixture")
+    escape_link = root / "escape-link"
+    try:
+        escape_link.symlink_to(outside, target_is_directory=True)
+    except OSError:
+        if sys.platform != "win32":
+            raise
+        completed = subprocess.run(
+            ["cmd.exe", "/d", "/c", "mklink", "/J", str(escape_link), str(outside)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert completed.returncode == 0, completed.stderr
+
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["samples"][0]["relative_path"] = "escape-link/authentic.png"
+    manifest["samples"][0]["sha256"] = _sha256(escaped_sample)
+    manifest_path.write_text(json.dumps(manifest, sort_keys=True), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="escapes locked-test root"):
+        load_locked_test_manifest(
+            locked_test_root=root,
+            manifest_path=manifest_path,
+            manifest_schema_path=schema_path,
+            expected_manifest_sha256=_sha256(manifest_path),
+            expected_schema_sha256=_sha256(schema_path),
+            expected_split_seal=split_seal,
+        )
+
+
 def test_stage1_model_loader_recreates_frozen_binary_architecture(tmp_path: Path) -> None:
     import torch
 
@@ -596,6 +683,8 @@ def test_complete_cli_dispatches_real_confirmatory_session(monkeypatch, tmp_path
     required_paths = {
         "authorization-file": tmp_path / "authorization.json",
         "package-archive": tmp_path / "package.tar.gz",
+        "execution-authorization-binding": tmp_path
+        / "execution-authorization-binding.json",
         "source-binding": tmp_path / "source-binding.json",
         "authorization-schema": tmp_path / "authorization.schema.json",
         "checkpoint-dir": tmp_path / "checkpoints",
@@ -639,6 +728,10 @@ def test_windows_authorized_session_orchestrator_contract_validation_only() -> N
     assert contract["verdict"] == "AUTHORIZED_SESSION_CONTRACT_VALID"
     assert contract["mutations_performed"] == 0
     assert contract["uac_or_readiness_invoked"] is False
+    assert (
+        contract["exact_archive_binding"]
+        == "external_execution_authorization_binding"
+    )
     assert contract["ordered_steps"] == [
         "verify_authorization_and_final_package",
         "create_network_recovery_watchdog",
@@ -792,11 +885,12 @@ def test_complete_package_is_deterministic_self_contained_and_data_free(
         build_package,
     )
 
-    effective_commit = "5cf84a33641b7bc7a232fcd602b89671c63bb2ad"
     source_binding = (
         REPO_ROOT
         / "research/evidence/phase-4c.2g.0.5/evaluator_source_binding.json"
     )
+    binding_payload = json.loads(source_binding.read_text(encoding="utf-8"))
+    effective_commit = binding_payload["effective_evaluator_commit"]
     first_path = tmp_path / "first.tar.gz"
     second_path = tmp_path / "second.tar.gz"
     first = build_package(
@@ -849,7 +943,35 @@ def test_complete_package_is_deterministic_self_contained_and_data_free(
     assert completed.returncode == 0, completed.stderr
 
 
-def test_authorization_v2_locks_effective_commit_and_exact_components(
+def test_real_source_binding_matches_every_effective_commit_git_object() -> None:
+    from scripts.research.build_phase4c2g_execution_package import (
+        PACKAGE_SOURCE_MEMBERS,
+        audit_git_commit_components,
+    )
+
+    binding_path = (
+        REPO_ROOT
+        / "research/evidence/phase-4c.2g.0.5/evaluator_source_binding.json"
+    )
+    binding = json.loads(binding_path.read_text(encoding="utf-8"))
+    components = dict(binding["components"])
+    components["authorization_schema"] = binding["authorization_schema"]
+    audit = audit_git_commit_components(
+        repo_root=REPO_ROOT,
+        commit=binding["effective_evaluator_commit"],
+        components=components,
+        require_worktree_match=True,
+    )
+
+    assert len(audit) == len(PACKAGE_SOURCE_MEMBERS)
+    assert {item["relative_path"] for item in audit.values()} == set(
+        PACKAGE_SOURCE_MEMBERS
+    )
+    assert all(item["bytes_match"] for item in audit.values())
+    assert all(item["sha256_match"] for item in audit.values())
+
+
+def test_authorization_v2_structure_defers_exact_values_to_source_binding(
     tmp_path: Path,
 ) -> None:
     from ml.evaluation.locked_test_evaluator import LockedTestEvaluator
@@ -857,12 +979,34 @@ def test_authorization_v2_locks_effective_commit_and_exact_components(
     schema_path = (
         REPO_ROOT / "docs/schemas/human-unsealing-authorization.v2.schema.json"
     )
-    source_binding = (
-        REPO_ROOT
-        / "research/evidence/phase-4c.2g.0.5/evaluator_source_binding.json"
-    )
     schema = json.loads(schema_path.read_text(encoding="utf-8"))
     properties = schema["properties"]
+    effective_commit = "a" * 40
+    component_names = properties["evaluator_component_hashes"]["required"]
+    component_hashes = {
+        name: hashlib.sha256(name.encode("utf-8")).hexdigest()
+        for name in component_names
+    }
+    source_binding = tmp_path / "synthetic_source_binding.json"
+    source_binding.write_text(
+        json.dumps(
+            {
+                "effective_evaluator_commit": effective_commit,
+                "execution_package_commit": effective_commit,
+                "authorization_schema": {
+                    "relative_path": str(schema_path),
+                    "bytes": schema_path.stat().st_size,
+                    "sha256": _sha256(schema_path),
+                },
+                "authorization_component_names": component_names,
+                "components": {
+                    name: {"sha256": digest}
+                    for name, digest in component_hashes.items()
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
     authorization = {
         "status": "AUTHORIZED",
         "authorization_id": "fixture-auth-v2-001",
@@ -872,18 +1016,14 @@ def test_authorization_v2_locks_effective_commit_and_exact_components(
         "sample_size": 250,
         "exact_seeds": properties["exact_seeds"]["const"],
         "checkpoint_sha256s": properties["checkpoint_sha256s"]["const"],
-        "evaluator_effective_commit": properties["evaluator_effective_commit"][
-            "const"
-        ],
-        "evaluator_component_hashes": properties["evaluator_component_hashes"][
-            "const"
-        ],
+        "evaluator_effective_commit": effective_commit,
+        "evaluator_component_hashes": component_hashes,
         "maximum_unsealing_sessions": 1,
         "maximum_model_evaluation_attempts": 5,
         "expiry_policy": {"policy": "single_session_only"},
         "authorization_purpose": "Synthetic schema validation only; no data access.",
         "no_tuning_acknowledgment": True,
-        "execution_package_commit": properties["execution_package_commit"]["const"],
+        "execution_package_commit": effective_commit,
         "execution_package_tree_clean": True,
         "sealed_package_sha256": "a" * 64,
         "sealed_package_bytes": 1,
@@ -904,12 +1044,180 @@ def test_authorization_v2_locks_effective_commit_and_exact_components(
         bypass_git_checks=True,
     )
     assert verified["status"] == "AUTHORIZED"
-    assert (
-        verified["evaluator_effective_commit"]
-        == "5cf84a33641b7bc7a232fcd602b89671c63bb2ad"
+    assert verified["evaluator_effective_commit"] == effective_commit
+    assert verified["evaluator_component_hashes"] == component_hashes
+
+
+def test_effective_commit_audit_reads_exact_git_object_bytes() -> None:
+    from scripts.research.build_phase4c2g_execution_package import (
+        audit_git_commit_components,
     )
-    assert set(verified["evaluator_component_hashes"]) == set(
-        json.loads(source_binding.read_text(encoding="utf-8"))[
-            "authorization_component_names"
-        ]
+
+    binding = json.loads(
+        (
+            REPO_ROOT
+            / "research/evidence/phase-4c.2g.0.5/evaluator_source_binding.json"
+        ).read_text(encoding="utf-8")
     )
+    component = binding["components"]["confirmatory_metrics"]
+
+    audit = audit_git_commit_components(
+        repo_root=REPO_ROOT,
+        commit=binding["effective_evaluator_commit"],
+        components={"confirmatory_metrics": component},
+    )
+
+    assert audit["confirmatory_metrics"]["exists_at_commit"] is True
+    assert audit["confirmatory_metrics"]["bytes_match"] is True
+    assert audit["confirmatory_metrics"]["sha256_match"] is True
+
+
+def test_effective_commit_audit_detects_runtime_file_changed_after_commit() -> None:
+    import pytest
+
+    from scripts.research.build_phase4c2g_execution_package import (
+        audit_git_commit_components,
+    )
+
+    superseded_commit = "5cf84a33641b7bc7a232fcd602b89671c63bb2ad"
+    relative_path = "ml/evaluation/run_phase_4c2g_confirmatory.py"
+    committed = subprocess.run(
+        ["git", "show", f"{superseded_commit}:{relative_path}"],
+        cwd=REPO_ROOT,
+        check=True,
+        capture_output=True,
+    ).stdout
+
+    with pytest.raises(ValueError, match="changed after effective commit"):
+        audit_git_commit_components(
+            repo_root=REPO_ROOT,
+            commit=superseded_commit,
+            components={
+                "run_confirmatory_cli": {
+                    "relative_path": relative_path,
+                    "bytes": len(committed),
+                    "sha256": hashlib.sha256(committed).hexdigest(),
+                }
+            },
+            require_worktree_match=True,
+        )
+
+
+def test_external_binding_rejects_archive_bytes_commit_and_manifest_mutations(
+    tmp_path: Path,
+) -> None:
+    import copy
+    import pytest
+
+    from ml.evaluation.run_phase_4c2g_confirmatory import (
+        verify_execution_authorization_binding,
+    )
+
+    archive = tmp_path / "sealed-executor.tar.gz"
+    archive.write_bytes(b"synthetic sealed executor")
+    archive_sha = _sha256(archive)
+    commit = "a" * 40
+    manifest_sha = "b" * 64
+    components = {
+        "runtime": {
+            "relative_path": "runtime.py",
+            "bytes": 7,
+            "sha256": "c" * 64,
+        }
+    }
+    source_binding = {
+        "effective_evaluator_commit": commit,
+        "execution_package_commit": commit,
+        "authorization_schema": {"bytes": 123, "sha256": "d" * 64},
+        "authorization_component_names": ["runtime"],
+        "components": components,
+    }
+    binding = {
+        "schema_version": "1.0.0",
+        "status": "ACTIVE",
+        "effective_execution_commit": commit,
+        "execution_package_commit": commit,
+        "archive": {
+            "filename": archive.name,
+            "sha256": archive_sha,
+            "bytes": archive.stat().st_size,
+            "member_count": 25,
+        },
+        "authorization_schema": {"bytes": 123, "sha256": "d" * 64},
+        "runtime_components": components,
+        "locked_test_manifest_commitment": {
+            "status": "COMMITTED_BEFORE_UNSEALING",
+            "sha256": manifest_sha,
+            "provenance": "synthetic data-custodian fixture",
+        },
+    }
+    binding_path = tmp_path / "execution_authorization_binding.json"
+    binding_path.write_text(json.dumps(binding), encoding="utf-8")
+    authorization = {
+        "sealed_package_sha256": archive_sha,
+        "sealed_package_bytes": archive.stat().st_size,
+        "evaluator_effective_commit": commit,
+        "execution_package_commit": commit,
+        "locked_test_manifest_sha256": manifest_sha,
+        "evaluator_component_hashes": {"runtime": "c" * 64},
+    }
+
+    verified = verify_execution_authorization_binding(
+        authorization=authorization,
+        binding_path=binding_path,
+        package_archive=archive,
+        source_binding=source_binding,
+    )
+    assert verified["status"] == "EXECUTION_AUTHORIZATION_BINDING_VERIFIED"
+
+    mutations = (
+        ("sealed_package_sha256", "e" * 64),
+        ("sealed_package_bytes", archive.stat().st_size + 1),
+        ("evaluator_effective_commit", "f" * 40),
+        ("locked_test_manifest_sha256", "0" * 64),
+    )
+    for field, value in mutations:
+        mutated = copy.deepcopy(authorization)
+        mutated[field] = value
+        with pytest.raises(PermissionError, match=field):
+            verify_execution_authorization_binding(
+                authorization=mutated,
+                binding_path=binding_path,
+                package_archive=archive,
+                source_binding=source_binding,
+            )
+
+
+def test_external_binding_blocks_when_manifest_commitment_is_absent(
+    tmp_path: Path,
+) -> None:
+    import pytest
+
+    from ml.evaluation.run_phase_4c2g_confirmatory import (
+        verify_execution_authorization_binding,
+    )
+
+    archive = tmp_path / "sealed-executor.tar.gz"
+    archive.write_bytes(b"synthetic sealed executor")
+    binding_path = tmp_path / "execution_authorization_binding.json"
+    binding_path.write_text(
+        json.dumps(
+            {
+                "status": "BLOCKED_MANIFEST_COMMITMENT_ABSENT",
+                "locked_test_manifest_commitment": {
+                    "status": "ABSENT",
+                    "sha256": None,
+                    "required_action": "Independent data-custodian commitment required.",
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(PermissionError, match="BLOCKED_MANIFEST_COMMITMENT_ABSENT"):
+        verify_execution_authorization_binding(
+            authorization={},
+            binding_path=binding_path,
+            package_archive=archive,
+            source_binding={},
+        )

@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.5.1",
+  "generated_at_utc": "2026-10-03T07:48:40.0086566Z",
+  "clock_source": "SYSTEM_UTC_RUNTIME",
+  "environment_type": "SYNTHETIC_MUTATION_TEST_AND_PACKAGE_RESEAL",
+  "os": "Windows-11-10.0.26100",
+  "git": {
+    "branch": "research/phase-4c2g-locked-test-execution",
+    "starting_commit": "cac990e92bf6dc06f31b70812eea141d54d6bf06",
+    "effective_evaluator_commit": "2bbb1109c8ab18c9ff7120ef004acd0ba7074716",
+    "execution_package_commit": "2bbb1109c8ab18c9ff7120ef004acd0ba7074716",
+    "base_main_commit": "8a37966ea6ea55f58b589515f0c10bebae495b3a"
+  },
+  "operations_performed": {
+    "readiness_or_uac_run": false,
+    "authorization_artifact_created": false,
+    "locked_test_mounted": false,
+    "locked_test_enumerated": false,
+    "locked_test_read_or_hashed": false,
+    "scientific_inference_run": false,
+    "training_run": false
+  },
+  "real_counters": {
+    "locked_test_real_accesses": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "cpu_inference_calls": 0,
+    "gpu_inference_calls": 0,
+    "new_training_runs": 0
+  }
+}

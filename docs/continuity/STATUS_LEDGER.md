@@ -1,3 +1,16 @@
+## Phase 4C.2G.0.5.1 — Finalize Non-Circular Package, Manifest, and Effective-Commit Bindings
+
+- **Mục tiêu**: Audit every package/runtime file at the claimed effective commit, remove circular package binding, harden the locked manifest contract, and reseal without UAC/readiness, authorization creation, locked-test access, training, or inference.
+- **Starting commit**: `cac990e`; **replacement effective/package commit**: `2bbb110`; **branch**: `research/phase-4c2g-locked-test-execution`.
+- **Git-object audit**: `5cf84a3` FAIL (authorization schema absent; 12 bindings differed from exact Git blobs). Replacement commit PASS for all 22 objects with exact byte/SHA parity and zero runtime drift.
+- **Package/binding**: deterministic 25-member archive, 45,818 bytes, SHA-256 `05c32e11064616bf01a748ac7ea0ec5e089a5980463852d430c0b8c788ee7a2b`; external canonical binding locks commit/archive/schema/all components and is runtime-verified before locked-test mount/read.
+- **Manifest hardening**: Fail-closed label mapping, POSIX/Windows absolute/traversal paths, symlink escape, sample/path/source-label duplicates, exact 343/686 cardinality, missing/extra files, and checksum mismatch.
+- **Kết quả**: No canonical pre-unsealing per-sample locked-test manifest SHA exists; split seal `519e7a0e...` and development manifest `411e35da...` are not substitutes. Verdict `BLOCKED_MANIFEST_COMMITMENT_ABSENT`; all real counters remain 0.
+- **Evidence**: `research/evidence/phase-4c.2g.0.5.1/`; canonical external binding: `research/evidence/phase-4c.2g.0.5/execution_authorization_binding.json`.
+- **Quyết định tiếp theo**: Independent data custodian must commit the exact locked-test per-sample manifest SHA-256 before authorization/unsealing.
+
+---
+
 ## Phase 4C.2G.0.5 — Correct Authorization Provenance and Complete Sealed Confirmatory Execution Driver
 
 - **Mục tiêu**: Correct false approval provenance and build/test/seal the complete real Phase 4C.2G driver without locked-test access, authorization creation, readiness/UAC, training, or scientific inference.

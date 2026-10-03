@@ -8,10 +8,13 @@
   "execution_package_commit": "5cf84a33641b7bc7a232fcd602b89671c63bb2ad",
   "superseded_effective_evaluator_commit": "3cf75c2bf0c9835dd58897b7b36982732cab40ab",
   "binding_model": "functional_commit_then_non_circular_terminal_evidence_seal",
-  "runtime_surface_changed_after_effective_commit": false,
+  "runtime_surface_changed_after_effective_commit": true,
+  "status": "SUPERSEDED_BY_PHASE_4C_2G_0_5_1",
+  "superseded_reason": "Exact Git-object audit found the authorization schema absent at this commit and multiple bindings based on working-tree bytes rather than Git blob bytes.",
+  "replacement_effective_evaluator_commit": "2bbb1109c8ab18c9ff7120ef004acd0ba7074716",
   "source_binding": {
     "path": "research/evidence/phase-4c.2g.0.5/evaluator_source_binding.json",
-    "bytes": 5286,
-    "sha256": "2334c9ae504787bc314a1323ad3fe8a165375bd747f98c6794528d1269238b41"
+    "bytes": 5283,
+    "sha256": "a96ff4182a7b3c9237a06371f62e99561cb26a0c62ac7d2421953f417df2d820"
   }
 }

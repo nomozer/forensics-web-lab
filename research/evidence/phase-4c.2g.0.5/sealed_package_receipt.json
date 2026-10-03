@@ -2,6 +2,12 @@
   "schema_version": "1.0.0",
   "phase": "Phase 4C.2G.0.5",
   "generated_at_utc": "2026-10-02T20:26:56.7409559Z",
+  "status": "SUPERSEDED_BY_PHASE_4C_2G_0_5_1",
+  "replacement_archive": {
+    "filename": "phase_4c2g_complete_executor_2bbb110.tar.gz",
+    "sha256": "05c32e11064616bf01a748ac7ea0ec5e089a5980463852d430c0b8c788ee7a2b",
+    "bytes": 45818
+  },
   "archive": {
     "local_path_outside_git": "data/research/local-artifacts/phase-4c.2g.0.5/phase_4c2g_complete_executor_5cf84a3.tar.gz",
     "bytes": 44955,
