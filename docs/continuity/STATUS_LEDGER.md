@@ -1,3 +1,15 @@
+## Phase 4C.2G.0.8 — Authorized Manifest Custodian Commitment
+
+- **Mục tiêu**: Materialize the user's exact custodian-only authorization, reuse the prepared VHDX read-only, run exactly one sealed custodian session, and publish redacted commitment/cleanup evidence without evaluator execution.
+- **Authorization**: New external authorization `phase-4c2g0.7-dung-20261003T143742Z`, 1,533 bytes, SHA-256 `ccdff5ed...`, exact package/component preflight PASS; user-supplied identity recorded without cryptographic-signature claim. Prior authorization preserved as `SUPERSEDED_UNCONSUMED`.
+- **Execution**: Existing VHDX reused without copy/rebuild; runtime Windows `IsReadOnly=True`; egress isolated; exactly 1 reservation/session; 686 sample hashes across 343 sources; canonical manifest 174,337 bytes, SHA-256 `9d8564bdd64f5d5965e7f5470b322aa0769f4bf45b78ef8547134b07a71d18e7`.
+- **Adjudication**: Controller returned 1 after atomic commitment during watchdog deletion read-back. No retry. Separate UAC read-only audit verified the commitment hash chain, restored adapters/routes, absent watchdog, dismounted VHDX, absent drive letter, and zero `.part` files.
+- **Counters**: preparation accesses/hashes = 2/1,372; custodian sessions/hashes = 1/686; completed unsealing/model evaluations/evaluation attempts/new training = 0/0/0/0.
+- **Kết quả**: `MANIFEST_COMMITMENT_VALID_CLEANUP_VERIFIED_NO_RETRY`; evaluator prerequisite commitment satisfied but evaluator remains `BLOCKED_EVALUATOR_AUTHORIZATION_ABSENT`.
+- **Evidence**: `research/evidence/phase-4c.2g.0.8/`; manifest contents and raw authorization remain outside Git.
+
+---
+
 ## Phase 4C.2G.0.7 — Manifest Custodian PowerShell 5.1 Preflight Hotfix
 
 - **Mục tiêu**: Diagnose the first authorized custodian attempt, fix only a real execution blocker, and reseal without consuming authorization or running the evaluator.

@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.8",
+  "session_id": "phase4c2g-custodian-a86888d-20261003T143742Z",
+  "reserved_at_utc": "2026-10-03T14:42:57.106824Z",
+  "completed_at_utc": "2026-10-03T14:43:03.840470Z",
+  "verdict": "MANIFEST_COMMITMENT_SEALED",
+  "manifest_sha256": "9d8564bdd64f5d5965e7f5470b322aa0769f4bf45b78ef8547134b07a71d18e7",
+  "manifest_bytes": 174337,
+  "manifest_content_stored_in_git": false,
+  "source_count": 343,
+  "sample_count": 686,
+  "locked_test_split_seal": "519e7a0e6815e781d1cefa95971e5221ac1f25656837374d8dc4ba41401fded9",
+  "manifest_schema_sha256": "86036e52513bcbf0a9dd62f7b78fe9c87e47144c35275c19cc5c032046bd5646",
+  "custodian_tool_sha256": "c45b2507979d3434ae7b92704dcc858a20a8e79891185d09b3fb9688a7fb6534",
+  "reservation_receipt": {
+    "bytes": 412,
+    "sha256": "7b72a6b613afe1cb194ff03fc2e1d4338538432339f4eea82d434ed031ab85cd",
+    "automatic_retry_permitted": false
+  },
+  "commitment_receipt": {
+    "bytes": 1361,
+    "sha256": "81bbe2cb9ae552dc4bc7a29525642bc20874c7bb03dc371c8c3fac342be787dc"
+  },
+  "runtime_proofs": {
+    "network_isolation_receipt_sha256": "5368b3b98c0ed31daa15d26b215a80b4503ab53aedcac6b520eb29d79213081b",
+    "read_only_receipt_sha256": "964831d286af0ab9b880e93272023000d4f499b98edf58b19ea1b2f3999e5dd9",
+    "os_enforced_read_only": true,
+    "evidence_kind": "windows_read_only_virtual_disk",
+    "canary_writes_performed": 0
+  },
+  "counters": {
+    "preparation_accesses": 2,
+    "preparation_files_hashed": 1372,
+    "custodian_manifest_access_sessions": 1,
+    "custodian_files_hashed": 686,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "new_training_runs": 0
+  }
+}

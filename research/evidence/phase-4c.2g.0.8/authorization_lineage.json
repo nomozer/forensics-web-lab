@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.8",
+  "recorded_at_utc": "2026-10-03T14:47:29.9448348Z",
+  "prior_authorization": {
+    "authorization_id": "phase-4c2g0.6-dung-20261003T091622Z",
+    "sha256": "0c66f8d8851932481c325f62bb1599e6bac6d62fa5552b982790891b8fc28097",
+    "bytes": 1533,
+    "status": "SUPERSEDED_UNCONSUMED",
+    "preserved_external_to_git": true
+  },
+  "session_authorization": {
+    "authorization_id": "phase-4c2g0.7-dung-20261003T143742Z",
+    "authorized_by_user_supplied_identity": "dung",
+    "authorized_at_utc": "2026-10-03T14:37:42.3253277Z",
+    "sha256": "ccdff5ed20163125fd512ef7cc781ba9cad174a18759951bb4ac011e8629a491",
+    "bytes": 1533,
+    "effective_custodian_commit": "a86888dcee20f74de31ef61e54f224dab643740a",
+    "package_sha256": "05e455a594377e7ad153b7e9513fa33fd2639fca4e884776eaa8de827ac8e302",
+    "package_bytes": 13610,
+    "schema_and_exact_binding_preflight": "PASS",
+    "consumption_status": "CONSUMED_BY_ONE_COMPLETED_CUSTODIAN_SESSION",
+    "cryptographic_signature_claimed": false,
+    "raw_authorization_stored_in_git": false
+  }
+}

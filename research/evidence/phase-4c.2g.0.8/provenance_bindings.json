@@ -1,0 +1,54 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.8",
+  "generated_at_utc": "2026-10-03T14:53:35.4880571Z",
+  "status": "MANIFEST_COMMITMENT_VALID_CLEANUP_VERIFIED_NO_RETRY",
+  "evidence_seal_semantics": {
+    "effective_custodian_commit": "a86888dcee20f74de31ef61e54f224dab643740a",
+    "manifest_sha256": "9d8564bdd64f5d5965e7f5470b322aa0769f4bf45b78ef8547134b07a71d18e7",
+    "binding_model": "external_sensitive_outputs_then_redacted_non_circular_evidence_seal",
+    "statement": "Every listed redacted evidence file is bound by byte length and SHA-256; this provenance file intentionally excludes its own digest. Raw authorization and manifest contents remain external to Git."
+  },
+  "evidence_file_count": 6,
+  "files": [
+    {
+      "path": "research/evidence/phase-4c.2g.0.8/authorization_lineage.json",
+      "bytes": 1105,
+      "sha256": "21d68cd43baf16cb5963b7d4fbfcd7edeaae081e98399d2b40c423f32414c7b4"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.8/custodian_session_adjudication.json",
+      "bytes": 1337,
+      "sha256": "7a12deedae5d43c310f4b455fceb04038542648694e2ce59d7ccc5a82cea5626"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.8/environment.json",
+      "bytes": 551,
+      "sha256": "dc235a1d5da98283f70c7d7e8ef99593657c1910c18c0bdc03ad4eb6c3b0d48a"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.8/manifest_commitment_evidence.json",
+      "bytes": 1741,
+      "sha256": "e3f702516edc3ceaae2429f7bb872b74ebf521723167d8eb7a3f0cdc50df660f"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.8/PHASE_REPORT.md",
+      "bytes": 3088,
+      "sha256": "6ce3275fc4c8f7075f0b1817c31f66b7e74ad8c7d4119659f725d13c048bd5cc"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.8/test_summary.json",
+      "bytes": 1501,
+      "sha256": "62f95df2be70dccf833f4d4ef942fc27c076008741ba7ce221b13f30341769ea"
+    }
+  ],
+  "counters": {
+    "locked_test_preparation_accesses": 2,
+    "preparation_files_hashed": 1372,
+    "custodian_manifest_access_sessions": 1,
+    "custodian_files_hashed": 686,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "new_training_runs": 0
+  }
+}

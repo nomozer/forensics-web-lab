@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.8",
+  "generated_at_utc": "2026-10-03T14:47:29.9448348Z",
+  "branch": "research/phase-4c2g-locked-test-execution",
+  "starting_head": "c98f4843f7fad5912cf0f9ca53a662aabb0ce981",
+  "effective_custodian_commit": "a86888dcee20f74de31ef61e54f224dab643740a",
+  "operating_system": "Microsoft Windows NT 10.0.26100.0",
+  "formal_controller_shell": "Windows PowerShell 5.1",
+  "authorization_and_package_preflight": "PASS",
+  "sensitive_manifest_content_in_git": false,
+  "evaluator_invoked": false
+}

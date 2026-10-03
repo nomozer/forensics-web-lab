@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.8",
+  "session_id": "phase4c2g-custodian-a86888d-20261003T143742Z",
+  "controller_process_exit_code": 1,
+  "failure_boundary": "AFTER_RESERVATION_AND_AFTER_ATOMIC_MANIFEST_COMMITMENT",
+  "automatic_retry_performed": false,
+  "automatic_retry_permitted": false,
+  "diagnosis": {
+    "classification": "POST_COMMIT_WATCHDOG_DELETION_READBACK_RACE",
+    "explanation": "The controller sealed and verified the commitment, restored adapters, deleted the recovery task, then observed the task transiently during immediate deletion read-back and returned nonzero. A later elevated read-only adjudication verified the task absent and all cleanup complete.",
+    "sealed_controller_modified_after_session": false
+  },
+  "external_receipts": {
+    "wrapper_receipt_sha256": "7f871bcf18d8479864cda9b0110394944b7d18387890b4e833b88d09e67ffebd",
+    "cleanup_adjudication_receipt_sha256": "2e6a09cfd8d41fc813c03fa6da8c83883b4e84fe0572f12d62df250ca8bb896c"
+  },
+  "cleanup": {
+    "network_restored": true,
+    "restored_adapter_count": 2,
+    "restored_default_route_count": 3,
+    "watchdog_absent": true,
+    "vhdx_dismounted": true,
+    "drive_letter_absent": true,
+    "partial_outputs_present": 0
+  },
+  "final_adjudicated_verdict": "MANIFEST_COMMITMENT_VALID_CLEANUP_VERIFIED_NO_RETRY"
+}
