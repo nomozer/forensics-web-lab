@@ -20,6 +20,7 @@ Thí nghiệm so sánh đối đầu prospective 3 cấu hình (recipes) trên �
 - **Cùng họ classifier**: L2-regularized Logistic Regression (solver L-BFGS, max_iter=1000).
 - **Quy trình chọn siêu tham số đồng nhất**: Lưới $C \in \{10^{-4}, 10^{-3}, 10^{-2}, 10^{-1}, 1, 10, 100\}$ tối ưu hóa trên Macro-F1 trung bình của 4 inner folds; sau đó refit toàn bộ outer-train fold bằng $C^*$ tốt nhất và suy luận một lần trên outer-test fold.
 - **Dự đoán ảnh đơn độc lập**: Mỗi ảnh được trích xuất và phân loại riêng biệt, không dùng ảnh cặp, source ID, đường dẫn hay nhãn thật.
+- **Kế toán ngân sách chuẩn hóa**: 420 inner fits (3 recipes $\times$ 5 outer folds $\times$ 4 inner folds $\times$ 7 grid points của $C$) và 15 outer refits, tổng cộng 435 fits. Pilot đã hoàn thành nhóm `visual_control/outer_fold_0` gồm 28 inner fits và 1 outer refit (29 fits). 14 nhóm còn lại gồm 392 inner fits và 14 outer refits (406 fits). Protocol và lưới $C$ giữ nguyên tuyệt đối.
 - **Tiền xử lý độc lập hoàn toàn**: `StandardScaler` được fit độc lập trên từng training fold và transform trên test fold; tuyệt đối không fit trên toàn bộ dataset trước.
 
 ---
@@ -73,7 +74,7 @@ python -m ml.training.run_visual_dsp_ablation --mode full --output-dir data/rese
 
 ### Chạy qua Google Colab
 1. Sử dụng notebook: `notebooks/visual_dsp_ablation_colab.ipynb`.
-2. Đặt code snapshot `phase_visual_dsp_ablation_code.tar.gz` (SHA-256 `fda4feb4...`) và dataset `phase_4c1_binary_n250_reusable.tar` vào thư mục Drive:
+2. Đặt code snapshot `phase_visual_dsp_ablation_code.tar.gz` (SHA-256 `bf61b3c103ad5c4673dadfbe72525c482e61b67676307d33c17e70f34052c160`) và dataset `phase_4c1_binary_n250_reusable.tar` vào thư mục Drive:
    `MyDrive/Colab Notebooks/forensics-web-lab/visual_dsp_ablation/`
 3. Thực thi notebook. Khi kết quả hoàn tất, archive kết quả tự động lưu về Drive.
 

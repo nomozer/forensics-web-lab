@@ -54,8 +54,13 @@ budget:
   outer_folds: 5
   inner_folds: 4
   grid_points: 7
-  total_outer_refits: 15
-  oof_image_predictions: 2046
+  inner_fits_per_outer_fold: 28 # 4 inner folds * 7 grid points
+  total_inner_fits: 420 # 3 recipes * 5 outer folds * 28 inner fits
+  total_outer_refits: 15 # 3 recipes * 5 outer folds
+  total_fits: 435 # 420 inner fits + 15 outer refits
+  pilot_completed_fits: 29 # visual_control outer_fold 0 = 28 inner + 1 outer refit
+  remaining_fits: 406 # 14 outer groups * 29 fits
+  oof_image_predictions: 2046 # 3 recipes * 682 images
 
 artifact_bindings:
   dataset_archive:

@@ -176,3 +176,53 @@ def test_synthetic_outer_fit(tmp_path: Path):
     assert (tmp_path / "fits/dsp_only/outer_0/predictions.csv").is_file()
     assert (tmp_path / "fits/dsp_only/outer_0/model.pt").is_file()
 
+
+def test_evidence_artifacts_consistency():
+    import csv
+
+    evidence_dir = Path("research/evidence/visual_dsp_ablation")
+    if not evidence_dir.is_dir():
+        pytest.skip("Evidence directory not present")
+
+    # Verify oof_metrics.csv
+    oof_path = evidence_dir / "oof_metrics.csv"
+    assert oof_path.is_file()
+    with oof_path.open("r", encoding="utf-8") as f:
+        reader = list(csv.DictReader(f))
+    assert len(reader) == 3
+    recipes = {r["recipe"] for r in reader}
+    assert recipes == {"visual_control", "dsp_only", "visual_dsp_fusion"}
+    for r in reader:
+        assert int(float(r["sources"])) == 341
+        assert int(float(r["samples"])) == 682
+        assert float(r["macro_f1"]) > 0.5
+        assert float(r["auroc"]) > 0.5
+
+    # Verify paired_deltas.csv
+    deltas_path = evidence_dir / "paired_deltas.csv"
+    assert deltas_path.is_file()
+    with deltas_path.open("r", encoding="utf-8") as f:
+        deltas = list(csv.DictReader(f))
+    assert len(deltas) == 3
+
+    # Verify summary JSON
+    summary_path = evidence_dir / "analysis_summary.json"
+    assert summary_path.is_file()
+    with summary_path.open("r", encoding="utf-8") as f:
+        summary = json.load(f)
+    assert summary["sources_evaluated"] == 341
+    assert summary["samples_evaluated"] == 682
+    assert set(summary["metrics_by_recipe"].keys()) == {"visual_control", "dsp_only", "visual_dsp_fusion"}
+    assert len(summary["paired_deltas"]) == 3
+
+    # Verify figures
+    figures_dir = evidence_dir / "figures"
+    for name in ["oof_macro_f1_comparison", "oof_auroc_comparison"]:
+        png = figures_dir / f"{name}.png"
+        svg = figures_dir / f"{name}.svg"
+        assert png.is_file()
+        assert svg.is_file()
+        assert png.stat().st_size > 100
+        assert svg.stat().st_size > 100
+        assert png.read_bytes().startswith(b"\x89PNG")
+        assert "<svg" in svg.read_text(encoding="utf-8")

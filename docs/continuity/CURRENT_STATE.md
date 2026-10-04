@@ -1,7 +1,6 @@
 # Trạng thái Hiện tại: Forensics Web Lab (Current State)
 
 > **Tài liệu đọc đầu tiên bắt buộc cho mọi phiên làm việc AI mới.**<br>
-> **Tài liệu đọc đầu tiên bắt buộc cho mọi phiên làm việc AI mới.**<br>
 > **Documented through execution-package commit**: `9516341e7d7deaf61be4e501d6ce2eba0741c313`<br>
 > **Phase hoàn thành gần nhất**: Phase 4C.2H.2 — Development Nested-CV Artifact Audit and Exploratory OOF Analysis<br>
 > **Phase nghiên cứu hiện tại**: Visual/DSP Ablation Study on Development Cohort (341 sources)<br>
@@ -9,9 +8,12 @@
 > **Base main commit**: `9516341e7d7deaf61be4e501d6ce2eba0741c313` (đồng bộ với origin/main)<br>
 > **Preflight status**: `PREFLIGHT_PASS` (341 development pairs, 682 samples, zero locked-test access, manifest and weights SHA verified)<br>
 > **Pilot status**: `PILOT_PASS` (outer fold 0 visual_control completed in 1.92s, best_C=0.001, Macro-F1=0.5775, AUROC=0.6127, resume idempotency verified)<br>
-> **Code snapshot**: `data/research/local-artifacts/phase_visual_dsp_ablation_code.tar.gz` (SHA-256 `fda4feb4...`)<br>
+> **Budget accounting**: 420 inner fits + 15 outer refits = 435 total fits; pilot completed 28 inner + 1 outer refit (29 fits); full runner completed remaining 392 inner + 14 outer refits (406 fits) in 13.27s; convergence: 435/435 converged (0 warnings)<br>
+> **Ablation OOF results (Macro-F1 / AUROC)**: Visual control `0.5787 / 0.6058`, DSP only `0.5727 / 0.5978`, Visual+DSP fusion `0.5835 / 0.5920`; paired ablation gain $\Delta \text{Macro-F1} = +0.0048$, $\Delta \text{FNR} = -0.0235$, $\Delta \text{ECE} = +0.0575$<br>
+> **Code snapshot**: `data/research/local-artifacts/phase_visual_dsp_ablation_code.tar.gz` (SHA-256 `bf61b3c1...`)<br>
 > **Locked-test status**: `SEALED_AND_RETIRED` (zero access; experiment strictly restricted to 341 development sources)<br>
-> **Next approved action**: Execute remaining 14 outer fits of the full 15-fit ablation matrix (Colab or local), generate full OOF predictions across 3 recipes, run OOF analyzer, and document scientific report.<br>
+> **Verdict**: `DEVELOPMENT_EXPLORATORY_ABLATION_COMPLETE`<br>
+> **Next approved action**: Complete quality gates, commit/push research branch, merge into main via merge commit, verify ancestry on origin/main, and delete branch.<br>
 
 ---
 

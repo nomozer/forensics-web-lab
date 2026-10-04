@@ -219,7 +219,7 @@ graph TD
 | **Continuity Checker Tests** | `scripts/__tests__/continuity-check.test.mjs` | `implemented-and-tested` |
 | **Continuity Contract** | `AGENTS.md` (Mục 4: Continuity Contract) | `contract-enforced` |
 | **CI Continuity Gate** | `.github/workflows/ci.yml` (Model-Agnostic Continuity Check) | `ci-enforced` |
-| **Visual/DSP Ablation Protocol** | `ml/configs/visual_dsp_ablation_protocol.yaml` (prospective 341-source nested CV protocol across visual_control, dsp_only, visual_dsp_fusion) | `protocol-locked` |
+| **Visual/DSP Ablation Protocol** | `ml/configs/visual_dsp_ablation_protocol.yaml` (prospective 341-source nested CV protocol across visual_control, dsp_only, visual_dsp_fusion: 420 inner fits + 15 outer refits = 435 total fits) | `protocol-locked` |
 | **DSP Feature Extractor** | `ml/training/dsp_features.py` (16-dim deterministic DSP feature extractor mirroring packages/forensics: FFT, DCT, Noise, JPEG, Laplacian) | `implemented-and-tested` |
 | **Visual/DSP Ablation Harness** | `ml/training/visual_dsp_ablation.py` (341 development pairs loader, locked-test rejection, 5x4 nested grouped CV, visual/DSP feature caching) | `implemented-and-tested` |
 | **Visual/DSP Ablation Runner** | `ml/training/run_visual_dsp_ablation.py` (CLI runner supporting preflight, pilot, full, resume, nested CV fits with Logistic Regression) | `implemented-and-tested` |

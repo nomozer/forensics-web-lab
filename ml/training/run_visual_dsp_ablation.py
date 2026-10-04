@@ -31,8 +31,10 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Sequence
 
+import warnings
 import numpy as np
 import torch
+from sklearn.exceptions import ConvergenceWarning
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import balanced_accuracy_score, f1_score, roc_auc_score
 from sklearn.preprocessing import StandardScaler
@@ -194,7 +196,20 @@ def run_inner_validation(
                 max_iter=1000,
                 random_state=42,
             )
-            clf.fit(x_train_scaled, y_train)
+            with warnings.catch_warnings(record=True) as caught_warnings:
+                warnings.simplefilter("always", ConvergenceWarning)
+                clf.fit(x_train_scaled, y_train)
+
+            n_iter = int(clf.n_iter_[0]) if hasattr(clf, "n_iter_") else -1
+            conv_warns = [
+                str(w.message) for w in caught_warnings if issubclass(w.category, ConvergenceWarning)
+            ]
+            if n_iter >= clf.max_iter or conv_warns:
+                warn_msg = conv_warns[0] if conv_warns else "max_iter reached"
+                print(
+                    f"[{utc_now()}] [CONVERGENCE_WARNING] Inner fit C={c_val}, "
+                    f"inner_fold={inner_idx}: n_iter={n_iter}/{clf.max_iter}, warning={warn_msg}"
+                )
 
             preds, probs = predict_independent_samples(scaler, clf, x_val)
             metrics = evaluate_binary_predictions(y_val, probs)
@@ -242,7 +257,14 @@ def execute_outer_fit(
             receipt.get("recipe_id") == spec.recipe_id
             and receipt.get("outer_fold") == spec.outer_fold
             and receipt.get("status") == "COMPLETED"
+            and sha256_file(model_path) == receipt.get("model_sha256")
+            and sha256_file(pred_path) == receipt.get("predictions_sha256")
         ):
+            print(
+                f"[{utc_now()}] [RESUME] Verified existing fit: recipe={spec.recipe_id}, "
+                f"outer_fold={spec.outer_fold}, best_C={receipt.get('best_C')}, "
+                f"Macro-F1={receipt['test_metrics']['macro_f1']:.4f}"
+            )
             return receipt
 
     started = time.perf_counter()
@@ -278,7 +300,20 @@ def execute_outer_fit(
         max_iter=1000,
         random_state=42,
     )
-    model.fit(x_train_scaled, y_train)
+    with warnings.catch_warnings(record=True) as caught_warnings:
+        warnings.simplefilter("always", ConvergenceWarning)
+        model.fit(x_train_scaled, y_train)
+
+    outer_n_iter = int(model.n_iter_[0]) if hasattr(model, "n_iter_") else -1
+    outer_conv_warns = [
+        str(w.message) for w in caught_warnings if issubclass(w.category, ConvergenceWarning)
+    ]
+    if outer_n_iter >= model.max_iter or outer_conv_warns:
+        warn_msg = outer_conv_warns[0] if outer_conv_warns else "max_iter reached"
+        print(
+            f"[{utc_now()}] [CONVERGENCE_WARNING] Outer refit recipe={spec.recipe_id}, "
+            f"outer_fold={spec.outer_fold}: n_iter={outer_n_iter}/{model.max_iter}, warning={warn_msg}"
+        )
 
     # Save model weights and scaler parameters
     model_artifact = {
@@ -355,6 +390,9 @@ def execute_outer_fit(
         "test_samples": len(test_rows),
         "test_metrics": test_metrics,
         "inner_cv_history": inner_history,
+        "outer_n_iter": outer_n_iter,
+        "outer_converged": bool(outer_n_iter < model.max_iter and not outer_conv_warns),
+        "outer_convergence_warning": outer_conv_warns[0] if outer_conv_warns else None,
         "fit_wall_seconds": elapsed,
         "created_at_utc": utc_now(),
         "model_sha256": sha256_file(model_path),
@@ -435,10 +473,10 @@ def run_pipeline(
     print(f"[{utc_now()}] Running {mode.upper()} mode with {len(specs)} fit(s)...")
 
     results: list[dict[str, Any]] = []
-    for spec in specs:
+    for idx, spec in enumerate(specs, 1):
         features = get_recipe_feature_matrix(spec.recipe_id, visual_features, dsp_features)
         print(
-            f"[{utc_now()}] Executing fit: recipe={spec.recipe_id}, outer_fold={spec.outer_fold}..."
+            f"[{utc_now()}] [Fit {idx}/{len(specs)}] Executing fit: recipe={spec.recipe_id}, outer_fold={spec.outer_fold}..."
         )
         receipt = execute_outer_fit(
             spec=spec,
