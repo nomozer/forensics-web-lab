@@ -13,6 +13,18 @@ data_scope:
   labels: {authentic: 0, ai_edited: 1}
   statistical_unit: "source_id"
 
+artifact_bindings:
+  dataset_archive:
+    filename: "phase_4c1_binary_n250_reusable.tar"
+    bytes: 724633600
+    sha256: "d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27"
+    manifest_sha256: "411e35da80843a10f7bb22e33efac8a4d1db70110dbda91cadbbf39532c9312d"
+  pretrained_weights:
+    filename: "mobilenet_v3_small-047dcff4.pth"
+    bytes: 10306551
+    sha256: "047dcff4addef86ea5bc2eff13c9614dc11f47ab1160d0a71a25e7db994f4e1f"
+    backbone_state_fingerprint: "d42bb32ad876b9de2b04a6ccd245f76c4d0c6bb3ded74c25261cf14720c7e7d5"
+
 preprocessing:
   input_size: [224, 224]
   interpolation: "bicubic"
@@ -31,6 +43,11 @@ grouped_nested_cv:
 
 training:
   seeds: [42, 1337, 2025]
+  seed_change_from_prior_phase:
+    prior_stage1_and_confirmatory_seeds: [42, 1337, 2025, 3407, 9001]
+    current_development_seeds: [42, 1337, 2025]
+    change: "five seeds reduced to three before Phase 4C.2H official training"
+    rationale: "Bound the 5x4 nested-CV budget while retaining paired recipe comparisons; this is a new development experiment and does not alter the historical five-seed evidence."
   batch_size: 32
   optimizer: "AdamW"
   learning_rate: 0.001
@@ -46,6 +63,11 @@ training:
     name: "FocalLoss"
     gamma: 2.0
     label_smoothing: 0.05
+  frozen_feature_cache:
+    enabled: true
+    construction: "one independent deterministic image forward through the fixed ImageNet backbone in eval mode"
+    label_or_pair_inputs_to_backbone: false
+    reuse_across_recipes_folds_and_seeds: true
 
 recipes:
   - id: "stage1_frozen"
@@ -67,7 +89,15 @@ validation_contract:
   recipe_comparison: "paired per-seed delta of full OOF Macro-F1; exploratory"
   pair_ordering_metric: "secondary exploratory diagnostic only"
 
+pilot:
+  exact_inner_fits:
+    - {recipe_id: "stage1_frozen", seed: 42, outer_fold: 0, inner_fold: 0}
+    - {recipe_id: "stage1_frozen_pair_ranking", seed: 42, outer_fold: 0, inner_fold: 0}
+  inclusion_rule: "A pilot fit counts toward the 120 inner fits only when its exact protocol, code snapshot, dataset, weights, fold memberships, checkpoint, history, metrics, and receipt hashes validate."
+  automatic_retry_on_invalid_completed_fit: false
+
 execution_guard:
-  official_training_authorized: false
+  default_mode: "pilot"
+  full_matrix_requires_explicit_mode_all: true
   locked_test_accesses: 0
   main_branch_mutations: 0
