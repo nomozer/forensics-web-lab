@@ -1,3 +1,19 @@
+## Phase 4C.2G.0.12 — Cross-Component Inventory Contract Hotfix and Recovery Adjudication Preparation
+
+- **Mục tiêu**: Repair the custodian/evaluator inventory mismatch without reopening the consumed authorization or accessing the real locked test; seal an exact replacement package and prepare a human recovery-adjudication request.
+- **Reproduction/root cause**: Production custodian retained root metadata `custodian_inventory.json`, while the evaluator treated every regular root descendant as a sample. The production-to-production fixture reproduced `extra=['custodian_inventory.json']` before the fix.
+- **Hotfix**: Evaluator excludes only that exact regular root metadata path. Arbitrary extras, nested same-name metadata, traversal, symlink/reparse entries, missing samples, tampering, sample hashes, and 343/686 cardinality continue to fail closed.
+- **Synthetic verification**: Production custodian → evaluator validation → five fixture prediction sets → metrics → 10,000-replicate source-cluster PCG64 bootstrap → hash-chained ledger → atomic publication PASS. This is synthetic-only and is not locked-test scientific evidence.
+- **Package**: Effective evaluator/package commit `0658dce`; preserved orchestrator commit `597a79a`; 25-member archive `phase_4c2g_complete_executor_0658dce.tar.gz`, 52,896 bytes, SHA-256 `9ea55d331bff1e0d4e5ef111621733a04926d913b48f0144e238b9aea3dad83b`, external to Git. Exact packaged controller and production-custodian-to-packaged-loader preflight PASS.
+- **Incident preservation**: Prior authorization remains `CONSUMED`; historical ledger/output evidence remains immutable with `PRE_READ_UNSEAL`, one interrupted access session, and 0 evaluation attempts/predictions/metrics. Historical package is preserved and superseded only for future execution.
+- **Recovery request**: `RECOVERY_ADJUDICATION_REQUEST.json` is `PENDING_HUMAN_APPROVAL`, SHA-256 `52861ac098abd3dc7e6b45d30fa7c887dd921eba355b945b3436261d9c773134`; proposes exactly one recovery session and at most five checkpoint attempts, with cumulative access-session count becoming two only if approved and executed. No recovery authorization exists.
+- **Gates**: execution/custodian 49/49 PASS; evaluator 45/45 PASS; exact packaged test PASS; continuity PASS. No locked-test mount/read, network mutation, UAC, real model forward, metric, or training occurred.
+- **Kết quả**: `READY_FOR_HUMAN_RECOVERY_ADJUDICATION`.
+- **Evidence**: `research/evidence/phase-4c.2g.0.12/`.
+- **Quyết định tiếp theo**: Human explicitly approves or rejects the exact recovery request; do not materialize authorization or execute without that approval.
+
+---
+
 ## Phase 4C.2G.0.11 — Authorized Evaluator Session Interruption and Adjudication Hold
 
 - **Mục tiêu**: Execute exactly one user-authorized locked-test evaluator session bound to the Phase 4C.2G.0.10 request/package and publish results regardless of outcome.

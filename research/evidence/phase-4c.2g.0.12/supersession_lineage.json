@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.12",
+  "generated_at_utc": "2026-10-04T01:07:22.932146Z",
+  "historical_package": {
+    "execution_package_commit": "76fbfec84f8fce9b7afd92a266c0d3a7c2f6ca48",
+    "filename": "phase_4c2g_complete_executor_76fbfec.tar.gz",
+    "sha256": "2301238a1148ff0dd237132c1274c962148d601016fd59220cc876748883ea71",
+    "status": "PRESERVED_SUPERSEDED_FOR_ANY_FUTURE_EXECUTION"
+  },
+  "historical_authorization": {
+    "authorization_id": "phase4c2g010-dung-20261003T201057Z",
+    "status": "CONSUMED_REMAINS_CONSUMED_NOT_REACTIVATED",
+    "limits_changed": false
+  },
+  "new_package": {
+    "evaluator_effective_commit": "0658dce11a7790877ae1b0820645d2e5a7e9a710",
+    "execution_package_commit": "0658dce11a7790877ae1b0820645d2e5a7e9a710",
+    "filename": "phase_4c2g_complete_executor_0658dce.tar.gz",
+    "bytes": 52896,
+    "sha256": "9ea55d331bff1e0d4e5ef111621733a04926d913b48f0144e238b9aea3dad83b",
+    "member_count": 25,
+    "storage": "external_to_git",
+    "status": "SEALED_PENDING_RECOVERY_ADJUDICATION"
+  },
+  "new_request": {
+    "relative_path": "research/evidence/phase-4c.2g.0.12/RECOVERY_ADJUDICATION_REQUEST.json",
+    "sha256": "52861ac098abd3dc7e6b45d30fa7c887dd921eba355b945b3436261d9c773134",
+    "status": "PENDING_HUMAN_APPROVAL"
+  },
+  "recovery_authorization_created": false
+}

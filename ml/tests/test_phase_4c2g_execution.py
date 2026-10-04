@@ -1411,6 +1411,97 @@ def test_mixed_commit_package_contains_exact_preflightable_controller(
     assert contract["adapter_cmdlet_contract"]["adapter_mutations"] == 0
 
 
+def test_inventory_hotfix_package_contains_cross_component_compatible_loader(
+    tmp_path: Path,
+) -> None:
+    from scripts.research.build_phase4c2g_execution_package import build_package
+
+    binding_path = (
+        REPO_ROOT
+        / "research/evidence/phase-4c.2g.0.12/evaluator_source_binding.json"
+    )
+    binding = json.loads(binding_path.read_text(encoding="utf-8"))
+    expected_commit = "0658dce11a7790877ae1b0820645d2e5a7e9a710"
+    assert binding["effective_evaluator_commit"] == expected_commit
+    assert binding["execution_package_commit"] == expected_commit
+
+    archive_path = tmp_path / "phase_4c2g_complete_executor_0658dce.tar.gz"
+    audit = build_package(
+        repo_root=REPO_ROOT,
+        output_path=archive_path,
+        effective_execution_commit=expected_commit,
+        execution_package_commit=expected_commit,
+        source_binding_path=binding_path,
+    )
+    assert audit.bytes == 52896
+    assert audit.sha256 == (
+        "9ea55d331bff1e0d4e5ef111621733a04926d913b48f0144e238b9aea3dad83b"
+    )
+
+    extracted = tmp_path / "inventory-hotfix-package"
+    extracted.mkdir()
+    with tarfile.open(archive_path, "r:gz") as archive:
+        archive.extractall(extracted, filter="data")
+
+    fixture_workspace = tmp_path / "packaged-loader-fixture"
+    fixture_workspace.mkdir()
+    fixture = _build_production_custodian_evaluator_fixture(fixture_workspace)
+    manifest_path, receipt = _seal_production_custodian_fixture(fixture)
+    schema_path = extracted / "docs/schemas/locked-test-manifest.v1.schema.json"
+    probe = (
+        "import hashlib,json,sys; "
+        "from pathlib import Path; "
+        "from ml.evaluation.phase_4c2g_dataset import load_locked_test_manifest; "
+        "root,manifest,schema,manifest_sha,split=sys.argv[1:]; "
+        "loaded=load_locked_test_manifest(locked_test_root=Path(root), "
+        "manifest_path=Path(manifest), manifest_schema_path=Path(schema), "
+        "expected_manifest_sha256=manifest_sha, "
+        "expected_schema_sha256=hashlib.sha256(Path(schema).read_bytes()).hexdigest(), "
+        "expected_split_seal=split); "
+        "assert len(loaded.samples)==686; assert len(loaded.source_ids)==343"
+    )
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            probe,
+            str(fixture["root"]),
+            str(manifest_path),
+            str(schema_path),
+            receipt["manifest_sha256"],
+            fixture["split_seal"],
+        ],
+        cwd=extracted,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+
+    controller = (
+        extracted / "scripts/research/RUN_PHASE4C2G_AUTHORIZED_SESSION.ps1"
+    )
+    contract_validation = subprocess.run(
+        [
+            "powershell.exe",
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-File",
+            str(controller),
+            "-ContractValidationOnly",
+        ],
+        cwd=extracted,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert contract_validation.returncode == 0, contract_validation.stderr
+    assert json.loads(contract_validation.stdout)["verdict"] == (
+        "AUTHORIZED_SESSION_CONTRACT_VALID"
+    )
+
+
 def test_real_source_binding_matches_every_effective_commit_git_object() -> None:
     from scripts.research.build_phase4c2g_execution_package import (
         PACKAGE_SOURCE_MEMBERS,

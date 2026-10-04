@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.12",
+  "generated_at_utc": "2026-10-04T01:07:22.932146Z",
+  "archive": {
+    "filename": "phase_4c2g_complete_executor_0658dce.tar.gz",
+    "bytes": 52896,
+    "sha256": "9ea55d331bff1e0d4e5ef111621733a04926d913b48f0144e238b9aea3dad83b",
+    "member_count": 25,
+    "storage": "external_to_git"
+  },
+  "archive_audit": "PASS_25_EXACT_MEMBERS_DATA_CHECKPOINT_AUTHORIZATION_FREE",
+  "source_binding_sha256": "b371d6b8df721b08ea97e7f5add070ed5e959a01cd74e6a71c4eab21c2aa7f5e",
+  "controller_contract_validation": {
+    "runtime": "Windows PowerShell 5.1",
+    "verdict": "AUTHORIZED_SESSION_CONTRACT_VALID",
+    "mutations_performed": 0,
+    "uac_or_readiness_invoked": false
+  },
+  "packaged_loader_round_trip": {
+    "producer": "production_custodian",
+    "consumer": "exact_extracted_package_loader",
+    "sources": 343,
+    "samples": 686,
+    "verdict": "PASS"
+  },
+  "real_locked_test_accesses": 0,
+  "model_forwards": 0
+}

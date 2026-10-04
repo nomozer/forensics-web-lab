@@ -1,0 +1,55 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.12",
+  "classification": "SYNTHETIC_AND_CONTRACT_TESTS_ONLY",
+  "red_reproduction": {
+    "result": "EXPECTED_FAILURE_REPRODUCED",
+    "failures": 1,
+    "error": "Locked-test file inventory mismatch: missing=[], extra=['custodian_inventory.json']"
+  },
+  "post_fix_integration_cases": {
+    "passed": 6,
+    "covered": [
+      "valid production custodian to evaluator round trip",
+      "missing sample rejected",
+      "arbitrary extra file rejected",
+      "nested custodian_inventory.json rejected",
+      "tampered sample rejected",
+      "exact root metadata symlink or reparse rejected"
+    ]
+  },
+  "synthetic_full_pipeline": {
+    "passed": 1,
+    "bootstrap_replicates": 10000,
+    "locked_test_accesses": 0,
+    "real_model_forwards": 0
+  },
+  "final_gates": [
+    {
+      "suite": "test_phase_4c2g_execution.py + test_phase_4c2g_manifest_custodian.py",
+      "passed": 49,
+      "failed": 0,
+      "seconds": 89.62
+    },
+    {
+      "suite": "test_phase_4c2f_evaluator.py",
+      "passed": 45,
+      "failed": 0,
+      "seconds": 7.7
+    },
+    {
+      "suite": "exact packaged controller and cross-component loader test",
+      "passed": 1,
+      "failed": 0,
+      "seconds": 10.32,
+      "also_included_in_execution_suite": true
+    },
+    {
+      "suite": "pnpm continuity:check",
+      "result": "PASS"
+    }
+  ],
+  "ruff": "NOT_AVAILABLE_IN_EXISTING_ML_VIRTUAL_ENVIRONMENT_NO_DEPENDENCY_INSTALLED",
+  "real_locked_test_evaluation": "NOT_RUN",
+  "recovery_authorization_created": false
+}

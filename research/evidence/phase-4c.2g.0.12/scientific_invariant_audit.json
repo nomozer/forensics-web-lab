@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.12",
+  "generated_at_utc": "2026-10-04T01:07:22.932146Z",
+  "verdict": "SCIENTIFIC_PROTOCOL_UNCHANGED_VALIDATION_CONTRACT_ONLY",
+  "effective_evaluator_commit": "0658dce11a7790877ae1b0820645d2e5a7e9a710",
+  "changed_runtime_component": {
+    "name": "phase_4c2g_dataset",
+    "scope": "filesystem inventory validation only",
+    "old_sha256": "3140434a87b415071c7015083f477627e8d46187382640f6191a8da27a3e6e92",
+    "new_sha256": "ee4e190f9cfe9bf6cf2867ee1ca1d6cf48cc9664a06f2f7f72a08f82d97a8543"
+  },
+  "unchanged_component_hashes": {
+    "confirmatory_metrics": "706d120b0f8f00228d352b7ef300a701f0aefbe32de720c33db00145a4b68c3c",
+    "locked_test_evaluator": "dd4f359c0c41d1caef953a345b7ff09817a9f2a17369781278e27c2fe650d902",
+    "phase_4c2g_io": "21a3e3dd9885456077ca658e82b9e35c01cc4c5167014b9bca2d13ee8245466b",
+    "phase_4c2g_model": "0b14080e51888fe26f82dd78265deb0149a0454639d96b9493745e78c65d9404",
+    "phase_4c2g_windows": "e4ab78c5d4479dab0463b0b73f99997331492364d74bf11fd06e06c8fa7b666f",
+    "run_confirmatory_cli": "6ce3abe9e5110c3e85907c9915ddf6c9b85181c13b1573bd06ca0d8e23999ae4",
+    "model_architecture": "b60e936fffebffef42530e92a538ab7c279a027fa3e7e0091a41e3286c780592",
+    "locked_test_manifest_schema": "86036e52513bcbf0a9dd62f7b78fe9c87e47144c35275c19cc5c032046bd5646",
+    "windows_authorized_session_orchestrator": "878456e7f71c7f8755ad6760d163afe199bfaff5fc793b0ffd0ff2a7359f3047"
+  },
+  "checkpoints": {
+    "42": "c941f42ed00adb098962ddb43c0f2f7d897e48e20957cddc0c491243f8730c92",
+    "1337": "69e706f9062f050ccbfd2affb72d63d5dde9d12f02c1e64c762b0ea6719073f1",
+    "2025": "92ce5ee986d487fdf14374842067d0684fc7669f5ecb32c7d603f6813942ceee",
+    "3407": "4897821ef0a97df9f1c51acde8d4ac01d383aa3a7b9e7ee55bbc3b3108847868",
+    "9001": "5f0f8803adcb7eec88d47e398ef8b2002b46e740c263b12abc2ba392822a91c3"
+  },
+  "manifest_commitment": {
+    "status": "COMMITTED_BEFORE_UNSEALING",
+    "sha256": "9d8564bdd64f5d5965e7f5470b322aa0769f4bf45b78ef8547134b07a71d18e7",
+    "bytes": 174337,
+    "source_count": 343,
+    "sample_count": 686
+  },
+  "model_algorithm_changed": false,
+  "preprocessing_changed": false,
+  "threshold_changed": false,
+  "metric_changed": false,
+  "bootstrap_changed": false,
+  "decision_rule_changed": false,
+  "vhdx_rebuilt_or_copied": false,
+  "vhdx_mounted_in_hotfix": false,
+  "locked_test_model_forward_count": 0
+}

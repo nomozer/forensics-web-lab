@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.12",
+  "generated_at_utc": "2026-10-04T01:07:22.932146Z",
+  "classification": "SYNTHETIC_FIXTURE_ONLY_NOT_LOCKED_TEST_EVIDENCE",
+  "pipeline": [
+    "production_custodian_manifest_sealing",
+    "production_evaluator_manifest_validation",
+    "fixture_model_predictions_for_five_registered_seeds",
+    "descriptive_metrics",
+    "source_cluster_bootstrap",
+    "hash_chained_access_ledger",
+    "atomic_publication"
+  ],
+  "fixture_cardinality": {
+    "sources": 343,
+    "samples": 686
+  },
+  "checkpoint_seeds": [
+    42,
+    1337,
+    2025,
+    3407,
+    9001
+  ],
+  "bootstrap": {
+    "replicates": 10000,
+    "rng": "numpy.random.Generator(numpy.random.PCG64)",
+    "seed": 20261002
+  },
+  "result": "PASS",
+  "synthetic_metrics": "GENERATED_AND_VALIDATED_BUT_NOT_SCIENTIFICALLY_INTERPRETABLE",
+  "locked_test_real_accesses_in_hotfix": 0,
+  "locked_test_model_forwards_in_hotfix": 0,
+  "authorization_created": false,
+  "vhdx_mounted": false
+}
