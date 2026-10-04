@@ -1,0 +1,73 @@
+schema_version: "1.0.0"
+phase: "4C.2H.0"
+status: "DEVELOPMENT_PROTOCOL_LOCKED_PRE_TRAINING"
+title: "Development-only grouped nested CV: frozen Stage 1 versus pair-ranking"
+license_track: "research-only"
+
+data_scope:
+  manifest: "data/research/tgif/manifests/manifest_pilot_a_option_p.csv"
+  allowed_partitions: ["development_train", "inner_validation"]
+  forbidden_partitions: ["locked_test"]
+  expected_sources: 341
+  expected_samples: 682
+  labels: {authentic: 0, ai_edited: 1}
+  statistical_unit: "source_id"
+
+preprocessing:
+  input_size: [224, 224]
+  interpolation: "bicubic"
+  normalize_mean: [0.485, 0.456, 0.406]
+  normalize_std: [0.229, 0.224, 0.225]
+  augmentation: "none_canonical_deterministic"
+
+grouped_nested_cv:
+  outer_folds: 5
+  inner_folds: 4
+  outer_assignment_seed: 20261004
+  inner_assignment_seed: 20261005
+  grouping_key: "source_id"
+  inner_selection: "median best epoch across four inner folds, round-half-up"
+  outer_policy: "refit outer-train at selected epoch; predict outer-test once"
+
+training:
+  seeds: [42, 1337, 2025]
+  batch_size: 32
+  optimizer: "AdamW"
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  scheduler: "CosineAnnealingLR"
+  max_epochs: 25
+  early_stopping_patience: 5
+  checkpoint_metric: "inner_validation_macro_f1"
+  backbone: "mobilenet_v3_small_imagenet1k_v1"
+  freeze_backbone: true
+  trainable_modules: ["classifier"]
+  class_loss:
+    name: "FocalLoss"
+    gamma: 2.0
+    label_smoothing: 0.05
+
+recipes:
+  - id: "stage1_frozen"
+    classification_weight: 1.0
+    ranking_weight: 0.0
+    ranking_margin: 0.2
+  - id: "stage1_frozen_pair_ranking"
+    classification_weight: 1.0
+    ranking_weight: 0.25
+    ranking_margin: 0.2
+
+validation_contract:
+  prediction_input: "one image tensor only"
+  forbidden_prediction_inputs: ["paired image", "ground-truth label", "source peer label"]
+  threshold: 0.5
+  oof_assembly: "concatenate the five disjoint outer-test predictions per recipe and seed"
+  per_seed_metrics: ["macro_f1", "balanced_accuracy", "auroc", "brier_score", "ece"]
+  recipe_summary: "arithmetic mean and sample standard deviation across three fixed seeds"
+  recipe_comparison: "paired per-seed delta of full OOF Macro-F1; exploratory"
+  pair_ordering_metric: "secondary exploratory diagnostic only"
+
+execution_guard:
+  official_training_authorized: false
+  locked_test_accesses: 0
+  main_branch_mutations: 0

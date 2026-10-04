@@ -1,3 +1,17 @@
+## Phase 4C.2H.0 — Development Diagnostics and Nested-CV Protocol Lock
+
+- **Mục tiêu**: Diagnose label/preprocessing/gradient/frozen-state/overfit mechanics on development data, then lock a leakage-safe comparison of no more than two recipes before official training.
+- **Observed diagnostics**: 16/16 selected development hashes and strict binary label mapping PASS; canonical preprocessing is bit-identical to the sealed evaluator transform (`max_abs_diff=0.0`); exactly 148,226 classifier parameters receive gradients and no feature parameter does; 8-source/16-image classifier-only smoke reaches 100% after 300 CPU steps (`0.182709 -> 0.059190` loss).
+- **Proved defect and boundary**: Historical `model.train()` changes 102 frozen feature BatchNorm buffers; corrected frozen policy changes 0. This proves a frozen-semantic implementation defect, not that it caused the Phase 4C.2G outcome. Label reversal, preprocessing drift, missing classifier gradients, and tiny-set undercapacity were not supported.
+- **Protocol lock**: Exactly two recipes (corrected frozen baseline; same + pair-ranking weight `0.25`, margin `0.2`), seeds `[42,1337,2025]`, 5 outer x 4 inner source-grouped folds, fixed assignment seeds, median-inner-best-epoch refit rule, independent-image validation, and full OOF aggregation are locked.
+- **Budget**: 120 inner fits + 30 outer refits = 150 planned official fits, maximum 3,750 fit-epochs, 4,092 OOF image predictions. These are planned counts; official training and Colab runtime are not measured. Local development-only reusable-bundle smoke classifier training measured `2.2473s` CPU.
+- **Verification**: 8/8 targeted fixtures PASS; thin Colab development-smoke launcher added. Phase 4C.2G outputs and main unchanged; this phase made 0 locked-test accesses/evaluations and 0 official training runs.
+- **Kết quả**: `DEVELOPMENT_DIAGNOSTICS_COMPLETE_PROTOCOL_LOCKED`.
+- **Evidence**: `research/evidence/phase-4c.2h.0/`.
+- **Next**: Run the locked development matrix separately; collect a new source-disjoint independent validation cohort before any new confirmatory claim.
+
+---
+
 ## Phase 4C.2G.0.14 — Confirmatory Closure and Exploratory Error Analysis
 
 - **Mục tiêu**: Close Phase 4C.2G without changing its experimental result; reconcile existing artifacts, document the wrapper false negative, perform explicitly exploratory confusion/probability/source-error analysis, and propose a development-only next experiment plus a new independent-validation plan.

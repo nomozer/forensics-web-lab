@@ -1,0 +1,365 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "4C.2H.0",
+  "scope": "development-only diagnostic; not official nested-CV training",
+  "locked_test": {
+    "images_read": 0,
+    "model_evaluations": 0,
+    "phase_4c2g_results_modified": false
+  },
+  "runtime": {
+    "python": "3.12.10",
+    "torch": "2.5.1+cu121",
+    "device": "cpu",
+    "wall_seconds": 4.841617199999746
+  },
+  "development_inventory": {
+    "sources": 341,
+    "samples": 682,
+    "partitions": [
+      "development_train",
+      "inner_validation"
+    ],
+    "manifest_rows": 341,
+    "excluded_non_development_rows": 0,
+    "source_membership_commitment": "025cbc4d7990a4ad0a3554507854e2a16d27e04cf2aeef1d8485a2c50e99e6af",
+    "label_map": {
+      "authentic": 0,
+      "ai_edited": 1
+    }
+  },
+  "fold_lock": {
+    "outer_folds": [
+      {
+        "outer_fold": 0,
+        "outer_train_sources": 272,
+        "outer_test_sources": 69,
+        "outer_train_commitment": "faee6d4fce1e19cc1302ff4da3e5648bc8e7fea6251405b0f3795a1847cbb943",
+        "outer_test_commitment": "129825d4a569593dd304f290b0caa623b70f62ce962e89b69c489b5d9036204d",
+        "inner_validation": [
+          {
+            "inner_fold": 0,
+            "sources": 68,
+            "commitment": "24e86be0adcaf178b37c947dc0c34840b219f6a420d0b968e13279742f70c8aa"
+          },
+          {
+            "inner_fold": 1,
+            "sources": 68,
+            "commitment": "db914099933a3d2e87244a729d3f25baa0134edba366d9d3226916360fa69fe9"
+          },
+          {
+            "inner_fold": 2,
+            "sources": 68,
+            "commitment": "7d4b6ad71b35c86513cf357809f3dabb44408f1f65c26badb03e7fd995ef1786"
+          },
+          {
+            "inner_fold": 3,
+            "sources": 68,
+            "commitment": "909fa877fe1008b97f151c2f1c683135210331e6e209db75f54bdb43b0e8312b"
+          }
+        ]
+      },
+      {
+        "outer_fold": 1,
+        "outer_train_sources": 273,
+        "outer_test_sources": 68,
+        "outer_train_commitment": "efcc414ee1ddf23ee13f041bc94ab41d5c25366f22bc8388b5630ce394447dfd",
+        "outer_test_commitment": "f2e72ae753d7cc0c7b36d32336b32712a72873c2b12967eb010f997f021d38ef",
+        "inner_validation": [
+          {
+            "inner_fold": 0,
+            "sources": 69,
+            "commitment": "06f3ff48e7a34996ad45c27bc8016667e031e41c7823c44049c6a1546b0c3637"
+          },
+          {
+            "inner_fold": 1,
+            "sources": 68,
+            "commitment": "19d0b15ea3fde15bd7a32414b7896be4bbad99feaee95cf6354fe6342ee6900b"
+          },
+          {
+            "inner_fold": 2,
+            "sources": 68,
+            "commitment": "9a2d84dcc2640a5418eeca372a6ee612ed7389e1085fb627e360316964a681c2"
+          },
+          {
+            "inner_fold": 3,
+            "sources": 68,
+            "commitment": "a95461a7c44794000247eb1d7163d4bd1c62ebfa9e1ba1b2ec310d10b3866e15"
+          }
+        ]
+      },
+      {
+        "outer_fold": 2,
+        "outer_train_sources": 273,
+        "outer_test_sources": 68,
+        "outer_train_commitment": "a74b7b0789b355c1167735a1ce710cd3b81e542496627e7775bb71f8cc35f4b8",
+        "outer_test_commitment": "451ffcb93fc6759ad4849ed6b641e36bd239a9bb889d6e90f42d107451c0b355",
+        "inner_validation": [
+          {
+            "inner_fold": 0,
+            "sources": 69,
+            "commitment": "20abb6b1af8c4f4cf8f66f9c23be0b4c37e276937faec50d064b6cd3ea907df6"
+          },
+          {
+            "inner_fold": 1,
+            "sources": 68,
+            "commitment": "b157d1a918d07e0c507d0b40f0caf012a4f7716985c730615082848115d154b7"
+          },
+          {
+            "inner_fold": 2,
+            "sources": 68,
+            "commitment": "2118e76b805b877dd178b7f86b1be7145274d3279be91460a2205c63585b914f"
+          },
+          {
+            "inner_fold": 3,
+            "sources": 68,
+            "commitment": "e6a782999e9dd18072acf06f5b60b5f78a446368b95993b0095e00ff555c9bc8"
+          }
+        ]
+      },
+      {
+        "outer_fold": 3,
+        "outer_train_sources": 273,
+        "outer_test_sources": 68,
+        "outer_train_commitment": "fdf6b0b5038a6163f22fa71ef12e2bf739da33de7b1900afaa513f0cfed6d285",
+        "outer_test_commitment": "768f8fce7f5797f35ce599060ca92af8a4752f9147eda5504eb58abe1587e110",
+        "inner_validation": [
+          {
+            "inner_fold": 0,
+            "sources": 69,
+            "commitment": "0d6a540422ed1e2fae8d930c2fe2c14472c95566efe648c6f17af66970c1bbb0"
+          },
+          {
+            "inner_fold": 1,
+            "sources": 68,
+            "commitment": "91de38ea2f7865a56335a45a8c8abafd4b7f69c105511b7c7de03bc233a64ca6"
+          },
+          {
+            "inner_fold": 2,
+            "sources": 68,
+            "commitment": "d1f05a0554c6aa9fb0f93ed517cda54bdd07e2613bb976c6f5b00749af4c2a44"
+          },
+          {
+            "inner_fold": 3,
+            "sources": 68,
+            "commitment": "b88e1eb84616becdb150b6208a17e4dc02fd84790874d43e92a16fcdfeca83f9"
+          }
+        ]
+      },
+      {
+        "outer_fold": 4,
+        "outer_train_sources": 273,
+        "outer_test_sources": 68,
+        "outer_train_commitment": "725823343158a633a3e3e67ccd5da1ad9036d8d3777eff9190f936d3151e88bf",
+        "outer_test_commitment": "f7512ec2a0e164a88c92a28c1897bf6d2dcdc268ef6f448d60a35af711ec526e",
+        "inner_validation": [
+          {
+            "inner_fold": 0,
+            "sources": 69,
+            "commitment": "10b310525fccfdb0eecb2c2f12ec5394714bc2742d4095dcfb8bc2c0edb8ab4c"
+          },
+          {
+            "inner_fold": 1,
+            "sources": 68,
+            "commitment": "6f93b39304b7215931688a191709e3f254266cf4f95885ab7e2d5223c2816656"
+          },
+          {
+            "inner_fold": 2,
+            "sources": 68,
+            "commitment": "2ac035a3ffbe4716d35f32e963f64b1fef356d39aa98cb11598479ddab03d105"
+          },
+          {
+            "inner_fold": 3,
+            "sources": 68,
+            "commitment": "9d751963378fa8386fb2a2bebfaaf18ab713dbde71710847d9b77aca625a3a66"
+          }
+        ]
+      }
+    ]
+  },
+  "planned_training_budget": {
+    "recipes": 2,
+    "seeds": 3,
+    "inner_fits": 120,
+    "outer_refits": 30,
+    "total_fits": 150,
+    "maximum_fit_epochs": 3750,
+    "oof_image_predictions": 4092
+  },
+  "diagnostics": {
+    "label_mapping": {
+      "observed_labels": [
+        "ai_edited",
+        "authentic"
+      ],
+      "smoke_label_counts": {
+        "authentic": 8,
+        "ai_edited": 8
+      },
+      "selected_sample_hashes_verified": 16,
+      "pass": true
+    },
+    "preprocessing": {
+      "canonical_vs_sealed_evaluator_max_abs_diff": 0.0,
+      "pass": true
+    },
+    "trainable_parameters": {
+      "names": [
+        "classifier.0.weight",
+        "classifier.0.bias",
+        "classifier.3.weight",
+        "classifier.3.bias"
+      ],
+      "trainable_parameters": 148226,
+      "frozen_parameters": 927008
+    },
+    "gradients": {
+      "classifier_with_gradient": [
+        "classifier.0.weight",
+        "classifier.0.bias",
+        "classifier.3.weight",
+        "classifier.3.bias"
+      ],
+      "frozen_with_gradient": [],
+      "pass": true
+    },
+    "historical_frozen_buffer_probe": {
+      "changed_feature_buffers": [
+        "0.1.num_batches_tracked",
+        "0.1.running_mean",
+        "0.1.running_var",
+        "1.block.0.1.num_batches_tracked",
+        "1.block.0.1.running_mean",
+        "1.block.0.1.running_var",
+        "1.block.2.1.num_batches_tracked",
+        "1.block.2.1.running_mean",
+        "1.block.2.1.running_var",
+        "10.block.0.1.num_batches_tracked",
+        "10.block.0.1.running_mean",
+        "10.block.0.1.running_var",
+        "10.block.1.1.num_batches_tracked",
+        "10.block.1.1.running_mean",
+        "10.block.1.1.running_var",
+        "10.block.3.1.num_batches_tracked",
+        "10.block.3.1.running_mean",
+        "10.block.3.1.running_var",
+        "11.block.0.1.num_batches_tracked",
+        "11.block.0.1.running_mean",
+        "11.block.0.1.running_var",
+        "11.block.1.1.num_batches_tracked",
+        "11.block.1.1.running_mean",
+        "11.block.1.1.running_var",
+        "11.block.3.1.num_batches_tracked",
+        "11.block.3.1.running_mean",
+        "11.block.3.1.running_var",
+        "12.1.num_batches_tracked",
+        "12.1.running_mean",
+        "12.1.running_var",
+        "2.block.0.1.num_batches_tracked",
+        "2.block.0.1.running_mean",
+        "2.block.0.1.running_var",
+        "2.block.1.1.num_batches_tracked",
+        "2.block.1.1.running_mean",
+        "2.block.1.1.running_var",
+        "2.block.2.1.num_batches_tracked",
+        "2.block.2.1.running_mean",
+        "2.block.2.1.running_var",
+        "3.block.0.1.num_batches_tracked",
+        "3.block.0.1.running_mean",
+        "3.block.0.1.running_var",
+        "3.block.1.1.num_batches_tracked",
+        "3.block.1.1.running_mean",
+        "3.block.1.1.running_var",
+        "3.block.2.1.num_batches_tracked",
+        "3.block.2.1.running_mean",
+        "3.block.2.1.running_var",
+        "4.block.0.1.num_batches_tracked",
+        "4.block.0.1.running_mean",
+        "4.block.0.1.running_var",
+        "4.block.1.1.num_batches_tracked",
+        "4.block.1.1.running_mean",
+        "4.block.1.1.running_var",
+        "4.block.3.1.num_batches_tracked",
+        "4.block.3.1.running_mean",
+        "4.block.3.1.running_var",
+        "5.block.0.1.num_batches_tracked",
+        "5.block.0.1.running_mean",
+        "5.block.0.1.running_var",
+        "5.block.1.1.num_batches_tracked",
+        "5.block.1.1.running_mean",
+        "5.block.1.1.running_var",
+        "5.block.3.1.num_batches_tracked",
+        "5.block.3.1.running_mean",
+        "5.block.3.1.running_var",
+        "6.block.0.1.num_batches_tracked",
+        "6.block.0.1.running_mean",
+        "6.block.0.1.running_var",
+        "6.block.1.1.num_batches_tracked",
+        "6.block.1.1.running_mean",
+        "6.block.1.1.running_var",
+        "6.block.3.1.num_batches_tracked",
+        "6.block.3.1.running_mean",
+        "6.block.3.1.running_var",
+        "7.block.0.1.num_batches_tracked",
+        "7.block.0.1.running_mean",
+        "7.block.0.1.running_var",
+        "7.block.1.1.num_batches_tracked",
+        "7.block.1.1.running_mean",
+        "7.block.1.1.running_var",
+        "7.block.3.1.num_batches_tracked",
+        "7.block.3.1.running_mean",
+        "7.block.3.1.running_var",
+        "8.block.0.1.num_batches_tracked",
+        "8.block.0.1.running_mean",
+        "8.block.0.1.running_var",
+        "8.block.1.1.num_batches_tracked",
+        "8.block.1.1.running_mean",
+        "8.block.1.1.running_var",
+        "8.block.3.1.num_batches_tracked",
+        "8.block.3.1.running_mean",
+        "8.block.3.1.running_var",
+        "9.block.0.1.num_batches_tracked",
+        "9.block.0.1.running_mean",
+        "9.block.0.1.running_var",
+        "9.block.1.1.num_batches_tracked",
+        "9.block.1.1.running_mean",
+        "9.block.1.1.running_var",
+        "9.block.3.1.num_batches_tracked",
+        "9.block.3.1.running_mean",
+        "9.block.3.1.running_var"
+      ],
+      "changed_count": 102,
+      "semantic_violation_reproduced": true
+    },
+    "corrected_frozen_buffer_probe": {
+      "changed_feature_buffers": [],
+      "changed_count": 0,
+      "pass": true
+    },
+    "pair_ranking_gradient_probe": {
+      "loss": 0.30000001192092896,
+      "edit_score_gradient_authentic": 2.0,
+      "edit_score_gradient_edited": -2.0,
+      "correct_direction": true
+    },
+    "tiny_development_overfit": {
+      "sources": 8,
+      "images": 16,
+      "optimizer_steps": 300,
+      "learning_rate": 0.01,
+      "initial_loss": 0.182709202170372,
+      "final_loss": 0.059190135449171066,
+      "initial_accuracy": 0.375,
+      "final_accuracy": 1.0,
+      "training_wall_seconds": 2.247315399999934,
+      "pass": true
+    },
+    "independent_validation_prediction_api": {
+      "accepted_inputs": [
+        "model",
+        "images"
+      ],
+      "pass": true
+    }
+  }
+}
