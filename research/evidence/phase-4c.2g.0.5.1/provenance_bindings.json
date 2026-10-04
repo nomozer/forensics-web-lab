@@ -1,0 +1,64 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.5.1",
+  "generated_at_utc": "2026-10-03T08:05:30Z",
+  "evidence_seal_semantics": {
+    "effective_execution_commit": "2bbb1109c8ab18c9ff7120ef004acd0ba7074716",
+    "execution_package_commit": "2bbb1109c8ab18c9ff7120ef004acd0ba7074716",
+    "binding_model": "functional_commit_then_external_canonical_binding_then_terminal_evidence_seal",
+    "statement": "Runtime and schema bytes are exact Git objects at the functional commit. The archive is bound externally to avoid self-reference. This provenance file intentionally excludes its own digest."
+  },
+  "evidence_file_count": 8,
+  "files": [
+    {
+      "path": "research/evidence/phase-4c.2g.0.5/evaluator_source_binding.json",
+      "bytes": 5283,
+      "sha256": "a96ff4182a7b3c9237a06371f62e99561cb26a0c62ac7d2421953f417df2d820"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.5/execution_authorization_binding.json",
+      "bytes": 5744,
+      "sha256": "513d82b560c4d7df69b6c4cd53666a0e8e1eae2a0434c8034e5f0cdb1f8e35be"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.5.1/environment.json",
+      "bytes": 1178,
+      "sha256": "d387eddb7d6f977ca0e436779e43c420ca5b0b32bb61958bdd97f5bbd622c5fa"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.5.1/git_object_audit.json",
+      "bytes": 1622,
+      "sha256": "2d90cb6809e7faecd738a59faed1f5c17a1bffe6c8c0892c98be5762ed544879"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.5.1/manifest_commitment_audit.json",
+      "bytes": 1131,
+      "sha256": "cb3b2b5650ddaac9a22d85573e49b2ae9f555563ab90f2a01ba3014a6f182289"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.5.1/PHASE_REPORT.md",
+      "bytes": 4208,
+      "sha256": "736d5100b74bf4efe5fb7fb0d5a3de0a0de1e80b0ed82adfcc40ea22c6d3e257"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.5.1/sealed_package_receipt.json",
+      "bytes": 1345,
+      "sha256": "dc5103e7ba7af71078aca3a7c2141f0fe6dc2145eccda9602082e5e003fa06dd"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.5.1/test_summary.json",
+      "bytes": 1913,
+      "sha256": "f6bc93008c61b2c2832b0da2bd5365a01f21077107c2aad0f0095907cea7e818"
+    }
+  ],
+  "real_counters": {
+    "locked_test_real_accesses": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "cpu_inference_calls": 0,
+    "gpu_inference_calls": 0,
+    "new_training_runs": 0
+  },
+  "verdict": "BLOCKED_MANIFEST_COMMITMENT_ABSENT"
+}

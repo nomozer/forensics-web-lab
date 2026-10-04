@@ -1,0 +1,73 @@
+{
+  "timestamp_utc": "2026-10-02T02:15:32.620118+00:00",
+  "generated_at_utc": "2026-10-02T02:15:32.620118+00:00",
+  "clock_source": "SYSTEM_UTC_RUNTIME",
+  "timezone_aware": true,
+  "timestamp_future_check": "PASS",
+  "phase": "Phase 4C.2G.0.3.1",
+  "controller_name": "automated_windows_network_isolation_controller",
+  "controller_version": "1.1.0",
+  "controller_sha256": "c9ec88d5d539ac0f3e8691a2bba1c28d0e66add340b09dd8278758cec9c9891e",
+  "execution_mode": "DryRun",
+  "dry_run_verdict": "DRY_RUN_INSPECTION_PASS",
+  "host_session_type": "Local interactive session verified (Console)",
+  "is_remote_session": false,
+  "is_administrator": false,
+  "summary_counters": {
+    "default_route_owner_count": 2,
+    "initial_disable_target_count": 2,
+    "protected_internal_adapter_count": 4,
+    "unidentified_egress_routes_count": 0,
+    "scheduled_task_subsystem_available": true
+  },
+  "initial_disable_targets": [
+    {
+      "ifIndex": 21,
+      "adapter_name": "Wi-Fi",
+      "adapter_type": "Physical Wi-Fi",
+      "selection_reason": "Owns active default route: 0.0.0.0/0 via 172.16.8.1 metric 0"
+    },
+    {
+      "ifIndex": 12,
+      "adapter_name": "Radmin VPN",
+      "adapter_type": "VPN / Tunnel",
+      "selection_reason": "Owns active default route: 0.0.0.0/0 via 26.0.0.1 metric 9256"
+    }
+  ],
+  "protected_internal_adapters": [
+    {
+      "ifIndex": 16,
+      "adapter_name": "VMware Network Adapter VMnet8",
+      "adapter_type": "Virtual Network (VMware)",
+      "protected_reason": "Internal/virtual adapter with no default or egress route ownership"
+    },
+    {
+      "ifIndex": 5,
+      "adapter_name": "VMware Network Adapter VMnet1",
+      "adapter_type": "Host-Only Virtual Network (VMware)",
+      "protected_reason": "Internal/virtual adapter with no default or egress route ownership"
+    },
+    {
+      "ifIndex": 18,
+      "adapter_name": "vEthernet (Default Switch)",
+      "adapter_type": "Internal Virtual Switch (Hyper-V)",
+      "protected_reason": "Internal/virtual adapter with no default or egress route ownership"
+    },
+    {
+      "ifIndex": 56,
+      "adapter_name": "vEthernet (WSL (Hyper-V firewall))",
+      "adapter_type": "Internal Virtual Switch (WSL)",
+      "protected_reason": "Internal/virtual adapter with no default or egress route ownership"
+    }
+  ],
+  "single_uac_readiness_command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"D:\\Documents\\forensics-web-lab\\scripts\\research\\RUN_PHASE4C2G_AUTOMATED_ISOLATION.ps1\" -ReadinessTest",
+  "real_counters": {
+    "locked_test_real_accesses": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "cpu_inference_calls": 0,
+    "gpu_inference_calls": 0,
+    "new_training_runs": 0
+  }
+}

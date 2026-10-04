@@ -1,0 +1,37 @@
+{
+  "timestamp_utc": "2026-10-02T01:05:48.000000+00:00",
+  "phase": "Phase 4C.2G.0.2",
+  "gate_name": "pre_authorization_offline_runtime_gate",
+  "effective_evaluator_commit": "3cf75c2bf0c9835dd58897b7b36982732cab40ab",
+  "execution_package_commit": "2826a8274cb89ec548d6fac5c8ae50c1c2836202",
+  "hotfix_seal_commit": "54572ae4d6e11dc49110932a0d79e4685a335a0a",
+  "gate_checks": {
+    "detached_execution_worktree_at_2826a82": "PASS",
+    "worktree_porcelain_cleanliness": "PASS",
+    "evaluator_components_exactness": "PASS",
+    "five_checkpoints_bitwise_exactness": "PASS",
+    "pip_check_dependencies": "PASS",
+    "filesystem_disjoint_separation": "PASS",
+    "actual_execution_network_isolation": "USER_PHYSICAL_ACTION_REQUIRED",
+    "locked_test_unmounted_and_sealed": "PASS",
+    "zero_real_counters_preserved": "PASS",
+    "no_unauthorized_artifacts": "PASS"
+  },
+  "real_counters": {
+    "locked_test_real_accesses": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "cpu_inference_calls": 0,
+    "gpu_inference_calls": 0,
+    "new_training_runs": 0
+  },
+  "required_physical_action": "Disconnect all physical network adapters or launch within loopback-only network namespace before human unsealing authorization can be granted.",
+  "gate_verdict": "USER_PHYSICAL_ACTION_REQUIRED",
+  "generated_at_utc": "2026-10-02T01:05:48.000000+00:00",
+  "observation_started_at_utc": "2026-10-02T01:04:45.000000+00:00",
+  "observation_completed_at_utc": "2026-10-02T01:05:48.000000+00:00",
+  "clock_source": "SYSTEM_UTC_RUNTIME",
+  "timezone_aware": true,
+  "timestamp_future_check": "PASS"
+}

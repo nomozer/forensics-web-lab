@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.6",
+  "generated_at_utc": "2026-10-03T09:00:00Z",
+  "gates": [
+    {"command": "python -m pytest ml/tests/test_phase_4c2g_manifest_custodian.py -v", "result": "PASS", "passed": 13, "failed": 0},
+    {"command": "python -m pytest ml/tests -m \"not requires_research_artifact\" -q", "result": "PASS", "passed": 587, "deselected": 131, "failed": 0, "warnings": 3},
+    {"command": "pnpm test", "result": "PASS", "workspace_tests": 57, "continuity_checker_tests": 13},
+    {"command": "pnpm typecheck", "result": "PASS"},
+    {"command": "pnpm build", "result": "PASS", "warning_note": "Existing Vite chunk-size warning only."},
+    {"command": "pnpm continuity:check", "result": "PASS"},
+    {"command": "git diff --check", "result": "PASS"}
+  ],
+  "contract_only": {"controller": "PASS", "uac_or_real_session_run": false, "evaluator_invocations": 0},
+  "real_counters": {
+    "custodian_manifest_access_sessions": 0,
+    "custodian_files_hashed": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0
+  }
+}

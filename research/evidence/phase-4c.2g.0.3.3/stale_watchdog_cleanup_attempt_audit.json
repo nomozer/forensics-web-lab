@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.3.3",
+  "attempt_timestamp_utc": "2026-10-02T11:28:30.000000+00:00",
+  "attempt_timestamp_local": "2026-10-02T18:28:30+07:00",
+  "log_source": "data/research/local-artifacts/phase-4c.2g/automated_isolation_worker.log",
+  "stale_watchdog_delete_succeeded": true,
+  "post_delete_query_task_absent": true,
+  "controller_stopped_due_to_native_stderr_escalation": true,
+  "adapters_actually_disabled": 0,
+  "offline_verifier_invoked": false,
+  "readiness_receipt_created": false,
+  "locked_test_real_accesses": 0,
+  "model_evaluations": 0,
+  "inference_calls": 0,
+  "root_cause": "After successful deletion of stale watchdog scheduled task Phase4C2G_Emergency_Network_Recovery, read-back query via schtasks.exe /query returned non-zero exit code and native stderr 'ERROR: The system cannot find the file specified.' Under $ErrorActionPreference = 'Stop' in Windows PowerShell 5.1, native stderr was escalated into a terminating RemoteException (FullyQualifiedErrorId: NativeCommandError) at line 426, prematurely stopping the controller before watchdog creation or adapter isolation.",
+  "hotfix": "Created Test-ScheduledTaskExists and Remove-ScheduledTaskSafely helpers using ScheduledTasks module (Get-ScheduledTask / Unregister-ScheduledTask) with safe try/finally $ErrorActionPreference handling for schtasks.exe fallback. Prevents native stderr from escalating into a terminating exception on query or deletion.",
+  "verdict": "FAIL_CLOSED_NATIVE_STDERR_ESCALATION_RESOLVED"
+}

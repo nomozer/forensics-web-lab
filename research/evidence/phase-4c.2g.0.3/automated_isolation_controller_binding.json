@@ -1,0 +1,38 @@
+{
+  "timestamp_utc": "2026-10-02T01:53:04.030482+00:00",
+  "generated_at_utc": "2026-10-02T01:53:04.030482+00:00",
+  "clock_source": "SYSTEM_UTC_RUNTIME",
+  "timezone_aware": true,
+  "timestamp_future_check": "PASS",
+  "phase": "Phase 4C.2G.0.3",
+  "binding_name": "automated_windows_network_isolation_controller_binding",
+  "controller_script": {
+    "path": "scripts/research/RUN_PHASE4C2G_AUTOMATED_ISOLATION.ps1",
+    "bytes": 24255,
+    "sha256": "2ba8e03170680b8c46780cf5f81b04426ea2ab7660f107ca951bf83668841952",
+    "version": "1.0.0",
+    "language": "PowerShell"
+  },
+  "modes_supported": [
+    "-DryRun",
+    "-ReadinessTest",
+    "-ElevatedDetachedWorker"
+  ],
+  "contracts": {
+    "session_guard": "fail_closed_on_remote (RDP, SSH, WinRM, CI)",
+    "elevation_guard": "administrator_required_with_uac_detached_dispatch",
+    "watchdog_guard": "10_minute_scheduled_task_emergency_recovery",
+    "network_isolation_mechanism": "exact_egress_allowlist_disable_with_try_finally_restoration",
+    "verifier_binding": "scripts/research/RUN_PHASE4C2G_OFFLINE_VERIFIER.ps1",
+    "receipt_destination": "data/research/local-artifacts/phase-4c.2g/automated_isolation_readiness_receipt.json"
+  },
+  "real_counters": {
+    "locked_test_real_accesses": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "cpu_inference_calls": 0,
+    "gpu_inference_calls": 0,
+    "new_training_runs": 0
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.9",
+  "status": "PENDING_HUMAN_APPROVAL",
+  "presentation_status": "WITHHELD_RUNTIME_PREFLIGHT_BLOCKED",
+  "approval_actionable": false,
+  "generated_at_utc": "2026-10-03T19:06:24.1193805Z",
+  "authorization_type": "one_time_locked_test_confirmatory_evaluation",
+  "candidate_protocol": "stage1_frozen_backbone_linear_probe",
+  "sample_size": 250,
+  "exact_seeds": [42, 1337, 2025, 3407, 9001],
+  "exact_checkpoint_hashes": {
+    "42": "c941f42ed00adb098962ddb43c0f2f7d897e48e20957cddc0c491243f8730c92",
+    "1337": "69e706f9062f050ccbfd2affb72d63d5dde9d12f02c1e64c762b0ea6719073f1",
+    "2025": "92ce5ee986d487fdf14374842067d0684fc7669f5ecb32c7d603f6813942ceee",
+    "3407": "4897821ef0a97df9f1c51acde8d4ac01d383aa3a7b9e7ee55bbc3b3108847868",
+    "9001": "5f0f8803adcb7eec88d47e398ef8b2002b46e740c263b12abc2ba392822a91c3"
+  },
+  "evaluator_effective_commit": "2bbb1109c8ab18c9ff7120ef004acd0ba7074716",
+  "execution_package": {
+    "filename": "phase_4c2g_complete_executor_2bbb110.tar.gz",
+    "sha256": "05c32e11064616bf01a748ac7ea0ec5e089a5980463852d430c0b8c788ee7a2b",
+    "bytes": 45818,
+    "member_count": 25
+  },
+  "authorization_schema": {
+    "relative_path": "docs/schemas/human-unsealing-authorization.v2.schema.json",
+    "sha256": "ee6e72d198646608c25cd6438737c8d625e8a3ce9c28c2ee5925b8516fcd8512",
+    "bytes": 5454
+  },
+  "authorization_component_hashes": {
+    "confirmatory_metrics": "706d120b0f8f00228d352b7ef300a701f0aefbe32de720c33db00145a4b68c3c",
+    "locked_test_evaluator": "dd4f359c0c41d1caef953a345b7ff09817a9f2a17369781278e27c2fe650d902",
+    "phase_4c2g_dataset": "3140434a87b415071c7015083f477627e8d46187382640f6191a8da27a3e6e92",
+    "phase_4c2g_io": "21a3e3dd9885456077ca658e82b9e35c01cc4c5167014b9bca2d13ee8245466b",
+    "phase_4c2g_model": "0b14080e51888fe26f82dd78265deb0149a0454639d96b9493745e78c65d9404",
+    "phase_4c2g_windows": "e4ab78c5d4479dab0463b0b73f99997331492364d74bf11fd06e06c8fa7b666f",
+    "run_confirmatory_cli": "6ce3abe9e5110c3e85907c9915ddf6c9b85181c13b1573bd06ca0d8e23999ae4",
+    "model_architecture": "b60e936fffebffef42530e92a538ab7c279a027fa3e7e0091a41e3286c780592",
+    "locked_test_manifest_schema": "86036e52513bcbf0a9dd62f7b78fe9c87e47144c35275c19cc5c032046bd5646",
+    "windows_authorized_session_orchestrator": "646f5278d3f18ff3dc29ec800df3bcb7ee3332b7563d5f3db1086917167da778"
+  },
+  "locked_test_manifest_commitment": {
+    "status": "COMMITTED_BEFORE_UNSEALING",
+    "sha256": "9d8564bdd64f5d5965e7f5470b322aa0769f4bf45b78ef8547134b07a71d18e7",
+    "bytes": 174337,
+    "source_count": 343,
+    "sample_count": 686
+  },
+  "requested_limits": {
+    "maximum_unsealing_sessions": 1,
+    "maximum_model_evaluation_attempts": 5,
+    "exact_checkpoint_evaluations": 5,
+    "no_tuning": true,
+    "no_training": true,
+    "no_automatic_retry_after_reservation": true,
+    "publish_results_regardless_of_outcome": true
+  },
+  "confirmatory_decision_rule": {
+    "primary_statistic": "mean_macro_f1_across_five_checkpoints",
+    "resampling_unit": "source_id_cluster",
+    "bootstrap_replicates": 10000,
+    "bootstrap_rng": "numpy.random.PCG64",
+    "bootstrap_seed": 20261002,
+    "confidence_interval": "percentile_95_percent",
+    "reference_threshold": 0.5,
+    "success_criterion": "ci_lower_strictly_greater_than_0.5000"
+  },
+  "runtime_preflight_gate": {
+    "status": "BLOCKED_SEALED_ORCHESTRATOR_ADAPTER_PARAMETER_BINDING",
+    "reason": "The sealed controller calls Disable-NetAdapter and Enable-NetAdapter with unsupported -InterfaceIndex parameters on this Windows runtime, including the recovery watchdog path.",
+    "required_before_presentation": "Hotfix only the orchestrator, add a live cmdlet-contract regression, reseal/rebind the package, repeat fixture preflight, and generate a new exact request."
+  },
+  "human_signature_claim": "NONE",
+  "authorization_artifact_created": false,
+  "model_forward_count": 0
+}

@@ -1,0 +1,50 @@
+{
+  "phase": "4C.2G.0",
+  "generated_at_utc": "2026-10-01T19:30:00Z",
+  "protocol": "stage1_frozen_backbone_linear_probe",
+  "branch": "research/phase-4c2g-locked-test-execution",
+  "lineage": {
+    "base_main_commit": "8a379665bc8db3722a46618e47db4806a6ea7244",
+    "phase_4c2e_candidate_selection_commit": "8a379665bc8db3722a46618e47db4806a6ea7244",
+    "phase_4c2e_candidate_checkpoint_binding": {
+      "relative_path": "research/evidence/phase-4c.2e/candidate_checkpoint_binding.json",
+      "bytes": 3519,
+      "sha256": "b1363cb69e393927c6e2340a38e10865d16749939c1c391b28f2842666b31cfb"
+    },
+    "original_evaluator_commit": "656529f04ee8dfcf26e7bb46c757f5cba279326e",
+    "safety_hotfix_commit": "959139e847f56fddd61e7615759f05897d7f5d9b",
+    "phase_4c2f2_effective_commit": "97851a3008c03e2cdeeed22a3cdf896380605a0b",
+    "phase_4c2f2_seal_commit": "35f430f410c77247b1e8bb9bb9559ac615b0cd5b",
+    "final_effective_evaluator_commit": "3cf75c2bf0c9835dd58897b7b36982732cab40ab",
+    "execution_package_commit": "2826a8274cb89ec548d6fac5c8ae50c1c2836202"
+  },
+  "candidate_checkpoints": {
+    "42": "c941f42ed00adb098962ddb43c0f2f7d897e48e20957cddc0c491243f8730c92",
+    "1337": "69e706f9062f050ccbfd2affb72d63d5dde9d12f02c1e64c762b0ea6719073f1",
+    "2025": "92ce5ee986d487fdf14374842067d0684fc7669f5ecb32c7d603f6813942ceee",
+    "3407": "4897821ef0a97df9f1c51acde8d4ac01d383aa3a7b9e7ee55bbc3b3108847868",
+    "9001": "5f0f8803adcb7eec88d47e398ef8b2002b46e740c263b12abc2ba392822a91c3"
+  },
+  "evaluator_components": {
+    "confirmatory_metrics": {
+      "relative_path": "ml/evaluation/confirmatory_metrics.py",
+      "bytes": 15199,
+      "sha256": "bacbb9dc0a230359f1c3bbaece1ce8c19e30ddafa807313480d173a808bde808"
+    },
+    "locked_test_evaluator": {
+      "relative_path": "ml/evaluation/locked_test_evaluator.py",
+      "bytes": 47708,
+      "sha256": "b311e010535600781e52014fb6b675d32d78a558c5fe7e67bd3ec00b6989a5e1"
+    },
+    "run_evaluator_cli": {
+      "relative_path": "ml/evaluation/run_phase_4c2f_evaluator.py",
+      "bytes": 5739,
+      "sha256": "37ed02ff44d8c523150ebb968d2777bba9c2dee8597b3df60efa1fb5bd1e9041"
+    },
+    "authorization_schema": {
+      "relative_path": "docs/schemas/human-unsealing-authorization.v1.schema.json",
+      "bytes": 6143,
+      "sha256": "15291643b2ca2b3d6e3c135957db140e33f7cc65bc11aebc4668f3e105af6734"
+    }
+  }
+}

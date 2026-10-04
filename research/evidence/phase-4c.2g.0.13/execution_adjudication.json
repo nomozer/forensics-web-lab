@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "4C.2G.0.13",
+  "controller_exit_code": 0,
+  "controller_status": "AUTHORIZED_SESSION_COMPLETED",
+  "execution_receipt_status": "COMPLETED_VALID",
+  "outer_wrapper_exit_code": 1,
+  "outer_wrapper_reason": "The local custody wrapper checked for non-contract filename confirmatory_result.json; the sealed controller correctly published aggregate_confirmatory_metrics.json and confirmatory_decision.json.",
+  "outer_wrapper_false_negative": true,
+  "scientific_outputs_complete": true,
+  "sealed_controller_or_evaluator_defect": false,
+  "automatic_retry_performed": false,
+  "automatic_retry_permitted": false,
+  "session_count": 1,
+  "adjudicated_verdict": "COMPLETED_VALID_WITH_OUTER_WRAPPER_FILENAME_FALSE_NEGATIVE"
+}

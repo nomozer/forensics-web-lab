@@ -1,0 +1,34 @@
+{
+  "timestamp_utc": "2026-10-02T01:00:00.000000+00:00",
+  "phase": "Phase 4C.2F.1",
+  "contract_name": "bootstrap_contract",
+  "method": "source_cluster_bootstrap",
+  "resampling_unit": "unique_source_id",
+  "n_replicates": 10000,
+  "rng_generator": "numpy.random.Generator(numpy.random.PCG64(20261002))",
+  "rng_seed": 20261002,
+  "cluster_structure": {
+    "sources_per_replicate": 343,
+    "samples_per_source": 2,
+    "observations_per_replicate": 686,
+    "multiplicity_preservation": "If a source is drawn k times, both samples (authentic and ai_edited) appear exactly k times without deduplication"
+  },
+  "per_replicate_calculation": {
+    "step_1": "Compute individual Macro-F1 for each of the 5 checkpoints on replicate rows",
+    "step_2": "Compute arithmetic mean of the 5 Macro-F1 values",
+    "probability_averaging_allowed": false
+  },
+  "confidence_interval": {
+    "type": "percentile_bootstrap",
+    "nominal_coverage": 0.95,
+    "quantiles": [0.025, 0.975],
+    "quantile_method": "linear",
+    "scope_statement": "Source-sampling uncertainty conditional on the five fixed checkpoints. Does not cover training-seed uncertainty."
+  },
+  "decision_threshold": {
+    "value": 0.5000,
+    "label": "balanced_binary_uninformative_reference",
+    "criterion": "ci_lower > 0.5000"
+  },
+  "synthetic_mode_rule": "When executed on synthetic fixtures, output verdict is SYNTHETIC_PIPELINE_PASS and confirmatory success is omitted to prevent confusing fixtures with confirmatory evidence."
+}

@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.7",
+  "generated_at_utc": "2026-10-03T14:07:33.2794044Z",
+  "gates": [
+    {"command": "pytest focused PowerShell formal-preflight regression", "result": "PASS", "passed": 1, "failed": 0},
+    {"command": "pytest ml/tests/test_phase_4c2g_manifest_custodian.py", "result": "PASS", "passed": 14, "failed": 0},
+    {"command": "full hermetic ML tests", "result": "PASS", "passed": 588, "deselected": 131, "warnings": 3, "note": "Initial sandbox run had 11 Windows Bash access-denied failures; the required unsandboxed rerun passed."},
+    {"command": "pnpm test", "result": "PASS", "passed": 57, "failed": 0, "continuity_tests_passed": 13},
+    {"command": "pnpm typecheck", "result": "PASS"},
+    {"command": "pnpm build", "result": "PASS", "note": "Existing Vite chunk-size warning only."},
+    {"command": "deterministic custodian archive rebuild", "result": "PASS", "sha256": "05e455a594377e7ad153b7e9513fa33fd2639fca4e884776eaa8de827ac8e302", "bytes": 13610, "member_count": 7},
+    {"command": "pnpm continuity:check", "result": "PASS"},
+    {"command": "git diff --check", "result": "PASS"}
+  ],
+  "real_counters": {
+    "vhdx_preparation_access_attempts": 2,
+    "vhdx_preparation_files_hashed": 1372,
+    "custodian_manifest_access_sessions": 0,
+    "custodian_files_hashed": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0
+  }
+}

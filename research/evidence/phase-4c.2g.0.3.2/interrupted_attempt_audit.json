@@ -1,0 +1,43 @@
+{
+  "timestamp_utc": "2026-10-02T03:08:50.554507+00:00",
+  "generated_at_utc": "2026-10-02T03:08:50.554507+00:00",
+  "clock_source": "SYSTEM_UTC_RUNTIME",
+  "timezone_aware": true,
+  "timestamp_future_check": "PASS",
+  "phase": "Phase 4C.2G.0.3.2",
+  "artifact_name": "interrupted_attempt_audit",
+  "audit_scope": "Forensic audit of interrupted elevated readiness attempt",
+  "execution_stage_reached": "Step 1: Recovery Script Generation and Validation",
+  "watchdog_created": false,
+  "adapters_disabled": 0,
+  "adapters_status_verified": {
+    "wifi_ifindex_21": "Up / Connected / Untouched",
+    "radmin_vpn_ifindex_12": "Up / Connected / Untouched",
+    "vmnet1_ifindex_5": "Up / Protected Host-Only / Untouched",
+    "vmnet8_ifindex_16": "Up / Protected Host-Only / Untouched",
+    "wsl_ifindex_56": "Up / Protected Virtual Switch / Untouched",
+    "default_switch_ifindex_18": "Up / Protected Virtual Switch / Untouched"
+  },
+  "scheduled_tasks_verified": {
+    "Phase4C2G_Emergency_Network_Recovery": "NOT_FOUND (never created)"
+  },
+  "offline_verifier_invoked": false,
+  "locked_test_real_accesses": 0,
+  "historical_receipt_separation": {
+    "receipt_file": "data/research/local-artifacts/phase-4c.2g/offline_verifier_execution_receipt.json",
+    "historical_timestamp": "2026-10-02T01:26:42Z",
+    "historical_provenance": "Phase 4C.2G.0.2B offline verifier dry test run",
+    "status": "HISTORICAL_ONLY",
+    "interrupted_run_association": "NONE"
+  },
+  "interrupted_attempt_verdict": "FAIL_CLOSED_SAFE_PRIOR_TO_ISOLATION",
+  "real_counters": {
+    "locked_test_real_accesses": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "cpu_inference_calls": 0,
+    "gpu_inference_calls": 0,
+    "new_training_runs": 0
+  }
+}

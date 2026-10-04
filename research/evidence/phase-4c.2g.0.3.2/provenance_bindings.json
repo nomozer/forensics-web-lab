@@ -1,0 +1,60 @@
+{
+  "timestamp_utc": "2026-10-02T03:08:50.554507+00:00",
+  "generated_at_utc": "2026-10-02T03:08:50.554507+00:00",
+  "clock_source": "SYSTEM_UTC_RUNTIME",
+  "timezone_aware": true,
+  "timestamp_future_check": "PASS",
+  "phase": "Phase 4C.2G.0.3.2",
+  "binding_name": "phase_4c2g032_recovery_syntax_fix_provenance_binding",
+  "files": {
+    "run_phase4c2g_automated_isolation_ps1": {
+      "path": "scripts/research/RUN_PHASE4C2G_AUTOMATED_ISOLATION.ps1",
+      "bytes": 47146,
+      "sha256": "ba7a3d430f5bec49fdc95155890b9b5df86a3eac5237adf12e7ec7c94411b462"
+    },
+    "recovery_script_root_cause_json": {
+      "path": "research/evidence/phase-4c.2g.0.3.2/recovery_script_root_cause.json",
+      "bytes": 2834,
+      "sha256": "0e44826a2e6fce65f04b29b04bac359d6b0da476a5cb3abbd4cae64b95459b71"
+    },
+    "interrupted_attempt_audit_json": {
+      "path": "research/evidence/phase-4c.2g.0.3.2/interrupted_attempt_audit.json",
+      "bytes": 1805,
+      "sha256": "08079789cc4d3647873f3e1828fd81bf508cce293363e2db66743f86bd899380"
+    },
+    "timestamp_correction_json": {
+      "path": "research/evidence/phase-4c.2g.0.3.2/timestamp_correction.json",
+      "bytes": 1595,
+      "sha256": "74027e9cb6ee69e4f0ef97eab3f243f5a840dc467c31ccba383d7cfa4a8d4e55"
+    },
+    "generated_recovery_ast_test_receipt_json": {
+      "path": "research/evidence/phase-4c.2g.0.3.2/generated_recovery_ast_test_receipt.json",
+      "bytes": 1940,
+      "sha256": "280ba7ceb4a6e085e0e716f0cf21eb95aa589e6722420121792a370f4ca4b2b7"
+    },
+    "controller_source_binding_json": {
+      "path": "research/evidence/phase-4c.2g.0.3.2/controller_source_binding.json",
+      "bytes": 1466,
+      "sha256": "f092be3b6a88e4135e2d00817c2edaf84f26c0c6086fe46c2ab2ade870da2aea"
+    },
+    "environment_json": {
+      "path": "research/evidence/phase-4c.2g.0.3.2/environment.json",
+      "bytes": 1383,
+      "sha256": "e14056b06d28f5c9cb32c695b3537eaf717d3e6e1e67960034b4746a2584eab8"
+    },
+    "phase_report_md": {
+      "path": "research/evidence/phase-4c.2g.0.3.2/PHASE_REPORT.md",
+      "bytes": 7751,
+      "sha256": "ac5ccec0e96ab4acb8c7000b40720251f8ce236d9b438c1b6d9167da5115cb8f"
+    }
+  },
+  "real_counters": {
+    "locked_test_real_accesses": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "cpu_inference_calls": 0,
+    "gpu_inference_calls": 0,
+    "new_training_runs": 0
+  }
+}

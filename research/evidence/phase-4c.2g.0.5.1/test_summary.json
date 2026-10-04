@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.5.1",
+  "generated_at_utc": "2026-10-03T08:05:30Z",
+  "gates": [
+    {
+      "command": "python -m pytest ml/tests/test_phase_4c2g_execution.py -v",
+      "result": "PASS",
+      "passed": 24,
+      "failed": 0
+    },
+    {
+      "command": "python -m pytest ml/tests/test_phase_4c2f_evaluator.py -v",
+      "result": "PASS",
+      "passed": 45,
+      "failed": 0
+    },
+    {
+      "command": "python -m pytest ml/tests/test_phase_4c2e_preregistration.py -v",
+      "result": "PASS",
+      "passed": 30,
+      "failed": 0
+    },
+    {
+      "command": "python -m pytest ml/tests -m \"not requires_research_artifact\" -q",
+      "result": "PASS",
+      "passed": 574,
+      "failed": 0,
+      "deselected": 131,
+      "warnings": 3,
+      "environment_note": "The unchanged suite was rerun outside the sandbox after 11 Git Bash subprocess tests received Windows E_ACCESSDENIED in the sandbox; the rerun passed all 574 selected tests."
+    },
+    {
+      "command": "pnpm test",
+      "result": "PASS",
+      "workspace_tests": 57,
+      "continuity_checker_tests": 13
+    },
+    {"command": "pnpm typecheck", "result": "PASS"},
+    {
+      "command": "pnpm build",
+      "result": "PASS",
+      "warnings": 1,
+      "warning_note": "Existing Vite chunk-size warning; build completed successfully."
+    },
+    {"command": "pnpm continuity:check", "result": "PASS"},
+    {"command": "git diff --check", "result": "PASS"}
+  ],
+  "contract_validation_only": {
+    "windows_authorized_session_orchestrator": "PASS",
+    "readiness_or_uac_run": false,
+    "scientific_inference_run": false
+  },
+  "real_counters": {
+    "locked_test_real_accesses": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "cpu_inference_calls": 0,
+    "gpu_inference_calls": 0,
+    "new_training_runs": 0
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.5",
+  "generated_at_utc": "2026-10-02T20:26:56.7409559Z",
+  "corrected_phase": "Phase 4C.2G.0.4",
+  "correction": {
+    "human_approval_statement_received": false,
+    "authorization_artifact_created": false,
+    "authorization_consumed": false,
+    "canonical_statement": "No explicit user-authored authorization statement has been received. The assistant previously supplied example authorization wording, which does not constitute human approval."
+  },
+  "corrected_files": [
+    {
+      "path": "research/evidence/phase-4c.2g.0.4/environment.json",
+      "bytes": 1298,
+      "sha256": "47099964d673fa15a657635be15f8e9535c8687b4014bbb668e9439494a0255f"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.4/PHASE_REPORT.md",
+      "bytes": 4294,
+      "sha256": "db97ab10cab178d4314b53371ca44a91600d833739c87ae9b2f5823323acf0a6"
+    }
+  ],
+  "repository_scan": {
+    "forbidden_approval_claim_matches": 0,
+    "authorization_artifact_present": false
+  },
+  "preserved_measurements": {
+    "readiness_retry": "PASS",
+    "locked_test_real_accesses": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0
+  }
+}

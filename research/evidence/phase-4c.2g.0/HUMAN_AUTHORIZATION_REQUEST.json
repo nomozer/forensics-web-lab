@@ -1,0 +1,46 @@
+{
+  "status": "PENDING_HUMAN_APPROVAL",
+  "authorization_id": "auth-req-2026-phase4c2g-001",
+  "requested_at_utc": "2026-10-01T19:30:00Z",
+  "candidate_protocol": "stage1_frozen_backbone_linear_probe",
+  "sample_size": 250,
+  "exact_seeds": [
+    42,
+    1337,
+    2025,
+    3407,
+    9001
+  ],
+  "exact_checkpoint_hashes": {
+    "42": "c941f42ed00adb098962ddb43c0f2f7d897e48e20957cddc0c491243f8730c92",
+    "1337": "69e706f9062f050ccbfd2affb72d63d5dde9d12f02c1e64c762b0ea6719073f1",
+    "2025": "92ce5ee986d487fdf14374842067d0684fc7669f5ecb32c7d603f6813942ceee",
+    "3407": "4897821ef0a97df9f1c51acde8d4ac01d383aa3a7b9e7ee55bbc3b3108847868",
+    "9001": "5f0f8803adcb7eec88d47e398ef8b2002b46e740c263b12abc2ba392822a91c3"
+  },
+  "final_effective_evaluator_commit": "3cf75c2bf0c9835dd58897b7b36982732cab40ab",
+  "execution_package_commit": "2826a8274cb89ec548d6fac5c8ae50c1c2836202",
+  "authorization_schema_sha256": "15291643b2ca2b3d6e3c135957db140e33f7cc65bc11aebc4668f3e105af6734",
+  "evaluator_component_hashes": {
+    "confirmatory_metrics": "bacbb9dc0a230359f1c3bbaece1ce8c19e30ddafa807313480d173a808bde808",
+    "locked_test_evaluator": "b311e010535600781e52014fb6b675d32d78a558c5fe7e67bd3ec00b6989a5e1",
+    "run_evaluator_cli": "37ed02ff44d8c523150ebb968d2777bba9c2dee8597b3df60efa1fb5bd1e9041"
+  },
+  "maximum_unsealing_sessions": 1,
+  "maximum_model_evaluation_attempts": 5,
+  "no_tuning_acknowledgment": true,
+  "no_retry_after_reserved_attempt": true,
+  "output_directory": "research/results/phase-4c.2g.1",
+  "offline_runtime_requirement": "Must be executed with complete physical or namespace network isolation; zero external socket probes",
+  "readonly_locked_test_requirement": "Locked-test filesystem must be mounted strictly read-only; non-mutating mount verification (statvfs, metadata, disjoint path) required without canary writes",
+  "authorization_expiry_proposal": {
+    "policy": "single_session_only"
+  },
+  "exact_scientific_decision_rule": {
+    "metric": "aggregate_macro_f1 across 5 checkpoints on source-cluster bootstrap (10,000 replicates)",
+    "reference_threshold": 0.5000,
+    "reference_label": "balanced_binary_uninformative_reference",
+    "criterion": "95% Percentile Bootstrap CI lower bound > 0.5000"
+  },
+  "critical_warning": "CRITICAL GOVERNANCE WARNING: Approval of this request into HUMAN_UNSEALING_AUTHORIZATION.json authorizes the very first unsealing and physical reading of the locked-test partition. Once unsealed, the test set is consumed and can never be reused for confirmatory claims. Unfavorable results MUST be reported."
+}

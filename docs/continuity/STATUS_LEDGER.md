@@ -1,3 +1,375 @@
+## Phase 4C.2H.2 — Development Nested-CV Artifact Audit and Exploratory OOF Analysis
+
+- **Mục tiêu**: Audit the completed 150-fit Colab T4 development matrix and report full-OOF comparison of the frozen baseline vs pair-ranking recipe, strictly as development/exploratory evidence separate from the closed Phase 4C.2G locked test.
+- **Audit**: 636 files hashed; 480/480 declared artifact hashes; 150/150 receipt/checkpoint bindings (120 inner + 30 outer); 30/30 outer epochs equal the round-half-up median of four inner best epochs; fold lock independently reconstructed; six OOF cells each exactly 341 sources/682 unique samples. Source commit `75568d1`, code archive SHA-256 `2bd39387...`.
+- **Result (per seed 42/1337/2025, Macro-F1)**: frozen `0.558893/0.564770/0.572953` (mean `0.565539 ± 0.007061`); pair-ranking `0.571914/0.561654/0.566553` (mean `0.566707 ± 0.005132`). Paired delta `+0.013021/-0.003115/-0.006400`, mean `+0.001168 ± 0.010395`, 1/3 seeds positive. FPR/FNR shifts are strongly seed-dependent. No inferential test was run; n=3 seeds.
+- **Verification**: Analyzer rerun against raw artifacts reproduced all CSV/JSON/figures byte-for-byte; report now derives verdict/counts from data and adds an explicit non-comparability section vs the locked test (0.5138, CI lower 0.4998). 8/8 targeted tests PASS; 0 locked-test accesses, 0 new training, 0 new inference; raw artifacts untouched.
+- **Kết quả**: `NO_CONSISTENT_EXPLORATORY_PAIR_RANKING_IMPROVEMENT`.
+- **Evidence**: `research/evidence/phase-4c.2h.2/`.
+- **Next**: Collect a new independent source-disjoint validation set before any confirmatory claim; the retired locked test must not be reused.
+
+---
+
+## Phase 4C.2H.1 — Official Runner and Colab Pilot Readiness
+
+- **Mục tiêu**: Implement the locked 120-inner/30-outer development runner, seal an exact self-contained Colab snapshot, and prepare the two-fit runtime pilot without launching the full experiment.
+- **Execution contract**: Both recipes reuse the same independently constructed frozen-backbone feature cache with BatchNorm in eval mode. Inner best epochs use only inner-validation Macro-F1; outer refits use the round-half-up median of four inner epochs and create outer predictions only after refit. Per-image predictions cannot accept peer images or labels.
+- **Seeds/budget**: New development experiment remains prospectively locked to `[42,1337,2025]`, reduced from the historical five seeds before official training. Budget is 120 inner + 30 outer = 150 fits; pilot is exactly two official inner fits at outer 0 / inner 0 / seed 42, one per recipe.
+- **Snapshot**: Source commit `75568d1`; archive `phase_4c2h_code_75568d1.tar.gz`, 9,509,956 bytes, SHA-256 `2bd393873be3291084f86a329a34566bd9aa46c0efd8aa9f155e47571b132c18`; deterministic rebuild and exact packaged import PASS.
+- **Verification**: 12/12 targeted tests PASS. Exact packaged preflight on 341 sources/682 samples PASS; CPU feature-cache build `51.0809s`, validated resume reused it; completed official fits remain 0/150 and pilot fit runtime is not measured.
+- **Kết quả**: `READY_FOR_COLAB_TWO_FIT_PILOT`.
+- **Evidence**: `research/evidence/phase-4c.2h.1/`.
+- **Next**: Upload exact archive/notebook, run only the two-fit Colab pilot, preserve receipts, and review measured runtime before explicitly enabling the remaining matrix.
+
+---
+
+## Phase 4C.2H.0 — Development Diagnostics and Nested-CV Protocol Lock
+
+- **Mục tiêu**: Diagnose label/preprocessing/gradient/frozen-state/overfit mechanics on development data, then lock a leakage-safe comparison of no more than two recipes before official training.
+- **Observed diagnostics**: 16/16 selected development hashes and strict binary label mapping PASS; canonical preprocessing is bit-identical to the sealed evaluator transform (`max_abs_diff=0.0`); exactly 148,226 classifier parameters receive gradients and no feature parameter does; 8-source/16-image classifier-only smoke reaches 100% after 300 CPU steps (`0.182709 -> 0.059190` loss).
+- **Proved defect and boundary**: Historical `model.train()` changes 102 frozen feature BatchNorm buffers; corrected frozen policy changes 0. This proves a frozen-semantic implementation defect, not that it caused the Phase 4C.2G outcome. Label reversal, preprocessing drift, missing classifier gradients, and tiny-set undercapacity were not supported.
+- **Protocol lock**: Exactly two recipes (corrected frozen baseline; same + pair-ranking weight `0.25`, margin `0.2`), seeds `[42,1337,2025]`, 5 outer x 4 inner source-grouped folds, fixed assignment seeds, median-inner-best-epoch refit rule, independent-image validation, and full OOF aggregation are locked.
+- **Budget**: 120 inner fits + 30 outer refits = 150 planned official fits, maximum 3,750 fit-epochs, 4,092 OOF image predictions. These are planned counts; official training and Colab runtime are not measured. Local development-only reusable-bundle smoke classifier training measured `2.2473s` CPU.
+- **Verification**: 8/8 targeted fixtures PASS; thin Colab development-smoke launcher added. Phase 4C.2G outputs and main unchanged; this phase made 0 locked-test accesses/evaluations and 0 official training runs.
+- **Kết quả**: `DEVELOPMENT_DIAGNOSTICS_COMPLETE_PROTOCOL_LOCKED`.
+- **Evidence**: `research/evidence/phase-4c.2h.0/`.
+- **Next**: Run the locked development matrix separately; collect a new source-disjoint independent validation cohort before any new confirmatory claim.
+
+---
+
+## Phase 4C.2G.0.14 — Confirmatory Closure and Exploratory Error Analysis
+
+- **Mục tiêu**: Close Phase 4C.2G without changing its experimental result; reconcile existing artifacts, document the wrapper false negative, perform explicitly exploratory confusion/probability/source-error analysis, and propose a development-only next experiment plus a new independent-validation plan.
+- **Reconciliation**: 20/20 evaluator-output and 22/22 session checksum entries PASS; five 686-record prediction files have identical sample identity/order; all per-checkpoint metrics and confusion matrices recompute exactly from stored logits; aggregate Macro-F1 `0.513835085980773` matches; stored bootstrap summary is cross-file consistent and was not rerun; inputs remained byte-identical.
+- **Wrapper adjudication**: Outer exit 1 is a false negative caused by checking absent non-contract `confirmatory_result.json`; sealed controller exit 0, `COMPLETED_VALID`, canonical metrics/decision artifacts, and cleanup evidence remain valid. No retry and no scientific impact.
+- **Exploratory findings**: Non-independent pooled FPR/FNR `0.5732/0.3773`; pooled authentic/edited mean probabilities `0.506081/0.511111`; `82.9738%` of scores in `[0.45,0.55)`; 339/343 sources have at least one error across ten decisions, 215 have exactly 5/10 errors, and 189 show cross-seed prediction instability. These are post-hoc and not confirmatory.
+- **Counters**: New inference = 0; new training = 0; bootstrap reruns = 0; tuning/model selection = 0. Raw source/sample/path identifiers are not published.
+- **Kết quả**: `PHASE_4C2G_CLOSED_INSUFFICIENT_CONFIRMATORY_EVIDENCE`; original mean/CI/verdict remain unchanged.
+- **Evidence**: `research/evidence/phase-4c.2g.0.14/`; reproducible analyzer and two regression tests added.
+- **Quyết định tiếp theo**: New preregistered development-only grouped nested-CV work. A future confirmatory claim requires a newly acquired source-disjoint cohort, independent sealing, and separate one-session authorization; the Phase 4C.2G locked test is retired from tuning and selection.
+
+---
+
+## Phase 4C.2G.0.13 — Authorized Recovery Evaluator Session and Confirmatory Result
+
+- **Mục tiêu**: Execute exactly one directly approved recovery evaluator session using the exact `0658dce` package, publish the preregistered result regardless of outcome, preserve cumulative incident history, and verify cleanup.
+- **Authorization/bindings**: Request SHA-256 `52861ac0...`; external authorization `phase4c2g012-recovery-dung-20261004T024159Z` consumed once with identity `dung` and no cryptographic-signature claim; archive SHA-256 `9ea55d33...`; manifest SHA-256 `9d8564bd...`; all 22 components and five checkpoint hashes PASS.
+- **Execution**: Existing VHDX reused and mounted OS-enforced read-only under verified zero-route isolation. Five CPU attempts completed the fixed checkpoints `[42, 1337, 2025, 3407, 9001]`, 686 predictions each, with no retry/training/tuning/calibration fitting/best-seed selection/ensemble.
+- **Result**: Per-seed Macro-F1 `[0.524055881, 0.471988306, 0.530576335, 0.507791924, 0.534762985]`; arithmetic mean `0.513835085980773`; 10,000-replicate source-cluster PCG64(20261002) percentile 95% CI `[0.49976282750638307, 0.5273360991798881]`; lower bound does not exceed `0.5000`, so verdict `INSUFFICIENT_CONFIRMATORY_EVIDENCE`.
+- **Audit/counters**: Output and session checksum indices PASS; 12-entry ledger hash chain PASS. Cumulative history: 2 evaluator access sessions (1 interrupted + 1 completed recovery), 5 attempts, 5 completed model evaluations; no reset and no retry.
+- **Cleanup**: Controller exit 0; independent elevated read-back confirms network restored, Wi-Fi/Radmin VPN Up, watchdog absent, VHDX detached, and `R:` absent. Outer wrapper exit 1 was a non-contract filename false negative and did not trigger retry.
+- **Kết quả**: `LOCKED_TEST_CONFIRMATORY_EVALUATION_COMPLETE_INSUFFICIENT_CONFIRMATORY_EVIDENCE`.
+- **Evidence**: `research/evidence/phase-4c.2g.0.13/`; raw authorization, manifest, dataset, checkpoints, predictions, and ledgers remain external to Git.
+- **Quyết định tiếp theo**: Preserve/report the fixed result. Any future model development or evaluation requires a separately scoped phase and cannot rerun or reinterpret this confirmatory session.
+
+---
+
+## Phase 4C.2G.0.12 — Cross-Component Inventory Contract Hotfix and Recovery Adjudication Preparation
+
+- **Mục tiêu**: Repair the custodian/evaluator inventory mismatch without reopening the consumed authorization or accessing the real locked test; seal an exact replacement package and prepare a human recovery-adjudication request.
+- **Reproduction/root cause**: Production custodian retained root metadata `custodian_inventory.json`, while the evaluator treated every regular root descendant as a sample. The production-to-production fixture reproduced `extra=['custodian_inventory.json']` before the fix.
+- **Hotfix**: Evaluator excludes only that exact regular root metadata path. Arbitrary extras, nested same-name metadata, traversal, symlink/reparse entries, missing samples, tampering, sample hashes, and 343/686 cardinality continue to fail closed.
+- **Synthetic verification**: Production custodian → evaluator validation → five fixture prediction sets → metrics → 10,000-replicate source-cluster PCG64 bootstrap → hash-chained ledger → atomic publication PASS. This is synthetic-only and is not locked-test scientific evidence.
+- **Package**: Effective evaluator/package commit `0658dce`; preserved orchestrator commit `597a79a`; 25-member archive `phase_4c2g_complete_executor_0658dce.tar.gz`, 52,896 bytes, SHA-256 `9ea55d331bff1e0d4e5ef111621733a04926d913b48f0144e238b9aea3dad83b`, external to Git. Exact packaged controller and production-custodian-to-packaged-loader preflight PASS.
+- **Incident preservation**: Prior authorization remains `CONSUMED`; historical ledger/output evidence remains immutable with `PRE_READ_UNSEAL`, one interrupted access session, and 0 evaluation attempts/predictions/metrics. Historical package is preserved and superseded only for future execution.
+- **Recovery request**: `RECOVERY_ADJUDICATION_REQUEST.json` is `PENDING_HUMAN_APPROVAL`, SHA-256 `52861ac098abd3dc7e6b45d30fa7c887dd921eba355b945b3436261d9c773134`; proposes exactly one recovery session and at most five checkpoint attempts, with cumulative access-session count becoming two only if approved and executed. No recovery authorization exists.
+- **Gates**: execution/custodian 49/49 PASS; evaluator 45/45 PASS; exact packaged test PASS; continuity PASS. No locked-test mount/read, network mutation, UAC, real model forward, metric, or training occurred.
+- **Kết quả**: `READY_FOR_HUMAN_RECOVERY_ADJUDICATION`.
+- **Evidence**: `research/evidence/phase-4c.2g.0.12/`.
+- **Quyết định tiếp theo**: Human explicitly approves or rejects the exact recovery request; do not materialize authorization or execute without that approval.
+
+---
+
+## Phase 4C.2G.0.11 — Authorized Evaluator Session Interruption and Adjudication Hold
+
+- **Mục tiêu**: Execute exactly one user-authorized locked-test evaluator session bound to the Phase 4C.2G.0.10 request/package and publish results regardless of outcome.
+- **Authorization**: External authorization `phase4c2g010-dung-20261003T201057Z`, 2,812 bytes, SHA-256 `0de21d06...`; user-supplied identity `dung`, no cryptographic-signature claim; exact packaged preflight PASS.
+- **Runtime**: Existing VHDX reused and mounted `IsReadOnly=True`; fresh network-isolation and read-only receipts PASS; exact package/controller/manifest/checkpoint bindings verified.
+- **Interruption**: After `PRE_READ_UNSEAL`, evaluator rejected `custodian_inventory.json` as an extra locked-test file. Custodian intentionally excludes this metadata file while evaluator enumerates it; hash-chained ledger recorded `SESSION_INTERRUPTED`.
+- **Counters**: completed/interrupted unsealing sessions = 1/1; evaluation attempts = 0; completed model evaluations = 0; CPU/GPU inference = 0/0. Per-checkpoint metrics, aggregate Macro-F1, bootstrap CI, and confirmatory verdict are `NOT_EVALUATED`.
+- **Cleanup**: Network restored with 3 default routes; Wi-Fi/Radmin VPN Up; watchdog absent; VHDX detached; `R:` absent; no retry.
+- **Kết quả**: `BLOCKED_AUTHORIZATION_CONSUMED_CUSTODIAN_INVENTORY_METADATA_MISMATCH`.
+- **Evidence**: `research/evidence/phase-4c.2g.0.11/`; raw authorization/runtime outputs remain outside Git.
+- **Quyết định tiếp theo**: Human adjudication and separately authorized narrow evaluator/package correction; this consumed authorization cannot be retried.
+
+---
+
+## Phase 4C.2G.0.10 — Authorized-Session Adapter Hotfix and Package Reseal
+
+- **Mục tiêu**: Repair the sealed executor's Windows adapter parameter binding across isolation, generated recovery, and finally restoration; harden watchdog read-back; reseal and bind an exact package without changing evaluator/scientific artifacts.
+- **Root cause**: At `2bbb110`, the readiness controller already used exact-object pipeline semantics, but the separately authored authorized executor reintroduced 1 direct disable and 2 direct enable `-InterfaceIndex` calls; static-only contract tests missed it.
+- **Hotfix**: Exact ifIndex + Name/InterfaceDescription/MacAddress resolution via `Get-NetAdapter -IncludeHidden`; object pipelines; generated PowerShell 5.1 recovery identity guards; restoration-failure watchdog retention; bounded creation/deletion polling; contract self-tests including redirected child `-WhatIf`.
+- **Commit roles**: evaluator `2bbb110`; orchestrator `597a79a`; execution package `76fbfec`.
+- **Package**: `phase_4c2g_complete_executor_76fbfec.tar.gz`, 52,089 bytes, 25 members, SHA-256 `2301238a1148ff0dd237132c1274c962148d601016fd59220cc876748883ea71`, stored outside Git.
+- **Preflight**: Exact extracted controller PASS on Windows PowerShell 5.1 and PowerShell 7 with one JSON record each; 0 direct adapter parameter calls; recovery/identity/watchdog fixtures PASS; 0 adapter/network/model mutations.
+- **Scientific invariants**: evaluator/checkpoints/manifest unchanged; VHDX present and detached, not copied/rebuilt; custodian session remains 1/686; all evaluation/inference/training counters 0.
+- **Authorization**: New exact request is `PENDING_HUMAN_APPROVAL`; no authorization artifact/signature/consumption, UAC, locked-test read, or inference.
+- **Kết quả**: `READY_FOR_HUMAN_EVALUATOR_AUTHORIZATION`.
+- **Evidence**: `research/evidence/phase-4c.2g.0.10/`.
+- **Quyết định tiếp theo**: Human reviews and explicitly approves or rejects the exact one-session/five-checkpoint request; do not execute before approval.
+
+---
+
+## Phase 4C.2G.0.9 — Evaluator Authorization Preparation and Windows Runtime Preflight
+
+- **Mục tiêu**: Lock exact evaluator/package/components/schema, five Stage 1 N=250 checkpoints, and the completed manifest commitment; run fixture-only Windows readiness checks; prepare but do not activate the one-session evaluator authorization request.
+- **Bindings**: Effective/package commit `2bbb110`; archive 45,818 bytes SHA-256 `05c32e11...`; manifest 174,337 bytes SHA-256 `9d8564bd...`, 343 sources/686 samples; all five checkpoints 5,627,375 bytes and hash-matched with 0 Torch loads/model forwards.
+- **Kiểm tra**: evaluator 45/45 PASS; complete execution 24/24 PASS; sealed controller contract-only PASS; VHDX metadata-only check shows present and detached; exact package/component/schema/manifest audits PASS.
+- **Runtime blocker**: Non-mutating `-WhatIf` probes reproduce `NamedParameterNotFound` for `Disable-NetAdapter -InterfaceIndex` and `Enable-NetAdapter -InterfaceIndex`. The sealed controller uses those invalid calls in isolation, generated watchdog, and restoration.
+- **Authorization**: Exact request draft status `PENDING_HUMAN_APPROVAL`, but `approval_actionable=false` and presentation withheld. No authorization artifact, UAC, network mutation, VHDX mount, locked-test read, reservation, inference, metric, or training occurred.
+- **Counters**: preparation accesses/hashes = 2/1,372; custodian sessions/hashes = 1/686; completed unsealing/model evaluations/evaluation attempts/CPU inference/GPU inference/new training = 0/0/0/0/0/0.
+- **Kết quả**: `BLOCKED_SEALED_ORCHESTRATOR_ADAPTER_PARAMETER_BINDING`.
+- **Evidence**: `research/evidence/phase-4c.2g.0.9/`.
+- **Quyết định tiếp theo**: Authorize a narrow orchestrator-only hotfix; add live cmdlet-contract regression; reseal/rebind and repeat preflight; then produce a fresh exact human evaluator authorization request.
+
+---
+
+## Phase 4C.2G.0.8 — Authorized Manifest Custodian Commitment
+
+- **Mục tiêu**: Materialize the user's exact custodian-only authorization, reuse the prepared VHDX read-only, run exactly one sealed custodian session, and publish redacted commitment/cleanup evidence without evaluator execution.
+- **Authorization**: New external authorization `phase-4c2g0.7-dung-20261003T143742Z`, 1,533 bytes, SHA-256 `ccdff5ed...`, exact package/component preflight PASS; user-supplied identity recorded without cryptographic-signature claim. Prior authorization preserved as `SUPERSEDED_UNCONSUMED`.
+- **Execution**: Existing VHDX reused without copy/rebuild; runtime Windows `IsReadOnly=True`; egress isolated; exactly 1 reservation/session; 686 sample hashes across 343 sources; canonical manifest 174,337 bytes, SHA-256 `9d8564bdd64f5d5965e7f5470b322aa0769f4bf45b78ef8547134b07a71d18e7`.
+- **Adjudication**: Controller returned 1 after atomic commitment during watchdog deletion read-back. No retry. Separate UAC read-only audit verified the commitment hash chain, restored adapters/routes, absent watchdog, dismounted VHDX, absent drive letter, and zero `.part` files.
+- **Counters**: preparation accesses/hashes = 2/1,372; custodian sessions/hashes = 1/686; completed unsealing/model evaluations/evaluation attempts/new training = 0/0/0/0.
+- **Kết quả**: `MANIFEST_COMMITMENT_VALID_CLEANUP_VERIFIED_NO_RETRY`; evaluator prerequisite commitment satisfied but evaluator remains `BLOCKED_EVALUATOR_AUTHORIZATION_ABSENT`.
+- **Evidence**: `research/evidence/phase-4c.2g.0.8/`; manifest contents and raw authorization remain outside Git.
+
+---
+
+## Phase 4C.2G.0.7 — Manifest Custodian PowerShell 5.1 Preflight Hotfix
+
+- **Mục tiêu**: Diagnose the first authorized custodian attempt, fix only a real execution blocker, and reseal without consuming authorization or running the evaluator.
+- **Observed failure**: Equal five-key component maps were rejected because Windows PowerShell 5.1 rendered `.PSObject.Properties.Count` as `1 1 1 1 1`; failure occurred before output/reservation/root access.
+- **Hotfix**: One-line scalar `@(...).Count` comparison plus real formal-preflight regression test; no protocol, sealer, schema, dataset, checkpoint, model, metric, threshold, or evaluator change.
+- **Effective/package commit**: `a86888d`; archive: 7 members, 13,610 bytes, SHA-256 `05e455a594377e7ad153b7e9513fa33fd2639fca4e884776eaa8de827ac8e302`.
+- **VHDX**: External 343-source/686-sample VHDX prepared and verified Windows `IsReadOnly=True`, then dismounted after controller preflight failure; two preparation copy/hash attempts, 1,372 file hashes total, zero canary writes.
+- **Counters**: custodian sessions/files hashed by sealer = 0/0; unsealing sessions = 0; model evaluations/attempts = 0/0; training = 0.
+- **Kết quả**: Prior authorization remains unconsumed but cannot cover changed bytes; verdict `READY_FOR_HUMAN_MANIFEST_CUSTODIAN_REAUTHORIZATION`.
+- **Evidence**: `research/evidence/phase-4c.2g.0.7/`.
+
+---
+
+## Phase 4C.2G.0.6 — Build and Seal the Automated Locked-Test Manifest Custodian Workflow
+
+- **Mục tiêu**: Build a prospective, role-separated manifest commitment workflow without UAC/real session, authorization creation, locked-test access, evaluator/model execution, training, or inference.
+- **Starting commit**: `12df22e`; **effective/package commit**: `35b3563`; **branch**: `research/phase-4c2g-locked-test-execution`.
+- **Thay đổi chính**: Added evaluator-independent streaming sealer, exact 343-source/686-sample guards, NFC deterministic canonicalization, fsync reservation/atomic outputs/interrupted receipt, one-UAC Windows controller contract, custodian authorization schema, and Git-object package builder.
+- **Package**: 7 regular allowlisted members, 13,501 bytes, SHA-256 `970484622a52b9632a77f6a60985f34cdba63aff5ed83705e50bb2c433e6a131`; no dataset, model, authorization, or manifest contents.
+- **Kiểm tra**: Custodian 13/13 PASS; hermetic ML 587 PASS/131 deselected; workspace 57 PASS plus continuity checker unit 13 PASS; typecheck/build PASS.
+- **Kết quả**: `READY_FOR_HUMAN_MANIFEST_CUSTODIAN_APPROVAL`; no independent human custodian claimed; authorization/session/access/hash/evaluator/training/inference all not performed; all real counters remain 0.
+- **Evidence**: `research/evidence/phase-4c.2g.0.6/`.
+- **Quyết định tiếp theo**: Human review and explicit exact-package authorization for one custodian session; evaluator remains blocked until the real external manifest commitment exists.
+
+---
+
+## Phase 4C.2G.0.5.1 — Finalize Non-Circular Package, Manifest, and Effective-Commit Bindings
+
+- **Mục tiêu**: Audit every package/runtime file at the claimed effective commit, remove circular package binding, harden the locked manifest contract, and reseal without UAC/readiness, authorization creation, locked-test access, training, or inference.
+- **Starting commit**: `cac990e`; **replacement effective/package commit**: `2bbb110`; **branch**: `research/phase-4c2g-locked-test-execution`.
+- **Git-object audit**: `5cf84a3` FAIL (authorization schema absent; 12 bindings differed from exact Git blobs). Replacement commit PASS for all 22 objects with exact byte/SHA parity and zero runtime drift.
+- **Package/binding**: deterministic 25-member archive, 45,818 bytes, SHA-256 `05c32e11064616bf01a748ac7ea0ec5e089a5980463852d430c0b8c788ee7a2b`; external canonical binding locks commit/archive/schema/all components and is runtime-verified before locked-test mount/read.
+- **Manifest hardening**: Fail-closed label mapping, POSIX/Windows absolute/traversal paths, symlink escape, sample/path/source-label duplicates, exact 343/686 cardinality, missing/extra files, and checksum mismatch.
+- **Kết quả**: No canonical pre-unsealing per-sample locked-test manifest SHA exists; split seal `519e7a0e...` and development manifest `411e35da...` are not substitutes. Verdict `BLOCKED_MANIFEST_COMMITMENT_ABSENT`; all real counters remain 0.
+- **Evidence**: `research/evidence/phase-4c.2g.0.5.1/`; canonical external binding: `research/evidence/phase-4c.2g.0.5/execution_authorization_binding.json`.
+- **Quyết định tiếp theo**: Independent data custodian must commit the exact locked-test per-sample manifest SHA-256 before authorization/unsealing.
+
+---
+
+## Phase 4C.2G.0.5 — Correct Authorization Provenance and Complete Sealed Confirmatory Execution Driver
+
+- **Mục tiêu**: Correct false approval provenance and build/test/seal the complete real Phase 4C.2G driver without locked-test access, authorization creation, readiness/UAC, training, or scientific inference.
+- **Starting commit**: 720078e; **effective execution commit**: 5cf84a3; **branch**: research/phase-4c2g-locked-test-execution.
+- **Thay đổi chính**: Corrected Phase 4C.2G.0.4 to no user-authored authorization; implemented exact 343-source/686-sample manifest loader, Stage 1 model/checkpoint loader, canonical five-checkpoint driver, atomic outputs, bootstrap digest, Windows same-session isolation/read-only guards, future authorized-session orchestrator, and deterministic package builder.
+- **Package**: 25 regular members, 44,955 bytes, SHA-256 `243f157302778c7da34a737b1925c8db4f157ad461b2878b415929561189981b`; no credentials, dataset, checkpoints/weights, locked-test artifacts, or authorization artifact.
+- **Kiểm tra**: Phase 4C.2G 16/16 PASS; Phase 4C.2F 45/45 PASS; Phase 4C.2E 30/30 PASS; hermetic ML 566 PASS/131 deselected; workspace 57 PASS plus continuity checker 13 PASS; typecheck/build PASS; terminal continuity/diff gates PASS.
+- **Kết quả**: `READY_FOR_FINAL_PACKAGE_READINESS_TEST`; authorization received/created/consumed=false; every real counter remains 0.
+- **Evidence**: `research/evidence/phase-4c.2g.0.5/`.
+- **Quyết định tiếp theo**: Run only the final package-bound readiness test; a later unsealing still requires fresh direct human authorization bound to the exact sealed archive.
+
+---
+
+## Phase 4C.2G.0.4 — Live Readiness PASS and Fail-Closed Execution-Surface Audit
+
+- **Muc tieu**: Execute one post-hotfix UAC readiness retry, then audit the exact sealed execution surface before any authorization artifact creation or locked-test access. No direct user-authored authorization statement was received; prior assistant-supplied wording was only an example and did not constitute approval.
+- **Starting commit**: 24284f6 (Phase 4C.2G.0.3.4 seal)
+- **Branch**: research/phase-4c2g-locked-test-execution
+- **Thay đổi chính**: (1) Live controller v1.4.0 readiness achieved zero active routes/proxy/egress owners, current-session verifier receipt exit 0 and hash binding, operational restoration of Wi-Fi/Radmin, and verified watchdog removal. (2) Audited clean detached package commit 2826a82 and its 24-member archive. (3) Proved formal CLI has zero execute_checkpoint_evaluation calls and zero Torch imports; archive has no model loader, dataset loader, or real Phase 4C.2G driver. (4) Identified incompatible sealed Windows isolation/read-only enforcement. (5) Stopped before authorization artifact creation and locked-test access.
+- **Kiểm tra**: Readiness verdict `AUTOMATED_ISOLATION_READINESS_TEST_PASS_NETWORK_RESTORED`; offline verifier `READY_FOR_HUMAN_AUTHORIZATION_REVIEW`; receipt session binding, restoration, watchdog cleanup, archive SHA/bytes, clean execution worktree, and static CLI/archive capability audit PASS.
+- **Kết quả**: `BLOCKED_BEFORE_UNSEALING_SEALED_EXECUTION_IMPLEMENTATION_ABSENT`. Human approval statement received=false; authorization artifact created=false; authorization consumed=false; locked-test accesses=0, sessions=0, evaluations=0, inference calls=0, training runs=0.
+- **Evidence**: `research/evidence/phase-4c.2g.0.4/` (PHASE_REPORT.md, readiness_retry_receipt_binding.json, sealed_execution_surface_audit.json, environment.json, provenance_bindings.json).
+- **Quyết định tiếp theo**: Implement/test/seal a complete Phase 4C.2G.1 real execution driver without locked-test access, repeat readiness, then obtain new exact human authorization bound to the final package.
+
+---
+
+## Phase 4C.2G.0.3.4 — Reconcile Offline Verifier Egress Semantics, Restoration Proof, and Receipt Binding
+
+- **Muc tieu**: Audit the existing 21:25 runtime artifacts; remove the protected-internal-adapter false negative; require operational restoration proof; bind the verifier receipt on every exit; preserve locked-test sealing and pending human authorization.
+- **Starting commit**: 9f784a0 (Phase 4C.2G.0.3.3 seal)
+- **Branch**: research/phase-4c2g-locked-test-execution
+- **Thay đổi chính**: (1) Unified verifier/controller isolation on proxy=false, zero ActiveStore IPv4/IPv6 default routes, zero VPN/default-route owners, and zero unidentified active route owners; connected internal adapters are informational. (2) Split verifier output into active egress, protected internal, connected informational, and array-valued persistent-route diagnostics; corrected wrapper messages. (3) Controller v1.4.0 hashes and session-binds verifier receipts on every exit. (4) Exact-identity restoration polls 60 seconds; adapters initially Up require both AdminStatus and operational Status Up, otherwise NETWORK_RECOVERY_REQUIRED retains watchdog. (5) Added g114-g123 regressions and audited the 21:25 artifacts without a new live run.
+- **Kiểm tra**: 123/123 preparation tests PASS; 550 hermetic tests PASS with 131 deselected; controller contract mode PASS; PowerShell AST has 0 parse errors; continuity check PASS; git diff check PASS; `git diff -- ml/evaluation/` empty.
+- **Kết quả**: `READY_FOR_SINGLE_UAC_READINESS_RETRY`; authorization `PENDING_HUMAN_APPROVAL`; no live/UAC run, locked-test access, training, inference, or `ml/evaluation/` change. All real counters remain 0.
+- **Evidence**: `research/evidence/phase-4c.2g.0.3.4/` (PHASE_REPORT.md, runtime_attempt_2125_audit.json, hotfix_contract.json, offline_verifier_source_binding.json, provenance_bindings.json, environment.json).
+- **Quyết định tiếp theo**: Exactly one user-initiated UAC readiness retry; do not launch automatically.
+
+---
+
+## Phase 4C.2G.0.3.3 — Resolve Adapter Cmdlet Parameter Binding and Scheduled Task Query Hardening
+
+- **Muc tieu**: Resolve `ParameterBindingException` in `Disable-NetAdapter` and `Enable-NetAdapter` caused by missing `-InterfaceIndex` parameter; eliminate all direct `-InterfaceIndex` calls across cmdlets; copy full 5-field identity allowlist with mandatory non-empty InterfaceDescription/MacAddress; implement fail-closed restoration verification via `Resolve-TargetNetAdapter` and Up check; add `Remove-StaleWatchdogIfSafe`; harden scheduled task query and deletion via `Test-ScheduledTaskExists` and `Remove-ScheduledTaskSafely` without escalating missing task native stderr to terminating exception under `$ErrorActionPreference = "Stop"`; require verified watchdog deletion before granting RESTORED_VERIFIED and PASS verdict; emit BLOCKED_WATCHDOG_CLEANUP_FAILED_NETWORK_RESTORED on deletion failure; bind watchdog_auto_cleaned directly from $watchdogDeleted; audit 18:28 failed attempt; standardize active default route detection on Get-NetRoute -PolicyStore ActiveStore requiring active adapter owner; parse route.exe print strictly under Active Routes: and exclude Persistent Routes: from network connectivity; record persistent routes in persistent_routes_ignored; correct rescan loop to retry and emit BLOCKED_PASSIVE_ISOLATION_SOURCE_DISAGREEMENT (never ambiguous route owner) when routes are 0; synchronize standalone offline verifier to parse only Active Routes:; wrap steps 4-6 in try/catch/finally with guaranteed restoration, watchdog cleanup, and post-finally atomic readiness receipt creation; audit 20:47 attempt (passive_route_source_disagreement_attempt_audit.json); add regression tests test_g107-test_g113 (113/113 PASS); establish readiness retry state. Locked-test sealed (0 accesses).
+- **Starting commit**: d7c3b27 (Phase 4C.2G.0.3.2 seal)
+- **Branch**: research/phase-4c2g-locked-test-execution
+- **Thay đổi chính**: (1) Upgraded `scripts/research/RUN_PHASE4C2G_AUTOMATED_ISOLATION.ps1` to v1.3.2 (84,930 bytes, SHA-256 `804b94055ab3470a1863e80d0d3a172ff59c056e9b39664d68c58a6a95db5538`) with `Resolve-TargetNetAdapter`, object pipeline piping, strict 5-field target allowlists, fail-closed restoration verification, `Test-ScheduledTaskExists` and `Remove-ScheduledTaskSafely` using `ScheduledTasks` cmdlets and `try/finally` ErrorActionPreference guard for schtasks fallback, `Remove-StaleWatchdogIfSafe`, strict watchdog deletion gating requiring verified absence before `RESTORED_VERIFIED` and readiness PASS, `BLOCKED_WATCHDOG_CLEANUP_FAILED_NETWORK_RESTORED` verdict on cleanup failure, receipt `watchdog_auto_cleaned` bound directly from `$watchdogDeleted`, authoritative `Get-NetRoute -PolicyStore ActiveStore` routing check, strict section-delimited `route.exe print` parsing excluding persistent routes, rescan loop retry and `BLOCKED_PASSIVE_ISOLATION_SOURCE_DISAGREEMENT` verdict on 0 routes, `BLOCKED_PROXY_DETECTED` on proxy, guaranteed atomic readiness receipt in Step 8 via `try/catch/finally`, and expanded `-ValidateAdapterCmdletContractOnly`. (2) Synchronized `scripts/research/verify_phase_4c2g_offline_runtime.py` to parse only `Active Routes:` and record `persistent_routes_ignored` (17,335 bytes, SHA-256 `757f4e4cfc4ca0c9fdbd283b819a4ee410258455418c7ba340fba8b4491574f7`). (3) Quarantined faulty 792-byte script to `failed_recovery_scripts/`. (4) Audited 10:20 parameter binding attempt, 18:28 native stderr escalation attempt, and 20:47 passive route disagreement attempt (`passive_route_source_disagreement_attempt_audit.json`). (5) Added regression tests `test_g84` to `test_g113` in `ml/tests/test_phase_4c2g_preparation.py` (113/113 PASS).
+- **Kiểm tra**: 113/113 preparation tests PASS, 540 ML hermetic suite tests PASS, workspace packages PASS, typecheck 0 errors, build OK, continuity check PASS, git diff clean.
+- **Kết quả**: Adapter cmdlet contract verdict: `ADAPTER_CMDLET_CONTRACT_PASS`; Recovery script AST verdict: `RECOVERY_SCRIPT_SYNTAX_VALID`; DryRun inspection verdict: `DRY_RUN_INSPECTION_PASS`; Readiness status: `READY_FOR_SINGLE_UAC_READINESS_RETRY`. Real counters strictly 0 (accesses=0, unsealing_sessions=0, model_evaluations=0, evaluation_attempts=0, cpu_inference_calls=0, gpu_inference_calls=0, new_training_runs=0).
+- **Evidence**: `research/evidence/phase-4c.2g.0.3.3/` (PHASE_REPORT.md, adapter_cmdlet_contract_audit.json, interrupted_attempt_parameter_binding_audit.json, stale_watchdog_cleanup_attempt_audit.json, passive_route_source_disagreement_attempt_audit.json, adapter_resolution_contract.json, controller_source_binding.json, provenance_bindings.json, environment.json).
+- **Quyết định tiếp theo**: System ready for single-UAC elevation readiness retry via `LAUNCH_PHASE4C2G_READINESS.cmd` when requested by user.
+
+---
+
+## Phase 4C.2G.0.3.2 — Fix Generated Recovery Script Syntax and Correct Interruption Evidence
+
+- **Muc tieu**: Fix PowerShell AST syntax failure in generated `RECOVER_NETWORK.ps1` (`'-' operator` error); quarantine faulty 615-byte file; harden generator with atomic `.part` staging, `fileStream.Flush($true)`, AST parse before move, and allowlist validation; correct audit timestamp conversion (`02:54:30Z == 09:54:30 UTC+7`); test production generator fixture; establish readiness retry state. Locked-test sealed (0 accesses).
+- **Starting commit**: 21f86ec (Phase 4C.2G.0.3.1 seal)
+- **Branch**: research/phase-4c2g-locked-test-execution
+- **Thay đổi chính**: (1) Upgraded `scripts/research/RUN_PHASE4C2G_AUTOMATED_ISOLATION.ps1` to v1.2.0 (47,146 bytes, SHA-256 `ba7a3d43...`) with `-ValidateRecoveryScriptOnly`, `.part` staging, AST validation via `[Parser]::ParseFile`, automated quarantine of syntax-invalid scripts, single-quote escaping, and recovery check in `-DryRun`. (2) Quarantined faulty 615-byte script (SHA-256 `0e320236...`) to `failed_recovery_scripts/`. (3) Corrected timezone arithmetic in audit (`02:54:30Z -> 09:54:30 UTC+7`) and prohibited erroneous hour 10 representation. (4) Added 12 regression tests (`test_g72` to `test_g83`) in `ml/tests/test_phase_4c2g_preparation.py` (83/83 PASS).
+- **Kiểm tra**: 83/83 preparation tests PASS, full ML suite PASS, packages tests PASS, typecheck 0 errors, build OK, continuity check PASS, git diff clean.
+- **Kết quả**: Interrupted run verdict: `FAIL_CLOSED_SAFE_PRIOR_TO_ISOLATION` (watchdog=false, adapters_disabled=0); Generator AST verdict: `AST_PARSE_ZERO_ERRORS`; Readiness status: `READY_FOR_SINGLE_UAC_READINESS_RETRY`. Real counters strictly 0 (accesses=0, unsealing_sessions=0, model_evaluations=0, evaluation_attempts=0, cpu_inference_calls=0, gpu_inference_calls=0, new_training_runs=0).
+- **Evidence**: `research/evidence/phase-4c.2g.0.3.2/` (PHASE_REPORT.md, recovery_script_root_cause.json, generated_recovery_ast_test_receipt.json, interrupted_attempt_audit.json, timestamp_correction.json, controller_source_binding.json, provenance_bindings.json, environment.json).
+- **Quyết định tiếp theo**: System ready for single-UAC elevation readiness retry via `LAUNCH_PHASE4C2G_READINESS.cmd` when requested by user.
+
+---
+
+## Phase 4C.2G.0.3.1 — Minimize Windows Network-Isolation Targets and Harden Single-UAC Readiness Workflow
+
+- **Muc tieu**: Replace over-broad adapter selection with route-to-adapter minimal selection by `InterfaceIndex`; protect internal adapters (`VMnet1`, `VMnet8`, `WSL`, `Default Switch`); harden watchdog to 15m with AST syntax check and `schtasks /query` read-back; implement iterative rescan fail-closed logic; emit 10-field DryRun table and 4 distinct counters; single-UAC workflow. Locked-test sealed (0 accesses).
+- **Starting commit**: dee7241 (Phase 4C.2G.0.3 seal)
+- **Branch**: research/phase-4c2g-locked-test-execution
+- **Thay đổi chính**: (1) Upgraded `scripts/research/RUN_PHASE4C2G_AUTOMATED_ISOLATION.ps1` to v1.1.0 (39,354 bytes, SHA-256 `c9ec88d5...`) with `Get-AdapterType`, strict route-ownership matching, 15-minute watchdog, AST syntax validation, `schtasks /query` verification, iterative rescan (max 3 rounds) with ambiguous route owner fail-closed restoration, 10-field DryRun table, and 4 counters. (2) Added 9 regression tests (`test_g63` to `test_g71`) covering all 20 behavioral requirements in `ml/tests/test_phase_4c2g_preparation.py` (71/71 PASS). (3) Verified host DryRun selects only 2 egress adapters (`Wi-Fi` and `Radmin VPN`), strictly protecting 4 internal and 2 disconnected adapters.
+- **Kiểm tra**: 71/71 preparation tests PASS, full ML suite PASS, packages tests PASS, typecheck 0 errors, build OK, continuity check PASS, git diff clean.
+- **Kết quả**: DryRun inspection verdict: `DRY_RUN_INSPECTION_PASS`; Readiness status: `READY_FOR_SINGLE_UAC_READINESS_TEST`. Real counters strictly 0 (accesses=0, unsealing_sessions=0, model_evaluations=0, evaluation_attempts=0, cpu_inference_calls=0, gpu_inference_calls=0, new_training_runs=0).
+- **Evidence**: `research/evidence/phase-4c.2g.0.3.1/` (PHASE_REPORT.md, minimal_adapter_selection_contract.json, route_to_adapter_dry_run_receipt.json, recovery_watchdog_contract.json, controller_security_audit.json, provenance_bindings.json, environment.json).
+- **Quyết định tiếp theo**: Await single user UAC elevation command to execute temporary network isolation and standalone offline verification on execution host.
+
+---
+
+## Phase 4C.2G.0.3 — Build and Verify an Automated Windows Network-Isolation Controller
+
+- **Muc tieu**: Automate temporary Windows network isolation via standalone PowerShell controller; remote session fail-closed detection; 10-minute Scheduled Task recovery watchdog; try/finally exact adapter restoration; integrate offline verifier wrapper; dry-run & non-elevated verification. Locked-test sealed (0 accesses).
+- **Starting commit**: aa2bc01 (Phase 4C.2G.0.2B seal)
+- **Branch**: research/phase-4c2g-locked-test-execution
+- **Thay đổi chính**: (1) Built scripts/research/RUN_PHASE4C2G_AUTOMATED_ISOLATION.ps1 (24,255 bytes, SHA-256 2ba8e03..., -DryRun, -ReadinessTest, -ElevatedDetachedWorker). (2) Remote session detection rejects RDP/SSH/WinRM/CI with BLOCKED_REMOTE_SESSION_NETWORK_ISOLATION_UNSAFE. (3) 10-minute Scheduled Task watchdog Phase4C2G_Emergency_Network_Recovery with RECOVER_NETWORK.ps1. (4) Try/finally exact allowlist restoration. (5) Added 10 tests (test_g53 to test_g62) in ml/tests/test_phase_4c2g_preparation.py (62/62 PASS).
+- **Kiểm tra**: 62/62 preparation tests PASS, full ML suite PASS, packages tests PASS, typecheck 0 errors, build OK, continuity check PASS, git diff clean.
+- **Kết quả**: Dry-run verdict: DRY_RUN_INSPECTION_PASS; Non-elevated readiness verdict: USER_UAC_CONFIRMATION_REQUIRED. Real counters strictly 0 (accesses=0, unsealing_sessions=0, model_evaluations=0, evaluation_attempts=0, cpu_inference_calls=0, gpu_inference_calls=0, new_training_runs=0).
+- **Evidence**: research/evidence/phase-4c.2g.0.3/ (PHASE_REPORT.md, automated_isolation_controller_binding.json, controller_dry_run_receipt.json, controller_security_audit.json, recovery_watchdog_contract.json, provenance_bindings.json, environment.json).
+- **Quyết định tiếp theo**: Await user elevated execution with UAC confirmation or manual runbook execution to perform temporary network isolation and standalone offline verification.
+
+---
+
+## Phase 4C.2G.0.2B — Correct Timestamp Root-Cause Wording and Prepare the Exact Offline Command
+
+- **Muc tieu**: Eliminate speculative unproven root-cause narrative; classify timestamp error as MANUAL_OR_STATIC_TIMESTAMP_WITHOUT_RUNTIME_CLOCK_BINDING (historical mechanism INDETERMINATE); construct PowerShell offline wrapper RUN_PHASE4C2G_OFFLINE_VERIFIER.ps1 with real host paths; issue OFFLINE_USER_RUNBOOK.md. Locked-test sealed (0 accesses).
+- **Starting commit**: 1af0b2e (Phase 4C.2G.0.2A seal)
+- **Branch**: research/phase-4c2g-locked-test-execution
+- **Thay đổi chính**: (1) Root cause wording replaced with standard indeterminate classification; mathematically disproved naive local UTC+7 assumption. (2) Built scripts/research/RUN_PHASE4C2G_OFFLINE_VERIFIER.ps1 (5,480 bytes, SHA-256 e475c4a..., 0 placeholders, exit codes 0/2/1). (3) Authored research/evidence/phase-4c.2g.0.2b/OFFLINE_USER_RUNBOOK.md (11 operational steps). (4) Added 4 regression tests (test_g49 to test_g52) in ml/tests/test_phase_4c2g_preparation.py (52/52 PASS).
+- **Kiểm tra**: 52/52 preparation tests PASS, full ML suite PASS, packages tests PASS, typecheck 0 errors, build OK, continuity check PASS, git diff clean.
+- **Kết quả**: Verdict: READY_FOR_USER_PHYSICAL_NETWORK_DISCONNECTION. All real counters strictly 0 (accesses=0, unsealing_sessions=0, model_evaluations=0, evaluation_attempts=0, cpu_inference_calls=0, gpu_inference_calls=0, new_training_runs=0).
+- **Evidence**: research/evidence/phase-4c.2g.0.2b/ (PHASE_REPORT.md, OFFLINE_USER_RUNBOOK.md, provenance_bindings.json, environment.json).
+- **Quyết định tiếp theo**: Await user physical network adapter disconnection before executing standalone offline verifier wrapper on execution host.
+
+---
+
+## Phase 4C.2G.0.2A — Correct UTC Evidence Timestamps and Build a Standalone Offline Verifier
+
+- **Muc tieu**: Investigate and correct UTC timestamp skew in Phase 4C.2G.0.2; regenerate all 10 artifacts with verified runtime UTC timestamps (no future skew); implement standalone offline runtime verifier CLI with atomic receipts; verify passive network check. Locked-test sealed (0 accesses).
+- **Starting commit**: 0eac1b8 (Phase 4C.2G.0.2 seal)
+- **Branch**: research/phase-4c2g-locked-test-execution
+- **Thay đổi chính**: (1) Timestamp investigation: classified as MANUAL_OR_STATIC_TIMESTAMP_WITHOUT_RUNTIME_CLOCK_BINDING (historical mechanism INDETERMINATE; 6,552s future skew; naive local UTC+7 assumption disproven). (2) Regenerated all 10 artifacts in phase-4c.2g.0.2 with exact observation UTC (01:05:48Z, 0 future timestamps). (3) Implemented standalone verifier scripts/research/verify_phase_4c2g_offline_runtime.py (16,208 bytes, SHA-256 c15c217..., standard library only, 0 socket probes). (4) Added 10 regression tests (test_g39 to test_g48) in ml/tests/test_phase_4c2g_preparation.py (93/93 PASS). (5) Emitted Phase 4C.2G.0.2A evidence package (verdict READY_FOR_USER_PHYSICAL_NETWORK_DISCONNECTION).
+- **Kiểm tra**: 93/93 evaluator & preparation tests PASS, 465/465 unit pytest PASS, 13/13 continuity test PASS, 34/34 TS test PASS, typecheck 0 errors, build OK, continuity check PASS, git diff clean.
+- **Kết quả**: Pre-physical disconnection gate verdict: READY_FOR_USER_PHYSICAL_NETWORK_DISCONNECTION. All real counters strictly 0 (accesses=0, unsealing_sessions=0, model_evaluations=0, evaluation_attempts=0, cpu_inference_calls=0, gpu_inference_calls=0, new_training_runs=0).
+- **Evidence**: research/evidence/phase-4c.2g.0.2a/ (PHASE_REPORT.md, TIMESTAMP_CORRECTION_AUDIT.json, offline_verifier_source_binding.json, offline_verifier_test_receipt.json, PRE_PHYSICAL_DISCONNECTION_GATE.json, provenance_bindings.json, environment.json).
+- **Quyết định tiếp theo**: Await user physical network adapter disconnection before executing standalone offline verifier on execution host.
+
+---
+
+## Phase 4C.2G.0.2 — Prepare and Verify the Physical Offline Runtime Before Human Authorization
+
+- **Muc tieu**: Prepare and verify physical offline CPU runtime; verify clean detached execution worktree at 2826a82; verify 4 evaluator components and 5 canonical checkpoints (5,627,375 bytes each, zero model forward); inspect passive network isolation (default route present -> verdict USER_PHYSICAL_ACTION_REQUIRED); verify disjoint filesystem paths. Locked-test sealed (0 accesses).
+- **Starting commit**: 54572ae (Phase 4C.2G.0.1 hotfix seal)
+- **Branch**: research/phase-4c2g-locked-test-execution
+- **Thay đổi chính**: (1) Created clean detached execution worktree at exact commit 2826a82. (2) Verified 4 evaluator components exact bytes and SHA-256 in both worktree and repo. (3) Verified 5 canonical checkpoints bitwise exact (zero model forward, zero torch load). (4) Locked dependencies via pip freeze SHA 0e11c90... and verified pip check PASS. (5) Performed passive network inspection (0 outbound probes, default route present -> verdict USER_PHYSICAL_ACTION_REQUIRED). (6) Verified output path and planned mountpoint disjoint. (7) Added 10 regression tests (test_g29 to test_g38) in ml/tests/test_phase_4c2g_preparation.py (83/83 PASS).
+- **Kiểm tra**: 83/83 evaluator & preparation tests PASS, 455/455 unit pytest PASS, 13/13 continuity test PASS, 34/34 TS test PASS, typecheck 0 errors, build OK, continuity check PASS, git diff clean.
+- **Kết quả**: Pre-authorization runtime gate verdict: USER_PHYSICAL_ACTION_REQUIRED (network default route detected). Real counters strictly 0 (accesses=0, unsealing_sessions=0, model_evaluations=0, evaluation_attempts=0, cpu_inference_calls=0, gpu_inference_calls=0, new_training_runs=0).
+- **Evidence**: research/evidence/phase-4c.2g.0.2/ (PHASE_REPORT.md, OFFLINE_HOST_PREPARATION.json, EXECUTION_WORKTREE_VERIFICATION.json, CHECKPOINT_STAGING_VERIFICATION.json, DEPENDENCY_ENVIRONMENT_LOCK.json, NETWORK_ISOLATION_INSPECTION.json, FILESYSTEM_PREPARATION.json, PRE_AUTHORIZATION_RUNTIME_GATE.json, provenance_bindings.json, environment.json).
+- **Quyết định tiếp theo**: Await physical network adapter disconnection or loopback namespace on execution host before granting human unsealing authorization.
+
+---
+
+## Phase 4C.2G.0 — Reconcile Execution-Package, Checkpoint Bindings, and Offline-Runtime Evidence (Phase 4C.2G.0.1)
+
+- **Muc tieu**: Reconcile canonical checkpoint bindings with Phase 4C.2E baseline; lock execution_package_commit 2826a82; verify out-of-git archive (29,823 bytes, SHA-256 5ab922a); define preferred execution mode (clean detached checkout); eliminate canary write requirement; correct CPU determinism claim. Locked-test sealed (0 accesses).
+- **Starting commit**: 2826a82 (Phase 4C.2G.0 terminal seal)
+- **Branch**: research/phase-4c2g-locked-test-execution
+- **Thay đổi chính**: (1) Replaced stale checkpoint hashes with canonical Stage 1 N=250 hashes in request, template, and provenance. (2) Replaced commit placeholder with exact execution_package_commit 2826a82. (3) Verified existing archive (29,823 bytes, 24 members, SHA-256 5ab922a, streaming SHA check PASS). (4) Registered preferred execution mode (clean detached checkout at 2826a82). (5) Changed canary_write_verification_required to false; non_mutating read-only check to true. (6) Corrected CPU determinism rationale. (7) Added 13 regression tests (test_g16 to test_g28) in ml/tests/test_phase_4c2g_preparation.py (73/73 PASS).
+- **Kiểm tra**: 73/73 evaluator & preparation tests PASS, 442/442 unit pytest PASS, 13/13 continuity test PASS, 34/34 TS test PASS, typecheck 0 errors, build OK, continuity check PASS, git diff clean.
+- **Kết quả**: Pre-authorization gate verdict: RUNTIME_PREPARATION_REQUIRED (actual_execution_network_isolation = NOT_YET_VERIFIED). Real counters strictly 0 (accesses=0, unsealing_sessions=0, model_evaluations=0, evaluation_attempts=0, gpu_calls=0).
+- **Evidence**: research/evidence/phase-4c.2g.0/ (PHASE_REPORT.md, EXECUTION_PACKAGE_RECEIPT.json, OFFLINE_RUNTIME_READINESS.json, HUMAN_AUTHORIZATION_REQUEST.json, PRE_AUTHORIZATION_GO_NO_GO.json, provenance_bindings.json, environment.json, HUMAN_APPROVAL_TEMPLATE.md).
+- **Quyết định tiếp theo**: Await human offline runtime verification and signed authorization artifact before running Phase 4C.2G.1.
+
+---
+
+## Phase 4C.2G.0 — Build Final Execution Package, Prepare Offline Runtime, and Request Human Authorization
+
+- **Muc tieu**: Build and seal final execution package; bind execution_package_commit and git cleanliness checks; establish offline runtime readiness constraints; emit formal HUMAN_AUTHORIZATION_REQUEST.json (status PENDING_HUMAN_APPROVAL). Locked-test partition strictly sealed (0 accesses).
+- **Starting commit**: 35f430f (Phase 4C.2F.2 evidence seal)
+- **Branch**: research/phase-4c2g-locked-test-execution
+- **Thay đổi chính**: (1) Created branch research/phase-4c2g-locked-test-execution. (2) Bound execution_package_commit (pattern regex) and execution_package_tree_clean in schema. (3) Locked evaluator functional commit 3cf75c2 (final_effective_evaluator_commit, code strictly frozen). (4) Added git HEAD runtime validation and porcelain cleanliness check. (5) Defined offline runtime policy prioritizing CPU inference. (6) Emitted HUMAN_AUTHORIZATION_REQUEST.json in PENDING state; human approval template with 10-point checklist. (7) Added 15 new tests in ml/tests/test_phase_4c2g_preparation.py (60/60 total suite PASS).
+- **Kiểm tra**: 60/60 evaluator and preparation tests PASS, full test suite pass, typecheck 0 errors, build OK, continuity check PASS, git diff clean.
+- **Kết quả**: Pre-authorization gate verdict: RUNTIME_PREPARATION_REQUIRED (actual_execution_network_isolation = NOT_YET_VERIFIED). Real counters strictly 0 (accesses=0, unsealing_sessions=0, model_evaluations=0, evaluation_attempts=0, gpu_calls=0).
+- **Evidence**: research/evidence/phase-4c.2g.0/ (PHASE_REPORT.md, EXECUTION_PACKAGE_RECEIPT.json, OFFLINE_RUNTIME_READINESS.json, HUMAN_AUTHORIZATION_REQUEST.json, PRE_AUTHORIZATION_GO_NO_GO.json, provenance_bindings.json, environment.json, HUMAN_APPROVAL_TEMPLATE.md).
+- **Quyết định tiếp theo**: Await human execution of offline runtime preparation and signing of formal authorization artifact before transitioning to Phase 4C.2G.1.
+
+---
+
+## Phase 4C.2F — Effective Evaluator Commit and Authorization Schema Exactness Hotfix (Phase 4C.2F.2)
+
+- **Muc tieu**: Lock effective evaluator commit 97851a3 (distinct from base 8a37966 and pre-hotfix 656529f); enforce schema exact seeds, checkpoint hashes, and evaluator hashes; bind schema checksum with self-verification; normalize real UTC timestamps. Locked-test sealed (0 accesses).
+- **Starting commit**: 959139e (Phase 4C.2F.1 terminal seal)
+- **Branch**: research/phase-4c2f-locked-test-evaluator
+- **Thay đổi chính**: (1) Effective evaluator commit: 97851a3. (2) Schema exactness: exact seeds [42, 1337, 2025, 3407, 9001], checkpoint hashes, evaluator hashes locked by const; additionalProperties: false; FormatChecker date-time; expiry_policy oneOf. (3) Evaluator self-verifies authorization schema SHA-256 before unsealing. (4) Real UTC timestamps via datetime.now(timezone.utc). (5) 45/45 test suite (15 new regression tests).
+- **Kiểm tra**: 45/45 evaluator tests pass, 30/30 prereg tests pass, 427 hermetic pytest pass, 34/34 TS pass, 13/13 continuity unit tests pass, typecheck 0 errors, build OK, continuity check PASS, git diff --check clean.
+- **Kết quả**: Verdict READY_FOR_HUMAN_ONE_TIME_UNSEALING_APPROVAL. Checkpoints = 5, real unsealing sessions = 0, real model evaluations = 0, locked-test accesses = 0, GPU calls = 0.
+- **Evidence**: research/evidence/phase-4c.2f/ (PHASE_REPORT.md, evaluator_source_binding.json, evaluator_contract.json, PRE_UNSEALING_GO_NO_GO.json, provenance_bindings.json, environment.json, synthetic_dry_run_receipt.json).
+- **Quyết định tiếp theo**: Await signed human authorization artifact before performing one-time unsealing and locked-test confirmatory evaluation in Phase 4C.2G.
+
+---
+
+## Phase 4C.2F — Final Pre-Unsealing Safety and Provenance Hotfix (Phase 4C.2F.1)
+
+- **Muc tieu**: Final pre-unsealing safety and provenance hotfix; bind functional commit 656529f; replace synthetic receipt with SYNTHETIC_PIPELINE_PASS (0 real counters); passive local network check (0 outbound socket probes); non-invasive mount check (0 canary writes); pre-forward evaluation reservation; argmax tie-breaking first index; human authorization schema. Locked-test sealed (0 accesses).
+- **Starting commit**: 656529f (Phase 4C.2F base commit)
+- **Branch**: research/phase-4c2f-locked-test-evaluator
+- **Thay đổi chính**: (1) Distinct commits: base_main=8a37966, evaluator_functional=656529f, audited_through=656529f, non-circular terminal seal. (2) Synthetic receipt: synthetic_sessions_simulated=1, synthetic_model_evaluations_simulated=5, completed_real_unsealing_sessions=0, completed_real_model_evaluations=0, locked_test_real_accesses=0, verdict=SYNTHETIC_PIPELINE_PASS (no scientific verdicts); 10,000 bootstrap replicates with PCG64(20261002). (3) Passive network check (0 outbound probes). (4) Non-invasive mount check (0 canary writes). (5) EVALUATION_RESERVED before model forward; crash marked EVALUATION_ATTEMPT_INTERRUPTED blocking silent retry. (6) Argmax tie-breaking first index (p1 == 0.5 -> class 0). (7) docs/schemas/human-unsealing-authorization.v1.schema.json. (8) Tamper-evident hash-chained ledger with sequence_number, prev_entry_hash, entry_hash, tip_entry_hash fsync. (9) 30/30 test suite.
+- **Kiểm tra**: 30/30 evaluator tests pass, 30/30 prereg tests pass, 412/412 hermetic pytest pass, 70/70 TS pass, typecheck 0 errors, build OK, continuity check PASS.
+- **Kết quả**: Verdict READY_FOR_HUMAN_ONE_TIME_UNSEALING_APPROVAL. Checkpoints = 5, real unsealing sessions = 0, real model evaluations = 0, locked-test accesses = 0, GPU calls = 0.
+- **Evidence**: research/evidence/phase-4c.2f/ (PHASE_REPORT.md, evaluator_contract.json, evaluator_source_binding.json, metric_implementation_contract.json, bootstrap_contract.json, synthetic_dry_run_receipt.json, PRE_UNSEALING_GO_NO_GO.json, provenance_bindings.json, environment.json).
+- **Quyết định tiếp theo**: Await signed human authorization artifact before performing one-time unsealing and locked-test confirmatory evaluation in Phase 4C.2G.
+
+---
+
+## Phase 4C.2F — Build, Test, and Seal the Locked-Test Confirmatory Evaluator
+
+- **Muc tieu**: Build, test, and seal the prospective locked-test confirmatory evaluator enforcing prospective preregistration rules without unsealing, reading, or evaluating the locked-test partition. Locked-test partition strictly sealed (0 accesses).
+- **Starting commit**: 8a37966 (PR #4 merge commit)
+- **Branch**: research/phase-4c2f-locked-test-evaluator
+- **Thay đổi chính**: (1) Merged PR #4 into main via merge commit 8a37966 and branched research/phase-4c2f-locked-test-evaluator. (2) Implemented canonical metrics in ml/evaluation/confirmatory_metrics.py (sklearn parity Macro-F1, balanced accuracy, AUROC, ECE 10 uniform bins, CITL, signed gap; zero calibration fitting). (3) Implemented source-cluster bootstrap (10,000 replicates, PCG64 seed 20261002, 686 rows per replicate). (4) Built fail-closed engine ml/evaluation/locked_test_evaluator.py and CLI run_phase_4c2f_evaluator.py with human authorization check, airgap check, read-only mount check, append-only hash-chained ledger, and crash discrimination. (5) Added test suite ml/tests/test_phase_4c2f_evaluator.py (30/30 PASS).
+- **Kiểm tra**: 30/30 evaluator tests pass, 30/30 prereg tests pass, 382/382 hermetic pytest pass, 130/131 artifact pytest pass (1 skipped), 70/70 TS pass, typecheck 0 errors, build OK, continuity check PASS.
+- **Kết quả**: Verdict READY_FOR_HUMAN_ONE_TIME_UNSEALING_APPROVAL. Checkpoints = 5, unsealing sessions = 0, model evaluations = 0, locked-test accesses = 0.
+- **Evidence**: research/evidence/phase-4c.2f/ (PHASE_REPORT.md, evaluator_contract.json, metric_implementation_contract.json, bootstrap_contract.json, evaluator_source_binding.json, checkpoint_resolution_audit.json, synthetic_dry_run_receipt.json, PRE_UNSEALING_GO_NO_GO.json, provenance_bindings.json, environment.json).
+- **Quyết định tiếp theo**: Await signed human authorization artifact before performing one-time unsealing and locked-test confirmatory evaluation in Phase 4C.2G.
+
+---
+
 ## Phase 4C.2E — Locked-Test Confirmatory Protocol Preregistration
 
 - **Muc tieu**: Preregister Stage 1 N=250 frozen backbone linear probe protocol, 5 candidate checkpoints, primary aggregate Macro-F1 endpoint, source-cluster bootstrap 95% CI (10,000 replicates, RNG seed 20261002), and one-time unsealing protocol for locked-test evaluation. Locked-test partition strictly sealed (0 accesses).

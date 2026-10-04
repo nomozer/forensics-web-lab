@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.3.4",
+  "network_isolation_pass_requires": {
+    "proxy_detected": false,
+    "active_ipv4_default_route_count": 0,
+    "active_ipv6_default_route_count": 0,
+    "active_vpn_egress_owner_count": 0,
+    "unidentified_active_egress_route_owner_count": 0
+  },
+  "connected_adapter_semantics": {
+    "active_egress_adapters": "verdict-bearing",
+    "protected_internal_adapters": "informational-and-protected-when-no-egress-route-owned",
+    "connected_adapters_informational": "informational-only",
+    "persistent_routes_ignored": "diagnostic-only-array"
+  },
+  "protected_internal_patterns": [
+    "VMnet1",
+    "VMnet8",
+    "Hyper-V Default Switch",
+    "WSL switch"
+  ],
+  "receipt_binding": {
+    "hash_algorithm": "SHA-256",
+    "hash_mode": "streaming",
+    "bind_on_exit_codes": "all",
+    "required_fields": [
+      "offline_verifier_receipt_sha256",
+      "offline_verifier_verdict",
+      "offline_verifier_exit_code",
+      "offline_verifier_receipt_timestamp_valid"
+    ],
+    "stale_receipt_policy": "fail-closed"
+  },
+  "restoration": {
+    "identity_resolution": "exact-ifIndex-name-interface-description-mac-address",
+    "poll_timeout_seconds": 60,
+    "pre_isolation_up_requires": [
+      "AdminStatus=Up",
+      "Status=Up"
+    ],
+    "pre_isolation_disconnected_requires_operational_up": false,
+    "timeout_result": "NETWORK_RECOVERY_REQUIRED",
+    "watchdog_retained_on_failure": true
+  },
+  "authorization_status": "PENDING_HUMAN_APPROVAL",
+  "locked_test_mount_state": "UNMOUNTED",
+  "locked_test_real_accesses": 0
+}

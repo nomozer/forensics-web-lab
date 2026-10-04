@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.3.3",
+  "attempt_timestamp_utc": "2026-10-02T03:20:35.000000+00:00",
+  "attempt_timestamp_local": "2026-10-02T10:20:35+07:00",
+  "log_source": "data/research/local-artifacts/phase-4c.2g/automated_isolation_worker.log",
+  "watchdog_created": true,
+  "watchdog_task_name": "Phase4C2G_Emergency_Network_Recovery",
+  "watchdog_trigger_time": "10:35:00",
+  "disable_operation_attempted": true,
+  "adapters_actually_disabled": 0,
+  "restoration_command_failed_parameter_binding": true,
+  "offline_verifier_invoked": false,
+  "readiness_receipt_created": false,
+  "locked_test_real_accesses": 0,
+  "model_evaluations": 0,
+  "inference_calls": 0,
+  "historical_verifier_receipt_separated": true,
+  "root_cause": "Disable-NetAdapter and Enable-NetAdapter do not accept parameter 'InterfaceIndex'. ParameterBindingException raised immediately prior to adapter state modification.",
+  "quarantined_faulty_recovery_script": {
+    "path": "data/research/local-artifacts/phase-4c.2g/failed_recovery_scripts/RECOVER_NETWORK_20261002_032035_invalid_parameter.ps1",
+    "bytes": 792,
+    "sha256": "a2a123cd8037108c49d03f9d60372cb19d2374b34db6dc377467292aa2166ce3"
+  },
+  "verdict": "FAIL_CLOSED_PARAMETER_BINDING_ERROR_ZERO_ADAPTERS_DISABLED"
+}

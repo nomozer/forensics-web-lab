@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.5",
+  "generated_at_utc": "2026-10-02T20:26:56.7409559Z",
+  "status": "SUPERSEDED_BY_PHASE_4C_2G_0_5_1",
+  "replacement_archive": {
+    "filename": "phase_4c2g_complete_executor_2bbb110.tar.gz",
+    "sha256": "05c32e11064616bf01a748ac7ea0ec5e089a5980463852d430c0b8c788ee7a2b",
+    "bytes": 45818
+  },
+  "archive": {
+    "local_path_outside_git": "data/research/local-artifacts/phase-4c.2g.0.5/phase_4c2g_complete_executor_5cf84a3.tar.gz",
+    "bytes": 44955,
+    "sha256": "243f157302778c7da34a737b1925c8db4f157ad461b2878b415929561189981b",
+    "member_count": 25,
+    "format": "tar.gz",
+    "deterministic_mtime": 0
+  },
+  "commit_binding": {
+    "effective_evaluator_commit": "5cf84a33641b7bc7a232fcd602b89671c63bb2ad",
+    "execution_package_commit": "5cf84a33641b7bc7a232fcd602b89671c63bb2ad"
+  },
+  "audit": {
+    "regular_files_only": true,
+    "absolute_paths": 0,
+    "path_traversal_entries": 0,
+    "symlinks": 0,
+    "hardlinks": 0,
+    "device_entries": 0,
+    "credential_files": 0,
+    "dataset_files": 0,
+    "checkpoint_or_weight_files": 0,
+    "locked_test_artifacts": 0,
+    "authorization_artifacts": 0,
+    "self_contained_import_test": "PASS"
+  },
+  "required_surface": {
+    "confirmatory_metrics": true,
+    "evaluator_engine": true,
+    "real_cli_driver": true,
+    "model_architecture_and_imports": true,
+    "dataset_manifest_loader": true,
+    "authorization_schema_v2": true,
+    "checkpoint_binding": true,
+    "preregistered_metrics_plan": true,
+    "windows_authorized_session_orchestrator": true,
+    "source_provenance_manifest": true
+  }
+}

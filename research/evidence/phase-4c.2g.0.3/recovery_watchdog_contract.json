@@ -1,0 +1,26 @@
+{
+  "timestamp_utc": "2026-10-02T01:53:04.030482+00:00",
+  "generated_at_utc": "2026-10-02T01:53:04.030482+00:00",
+  "clock_source": "SYSTEM_UTC_RUNTIME",
+  "timezone_aware": true,
+  "timestamp_future_check": "PASS",
+  "phase": "Phase 4C.2G.0.3",
+  "contract_name": "recovery_watchdog_contract",
+  "watchdog_type": "One-shot Windows Scheduled Task",
+  "task_name": "Phase4C2G_Emergency_Network_Recovery",
+  "run_level": "HIGHEST",
+  "trigger_delay_minutes": 10,
+  "recovery_script_path": "data/research/local-artifacts/phase-4c.2g/RECOVER_NETWORK.ps1",
+  "recovery_command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File <RecoverScriptPath>",
+  "allowlist_policy": "Only re-enables exact adapters disabled during the session; preserves initially disconnected/disabled adapters",
+  "cleanup_policy": "Task deleted in finally block upon verified restoration; retained on error",
+  "real_counters": {
+    "locked_test_real_accesses": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "cpu_inference_calls": 0,
+    "gpu_inference_calls": 0,
+    "new_training_runs": 0
+  }
+}

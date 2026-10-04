@@ -1,0 +1,41 @@
+{
+  "timestamp_utc": "2026-10-01T18:42:00.000000+00:00",
+  "phase": "Phase 4C.2F.2",
+  "contract_name": "evaluator_source_binding",
+  "branch": "research/phase-4c2f-locked-test-evaluator",
+  "base_main_commit": "8a379665bc8db3722a46618e47db4806a6ea7244",
+  "original_evaluator_commit": "656529f04ee8dfcf26e7bb46c757f5cba279326e",
+  "pre_hotfix_evaluator_commit": "656529f04ee8dfcf26e7bb46c757f5cba279326e",
+  "safety_hotfix_commit": "959139e847f56fddd61e7615759f05897d7f5d9b",
+  "effective_evaluator_commit": "3cf75c2bf0c9835dd58897b7b36982732cab40ab",
+  "evaluator_functional_commit": "3cf75c2bf0c9835dd58897b7b36982732cab40ab",
+  "audited_through_commit": "3cf75c2bf0c9835dd58897b7b36982732cab40ab",
+  "authorization_schema": {
+    "relative_path": "docs/schemas/human-unsealing-authorization.v1.schema.json",
+    "bytes": 6143,
+    "sha256": "15291643b2ca2b3d6e3c135957db140e33f7cc65bc11aebc4668f3e105af6734"
+  },
+  "components": {
+    "confirmatory_metrics": {
+      "relative_path": "ml/evaluation/confirmatory_metrics.py",
+      "bytes": 15199,
+      "sha256": "bacbb9dc0a230359f1c3bbaece1ce8c19e30ddafa807313480d173a808bde808"
+    },
+    "locked_test_evaluator": {
+      "relative_path": "ml/evaluation/locked_test_evaluator.py",
+      "bytes": 47708,
+      "sha256": "b311e010535600781e52014fb6b675d32d78a558c5fe7e67bd3ec00b6989a5e1"
+    },
+    "run_evaluator_cli": {
+      "relative_path": "ml/evaluation/run_phase_4c2f_evaluator.py",
+      "bytes": 5739,
+      "sha256": "37ed02ff44d8c523150ebb968d2777bba9c2dee8597b3df60efa1fb5bd1e9041"
+    },
+    "evaluator_test_suite": {
+      "relative_path": "ml/tests/test_phase_4c2f_evaluator.py",
+      "bytes": 49607,
+      "sha256": "0c16925a40bb7309b975d2740d7a6516123a201f3c7d82f81e7a334cef2c056d"
+    }
+  },
+  "self_verification_rule": "Evaluator verifies component integrity and authorization schema against this binding before executing inference"
+}

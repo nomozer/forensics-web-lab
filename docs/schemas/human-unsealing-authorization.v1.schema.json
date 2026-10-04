@@ -1,0 +1,170 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://forensics-web-lab.local/schemas/human-unsealing-authorization.v1.schema.json",
+  "title": "HumanUnsealingAuthorizationV1",
+  "description": "Preregistered schema for one-time human authorization artifact required to unseal locked-test partition.",
+  "type": "object",
+  "required": [
+    "status",
+    "authorization_id",
+    "authorized_by",
+    "authorized_at_utc",
+    "candidate_protocol",
+    "sample_size",
+    "exact_seeds",
+    "checkpoint_sha256s",
+    "evaluator_effective_commit",
+    "evaluator_component_hashes",
+    "maximum_unsealing_sessions",
+    "maximum_model_evaluation_attempts",
+    "expiry_policy",
+    "authorization_purpose",
+    "no_tuning_acknowledgment",
+    "execution_package_commit",
+    "execution_package_tree_clean"
+  ],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["AUTHORIZED"],
+      "description": "Must be strictly AUTHORIZED to permit locked-test unsealing."
+    },
+    "authorization_id": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9_-]{8,64}$",
+      "description": "Unique identifier for this human authorization."
+    },
+    "authorized_by": {
+      "type": "string",
+      "minLength": 3,
+      "description": "Identity, role, or institutional affiliation of the authorizer."
+    },
+    "authorized_at_utc": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 UTC timestamp when authorization was executed."
+    },
+    "candidate_protocol": {
+      "type": "string",
+      "enum": ["stage1_frozen_backbone_linear_probe"],
+      "description": "Candidate protocol locked during Phase 4C.2E preregistration."
+    },
+    "sample_size": {
+      "type": "integer",
+      "const": 250,
+      "description": "Maximum development sample size principle locked in preregistration."
+    },
+    "exact_seeds": {
+      "type": "array",
+      "const": [42, 1337, 2025, 3407, 9001],
+      "description": "Strict 5-seed list [42, 1337, 2025, 3407, 9001] in exact canonical order."
+    },
+    "checkpoint_sha256s": {
+      "type": "object",
+      "properties": {
+        "42": { "type": "string" },
+        "1337": { "type": "string" },
+        "2025": { "type": "string" },
+        "3407": { "type": "string" },
+        "9001": { "type": "string" }
+      },
+      "const": {
+        "42": "c941f42ed00adb098962ddb43c0f2f7d897e48e20957cddc0c491243f8730c92",
+        "1337": "69e706f9062f050ccbfd2affb72d63d5dde9d12f02c1e64c762b0ea6719073f1",
+        "2025": "92ce5ee986d487fdf14374842067d0684fc7669f5ecb32c7d603f6813942ceee",
+        "3407": "4897821ef0a97df9f1c51acde8d4ac01d383aa3a7b9e7ee55bbc3b3108847868",
+        "9001": "5f0f8803adcb7eec88d47e398ef8b2002b46e740c263b12abc2ba392822a91c3"
+      },
+      "additionalProperties": false,
+      "description": "Cryptographic SHA-256 digests for all 5 candidate checkpoints locked by exact const."
+    },
+    "evaluator_effective_commit": {
+      "type": "string",
+      "const": "3cf75c2bf0c9835dd58897b7b36982732cab40ab",
+      "description": "Canonical effective commit hash of the confirmatory evaluator."
+    },
+    "evaluator_component_hashes": {
+      "type": "object",
+      "properties": {
+        "confirmatory_metrics": { "type": "string" },
+        "locked_test_evaluator": { "type": "string" },
+        "run_evaluator_cli": { "type": "string" }
+      },
+      "const": {
+        "confirmatory_metrics": "bacbb9dc0a230359f1c3bbaece1ce8c19e30ddafa807313480d173a808bde808",
+        "locked_test_evaluator": "b311e010535600781e52014fb6b675d32d78a558c5fe7e67bd3ec00b6989a5e1",
+        "run_evaluator_cli": "37ed02ff44d8c523150ebb968d2777bba9c2dee8597b3df60efa1fb5bd1e9041"
+      },
+      "additionalProperties": false,
+      "description": "SHA-256 digests of canonical evaluator source components locked by exact const."
+    },
+    "maximum_unsealing_sessions": {
+      "type": "integer",
+      "const": 1,
+      "description": "Hard limit on total unsealing sessions (exactly 1)."
+    },
+    "maximum_model_evaluation_attempts": {
+      "type": "integer",
+      "const": 5,
+      "description": "Hard limit on evaluation attempts across the 5 candidate checkpoints (exactly 5)."
+    },
+    "expiry_policy": {
+      "type": "object",
+      "properties": {
+        "policy": {
+          "type": "string",
+          "enum": ["single_session_only", "explicit_expiry_timestamp", "explicit_no_expiry"]
+        },
+        "expires_at_utc": {
+          "type": ["string", "null"]
+        }
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "policy": { "const": "single_session_only" },
+            "expires_at_utc": { "type": "null" }
+          },
+          "required": ["policy"]
+        },
+        {
+          "properties": {
+            "policy": { "const": "explicit_expiry_timestamp" },
+            "expires_at_utc": { "type": "string", "format": "date-time" }
+          },
+          "required": ["policy", "expires_at_utc"]
+        },
+        {
+          "properties": {
+            "policy": { "const": "explicit_no_expiry" },
+            "expires_at_utc": { "type": "null" }
+          },
+          "required": ["policy", "expires_at_utc"]
+        }
+      ],
+      "additionalProperties": false,
+      "description": "Specification of unsealing authorization expiry."
+    },
+    "authorization_purpose": {
+      "type": "string",
+      "minLength": 10,
+      "description": "Explicit statement of evaluation purpose."
+    },
+    "no_tuning_acknowledgment": {
+      "type": "boolean",
+      "const": true,
+      "description": "Irrevocable acknowledgment that no model tuning, threshold tuning, or hyperparameter selection will occur on locked-test."
+    },
+    "execution_package_commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$",
+      "description": "Full 40-character Git commit hash of the terminal execution package."
+    },
+    "execution_package_tree_clean": {
+      "type": "boolean",
+      "const": true,
+      "description": "Attestation that the execution package repository working tree was verified clean."
+    }
+  },
+  "additionalProperties": false
+}

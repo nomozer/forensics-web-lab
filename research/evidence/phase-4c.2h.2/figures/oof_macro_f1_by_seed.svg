@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520">
+<rect width="100%" height="100%" fill="white"/>
+<g font-family="sans-serif" fill="#222">
+<text x="450.0" y="28" text-anchor="middle" font-size="18">Phase 4C.2H exploratory OOF Macro-F1</text>
+<line x1="105" y1="435.00" x2="865" y2="435.00" stroke="#dddddd"/>
+<text x="97" y="439.00" text-anchor="end" font-size="11">0.530</text>
+<line x1="105" y1="359.00" x2="865" y2="359.00" stroke="#dddddd"/>
+<text x="97" y="363.00" text-anchor="end" font-size="11">0.542</text>
+<line x1="105" y1="283.00" x2="865" y2="283.00" stroke="#dddddd"/>
+<text x="97" y="287.00" text-anchor="end" font-size="11">0.554</text>
+<line x1="105" y1="207.00" x2="865" y2="207.00" stroke="#dddddd"/>
+<text x="97" y="211.00" text-anchor="end" font-size="11">0.566</text>
+<line x1="105" y1="131.00" x2="865" y2="131.00" stroke="#dddddd"/>
+<text x="97" y="135.00" text-anchor="end" font-size="11">0.578</text>
+<line x1="105" y1="55.00" x2="865" y2="55.00" stroke="#dddddd"/>
+<text x="97" y="59.00" text-anchor="end" font-size="11">0.590</text>
+<line x1="105" y1="55" x2="105" y2="435" stroke="black" stroke-width="2"/>
+<line x1="105" y1="435" x2="865" y2="435" stroke="black" stroke-width="2"/>
+<text x="20" y="260.0" text-anchor="middle" font-size="13" transform="rotate(-90 20 260.0)">Full OOF Macro-F1</text>
+<text x="231.67" y="463" text-anchor="middle" font-size="12">42</text>
+<text x="485.00" y="463" text-anchor="middle" font-size="12">1337</text>
+<text x="738.33" y="463" text-anchor="middle" font-size="12">2025</text>
+<rect x="143.00" y="252.01" width="78.03" height="182.99" fill="#4472C4"/>
+<rect x="396.33" y="214.79" width="78.03" height="220.21" fill="#4472C4"/>
+<rect x="649.67" y="162.96" width="78.03" height="272.04" fill="#4472C4"/>
+<rect x="231.67" y="169.55" width="78.03" height="265.45" fill="#ED7D31"/>
+<rect x="485.00" y="234.52" width="78.03" height="200.48" fill="#ED7D31"/>
+<rect x="738.33" y="203.50" width="78.03" height="231.50" fill="#ED7D31"/>
+<rect x="113" y="486" width="14" height="14" fill="#4472C4"/>
+<text x="133" y="498" font-size="11">stage1_frozen</text>
+<rect x="423" y="486" width="14" height="14" fill="#ED7D31"/>
+<text x="443" y="498" font-size="11">stage1_frozen_pair_ranking</text>
+</g>
+</svg>

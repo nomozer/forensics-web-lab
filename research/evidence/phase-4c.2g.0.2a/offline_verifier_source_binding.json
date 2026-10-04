@@ -1,0 +1,33 @@
+{
+  "timestamp_utc": "2026-10-02T01:10:00.000000+00:00",
+  "generated_at_utc": "2026-10-02T01:10:00.000000+00:00",
+  "observation_started_at_utc": "2026-10-02T01:08:56.000000+00:00",
+  "observation_completed_at_utc": "2026-10-02T01:10:00.000000+00:00",
+  "clock_source": "SYSTEM_UTC_RUNTIME",
+  "timezone_aware": true,
+  "timestamp_future_check": "PASS",
+  "phase": "Phase 4C.2G.0.2A",
+  "binding_name": "standalone_offline_verifier_source_binding",
+  "source_script": {
+    "relative_path": "scripts/research/verify_phase_4c2g_offline_runtime.py",
+    "byte_count": 17335,
+    "sha256": "757f4e4cfc4ca0c9fdbd283b819a4ee410258455418c7ba340fba8b4491574f7",
+    "language": "python3",
+    "dependencies": "standard_library_only"
+  },
+  "cli_contract": {
+    "command": "python scripts/research/verify_phase_4c2g_offline_runtime.py --execution-worktree <DETACHED_WORKTREE> --checkpoint-root <CHECKPOINT_ROOT> --output-dir <EMPTY_OUTPUT_DIR> --planned-locked-test-mountpoint <EMPTY_MOUNTPOINT> --receipt <LOCAL_RECEIPT_PATH>",
+    "atomic_receipt_pattern": "<receipt>.part -> fsync -> os.replace"
+  },
+  "exit_code_contract": {
+    "0": "READY_FOR_HUMAN_AUTHORIZATION_REVIEW (all checks pass, offline verified)",
+    "1": "BLOCKED_WITH_EXACT_REASON (binding mismatch, missing file, corrupt digest)",
+    "2": "USER_PHYSICAL_ACTION_REQUIRED (default internet route or connected adapter detected)"
+  },
+  "prohibited_verdicts": [
+    "READY_FOR_EXECUTION",
+    "AUTHORIZED",
+    "CONFIRMATORY_SUCCESS",
+    "CONFIRMATORY_FAILURE"
+  ]
+}

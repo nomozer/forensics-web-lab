@@ -1,0 +1,32 @@
+{
+  "timestamp_utc": "2026-10-02T01:05:48.000000+00:00",
+  "phase": "Phase 4C.2G.0.2",
+  "inspection_method": "PASSIVE_LOCAL_INSPECTION_ZERO_OUTBOUND_PROBES",
+  "passive_checks": {
+    "outbound_socket_probes_sent": 0,
+    "dns_lookups_performed": 0,
+    "http_requests_sent": 0,
+    "http_proxy_empty": true,
+    "https_proxy_empty": true,
+    "all_proxy_empty": true,
+    "active_vpn_tunnel_detected": false
+  },
+  "proxy_environment": {
+    "HTTP_PROXY": "",
+    "HTTPS_PROXY": "",
+    "ALL_PROXY": ""
+  },
+  "observed_host_routing": {
+    "default_internet_route_detected": true,
+    "physical_network_disconnection": "NOT_YET_DISCONNECTED",
+    "network_namespace_isolation": "NOT_AVAILABLE_ON_HOST"
+  },
+  "airgap_requirement": "Host must be physically disconnected from network adapters or placed in a loopback-only namespace before human authorization and before unsealing session starts.",
+  "inspection_verdict": "USER_PHYSICAL_ACTION_REQUIRED",
+  "generated_at_utc": "2026-10-02T01:05:48.000000+00:00",
+  "observation_started_at_utc": "2026-10-02T01:04:45.000000+00:00",
+  "observation_completed_at_utc": "2026-10-02T01:05:48.000000+00:00",
+  "clock_source": "SYSTEM_UTC_RUNTIME",
+  "timezone_aware": true,
+  "timestamp_future_check": "PASS"
+}

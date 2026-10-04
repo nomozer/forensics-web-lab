@@ -1,0 +1,45 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.10",
+  "generated_at_utc": "2026-10-03T19:50:18.6606310Z",
+  "preservation_policy": "Historical packages, bindings, and requests remain immutable and are not deleted or overwritten.",
+  "superseded": [
+    {
+      "kind": "historical_execution_package",
+      "filename": "phase_4c2g_complete_executor_2bbb110.tar.gz",
+      "sha256": "05c32e11064616bf01a748ac7ea0ec5e089a5980463852d430c0b8c788ee7a2b",
+      "bytes": 45818,
+      "reason": "Contains adapter parameter-binding defect."
+    },
+    {
+      "kind": "historical_authorization_request",
+      "path": "research/evidence/phase-4c.2g.0.9/EVALUATOR_AUTHORIZATION_REQUEST.json",
+      "sha256": "4ed54e810c434909c9706c8a3299874d52330d7d0303be9234b8717d34e6c05d",
+      "reason": "Non-actionable request bound to defective package."
+    },
+    {
+      "kind": "intermediate_preflight_package",
+      "filename": "phase_4c2g_complete_executor_bacbc68.tar.gz",
+      "sha256": "8c42d10b1db9ff71841b6ed89dc3ad9bdfccd642add30876cdc10675409f96ca",
+      "bytes": 51820,
+      "reason": "Packaged controller emitted WhatIf host text before JSON; never eligible for authorization."
+    },
+    {
+      "kind": "intermediate_binding_package",
+      "filename": "phase_4c2g_complete_executor_597a79a.tar.gz",
+      "sha256": "397ad7274f71460017f98968f1f0503831aec055d8a7eea2c629b5b4d3cf34d8",
+      "bytes": 51955,
+      "reason": "Preflight passed, then package/evaluator commit semantics were made explicit; never presented for authorization."
+    }
+  ],
+  "current": {
+    "evaluator_effective_commit": "2bbb1109c8ab18c9ff7120ef004acd0ba7074716",
+    "orchestrator_hotfix_commit": "597a79af3cc76707edeefcb6dfc1d93f5f0e5ae1",
+    "execution_package_commit": "76fbfec84f8fce9b7afd92a266c0d3a7c2f6ca48",
+    "archive_filename": "phase_4c2g_complete_executor_76fbfec.tar.gz",
+    "archive_sha256": "2301238a1148ff0dd237132c1274c962148d601016fd59220cc876748883ea71",
+    "archive_bytes": 52089,
+    "authorization_request": "research/evidence/phase-4c.2g.0.10/EVALUATOR_AUTHORIZATION_REQUEST.json",
+    "authorization_request_status": "PENDING_HUMAN_APPROVAL"
+  }
+}

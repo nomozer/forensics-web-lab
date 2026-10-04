@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.12",
+  "generated_at_utc": "2026-10-04T01:07:22.932146Z",
+  "classification": "CROSS_COMPONENT_LOCKED_TEST_INVENTORY_CONTRACT_MISMATCH",
+  "reproduction_before_fix": {
+    "fixture": "production custodian output root passed directly to production evaluator loader",
+    "result": "EXPECTED_FAILURE_REPRODUCED",
+    "error": "Locked-test file inventory mismatch: missing=[], extra=['custodian_inventory.json']"
+  },
+  "cause": {
+    "custodian": "Treats exact root custodian_inventory.json as metadata and excludes it from the 686-sample manifest.",
+    "evaluator_before_fix": "Compared every regular file under the root against manifest sample paths, so root metadata appeared as an extra sample.",
+    "missing_test_seam": "Custodian and evaluator fixtures were previously independent; no production-to-production round-trip covered the retained root metadata layout."
+  },
+  "fix": {
+    "relative_path": "ml/evaluation/phase_4c2g_dataset.py",
+    "old_sha256": "3140434a87b415071c7015083f477627e8d46187382640f6191a8da27a3e6e92",
+    "new_sha256": "ee4e190f9cfe9bf6cf2867ee1ca1d6cf48cc9664a06f2f7f72a08f82d97a8543",
+    "contract": "Exclude only the exact regular root custodian_inventory.json metadata path; reject arbitrary extras, nested same-name metadata, traversal, symlinks/reparse points, missing samples, and hash mismatches."
+  },
+  "scientific_impact": "No prior or hotfix-phase model evaluation, prediction, or metric occurred."
+}

@@ -298,7 +298,7 @@ export function checkRepositoryIntegrity(rootDir) {
       for (const ent of entries) {
         const p = path.join(d, ent.name);
         if (ent.isDirectory()) {
-          if (!['node_modules', '.git', '.venv', 'dist', 'build'].includes(ent.name)) {
+          if (!['node_modules', '.git', '.venv', 'dist', 'build', '.pytest_cache', '__pycache__'].includes(ent.name)) {
             walk(p);
           }
         } else if (duplicatePattern.test(ent.name)) {

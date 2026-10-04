@@ -1,0 +1,84 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.9",
+  "generated_at_utc": "2026-10-03T19:06:24.1193805Z",
+  "verdict": "BLOCKED_SEALED_ORCHESTRATOR_ADAPTER_PARAMETER_BINDING",
+  "scope": "non_mutating_fixture_and_metadata_only_preflight",
+  "runtime": {
+    "powershell_core_version": "7.4.20",
+    "process_architecture": "X64",
+    "elevated": false
+  },
+  "sealed_controller": {
+    "relative_path": "scripts/research/RUN_PHASE4C2G_AUTHORIZED_SESSION.ps1",
+    "sha256": "646f5278d3f18ff3dc29ec800df3bcb7ee3332b7563d5f3db1086917167da778",
+    "bytes": 16227,
+    "modified": false,
+    "contract_validation_only": "PASS"
+  },
+  "capabilities": [
+    {
+      "capability": "manifest_commitment_validation",
+      "result": "PASS",
+      "detail": "Existing external manifest matches the committed SHA-256 and byte count; no manifest content was published."
+    },
+    {
+      "capability": "existing_vhdx_reuse",
+      "result": "PASS_METADATA_ONLY",
+      "detail": "Existing VHDX is present, 775946240 bytes, Attached=false. It was not mounted and its contents were not read during this preparation."
+    },
+    {
+      "capability": "runtime_read_only_proof",
+      "result": "DEFERRED_TO_AUTHORIZED_SESSION",
+      "detail": "The prior custodian session proved Windows IsReadOnly=True. The dismounted VHDX must be mounted read-only and freshly proved in the future evaluation session."
+    },
+    {
+      "capability": "atomic_output_publication_and_access_ledger",
+      "result": "PASS_FIXTURE",
+      "detail": "Execution fixtures passed atomic output, ledger, reservation, and no-retry contracts."
+    },
+    {
+      "capability": "network_isolation",
+      "result": "FAIL_RUNTIME_COMPATIBILITY",
+      "detail": "Disable-NetAdapter does not expose -InterfaceIndex on this host; non-mutating -WhatIf reproduction returns NamedParameterNotFound."
+    },
+    {
+      "capability": "network_restoration_watchdog",
+      "result": "FAIL_RUNTIME_COMPATIBILITY",
+      "detail": "Enable-NetAdapter does not expose -InterfaceIndex on this host; both generated watchdog and finally restoration use the invalid parameter."
+    }
+  ],
+  "cmdlet_contract": {
+    "Get-NetAdapter": {"has_InterfaceIndex": true, "has_InputObject": false},
+    "Disable-NetAdapter": {"has_InterfaceIndex": false, "has_InputObject": true, "supports_WhatIf": true},
+    "Enable-NetAdapter": {"has_InterfaceIndex": false, "has_InputObject": true, "supports_WhatIf": true}
+  },
+  "safe_reproduction": [
+    {
+      "command": "Disable-NetAdapter -InterfaceIndex 2147483647 -WhatIf",
+      "result": "NamedParameterNotFound,Disable-NetAdapter",
+      "message": "A parameter cannot be found that matches parameter name 'InterfaceIndex'.",
+      "adapter_mutations": 0
+    },
+    {
+      "command": "Enable-NetAdapter -InterfaceIndex 2147483647 -WhatIf",
+      "result": "NamedParameterNotFound,Enable-NetAdapter",
+      "message": "A parameter cannot be found that matches parameter name 'InterfaceIndex'.",
+      "adapter_mutations": 0
+    }
+  ],
+  "sealed_source_occurrences": [
+    "recovery watchdog: Enable-NetAdapter -InterfaceIndex",
+    "isolation loop: Disable-NetAdapter -InterfaceIndex",
+    "finally restoration: Enable-NetAdapter -InterfaceIndex"
+  ],
+  "safety_outcome": {
+    "uac_invoked": false,
+    "network_changed": false,
+    "vhdx_mounted": false,
+    "locked_test_data_read": false,
+    "authorization_created": false,
+    "evaluation_reserved": false,
+    "model_forward_count": 0
+  }
+}

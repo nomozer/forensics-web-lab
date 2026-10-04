@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.3.1",
+  "phase": "Phase 4C.2G.0.3.3",
+  "timestamp_utc": "2026-10-02T11:15:00.000000+00:00",
+  "contract_mode": "-ValidateAdapterCmdletContractOnly",
+  "cmdlet_inspections": {
+    "Disable-NetAdapter": {
+      "has_interface_index_parameter": false,
+      "accepts_pipeline_input_object": true,
+      "pipeline_attribute_type": "Microsoft.Management.Infrastructure.CimInstance#MSFT_NetAdapter"
+    },
+    "Enable-NetAdapter": {
+      "has_interface_index_parameter": false,
+      "accepts_pipeline_input_object": true,
+      "pipeline_attribute_type": "Microsoft.Management.Infrastructure.CimInstance#MSFT_NetAdapter"
+    }
+  },
+  "controller_source_ast_audit": {
+    "file": "scripts/research/RUN_PHASE4C2G_AUTOMATED_ISOLATION.ps1",
+    "forbidden_cmdlet_interface_index_calls": {
+      "Disable-NetAdapter": 0,
+      "Enable-NetAdapter": 0,
+      "Get-NetAdapter": 0
+    },
+    "pipeline_piping_calls_verified": true
+  },
+  "generated_recovery_script_contract": {
+    "ast_parse_errors": 0,
+    "contains_enable_netadapter_interface_index": false,
+    "contains_get_netadapter_interface_index": false,
+    "contains_pipeline_enable_netadapter": true
+  },
+  "expanded_contract_checks": {
+    "allowlist_missing_identity_rejected": true,
+    "null_or_unresolved_restoration_detected_as_failure": true
+  },
+  "mock_pipeline_binding_verified": true,
+  "verdict": "ADAPTER_CMDLET_CONTRACT_PASS"
+}

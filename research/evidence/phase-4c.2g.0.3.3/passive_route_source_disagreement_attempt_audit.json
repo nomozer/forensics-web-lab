@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.3.3",
+  "attempt_timestamp_utc": "2026-10-02T13:47:00.000000+00:00",
+  "attempt_timestamp_local": "2026-10-02T20:47:00+07:00",
+  "adapters_disabled": [
+    "Wi-Fi",
+    "Radmin VPN"
+  ],
+  "disabled_adapter_if_indices": [
+    21,
+    14
+  ],
+  "active_default_routes_after_disable": 0,
+  "isolation_not_accepted_due_to_passive_source_disagreement": true,
+  "offline_verifier_invoked": false,
+  "network_restored": true,
+  "watchdog_cleanup_verified": true,
+  "readiness_receipt_created": false,
+  "locked_test_real_accesses": 0,
+  "model_evaluations": 0,
+  "inference_calls": 0,
+  "root_cause": {
+    "summary": "route.exe print 0.0.0.0 output included static Persistent Routes entry (0.0.0.0 0.0.0.0 26.0.0.1 9256) while Active Routes was None. Both Test-PassiveIsolation and standalone verifier previously scanned all lines without distinguishing Active from Persistent sections, falsely reporting DefaultRouteDetected=True and IsIsolated=False. Controller misidentified this disagreement as ambiguous route owner and threw unhandled BLOCKED_AMBIGUOUS_ROUTE_OWNER which exited before Step 8 receipt creation.",
+    "persistent_route_entry": "0.0.0.0 0.0.0.0 26.0.0.1 9256",
+    "persistent_route_ignored_under_hotfix": true,
+    "unhandled_exception_mitigated": true
+  },
+  "verdict": "FAIL_CLOSED_PASSIVE_ROUTE_SOURCE_DISAGREEMENT_NETWORK_RESTORED_WATCHDOG_CLEANED"
+}

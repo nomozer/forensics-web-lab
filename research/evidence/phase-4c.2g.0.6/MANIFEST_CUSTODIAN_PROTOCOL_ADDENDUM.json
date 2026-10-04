@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.6",
+  "prospective": true,
+  "created_before_any_custodian_locked_test_access": true,
+  "role_separation": {
+    "mode": "role_separated_automated_custodian_process",
+    "independent_human_data_custodian_claimed": false,
+    "statement": "No independent human data custodian has been established. The sealed workflow provides technical role separation from model development and evaluation."
+  },
+  "manifest_custodian_sealing_sessions": {
+    "maximum": 1,
+    "used": 0,
+    "allowed_operations": ["inventory_required_metadata", "streaming_sha256"],
+    "image_loading_or_decoding": false,
+    "model_execution": false,
+    "performance_metric_computation": false,
+    "manifest_content_disclosure_to_model_development": false,
+    "retry_after_reservation": "HUMAN_ADJUDICATION_REQUIRED"
+  },
+  "confirmatory_model_evaluation_sessions": {
+    "maximum": 1,
+    "used": 0,
+    "authorized_by_this_addendum": false
+  },
+  "counters": {
+    "custodian_manifest_access_sessions": 0,
+    "custodian_files_hashed": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0
+  }
+}

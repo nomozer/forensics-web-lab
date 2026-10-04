@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.7",
+  "generated_at_utc": "2026-10-03T14:24:26.8148456Z",
+  "repository": {
+    "branch": "research/phase-4c2g-locked-test-execution",
+    "functional_hotfix_commit": "a86888dcee20f74de31ef61e54f224dab643740a"
+  },
+  "runtime": {
+    "os": "Microsoft Windows NT 10.0.26100.0",
+    "powershell": "7.4.20",
+    "python": "3.12.10",
+    "node": "v24.13.0",
+    "pnpm": "10.33.0"
+  },
+  "custodian_runtime_observation": {
+    "formal_preflight_shell": "Windows PowerShell 5.1",
+    "vhdx_final_state": "dismounted_after_controller_preflight_failure",
+    "locked_test_model_execution": false
+  }
+}

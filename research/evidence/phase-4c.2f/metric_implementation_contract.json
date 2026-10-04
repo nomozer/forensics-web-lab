@@ -1,0 +1,48 @@
+{
+  "timestamp_utc": "2026-10-02T01:00:00.000000+00:00",
+  "phase": "Phase 4C.2F.1",
+  "contract_name": "metric_implementation_contract",
+  "label_mapping": {
+    "authentic": 0,
+    "ai_edited": 1
+  },
+  "prediction_rule": {
+    "positive_probability": "softmax(logits, dim=1)[:, 1]",
+    "predicted_class": "argmax(logits, axis=1)",
+    "tie_breaking": "Official argmax first-index rule: p1 > 0.5 -> class 1; p1 < 0.5 -> class 0; p1 == 0.5 -> class 0 (first index). Not equivalent to p1 >= 0.5.",
+    "threshold_optimization_allowed": false
+  },
+  "primary_endpoint": {
+    "metric": "Macro-F1",
+    "implementation": "sklearn.metrics.f1_score(y_true, y_pred, average='macro', labels=[0, 1], zero_division=0)",
+    "aggregation": "arithmetic_mean_across_5_checkpoints",
+    "paired_t_test_inference_allowed": false,
+    "reference_threshold": 0.5000,
+    "reference_label": "balanced_binary_uninformative_reference",
+    "success_rule": "source_cluster_bootstrap_95_ci_lower > 0.5000"
+  },
+  "secondary_endpoints": {
+    "classification": "descriptive_exploratory_only",
+    "metrics": [
+      "balanced_accuracy",
+      "auroc",
+      "brier_score",
+      "ece_10_bins",
+      "citl",
+      "signed_confidence_calibration_gap",
+      "confusion_matrix",
+      "per_class_sensitivity_specificity"
+    ]
+  },
+  "calibration_policy": {
+    "fitting_allowed": false,
+    "temperature_scaling_allowed": false,
+    "platt_scaling_allowed": false,
+    "isotonic_regression_allowed": false,
+    "ece_bins": 10,
+    "bin_edges": [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+    "bin_convention": "bins 0-8: [left, right); bin 9: [0.9, 1.0]; empty bins contribute 0",
+    "citl_formula": "mean(p_positive - y_true)",
+    "signed_confidence_gap_formula": "mean(predicted_class_confidence - correctness)"
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.5",
+  "generated_at_utc": "2026-10-03T08:05:30Z",
+  "status": "SUPERSEDED_AND_CORRECTED_BY_PHASE_4C_2G_0_5_1",
+  "evidence_seal_semantics": {
+    "effective_execution_commit": "5cf84a33641b7bc7a232fcd602b89671c63bb2ad",
+    "execution_package_commit": "5cf84a33641b7bc7a232fcd602b89671c63bb2ad",
+    "binding_model": "functional_commit_then_non_circular_terminal_evidence_seal",
+    "statement": "The former effective commit was invalidated by exact Git-object audit. Corrected files below preserve the supersession notice and point to replacement commit 2bbb110; this provenance file intentionally excludes its own digest."
+  },
+  "evidence_file_count": 8,
+  "files": [
+    {
+      "path": "research/evidence/phase-4c.2g.0.5/authorization_provenance_correction.json",
+      "bytes": 1213,
+      "sha256": "b896955d647915b3de6cfe5a191d7dc3de86edcb15cd802f6c2ec185be7835e4"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.5/effective_execution_commit_receipt.json",
+      "bytes": 1136,
+      "sha256": "b0b69c8f0afb5a5aa2169323d8fc09c0f26214778c6b83282ba19d695f124875"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.5/environment.json",
+      "bytes": 1543,
+      "sha256": "eb5b825bf28dae38fbdb554b6cfb670d915fd79b1c9429ffac27186ecac9f3d1"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.5/evaluator_source_binding.json",
+      "bytes": 5283,
+      "sha256": "a96ff4182a7b3c9237a06371f62e99561cb26a0c62ac7d2421953f417df2d820"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.5/execution_authorization_binding.json",
+      "bytes": 5744,
+      "sha256": "513d82b560c4d7df69b6c4cd53666a0e8e1eae2a0434c8034e5f0cdb1f8e35be"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.5/PHASE_REPORT.md",
+      "bytes": 5578,
+      "sha256": "a24ad0aec00b0107b16d4da54ed295395f9efa05b379299f70e4e430da647b03"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.5/sealed_package_receipt.json",
+      "bytes": 1632,
+      "sha256": "b2e91308abb89baea34c7023c2dead629f9c08365acaf4870318543dd49ced33"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.5/test_summary.json",
+      "bytes": 1814,
+      "sha256": "b44c64e6bafe2d48bcd0f29c826f883e1634fb12dcfae15688f0445a7db02262"
+    }
+  ],
+  "real_counters": {
+    "locked_test_real_accesses": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "cpu_inference_calls": 0,
+    "gpu_inference_calls": 0,
+    "new_training_runs": 0
+  }
+}

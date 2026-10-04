@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.5.1",
+  "generated_at_utc": "2026-10-03T07:48:40.0086566Z",
+  "audit_method": "git show <40-hex-commit>:<relative-path>; SHA-256 and byte count over stdout bytes",
+  "superseded_commit_audit": {
+    "commit": "5cf84a33641b7bc7a232fcd602b89671c63bb2ad",
+    "verdict": "FAIL",
+    "absent_at_commit": [
+      "docs/schemas/human-unsealing-authorization.v2.schema.json"
+    ],
+    "binding_mismatch": [
+      "ml/requirements.txt",
+      "ml/evaluation/__init__.py",
+      "ml/evaluation/calibration.py",
+      "ml/evaluation/metrics.py",
+      "ml/training/__init__.py",
+      "ml/training/loss.py",
+      "ml/training/mobilenetv3_forensics.py",
+      "research/evidence/phase-4c.2e/LOCKED_TEST_PREREGISTRATION.json",
+      "research/evidence/phase-4c.2e/candidate_checkpoint_binding.json",
+      "research/evidence/phase-4c.2e/confirmatory_metrics_plan.json",
+      "research/evidence/phase-4c.2e/unsealing_protocol.json",
+      "research/evidence/phase-4b.2/split-lock.json"
+    ],
+    "root_cause": "The prior binding recorded working-tree CRLF byte representations for multiple files and included a schema added after the claimed effective commit."
+  },
+  "replacement_commit_audit": {
+    "commit": "2bbb1109c8ab18c9ff7120ef004acd0ba7074716",
+    "verdict": "PASS",
+    "audited_objects": 22,
+    "missing_objects": 0,
+    "byte_count_mismatches": 0,
+    "sha256_mismatches": 0,
+    "worktree_runtime_drifts": 0,
+    "exact_values_source": "research/evidence/phase-4c.2g.0.5/evaluator_source_binding.json"
+  },
+  "runtime_surface_changed_after_5cf84a3": true
+}

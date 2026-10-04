@@ -1,0 +1,40 @@
+{
+  "timestamp_utc": "2026-10-02T01:53:04.030482+00:00",
+  "generated_at_utc": "2026-10-02T01:53:04.030482+00:00",
+  "clock_source": "SYSTEM_UTC_RUNTIME",
+  "timezone_aware": true,
+  "timestamp_future_check": "PASS",
+  "phase": "Phase 4C.2G.0.3",
+  "controller_name": "automated_windows_network_isolation_controller",
+  "controller_version": "1.0.0",
+  "controller_sha256": "2ba8e03170680b8c46780cf5f81b04426ea2ab7660f107ca951bf83668841952",
+  "execution_mode": "DryRun",
+  "dry_run_verdict": "DRY_RUN_INSPECTION_PASS",
+  "session_detection": {
+    "is_remote": false,
+    "reason": "Local interactive session verified (Console)"
+  },
+  "privilege_status": {
+    "is_administrator": false,
+    "elevation_strategy": "UAC detached process dispatch or user elevated launch"
+  },
+  "adapter_inventory_summary": {
+    "total_detected": 8,
+    "egress_target_count": 6,
+    "protected_adapter_count": 2,
+    "default_ipv4_routes_detected": 2,
+    "default_ipv6_routes_detected": 0
+  },
+  "scheduled_task_subsystem_available": true,
+  "recovery_script_destination": "data/research/local-artifacts/phase-4c.2g/RECOVER_NETWORK.ps1",
+  "uac_behavior_verified": "USER_UAC_CONFIRMATION_REQUIRED",
+  "real_counters": {
+    "locked_test_real_accesses": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "cpu_inference_calls": 0,
+    "gpu_inference_calls": 0,
+    "new_training_runs": 0
+  }
+}

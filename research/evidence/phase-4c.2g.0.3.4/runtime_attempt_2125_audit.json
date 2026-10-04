@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.3.4",
+  "classification": "AUDIT_OF_EXISTING_RUNTIME_ARTIFACTS_NO_NEW_LIVE_EXECUTION",
+  "sources": [
+    "data/research/local-artifacts/phase-4c.2g/automated_isolation_readiness_receipt.json",
+    "data/research/local-artifacts/phase-4c.2g/offline_verifier_execution_receipt.json",
+    "data/research/local-artifacts/phase-4c.2g/automated_isolation_worker.log"
+  ],
+  "observed_session": {
+    "controller_started_at_utc": "2026-10-02T14:25:04.836500+00:00",
+    "isolation_verified_at_utc": "2026-10-02T14:25:12.009901+00:00",
+    "offline_verifier_started_at_utc": "2026-10-02T14:25:12.442098+00:00",
+    "offline_verifier_completed_at_utc": "2026-10-02T14:25:14.642511+00:00",
+    "network_restored_at_utc": "2026-10-02T14:25:22.915430+00:00"
+  },
+  "controller_isolation_evidence": {
+    "isolation_verified": true,
+    "remaining_active_default_routes": 0,
+    "proxy_detected": false,
+    "persistent_routes_ignored": [
+      "0.0.0.0          0.0.0.0         26.0.0.1    9256"
+    ]
+  },
+  "offline_verifier_false_negative": {
+    "verdict": "USER_PHYSICAL_ACTION_REQUIRED",
+    "default_route_detected": false,
+    "active_vpn_detected": false,
+    "connected_network_adapters": [
+      "vEthernet (Default Switch)",
+      "vEthernet (WSL (Hyper-V firewall))",
+      "VMware Network Adapter VMnet8",
+      "VMware Network Adapter VMnet1"
+    ],
+    "finding": "All four listed adapters are protected internal or host-only adapters without active default-route ownership; connected state alone is not Internet-egress evidence."
+  },
+  "controller_terminal_evidence": {
+    "verdict": "OFFLINE_VERIFIER_EXIT_NON_ZERO",
+    "offline_verifier_receipt_existed": true,
+    "offline_verifier_receipt_sha256_recorded": null
+  },
+  "restoration_false_positive": {
+    "adapter": "Wi-Fi",
+    "pre_isolation_status": "Up",
+    "post_enable_admin_status": "Up",
+    "post_enable_operational_status": "Disconnected",
+    "recorded_restoration_result": "RESTORED_VERIFIED",
+    "correct_classification": "NETWORK_RECOVERY_REQUIRED"
+  },
+  "scientific_counters": {
+    "locked_test_real_accesses": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "cpu_inference_calls": 0,
+    "gpu_inference_calls": 0,
+    "new_training_runs": 0
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.9",
+  "generated_at_utc": "2026-10-03T19:11:04.3782043Z",
+  "status": "BLOCKED_SEALED_ORCHESTRATOR_ADAPTER_PARAMETER_BINDING",
+  "binding_model": "redacted_non_circular_evidence_seal",
+  "statement": "Every listed evidence file is bound by byte length and SHA-256. This provenance file intentionally excludes its own digest. No manifest contents, raw authorization, checkpoint bytes, or machine-local absolute artifact paths are published.",
+  "evidence_file_count": 6,
+  "files": [
+    {
+      "path": "research/evidence/phase-4c.2g.0.9/EVALUATOR_AUTHORIZATION_REQUEST.json",
+      "bytes": 3951,
+      "sha256": "4ed54e810c434909c9706c8a3299874d52330d7d0303be9234b8717d34e6c05d"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.9/exact_binding_audit.json",
+      "bytes": 2382,
+      "sha256": "df110b374e151a94814870f04f056deb3bcb2547dd2f11398beb8d7e8dde47ad"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.9/PHASE_REPORT.md",
+      "bytes": 3418,
+      "sha256": "1e60a02e386b586ab5d5a333afc5ff6de2021d63d8acb3c66d4ace1c337bcba9"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.9/post_approval_execution_plan.json",
+      "bytes": 2018,
+      "sha256": "f441cf7ffd056166409c8b00a3017091c6572882102e3529c09cee729aebf8e1"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.9/test_summary.json",
+      "bytes": 1983,
+      "sha256": "7d00a21e9b779c8e9f1600c186d35f4f84d51b0b5eff1ec0a9b7b72031695d69"
+    },
+    {
+      "path": "research/evidence/phase-4c.2g.0.9/windows_runtime_preflight.json",
+      "bytes": 3495,
+      "sha256": "7946de8c4f298fac12330499533ef7068a6285197ac209498304355dde75b501"
+    }
+  ],
+  "scientific_counters": {
+    "locked_test_preparation_accesses": 2,
+    "preparation_files_hashed": 1372,
+    "custodian_manifest_access_sessions": 1,
+    "custodian_files_hashed": 686,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "cpu_inference_calls": 0,
+    "gpu_inference_calls": 0,
+    "new_training_runs": 0
+  }
+}

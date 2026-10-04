@@ -1,0 +1,31 @@
+{
+  "timestamp_utc": "2026-10-02T15:42:01.7574453+00:00",
+  "generated_at_utc": "2026-10-02T15:42:01.7574453+00:00",
+  "clock_source": "SYSTEM_UTC_RUNTIME",
+  "timezone_aware": true,
+  "phase": "Phase 4C.2G.0.4",
+  "environment_type": "LIVE_READINESS_RETRY_AND_PRE_UNSEALING_EXECUTION_SURFACE_AUDIT",
+  "os": "Windows-11-10.0.26100",
+  "git": {
+    "branch": "research/phase-4c2g-locked-test-execution",
+    "starting_commit": "24284f6024c8df00233dd7633e34b7acdbab35fd",
+    "execution_package_commit": "2826a8274cb89ec548d6fac5c8ae50c1c2836202",
+    "execution_package_tree_clean": true,
+    "effective_evaluator_commit": "3cf75c2bf0c9835dd58897b7b36982732cab40ab"
+  },
+  "authorization": {
+    "human_approval_statement_received": false,
+    "authorization_artifact_created": false,
+    "authorization_consumed": false,
+    "reason_not_created": "No explicit user-authored authorization statement has been received. The assistant previously supplied example authorization wording, which does not constitute human approval."
+  },
+  "real_counters": {
+    "locked_test_real_accesses": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "cpu_inference_calls": 0,
+    "gpu_inference_calls": 0,
+    "new_training_runs": 0
+  }
+}

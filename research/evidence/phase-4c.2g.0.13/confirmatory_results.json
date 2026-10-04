@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "4C.2G.0.13",
+  "result_kind": "REAL_LOCKED_TEST_CONFIRMATORY_RESULT",
+  "protocol": "stage1_frozen_backbone_linear_probe",
+  "sample_size": 250,
+  "sources": 343,
+  "samples": 686,
+  "device": "cpu",
+  "per_checkpoint": {
+    "42": {"macro_f1": 0.5240558805642875, "balanced_accuracy": 0.5276967930029155, "auroc": 0.5421550544416017, "brier_score": 0.24854960576394428, "ece": 0.004062124003172296},
+    "1337": {"macro_f1": 0.4719883060970457, "balanced_accuracy": 0.5087463556851312, "auroc": 0.5346666779998129, "brier_score": 0.24974944520924072, "ece": 0.02974696368932406},
+    "2025": {"macro_f1": 0.5305763345800748, "balanced_accuracy": 0.5306122448979591, "auroc": 0.5420445562648217, "brier_score": 0.24842240296121945, "ece": 0.003241363337105026},
+    "3407": {"macro_f1": 0.5077919236995232, "balanced_accuracy": 0.5218658892128281, "auroc": 0.537590629754609, "brier_score": 0.2490952512316505, "ece": 0.0024398871005941736},
+    "9001": {"macro_f1": 0.5347629849629335, "balanced_accuracy": 0.5349854227405249, "auroc": 0.5465579817933004, "brier_score": 0.24838547730016416, "ece": 0.012318746597465489}
+  },
+  "primary": {
+    "metric": "arithmetic_mean_of_5_macro_f1",
+    "value": 0.513835085980773,
+    "between_seed_sd": 0.025545957602838978
+  },
+  "bootstrap": {
+    "resampling_unit": "unique_source_id",
+    "replicates": 10000,
+    "generator": "numpy.random.Generator(numpy.random.PCG64)",
+    "seed": 20261002,
+    "interval": "percentile_95_percent",
+    "ci_lower": 0.49976282750638307,
+    "ci_upper": 0.5273360991798881,
+    "distribution_sha256_float64_le": "6a0e39410bc635ca5de2b3312041f50ae7880e8b9f28701eacbf6d8c392f04a2"
+  },
+  "decision": {
+    "rule": "ci_lower_95 > 0.5000",
+    "success": false,
+    "verdict": "INSUFFICIENT_CONFIRMATORY_EVIDENCE"
+  },
+  "threshold_tuning": false,
+  "calibration_fitting": false,
+  "best_seed_selection": false,
+  "probability_ensemble": false
+}

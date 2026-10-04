@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.10",
+  "generated_at_utc": "2026-10-03T19:50:18.6606310Z",
+  "status": "READY_FOR_HUMAN_EVALUATOR_AUTHORIZATION",
+  "binding_model": "redacted_non_circular_evidence_seal",
+  "statement": "Every listed evidence file is bound by byte length and SHA-256. This file excludes its own digest. The execution archive remains external to Git; no manifest contents, checkpoint bytes, raw authorization, or credentials are published.",
+  "evidence_file_count": 10,
+  "files": [
+    {"path": "research/evidence/phase-4c.2g.0.10/EVALUATOR_AUTHORIZATION_REQUEST.json", "bytes": 4144, "sha256": "908fe693f3e8086e1d02f93fb107a8b6b473c28766cf60393afabadd99c68891"},
+    {"path": "research/evidence/phase-4c.2g.0.10/evaluator_source_binding.json", "bytes": 7465, "sha256": "69c394c193fbf7b8aaa1e27fffd9a2b547c3c9a2932d7728b8aba5c43747006e"},
+    {"path": "research/evidence/phase-4c.2g.0.10/execution_authorization_binding.json", "bytes": 7229, "sha256": "c3e9126ad45921a710bf3ea72573395de231de7b32ad6bc7a0bdf5ebe38c2768"},
+    {"path": "research/evidence/phase-4c.2g.0.10/package_receipt.json", "bytes": 1441, "sha256": "d380eda7116c3cf1c49bd093282026a33c62ce0ce9c79880d29f105248feb417"},
+    {"path": "research/evidence/phase-4c.2g.0.10/packaged_controller_preflight.json", "bytes": 2496, "sha256": "fed506b519b6ede10e6a99d9e5d552b32143e233c0eac5b243c26376af0add8c"},
+    {"path": "research/evidence/phase-4c.2g.0.10/PHASE_REPORT.md", "bytes": 4221, "sha256": "44ceff99e10bd935041204027dfdc4c9587ba60ee1ed48189adfe59df92367e7"},
+    {"path": "research/evidence/phase-4c.2g.0.10/scientific_invariant_audit.json", "bytes": 1667, "sha256": "d6e0a0f34b713b9865aa4528332dea8b1cdeecdd4567e131d334550e17294498"},
+    {"path": "research/evidence/phase-4c.2g.0.10/source_diff_root_cause.json", "bytes": 2286, "sha256": "9562e85063e5baf6dbf695527f19cf1db3b0338756efcf9a52f84be86dbd78c8"},
+    {"path": "research/evidence/phase-4c.2g.0.10/supersession_lineage.json", "bytes": 2168, "sha256": "a69b85b88d07eb8df24e2303dfb82697594984b41719046092d24ab30e1d21a7"},
+    {"path": "research/evidence/phase-4c.2g.0.10/test_summary.json", "bytes": 2343, "sha256": "fc542e30c2f4a02a0d7df5b5ceb3343d85c87dac31731cec1ce75250acf207ae"}
+  ],
+  "package": {"filename": "phase_4c2g_complete_executor_76fbfec.tar.gz", "bytes": 52089, "sha256": "2301238a1148ff0dd237132c1274c962148d601016fd59220cc876748883ea71", "stored_outside_git": true},
+  "scientific_counters": {"locked_test_preparation_accesses": 2, "preparation_files_hashed": 1372, "custodian_manifest_access_sessions": 1, "custodian_files_hashed": 686, "completed_real_unsealing_sessions": 0, "completed_real_model_evaluations": 0, "evaluation_attempts": 0, "cpu_inference_calls": 0, "gpu_inference_calls": 0, "new_training_runs": 0}
+}

@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.3.2",
+  "phase": "Phase 4C.2G.0.3.3",
+  "controller_path": "scripts/research/RUN_PHASE4C2G_AUTOMATED_ISOLATION.ps1",
+  "controller_version": "1.3.2",
+  "controller_bytes": 84930,
+  "controller_sha256": "804b94055ab3470a1863e80d0d3a172ff59c056e9b39664d68c58a6a95db5538",
+  "supported_modes": [
+    "-DryRun",
+    "-ReadinessTest",
+    "-ElevatedDetachedWorker",
+    "-ValidateRecoveryScriptOnly",
+    "-ValidateAdapterCmdletContractOnly"
+  ],
+  "adapter_binding_protocol": "RESOLVE_UNIQUE_OBJECT_AND_PIPE",
+  "scheduled_task_helper_protocol": "SCHEDULED_TASKS_CMDLET_WITH_SAFE_FALLBACK",
+  "route_isolation_protocol": "AUTHORITATIVE_ACTIVE_STORE_WITH_PERSISTENT_ROUTE_EXCLUSION",
+  "verdict": "CONTROLLER_HOTFIX_RESOLVED_READY_FOR_RETRY"
+}

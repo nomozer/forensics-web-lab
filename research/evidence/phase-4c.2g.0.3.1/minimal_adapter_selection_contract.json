@@ -1,0 +1,38 @@
+{
+  "timestamp_utc": "2026-10-02T02:15:32.620118+00:00",
+  "generated_at_utc": "2026-10-02T02:15:32.620118+00:00",
+  "clock_source": "SYSTEM_UTC_RUNTIME",
+  "timezone_aware": true,
+  "timestamp_future_check": "PASS",
+  "phase": "Phase 4C.2G.0.3.1",
+  "contract_name": "minimal_adapter_selection_contract",
+  "primary_identifier": "InterfaceIndex (ifIndex)",
+  "selection_criteria": {
+    "rule_1_ipv4_default_route": "Adapter owns active IPv4 default route (0.0.0.0/0)",
+    "rule_2_ipv6_default_route": "Adapter owns active IPv6 default route (::/0)",
+    "rule_3_vpn_tunnel_egress": "Active VPN/tunnel adapter owning active non-loopback egress route",
+    "rule_4_iterative_rescan": "Discovered secondary owner of remaining egress route during multi-round rescan"
+  },
+  "default_protected_categories": [
+    "Loopback pseudo-interfaces",
+    "Disconnected or disabled physical adapters",
+    "Host-only virtual adapters (e.g., VMnet1)",
+    "Internal virtual switches (e.g., WSL, Hyper-V Default Switch)",
+    "Internal virtual adapters without default route (e.g., VMnet8)"
+  ],
+  "fail_closed_triggers": [
+    "Ambiguous route owner (egress route on ifIndex not mappable to known adapter)",
+    "Unidentified egress routes detected in dry-run",
+    "Internal-only adapter selected without route evidence",
+    "Watchdog task read-back query failure"
+  ],
+  "real_counters": {
+    "locked_test_real_accesses": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "cpu_inference_calls": 0,
+    "gpu_inference_calls": 0,
+    "new_training_runs": 0
+  }
+}

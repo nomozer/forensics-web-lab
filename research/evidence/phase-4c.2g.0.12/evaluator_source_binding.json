@@ -1,0 +1,191 @@
+{
+  "authorization_component_names": [
+    "confirmatory_metrics",
+    "locked_test_evaluator",
+    "phase_4c2g_dataset",
+    "phase_4c2g_io",
+    "phase_4c2g_model",
+    "phase_4c2g_windows",
+    "run_confirmatory_cli",
+    "model_architecture",
+    "locked_test_manifest_schema",
+    "windows_authorized_session_orchestrator"
+  ],
+  "authorization_schema": {
+    "bytes": 5454,
+    "git_commit": "0658dce11a7790877ae1b0820645d2e5a7e9a710",
+    "relative_path": "docs/schemas/human-unsealing-authorization.v2.schema.json",
+    "sha256": "ee6e72d198646608c25cd6438737c8d625e8a3ce9c28c2ee5925b8516fcd8512"
+  },
+  "base_main_commit": "8a37966ea6ea55f58b589515f0c10bebae495b3a",
+  "binding_model": "inventory_hotfix_evaluator_plus_sealed_orchestrator_plus_package_commit",
+  "branch": "research/phase-4c2g-locked-test-execution",
+  "components": {
+    "calibration_support": {
+      "bytes": 1818,
+      "git_commit": "0658dce11a7790877ae1b0820645d2e5a7e9a710",
+      "relative_path": "ml/evaluation/calibration.py",
+      "sha256": "d755008551893446e86f1f33a8ab87fd273564a5eaea5e3bf55e26d2891dab69"
+    },
+    "checkpoint_binding": {
+      "bytes": 3519,
+      "git_commit": "0658dce11a7790877ae1b0820645d2e5a7e9a710",
+      "relative_path": "research/evidence/phase-4c.2e/candidate_checkpoint_binding.json",
+      "sha256": "b1363cb69e393927c6e2340a38e10865d16749939c1c391b28f2842666b31cfb"
+    },
+    "confirmatory_metrics": {
+      "bytes": 15704,
+      "git_commit": "0658dce11a7790877ae1b0820645d2e5a7e9a710",
+      "relative_path": "ml/evaluation/confirmatory_metrics.py",
+      "sha256": "706d120b0f8f00228d352b7ef300a701f0aefbe32de720c33db00145a4b68c3c"
+    },
+    "evaluation_package_init": {
+      "bytes": 335,
+      "git_commit": "0658dce11a7790877ae1b0820645d2e5a7e9a710",
+      "relative_path": "ml/evaluation/__init__.py",
+      "sha256": "b50f5f66202a338f02ecd71302752a71844894d17a56a80fff550a23ffcea199"
+    },
+    "legacy_metrics_support": {
+      "bytes": 3203,
+      "git_commit": "0658dce11a7790877ae1b0820645d2e5a7e9a710",
+      "relative_path": "ml/evaluation/metrics.py",
+      "sha256": "75ead5785f8f56c894bcd8ccff19a949d5d6d31a5f07b31682bbe25cd6a0918b"
+    },
+    "locked_test_evaluator": {
+      "bytes": 48119,
+      "git_commit": "0658dce11a7790877ae1b0820645d2e5a7e9a710",
+      "relative_path": "ml/evaluation/locked_test_evaluator.py",
+      "sha256": "dd4f359c0c41d1caef953a345b7ff09817a9f2a17369781278e27c2fe650d902"
+    },
+    "locked_test_manifest_schema": {
+      "bytes": 1412,
+      "git_commit": "0658dce11a7790877ae1b0820645d2e5a7e9a710",
+      "relative_path": "docs/schemas/locked-test-manifest.v1.schema.json",
+      "sha256": "86036e52513bcbf0a9dd62f7b78fe9c87e47144c35275c19cc5c032046bd5646"
+    },
+    "loss_support": {
+      "bytes": 1615,
+      "git_commit": "0658dce11a7790877ae1b0820645d2e5a7e9a710",
+      "relative_path": "ml/training/loss.py",
+      "sha256": "bb92dc961227f4e32a03f499c6a5f5356fbbf643a48ece1b05659a9ecf3c1829"
+    },
+    "metrics_plan": {
+      "bytes": 3264,
+      "git_commit": "0658dce11a7790877ae1b0820645d2e5a7e9a710",
+      "relative_path": "research/evidence/phase-4c.2e/confirmatory_metrics_plan.json",
+      "sha256": "259bb88067f2465186e466151de1687def89dc9ac288402ae5665de1ef446d1a"
+    },
+    "model_architecture": {
+      "bytes": 1961,
+      "git_commit": "0658dce11a7790877ae1b0820645d2e5a7e9a710",
+      "relative_path": "ml/training/mobilenetv3_forensics.py",
+      "sha256": "b60e936fffebffef42530e92a538ab7c279a027fa3e7e0091a41e3286c780592"
+    },
+    "phase_4c2g_dataset": {
+      "bytes": 9404,
+      "git_commit": "0658dce11a7790877ae1b0820645d2e5a7e9a710",
+      "relative_path": "ml/evaluation/phase_4c2g_dataset.py",
+      "sha256": "ee4e190f9cfe9bf6cf2867ee1ca1d6cf48cc9664a06f2f7f72a08f82d97a8543"
+    },
+    "phase_4c2g_io": {
+      "bytes": 1116,
+      "git_commit": "0658dce11a7790877ae1b0820645d2e5a7e9a710",
+      "relative_path": "ml/evaluation/phase_4c2g_io.py",
+      "sha256": "21a3e3dd9885456077ca658e82b9e35c01cc4c5167014b9bca2d13ee8245466b"
+    },
+    "phase_4c2g_model": {
+      "bytes": 4447,
+      "git_commit": "0658dce11a7790877ae1b0820645d2e5a7e9a710",
+      "relative_path": "ml/evaluation/phase_4c2g_model.py",
+      "sha256": "0b14080e51888fe26f82dd78265deb0149a0454639d96b9493745e78c65d9404"
+    },
+    "phase_4c2g_windows": {
+      "bytes": 5112,
+      "git_commit": "0658dce11a7790877ae1b0820645d2e5a7e9a710",
+      "relative_path": "ml/evaluation/phase_4c2g_windows.py",
+      "sha256": "e4ab78c5d4479dab0463b0b73f99997331492364d74bf11fd06e06c8fa7b666f"
+    },
+    "preregistration": {
+      "bytes": 2635,
+      "git_commit": "0658dce11a7790877ae1b0820645d2e5a7e9a710",
+      "relative_path": "research/evidence/phase-4c.2e/LOCKED_TEST_PREREGISTRATION.json",
+      "sha256": "6e171597aba32cf255896e3bceefb0f640b6576ca62abe8ea0de5036b239e39d"
+    },
+    "requirements": {
+      "bytes": 186,
+      "git_commit": "0658dce11a7790877ae1b0820645d2e5a7e9a710",
+      "relative_path": "ml/requirements.txt",
+      "sha256": "aa6408d0c7057641bb71d6433cd6b796a2d1ac45d110b2bc9c61113f02efa617"
+    },
+    "run_confirmatory_cli": {
+      "bytes": 24195,
+      "git_commit": "0658dce11a7790877ae1b0820645d2e5a7e9a710",
+      "relative_path": "ml/evaluation/run_phase_4c2g_confirmatory.py",
+      "sha256": "6ce3abe9e5110c3e85907c9915ddf6c9b85181c13b1573bd06ca0d8e23999ae4"
+    },
+    "source_provenance_split_lock": {
+      "bytes": 7974,
+      "git_commit": "0658dce11a7790877ae1b0820645d2e5a7e9a710",
+      "relative_path": "research/evidence/phase-4b.2/split-lock.json",
+      "sha256": "9e96234f7cca6a71156d1f5e32c83c44c7e4ac9682a509840848e8d14f2b8ab1"
+    },
+    "training_package_init": {
+      "bytes": 203,
+      "git_commit": "0658dce11a7790877ae1b0820645d2e5a7e9a710",
+      "relative_path": "ml/training/__init__.py",
+      "sha256": "0eeb9dbcb52577c921a0026bdffab1f39ce3c996248b4a59057b0b0aebfd57ad"
+    },
+    "unsealing_protocol": {
+      "bytes": 2539,
+      "git_commit": "0658dce11a7790877ae1b0820645d2e5a7e9a710",
+      "relative_path": "research/evidence/phase-4c.2e/unsealing_protocol.json",
+      "sha256": "4ad62ffe03029b5b1bf2a0c9db7e04c884bdf023fef0873c0c65c688c7a977dc"
+    },
+    "windows_authorized_session_orchestrator": {
+      "bytes": 37740,
+      "git_commit": "597a79af3cc76707edeefcb6dfc1d93f5f0e5ae1",
+      "relative_path": "scripts/research/RUN_PHASE4C2G_AUTHORIZED_SESSION.ps1",
+      "sha256": "878456e7f71c7f8755ad6760d163afe199bfaff5fc793b0ffd0ff2a7359f3047"
+    }
+  },
+  "contract_name": "cross_component_inventory_hotfix_execution_source_binding",
+  "effective_evaluator_commit": "0658dce11a7790877ae1b0820645d2e5a7e9a710",
+  "effective_execution_commit": "0658dce11a7790877ae1b0820645d2e5a7e9a710",
+  "execution_package_commit": "0658dce11a7790877ae1b0820645d2e5a7e9a710",
+  "historical_packages_preserved": [
+    "phase_4c2g_complete_executor_76fbfec.tar.gz"
+  ],
+  "incident_preservation": {
+    "furthest_access_stage": "PRE_READ_UNSEAL",
+    "locked_test_evaluation_attempts": 0,
+    "locked_test_metric_computations": 0,
+    "locked_test_prediction_rows": 0,
+    "prior_authorization_status": "CONSUMED",
+    "prior_session_terminal_state": "INTERRUPTED_PRE_EVALUATION"
+  },
+  "legacy_effective_execution_commit_semantics": "evaluator_effective_commit_for_sealed_driver_compatibility",
+  "manifest_commitment": {
+    "bytes": 174337,
+    "sample_count": 686,
+    "sha256": "9d8564bdd64f5d5965e7f5470b322aa0769f4bf45b78ef8547134b07a71d18e7",
+    "source_count": 343
+  },
+  "orchestrator_hotfix_commit": "597a79af3cc76707edeefcb6dfc1d93f5f0e5ae1",
+  "phase": "Phase 4C.2G.0.12",
+  "real_counters": {
+    "completed_real_model_evaluations": 0,
+    "completed_real_unsealing_sessions": 1,
+    "cpu_inference_calls": 0,
+    "evaluation_attempts": 0,
+    "gpu_inference_calls": 0,
+    "interrupted_real_unsealing_sessions": 1,
+    "locked_test_real_accesses": 1,
+    "metric_computations": 0,
+    "new_training_runs": 0,
+    "prediction_rows": 0
+  },
+  "schema_version": "4.0.0",
+  "superseded_effective_evaluator_commit": "2bbb1109c8ab18c9ff7120ef004acd0ba7074716",
+  "supersession_reason": "CROSS_COMPONENT_LOCKED_TEST_INVENTORY_CONTRACT_MISMATCH",
+  "timestamp_utc": "2026-10-04T00:59:29.207163Z"
+}

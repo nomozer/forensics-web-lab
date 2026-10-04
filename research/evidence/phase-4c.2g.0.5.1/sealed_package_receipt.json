@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.5.1",
+  "generated_at_utc": "2026-10-03T07:48:40.0086566Z",
+  "archive": {
+    "local_path_outside_git": "data/research/local-artifacts/phase-4c.2g.0.5/phase_4c2g_complete_executor_2bbb110.tar.gz",
+    "filename": "phase_4c2g_complete_executor_2bbb110.tar.gz",
+    "bytes": 45818,
+    "sha256": "05c32e11064616bf01a748ac7ea0ec5e089a5980463852d430c0b8c788ee7a2b",
+    "member_count": 25,
+    "format": "tar.gz",
+    "deterministic_mtime": 0
+  },
+  "commit_binding": {
+    "effective_evaluator_commit": "2bbb1109c8ab18c9ff7120ef004acd0ba7074716",
+    "execution_package_commit": "2bbb1109c8ab18c9ff7120ef004acd0ba7074716"
+  },
+  "binding": {
+    "path": "research/evidence/phase-4c.2g.0.5/execution_authorization_binding.json",
+    "bytes": 5744,
+    "sha256": "513d82b560c4d7df69b6c4cd53666a0e8e1eae2a0434c8034e5f0cdb1f8e35be",
+    "status": "BLOCKED_MANIFEST_COMMITMENT_ABSENT"
+  },
+  "audit": {
+    "regular_files_only": true,
+    "absolute_paths": 0,
+    "path_traversal_entries": 0,
+    "symlinks": 0,
+    "hardlinks": 0,
+    "device_entries": 0,
+    "credential_files": 0,
+    "dataset_files": 0,
+    "checkpoint_or_weight_files": 0,
+    "locked_test_artifacts": 0,
+    "authorization_artifacts": 0,
+    "deterministic_rebuild": "PASS",
+    "self_contained_import_test": "PASS"
+  }
+}

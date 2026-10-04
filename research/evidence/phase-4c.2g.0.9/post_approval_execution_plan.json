@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.9",
+  "generated_at_utc": "2026-10-03T19:06:24.1193805Z",
+  "activation_status": "DISABLED_RUNTIME_PREFLIGHT_BLOCKED",
+  "command_prepared": true,
+  "command_must_not_run": true,
+  "required_console": "local elevated Windows PowerShell after explicit exact authorization",
+  "command_template": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts\\research\\RUN_PHASE4C2G_AUTHORIZED_SESSION.ps1 -PythonExe <ML_VENV_PYTHON> -PackageArchive <EXACT_RESEALED_PACKAGE> -AuthorizationFile <HUMAN_AUTHORIZATION_JSON> -ExecutionAuthorizationBinding <EXACT_COMMITTED_BINDING_JSON> -SourceBinding <EXACT_SOURCE_BINDING_JSON> -AuthorizationSchema docs\\schemas\\human-unsealing-authorization.v2.schema.json -CheckpointDir <EXACT_CHECKPOINT_ROOT> -LockedTestRoot <READ_ONLY_VHDX_MOUNT_ROOT> -Manifest <LOCKED_TEST_MANIFEST_JSON> -ManifestSchema docs\\schemas\\locked-test-manifest.v1.schema.json -OutputDir <NEW_EMPTY_OUTPUT_DIR> -SessionId <AUTHORIZED_SESSION_ID> -Device cpu -BatchSize 32",
+  "ordered_cleanup_contract": [
+    "restore_exact_adapters_disabled_by_session",
+    "verify_adapter_admin_and_operational_status_up",
+    "verify_network_recovery_watchdog_absent_only_after_restoration",
+    "dismount_vhdx",
+    "verify_vhdx_detached_and mount drive absent",
+    "seal restoration receipt and output checksums"
+  ],
+  "blocker": {
+    "code": "BLOCKED_SEALED_ORCHESTRATOR_ADAPTER_PARAMETER_BINDING",
+    "required_remediation": [
+      "replace direct Disable-NetAdapter/Enable-NetAdapter -InterfaceIndex calls with exact-object resolution and InputObject pipeline semantics",
+      "apply the same repair to the generated watchdog path",
+      "add a live cmdlet metadata/WhatIf regression test",
+      "reseal package and regenerate exact component/package bindings",
+      "repeat non-mutating fixture preflight",
+      "obtain a fresh human authorization bound to the repaired package"
+    ]
+  },
+  "automatic_retry_after_reservation": false
+}

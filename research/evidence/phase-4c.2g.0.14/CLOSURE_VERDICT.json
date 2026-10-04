@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "4C.2G",
+  "closure_phase": "4C.2G.0.14",
+  "status": "CLOSED",
+  "confirmatory_verdict": "INSUFFICIENT_CONFIRMATORY_EVIDENCE",
+  "confirmatory_success": false,
+  "primary_mean_macro_f1": 0.513835085980773,
+  "percentile_95_ci": [0.49976282750638307, 0.5273360991798881],
+  "decision_rule": "ci_lower_95 > 0.5000",
+  "result_changed_by_closure_analysis": false,
+  "wrapper_false_negative": {
+    "confirmed": true,
+    "controller_exit_code": 0,
+    "execution_receipt_status": "COMPLETED_VALID",
+    "cause": "The outer wrapper checked non-contract confirmatory_result.json while the sealed controller published aggregate_confirmatory_metrics.json and confirmatory_decision.json.",
+    "scientific_result_affected": false,
+    "retry_performed": false
+  },
+  "post_hoc_analysis_classification": "EXPLORATORY_POST_HOC_LOCKED_TEST_ARTIFACT_ANALYSIS_NOT_CONFIRMATORY",
+  "new_inference_calls": 0,
+  "new_training_runs": 0,
+  "locked_test_reuse_for_tuning_prohibited": true,
+  "next_action": "Development-only experiments followed, if justified, by a newly acquired source-disjoint independently sealed validation set under a new preregistration."
+}

@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://forensics-web-lab.local/schemas/human-manifest-custodian-authorization.v1.schema.json",
+  "title": "HumanManifestCustodianAuthorizationV1",
+  "description": "Prospective authorization for one role-separated data-integrity manifest sealing session; never authorizes model evaluation.",
+  "type": "object",
+  "required": [
+    "status",
+    "authorization_id",
+    "authorized_by",
+    "role_separation_mode",
+    "authorized_at_utc",
+    "authorization_purpose",
+    "maximum_manifest_custodian_sealing_sessions",
+    "custodian_tool_commit",
+    "custodian_package_commit",
+    "custodian_component_hashes",
+    "sealed_package_sha256",
+    "sealed_package_bytes",
+    "locked_test_split_seal",
+    "no_model_execution_acknowledgment",
+    "no_metric_computation_acknowledgment",
+    "no_data_modification_acknowledgment",
+    "no_manifest_content_disclosure_acknowledgment",
+    "data_integrity_access_not_model_evaluation_acknowledgment"
+  ],
+  "properties": {
+    "status": {"const": "AUTHORIZED"},
+    "authorization_id": {"type": "string", "minLength": 8},
+    "authorized_by": {"type": "string", "minLength": 3},
+    "role_separation_mode": {
+      "enum": [
+        "independent_human_data_custodian",
+        "role_separated_automated_custodian_process"
+      ]
+    },
+    "authorized_at_utc": {"type": "string", "format": "date-time"},
+    "authorization_purpose": {"const": "create_locked_test_manifest_commitment_only"},
+    "maximum_manifest_custodian_sealing_sessions": {"const": 1},
+    "custodian_tool_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "custodian_package_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "custodian_component_hashes": {
+      "type": "object",
+      "required": [
+        "manifest_sealer",
+        "windows_custodian_controller",
+        "custodian_authorization_schema",
+        "locked_test_manifest_schema",
+        "split_lock"
+      ],
+      "properties": {
+        "manifest_sealer": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "windows_custodian_controller": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "custodian_authorization_schema": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "locked_test_manifest_schema": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "split_lock": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "additionalProperties": false
+    },
+    "sealed_package_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "sealed_package_bytes": {"type": "integer", "minimum": 1},
+    "locked_test_split_seal": {
+      "const": "519e7a0e6815e781d1cefa95971e5221ac1f25656837374d8dc4ba41401fded9"
+    },
+    "no_model_execution_acknowledgment": {"const": true},
+    "no_metric_computation_acknowledgment": {"const": true},
+    "no_data_modification_acknowledgment": {"const": true},
+    "no_manifest_content_disclosure_acknowledgment": {"const": true},
+    "data_integrity_access_not_model_evaluation_acknowledgment": {"const": true}
+  },
+  "additionalProperties": false
+}

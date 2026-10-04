@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "4C.2G.0.13",
+  "approval_source": "direct_user_message_in_this_session",
+  "approved_request_sha256": "52861ac098abd3dc7e6b45d30fa7c887dd921eba355b945b3436261d9c773134",
+  "authorization_id": "phase4c2g012-recovery-dung-20261004T024159Z",
+  "authorization_status": "CONSUMED",
+  "authorization_bytes": 2878,
+  "authorization_sha256": "2fba749b33b2ea9f1e18840115ff1e158416e721e1cdc0d17696990e775c006f",
+  "authorized_identity": "dung",
+  "human_signature_claim": "NONE",
+  "cryptographic_signature_claimed": false,
+  "effective_evaluator_commit": "0658dce11a7790877ae1b0820645d2e5a7e9a710",
+  "execution_package_commit": "0658dce11a7790877ae1b0820645d2e5a7e9a710",
+  "archive": {
+    "name": "phase_4c2g_complete_executor_0658dce.tar.gz",
+    "bytes": 52896,
+    "sha256": "9ea55d331bff1e0d4e5ef111621733a04926d913b48f0144e238b9aea3dad83b"
+  },
+  "manifest": {
+    "bytes": 174337,
+    "sha256": "9d8564bdd64f5d5965e7f5470b322aa0769f4bf45b78ef8547134b07a71d18e7",
+    "sources": 343,
+    "samples": 686
+  },
+  "checkpoint_sha256s": {
+    "42": "c941f42ed00adb098962ddb43c0f2f7d897e48e20957cddc0c491243f8730c92",
+    "1337": "69e706f9062f050ccbfd2affb72d63d5dde9d12f02c1e64c762b0ea6719073f1",
+    "2025": "92ce5ee986d487fdf14374842067d0684fc7669f5ecb32c7d603f6813942ceee",
+    "3407": "4897821ef0a97df9f1c51acde8d4ac01d383aa3a7b9e7ee55bbc3b3108847868",
+    "9001": "5f0f8803adcb7eec88d47e398ef8b2002b46e740c263b12abc2ba392822a91c3"
+  },
+  "binding_preflight": "PASS",
+  "component_count_verified": 22,
+  "historical_authorization_status": "CONSUMED_REMAINS_CONSUMED",
+  "authorization_history_reset": false,
+  "raw_authorization_committed_to_git": false
+}

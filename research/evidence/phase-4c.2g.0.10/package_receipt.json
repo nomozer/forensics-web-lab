@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.10",
+  "generated_at_utc": "2026-10-03T19:50:18.6606310Z",
+  "status": "SEALED_AND_EXACT_PACKAGED_CONTROLLER_PREFLIGHT_PASS",
+  "archive": {"filename": "phase_4c2g_complete_executor_76fbfec.tar.gz", "bytes": 52089, "sha256": "2301238a1148ff0dd237132c1274c962148d601016fd59220cc876748883ea71", "member_count": 25, "storage": "external_to_git"},
+  "commit_roles": {
+    "evaluator_effective_commit": "2bbb1109c8ab18c9ff7120ef004acd0ba7074716",
+    "orchestrator_hotfix_commit": "597a79af3cc76707edeefcb6dfc1d93f5f0e5ae1",
+    "execution_package_commit": "76fbfec84f8fce9b7afd92a266c0d3a7c2f6ca48"
+  },
+  "controller": {"relative_path": "scripts/research/RUN_PHASE4C2G_AUTHORIZED_SESSION.ps1", "bytes": 37740, "sha256": "878456e7f71c7f8755ad6760d163afe199bfaff5fc793b0ffd0ff2a7359f3047"},
+  "bindings": {
+    "source_binding_sha256": "69c394c193fbf7b8aaa1e27fffd9a2b547c3c9a2932d7728b8aba5c43747006e",
+    "execution_authorization_binding_sha256": "c3e9126ad45921a710bf3ea72573395de231de7b32ad6bc7a0bdf5ebe38c2768",
+    "authorization_request_sha256": "908fe693f3e8086e1d02f93fb107a8b6b473c28766cf60393afabadd99c68891",
+    "cross_document_verification": "EXECUTION_AUTHORIZATION_BINDING_VERIFIED"
+  },
+  "archive_contents": {"contains_dataset": false, "contains_checkpoints": false, "contains_authorization_artifact": false},
+  "preflight": "EXACT_PACKAGED_CONTROLLER_PREFLIGHT_PASS"
+}

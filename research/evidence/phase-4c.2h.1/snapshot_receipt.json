@@ -1,0 +1,30 @@
+{
+  "archive": {
+    "bytes": 9509956,
+    "filename": "phase_4c2h_code_75568d1.tar.gz",
+    "location": "external_local_artifacts_not_git",
+    "sha256": "2bd393873be3291084f86a329a34566bd9aa46c0efd8aa9f155e47571b132c18"
+  },
+  "backbone_state_fingerprint": "d42bb32ad876b9de2b04a6ccd245f76c4d0c6bb3ded74c25261cf14720c7e7d5",
+  "deterministic_rebuild": {
+    "archive_bytes_equal": true,
+    "archive_sha256_equal": true,
+    "runs": 2
+  },
+  "final_packaged_import_audit": "PASS",
+  "member_count_excluding_manifest": 11,
+  "preliminary_package_rejection": {
+    "reason": "ml.evaluation.__init__ imported calibration.py but preliminary snapshot omitted that dependency",
+    "sha256": "2c24d53f0b40f566634346f77ecccc0e300691ce6b1afe22c267568073bfab5f",
+    "status": "REJECTED_BEFORE_PILOT"
+  },
+  "pretrained_weights": {
+    "bytes": 10306551,
+    "sha256": "047dcff4addef86ea5bc2eff13c9614dc11f47ab1160d0a71a25e7db994f4e1f"
+  },
+  "protocol_sha256": "87d36c11d08e0f0637c9a2f53770dadce9c9f0ccbf6970d163db1d1c621d3471",
+  "schema_version": "1.0.0",
+  "snapshot_manifest_sha256": "3800d87871c4121ab2368fa330331b53739f632f4ba4fd8257ef5904ec423711",
+  "source_commit": "75568d1c03d89e02ad654df75c969924b857ee78",
+  "status": "SEALED_AND_PACKAGED_IMPORT_PASS"
+}

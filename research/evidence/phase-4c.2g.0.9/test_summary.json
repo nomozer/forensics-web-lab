@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.9",
+  "generated_at_utc": "2026-10-03T19:06:24.1193805Z",
+  "gates": [
+    {"gate": "21 Git-object component hashes and worktree parity", "result": "PASS"},
+    {"gate": "sealed execution package hash/bytes/member count", "result": "PASS"},
+    {"gate": "authorization schema hash/bytes", "result": "PASS"},
+    {"gate": "five checkpoint streaming SHA-256/bytes", "result": "PASS", "torch_load_calls": 0, "model_forward_count": 0},
+    {"gate": "manifest commitment SHA-256/bytes/cardinality", "result": "PASS"},
+    {"command": "pytest ml/tests/test_phase_4c2f_evaluator.py -q", "result": "PASS", "passed": 45},
+    {"command": "pytest ml/tests/test_phase_4c2g_execution.py -q", "result": "PASS", "passed": 24},
+    {"command": "RUN_PHASE4C2G_AUTHORIZED_SESSION.ps1 -ContractValidationOnly", "result": "PASS", "mutations": 0},
+    {"gate": "Windows Disable-NetAdapter -InterfaceIndex compatibility", "result": "FAIL", "error_id": "NamedParameterNotFound,Disable-NetAdapter"},
+    {"gate": "Windows Enable-NetAdapter -InterfaceIndex compatibility", "result": "FAIL", "error_id": "NamedParameterNotFound,Enable-NetAdapter"},
+    {"command": "pnpm test", "result": "PASS", "workspace_tests_passed": 57, "continuity_unit_tests_passed": 13},
+    {"command": "pnpm typecheck", "result": "PASS"},
+    {"command": "pnpm build", "result": "PASS", "note": "Existing Vite chunk-size warning only."},
+    {"command": "git diff --check", "result": "PASS"},
+    {"command": "pnpm continuity:check", "result": "PASS"}
+  ],
+  "test_interpretation": "Hermetic fixtures validate evaluator contracts but do not cover the sealed controller's live NetAdapter parameter binding. The runtime probe closes that gap and blocks authorization presentation.",
+  "scientific_counters": {
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "cpu_inference_calls": 0,
+    "gpu_inference_calls": 0,
+    "new_training_runs": 0
+  }
+}

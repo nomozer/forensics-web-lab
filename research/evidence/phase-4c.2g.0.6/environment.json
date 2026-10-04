@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.6",
+  "generated_at_utc": "2026-10-03T08:51:13.9062474Z",
+  "environment_type": "SYNTHETIC_CUSTODIAN_WORKFLOW_BUILD_AND_SEAL",
+  "os": "Windows-11-10.0.26100",
+  "git": {
+    "branch": "research/phase-4c2g-locked-test-execution",
+    "starting_commit": "12df22e23ea36c08f409923717b4dd4f15100188",
+    "superseded_functional_commit": "09ab2c8ca5f230547b8da6d460bdbbfa696189a6",
+    "effective_custodian_commit": "35b356304bc1a8187d3ec2b941b0269928ad1ce5",
+    "base_main_commit": "8a37966ea6ea55f58b589515f0c10bebae495b3a"
+  },
+  "operations_performed": {
+    "uac_or_real_custodian_session": false,
+    "authorization_artifact_created": false,
+    "locked_test_mounted_or_listed": false,
+    "locked_test_read_or_hashed": false,
+    "evaluator_or_model_forward": false,
+    "training_or_inference": false
+  },
+  "real_counters": {
+    "custodian_manifest_access_sessions": 0,
+    "custodian_files_hashed": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "phase": "4C.2G.0",
+  "generated_at_utc": "2026-10-01T19:30:00Z",
+  "system": {
+    "os": "Windows-11-10.0.26100-SP0",
+    "architecture": "AMD64",
+    "python_version": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+    "git_branch": "research/phase-4c2g-locked-test-execution",
+    "git_head_commit": "2826a8274cb89ec548d6fac5c8ae50c1c2836202"
+  },
+  "libraries": {
+    "torch": "2.5.1+cu121",
+    "scikit-learn": "1.9.1",
+    "numpy": "2.5.3",
+    "jsonschema": "4.26.0"
+  },
+  "hardware_observation": {
+    "cuda_available": true,
+    "device_policy": "CPU_PRIORITIZED",
+    "rationale": "CPU được ưu tiên để giảm phụ thuộc CUDA và cải thiện khả năng tái lập trong một runtime đã niêm phong. Bitwise parity giữa các host, BLAS, PyTorch hoặc kiến trúc CPU khác nhau không được giả định nếu chưa được kiểm chứng."
+  },
+  "accounting_counters": {
+    "locked_test_real_accesses": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "gpu_inference_calls": 0
+  }
+}

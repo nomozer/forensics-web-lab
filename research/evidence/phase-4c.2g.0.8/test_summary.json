@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.8",
+  "generated_at_utc": "2026-10-03T14:47:29.9448348Z",
+  "gates": [
+    {"gate": "authorization schema and exact package preflight", "result": "PASS"},
+    {"gate": "five-component Git-object audit", "result": "PASS", "objects": 5},
+    {"gate": "runtime Windows read-only VHDX proof", "result": "PASS", "canary_writes": 0},
+    {"gate": "atomic commitment and SHA-256 sidecar parity", "result": "PASS"},
+    {"gate": "post-commit elevated cleanup adjudication", "result": "PASS", "controller_retry_count": 0},
+    {"command": "pytest ml/tests/test_phase_4c2g_manifest_custodian.py", "result": "PASS", "passed": 14, "warnings": 1, "note": "Initial sandbox run was invalid because sandbox ACL denied temp-directory creation; required unsandboxed rerun passed."},
+    {"command": "pnpm test", "result": "PASS", "workspace_tests_passed": 57, "continuity_unit_tests_passed": 13},
+    {"command": "pnpm typecheck", "result": "PASS"},
+    {"command": "pnpm build", "result": "PASS", "note": "Existing Vite chunk-size warning only."},
+    {"command": "pnpm continuity:check", "result": "PASS"},
+    {"command": "git diff --check", "result": "PASS"}
+  ],
+  "scientific_counters": {
+    "locked_test_preparation_accesses": 2,
+    "preparation_files_hashed": 1372,
+    "custodian_manifest_access_sessions": 1,
+    "custodian_files_hashed": 686,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "new_training_runs": 0
+  }
+}

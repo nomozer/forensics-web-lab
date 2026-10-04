@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.5.1",
+  "generated_at_utc": "2026-10-03T07:48:40.0086566Z",
+  "verdict": "BLOCKED_MANIFEST_COMMITMENT_ABSENT",
+  "locked_test_manifest_sha256": null,
+  "search_scope": [
+    "research/evidence/phase-4c.2e/LOCKED_TEST_PREREGISTRATION.json",
+    "research/evidence/phase-4c.2e/unsealing_protocol.json",
+    "research/evidence/phase-4c.2e/candidate_checkpoint_binding.json",
+    "research/evidence/phase-4b.2/split-lock.json"
+  ],
+  "findings": [
+    {
+      "sha256": "519e7a0e6815e781d1cefa95971e5221ac1f25656837374d8dc4ba41401fded9",
+      "semantic_type": "locked source-ID split seal",
+      "accepted_as_locked_test_manifest_commitment": false
+    },
+    {
+      "sha256": "411e35da80843a10f7bb22e33efac8a4d1db70110dbda91cadbbf39532c9312d",
+      "semantic_type": "development/inner-validation bundle manifest",
+      "accepted_as_locked_test_manifest_commitment": false
+    }
+  ],
+  "locked_test_read_or_hashed": false,
+  "required_action": "Independent data custodian must commit the exact per-sample locked-test manifest SHA-256 before authorization and unsealing."
+}

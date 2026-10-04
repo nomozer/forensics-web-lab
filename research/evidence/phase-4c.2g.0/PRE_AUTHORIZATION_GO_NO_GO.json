@@ -1,0 +1,24 @@
+{
+  "phase": "4C.2G.0",
+  "evaluated_at_utc": "2026-10-01T19:30:00Z",
+  "gate_type": "PRE_AUTHORIZATION_GATE",
+  "checks": {
+    "execution_package_sealed": true,
+    "final_effective_evaluator_commit_frozen": true,
+    "final_effective_evaluator_commit": "3cf75c2bf0c9835dd58897b7b36982732cab40ab",
+    "execution_package_commit": "2826a8274cb89ec548d6fac5c8ae50c1c2836202",
+    "schema_bound_to_effective_commit": true,
+    "canonical_checkpoint_hashes_verified": true,
+    "runtime_offline_readiness_verified_by_fixture": true,
+    "authorization_request_pending": true,
+    "no_authorized_artifact_in_git": true,
+    "locked_test_real_accesses": 0,
+    "completed_real_unsealing_sessions": 0,
+    "completed_real_model_evaluations": 0,
+    "evaluation_attempts": 0,
+    "gpu_inference_calls": 0,
+    "actual_execution_network_isolation": "NOT_YET_VERIFIED"
+  },
+  "verdict": "RUNTIME_PREPARATION_REQUIRED",
+  "verdict_rationale": "The execution package, evaluator code, and authorization request are fully prepared and sealed. All safety invariants, synthetic pipeline fixtures, and accounting counters are strictly verified at zero. Because actual physical network isolation must be established on the execution host prior to unsealing, the system pauses at RUNTIME_PREPARATION_REQUIRED. Human unsealing authorization must NOT be issued until the offline runtime environment is verified."
+}

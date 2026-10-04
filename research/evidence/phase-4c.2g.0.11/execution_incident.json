@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.11",
+  "session_id": "phase4c2g-eval-76fbfec-dung-20261003T201057Z",
+  "authorization_id": "phase4c2g010-dung-20261003T201057Z",
+  "authorization_request_sha256": "908fe693f3e8086e1d02f93fb107a8b6b473c28766cf60393afabadd99c68891",
+  "authorization_status": "CONSUMED_BY_ONE_INTERRUPTED_UNSEALING_SESSION",
+  "human_signature_claim": "NONE",
+  "evaluator_commit": "2bbb1109c8ab18c9ff7120ef004acd0ba7074716",
+  "execution_package_commit": "76fbfec84f8fce9b7afd92a266c0d3a7c2f6ca48",
+  "archive": {
+    "filename": "phase_4c2g_complete_executor_76fbfec.tar.gz",
+    "bytes": 52089,
+    "sha256": "2301238a1148ff0dd237132c1274c962148d601016fd59220cc876748883ea71"
+  },
+  "manifest_sha256": "9d8564bdd64f5d5965e7f5470b322aa0769f4bf45b78ef8547134b07a71d18e7",
+  "runtime_guards": {
+    "authorization_and_package_preflight": "PASS",
+    "network_isolation": "PASS",
+    "os_enforced_read_only_vhdx": "PASS",
+    "canary_writes": 0
+  },
+  "interruption": {
+    "stage": "manifest_inventory_validation_after_pre_read_unseal_before_evaluation_reservation",
+    "error": "Locked-test file inventory mismatch: missing=[], extra=['custodian_inventory.json']",
+    "human_adjudication_required": true,
+    "automatic_retry_permitted": false
+  },
+  "metrics": {
+    "per_checkpoint": "NOT_EVALUATED",
+    "aggregate_mean_macro_f1": "NOT_EVALUATED",
+    "source_cluster_bootstrap_95_percent_ci": "NOT_EVALUATED",
+    "confirmatory_verdict": "NOT_COMPUTED_SESSION_INTERRUPTED_BEFORE_MODEL_EVALUATION"
+  },
+  "verdict": "BLOCKED_AUTHORIZATION_CONSUMED_CUSTODIAN_INVENTORY_METADATA_MISMATCH"
+}

@@ -1,0 +1,62 @@
+{
+  "timestamp_utc": "2026-10-02T01:05:48.000000+00:00",
+  "phase": "Phase 4C.2G.0.2",
+  "worktree_verification_name": "clean_detached_execution_worktree_verification",
+  "preferred_execution_mode": "CLEAN_DETACHED_GIT_CHECKOUT",
+  "target_execution_commit": "2826a8274cb89ec548d6fac5c8ae50c1c2836202",
+  "effective_evaluator_commit": "3cf75c2bf0c9835dd58897b7b36982732cab40ab",
+  "hotfix_evidence_commit": "54572ae4d6e11dc49110932a0d79e4685a335a0a",
+  "worktree_relative_location": "../forensics-web-lab-offline-execution",
+  "worktree_head_verified": "2826a8274cb89ec548d6fac5c8ae50c1c2836202",
+  "worktree_status_porcelain": "CLEAN_EMPTY",
+  "ancestry_verification": {
+    "effective_evaluator_is_ancestor_of_execution_package": true,
+    "execution_package_is_ancestor_of_hotfix": true
+  },
+  "forbidden_execution_modes": [
+    "DIRTY_WORKING_TREE",
+    "HOTFIX_HEAD_EXECUTION",
+    "UNVERIFIED_EXTRACTED_TAR_WITHOUT_GIT"
+  ],
+  "components_verified": [
+    {
+      "component_path": "ml/evaluation/confirmatory_metrics.py",
+      "expected_bytes": 15199,
+      "actual_bytes": 15199,
+      "expected_sha256": "bacbb9dc0a230359f1c3bbaece1ce8c19e30ddafa807313480d173a808bde808",
+      "actual_sha256": "bacbb9dc0a230359f1c3bbaece1ce8c19e30ddafa807313480d173a808bde808",
+      "status": "PASS"
+    },
+    {
+      "component_path": "ml/evaluation/locked_test_evaluator.py",
+      "expected_bytes": 47708,
+      "actual_bytes": 47708,
+      "expected_sha256": "b311e010535600781e52014fb6b675d32d78a558c5fe7e67bd3ec00b6989a5e1",
+      "actual_sha256": "b311e010535600781e52014fb6b675d32d78a558c5fe7e67bd3ec00b6989a5e1",
+      "status": "PASS"
+    },
+    {
+      "component_path": "ml/evaluation/run_phase_4c2f_evaluator.py",
+      "expected_bytes": 5739,
+      "actual_bytes": 5739,
+      "expected_sha256": "37ed02ff44d8c523150ebb968d2777bba9c2dee8597b3df60efa1fb5bd1e9041",
+      "actual_sha256": "37ed02ff44d8c523150ebb968d2777bba9c2dee8597b3df60efa1fb5bd1e9041",
+      "status": "PASS"
+    },
+    {
+      "component_path": "docs/schemas/human-unsealing-authorization.v1.schema.json",
+      "expected_bytes": 6143,
+      "actual_bytes": 6143,
+      "expected_sha256": "15291643b2ca2b3d6e3c135957db140e33f7cc65bc11aebc4668f3e105af6734",
+      "actual_sha256": "15291643b2ca2b3d6e3c135957db140e33f7cc65bc11aebc4668f3e105af6734",
+      "status": "PASS"
+    }
+  ],
+  "verification_verdict": "VERIFIED_EXACT_MATCH",
+  "generated_at_utc": "2026-10-02T01:05:48.000000+00:00",
+  "observation_started_at_utc": "2026-10-02T01:04:45.000000+00:00",
+  "observation_completed_at_utc": "2026-10-02T01:05:48.000000+00:00",
+  "clock_source": "SYSTEM_UTC_RUNTIME",
+  "timezone_aware": true,
+  "timestamp_future_check": "PASS"
+}

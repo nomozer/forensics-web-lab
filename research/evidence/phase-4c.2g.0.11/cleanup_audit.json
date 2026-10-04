@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "checked_at_utc": "2026-10-03T20:18:55.9779058+00:00",
+  "network": {
+    "restored": true,
+    "active_default_route_count": 3,
+    "operational_route_owners": [
+      {"name": "Wi-Fi", "interface_index": 22, "status": "Up", "admin_status": "Up"},
+      {"name": "Radmin VPN", "interface_index": 13, "status": "Up", "admin_status": "Up"}
+    ]
+  },
+  "watchdog": {
+    "task_name": "Phase4C2G_AuthorizedSession_NetworkRecovery",
+    "present": false
+  },
+  "storage": {
+    "vhdx_reused_without_copy_or_rebuild": true,
+    "runtime_mount_is_read_only": true,
+    "runtime_bus_type": "File Backed Virtual",
+    "dismounted": true,
+    "drive_r_absent": true,
+    "canary_writes": 0
+  },
+  "cleanup_verdict": "NETWORK_RESTORED_WATCHDOG_ABSENT_VHDX_DISMOUNTED"
+}

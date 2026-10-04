@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0.0",
+  "checked_at_utc": "2026-10-04T02:52:07.0769939Z",
+  "controller_cleanup": {
+    "driver_exit_code": 0,
+    "network_restored": true,
+    "watchdog_deleted_and_verified_absent": true,
+    "automatic_retry_permitted": false
+  },
+  "independent_elevated_readback": {
+    "network": {
+      "active_default_route_count": 2,
+      "operational_route_owners": [
+        {"name": "Wi-Fi", "interface_index": 22, "status": "Up", "admin_status": "Up"},
+        {"name": "Radmin VPN", "interface_index": 14, "status": "Up", "admin_status": "Up"}
+      ],
+      "all_route_owners_up": true
+    },
+    "watchdog_present": false,
+    "vhdx_attached": false,
+    "drive_r_absent": true
+  },
+  "runtime_storage_guard": {
+    "vhdx_reused_without_copy_or_rebuild": true,
+    "mounted_read_only": true,
+    "os_enforced_read_only": true,
+    "backing_bus_type": "File Backed Virtual",
+    "canary_writes": 0
+  },
+  "cleanup_readback_sha256": "0279265c6b71506f02fc354e569790e13b179f206fb75b4824686f63f0c75b12",
+  "cleanup_verdict": "NETWORK_RESTORED_WATCHDOG_ABSENT_VHDX_DISMOUNTED"
+}
