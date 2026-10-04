@@ -219,6 +219,14 @@ graph TD
 | **Continuity Checker Tests** | `scripts/__tests__/continuity-check.test.mjs` | `implemented-and-tested` |
 | **Continuity Contract** | `AGENTS.md` (Mục 4: Continuity Contract) | `contract-enforced` |
 | **CI Continuity Gate** | `.github/workflows/ci.yml` (Model-Agnostic Continuity Check) | `ci-enforced` |
+| **Visual/DSP Ablation Protocol** | `ml/configs/visual_dsp_ablation_protocol.yaml` (prospective 341-source nested CV protocol across visual_control, dsp_only, visual_dsp_fusion) | `protocol-locked` |
+| **DSP Feature Extractor** | `ml/training/dsp_features.py` (16-dim deterministic DSP feature extractor mirroring packages/forensics: FFT, DCT, Noise, JPEG, Laplacian) | `implemented-and-tested` |
+| **Visual/DSP Ablation Harness** | `ml/training/visual_dsp_ablation.py` (341 development pairs loader, locked-test rejection, 5x4 nested grouped CV, visual/DSP feature caching) | `implemented-and-tested` |
+| **Visual/DSP Ablation Runner** | `ml/training/run_visual_dsp_ablation.py` (CLI runner supporting preflight, pilot, full, resume, nested CV fits with Logistic Regression) | `implemented-and-tested` |
+| **Visual/DSP OOF Analyzer** | `scripts/research/analyze_visual_dsp_ablation.py` (OOF evaluation across 341 sources: Macro-F1, AUROC, Brier, ECE, FPR, FNR, paired deltas, SVG/PNG plots) | `implemented-and-tested` |
+| **Visual/DSP Package Builder** | `scripts/research/build_visual_dsp_ablation_package.py` (self-contained reproducible code snapshot archive builder) | `implemented-and-tested` |
+| **Visual/DSP Colab Notebook** | `notebooks/visual_dsp_ablation_colab.ipynb` (5-cell execution notebook: intro, Drive bindings, staging, runner, OOF analysis) | `implemented-and-tested` |
+| **Visual/DSP Ablation Unit Tests** | `ml/tests/test_dsp_features.py`, `ml/tests/test_visual_dsp_ablation.py`, `ml/tests/test_visual_dsp_ablation_analysis.py` (15/15 PASS) | `implemented-and-tested` |
 
 ---
 

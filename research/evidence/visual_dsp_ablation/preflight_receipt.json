@@ -1,0 +1,17 @@
+{
+  "created_at_utc": "2026-10-04T14:58:41.008717+00:00",
+  "device": "cuda",
+  "manifest_sha256": "e1e6b6d282002108d6a15000b755c20dd569cc8aa68c4eebbfa2aab3cee3b626",
+  "mode": "preflight",
+  "outer_folds": 5,
+  "recipes": [
+    "visual_control",
+    "dsp_only",
+    "visual_dsp_fusion"
+  ],
+  "samples": 682,
+  "schema_version": "1.0.0",
+  "sources": 341,
+  "status": "PREFLIGHT_PASS",
+  "weights_sha256": "047dcff4addef86ea5bc2eff13c9614dc11f47ab1160d0a71a25e7db994f4e1f"
+}
