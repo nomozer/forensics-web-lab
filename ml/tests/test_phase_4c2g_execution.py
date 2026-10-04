@@ -1020,6 +1020,7 @@ def test_complete_cli_dispatches_real_confirmatory_session(monkeypatch, tmp_path
     assert observed[0].locked_test_root == required_paths["locked-test-root"]
 
 
+@pytest.mark.skipif(sys.platform != "win32", reason="Windows PowerShell controller required")
 def test_windows_authorized_session_orchestrator_contract_validation_only() -> None:
     script = REPO_ROOT / "scripts/research/RUN_PHASE4C2G_AUTHORIZED_SESSION.ps1"
     completed = subprocess.run(
@@ -1066,6 +1067,7 @@ def test_windows_authorized_session_orchestrator_contract_validation_only() -> N
     )
 
 
+@pytest.mark.skipif(sys.platform != "win32", reason="Windows PowerShell controller required")
 def test_authorized_controller_enforces_object_pipeline_adapter_contract() -> None:
     script = REPO_ROOT / "scripts/research/RUN_PHASE4C2G_AUTHORIZED_SESSION.ps1"
     source = script.read_text(encoding="utf-8")
@@ -1105,6 +1107,7 @@ def test_authorized_controller_enforces_object_pipeline_adapter_contract() -> No
     assert adapter["adapter_mutations"] == 0
 
 
+@pytest.mark.skipif(sys.platform != "win32", reason="Windows PowerShell controller required")
 def test_authorized_controller_contract_exercises_recovery_identity_and_watchdog() -> None:
     script = REPO_ROOT / "scripts/research/RUN_PHASE4C2G_AUTHORIZED_SESSION.ps1"
     completed = subprocess.run(

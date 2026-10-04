@@ -9,6 +9,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -450,6 +452,7 @@ def test_custodian_authorization_schema_locks_role_and_prohibitions() -> None:
             jsonschema.validate(mutated, schema)
 
 
+@pytest.mark.skipif(sys.platform != "win32", reason="Windows PowerShell host required")
 def test_windows_custodian_controller_contract_is_non_mutating_and_model_free() -> None:
     script = (
         REPO_ROOT

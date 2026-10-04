@@ -34,6 +34,8 @@ import tarfile
 from pathlib import Path
 from typing import Any, Dict, List
 
+import sys
+
 import numpy as np
 import pytest
 
@@ -1163,6 +1165,7 @@ class TestPhase4C2G03AutomatedIsolationController:
         assert mock_receipt["caveat"] == required_caveat
         assert mock_receipt["verdict"] == "AUTOMATED_ISOLATION_READINESS_TEST_PASS_NETWORK_RESTORED"
 
+    @pytest.mark.skipif(sys.platform != "win32", reason="Windows PowerShell controller required")
     def test_g61_dry_run_execution_via_powershell(self):
         """Executing controller in -DryRun mode succeeds with code 0 and outputs DRY_RUN_INSPECTION_PASS."""
         cmd = [
@@ -1182,6 +1185,7 @@ class TestPhase4C2G03AutomatedIsolationController:
         assert "scheduled_task_subsystem_available : True" in stdout
         assert "Dry-Run Verdict: DRY_RUN_INSPECTION_PASS" in stdout
 
+    @pytest.mark.skipif(sys.platform != "win32", reason="Windows PowerShell controller required")
     def test_g62_non_elevated_readiness_test_behavior(self):
         """Executing -ReadinessTest in non-elevated session gracefully requests UAC without error."""
         cmd = [
@@ -1312,6 +1316,7 @@ class TestPhase4C2G031MinimalIsolation:
         assert "Test-WatchdogTaskVerified" in content, "Watchdog must be verified via query read-back"
         assert "schtasks.exe /query" in content, "schtasks query command must be present"
 
+    @pytest.mark.skipif(sys.platform != "win32", reason="Windows PowerShell controller required")
     def test_g70_dry_run_outputs_route_table_and_makes_zero_system_modifications(self):
         """Executing controller in -DryRun prints all 10 table columns and 4 summary counters."""
         cmd = [
@@ -1359,6 +1364,7 @@ class TestPhase4C2G032RecoveryScriptSyntaxAndInterruption:
     REPO_ROOT = Path(__file__).resolve().parent.parent.parent
     CONTROLLER_PATH = REPO_ROOT / "scripts" / "research" / "RUN_PHASE4C2G_AUTOMATED_ISOLATION.ps1"
 
+    @pytest.mark.skipif(sys.platform != "win32", reason="Windows PowerShell controller required")
     def test_g72_production_generator_creates_valid_ast_fixture(self, tmp_path):
         """Production generator creates recovery script with spaces, quotes, and timestamps that passes AST parsing with 0 errors."""
         fixture_file = tmp_path / "targets_fixture.json"
@@ -1390,6 +1396,7 @@ class TestPhase4C2G032RecoveryScriptSyntaxAndInterruption:
         assert parse_res.returncode == 0, f"AST Parse failed: {parse_res.stderr}\n{parse_res.stdout}"
         assert "AST_PARSE_ZERO_ERRORS" in parse_res.stdout
 
+    @pytest.mark.skipif(sys.platform != "win32", reason="Windows PowerShell controller required")
     def test_g73_timestamp_strictly_in_valid_literal_or_runtime_call(self, tmp_path):
         """Timestamps in generated recovery script are strictly in comments, string literals, or runtime DateTime calls."""
         output_script = tmp_path / "RECOVER_TEST_TS.ps1"
@@ -1415,6 +1422,7 @@ class TestPhase4C2G032RecoveryScriptSyntaxAndInterruption:
 
         assert "[System.DateTime]::UtcNow.ToString('o')" in content
 
+    @pytest.mark.skipif(sys.platform != "win32", reason="Windows PowerShell controller required")
     def test_g74_allowlist_exact_interface_indices(self, tmp_path):
         """Generated recovery script strictly preserves target ifIndex values and nothing outside allowlist."""
         fixture_file = tmp_path / "targets_allowlist.json"
@@ -1441,6 +1449,7 @@ class TestPhase4C2G032RecoveryScriptSyntaxAndInterruption:
         assert not re.search(r"InterfaceIndex\s*=\s*18\b", content)
         assert not re.search(r"InterfaceIndex\s*=\s*56\b", content)
 
+    @pytest.mark.skipif(sys.platform != "win32", reason="Windows PowerShell controller required")
     def test_g75_mocked_execution_only_enables_isolated_adapters(self, tmp_path):
         """Mocked execution of recovery script only calls Enable-NetAdapter on exact target allowlist."""
         output_script = tmp_path / "RECOVER_TEST_MOCK.ps1"
@@ -1493,6 +1502,7 @@ class TestPhase4C2G032RecoveryScriptSyntaxAndInterruption:
         invoked = [int(x.strip()) for x in invoked_text.splitlines() if x.strip()]
         assert set(invoked) == set(expected_indices)
 
+    @pytest.mark.skipif(sys.platform != "win32", reason="Windows PowerShell controller required")
     def test_g76_generated_script_contains_zero_network_probes(self, tmp_path):
         """Generated recovery script strictly contains 0 outbound network requests or socket calls."""
         output_script = tmp_path / "RECOVER_TEST_ZERO_NET.ps1"
@@ -1521,6 +1531,7 @@ class TestPhase4C2G032RecoveryScriptSyntaxAndInterruption:
             "Update-RecoveryScriptAndValidate must precede schtasks /create, which must precede Disable-NetAdapter"
         )
 
+    @pytest.mark.requires_research_artifact
     def test_g78_stale_invalid_recovery_script_quarantined(self):
         """The faulty 615-byte RECOVER_NETWORK.ps1 from the interrupted attempt is quarantined in failed_recovery_scripts/."""
         quarantine_dir = self.REPO_ROOT / "data" / "research" / "local-artifacts" / "phase-4c.2g" / "failed_recovery_scripts"
@@ -1560,6 +1571,7 @@ class TestPhase4C2G032RecoveryScriptSyntaxAndInterruption:
                 text = p.read_text(encoding="utf-8")
                 assert "10:54:30" not in text, f"Erroneous timestamp 10:54:30 found in {p}"
 
+    @pytest.mark.requires_research_artifact
     def test_g82_interrupted_run_classification_and_historical_receipt_separation(self):
         """Interrupted run is classified as terminated at parameter binding error; historical receipts separated."""
         readiness_receipt = self.REPO_ROOT / "data" / "research" / "local-artifacts" / "phase-4c.2g" / "automated_isolation_readiness_receipt.json"
@@ -1682,6 +1694,7 @@ class TestPhase4C2G033AdapterCmdletContractAndFailedAttempt:
 
         assert check_identity(ad, exp_name="Wi-Fi", exp_desc="Realtek", exp_mac="AA-BB") is True
 
+    @pytest.mark.skipif(sys.platform != "win32", reason="Windows PowerShell controller required")
     def test_g88_generated_recovery_script_uses_pipeline_object(self, tmp_path):
         """Generated recovery script pipes adapter object to Enable-NetAdapter and has 0 syntax errors."""
         output_script = tmp_path / "RECOVER_TEST_PIPE.ps1"
@@ -1706,6 +1719,7 @@ class TestPhase4C2G033AdapterCmdletContractAndFailedAttempt:
         assert parse_res.returncode == 0
         assert "AST_OK" in parse_res.stdout
 
+    @pytest.mark.skipif(sys.platform != "win32", reason="Windows PowerShell controller required")
     def test_g89_mocked_execution_only_affects_targeted_adapters(self, tmp_path):
         """Mocked execution of recovery script verifies pipeline object passing and target isolation allowlist."""
         output_script = tmp_path / "RECOVER_TEST_MOCK_PIPE.ps1"
@@ -1756,6 +1770,7 @@ class TestPhase4C2G033AdapterCmdletContractAndFailedAttempt:
         invoked = [int(x.strip()) for x in invoked_file.read_text(encoding="utf-8").strip().splitlines() if x.strip()]
         assert set(invoked) == set(expected_indices)
 
+    @pytest.mark.skipif(sys.platform != "win32", reason="Windows PowerShell controller required")
     def test_g90_validate_adapter_cmdlet_contract_only_execution(self):
         """Executing controller with -ValidateAdapterCmdletContractOnly succeeds without mutating network state."""
         cmd = (
@@ -1770,6 +1785,7 @@ class TestPhase4C2G033AdapterCmdletContractAndFailedAttempt:
         assert "Disable-NetAdapter accepts pipeline InputObject: True" in res.stdout
         assert "Enable-NetAdapter  accepts pipeline InputObject: True" in res.stdout
 
+    @pytest.mark.requires_research_artifact
     def test_g91_failed_attempt_parameter_binding_evidence(self):
         """Audits parameter binding failed attempt evidence: parameter binding error recorded, watchdog created, 0 disabled."""
         audit_path = (
@@ -1914,6 +1930,7 @@ class TestPhase4C2G033AdapterCmdletContractAndFailedAttempt:
         with pytest.raises(RuntimeError, match="BLOCKED_TARGET_ADAPTER_NOT_UP_FOR_STALE_WATCHDOG_CLEANUP"):
             safe_cleanup_check(True, 0, False)
 
+    @pytest.mark.skipif(sys.platform != "win32", reason="Windows PowerShell controller required")
     def test_g96_validate_adapter_cmdlet_contract_expanded_execution(self):
         """Executing controller with -ValidateAdapterCmdletContractOnly verifies Get-NetAdapter, allowlist rejection, and null restoration detection."""
         cmd = (
@@ -1935,6 +1952,7 @@ class TestPhase4C2G033AdapterCmdletContractAndFailedAttempt:
         assert "Remaining routes 0 with passive disagreement => DISAGREEMENT: True" in res.stdout
         assert "Remaining routes 0 with proxy detected => BLOCKED_PROXY_DETECTED: True" in res.stdout
 
+    @pytest.mark.skipif(sys.platform != "win32", reason="Windows PowerShell controller required")
     def test_g97_generated_recovery_script_rejects_missing_identity(self, tmp_path):
         """Generated recovery script generator strictly throws if target adapter is missing InterfaceDescription or MacAddress."""
         fixture_missing = tmp_path / "targets_missing.json"
@@ -2001,6 +2019,7 @@ class TestPhase4C2G033AdapterCmdletContractAndFailedAttempt:
             remove_stale_watchdog_workflow(task_remains=True)
         assert len(disabled_adapters) == 0
 
+    @pytest.mark.skipif(sys.platform != "win32", reason="Windows PowerShell controller required")
     def test_g101_native_stderr_does_not_escape_as_terminating_exception(self):
         """Native stderr from schtasks.exe on missing task is caught or suppressed under $ErrorActionPreference = 'Stop'."""
         ps_code = (
@@ -2543,6 +2562,7 @@ class TestPhase4C2G033AdapterCmdletContractAndFailedAttempt:
         assert "TimeoutSeconds 60" in controller
         assert "RESTORED_VERIFIED" in controller
 
+    @pytest.mark.requires_research_artifact
     def test_g123_real_artifacts_preserve_locked_test_zero_access(self):
         """The audited failed readiness attempt never mounted or read locked-test."""
         artifacts = self.REPO_ROOT / "data" / "research" / "local-artifacts" / "phase-4c.2g"
