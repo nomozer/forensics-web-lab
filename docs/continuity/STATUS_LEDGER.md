@@ -1,3 +1,15 @@
+## Phase 4C.2H.2 — Development Nested-CV Artifact Audit and Exploratory OOF Analysis
+
+- **Mục tiêu**: Audit the completed 150-fit Colab T4 development matrix and report full-OOF comparison of the frozen baseline vs pair-ranking recipe, strictly as development/exploratory evidence separate from the closed Phase 4C.2G locked test.
+- **Audit**: 636 files hashed; 480/480 declared artifact hashes; 150/150 receipt/checkpoint bindings (120 inner + 30 outer); 30/30 outer epochs equal the round-half-up median of four inner best epochs; fold lock independently reconstructed; six OOF cells each exactly 341 sources/682 unique samples. Source commit `75568d1`, code archive SHA-256 `2bd39387...`.
+- **Result (per seed 42/1337/2025, Macro-F1)**: frozen `0.558893/0.564770/0.572953` (mean `0.565539 ± 0.007061`); pair-ranking `0.571914/0.561654/0.566553` (mean `0.566707 ± 0.005132`). Paired delta `+0.013021/-0.003115/-0.006400`, mean `+0.001168 ± 0.010395`, 1/3 seeds positive. FPR/FNR shifts are strongly seed-dependent. No inferential test was run; n=3 seeds.
+- **Verification**: Analyzer rerun against raw artifacts reproduced all CSV/JSON/figures byte-for-byte; report now derives verdict/counts from data and adds an explicit non-comparability section vs the locked test (0.5138, CI lower 0.4998). 8/8 targeted tests PASS; 0 locked-test accesses, 0 new training, 0 new inference; raw artifacts untouched.
+- **Kết quả**: `NO_CONSISTENT_EXPLORATORY_PAIR_RANKING_IMPROVEMENT`.
+- **Evidence**: `research/evidence/phase-4c.2h.2/`.
+- **Next**: Collect a new independent source-disjoint validation set before any confirmatory claim; the retired locked test must not be reused.
+
+---
+
 ## Phase 4C.2H.1 — Official Runner and Colab Pilot Readiness
 
 - **Mục tiêu**: Implement the locked 120-inner/30-outer development runner, seal an exact self-contained Colab snapshot, and prepare the two-fit runtime pilot without launching the full experiment.

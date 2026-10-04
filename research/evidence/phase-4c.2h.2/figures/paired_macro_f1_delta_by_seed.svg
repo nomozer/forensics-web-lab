@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520">
+<rect width="100%" height="100%" fill="white"/>
+<g font-family="sans-serif" fill="#222">
+<text x="450.0" y="28" text-anchor="middle" font-size="18">Paired exploratory Macro-F1 deltas</text>
+<line x1="105" y1="435.00" x2="865" y2="435.00" stroke="#dddddd"/>
+<text x="97" y="439.00" text-anchor="end" font-size="11">-0.016</text>
+<line x1="105" y1="359.00" x2="865" y2="359.00" stroke="#dddddd"/>
+<text x="97" y="363.00" text-anchor="end" font-size="11">-0.010</text>
+<line x1="105" y1="283.00" x2="865" y2="283.00" stroke="#dddddd"/>
+<text x="97" y="287.00" text-anchor="end" font-size="11">-0.003</text>
+<line x1="105" y1="207.00" x2="865" y2="207.00" stroke="#dddddd"/>
+<text x="97" y="211.00" text-anchor="end" font-size="11">0.003</text>
+<line x1="105" y1="131.00" x2="865" y2="131.00" stroke="#dddddd"/>
+<text x="97" y="135.00" text-anchor="end" font-size="11">0.010</text>
+<line x1="105" y1="55.00" x2="865" y2="55.00" stroke="#dddddd"/>
+<text x="97" y="59.00" text-anchor="end" font-size="11">0.016</text>
+<line x1="105" y1="55" x2="105" y2="435" stroke="black" stroke-width="2"/>
+<line x1="105" y1="435" x2="865" y2="435" stroke="black" stroke-width="2"/>
+<text x="20" y="260.0" text-anchor="middle" font-size="13" transform="rotate(-90 20 260.0)">Pair-ranking minus frozen</text>
+<text x="231.67" y="463" text-anchor="middle" font-size="12">42</text>
+<text x="485.00" y="463" text-anchor="middle" font-size="12">1337</text>
+<text x="738.33" y="463" text-anchor="middle" font-size="12">2025</text>
+<line x1="105" y1="245.00" x2="865" y2="245.00" stroke="#333333" stroke-width="2"/>
+<rect x="143.00" y="93.00" width="156.05" height="152.00" fill="#5B9BD5"/>
+<rect x="396.33" y="245.00" width="156.05" height="36.37" fill="#5B9BD5"/>
+<rect x="649.67" y="245.00" width="156.05" height="74.71" fill="#5B9BD5"/>
+<rect x="113" y="486" width="14" height="14" fill="#5B9BD5"/>
+<text x="133" y="498" font-size="11">Macro-F1 delta</text>
+</g>
+</svg>

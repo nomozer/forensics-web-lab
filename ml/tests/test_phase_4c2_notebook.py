@@ -51,7 +51,9 @@ def test_30_notebook_execute_false_invokes_preflight_only():
 
 def test_31_no_duplicate_notebook():
     """31. Exactly one Stage 2 notebook exists; no duplicate _v2, (1), etc."""
-    nb_files = list(NOTEBOOK_DIR.glob("phase_4c2*.ipynb"))
+    nb_files = [
+        f for f in NOTEBOOK_DIR.glob("phase_4c2*.ipynb") if not f.name.startswith("phase_4c2h_")
+    ]
     assert len(nb_files) == 1, f"Found multiple Stage 2 notebooks: {[f.name for f in nb_files]}"
     assert nb_files[0].name == "phase_4c2_finetuning_colab.ipynb"
 
