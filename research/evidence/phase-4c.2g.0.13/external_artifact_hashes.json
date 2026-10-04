@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0.0",
+  "storage": "external_to_git",
+  "path_policy": "logical relative paths only",
+  "session_id": "phase4c2g-recovery-0658dce-dung-20261004T024159Z",
+  "files": [
+    {"relative_path": "human_unsealing_authorization.json", "bytes": 2878, "sha256": "2fba749b33b2ea9f1e18840115ff1e158416e721e1cdc0d17696990e775c006f"},
+    {"relative_path": "authorization_materialization_receipt.json", "bytes": 1630, "sha256": "41daf7525d9ed4399e73289bfb17477c83ba55c1354bdfde06ac97c43cc259cb"},
+    {"relative_path": "controller_console.log", "bytes": 516, "sha256": "22b6a79c326d6c62c7e93ff5878a270ea93a08211fb0534c0e6a915e7457e635"},
+    {"relative_path": "execution_wrapper_receipt.json", "bytes": 1492, "sha256": "f75334ec47d8e16049f332a07865894a41fff9b236b3dc71bf6aa397d79ac0c0"},
+    {"relative_path": "cleanup_readback.json", "bytes": 1772, "sha256": "0279265c6b71506f02fc354e569790e13b179f206fb75b4824686f63f0c75b12"},
+    {"relative_path": "outputs/aggregate_confirmatory_metrics.json", "bytes": 1445, "sha256": "254932c427a9fe9458a71be83959e9e89e1dd81a36f8a53ba73dcb2e20c97813"},
+    {"relative_path": "outputs/per_checkpoint_metrics.json", "bytes": 7161, "sha256": "53b6857ddc2a46450612e4be859000303da3d130aae745133066f4c55d972e0d"},
+    {"relative_path": "outputs/bootstrap_distribution_summary.json", "bytes": 597, "sha256": "d68be1a6df62383b16fcd9d66240ffc8b01e2fc12035ac152eedc46748979719"},
+    {"relative_path": "outputs/confirmatory_decision.json", "bytes": 230, "sha256": "03addab16e46df5adffe2bf40aaa535c1eac7eae4b664cb22752194e2dabd7d3"},
+    {"relative_path": "outputs/execution_receipt.json", "bytes": 716, "sha256": "37586b75b77e1aeea8d0e57705ba041c62ad3e44d8ee7d8b8178636b5e49a618"},
+    {"relative_path": "outputs/authorized_session_receipt.json", "bytes": 294, "sha256": "5cb1336eb8be120723cd7ba7782e2e542fd9142ca8af2e7eb7fb2148b41a3a5d"},
+    {"relative_path": "outputs/isolation_receipt.json", "bytes": 467, "sha256": "f4c3af82500f0d3c07258cb3856cf78301fa3309348f27b60d13f0eb3e432021"},
+    {"relative_path": "outputs/read_only_receipt.json", "bytes": 481, "sha256": "fee201e72aba9e2b38386bf5be277cf40db3eff33df90bd1b1e0000467d0f61b"},
+    {"relative_path": "outputs/locked_test_access_ledger.jsonl", "bytes": 9791, "sha256": "4adb8417a7289d7364148912908d65a713f98c69ae9fe7826b8d1694db8b2334"},
+    {"relative_path": "outputs/checksums.json", "bytes": 3066, "sha256": "cd1326368111bcd7786d1bbd58f6387929f13c35256bce32152a7cca8fa96501"},
+    {"relative_path": "outputs/session_checksums.json", "bytes": 6792, "sha256": "4d3d3784c76cc586be6599854d7738ef8f57de255061d1a1e4e4536b977e53dc"},
+    {"relative_path": "outputs/predictions_seed_42.json", "bytes": 191354, "sha256": "935131391f6e4f9a04b5bc695e33663c320aafd3e27c88ee4303be231b6e4a29"},
+    {"relative_path": "outputs/predictions_seed_1337.json", "bytes": 191808, "sha256": "a18395dc47523ab26cfb676d28d966539182eb6975ec18eb7f052f7f34567443"},
+    {"relative_path": "outputs/predictions_seed_2025.json", "bytes": 191281, "sha256": "986ae490f7b09c2ad11a8137e098b7ed51a89e818d8fa6a56cf6f8628a358a55"},
+    {"relative_path": "outputs/predictions_seed_3407.json", "bytes": 191414, "sha256": "46dca3a1b7b06c630c07f77b3ce22fcd1622dc75987452bcd983b9cb8f4b70f2"},
+    {"relative_path": "outputs/predictions_seed_9001.json", "bytes": 192067, "sha256": "f58d493cfa06a5338c7eeb88477d1530c5a70280674d791bab9be457967ca5a4"}
+  ],
+  "output_checksum_entries_verified": 20,
+  "session_checksum_entries_verified": 22,
+  "sensitive_or_locked_test_contents_committed": false
+}

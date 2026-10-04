@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "4C.2G.0.13",
+  "recovery_session_id": "phase4c2g-recovery-0658dce-dung-20261004T024159Z",
+  "ledger_hash_chain": "PASS",
+  "entry_count": 12,
+  "events": [
+    "PRE_READ_UNSEAL",
+    "EVALUATION_RESERVED", "EVALUATION_COMPLETED",
+    "EVALUATION_RESERVED", "EVALUATION_COMPLETED",
+    "EVALUATION_RESERVED", "EVALUATION_COMPLETED",
+    "EVALUATION_RESERVED", "EVALUATION_COMPLETED",
+    "EVALUATION_RESERVED", "EVALUATION_COMPLETED",
+    "SESSION_CLOSE"
+  ],
+  "recovery_session": {
+    "unsealing_sessions": 1,
+    "evaluation_attempts": 5,
+    "completed_model_evaluations": 5,
+    "checkpoint_order": [42, 1337, 2025, 3407, 9001],
+    "prediction_records_per_checkpoint": 686,
+    "status": "COMPLETED_VALID"
+  },
+  "cumulative_history": {
+    "evaluator_access_sessions": 2,
+    "interrupted_sessions": 1,
+    "completed_recovery_sessions": 1,
+    "evaluation_attempts": 5,
+    "completed_model_evaluations": 5,
+    "historical_session_attempts": 0,
+    "historical_session_completed_model_evaluations": 0,
+    "authorization_history_reset": false
+  },
+  "execution_receipt_pre_close_tip_entry_hash": "1d341c19962e0d9b36425d4c1b00016515d8dd75fe595914dd4570a661f9a5a8",
+  "final_session_close_tip_entry_hash": "8027c011b1a5becacfca920eb49b6e81086e3fd79fd3d5dc495aa8b1bdf7d39f",
+  "receipt_pre_close_tip_matches_ledger": true,
+  "ledger_bytes": 9791,
+  "ledger_sha256": "4adb8417a7289d7364148912908d65a713f98c69ae9fe7826b8d1694db8b2334",
+  "historical_ledger_sha256": "8c5d27a5c9d13edf1a054a7035ccf3d0b325e44d2826e1cce194c5924840c04f",
+  "raw_ledgers_committed_to_git": false
+}

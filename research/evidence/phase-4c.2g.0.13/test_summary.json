@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "4C.2G.0.13",
+  "runtime_audits": [
+    {"gate": "exact request/archive/component/manifest/checkpoint preflight", "result": "PASS"},
+    {"gate": "runtime network isolation", "result": "PASS", "remaining_active_default_routes": 0},
+    {"gate": "runtime VHDX read-only enforcement", "result": "PASS", "os_enforced_read_only": true},
+    {"gate": "sealed controller execution", "result": "PASS", "exit_code": 0},
+    {"gate": "output checksums", "result": "PASS", "entries": 20},
+    {"gate": "session checksums", "result": "PASS", "entries": 22},
+    {"gate": "ledger hash chain", "result": "PASS", "entries": 12},
+    {"gate": "prediction cardinality", "result": "PASS", "checkpoint_files": 5, "records_each": 686},
+    {"gate": "aggregate arithmetic mean recomputation", "result": "PASS"},
+    {"gate": "decision rule recomputation", "result": "PASS"},
+    {"gate": "independent elevated cleanup readback", "result": "PASS"}
+  ],
+  "repository_gates": [
+    {"gate": "phase 4C.2G execution plus Phase 4C.2F evaluator pytest", "result": "PASS", "passed": 80, "failed": 0},
+    {"gate": "pnpm continuity:check", "result": "PASS"},
+    {"gate": "git diff --check", "result": "PASS"}
+  ],
+  "environment_note": "An initial pytest invocation could not create files under the sandbox-inaccessible user TEMP directory; rerunning unchanged tests with a workspace --basetemp passed 80/80.",
+  "automatic_retry_count": 0,
+  "raw_locked_test_artifacts_committed": false
+}

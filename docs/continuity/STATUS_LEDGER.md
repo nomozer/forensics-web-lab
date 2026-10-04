@@ -1,3 +1,17 @@
+## Phase 4C.2G.0.13 — Authorized Recovery Evaluator Session and Confirmatory Result
+
+- **Mục tiêu**: Execute exactly one directly approved recovery evaluator session using the exact `0658dce` package, publish the preregistered result regardless of outcome, preserve cumulative incident history, and verify cleanup.
+- **Authorization/bindings**: Request SHA-256 `52861ac0...`; external authorization `phase4c2g012-recovery-dung-20261004T024159Z` consumed once with identity `dung` and no cryptographic-signature claim; archive SHA-256 `9ea55d33...`; manifest SHA-256 `9d8564bd...`; all 22 components and five checkpoint hashes PASS.
+- **Execution**: Existing VHDX reused and mounted OS-enforced read-only under verified zero-route isolation. Five CPU attempts completed the fixed checkpoints `[42, 1337, 2025, 3407, 9001]`, 686 predictions each, with no retry/training/tuning/calibration fitting/best-seed selection/ensemble.
+- **Result**: Per-seed Macro-F1 `[0.524055881, 0.471988306, 0.530576335, 0.507791924, 0.534762985]`; arithmetic mean `0.513835085980773`; 10,000-replicate source-cluster PCG64(20261002) percentile 95% CI `[0.49976282750638307, 0.5273360991798881]`; lower bound does not exceed `0.5000`, so verdict `INSUFFICIENT_CONFIRMATORY_EVIDENCE`.
+- **Audit/counters**: Output and session checksum indices PASS; 12-entry ledger hash chain PASS. Cumulative history: 2 evaluator access sessions (1 interrupted + 1 completed recovery), 5 attempts, 5 completed model evaluations; no reset and no retry.
+- **Cleanup**: Controller exit 0; independent elevated read-back confirms network restored, Wi-Fi/Radmin VPN Up, watchdog absent, VHDX detached, and `R:` absent. Outer wrapper exit 1 was a non-contract filename false negative and did not trigger retry.
+- **Kết quả**: `LOCKED_TEST_CONFIRMATORY_EVALUATION_COMPLETE_INSUFFICIENT_CONFIRMATORY_EVIDENCE`.
+- **Evidence**: `research/evidence/phase-4c.2g.0.13/`; raw authorization, manifest, dataset, checkpoints, predictions, and ledgers remain external to Git.
+- **Quyết định tiếp theo**: Preserve/report the fixed result. Any future model development or evaluation requires a separately scoped phase and cannot rerun or reinterpret this confirmatory session.
+
+---
+
 ## Phase 4C.2G.0.12 — Cross-Component Inventory Contract Hotfix and Recovery Adjudication Preparation
 
 - **Mục tiêu**: Repair the custodian/evaluator inventory mismatch without reopening the consumed authorization or accessing the real locked test; seal an exact replacement package and prepare a human recovery-adjudication request.
