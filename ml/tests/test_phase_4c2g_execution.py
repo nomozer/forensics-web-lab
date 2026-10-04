@@ -16,6 +16,8 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+import pytest
+
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -58,6 +60,104 @@ def _build_synthetic_locked_manifest(tmp_path: Path) -> tuple[Path, Path, str, s
     split_payload = json.dumps(sorted(source_ids))
     split_seal = hashlib.sha256(split_payload.encode("utf-8")).hexdigest()
     return root, manifest_path, _sha256(manifest_path), split_seal
+
+
+def _build_production_custodian_evaluator_fixture(tmp_path: Path) -> dict[str, object]:
+    root = tmp_path / "custodian-evaluator-root"
+    output = tmp_path / "custodian-output"
+    root.mkdir()
+    samples = []
+    source_ids = [f"integration-{idx:03d}" for idx in range(343)]
+    for source_id in source_ids:
+        for label, label_id in (("authentic", 0), ("ai_edited", 1)):
+            relative_path = f"samples/{source_id}/{label}.bin"
+            sample_path = root / relative_path
+            sample_path.parent.mkdir(parents=True, exist_ok=True)
+            sample_path.write_bytes(f"{source_id}:{label}".encode("utf-8"))
+            samples.append(
+                {
+                    "sample_id": f"{source_id}-{label}",
+                    "unique_source_id": source_id,
+                    "relative_path": relative_path,
+                    "expected_sha256": _sha256(sample_path),
+                    "label": label,
+                    "label_id": label_id,
+                    "partition": "locked_test",
+                }
+            )
+
+    inventory_path = root / "custodian_inventory.json"
+    inventory_path.write_text(
+        json.dumps(
+            {
+                "schema_version": "1.0.0",
+                "dataset_id": "synthetic-custodian-evaluator-integration",
+                "partition": "locked_test",
+                "samples": samples,
+            }
+        ),
+        encoding="utf-8",
+    )
+    split_seal = hashlib.sha256(
+        json.dumps(sorted(source_ids)).encode("utf-8")
+    ).hexdigest()
+    session_id = "synthetic-custodian-evaluator-integration"
+    read_only_receipt = tmp_path / "read-only-receipt.json"
+    read_only_receipt.write_text(
+        json.dumps(
+            {
+                "session_id": session_id,
+                "locked_test_root": str(root.resolve()),
+                "status": "READ_ONLY_VOLUME_VERIFIED",
+                "os_enforced_read_only": True,
+                "evidence_kind": "synthetic_read_only_fixture",
+                "backing_volume_unique_id": "synthetic-integration-volume",
+                "canary_writes_performed": 0,
+            }
+        ),
+        encoding="utf-8",
+    )
+    isolation_receipt = tmp_path / "isolation-receipt.json"
+    isolation_receipt.write_text(
+        json.dumps(
+            {
+                "session_id": session_id,
+                "isolation_verified": True,
+                "proxy_enabled": False,
+                "remaining_active_default_routes": 0,
+                "active_egress_adapters": [],
+                "active_vpn_route_owners": [],
+                "unidentified_route_owners": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    return {
+        "root": root,
+        "output": output,
+        "inventory_path": inventory_path,
+        "session_id": session_id,
+        "read_only_receipt": read_only_receipt,
+        "isolation_receipt": isolation_receipt,
+        "split_seal": split_seal,
+    }
+
+
+def _seal_production_custodian_fixture(fixture: dict[str, object]) -> tuple[Path, dict]:
+    from scripts.research.seal_locked_test_manifest import seal_manifest_session
+
+    receipt = seal_manifest_session(
+        locked_test_root=fixture["root"],
+        output_root=fixture["output"],
+        session_id=fixture["session_id"],
+        read_only_receipt_path=fixture["read_only_receipt"],
+        isolation_receipt_path=fixture["isolation_receipt"],
+        manifest_schema_path=REPO_ROOT
+        / "docs/schemas/locked-test-manifest.v1.schema.json",
+        expected_split_seal=fixture["split_seal"],
+        allow_synthetic_read_only=True,
+    )
+    return Path(fixture["output"]) / "locked_test_manifest.json", receipt
 
 
 def test_phase_4c2g04_records_no_human_authorization() -> None:
@@ -104,6 +204,103 @@ def test_locked_test_manifest_contract_accepts_exact_paired_fixture(tmp_path: Pa
     assert loaded.label_map == {"authentic": 0, "ai_edited": 1}
     assert loaded.manifest_sha256 == manifest_sha256
     assert loaded.split_seal == split_seal
+
+
+def test_production_custodian_manifest_round_trips_into_production_evaluator_loader(
+    tmp_path: Path,
+) -> None:
+    from ml.evaluation.phase_4c2g_dataset import load_locked_test_manifest
+
+    fixture = _build_production_custodian_evaluator_fixture(tmp_path)
+    manifest_path, receipt = _seal_production_custodian_fixture(fixture)
+    schema_path = REPO_ROOT / "docs/schemas/locked-test-manifest.v1.schema.json"
+
+    loaded = load_locked_test_manifest(
+        locked_test_root=fixture["root"],
+        manifest_path=manifest_path,
+        manifest_schema_path=schema_path,
+        expected_manifest_sha256=receipt["manifest_sha256"],
+        expected_schema_sha256=_sha256(schema_path),
+        expected_split_seal=fixture["split_seal"],
+    )
+
+    assert receipt["sample_count"] == len(loaded.samples) == 686
+    assert receipt["source_count"] == len(loaded.source_ids) == 343
+    assert Path(fixture["inventory_path"]).is_file()
+
+
+@pytest.mark.parametrize(
+    ("mutation", "expected_error"),
+    (
+        ("missing_sample", "Missing or non-regular sample"),
+        ("extra_file", "file inventory mismatch"),
+        ("nested_metadata_name", "file inventory mismatch"),
+        ("tampered_sample", "Sample SHA-256 mismatch"),
+    ),
+)
+def test_production_custodian_evaluator_integration_rejects_sample_mutations(
+    tmp_path: Path,
+    mutation: str,
+    expected_error: str,
+) -> None:
+    from ml.evaluation.phase_4c2g_dataset import load_locked_test_manifest
+
+    fixture = _build_production_custodian_evaluator_fixture(tmp_path)
+    manifest_path, receipt = _seal_production_custodian_fixture(fixture)
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    root = Path(fixture["root"])
+    first_sample = root / manifest["samples"][0]["relative_path"]
+    if mutation == "missing_sample":
+        first_sample.unlink()
+    elif mutation == "extra_file":
+        (root / "unexpected.bin").write_bytes(b"unexpected")
+    elif mutation == "nested_metadata_name":
+        nested = root / "samples" / "custodian_inventory.json"
+        nested.write_text("{}", encoding="utf-8")
+    elif mutation == "tampered_sample":
+        first_sample.write_bytes(b"tampered-sample")
+    else:  # pragma: no cover - parametrization is closed above
+        raise AssertionError(f"Unknown mutation: {mutation}")
+
+    schema_path = REPO_ROOT / "docs/schemas/locked-test-manifest.v1.schema.json"
+    with pytest.raises((FileNotFoundError, ValueError), match=expected_error):
+        load_locked_test_manifest(
+            locked_test_root=root,
+            manifest_path=manifest_path,
+            manifest_schema_path=schema_path,
+            expected_manifest_sha256=receipt["manifest_sha256"],
+            expected_schema_sha256=_sha256(schema_path),
+            expected_split_seal=fixture["split_seal"],
+        )
+
+
+def test_exact_root_custodian_metadata_symlink_is_rejected(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    from ml.evaluation.phase_4c2g_dataset import load_locked_test_manifest
+
+    fixture = _build_production_custodian_evaluator_fixture(tmp_path)
+    manifest_path, receipt = _seal_production_custodian_fixture(fixture)
+    inventory_path = Path(fixture["inventory_path"]).resolve()
+    original_is_symlink = Path.is_symlink
+
+    def fixture_is_symlink(path: Path) -> bool:
+        if path.resolve(strict=False) == inventory_path:
+            return True
+        return original_is_symlink(path)
+
+    monkeypatch.setattr(Path, "is_symlink", fixture_is_symlink)
+    schema_path = REPO_ROOT / "docs/schemas/locked-test-manifest.v1.schema.json"
+    with pytest.raises(ValueError, match="Symlink/reparse point forbidden"):
+        load_locked_test_manifest(
+            locked_test_root=fixture["root"],
+            manifest_path=manifest_path,
+            manifest_schema_path=schema_path,
+            expected_manifest_sha256=receipt["manifest_sha256"],
+            expected_schema_sha256=_sha256(schema_path),
+            expected_split_seal=fixture["split_seal"],
+        )
 
 
 def test_locked_test_manifest_contract_rejects_checksum_pair_duplicate_missing_and_extra(
@@ -523,6 +720,122 @@ def test_confirmatory_finalization_writes_complete_atomic_output_set(
         artifact = output_dir / name
         assert metadata["sha256"] == _sha256(artifact)
         assert metadata["bytes"] == artifact.stat().st_size
+
+
+def test_synthetic_custodian_to_atomic_confirmatory_publication_end_to_end(
+    tmp_path: Path,
+) -> None:
+    from ml.evaluation.confirmatory_metrics import (
+        BOOTSTRAP_REPLICATES,
+        BOOTSTRAP_RNG_SEED,
+    )
+    from ml.evaluation.locked_test_evaluator import (
+        AUTHORIZED_SEEDS,
+        CHECKPOINT_SHA256_REGISTRY,
+        EXPECTED_CHECKPOINT_BYTES,
+        LockedTestEvaluator,
+    )
+    from ml.evaluation.phase_4c2g_dataset import load_locked_test_manifest
+    from ml.evaluation.run_phase_4c2g_confirmatory import (
+        finalize_confirmatory_outputs,
+        run_five_checkpoint_orchestration,
+    )
+
+    fixture = _build_production_custodian_evaluator_fixture(tmp_path)
+    manifest_path, custodian_receipt = _seal_production_custodian_fixture(fixture)
+    schema_path = REPO_ROOT / "docs/schemas/locked-test-manifest.v1.schema.json"
+    loaded = load_locked_test_manifest(
+        locked_test_root=fixture["root"],
+        manifest_path=manifest_path,
+        manifest_schema_path=schema_path,
+        expected_manifest_sha256=custodian_receipt["manifest_sha256"],
+        expected_schema_sha256=_sha256(schema_path),
+        expected_split_seal=fixture["split_seal"],
+    )
+
+    output_dir = tmp_path / "synthetic-evaluator-output"
+    evaluator = LockedTestEvaluator(
+        output_dir=output_dir,
+        effective_evaluator_commit="f" * 40,
+    )
+    session_id = "synthetic-cross-component-end-to-end"
+    evaluator.ledger.record_event(
+        event_type="PRE_READ_UNSEAL",
+        session_id=session_id,
+        metadata={"mode": "synthetic_fixture_only", "scientific_result": False},
+        inc_unsealing_session=True,
+    )
+    checkpoint_infos = {
+        seed: {
+            "seed": seed,
+            "sha256": CHECKPOINT_SHA256_REGISTRY[seed],
+            "byte_count": EXPECTED_CHECKPOINT_BYTES,
+        }
+        for seed in AUTHORIZED_SEEDS
+    }
+
+    def fixture_inference(seed, checkpoint_info, data_loader):
+        assert data_loader is loaded
+        return {
+            "seed": seed,
+            "protocol": "stage1_frozen_backbone_linear_probe",
+            "sample_size": 250,
+            "predictions": [
+                {
+                    "source_id": sample.unique_source_id,
+                    "sample_id": sample.sample_id,
+                    "sample_idx": index,
+                    "relative_path": sample.relative_path,
+                    "true_label": sample.label_id,
+                    "logits": (
+                        [3.0, -3.0] if sample.label_id == 0 else [-3.0, 3.0]
+                    ),
+                }
+                for index, sample in enumerate(loaded.samples)
+            ],
+            "calibration_fitted": False,
+            "threshold_tuned": False,
+            "probability_ensemble": False,
+        }
+
+    receipts = run_five_checkpoint_orchestration(
+        evaluator=evaluator,
+        checkpoint_infos=checkpoint_infos,
+        data_loader=loaded,
+        inference_fn=fixture_inference,
+        session_id=session_id,
+    )
+    result = finalize_confirmatory_outputs(
+        evaluator=evaluator,
+        receipts=receipts,
+        session_id=session_id,
+        manifest_binding={
+            "manifest_sha256": custodian_receipt["manifest_sha256"],
+            "schema_sha256": _sha256(schema_path),
+            "split_seal": fixture["split_seal"],
+        },
+        environment={
+            "fixture_only": True,
+            "scientific_result": False,
+            "locked_test_real_accesses": 0,
+            "completed_real_model_evaluations": 0,
+        },
+        n_bootstrap_replicates=BOOTSTRAP_REPLICATES,
+    )
+
+    assert result["aggregate"]["bootstrap_replicates"] == 10000
+    assert result["aggregate"]["bootstrap_rng_seed"] == BOOTSTRAP_RNG_SEED
+    assert result["aggregate"]["bootstrap_generator"] == (
+        "numpy.random.Generator(numpy.random.PCG64)"
+    )
+    assert result["execution_receipt"]["evaluation_attempts"] == 5
+    assert result["execution_receipt"]["completed_model_evaluations"] == 5
+    assert result["environment"]["scientific_result"] is False
+    assert result["environment"]["locked_test_real_accesses"] == 0
+    assert not list(output_dir.glob("*.part"))
+    assert json.loads(
+        (output_dir / "checksums.json").read_text(encoding="utf-8")
+    )["files"]
 
 
 def test_real_inference_function_preserves_sample_identity_and_logits(

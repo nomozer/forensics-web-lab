@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import stat
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath, PureWindowsPath
@@ -19,6 +20,7 @@ import jsonschema
 EXPECTED_SOURCE_COUNT = 343
 EXPECTED_SAMPLE_COUNT = 686
 LABEL_MAP = {"authentic": 0, "ai_edited": 1}
+CUSTODIAN_INVENTORY_METADATA_NAME = "custodian_inventory.json"
 CANONICAL_LOCKED_SPLIT_SEAL = (
     "519e7a0e6815e781d1cefa95971e5221ac1f25656837374d8dc4ba41401fded9"
 )
@@ -90,6 +92,33 @@ def _resolve_member(root: Path, relative_path: str) -> Path:
 def _source_split_seal(source_ids: Sequence[str]) -> str:
     payload = json.dumps(sorted(source_ids))
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def _is_symlink_or_reparse(path: Path) -> bool:
+    metadata = path.lstat()
+    attributes = int(getattr(metadata, "st_file_attributes", 0))
+    reparse_flag = int(getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400))
+    return path.is_symlink() or bool(attributes & reparse_flag)
+
+
+def _inventory_sample_files(root: Path) -> set[Path]:
+    """Return regular sample candidates, excluding only custodian root metadata."""
+    files: set[Path] = set()
+    for path in root.rglob("*"):
+        if _is_symlink_or_reparse(path):
+            raise ValueError(f"Symlink/reparse point forbidden: {path}")
+        if not path.is_file():
+            continue
+        relative = path.relative_to(root)
+        if relative.parts == (CUSTODIAN_INVENTORY_METADATA_NAME,):
+            continue
+        resolved = path.resolve(strict=True)
+        try:
+            resolved.relative_to(root)
+        except ValueError as exc:
+            raise ValueError(f"Locked-test file escapes root: {relative}") from exc
+        files.add(resolved)
+    return files
 
 
 def load_locked_test_manifest(
@@ -207,11 +236,7 @@ def load_locked_test_manifest(
             f"expected {expected_split_seal}, got {actual_split_seal}"
         )
 
-    actual_files = {
-        path.resolve()
-        for path in root.rglob("*")
-        if path.is_file()
-    }
+    actual_files = _inventory_sample_files(root)
     try:
         manifest_file.relative_to(root)
     except ValueError:
