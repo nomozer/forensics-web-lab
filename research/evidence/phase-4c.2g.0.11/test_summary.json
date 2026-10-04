@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "Phase 4C.2G.0.11",
+  "final_gates": [
+    {"command": "pytest phase 4C.2G execution + phase 4C.2F evaluator with workspace basetemp", "result": "PASS", "tests": 72},
+    {"command": "pnpm test", "result": "PASS", "workspace_tests": 57, "continuity_unit_tests": 13},
+    {"command": "pnpm typecheck", "result": "PASS"},
+    {"command": "pnpm build", "result": "PASS_WITH_EXISTING_CHUNK_SIZE_WARNING"},
+    {"command": "pnpm continuity:check", "result": "PASS"},
+    {"command": "git diff --check", "result": "PASS"},
+    {"command": "exact packaged authorization preflight", "result": "PASS", "locked_test_accesses": 0},
+    {"command": "external interrupted-ledger hash-chain audit", "result": "PASS", "entries": 2}
+  ],
+  "environmental_reruns": {
+    "count": 2,
+    "classification": "PRE_TEST_FIXTURE_SETUP_ONLY_NO_EVALUATOR_RETRY",
+    "reason": "The default Windows pytest temp root and then the sandbox temporary root were inaccessible to the non-elevated test process after UAC. Both attempts produced 31 passes and 41 tmp_path setup errors, with no assertion failures. The final run used an ignored workspace basetemp and passed 72/72.",
+    "locked_test_session_rerun": false
+  },
+  "code_or_evaluator_modified": false
+}

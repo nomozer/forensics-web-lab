@@ -1,3 +1,17 @@
+## Phase 4C.2G.0.11 — Authorized Evaluator Session Interruption and Adjudication Hold
+
+- **Mục tiêu**: Execute exactly one user-authorized locked-test evaluator session bound to the Phase 4C.2G.0.10 request/package and publish results regardless of outcome.
+- **Authorization**: External authorization `phase4c2g010-dung-20261003T201057Z`, 2,812 bytes, SHA-256 `0de21d06...`; user-supplied identity `dung`, no cryptographic-signature claim; exact packaged preflight PASS.
+- **Runtime**: Existing VHDX reused and mounted `IsReadOnly=True`; fresh network-isolation and read-only receipts PASS; exact package/controller/manifest/checkpoint bindings verified.
+- **Interruption**: After `PRE_READ_UNSEAL`, evaluator rejected `custodian_inventory.json` as an extra locked-test file. Custodian intentionally excludes this metadata file while evaluator enumerates it; hash-chained ledger recorded `SESSION_INTERRUPTED`.
+- **Counters**: completed/interrupted unsealing sessions = 1/1; evaluation attempts = 0; completed model evaluations = 0; CPU/GPU inference = 0/0. Per-checkpoint metrics, aggregate Macro-F1, bootstrap CI, and confirmatory verdict are `NOT_EVALUATED`.
+- **Cleanup**: Network restored with 3 default routes; Wi-Fi/Radmin VPN Up; watchdog absent; VHDX detached; `R:` absent; no retry.
+- **Kết quả**: `BLOCKED_AUTHORIZATION_CONSUMED_CUSTODIAN_INVENTORY_METADATA_MISMATCH`.
+- **Evidence**: `research/evidence/phase-4c.2g.0.11/`; raw authorization/runtime outputs remain outside Git.
+- **Quyết định tiếp theo**: Human adjudication and separately authorized narrow evaluator/package correction; this consumed authorization cannot be retried.
+
+---
+
 ## Phase 4C.2G.0.10 — Authorized-Session Adapter Hotfix and Package Reseal
 
 - **Mục tiêu**: Repair the sealed executor's Windows adapter parameter binding across isolation, generated recovery, and finally restoration; harden watchdog read-back; reseal and bind an exact package without changing evaluator/scientific artifacts.

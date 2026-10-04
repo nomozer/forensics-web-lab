@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "session_id": "phase4c2g-eval-76fbfec-dung-20261003T201057Z",
+  "ledger_hash_chain": "PASS",
+  "entry_count": 2,
+  "events": [
+    "PRE_READ_UNSEAL",
+    "SESSION_INTERRUPTED"
+  ],
+  "completed_unsealing_sessions": 1,
+  "evaluation_attempts": 0,
+  "completed_model_evaluations": 0,
+  "cpu_inference_calls": 0,
+  "gpu_inference_calls": 0,
+  "tip_entry_hash": "affda2c650c660925a6ebdadc762c566847ffa0ee615515bd84da2f96a2ee853",
+  "ledger_sha256": "8c5d27a5c9d13edf1a054a7035ccf3d0b325e44d2826e1cce194c5924840c04f",
+  "raw_ledger_committed_to_git": false
+}

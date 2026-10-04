@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0.0",
+  "classification": "CROSS_COMPONENT_LOCKED_TEST_INVENTORY_CONTRACT_MISMATCH",
+  "custodian_behavior": {
+    "source": "scripts/research/seal_locked_test_manifest.py",
+    "metadata_name": "custodian_inventory.json",
+    "contract": "The custodian intentionally excludes this exact metadata file from the disk-file set before comparing against the 686 registered samples."
+  },
+  "evaluator_behavior": {
+    "source": "ml/evaluation/phase_4c2g_dataset.py",
+    "contract": "The evaluator recursively includes every regular file below locked_test_root and discards only the manifest when it is located under that root.",
+    "observed_extra": "custodian_inventory.json"
+  },
+  "why_preflight_missed_it": "Custodian fixtures include the metadata file, but evaluator fixtures independently construct sample-only roots and test only arbitrary unexpected files. No integration fixture passed the exact custodian-produced root layout to the evaluator loader.",
+  "scientific_impact": "No model evaluation or metric occurred; scientific outcome remains not evaluated.",
+  "remediation_boundary": "Do not retry this consumed authorization. Any exact-metadata exclusion correction requires a newly sealed package and fresh human authorization."
+}

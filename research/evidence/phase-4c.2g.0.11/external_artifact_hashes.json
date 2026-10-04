@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0.0",
+  "storage": "external_to_git",
+  "path_policy": "logical relative paths only",
+  "files": [
+    {"relative_path": "human_unsealing_authorization.json", "bytes": 2812, "sha256": "0de21d0610281fedd6fb35a4cd6d896502cf46b28b9dba02acdd3bfb908f8993"},
+    {"relative_path": "authorization_materialization_receipt.json", "bytes": 873, "sha256": "983dd14bb875a366484b00ab6bd706386ce205d9bb794c99c073e8f2beb6268a"},
+    {"relative_path": "execution_wrapper_receipt.json", "bytes": 1271, "sha256": "4d1639d7be814beaeeb5c4233863909244880c32a94f77ff3328b8d559e5fa61"},
+    {"relative_path": "controller_console.log", "bytes": 520, "sha256": "0c1d25d936d9f5e4b88a8bdf8d42f4028798d92c724953ee49af69d49bf22586"},
+    {"relative_path": "outputs/isolation_receipt.json", "bytes": 463, "sha256": "435bab9f89390c5d073db83e5d160b960a63eea74144372397dc51067d5be946"},
+    {"relative_path": "outputs/read_only_receipt.json", "bytes": 477, "sha256": "52b60d6456524bc69acdcf0a0139022330c6ae10050ebac6b1d25e025d29ecb7"},
+    {"relative_path": "outputs/locked_test_access_ledger.jsonl", "bytes": 1604, "sha256": "8c5d27a5c9d13edf1a054a7035ccf3d0b325e44d2826e1cce194c5924840c04f"},
+    {"relative_path": "outputs/RECOVER_NETWORK_AUTHORIZED_SESSION.ps1", "bytes": 1079, "sha256": "cebd569bc0ceac824c1f6a1a5f520b2d4b68e72bc0ec3e39878bc4281b2a46ba"}
+  ],
+  "sensitive_or_locked_test_contents_committed": false
+}
