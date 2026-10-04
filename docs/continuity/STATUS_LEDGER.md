@@ -1,3 +1,16 @@
+## Phase 4C.2H.1 — Official Runner and Colab Pilot Readiness
+
+- **Mục tiêu**: Implement the locked 120-inner/30-outer development runner, seal an exact self-contained Colab snapshot, and prepare the two-fit runtime pilot without launching the full experiment.
+- **Execution contract**: Both recipes reuse the same independently constructed frozen-backbone feature cache with BatchNorm in eval mode. Inner best epochs use only inner-validation Macro-F1; outer refits use the round-half-up median of four inner epochs and create outer predictions only after refit. Per-image predictions cannot accept peer images or labels.
+- **Seeds/budget**: New development experiment remains prospectively locked to `[42,1337,2025]`, reduced from the historical five seeds before official training. Budget is 120 inner + 30 outer = 150 fits; pilot is exactly two official inner fits at outer 0 / inner 0 / seed 42, one per recipe.
+- **Snapshot**: Source commit `75568d1`; archive `phase_4c2h_code_75568d1.tar.gz`, 9,509,956 bytes, SHA-256 `2bd393873be3291084f86a329a34566bd9aa46c0efd8aa9f155e47571b132c18`; deterministic rebuild and exact packaged import PASS.
+- **Verification**: 12/12 targeted tests PASS. Exact packaged preflight on 341 sources/682 samples PASS; CPU feature-cache build `51.0809s`, validated resume reused it; completed official fits remain 0/150 and pilot fit runtime is not measured.
+- **Kết quả**: `READY_FOR_COLAB_TWO_FIT_PILOT`.
+- **Evidence**: `research/evidence/phase-4c.2h.1/`.
+- **Next**: Upload exact archive/notebook, run only the two-fit Colab pilot, preserve receipts, and review measured runtime before explicitly enabling the remaining matrix.
+
+---
+
 ## Phase 4C.2H.0 — Development Diagnostics and Nested-CV Protocol Lock
 
 - **Mục tiêu**: Diagnose label/preprocessing/gradient/frozen-state/overfit mechanics on development data, then lock a leakage-safe comparison of no more than two recipes before official training.

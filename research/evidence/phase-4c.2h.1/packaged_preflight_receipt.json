@@ -1,0 +1,46 @@
+{
+  "archive_sha256": "2bd393873be3291084f86a329a34566bd9aa46c0efd8aa9f155e47571b132c18",
+  "completed_fits": {
+    "inner": 0,
+    "outer": 0,
+    "total": 0
+  },
+  "dataset": {
+    "archive_bytes": 724633600,
+    "archive_sha256": "d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27",
+    "manifest_sha256": "411e35da80843a10f7bb22e33efac8a4d1db70110dbda91cadbbf39532c9312d",
+    "samples": 682,
+    "sources": 341
+  },
+  "feature_cache": {
+    "build_wall_seconds_cpu": 51.080908299998555,
+    "bytes": 1579411,
+    "construction": "independent_pixels_to_frozen_backbone_eval",
+    "label_or_pair_inputs_to_backbone": false,
+    "sha256": "cb950e86ee2229286eb776b84fec830e6f4599b5deedd3abc8474b2e6b0b8425"
+  },
+  "first_successful_preflight_utc": "2026-10-04T09:20:52.420730+00:00",
+  "locked_test_accesses": 0,
+  "mode": "preflight",
+  "planned_fits": {
+    "inner": 120,
+    "outer": 30,
+    "total": 150
+  },
+  "resume_check": {
+    "cache_created_at_unchanged": true,
+    "cache_sha256_unchanged": true,
+    "second_invocation_wall_seconds_total": 19.1,
+    "status": "VALID_CACHE_REUSED"
+  },
+  "runtime": {
+    "device": "cpu",
+    "numpy": "2.5.3",
+    "python": "3.12.10",
+    "torch": "2.5.1+cu121"
+  },
+  "schema_version": "1.0.0",
+  "source_commit": "75568d1c03d89e02ad654df75c969924b857ee78",
+  "status": "EXACT_PACKAGED_DEVELOPMENT_PREFLIGHT_PASS",
+  "training_performed": false
+}

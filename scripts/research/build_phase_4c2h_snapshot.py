@@ -14,8 +14,8 @@ from pathlib import Path
 
 
 SOURCE_MEMBERS = (
-    "ml/__init__.py",
     "ml/evaluation/__init__.py",
+    "ml/evaluation/calibration.py",
     "ml/evaluation/metrics.py",
     "ml/training/__init__.py",
     "ml/training/loss.py",
