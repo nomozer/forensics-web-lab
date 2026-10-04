@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="700" height="420" viewBox="0 0 700 420">
+<rect width="700" height="420" fill="#ffffff"/>
+<text x="350.0" y="35" text-anchor="middle" font-family="sans-serif" font-size="18" font-weight="bold" fill="#333333">Out-Of-Fold AUROC Comparison (N=341 Sources / 682 Samples)</text>
+<text x="25" y="205.0" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#666666" transform="rotate(-90 25 205.0)">AUROC</text>
+<line x1="70" y1="350.0" x2="660" y2="350.0" stroke="#e0e0e0" stroke-width="1"/>
+<text x="60" y="354.0" text-anchor="end" font-family="sans-serif" font-size="11" fill="#888888">0.40</text>
+<line x1="70" y1="292.0" x2="660" y2="292.0" stroke="#e0e0e0" stroke-width="1"/>
+<text x="60" y="296.0" text-anchor="end" font-family="sans-serif" font-size="11" fill="#888888">0.47</text>
+<line x1="70" y1="233.99999999999997" x2="660" y2="233.99999999999997" stroke="#e0e0e0" stroke-width="1"/>
+<text x="60" y="237.99999999999997" text-anchor="end" font-family="sans-serif" font-size="11" fill="#888888">0.54</text>
+<line x1="70" y1="176.0" x2="660" y2="176.0" stroke="#e0e0e0" stroke-width="1"/>
+<text x="60" y="180.0" text-anchor="end" font-family="sans-serif" font-size="11" fill="#888888">0.61</text>
+<line x1="70" y1="118.00000000000006" x2="660" y2="118.00000000000006" stroke="#e0e0e0" stroke-width="1"/>
+<text x="60" y="122.00000000000006" text-anchor="end" font-family="sans-serif" font-size="11" fill="#888888">0.68</text>
+<line x1="70" y1="60.0" x2="660" y2="60.0" stroke="#e0e0e0" stroke-width="1"/>
+<text x="60" y="64.0" text-anchor="end" font-family="sans-serif" font-size="11" fill="#888888">0.75</text>
+<rect x="106.9" y="179.4" width="122.9" height="170.6" fill="#4A90E2" rx="3"/>
+<text x="168.3" y="171.4" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="bold" fill="#333333">0.6058</text>
+<text x="168.3" y="375.0" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#555555">Visual Control</text>
+<rect x="303.5" y="186.1" width="122.9" height="163.9" fill="#F5A623" rx="3"/>
+<text x="365.0" y="178.1" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="bold" fill="#333333">0.5978</text>
+<text x="365.0" y="375.0" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#555555">DSP Only</text>
+<rect x="500.2" y="190.9" width="122.9" height="159.1" fill="#7ED321" rx="3"/>
+<text x="561.7" y="182.9" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="bold" fill="#333333">0.5920</text>
+<text x="561.7" y="375.0" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#555555">Visual + DSP</text>
+</svg>

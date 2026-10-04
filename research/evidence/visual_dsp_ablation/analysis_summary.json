@@ -1,0 +1,87 @@
+{
+  "schema_version": "1.0.0",
+  "sources_evaluated": 341,
+  "samples_evaluated": 682,
+  "metrics_by_recipe": {
+    "visual_control": {
+      "macro_f1": 0.578699727719842,
+      "balanced_accuracy": 0.5791788856304985,
+      "auroc": 0.605842743010466,
+      "brier_score": 0.24400098693123168,
+      "ece": 0.03196196048315669,
+      "fpr": 0.3870967741935484,
+      "fnr": 0.45454545454545453,
+      "tn": 209.0,
+      "fp": 132.0,
+      "fn": 155.0,
+      "tp": 186.0,
+      "samples": 682.0,
+      "sources": 341.0
+    },
+    "dsp_only": {
+      "macro_f1": 0.5727396614416823,
+      "balanced_accuracy": 0.5733137829912023,
+      "auroc": 0.5978448757750622,
+      "brier_score": 0.24543353985509064,
+      "ece": 0.037321687858999655,
+      "fpr": 0.4633431085043988,
+      "fnr": 0.39002932551319647,
+      "tn": 183.0,
+      "fp": 158.0,
+      "fn": 133.0,
+      "tp": 208.0,
+      "samples": 682.0,
+      "sources": 341.0
+    },
+    "visual_dsp_fusion": {
+      "macro_f1": 0.5834881640517479,
+      "balanced_accuracy": 0.5835777126099707,
+      "auroc": 0.5920141725647354,
+      "brier_score": 0.2573467311320165,
+      "ece": 0.08950770683477353,
+      "fpr": 0.40175953079178883,
+      "fnr": 0.4310850439882698,
+      "tn": 204.0,
+      "fp": 137.0,
+      "fn": 147.0,
+      "tp": 194.0,
+      "samples": 682.0,
+      "sources": 341.0
+    }
+  },
+  "paired_deltas": [
+    {
+      "comparison": "dsp_vs_visual",
+      "description": "DSP Only minus Visual Control",
+      "delta_macro_f1": -0.005960066278159704,
+      "delta_balanced_accuracy": -0.0058651026392961825,
+      "delta_auroc": -0.007997867235403855,
+      "delta_brier_score": 0.0014325529238589652,
+      "delta_ece": 0.0053597273758429625,
+      "delta_fpr": 0.07624633431085043,
+      "delta_fnr": -0.06451612903225806
+    },
+    {
+      "comparison": "fusion_vs_visual",
+      "description": "Visual+DSP Fusion minus Visual Control (Ablation Gain)",
+      "delta_macro_f1": 0.004788436331905843,
+      "delta_balanced_accuracy": 0.004398826979472248,
+      "delta_auroc": -0.013828570445730604,
+      "delta_brier_score": 0.013345744200784826,
+      "delta_ece": 0.05754574635161684,
+      "delta_fpr": 0.014662756598240456,
+      "delta_fnr": -0.02346041055718473
+    },
+    {
+      "comparison": "fusion_vs_dsp",
+      "description": "Visual+DSP Fusion minus DSP Only",
+      "delta_macro_f1": 0.010748502610065547,
+      "delta_balanced_accuracy": 0.01026392961876843,
+      "delta_auroc": -0.005830703210326749,
+      "delta_brier_score": 0.01191319127692586,
+      "delta_ece": 0.05218601897577388,
+      "delta_fpr": -0.06158357771260997,
+      "delta_fnr": 0.04105571847507333
+    }
+  ]
+}

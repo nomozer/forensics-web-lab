@@ -1,0 +1,74 @@
+schema_version: "1.0.0"
+experiment_id: "visual_dsp_ablation"
+status: "DEVELOPMENT_PROTOCOL_LOCKED_PRE_TRAINING"
+created_at_utc: "2026-10-04T14:47:00Z"
+purpose: >-
+  Prospective ablation experiment comparing Visual control, DSP-only, and
+  Visual+DSP fusion on the 341 development sources using source-grouped
+  nested cross-validation with zero data leakage.
+
+recipes:
+  - id: "visual_control"
+    name: "Visual Control (MobileNetV3 Frozen Backbone)"
+    feature_type: "visual"
+    feature_dimension: 576
+  - id: "dsp_only"
+    name: "DSP Only (2D-FFT + 2D-DCT + Noise Residual + JPEG BAG)"
+    feature_type: "dsp"
+    feature_dimension: 16
+  - id: "visual_dsp_fusion"
+    name: "Visual + DSP Early Fusion"
+    feature_type: "visual_dsp"
+    feature_dimension: 592
+
+classifier:
+  family: "regularized_logistic_regression"
+  penalty: "l2"
+  solver: "lbfgs"
+  max_iter: 1000
+  tolerance: 1e-4
+  scaler: "StandardScaler"
+  hyperparameter_search:
+    parameter: "C"
+    grid: [0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0]
+    selection_metric: "macro_f1"
+
+data_scope:
+  expected_sources: 341
+  expected_samples: 682
+  allowed_partitions:
+    - "development_train"
+    - "inner_validation"
+  forbidden_partitions:
+    - "locked_test"
+  pairs_per_source: 1
+
+grouped_nested_cv:
+  outer_folds: 5
+  inner_folds: 4
+  outer_seed: 42
+  inner_seed: 1337
+
+budget:
+  recipes: 3
+  outer_folds: 5
+  inner_folds: 4
+  grid_points: 7
+  inner_fits_per_outer_fold: 28 # 4 inner folds * 7 grid points
+  total_inner_fits: 420 # 3 recipes * 5 outer folds * 28 inner fits
+  total_outer_refits: 15 # 3 recipes * 5 outer folds
+  total_fits: 435 # 420 inner fits + 15 outer refits
+  pilot_completed_fits: 29 # visual_control outer_fold 0 = 28 inner + 1 outer refit
+  remaining_fits: 406 # 14 outer groups * 29 fits
+  oof_image_predictions: 2046 # 3 recipes * 682 images
+
+artifact_bindings:
+  dataset_archive:
+    manifest_name: "manifest_pilot_a_option_p.csv"
+    manifest_sha256: "e1e6b6d282002108d6a15000b755c20dd569cc8aa68c4eebbfa2aab3cee3b626"
+    bundle_manifest_sha256: "411e35da80843a10f7bb22e33efac8a4d1db70110dbda91cadbbf39532c9312d"
+  pretrained_weights:
+    filename: "mobilenet_v3_small-047dcff4.pth"
+    bytes: 10306551
+    sha256: "047dcff4addef86ea5bc2eff13c9614dc11f47ab1160d0a71a25e7db994f4e1f"
+    backbone_state_fingerprint: "d42bb32ad876b9de2b04a6ccd245f76c4d0c6bb3ded74c25261cf14720c7e7d5"

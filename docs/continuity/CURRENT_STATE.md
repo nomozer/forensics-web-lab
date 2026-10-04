@@ -1,26 +1,19 @@
 # Trạng thái Hiện tại: Forensics Web Lab (Current State)
 
 > **Tài liệu đọc đầu tiên bắt buộc cho mọi phiên làm việc AI mới.**<br>
-> **Documented through execution-package commit**: `0658dce11a7790877ae1b0820645d2e5a7e9a710` (inventory-contract evaluator hotfix + preserved sealed orchestrator + non-circular execution package)<br>
+> **Documented through execution-package commit**: `9516341e7d7deaf61be4e501d6ce2eba0741c313`<br>
 > **Phase hoàn thành gần nhất**: Phase 4C.2H.2 — Development Nested-CV Artifact Audit and Exploratory OOF Analysis<br>
-> **Branch**: `research/phase-4c2g-locked-test-execution`<br>
-> **Base main commit**: `8a37966ea6ea55f58b589515f0c10bebae495b3a` (bảo toàn nguyên vẹn, không commit trực tiếp)<br>
-> **Parent Phase 4C.2F commit**: `35f430f410c77247b1e8bb9bb9559ac615b0cd5b`<br>
-> **Final effective evaluator commit**: `0658dce11a7790877ae1b0820645d2e5a7e9a710`<br>
-> **Orchestrator hotfix commit**: `597a79af3cc76707edeefcb6dfc1d93f5f0e5ae1`<br>
-> **Execution package commit**: `0658dce11a7790877ae1b0820645d2e5a7e9a710`<br>
-> **Manifest custodian effective/package commit**: `a86888dcee20f74de31ef61e54f224dab643740a`<br>
-> **Actual execution network isolation**: `AUTHORIZED_SESSION_ISOLATION_PASS_NETWORK_RESTORED` (Phase 4C.2G.0.13 same-session receipt recorded zero routes/proxy/egress owners; controller cleanup and independent elevated read-back confirmed two restored default routes, Wi-Fi and Radmin VPN operationally Up, watchdog absent)<br>
-> **Controller readiness verdict**: `EXACT_PACKAGED_CONTROLLER_AND_LOADER_PREFLIGHT_PASS` (Windows PowerShell 5.1 contract validation plus production-custodian-to-exact-packaged-loader round trip, zero adapter mutations/locked-test accesses/model forwards)<br>
-> **Locked-test execution verdict**: `PHASE_4C2G_CLOSED_INSUFFICIENT_CONFIRMATORY_EVIDENCE` (the fixed result remains mean Macro-F1 `0.513835085980773`, percentile 95% source-cluster bootstrap CI `[0.49976282750638307, 0.5273360991798881]`; artifact-only closure reconciliation PASS; wrapper exit 1 is a confirmed filename-check false negative with controller exit 0 and `COMPLETED_VALID`; all additional confusion/probability/source-error analyses are post-hoc exploratory)<br>
-> **Development research verdict**: `NO_CONSISTENT_EXPLORATORY_PAIR_RANKING_IMPROVEMENT` (Colab T4 completed 120/120 inner fits and 30/30 outer refits; 636 files and 480 declared artifact hashes verified; every outer epoch matches the round-half-up median of four inner-validation best epochs; six full OOF cells each contain exactly 341 sources/682 unique samples; baseline mean Macro-F1 `0.5655386579 ± 0.0070613283`, pair-ranking `0.5667070792 ± 0.0051315784`, paired mean delta `+0.0011684213 ± 0.0103948418`, with only 1/3 seeds positive; development/exploratory only)<br>
-> **Manifest custodian workflow verdict**: `MANIFEST_COMMITMENT_VALID_CLEANUP_VERIFIED_NO_RETRY` (authorization `phase-4c2g0.7-dung-20261003T143742Z` consumed by exactly one completed custodian session; atomic commitment and hash chain verified; post-commit watchdog read-back race adjudicated without retry; network restored and VHDX dismounted)<br>
-> **Real counters**: locked_test_preparation_accesses = 2, vhdx_preparation_files_hashed = 1372, custodian_manifest_access_sessions = 1, custodian_files_hashed = 686, cumulative_evaluator_access_sessions = 2, interrupted_evaluator_sessions = 1, completed_recovery_sessions = 1, completed_real_model_evaluations = 5, evaluation_attempts = 5, cpu_checkpoint_evaluations = 5, cpu_forward_batches = 110, gpu_inference_calls = 0, phase_4c2h_completed_inner_fits = 120, phase_4c2h_completed_outer_refits = 30, bounded_development_smoke_runs = 1<br>
-> **Remote completed training runs**: 15/15 historical Stage 1 + 15/15 historical Stage 2 + Phase 4C.2H 120/120 inner fits and 30/30 outer refits (all Colab T4; Phase 4C.2H remains development/exploratory and does not change Phase 4C.2G)<br>
-> **Remaining training runs**: 0<br>
-> **Tuyên bố khoa học tối thượng**:<br>
-> **`Stage 1 frozen linear probe vs Stage 2 pre-registered partial fine-tuning protocol evaluated across 15 exact matched pairs (3 cohorts N ∈ {50, 100, 250} × 5 seeds; 91 inner-validation sources, 182 balanced samples); 30 runs cross-artifact numerical parity verified (tolerance <= 10^-6, 100% verified across receipts, metrics, predictions, checkpoints, paired summaries, statistical tests, and Markdown tables); Stage 1 lineage audit confirms reload of best_checkpoint.pt before final evaluation; Stage 2 protocol fails to demonstrate statistically significant superiority on any cohort on inner-validation (all 95% CIs cross 0, all Holm p > 0.05); Stage 1 frozen backbone linear probe was selected post hoc for the preregistered locked-test evaluation; the exact five-checkpoint Stage 1 N=250 locked-test result is mean Macro-F1 0.513835085980773 with 10,000-replicate PCG64(20261002) source-cluster percentile 95% CI [0.49976282750638307, 0.5273360991798881]; confirmatory success criterion CI lower > 0.5000 is not met, yielding INSUFFICIENT_CONFIRMATORY_EVIDENCE and Phase 4C.2G is closed; artifact-only post-hoc analysis is explicitly exploratory and suggests score compression near 0.5, seed-dependent class bias, and widespread source-pair errors without changing the confirmatory verdict; authorized data handling is recorded separately as 2 preparation copy/hash passes, 1 manifest-custodian session, 1 interrupted evaluator access session before model evaluation, and 1 completed recovery evaluator session with 5 attempts/5 completed checkpoint evaluations; branch research/phase-4c2-finetuning prepared for PR review into main (verdict READY_FOR_PR_REVIEW).`**
-> **Development-only exploratory update**: Phase 4C.2H grouped nested CV finds no consistent pair-ranking improvement: paired full-OOF Macro-F1 delta `+0.0011684213 ± 0.0103948418` across three fixed seeds, with pair-ranking better on one seed and worse on two. The 30 outer refits are folds, not independent observations.<br>
+> **Phase nghiên cứu hiện tại**: Visual/DSP Ablation Study on Development Cohort (341 sources)<br>
+> **Branch**: `research/visual-dsp-ablation`<br>
+> **Base main commit**: `9516341e7d7deaf61be4e501d6ce2eba0741c313` (đồng bộ với origin/main)<br>
+> **Preflight status**: `PREFLIGHT_PASS` (341 development pairs, 682 samples, zero locked-test access, manifest and weights SHA verified)<br>
+> **Pilot status**: `PILOT_PASS` (outer fold 0 visual_control completed in 1.92s, best_C=0.001, Macro-F1=0.5775, AUROC=0.6127, resume idempotency verified)<br>
+> **Budget accounting**: 420 inner fits + 15 outer refits = 435 total fits; pilot completed 28 inner + 1 outer refit (29 fits); full runner completed remaining 392 inner + 14 outer refits (406 fits) in 13.27s; convergence: 435/435 converged (0 warnings)<br>
+> **Ablation OOF results (Macro-F1 / AUROC)**: Visual control `0.5787 / 0.6058`, DSP only `0.5727 / 0.5978`, Visual+DSP fusion `0.5835 / 0.5920`; paired ablation gain $\Delta \text{Macro-F1} = +0.0048$, $\Delta \text{FNR} = -0.0235$, $\Delta \text{ECE} = +0.0575$<br>
+> **Code snapshot**: `data/research/local-artifacts/phase_visual_dsp_ablation_code.tar.gz` (SHA-256 `bf61b3c1...`)<br>
+> **Locked-test status**: `SEALED_AND_RETIRED` (zero access; experiment strictly restricted to 341 development sources)<br>
+> **Verdict**: `DEVELOPMENT_EXPLORATORY_ABLATION_COMPLETE`<br>
+> **Next approved action**: Complete quality gates, commit/push research branch, merge into main via merge commit, verify ancestry on origin/main, and delete branch.<br>
 
 ---
 
