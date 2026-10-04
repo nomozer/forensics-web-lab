@@ -1,0 +1,39 @@
+{
+  "aggregate_macro_f1_recomputed": 0.513835085980773,
+  "aggregate_matches_published_result": true,
+  "bootstrap_summary_cross_file_consistency": "PASS_NOT_RERUN",
+  "checksum_audit": [
+    {
+      "entries_verified": 20,
+      "index": "checksums.json",
+      "status": "PASS"
+    },
+    {
+      "entries_verified": 22,
+      "index": "session_checksums.json",
+      "status": "PASS"
+    }
+  ],
+  "ci_lower_95": 0.49976282750638307,
+  "ci_upper_95": 0.5273360991798881,
+  "confirmatory_success": false,
+  "confirmatory_verdict": "INSUFFICIENT_CONFIRMATORY_EVIDENCE",
+  "input_artifacts_unchanged": true,
+  "new_inference_calls": 0,
+  "new_training_runs": 0,
+  "per_checkpoint_metrics_recomputed_from_existing_logits": "PASS",
+  "prediction_files_verified": 5,
+  "result_classification": "CONFIRMATORY_RESULT_RECONCILIATION_NO_NEW_MODEL_EVALUATION",
+  "sample_identity_and_order_equal_across_checkpoints": true,
+  "samples_per_checkpoint": 686,
+  "schema_version": "1.0.0",
+  "sources": 343,
+  "wrapper_adjudication": {
+    "cause": "Wrapper checked non-contract confirmatory_result.json while the sealed controller published aggregate_confirmatory_metrics.json and confirmatory_decision.json.",
+    "controller_exit_code": 0,
+    "execution_receipt_status": "COMPLETED_VALID",
+    "outer_wrapper_false_negative": true,
+    "retry_performed": false,
+    "scientific_result_affected": false
+  }
+}

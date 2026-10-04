@@ -1,3 +1,16 @@
+## Phase 4C.2G.0.14 — Confirmatory Closure and Exploratory Error Analysis
+
+- **Mục tiêu**: Close Phase 4C.2G without changing its experimental result; reconcile existing artifacts, document the wrapper false negative, perform explicitly exploratory confusion/probability/source-error analysis, and propose a development-only next experiment plus a new independent-validation plan.
+- **Reconciliation**: 20/20 evaluator-output and 22/22 session checksum entries PASS; five 686-record prediction files have identical sample identity/order; all per-checkpoint metrics and confusion matrices recompute exactly from stored logits; aggregate Macro-F1 `0.513835085980773` matches; stored bootstrap summary is cross-file consistent and was not rerun; inputs remained byte-identical.
+- **Wrapper adjudication**: Outer exit 1 is a false negative caused by checking absent non-contract `confirmatory_result.json`; sealed controller exit 0, `COMPLETED_VALID`, canonical metrics/decision artifacts, and cleanup evidence remain valid. No retry and no scientific impact.
+- **Exploratory findings**: Non-independent pooled FPR/FNR `0.5732/0.3773`; pooled authentic/edited mean probabilities `0.506081/0.511111`; `82.9738%` of scores in `[0.45,0.55)`; 339/343 sources have at least one error across ten decisions, 215 have exactly 5/10 errors, and 189 show cross-seed prediction instability. These are post-hoc and not confirmatory.
+- **Counters**: New inference = 0; new training = 0; bootstrap reruns = 0; tuning/model selection = 0. Raw source/sample/path identifiers are not published.
+- **Kết quả**: `PHASE_4C2G_CLOSED_INSUFFICIENT_CONFIRMATORY_EVIDENCE`; original mean/CI/verdict remain unchanged.
+- **Evidence**: `research/evidence/phase-4c.2g.0.14/`; reproducible analyzer and two regression tests added.
+- **Quyết định tiếp theo**: New preregistered development-only grouped nested-CV work. A future confirmatory claim requires a newly acquired source-disjoint cohort, independent sealing, and separate one-session authorization; the Phase 4C.2G locked test is retired from tuning and selection.
+
+---
+
 ## Phase 4C.2G.0.13 — Authorized Recovery Evaluator Session and Confirmatory Result
 
 - **Mục tiêu**: Execute exactly one directly approved recovery evaluator session using the exact `0658dce` package, publish the preregistered result regardless of outcome, preserve cumulative incident history, and verify cleanup.

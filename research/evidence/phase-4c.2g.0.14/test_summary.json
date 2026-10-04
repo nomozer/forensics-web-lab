@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "4C.2G.0.14",
+  "artifact_analysis": {
+    "output_checksum_entries_verified": 20,
+    "session_checksum_entries_verified": 22,
+    "prediction_files_verified": 5,
+    "records_per_prediction_file": 686,
+    "unique_sources": 343,
+    "input_artifacts_unchanged": true,
+    "new_inference_calls": 0,
+    "new_training_runs": 0
+  },
+  "analysis_regression_tests": {
+    "passed": 2,
+    "failed": 0
+  },
+  "related_test_suites": {
+    "files": [
+      "ml/tests/test_phase_4c2g_closure_analysis.py",
+      "ml/tests/test_phase_4c2g_execution.py",
+      "ml/tests/test_phase_4c2f_evaluator.py"
+    ],
+    "passed": 82,
+    "failed": 0
+  },
+  "quality_gates": {
+    "python_compile": "PASS",
+    "direct_cli_help": "PASS",
+    "deterministic_artifact_reproduction": "PASS",
+    "json_parse": "PASS",
+    "raw_identifier_and_absolute_path_scan": "PASS",
+    "git_diff_check": "PASS",
+    "continuity_check": "PASS"
+  },
+  "generated_artifact_sha256": {
+    "artifact_reconciliation.json": "c08029f204ab6489ed28179e603e4a58c615d48add7728446d89a1a4249ba727",
+    "exploratory_error_analysis.json": "0ec207e6f35103385b48234365291dd018d3d7e4e8b783eae26ca0d08618af8b"
+  }
+}
