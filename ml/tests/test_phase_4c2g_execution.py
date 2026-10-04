@@ -1348,6 +1348,7 @@ def test_complete_package_is_deterministic_self_contained_and_data_free(
     assert completed.returncode == 0, completed.stderr
 
 
+@pytest.mark.skipif(sys.platform != "win32", reason="Windows PowerShell controller required")
 def test_mixed_commit_package_contains_exact_preflightable_controller(
     tmp_path: Path,
 ) -> None:
@@ -1414,6 +1415,7 @@ def test_mixed_commit_package_contains_exact_preflightable_controller(
     assert contract["adapter_cmdlet_contract"]["adapter_mutations"] == 0
 
 
+@pytest.mark.skipif(sys.platform != "win32", reason="Windows PowerShell controller required")
 def test_inventory_hotfix_package_contains_cross_component_compatible_loader(
     tmp_path: Path,
 ) -> None:
