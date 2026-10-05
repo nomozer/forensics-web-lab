@@ -1,0 +1,66 @@
+{
+  "aggregate": {
+    "differences": {
+      "dsp_raw_vs_dsp_only": {
+        "auroc": 0.0,
+        "balanced_accuracy": 0.0,
+        "brier_score": 5.551115123125783e-17,
+        "ece": 0.0,
+        "fn": 0.0,
+        "fnr": 0.0,
+        "fp": 0.0,
+        "fpr": 0.0,
+        "macro_f1": 0.0,
+        "tn": 0.0,
+        "tp": 0.0
+      },
+      "visual_raw_vs_visual_control": {
+        "auroc": 0.0,
+        "balanced_accuracy": 0.0,
+        "brier_score": 0.0,
+        "ece": 0.0,
+        "fn": 0.0,
+        "fnr": 0.0,
+        "fp": 0.0,
+        "fpr": 0.0,
+        "macro_f1": 0.0,
+        "tn": 0.0,
+        "tp": 0.0
+      }
+    },
+    "max_abs_difference": 5.551115123125783e-17,
+    "status": "REPRODUCED"
+  },
+  "sample_level": {
+    "details": {
+      "dsp_raw_vs_dsp_only": {
+        "best_C_identical_per_fold": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "max_abs_probability_difference": 0.0,
+        "outer_fold_assignment_identical": true,
+        "predictions_identical": true,
+        "sample_ids_aligned": true
+      },
+      "visual_raw_vs_visual_control": {
+        "best_C_identical_per_fold": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "max_abs_probability_difference": 0.0,
+        "outer_fold_assignment_identical": true,
+        "predictions_identical": true,
+        "sample_ids_aligned": true
+      }
+    },
+    "status": "REPRODUCED"
+  },
+  "tolerance": 1e-06
+}

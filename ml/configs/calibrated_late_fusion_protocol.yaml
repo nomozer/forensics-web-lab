@@ -1,0 +1,161 @@
+schema_version: "1.0.0"
+experiment_id: "calibrated_late_fusion"
+phase: "4C.3A"
+status: "DEVELOPMENT_PROTOCOL_LOCKED_PRE_EXECUTION"
+evidence_class: "development_exploratory"
+created_at_utc: "2026-10-05T07:10:00Z"
+purpose: >-
+  Prospective development-only follow-up to the Visual/DSP ablation. Early
+  concatenation improved OOF Macro-F1 slightly but degraded ECE/Brier. This
+  experiment tests the ADR-0004 design instead: separate visual and DSP
+  logistic-regression scorers, per-modality temperature scaling fitted only on
+  inner out-of-fold scores, and a late fusion of the calibrated log-odds, all on
+  exactly the same 341 development sources and the same 5x4 source-grouped folds
+  as the ablation so every OOF prediction is paired with the ablation results.
+
+predecessor:
+  experiment_id: "visual_dsp_ablation"
+  protocol_path: "ml/configs/visual_dsp_ablation_protocol.yaml"
+  analysis_summary_path: "research/evidence/visual_dsp_ablation/analysis_summary.json"
+  analysis_summary_sha256: "81626ba30558d8dda26c325a41101172cefbf78b043bb5b12c05243f7aa91095"
+  reference_recipe_map:
+    visual_raw: "visual_control"
+    dsp_raw: "dsp_only"
+  early_fusion_recipe: "visual_dsp_fusion"
+  reproduction_tolerance: 1.0e-6
+
+modalities:
+  - id: "visual"
+    feature_type: "visual"
+    feature_dimension: 576
+  - id: "dsp"
+    feature_type: "dsp"
+    feature_dimension: 16
+
+base_classifier:
+  family: "regularized_logistic_regression"
+  penalty: "l2"
+  solver: "lbfgs"
+  max_iter: 1000
+  random_state: 42
+  scaler: "StandardScaler"
+  hyperparameter_search:
+    parameter: "C"
+    grid: [0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0]
+    selection_metric: "macro_f1"
+    tie_break: "first_strictly_greater_in_grid_order"
+  inner_oof_scores: "held-out decision_function of the inner fit at the selected C"
+
+calibration:
+  method: "temperature_scaling"
+  objective: "binary_negative_log_likelihood"
+  temperature_bounds: [0.05, 10.0]
+  fitted_on: "inner_oof_scores_of_outer_train_only"
+
+fusion:
+  stacker:
+    family: "logistic_regression"
+    inputs: ["visual_calibrated_logit", "dsp_calibrated_logit"]
+    penalty: "l2"
+    C: 1.0
+    solver: "lbfgs"
+    max_iter: 1000
+    random_state: 42
+    scaler: "none"
+    fitted_on: "inner_oof_calibrated_logits_of_outer_train_only"
+  mean:
+    rule: "arithmetic_mean_of_calibrated_logits"
+    weights: [0.5, 0.5]
+
+recipes:
+  - id: "visual_raw"
+    role: "reference_reproduces_ablation_visual_control"
+  - id: "dsp_raw"
+    role: "reference_reproduces_ablation_dsp_only"
+  - id: "visual_calibrated"
+    role: "calibrated_single_modality_comparator"
+  - id: "dsp_calibrated"
+    role: "calibrated_single_modality_reference"
+  - id: "late_fusion_mean"
+    role: "secondary_fixed_weight_late_fusion"
+  - id: "late_fusion_stacked"
+    role: "primary_calibrated_late_fusion"
+
+decision:
+  threshold: 0.5
+  uncertain_policy:
+    source: "ADR-0004"
+    tau_conf: 0.65
+    usage: "descriptive_selective_coverage_only_not_tuned"
+
+grouped_nested_cv:
+  outer_folds: 5
+  inner_folds: 4
+  outer_seed: 42
+  inner_seed: 1337
+
+data_scope:
+  expected_sources: 341
+  expected_samples: 682
+  allowed_partitions:
+    - "development_train"
+    - "inner_validation"
+  forbidden_partitions:
+    - "locked_test"
+  pairs_per_source: 1
+
+endpoints:
+  primary:
+    comparison: "late_fusion_stacked_minus_visual_calibrated"
+    metric: "brier_score"
+  secondary_comparisons:
+    - "late_fusion_stacked_minus_visual_raw"
+    - "late_fusion_stacked_minus_early_fusion"
+    - "late_fusion_mean_minus_visual_calibrated"
+    - "visual_calibrated_minus_visual_raw"
+    - "late_fusion_stacked_minus_dsp_calibrated"
+  reported_metrics:
+    - "brier_score"
+    - "log_loss"
+    - "ece"
+    - "macro_f1"
+    - "balanced_accuracy"
+    - "auroc"
+    - "fpr"
+    - "fnr"
+  interval:
+    method: "paired_source_cluster_bootstrap_percentile"
+    replicates: 10000
+    rng: "PCG64"
+    seed: 20261005
+    confidence: 0.95
+  verdict_rule: >-
+    Exploratory only. EXPLORATORY_LATE_FUSION_BRIER_IMPROVEMENT if the primary
+    95% interval upper bound is below 0; EXPLORATORY_LATE_FUSION_BRIER_WORSE if
+    the lower bound is above 0; otherwise NO_RESOLVED_LATE_FUSION_BRIER_DIFFERENCE.
+    No confirmatory claim is permitted: the Phase 4C.2G locked test is retired.
+
+budget:
+  modalities: 2
+  outer_folds: 5
+  inner_folds: 4
+  grid_points: 7
+  base_inner_fits: 280 # 2 modalities * 5 outer * 4 inner * 7 C
+  base_outer_refits: 10 # 2 modalities * 5 outer
+  temperature_fits: 10 # 2 modalities * 5 outer
+  stacker_fits: 5 # 1 per outer fold
+  total_fits: 305
+  fits_per_outer_fold: 61 # 56 inner + 2 refits + 2 temperatures + 1 stacker
+  pilot_outer_folds: [0]
+  pilot_fits: 61
+  oof_image_predictions: 4092 # 6 recipes * 682 images
+
+artifact_bindings:
+  dataset_archive:
+    manifest_name: "manifest_pilot_a_option_p.csv"
+    manifest_sha256: "e1e6b6d282002108d6a15000b755c20dd569cc8aa68c4eebbfa2aab3cee3b626"
+    bundle_manifest_sha256: "411e35da80843a10f7bb22e33efac8a4d1db70110dbda91cadbbf39532c9312d"
+  pretrained_weights:
+    filename: "mobilenet_v3_small-047dcff4.pth"
+    bytes: 10306551
+    sha256: "047dcff4addef86ea5bc2eff13c9614dc11f47ab1160d0a71a25e7db994f4e1f"

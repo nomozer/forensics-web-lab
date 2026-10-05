@@ -1,0 +1,181 @@
+{
+  "created_at_utc": "2026-10-05T07:38:58.256114+00:00",
+  "feature_cache_root_reused": true,
+  "feature_caches_present": true,
+  "fold_lock": {
+    "outer_folds": [
+      {
+        "inner_validation": [
+          {
+            "commitment": "60cea1976b48be49effd3dab8784ccfb02cf826b2ddd58e95fe517529a0d5808",
+            "inner_fold": 0,
+            "sources": 68
+          },
+          {
+            "commitment": "02b5aa6f115079243768c43aa4ba597bae313f287ac342e5c7fec4ec078352aa",
+            "inner_fold": 1,
+            "sources": 68
+          },
+          {
+            "commitment": "beb3478dba7032e26bd03c782e2134b9b0b7f88077e25c45589953908f914dbe",
+            "inner_fold": 2,
+            "sources": 68
+          },
+          {
+            "commitment": "a4d3709676839b1fa7bee6bb6184a2a0efef5128f430902e8c8ed791d27ac4a3",
+            "inner_fold": 3,
+            "sources": 68
+          }
+        ],
+        "outer_fold": 0,
+        "outer_test_commitment": "48a038271d75a5d6082bcd77c5138505329a514070e8ed70cd8fb7696dd5a3b5",
+        "outer_test_sources": 69,
+        "outer_train_commitment": "bfc7794126d15c2e0cb90c86249ce7c460d10b5c5941d7895183eab0a672e916",
+        "outer_train_sources": 272
+      },
+      {
+        "inner_validation": [
+          {
+            "commitment": "559bbfae0c036cc780a5da54594714a61123d4cbb555cf0a89687e4e93ce045d",
+            "inner_fold": 0,
+            "sources": 69
+          },
+          {
+            "commitment": "21877be1bd3029c752a73053c575b8868729d034e88aa5f10dbef8554b3c7ca6",
+            "inner_fold": 1,
+            "sources": 68
+          },
+          {
+            "commitment": "fb888ada6e8d2f2d71e5c841e27ec9247ef7ad991ab8b998df9d30262764d316",
+            "inner_fold": 2,
+            "sources": 68
+          },
+          {
+            "commitment": "92b83e8bf28c14e49480ed804519ca63a83715c00e6c8916b8b73040d8106ee6",
+            "inner_fold": 3,
+            "sources": 68
+          }
+        ],
+        "outer_fold": 1,
+        "outer_test_commitment": "a770bb9be254a4b79a4d6855c509c7179b296b031d74fa5b66c6ffe9f13996f5",
+        "outer_test_sources": 68,
+        "outer_train_commitment": "f4493a418b8423b82bcfb74227cbd56628e484c3844858ccd91426932eacd32a",
+        "outer_train_sources": 273
+      },
+      {
+        "inner_validation": [
+          {
+            "commitment": "97cee499b89abad83b90f5176b9a10b54bf0732d0c857f6fb87432e80dde681f",
+            "inner_fold": 0,
+            "sources": 69
+          },
+          {
+            "commitment": "57a58b5ec9c50f85c9c324aa311f471d83267de24faa36244ec17799ec5827c7",
+            "inner_fold": 1,
+            "sources": 68
+          },
+          {
+            "commitment": "8bd790735e1b9c56b215bc85d1dc9cae873b8aeeab45447acbf819543f6bcc26",
+            "inner_fold": 2,
+            "sources": 68
+          },
+          {
+            "commitment": "607e4dd60ede9352a15789e8d4ede77064208a5db0bae83b3d6ed775a10aa077",
+            "inner_fold": 3,
+            "sources": 68
+          }
+        ],
+        "outer_fold": 2,
+        "outer_test_commitment": "2314b58853f21950000d20a95dbceb41838937a481fb25525ea2d0699ba8cb8a",
+        "outer_test_sources": 68,
+        "outer_train_commitment": "698368c4f6f85815a80f7bac61100443e46a5583af99e0750fc0c8b5d2a92208",
+        "outer_train_sources": 273
+      },
+      {
+        "inner_validation": [
+          {
+            "commitment": "742b81cc9af58ca3ba0153d72d71240de4cf278a2a2fc9eea6189639150a985b",
+            "inner_fold": 0,
+            "sources": 69
+          },
+          {
+            "commitment": "49670814ad18b64e0420e07ed7190457531cf9c454dce7fdffea734589eff8b2",
+            "inner_fold": 1,
+            "sources": 68
+          },
+          {
+            "commitment": "64677ab18b110a3e2056a2e07be1894f20691373623e97ac90a882ee1f88708d",
+            "inner_fold": 2,
+            "sources": 68
+          },
+          {
+            "commitment": "d99af01c496872716bb4baa684704f4c5c541a29255fe65a126c282da442bd20",
+            "inner_fold": 3,
+            "sources": 68
+          }
+        ],
+        "outer_fold": 3,
+        "outer_test_commitment": "a04b43b116e12344d0f8071f6e20a550d81139a432756e62b0fde111d88b5582",
+        "outer_test_sources": 68,
+        "outer_train_commitment": "d8d56730920750319679eccd44705e227798cbe4c205ded261f3beeddd692bd9",
+        "outer_train_sources": 273
+      },
+      {
+        "inner_validation": [
+          {
+            "commitment": "0040afa60a62102f2746a8f5e86ec2b5c0d3c9149ef70e40cbd7e53806dcb22c",
+            "inner_fold": 0,
+            "sources": 69
+          },
+          {
+            "commitment": "fe7e5303e3e3d87a82fafa0eb905235c5828952e5bb6785a27b89a9a14f1544c",
+            "inner_fold": 1,
+            "sources": 68
+          },
+          {
+            "commitment": "5b2ee92aac3f17dcb335d6c29372bb2f94dcaa3477f8a284bdf6c97e3bf00a2d",
+            "inner_fold": 2,
+            "sources": 68
+          },
+          {
+            "commitment": "302448f466cd1a08358ad84ea64551667b7c24f006c15a8f68ac2cbbbbe03ad3",
+            "inner_fold": 3,
+            "sources": 68
+          }
+        ],
+        "outer_fold": 4,
+        "outer_test_commitment": "31385d00586f68b2673c8d3ef4cd93f5d08c6d85ca6ca9f00e01ad4cc5fa88fc",
+        "outer_test_sources": 68,
+        "outer_train_commitment": "f69548001ee895e7b28a6f6d5a5a3c991e0c527141dd4795d3cb15fb8862d406",
+        "outer_train_sources": 273
+      }
+    ]
+  },
+  "manifest_sha256": "e1e6b6d282002108d6a15000b755c20dd569cc8aa68c4eebbfa2aab3cee3b626",
+  "mode": "preflight",
+  "outer_folds": 5,
+  "planned_budget": {
+    "base_inner_fits": 280,
+    "base_outer_refits": 10,
+    "fits_per_outer_fold": 61,
+    "oof_image_predictions": 4092,
+    "pilot_fits": 61,
+    "stacker_fits": 5,
+    "temperature_fits": 10,
+    "total_fits": 305
+  },
+  "protocol_sha256": "85dcb2427a16507e8ba55eba5b010fc6a59e6763fc2b16bf29514913bab731e1",
+  "recipes": [
+    "visual_raw",
+    "dsp_raw",
+    "visual_calibrated",
+    "dsp_calibrated",
+    "late_fusion_mean",
+    "late_fusion_stacked"
+  ],
+  "samples": 682,
+  "schema_version": "1.0.0",
+  "sources": 341,
+  "status": "PREFLIGHT_PASS",
+  "weights_sha256": "047dcff4addef86ea5bc2eff13c9614dc11f47ab1160d0a71a25e7db994f4e1f"
+}

@@ -227,6 +227,13 @@ graph TD
 | **Visual/DSP Package Builder** | `scripts/research/build_visual_dsp_ablation_package.py` (self-contained reproducible code snapshot archive builder) | `implemented-and-tested` |
 | **Visual/DSP Colab Notebook** | `notebooks/visual_dsp_ablation_colab.ipynb` (5-cell execution notebook: intro, Drive bindings, staging, runner, OOF analysis) | `implemented-and-tested` |
 | **Visual/DSP Ablation Unit Tests** | `ml/tests/test_dsp_features.py`, `ml/tests/test_visual_dsp_ablation.py`, `ml/tests/test_visual_dsp_ablation_analysis.py` (15/15 PASS) | `implemented-and-tested` |
+| **Calibrated Late Fusion Protocol** | `ml/configs/calibrated_late_fusion_protocol.yaml` (Phase 4C.3A development protocol: same 341 sources/5x4 folds/C grid as the ablation, per-modality temperature scaling + logistic stacker on inner-OOF scores, 6 recipes, primary ΔBrier vs `visual_calibrated`, 305 fits) | `protocol-locked` |
+| **Calibrated Late Fusion Core** | `ml/training/calibrated_late_fusion.py` (pure per-fold pipeline on `[sources, 2, dim]` arrays, temperature/stacker fits, run-manifest bindings, hash-verified fold persistence/resume, fail-closed tamper detection) | `implemented-and-tested` (synthetic) |
+| **Calibrated Late Fusion Runner** | `ml/training/run_calibrated_late_fusion.py` (CLI `--mode preflight|pilot|full`, `--feature-cache-dir` read-only reuse of ablation caches) | `implemented-and-tested` (synthetic); real run pending |
+| **Calibrated Late Fusion Analyzer** | `scripts/research/analyze_calibrated_late_fusion.py` (OOF metrics incl. log-loss and ADR-0004 τ=0.65 coverage, vectorised paired source-cluster bootstrap, reliability bins/diagram, reproduction check vs ablation; refuses synthetic output under `research/evidence/`) | `implemented-and-tested` (synthetic) |
+| **Calibrated Late Fusion Package Builder** | `scripts/research/build_calibrated_late_fusion_package.py` (deterministic archive from Git objects at one commit + `SNAPSHOT_MANIFEST.json`, optional weights) | `implemented-and-tested` |
+| **Calibrated Late Fusion Colab Notebook** | `notebooks/calibrated_late_fusion_colab.ipynb` (6 cells; default `MODE="preflight"`, `ALLOW_FULL=False`; snapshot-manifest verification; results bundle) | `implemented-and-tested` (structure only) |
+| **Calibrated Late Fusion Tests** | `ml/tests/test_calibrated_late_fusion.py` (24), `ml/tests/test_calibrated_late_fusion_analysis.py` (15) — 39/39 PASS | `implemented-and-tested` |
 
 ---
 

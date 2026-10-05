@@ -1,3 +1,30 @@
+## Phase 4C.3B — Calibrated Late Fusion: Execution, OOF Analysis and Reproduction Verification
+
+- **Mục tiêu**: Execute the locked 305-fit Calibrated Late Fusion protocol on 341 Option P development sources, test whether late fusion improves Brier calibration over calibrated visual control, and verify reproduction of ablation baselines.
+- **Execution**: Preflight verified 341 pairs/682 images; pilot (outer fold 0) completed 61 fits; full run resumed fold 0 and completed folds 1–4 (305/305 fits converged, 0 warnings); 4,092 OOF image predictions. Reused visual/DSP ablation caches read-only.
+- **Reproduction**: Exact reproduction against `visual_dsp_ablation`: aggregate metrics diff $\le 5.55 \times 10^{-17}$; sample-level predictions and fold $C$ identical (status `REPRODUCED`).
+- **Results**: `late_fusion_stacked` vs `visual_calibrated` primary $\Delta \text{Brier} = -0.0036$ [95% CI: $-0.0056, -0.0013$] (99.83% bootstrap below 0); Macro-F1 $0.6026$ vs $0.5787$ ($\Delta = +0.0239$ [$-0.0000, +0.0475$]); AUROC $0.6249$ vs $0.6058$ ($\Delta = +0.0191$ [$+0.0083, +0.0298$]).
+- **vs Early Fusion**: $\Delta \text{Brier} = -0.0187$ [$-0.0251, -0.0122$], $\Delta \text{ECE} = -0.0469$ [$-0.0809, -0.0128$], $\Delta \text{AUROC} = +0.0329$ [$+0.0151, +0.0512$].
+- **Verification**: 39/39 targeted tests PASS; hermetic ML suite 672 passed / 135 deselected; continuity checker PASS; 0 locked-test accesses.
+- **Kết quả**: `EXPLORATORY_LATE_FUSION_BRIER_IMPROVEMENT` (development-only; no confirmatory claim).
+- **Evidence**: `research/evidence/calibrated_late_fusion/`, `research/evidence/phase-4c.3b/`.
+- **Next**: Merge `claude/keen-knuth-4esvaw` into `main` via merge commit, push origin/main, verify CI.
+
+---
+
+## Phase 4C.3A — Calibrated Late Fusion: Protocol Lock, Implementation and Execution Package
+
+- **Mục tiêu**: Follow up the Visual/DSP ablation (early fusion: ΔMacro-F1 `+0.0048` but ΔECE `+0.0575`, ΔBrier `+0.0133` vs visual) with the ADR-0004 design: calibrate visual and DSP scorers separately, then fuse late, on the same 341 sources and 5x4 folds.
+- **Protocol lock**: `ml/configs/calibrated_late_fusion_protocol.yaml`; base scorers byte-identical to the ablation; per-modality temperature scaling and a 2-input logistic stacker fitted only on inner-OOF scores; 6 recipes; primary ΔBrier `late_fusion_stacked − visual_calibrated` with 10,000-replicate paired source-cluster bootstrap (PCG64 seed 20261005); fixed verdict vocabulary; 305 fits (pilot 61).
+- **Implementation**: runner/CLI (`preflight|pilot|full`, read-only reuse of ablation caches, hash-bound resume, fail-closed tamper detection), analyzer (metrics, bootstrap, reliability, reproduction check vs ablation), Git-object package builder, 6-cell Colab notebook.
+- **Verification**: 39/39 synthetic-fixture tests PASS (exact ablation-runner equality, outer-test isolation, per-image independence, deterministic outputs); hermetic ML 649 passed / 23 skipped / 135 deselected / 0 failed on Python 3.11.15 cloud.
+- **Not run**: real preflight/pilot/full/analysis — development bundle, ablation caches and weights absent from the cloud container; real metrics not measured; 0 locked-test access.
+- **Kết quả**: `IMPLEMENTED_SYNTHETIC_VERIFIED_AWAITING_REAL_EXECUTION`.
+- **Evidence**: `research/evidence/phase-4c.3a/` (PHASE_REPORT, EXECUTION_GUIDE, test summary, package receipt).
+- **Next**: Execute locally or on Colab per EXECUTION_GUIDE; record Phase 4C.3B with measured results; no merge before that.
+
+---
+
 ## Phase 4C.2H.2 — Development Nested-CV Artifact Audit and Exploratory OOF Analysis
 
 - **Mục tiêu**: Audit the completed 150-fit Colab T4 development matrix and report full-OOF comparison of the frozen baseline vs pair-ranking recipe, strictly as development/exploratory evidence separate from the closed Phase 4C.2G locked test.
