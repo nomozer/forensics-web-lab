@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "4C.4A",
+  "measured_in": "claude_code_cloud_container_linux_python_3.11.15",
+  "data_origin_of_all_runs": "synthetic_only",
+  "targeted": {
+    "ml/tests/test_development_robustness.py": {"passed": 28, "failed": 0},
+    "ml/tests/test_calibrated_late_fusion.py + test_calibrated_late_fusion_analysis.py": "included in hermetic suite, 0 failed"
+  },
+  "hermetic_ml_suite": {
+    "command": "python -m pytest ml/tests -m \"not requires_research_artifact\"",
+    "passed": 677,
+    "skipped": 23,
+    "deselected": 135,
+    "failed": 0
+  },
+  "ruff_new_and_changed_python_files": "PASS",
+  "continuity_check": "PASS",
+  "continuity_unit_tests": {"passed": 13, "failed": 0},
+  "not_run": [
+    "real preflight / pilot / full / analysis (data and fitted artifacts outside Git)",
+    "original-reproduction gate on real images",
+    "requires_research_artifact tests (135 deselected)",
+    "Python 3.12 / Windows execution",
+    "pnpm test / typecheck / build (no TypeScript changes)",
+    "GitHub CI on the pushed branch"
+  ],
+  "real_robustness_metrics": "not measured",
+  "fits": 0,
+  "locked_test_accesses": 0
+}

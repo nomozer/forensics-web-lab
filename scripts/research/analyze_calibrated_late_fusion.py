@@ -393,34 +393,71 @@ def reproduction_check(
 
 
 def render_reliability_diagram(stem: Path, curves: dict[str, list[dict[str, Any]]], title: str) -> list[str]:
-    width, height = 560, 560
-    left, top, size = 70, 60, 420
-    colors = ["#4A90E2", "#F5A623", "#7ED321", "#D0021B", "#9013FE", "#417505"]
-
-    def xy(px: float, py: float) -> tuple[float, float]:
-        return left + px * size, top + (1.0 - py) * size
-
+    """One panel per recipe: 10-bin reliability with axis ticks and the image count n per bin."""
+    colors = ["#4A90E2", "#F5A623", "#2E8B57", "#D0021B", "#9013FE", "#417505"]
+    columns = min(3, max(1, len(curves)))
+    rows_count = (len(curves) + columns - 1) // columns
+    size, left_margin, top_margin, h_gap, v_gap = 230, 70, 70, 85, 95
+    width = left_margin + columns * size + (columns - 1) * h_gap + 30
+    height = top_margin + rows_count * size + (rows_count - 1) * v_gap + 90
+    ticks = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
     svg = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
         f'<rect width="{width}" height="{height}" fill="#ffffff"/>',
-        f'<text x="{width / 2}" y="32" text-anchor="middle" font-family="sans-serif" font-size="16" font-weight="bold" fill="#333333">{title}</text>',
-        f'<rect x="{left}" y="{top}" width="{size}" height="{size}" fill="none" stroke="#999999"/>',
-        f'<line x1="{left}" y1="{top + size}" x2="{left + size}" y2="{top}" stroke="#cccccc" stroke-dasharray="4 4"/>',
-        f'<text x="{left + size / 2}" y="{top + size + 40}" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#555555">Mean predicted P(ai_edited) per bin</text>',
-        f'<text x="20" y="{top + size / 2}" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#555555" transform="rotate(-90 20 {top + size / 2})">Observed fraction ai_edited</text>',
+        f'<text x="{width / 2}" y="30" text-anchor="middle" font-family="sans-serif" font-size="16" font-weight="bold" fill="#333333">{title}</text>',
+        (
+            f'<text x="{width / 2}" y="50" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#666666">'
+            "Points: bins with n &gt; 0 (n = images in bin); dashed line: perfect calibration</text>"
+        ),
     ]
     image = Image.new("RGB", (width, height), color=(255, 255, 255))
     draw = ImageDraw.Draw(image)
-    draw.rectangle([left, top, left + size, top + size], outline=(153, 153, 153))
-    draw.line([xy(0, 0), xy(1, 1)], fill=(204, 204, 204))
+    draw.text((left_margin, 10), title, fill=(51, 51, 51))
+    draw.text((left_margin, 30), "n = images per bin; dashed: perfect calibration", fill=(102, 102, 102))
     for index, (name, rows) in enumerate(curves.items()):
         color = colors[index % len(colors)]
         rgb = tuple(int(color[k : k + 2], 16) for k in (1, 3, 5))
-        points = [
-            xy(float(r["mean_probability"]), float(r["fraction_ai_edited"]))
-            for r in rows
-            if r["count"]
-        ]
+        left = left_margin + (index % columns) * (size + h_gap)
+        top = top_margin + (index // columns) * (size + v_gap)
+
+        def xy(px: float, py: float, left: float = left, top: float = top) -> tuple[float, float]:
+            return left + px * size, top + (1.0 - py) * size
+
+        svg.append(f'<rect x="{left}" y="{top}" width="{size}" height="{size}" fill="none" stroke="#999999"/>')
+        svg.append(
+            f'<line x1="{left}" y1="{top + size}" x2="{left + size}" y2="{top}" stroke="#bbbbbb" stroke-dasharray="4 4"/>'
+        )
+        svg.append(
+            f'<text x="{left + size / 2}" y="{top - 8}" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="bold" fill="{color}">{name}</text>'
+        )
+        draw.rectangle([left, top, left + size, top + size], outline=(153, 153, 153))
+        draw.line([xy(0, 0), xy(1, 1)], fill=(187, 187, 187))
+        draw.text((left, top - 14), name, fill=rgb)
+        for tick in ticks:
+            tx, _ = xy(tick, 0)
+            _, ty = xy(0, tick)
+            svg.append(f'<line x1="{tx:.1f}" y1="{top + size}" x2="{tx:.1f}" y2="{top + size + 4}" stroke="#999999"/>')
+            svg.append(
+                f'<text x="{tx:.1f}" y="{top + size + 16}" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555555">{tick:.1f}</text>'
+            )
+            svg.append(f'<line x1="{left - 4}" y1="{ty:.1f}" x2="{left}" y2="{ty:.1f}" stroke="#999999"/>')
+            svg.append(
+                f'<text x="{left - 7}" y="{ty + 3:.1f}" text-anchor="end" font-family="sans-serif" font-size="10" fill="#555555">{tick:.1f}</text>'
+            )
+            draw.line([(tx, top + size), (tx, top + size + 4)], fill=(153, 153, 153))
+            draw.text((tx - 8, top + size + 6), f"{tick:.1f}", fill=(85, 85, 85))
+            draw.line([(left - 4, ty), (left, ty)], fill=(153, 153, 153))
+            draw.text((left - 28, ty - 6), f"{tick:.1f}", fill=(85, 85, 85))
+        svg.append(
+            f'<text x="{left + size / 2}" y="{top + size + 34}" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#333333">Mean predicted P(ai_edited) in bin</text>'
+        )
+        svg.append(
+            f'<text x="{left - 40}" y="{top + size / 2}" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#333333" transform="rotate(-90 {left - 40} {top + size / 2})">Observed fraction ai_edited</text>'
+        )
+        draw.text((left + 20, top + size + 22), "Mean predicted P(ai_edited)", fill=(51, 51, 51))
+        draw.text((left + 4, top + 4), "y: observed fraction ai_edited", fill=(120, 120, 120))
+        populated = [r for r in rows if int(r["count"])]
+        points = [xy(float(r["mean_probability"]), float(r["fraction_ai_edited"])) for r in populated]
         if len(points) > 1:
             svg.append(
                 f'<polyline fill="none" stroke="{color}" stroke-width="2" points="'
@@ -428,22 +465,31 @@ def render_reliability_diagram(stem: Path, curves: dict[str, list[dict[str, Any]
                 + '"/>'
             )
             draw.line(points, fill=rgb, width=2)
-        for x, y in points:
+        for position, ((x, y), row) in enumerate(zip(points, populated)):
+            count = int(row["count"])
+            above = position % 2 == 0  # alternate label side to limit overlaps in dense bins
             svg.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="3" fill="{color}"/>')
+            svg.append(
+                f'<text x="{x + 5:.1f}" y="{y - 6 if above else y + 13:.1f}" font-family="sans-serif" font-size="9" fill="#333333">n={count}</text>'
+            )
             draw.ellipse([x - 3, y - 3, x + 3, y + 3], fill=rgb)
-        legend_y = top + 14 + 18 * index
-        svg.append(f'<rect x="{left + 10}" y="{legend_y - 9}" width="12" height="12" fill="{color}"/>')
-        svg.append(
-            f'<text x="{left + 28}" y="{legend_y + 1}" font-family="sans-serif" font-size="12" fill="#333333">{name}</text>'
-        )
-        draw.rectangle([left + 10, legend_y - 9, left + 22, legend_y + 3], fill=rgb)
-        draw.text((left + 28, legend_y - 8), name, fill=(51, 51, 51))
+            draw.text((x + 4, y - 14 if above else y + 3), f"n={count}", fill=(51, 51, 51))
     svg.append("</svg>")
     stem.parent.mkdir(parents=True, exist_ok=True)
     svg_path, png_path = stem.with_suffix(".svg"), stem.with_suffix(".png")
     svg_path.write_text("\n".join(svg) + "\n", encoding="utf-8")
     image.save(png_path, optimize=False)
     return [str(svg_path), str(png_path)]
+
+
+def rerender_reliability_from_bins(bins_csv: Path, stem: Path, recipes: Sequence[str], title: str) -> list[str]:
+    """Redraw the reliability figure from an existing reliability_bins.csv without touching any metric."""
+    rows = _read_csv(bins_csv)
+    curves = {name: [r for r in rows if r["recipe"] == name] for name in recipes}
+    missing = [name for name, values in curves.items() if not values]
+    if missing:
+        raise ValueError(f"reliability bins missing for {missing}")
+    return render_reliability_diagram(stem, curves, title)
 
 
 # --------------------------------------------------------------------------- report
