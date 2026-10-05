@@ -4,7 +4,7 @@ Handles:
   1. Development dataset loading (strictly the 341 development sources / 682 images).
   2. Source-grouped nested cross-validation (5 outer folds x 4 inner folds, seed 42).
   3. Precomputed feature caches:
-     - Visual features: 576-dim from frozen MobileNetV3-Large.
+     - Visual features: 576-dim from frozen MobileNetV3-Small.
      - DSP features: 16-dim from deterministic signal analysis.
      - Fusion features: 592-dim concatenated (visual + DSP).
   4. Fail-closed guards against locked-test access and data leakage.

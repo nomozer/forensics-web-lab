@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="560" viewBox="0 0 560 560">
+<rect width="560" height="560" fill="#ffffff"/>
+<text x="280.0" y="32" text-anchor="middle" font-family="sans-serif" font-size="16" font-weight="bold" fill="#333333">OOF reliability (10 bins)</text>
+<rect x="70" y="60" width="420" height="420" fill="none" stroke="#999999"/>
+<line x1="70" y1="480" x2="490" y2="60" stroke="#cccccc" stroke-dasharray="4 4"/>
+<text x="280.0" y="520" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#555555">Mean predicted P(ai_edited) per bin</text>
+<text x="20" y="270.0" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#555555" transform="rotate(-90 20 270.0)">Observed fraction ai_edited</text>
+<polyline fill="none" stroke="#4A90E2" stroke-width="2" points="132.2,270.0 177.4,375.0 222.7,307.5 263.9,297.3 296.7,242.4 336.4,210.0 377.3,165.0 423.3,240.0 453.3,270.0"/>
+<circle cx="132.2" cy="270.0" r="3" fill="#4A90E2"/>
+<circle cx="177.4" cy="375.0" r="3" fill="#4A90E2"/>
+<circle cx="222.7" cy="307.5" r="3" fill="#4A90E2"/>
+<circle cx="263.9" cy="297.3" r="3" fill="#4A90E2"/>
+<circle cx="296.7" cy="242.4" r="3" fill="#4A90E2"/>
+<circle cx="336.4" cy="210.0" r="3" fill="#4A90E2"/>
+<circle cx="377.3" cy="165.0" r="3" fill="#4A90E2"/>
+<circle cx="423.3" cy="240.0" r="3" fill="#4A90E2"/>
+<circle cx="453.3" cy="270.0" r="3" fill="#4A90E2"/>
+<rect x="80" y="65" width="12" height="12" fill="#4A90E2"/>
+<text x="98" y="75" font-family="sans-serif" font-size="12" fill="#333333">visual_raw</text>
+<polyline fill="none" stroke="#F5A623" stroke-width="2" points="142.0,480.0 181.5,331.8 223.9,328.2 261.1,290.0 299.1,247.4 338.7,218.1 380.2,183.5 429.9,165.0"/>
+<circle cx="142.0" cy="480.0" r="3" fill="#F5A623"/>
+<circle cx="181.5" cy="331.8" r="3" fill="#F5A623"/>
+<circle cx="223.9" cy="328.2" r="3" fill="#F5A623"/>
+<circle cx="261.1" cy="290.0" r="3" fill="#F5A623"/>
+<circle cx="299.1" cy="247.4" r="3" fill="#F5A623"/>
+<circle cx="338.7" cy="218.1" r="3" fill="#F5A623"/>
+<circle cx="380.2" cy="183.5" r="3" fill="#F5A623"/>
+<circle cx="429.9" cy="165.0" r="3" fill="#F5A623"/>
+<rect x="80" y="83" width="12" height="12" fill="#F5A623"/>
+<text x="98" y="93" font-family="sans-serif" font-size="12" fill="#333333">visual_calibrated</text>
+<polyline fill="none" stroke="#7ED321" stroke-width="2" points="139.6,480.0 179.7,246.7 219.9,263.6 265.4,308.6 294.2,243.5 337.7,221.5 379.3,270.0"/>
+<circle cx="139.6" cy="480.0" r="3" fill="#7ED321"/>
+<circle cx="179.7" cy="246.7" r="3" fill="#7ED321"/>
+<circle cx="219.9" cy="263.6" r="3" fill="#7ED321"/>
+<circle cx="265.4" cy="308.6" r="3" fill="#7ED321"/>
+<circle cx="294.2" cy="243.5" r="3" fill="#7ED321"/>
+<circle cx="337.7" cy="221.5" r="3" fill="#7ED321"/>
+<circle cx="379.3" cy="270.0" r="3" fill="#7ED321"/>
+<rect x="80" y="101" width="12" height="12" fill="#7ED321"/>
+<text x="98" y="111" font-family="sans-serif" font-size="12" fill="#333333">dsp_calibrated</text>
+<polyline fill="none" stroke="#D0021B" stroke-width="2" points="144.6,480.0 180.4,316.7 221.6,316.7 260.8,307.4 299.7,236.4 340.0,224.9 381.2,133.0 423.3,270.0"/>
+<circle cx="144.6" cy="480.0" r="3" fill="#D0021B"/>
+<circle cx="180.4" cy="316.7" r="3" fill="#D0021B"/>
+<circle cx="221.6" cy="316.7" r="3" fill="#D0021B"/>
+<circle cx="260.8" cy="307.4" r="3" fill="#D0021B"/>
+<circle cx="299.7" cy="236.4" r="3" fill="#D0021B"/>
+<circle cx="340.0" cy="224.9" r="3" fill="#D0021B"/>
+<circle cx="381.2" cy="133.0" r="3" fill="#D0021B"/>
+<circle cx="423.3" cy="270.0" r="3" fill="#D0021B"/>
+<rect x="80" y="119" width="12" height="12" fill="#D0021B"/>
+<text x="98" y="129" font-family="sans-serif" font-size="12" fill="#333333">late_fusion_stacked</text>
+<polyline fill="none" stroke="#9013FE" stroke-width="2" points="98.2,403.6 132.8,262.8 177.1,317.1 222.7,281.7 261.5,309.8 298.8,242.5 338.1,240.0 385.8,173.1 428.6,191.2 467.0,270.0"/>
+<circle cx="98.2" cy="403.6" r="3" fill="#9013FE"/>
+<circle cx="132.8" cy="262.8" r="3" fill="#9013FE"/>
+<circle cx="177.1" cy="317.1" r="3" fill="#9013FE"/>
+<circle cx="222.7" cy="281.7" r="3" fill="#9013FE"/>
+<circle cx="261.5" cy="309.8" r="3" fill="#9013FE"/>
+<circle cx="298.8" cy="242.5" r="3" fill="#9013FE"/>
+<circle cx="338.1" cy="240.0" r="3" fill="#9013FE"/>
+<circle cx="385.8" cy="173.1" r="3" fill="#9013FE"/>
+<circle cx="428.6" cy="191.2" r="3" fill="#9013FE"/>
+<circle cx="467.0" cy="270.0" r="3" fill="#9013FE"/>
+<rect x="80" y="137" width="12" height="12" fill="#9013FE"/>
+<text x="98" y="147" font-family="sans-serif" font-size="12" fill="#333333">early_fusion</text>
+</svg>

@@ -163,7 +163,7 @@ def test_analysis_is_labelled_synthetic_and_byte_deterministic(tmp_path, synthet
     report = (tmp_path / "a" / "ANALYSIS_REPORT.md").read_text(encoding="utf-8")
     assert "SYNTHETIC FIXTURE — NOT EXPERIMENTAL EVIDENCE" in report
     files = sorted(p.relative_to(tmp_path / "a") for p in (tmp_path / "a").rglob("*") if p.is_file())
-    assert [str(f) for f in files] == [
+    assert [f.as_posix() for f in files] == [
         "ANALYSIS_REPORT.md", "analysis_summary.json", "figures/reliability_diagram.png",
         "figures/reliability_diagram.svg", "fold_parameters.csv", "oof_metrics.csv",
         "paired_deltas.csv", "reliability_bins.csv", "reproduction_check.json",

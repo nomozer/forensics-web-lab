@@ -1,0 +1,223 @@
+{
+  "completed_at_utc": "2026-10-05T07:39:22.402780+00:00",
+  "fit_wall_seconds": 2.3877756999972917,
+  "folds": [
+    {
+      "bindings": {
+        "data_origin": "development_real",
+        "dsp_feature_commitment": "582108a2033ebd1f27d829fbdaeb1fd6b107e69d47e9bb9236df3aeba5b6b57f",
+        "protocol_sha256": "85dcb2427a16507e8ba55eba5b010fc6a59e6763fc2b16bf29514913bab731e1",
+        "source_membership_commitment": "025cbc4d7990a4ad0a3554507854e2a16d27e04cf2aeef1d8485a2c50e99e6af",
+        "visual_feature_commitment": "351e4952dc0d3d78d46db4bb4adddf35381e89c8909f75b7358dc6e3d9472cef"
+      },
+      "created_at_utc": "2026-10-05T07:39:22.400779+00:00",
+      "fit_counts": {
+        "base_inner_fits": 56,
+        "base_outer_refits": 2,
+        "stacker_fits": 1,
+        "temperature_fits": 2,
+        "total_fits": 61,
+        "unconverged_fits": 0
+      },
+      "fit_wall_seconds": 2.3877756999972917,
+      "modalities": {
+        "dsp": {
+          "best_C": 100.0,
+          "best_inner_macro_f1": 0.5673000056602111,
+          "inner_cv_history": [
+            {
+              "C": 0.0001,
+              "fold_scores": [
+                0.4879685709608774,
+                0.5120678408349641,
+                0.5218261481040731,
+                0.5103849349210745
+              ],
+              "mean_macro_f1": 0.5080618737052474
+            },
+            {
+              "C": 0.001,
+              "fold_scores": [
+                0.49728201782996306,
+                0.5526315789473684,
+                0.5277777777777778,
+                0.5103849349210745
+              ],
+              "mean_macro_f1": 0.522019077369046
+            },
+            {
+              "C": 0.01,
+              "fold_scores": [
+                0.5277777777777778,
+                0.5330669218213542,
+                0.5514463368477966,
+                0.5228070175438597
+              ],
+              "mean_macro_f1": 0.533774513497697
+            },
+            {
+              "C": 0.1,
+              "fold_scores": [
+                0.5587280986372485,
+                0.5275434243176178,
+                0.5416394868449663,
+                0.5502791781861549
+              ],
+              "mean_macro_f1": 0.5445475469964969
+            },
+            {
+              "C": 1.0,
+              "fold_scores": [
+                0.5588235294117647,
+                0.5592903828197946,
+                0.5361377294136755,
+                0.5502791781861549
+              ],
+              "mean_macro_f1": 0.5511327049578474
+            },
+            {
+              "C": 10.0,
+              "fold_scores": [
+                0.5661530143281968,
+                0.5502791781861549,
+                0.5584415584415584,
+                0.5797690681411611
+              ],
+              "mean_macro_f1": 0.5636607047742679
+            },
+            {
+              "C": 100.0,
+              "fold_scores": [
+                0.5659652728944664,
+                0.5502791781861549,
+                0.5584415584415584,
+                0.5945140131186644
+              ],
+              "mean_macro_f1": 0.5673000056602111
+            }
+          ],
+          "outer_refit_converged": true,
+          "outer_refit_n_iter": 72,
+          "temperature": {
+            "at_bound": false,
+            "converged": true,
+            "nll_after": 0.6831541591751036,
+            "nll_before": 0.6852492367273136,
+            "temperature": 1.4771175329477901
+          }
+        },
+        "visual": {
+          "best_C": 0.001,
+          "best_inner_macro_f1": 0.5733559730497311,
+          "inner_cv_history": [
+            {
+              "C": 0.0001,
+              "fold_scores": [
+                0.5220329818869964,
+                0.5365391897008709,
+                0.5655893021493151,
+                0.5659652728944664
+              ],
+              "mean_macro_f1": 0.5475316866579122
+            },
+            {
+              "C": 0.001,
+              "fold_scores": [
+                0.5440190352584902,
+                0.5806783144912642,
+                0.5731601731601732,
+                0.595566369288997
+              ],
+              "mean_macro_f1": 0.5733559730497311
+            },
+            {
+              "C": 0.01,
+              "fold_scores": [
+                0.5284940411700976,
+                0.5881462253947654,
+                0.5731601731601732,
+                0.5882352941176471
+              ],
+              "mean_macro_f1": 0.5695089334606708
+            },
+            {
+              "C": 0.1,
+              "fold_scores": [
+                0.46875,
+                0.5512522312976686,
+                0.5806783144912642,
+                0.5512522312976686
+              ],
+              "mean_macro_f1": 0.5379831942716504
+            },
+            {
+              "C": 1.0,
+              "fold_scores": [
+                0.4677103718199609,
+                0.5199565571544936,
+                0.5587280986372485,
+                0.5355342332086519
+              ],
+              "mean_macro_f1": 0.5204823152050888
+            },
+            {
+              "C": 10.0,
+              "fold_scores": [
+                0.4982638888888889,
+                0.4879685709608774,
+                0.5734371620160069,
+                0.5494976920988325
+              ],
+              "mean_macro_f1": 0.5272918284911514
+            },
+            {
+              "C": 100.0,
+              "fold_scores": [
+                0.4824961948249619,
+                0.4812554489973845,
+                0.565024123163658,
+                0.5365391897008709
+              ],
+              "mean_macro_f1": 0.5163287391717188
+            }
+          ],
+          "outer_refit_converged": true,
+          "outer_refit_n_iter": 8,
+          "temperature": {
+            "at_bound": false,
+            "converged": true,
+            "nll_after": 0.6755575223153545,
+            "nll_before": 0.6791445353082367,
+            "temperature": 0.5420008590662588
+          }
+        }
+      },
+      "model_sha256": "aec184fdbc965ead75bd601032b67806ae8d2bc25ba04b0c49bf02935c3f0b6f",
+      "outer_fold": 0,
+      "outer_test_samples": 138,
+      "outer_test_sources": 69,
+      "outer_train_sources": 272,
+      "prediction_rows": 828,
+      "predictions_sha256": "3a415f5fbc3601149521fb0971cd6c3d75c346e14927c239b1d9fb123e77bfa4",
+      "schema_version": "1.0.0",
+      "stacker": {
+        "coef": [
+          0.9033950236456091,
+          0.834748476978678
+        ],
+        "converged": true,
+        "inner_oof_nll": 0.6675873438675338,
+        "intercept": 0.017438270068837778,
+        "n_iter": 6
+      },
+      "status": "COMPLETED"
+    }
+  ],
+  "mode": "pilot",
+  "outer_folds": [
+    0
+  ],
+  "schema_version": "1.0.0",
+  "total_fits": 61,
+  "unconverged_fits": 0
+}

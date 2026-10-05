@@ -1,0 +1,13 @@
+{
+  "timestamp": "2026-10-05T07:45:55Z",
+  "execution_context": "windows_workstation_powershell",
+  "python": "3.12.10",
+  "numpy": "2.5.3",
+  "scipy": "1.18.1",
+  "scikit_learn": "1.9.1",
+  "torch": "2.5.1+cu121",
+  "real_dataset_available": true,
+  "ablation_feature_caches_available": true,
+  "pretrained_weights_available": true,
+  "note": "Full execution of calibrated late fusion on real development cohort (341 pairs / 682 images) using cached features from visual_dsp_ablation."
+}

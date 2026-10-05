@@ -1,3 +1,17 @@
+## Phase 4C.3B — Calibrated Late Fusion: Execution, OOF Analysis and Reproduction Verification
+
+- **Mục tiêu**: Execute the locked 305-fit Calibrated Late Fusion protocol on 341 Option P development sources, test whether late fusion improves Brier calibration over calibrated visual control, and verify reproduction of ablation baselines.
+- **Execution**: Preflight verified 341 pairs/682 images; pilot (outer fold 0) completed 61 fits; full run resumed fold 0 and completed folds 1–4 (305/305 fits converged, 0 warnings); 4,092 OOF image predictions. Reused visual/DSP ablation caches read-only.
+- **Reproduction**: Exact reproduction against `visual_dsp_ablation`: aggregate metrics diff $\le 5.55 \times 10^{-17}$; sample-level predictions and fold $C$ identical (status `REPRODUCED`).
+- **Results**: `late_fusion_stacked` vs `visual_calibrated` primary $\Delta \text{Brier} = -0.0036$ [95% CI: $-0.0056, -0.0013$] (99.83% bootstrap below 0); Macro-F1 $0.6026$ vs $0.5787$ ($\Delta = +0.0239$ [$-0.0000, +0.0475$]); AUROC $0.6249$ vs $0.6058$ ($\Delta = +0.0191$ [$+0.0083, +0.0298$]).
+- **vs Early Fusion**: $\Delta \text{Brier} = -0.0187$ [$-0.0251, -0.0122$], $\Delta \text{ECE} = -0.0469$ [$-0.0809, -0.0128$], $\Delta \text{AUROC} = +0.0329$ [$+0.0151, +0.0512$].
+- **Verification**: 39/39 targeted tests PASS; hermetic ML suite 672 passed / 135 deselected; continuity checker PASS; 0 locked-test accesses.
+- **Kết quả**: `EXPLORATORY_LATE_FUSION_BRIER_IMPROVEMENT` (development-only; no confirmatory claim).
+- **Evidence**: `research/evidence/calibrated_late_fusion/`, `research/evidence/phase-4c.3b/`.
+- **Next**: Merge `claude/keen-knuth-4esvaw` into `main` via merge commit, push origin/main, verify CI.
+
+---
+
 ## Phase 4C.3A — Calibrated Late Fusion: Protocol Lock, Implementation and Execution Package
 
 - **Mục tiêu**: Follow up the Visual/DSP ablation (early fusion: ΔMacro-F1 `+0.0048` but ΔECE `+0.0575`, ΔBrier `+0.0133` vs visual) with the ADR-0004 design: calibrate visual and DSP scorers separately, then fuse late, on the same 341 sources and 5x4 folds.
