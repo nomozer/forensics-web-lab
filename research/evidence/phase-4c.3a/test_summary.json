@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "4C.3A",
+  "measured_in": "claude_code_cloud_container_linux_python_3.11.15",
+  "targeted": {
+    "ml/tests/test_calibrated_late_fusion.py": {
+      "passed": 24,
+      "failed": 0
+    },
+    "ml/tests/test_calibrated_late_fusion_analysis.py": {
+      "passed": 15,
+      "failed": 0
+    },
+    "total_passed": 39,
+    "total_failed": 0
+  },
+  "hermetic_ml_suite": {
+    "command": "python -m pytest ml/tests -m \"not requires_research_artifact\"",
+    "passed": 649,
+    "skipped": 23,
+    "deselected": 135,
+    "failed": 0
+  },
+  "ruff_new_files": "PASS",
+  "real_cohort_execution": {
+    "preflight": "not run (data absent)",
+    "pilot_fits": 0,
+    "full_fits": 0,
+    "metrics": "not measured"
+  },
+  "locked_test_accesses": 0,
+  "continuity_unit_tests": {
+    "passed": 13,
+    "failed": 0
+  },
+  "continuity_check": "PASS"
+}

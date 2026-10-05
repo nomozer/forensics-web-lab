@@ -1,3 +1,16 @@
+## Phase 4C.3A — Calibrated Late Fusion: Protocol Lock, Implementation and Execution Package
+
+- **Mục tiêu**: Follow up the Visual/DSP ablation (early fusion: ΔMacro-F1 `+0.0048` but ΔECE `+0.0575`, ΔBrier `+0.0133` vs visual) with the ADR-0004 design: calibrate visual and DSP scorers separately, then fuse late, on the same 341 sources and 5x4 folds.
+- **Protocol lock**: `ml/configs/calibrated_late_fusion_protocol.yaml`; base scorers byte-identical to the ablation; per-modality temperature scaling and a 2-input logistic stacker fitted only on inner-OOF scores; 6 recipes; primary ΔBrier `late_fusion_stacked − visual_calibrated` with 10,000-replicate paired source-cluster bootstrap (PCG64 seed 20261005); fixed verdict vocabulary; 305 fits (pilot 61).
+- **Implementation**: runner/CLI (`preflight|pilot|full`, read-only reuse of ablation caches, hash-bound resume, fail-closed tamper detection), analyzer (metrics, bootstrap, reliability, reproduction check vs ablation), Git-object package builder, 6-cell Colab notebook.
+- **Verification**: 39/39 synthetic-fixture tests PASS (exact ablation-runner equality, outer-test isolation, per-image independence, deterministic outputs); hermetic ML 649 passed / 23 skipped / 135 deselected / 0 failed on Python 3.11.15 cloud.
+- **Not run**: real preflight/pilot/full/analysis — development bundle, ablation caches and weights absent from the cloud container; real metrics not measured; 0 locked-test access.
+- **Kết quả**: `IMPLEMENTED_SYNTHETIC_VERIFIED_AWAITING_REAL_EXECUTION`.
+- **Evidence**: `research/evidence/phase-4c.3a/` (PHASE_REPORT, EXECUTION_GUIDE, test summary, package receipt).
+- **Next**: Execute locally or on Colab per EXECUTION_GUIDE; record Phase 4C.3B with measured results; no merge before that.
+
+---
+
 ## Phase 4C.2H.2 — Development Nested-CV Artifact Audit and Exploratory OOF Analysis
 
 - **Mục tiêu**: Audit the completed 150-fit Colab T4 development matrix and report full-OOF comparison of the frozen baseline vs pair-ranking recipe, strictly as development/exploratory evidence separate from the closed Phase 4C.2G locked test.
