@@ -11,7 +11,7 @@ gates, and only then merges.
 | :--- | :--- |
 | Branch | `claude/keen-knuth-4esvaw` (restarted from `origin/main`; previous use of this name was merged) |
 | Base `origin/main` | `18e0b8f05a5c253728b1f6ccc8dadc852a439624` (CI run #28 `success`) |
-| Implementation commit | the commit that adds this file; `git log -1 --format=%H -- research/evidence/phase-4c.4a/HANDOFF.md` |
+| Implementation commit | `fffccce42ce6295d2b86e0a357179eb715f34be4` (code, protocol, tests; this HANDOFF line was pinned in the next commit) |
 | Protocol | `ml/configs/development_robustness_protocol.yaml` |
 | Protocol SHA-256 (CRLF→LF normalised) | `b711cdd9eeb56e9b8167daa508b5b85e400cdb8ec2006272fcc922f0061734d6` |
 | Frozen 4C.3B bindings in the protocol | late-fusion `run_manifest.json` `99b95ff2…`, five fold `predictions.csv` hashes, 4C.3B `analysis_summary.json` (LF-normalised) `6a668afe…`, visual/DSP feature commitments `351e4952…` / `582108a2…`, dataset manifest `e1e6b6d2…`, weights `047dcff4…` |
