@@ -1,0 +1,15 @@
+{
+  "archive_bytes": 37210,
+  "archive_filename": "phase_4c3_calibrated_late_fusion_code.tar.gz",
+  "archive_location": "not committed (data/research/local-artifacts/ is outside Git); rebuild with --source-commit 821d101f7fe945a4288854ef4c54d1218eef656d",
+  "archive_sha256": "b6ce8412c63c9d9b54bd547add2f59a500942ca1b9b8f7286b86144a59061c5d",
+  "built_in": "claude_code_cloud_container_linux_python_3.11.15",
+  "created_at_utc": "2026-10-05T07:40:00Z",
+  "experiment": "calibrated_late_fusion",
+  "includes_weights": false,
+  "member_count": 16,
+  "schema_version": "1.0.0",
+  "snapshot_manifest_sha256": "afa2fc431b8f47b161c427a1d7e3a2369120f4aaf2d56db4e3fee7c3322e069a",
+  "source_commit": "821d101f7fe945a4288854ef4c54d1218eef656d",
+  "verification_note": "snapshot_manifest_sha256 binds member bytes independent of compression; archive_sha256 reproduces only with the same gzip/zlib output. The notebook checks the snapshot manifest."
+}

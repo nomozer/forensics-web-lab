@@ -57,7 +57,7 @@ the reproduction check can report `DIVERGED` at sample level; report that as obs
 
 ## 2. Colab alternative
 
-1. Build the code package from the bound commit (`package_receipt.json` lists it):
+1. Build the code package from the bound commit `821d101` (`package_receipt.json`; snapshot manifest SHA-256 `afa2fc43…`, already pinned in the notebook):
    `python scripts/research/build_calibrated_late_fusion_package.py --source-commit <commit> --receipt <file>`
    Add `--weights-path <...pth>` to embed the weights if the ablation caches are not on Drive.
 2. Upload it to Drive `calibrated_late_fusion/inputs/phase_4c3_calibrated_late_fusion_code.tar.gz`.
