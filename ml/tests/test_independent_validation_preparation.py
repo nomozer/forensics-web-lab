@@ -397,7 +397,87 @@ def test_cli_execution_contract():
     """Verify run_independent_validation CLI contract (--check-readiness)."""
     from scripts.research.run_independent_validation import check_readiness
 
-    readiness = check_readiness()
+    readiness = check_readiness(write_artifact=False)
     assert readiness["phase"] == "4C.7A"
     assert readiness["status"] == "PREPARATION_COMPLETE_PENDING_INDEPENDENT_COHORT"
     assert readiness["ready_for_real_evaluation"] is False
+
+
+def test_loader_rejects_incorrect_dsp_feature_order(tmp_path):
+    """Loader must reject bindings if dsp.feature_order is scrambled, missing, or mismatched."""
+    from ml.evaluation.independent_model_bindings import DEFAULT_BINDINGS_PATH, ModelIntegrityError, load_candidate_models
+
+    bindings_text = DEFAULT_BINDINGS_PATH.read_text(encoding="utf-8")
+    bindings = json.loads(bindings_text)
+    # Scramble the order
+    order = list(bindings["feature_contracts"]["dsp"]["feature_order"])
+    order[0], order[1] = order[1], order[0]
+    bindings["feature_contracts"]["dsp"]["feature_order"] = order
+
+    bad_file = tmp_path / "bad_bindings.json"
+    bad_file.write_text(json.dumps(bindings), encoding="utf-8")
+
+    with pytest.raises(ModelIntegrityError, match="DSP feature order mismatch"):
+        load_candidate_models(bad_file)
+
+
+def test_report_model_sizes_and_hashes_match_audit():
+    """Verify PHASE_REPORT.md records actual byte sizes and hashes from model_bindings_audit.json, not copy-pasted 43,264 bytes."""
+    report_text = (REPO_ROOT / "research/evidence/phase-4c.7a/PHASE_REPORT.md").read_text(encoding="utf-8")
+    audit_data = json.loads((REPO_ROOT / "research/evidence/phase-4c.7a/model_bindings_audit.json").read_text(encoding="utf-8"))
+
+    # Must NOT contain the old copy-pasted size 43,264 bytes
+    assert "43,264 bytes" not in report_text, "PHASE_REPORT.md still contains erroneous 43,264 bytes placeholder!"
+    assert "43264 bytes" not in report_text
+
+    for fold in audit_data["outer_folds"]:
+        size_str = str(fold["model_size_bytes"])
+        sha_str = fold["model_sha256"]
+        assert size_str in report_text, f"Fold {fold['outer_fold']} size {size_str} not in report!"
+        assert sha_str in report_text, f"Fold {fold['outer_fold']} SHA {sha_str} not in report!"
+
+
+def test_report_dsp_features_match_canonical_extractor():
+    """Verify PHASE_REPORT.md lists all 16 DSP features in canonical order matching dsp_features.py."""
+    from ml.training.dsp_features import DSP_FEATURE_NAMES
+
+    report_text = (REPO_ROOT / "research/evidence/phase-4c.7a/PHASE_REPORT.md").read_text(encoding="utf-8")
+
+    for feat in DSP_FEATURE_NAMES:
+        assert feat in report_text, f"Canonical feature {feat} missing from PHASE_REPORT.md!"
+
+    # In Section 3.2, obsolete features from early exploratory drafts must not be present
+    sec_3_2 = report_text.split("### 3.2.")[1].split("---")[0]
+    assert "dct_corner_energy_ratio" not in sec_3_2
+    assert "noise_residual_variance" not in sec_3_2
+    assert "noise_kurtosis" not in sec_3_2
+
+
+def test_cohort_specification_quotas_and_consistency():
+    """Verify canonical cohort specification quotas sum to 100% and match across acquisition plan and report."""
+    spec_path = REPO_ROOT / "research/evidence/phase-4c.7a/cohort_specification.json"
+    assert spec_path.is_file(), "Canonical cohort_specification.json missing!"
+    spec = json.loads(spec_path.read_text(encoding="utf-8"))
+
+    # Tool quotas
+    tool_quotas = spec["inpainting_tools"]
+    total_tool_pct = sum(t["quota_percentage"] for t in tool_quotas)
+    total_tool_pairs = sum(t["target_pairs"] for t in tool_quotas)
+    assert total_tool_pct == 100
+    assert total_tool_pairs == spec["target_sample_size_pairs"]
+
+    # Authentic source quotas
+    auth_sources = spec["authentic_sources"]
+    total_auth_pct = sum(s["quota_percentage"] for s in auth_sources)
+    total_auth_pairs = sum(s["target_pairs"] for s in auth_sources)
+    assert total_auth_pct == 100
+    assert total_auth_pairs == spec["target_sample_size_pairs"]
+
+    # Cross-reference with COHORT_ACQUISITION_PLAN.md
+    plan_text = (REPO_ROOT / "research/evidence/phase-4c.7a/COHORT_ACQUISITION_PLAN.md").read_text(encoding="utf-8")
+    report_text = (REPO_ROOT / "research/evidence/phase-4c.7a/PHASE_REPORT.md").read_text(encoding="utf-8")
+
+    for t in tool_quotas:
+        quota_str = f"{t['quota_percentage']}%"
+        assert quota_str in plan_text, f"Quota {quota_str} for {t['name']} missing in plan!"
+        assert quota_str in report_text, f"Quota {quota_str} for {t['name']} missing in report!"

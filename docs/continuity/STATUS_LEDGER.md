@@ -2,15 +2,15 @@
 
 - **Mục tiêu**: Prespecify independent validation protocol comparing visual_calibrated vs late_fusion_dsp_augmented on novel source-disjoint cohort; 0 tuning on 341 dev sources.
 - **Protocol lock & Amendment v1.1**: `independent_validation_protocol.yaml` + `PROTOCOL_AMENDMENT_V1.1.md` lock 6 conditions, 5 outer-fold models fixed, arithmetic mean of 5 fold Macro-F1 (no probability averaging, no ensemble); paired cluster bootstrap (10,000 / PCG64 20261007); primary endpoint Δ at jpeg_q75; $N_{\text{target}}=400$ pairs locked with strict stopping rule; 16 DSP feature order aligned with `dsp_features.py`.
-- **Model bindings audit**: Machine audit (`model_bindings_audit.json`) streamed SHA-256 for all 5 outer-fold models on disk, confirmed 5/5 AUDIT_VERIFIED; reconciled chat markdown hash hallucination against immutable disk ground truth.
-- **Monte Carlo simulation**: Completed paired cluster bootstrap planning across 5 effect scenarios x 5 sample sizes with 50 cohorts x 500 replicates (`sample_size_planning_results.json`); null FPR <= 2.5%, subtle effect power 100%, ME +-0.0098 at N=400 pairs.
-- **Cohort design & Guard**: Multi-layer disjoint guard (`independent_cohort.py`) checks source_id, image_sha256, origin_id, and resolution parity vs 684 historical Option P sources; acquisition quotas locked (SD2 40%, SDXL 35%, Firefly 25%).
+- **Model bindings audit**: Machine audit (`model_bindings_audit.json`) streamed SHA-256 and byte sizes for all 5 outer-fold models on disk ([58418, 58030, 58465, 58455, 58390] bytes), confirmed 5/5 AUDIT_VERIFIED; reconciled chat markdown hash hallucination against immutable disk ground truth; fixed 43.264 bytes placeholder in report.
+- **Monte Carlo simulation**: Completed paired cluster bootstrap planning across 5 effect scenarios x 5 sample sizes with 50 cohorts x 500 replicates (`sample_size_planning_results.json`); Wilson 95% CIs on MC proportions (null rejection 2.0%-4.0%, subtle effect power 50/50 = 100.0% [92.9%, 100.0%], ME +-0.0098 at N=400 pairs).
+- **Cohort specification & Guard**: Single canonical machine configuration (`cohort_specification.json`) locks N=400 (buffer 440), authentic quotas (40% Research Field / 35% COCO / 25% Unsplash), tool quotas (40% SD2 / 40% SDXL / 20% Firefly), and orthogonal allocation matrix; multi-layer disjoint guard (`independent_cohort.py`) checks source_id, image_sha256, origin_id, and resolution parity vs 684 historical Option P sources.
 - **Pipeline & CLI**: `IndependentEvaluationPipeline` verified end-to-end (PIL decode -> 6 transforms -> backbone/DSP extraction -> models -> arithmetic Macro-F1 -> bootstrap); CLI runner supports `--image-preflight` and `--evaluate`.
-- **Tests**: 21/21 tests PASS (17 hermetic CI tests + 4 artifact-gated tests).
-- **Not run**: Any real cohort evaluation (0 fits, 0 new evaluations, real independent performance `NOT_MEASURED`).
-- **Kết quả**: `PREPARATION_COMPLETE_PENDING_INDEPENDENT_COHORT`.
-- **Evidence**: `research/evidence/phase-4c.7a/` (protocol, amendment v1.1, audited bindings, audit report, Monte Carlo results & report, acquisition plan, execution guide, readiness.json, report).
-- **Next**: Acquire independent cohort per plan (Phase 4C.7B), run independent evaluation.
+- **Tests**: 25/25 tests PASS (21 hermetic CI tests + 4 artifact-gated tests; regression tests for model sizes/hashes, DSP feature order, cohort quotas).
+- **Not run**: Any real cohort evaluation (0 fits, 0 new evaluations, real independent cohort `NOT_ACQUIRED`, independent performance `NOT_MEASURED`).
+- **Kết quả**: `PREPARATION_COMPLETE_PENDING_INDEPENDENT_COHORT`. Handoff: `BLOCKED_WITH_EXACT_ACQUISITION_REQUIREMENTS` (160 user field photos, Adobe Firefly subscription).
+- **Evidence**: `research/evidence/phase-4c.7a/` (protocol, amendment v1.1, audited bindings, audit report, Monte Carlo results & report, cohort_specification.json, acquisition plan, execution guide, readiness.json, report).
+- **Next**: Acquire independent cohort per plan (Phase 4C.7B) once requirements unblocked; run independent evaluation.
 
 ---
 

@@ -59,17 +59,27 @@ Tuyệt đối không giả định toàn bộ ảnh trong một dataset đều 
 - **Mask lớn ($> 30\%$ diện tích canvas)**: 30% (120 pairs).
 Mỗi ảnh `ai_edited` bắt buộc đi kèm 1 file binary mask PNG tương ứng ghi nhận pixel 0 (giữ nguyên) và 255 (vùng chỉnh sửa).
 
+### 3.3. Ma Trận Phân Bổ Trực Giao (Orthogonal Allocation Matrix)
+Để triệt tiêu hiện tượng nhiễu liên đới (confounding) giữa nguồn ảnh authentic và công cụ inpainting, việc ghép cặp giữa nguồn ảnh và công cụ tạo sinh được khóa theo tỷ lệ cố định (prespecified orthogonal allocation):
+
+| Nguồn Ảnh Authentic | SD 2.0 Inpainting (40%) | SDXL Inpainting (40%) | Adobe Firefly (20%) | Tổng Cặp Nguồn |
+| :--- | :---: | :---: | :---: | :---: |
+| **Research Field (40%)** | 64 pairs | 64 pairs | 32 pairs | **160 pairs** |
+| **COCO 2017 (35%)** | 56 pairs | 56 pairs | 28 pairs | **140 pairs** |
+| **Unsplash Verified (25%)** | 40 pairs | 40 pairs | 20 pairs | **100 pairs** |
+| **Tổng Theo Công Cụ** | **160 pairs (40%)** | **160 pairs (40%)** | **80 pairs (20%)** | **400 pairs (100%)** |
+
 ---
 
 ## 4. Chuẩn Hóa Canvas và Chống Shortcut Nhãn (Artifact Parity)
 
-Để ngăn chặn mô hình học các shortcut về nén file, kích thước hoặc codec:
+Để kiểm soát định dạng và kích thước đầu ra giữa hai lớp:
 1. **Canvas Resolution Đồng Nhất**:
    - Mọi cặp ảnh (authentic và edited) đều được crop/scale về cùng kích thước canvas cố định: **$512 \times 512$ pixels** (RGB 8-bit).
    - Kích thước pixel giữa authentic và ai_edited của cùng một source phải khớp tuyệt đối ($W_{\text{auth}} = W_{\text{edit}} = 512$, $H_{\text{auth}} = H_{\text{edit}} = 512$).
-2. **Định Dạng Master File**:
+2. **Định Dạng Master File & Giới Hạn Kiểm Soát**:
    - Cả ảnh authentic và edited đều được lưu dưới định dạng **PNG không nén lossy (RGB)** trước khi đưa vào pipeline kiểm định.
-   - *Làm rõ*: Điều kiện `original` trong 6 conditions kiểm định đại diện cho ảnh master input đầu vào theo quy trình chuẩn hóa này, không mặc nhiên giả định là ảnh raw chưa nén từ cảm biến.
+   - *Làm rõ về mặt khoa học*: Quy trình chuẩn hóa PNG $512 \times 512$ là biện pháp **kiểm soát định dạng container và độ phân giải đầu ra** để đảm bảo tính đồng nhất (parity) giữa authentic và edited trong benchmark. Quy trình này **không tuyên bố loại bỏ hoàn toàn dấu vết nén JPEG từ cảm biến gốc trong quá khứ hoặc mọi shortcut tiềm ẩn** vốn có của ảnh nguồn trước khi thu thập.
 3. **Quy Trình Xử Lý Độc Lập**:
    - Khi mô hình dự đoán, mỗi ảnh được đưa vào độc lập hoàn toàn. Không bao giờ đưa thông tin cặp, mask, source ID hay nhãn vào vector đặc trưng.
 
@@ -93,3 +103,22 @@ Validator [`ml/evaluation/independent_cohort.py`](ml/evaluation/independent_coho
    - **Dừng thu thập ngay khi đạt đủ $N_{\text{target}} = 400$ pairs hợp lệ**.
    - Tuyệt đối cấm đánh giá mô hình trong lúc thu thập; không kéo dài thu thập hoặc dừng sớm dựa trên kết quả trung gian.
    - Khi đã khóa 400 pairs, manifest được tính SHA-256 và niêm phong trước khi chạy bất kỳ phép scoring nào.
+
+---
+
+## 7. Đánh Giá Tính Khả Thi và Yêu Cầu Bàn Giao (Acquisition Feasibility Assessment)
+
+Bảng thẩm tra tính khả thi thực tế trước khi thu thập độc lập:
+
+| Hạng mục | Trạng thái hiện tại | Môi trường / Cơ chế | Blocker & Yêu cầu bàn giao |
+| :--- | :---: | :--- | :--- |
+| **160 ảnh Research Field** | `NOT_ACQUIRED` | Máy ảnh số / Smartphone người dùng | **BLOCKER 1**: Nhóm nghiên cứu / người dùng cần chụp và cung cấp 160 ảnh gốc kèm metadata thiết bị. |
+| **140 ảnh COCO 2017** | `READY_FOR_AUTOMATION` | COCO API / URL Flickr | Đạt tính khả thi tự động hóa với script tải có kiểm tra license CC-BY 4.0 và exclude Option P. |
+| **100 ảnh Unsplash** | `READY_FOR_CURATION` | Unsplash API / Manual curation | Đạt tính khả thi với danh sách photo ID chụp trước 2022 (Unsplash License). |
+| **SD 2.0 Inpainting (160 pairs)** | `READY_FOR_EXECUTION` | PyTorch + Diffusers (CUDA / Cloud) | Checkpoint mã nguồn mở sẵn sàng, script inpainting tự động hóa. |
+| **SDXL Inpainting (160 pairs)** | `READY_FOR_EXECUTION` | PyTorch + Diffusers (CUDA / Cloud) | Checkpoint mã nguồn mở sẵn sàng, script inpainting tự động hóa. |
+| **Adobe Firefly (80 pairs)** | `BLOCKED_SUBSCRIPTION` | Adobe Photoshop / Firefly API | **BLOCKER 2**: Cần tài khoản Adobe bản quyền và can thiệp thủ công / API token. |
+| **Tài nguyên GPU / Storage** | `FEASIBLE` | NVIDIA GPU (>= 4GB) + ~2GB disk | Đạt yêu cầu thực thi trên máy trạm hoặc Google Colab T4. |
+
+> **Kết luận trạng thái**: `BLOCKED_WITH_EXACT_ACQUISITION_REQUIREMENTS`<br>
+> Việc thu thập cohort độc lập chưa thể bắt đầu ngay do thiếu 160 ảnh chụp thực địa và tài khoản Adobe Firefly. Tuyệt đối không tự ý thay đổi quotas, thay thế Firefly bằng SD2, hoặc bỏ qua ảnh tự chụp khi chưa có Protocol Amendment được phê duyệt.

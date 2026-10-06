@@ -1,0 +1,185 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "4C.7A",
+  "specification_name": "canonical_independent_cohort_specification",
+  "status": "COHORT_SPECIFICATION_LOCKED_PRE_ACQUISITION",
+  "locked_at_utc": "2026-10-06T15:00:00Z",
+  "target_sample_size_pairs": 400,
+  "acquisition_buffer_pairs": 440,
+  "total_target_images": 800,
+  "task_scope": {
+    "classification": "binary",
+    "classes": {
+      "0": "authentic",
+      "1": "ai_edited"
+    },
+    "three_class_note": "fully_generated (3-class generalization, RQ1) is excluded from this cohort due to absent 3-class data."
+  },
+  "authentic_sources": [
+    {
+      "source_key": "research_field_collection",
+      "name": "Research Field Collection (Ảnh chụp thực địa độc quyền)",
+      "quota_percentage": 40,
+      "target_pairs": 160,
+      "license": "Custom Research License (Độc quyền nhóm nghiên cứu, cấp phép mở cho nghiên cứu)",
+      "provenance_tracking": "Thiết bị chụp, EXIF cảm biến gốc, địa điểm/thời gian",
+      "acquisition_readiness": "DEPENDS_ON_HUMAN_PROVISION (Cần người dùng / nhóm nghiên cứu chụp và cung cấp 160 ảnh gốc)"
+    },
+    {
+      "source_key": "coco_2017",
+      "name": "COCO 2017 Dataset (Partitions sạch ngoài Option P)",
+      "quota_percentage": 35,
+      "target_pairs": 140,
+      "license": "CC-BY 4.0 (Creative Commons Attribution 4.0 International; đối chiếu Flickr ID tác giả gốc)",
+      "provenance_tracking": "Flickr image ID, tác giả, Flickr URL",
+      "acquisition_readiness": "AUTOMATED_DOWNLOAD_READY (Có thể tự động tải qua COCO/Flickr API với script)"
+    },
+    {
+      "source_key": "unsplash_verified",
+      "name": "Unsplash Verified Open Collection (Chụp trước 2022)",
+      "quota_percentage": 25,
+      "target_pairs": 100,
+      "license": "Unsplash License (Miễn phí phi thương mại và nghiên cứu khoa học)",
+      "provenance_tracking": "Unsplash photo ID, tác giả, năm công bố <= 2021",
+      "acquisition_readiness": "CURATED_DOWNLOAD_READY (Cần duyệt danh sách photo ID trước khi tải)"
+    }
+  ],
+  "inpainting_tools": [
+    {
+      "tool_key": "stable_diffusion_2_inpainting",
+      "name": "Stable Diffusion 2 Inpainting",
+      "checkpoint": "stabilityai/stable-diffusion-2-inpainting",
+      "model_type": "open_weights_diffusion",
+      "quota_percentage": 40,
+      "target_pairs": 160,
+      "parameters": {
+        "scheduler": "DDIM",
+        "num_inference_steps": 50,
+        "guidance_scale": 7.5,
+        "resolution": [512, 512],
+        "seed_policy": "fixed_prng_sequence"
+      },
+      "execution_environment": "Local GPU (CUDA / Diffusers)",
+      "feasibility_status": "AVAILABLE_LOCAL_OR_COLAB"
+    },
+    {
+      "tool_key": "sdxl_inpainting",
+      "name": "SDXL Inpainting",
+      "checkpoint": "diffusers/stable-diffusion-xl-1.0-inpainting-0.1",
+      "model_type": "open_weights_diffusion",
+      "quota_percentage": 40,
+      "target_pairs": 160,
+      "parameters": {
+        "scheduler": "EulerDiscreteScheduler",
+        "num_inference_steps": 30,
+        "guidance_scale": 7.5,
+        "resolution": [512, 512],
+        "seed_policy": "fixed_prng_sequence"
+      },
+      "execution_environment": "Local GPU (CUDA / Diffusers)",
+      "feasibility_status": "AVAILABLE_LOCAL_OR_COLAB"
+    },
+    {
+      "tool_key": "adobe_firefly",
+      "name": "Adobe Firefly / Generative Fill",
+      "checkpoint": "Firefly Image 3 Model",
+      "model_type": "commercial_closed_diffusion",
+      "quota_percentage": 20,
+      "target_pairs": 80,
+      "parameters": {
+        "engine": "Adobe Cloud Diffusion Backend",
+        "resolution": [512, 512]
+      },
+      "execution_environment": "Adobe Photoshop Desktop / Firefly API",
+      "feasibility_status": "REQUIRES_USER_CREDENTIALS_AND_SUBSCRIPTION"
+    }
+  ],
+  "orthogonal_allocation_matrix": {
+    "description": "Fixed orthogonal allocation of inpainting tools across authentic sources to eliminate confounding",
+    "allocations": [
+      {
+        "authentic_source": "research_field_collection",
+        "sd2_pairs": 64,
+        "sdxl_pairs": 64,
+        "firefly_pairs": 32,
+        "total_pairs": 160
+      },
+      {
+        "authentic_source": "coco_2017",
+        "sd2_pairs": 56,
+        "sdxl_pairs": 56,
+        "firefly_pairs": 28,
+        "total_pairs": 140
+      },
+      {
+        "authentic_source": "unsplash_verified",
+        "sd2_pairs": 40,
+        "sdxl_pairs": 40,
+        "firefly_pairs": 20,
+        "total_pairs": 100
+      }
+    ],
+    "column_totals": {
+      "sd2_pairs": 160,
+      "sdxl_pairs": 160,
+      "firefly_pairs": 80,
+      "total_pairs": 400
+    }
+  },
+  "modification_types": {
+    "object_replacement": {
+      "quota_percentage": 40,
+      "target_pairs": 160
+    },
+    "object_removal_and_infill": {
+      "quota_percentage": 30,
+      "target_pairs": 120
+    },
+    "object_insertion": {
+      "quota_percentage": 30,
+      "target_pairs": 120
+    }
+  },
+  "mask_area_distribution": {
+    "small_under_10pct": {
+      "quota_percentage": 30,
+      "target_pairs": 120
+    },
+    "medium_10_to_30pct": {
+      "quota_percentage": 40,
+      "target_pairs": 160
+    },
+    "large_over_30pct": {
+      "quota_percentage": 30,
+      "target_pairs": 120
+    }
+  },
+  "canvas_and_codec_controls": {
+    "standard_width": 512,
+    "standard_height": 512,
+    "color_space": "RGB_8bit",
+    "master_format": "PNG_lossless",
+    "mask_format": "PNG_binary_0_or_255",
+    "scientific_interpretation": "Canvas/codec normalization controls output container and resolution parity between pairs. It does NOT claim to erase pre-existing sensor JPEG compression history or eliminate all potential pipeline shortcuts."
+  },
+  "inclusion_criteria": [
+    "Image must decode successfully with Pillow without errors.",
+    "Pixel dimensions must be exactly 512x512 RGB.",
+    "Binary mask PNG (512x512) must accompany each ai_edited sample with values in {0, 255}.",
+    "Must pass decompression bomb guard (<= 50,000,000 pixels).",
+    "Verified provenance documentation for authentic image."
+  ],
+  "exclusion_criteria": [
+    "Overlap with any of 684 historical Option P sources by source_id.",
+    "Overlap with any historical Option P image by image_sha256.",
+    "Overlap with any historical Option P image by origin_id / Flickr URL.",
+    "Resolution mismatch between authentic and ai_edited within the same source.",
+    "Synthetic or non-photographic authentic images (e.g., pure computer graphics, screenshots, text diagrams)."
+  ],
+  "sampling_and_stopping_rule": {
+    "candidate_pool_size": 440,
+    "prespecified_random_ordering": true,
+    "stopping_threshold_valid_pairs": 400,
+    "rule": "Process candidate pairs in prespecified random order; lock and seal cohort manifest immediately upon reaching 400 verified valid pairs. Zero model scoring permitted during collection."
+  }
+}
