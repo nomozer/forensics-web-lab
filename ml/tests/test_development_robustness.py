@@ -397,7 +397,7 @@ def test_analysis_is_synthetic_labelled_deterministic_and_complete(world, full_r
     # 3 recipes x 5 conditions + 2 contrasts x 6 conditions, 10 metrics each
     assert len(first["paired_deltas"]) == (3 * 5 + 2 * 6) * 10
     assert len(first["condition_metrics"]) == 18
-    assert "synthetic_only — NOT EXPERIMENTAL EVIDENCE" in (tmp_path / "a" / "ROBUSTNESS_REPORT.md").read_text()
+    assert "synthetic_only — NOT EXPERIMENTAL EVIDENCE" in (tmp_path / "a" / "ROBUSTNESS_REPORT.md").read_text(encoding="utf-8")
     files = sorted(p.relative_to(tmp_path / "a").as_posix() for p in (tmp_path / "a").rglob("*") if p.is_file())
     assert files == [
         "ROBUSTNESS_REPORT.md", "analysis_summary.json", "condition_metrics.csv",
@@ -448,12 +448,12 @@ def test_reliability_figure_rerender_keeps_bins_and_adds_ticks_and_counts(tmp_pa
     bins = EVIDENCE / "reliability_bins.csv"
     before = bins.read_bytes()
     rerender_reliability_from_bins(bins, tmp_path / "rel", recipes, "OOF reliability (10 bins)")
-    svg = (tmp_path / "rel.svg").read_text()
+    svg = (tmp_path / "rel.svg").read_text(encoding="utf-8")
     assert bins.read_bytes() == before
     assert "Mean predicted P(ai_edited) in bin" in svg and "Observed fraction ai_edited" in svg
     assert svg.count(">0.4</text>") >= 2 * len(recipes)
-    assert "n=292" in svg  # visual_raw bin 4 count from reliability_bins.csv
-    committed = (EVIDENCE / "figures" / "reliability_diagram.svg").read_text()
+    assert "n per bin:" in svg and "292" in svg  # visual_raw bin 4 count from reliability_bins.csv
+    committed = (EVIDENCE / "figures" / "reliability_diagram.svg").read_text(encoding="utf-8")
     assert committed == svg
 
 

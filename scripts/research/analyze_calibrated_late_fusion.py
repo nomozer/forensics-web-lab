@@ -465,19 +465,19 @@ def render_reliability_diagram(stem: Path, curves: dict[str, list[dict[str, Any]
                 + '"/>'
             )
             draw.line(points, fill=rgb, width=2)
-        for position, ((x, y), row) in enumerate(zip(points, populated)):
-            count = int(row["count"])
-            above = position % 2 == 0  # alternate label side to limit overlaps in dense bins
+        for x, y in points:
             svg.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="3" fill="{color}"/>')
-            svg.append(
-                f'<text x="{x + 5:.1f}" y="{y - 6 if above else y + 13:.1f}" font-family="sans-serif" font-size="9" fill="#333333">n={count}</text>'
-            )
             draw.ellipse([x - 3, y - 3, x + 3, y + 3], fill=rgb)
-            draw.text((x + 4, y - 14 if above else y + 3), f"n={count}", fill=(51, 51, 51))
+        # Counts go in a strip under the panel (point labels overlapped in dense bins).
+        strip = "n per bin: " + " ".join(str(int(r["count"])) for r in populated)
+        svg.append(
+            f'<text x="{left}" y="{top + size + 52}" font-family="sans-serif" font-size="8" fill="#333333">{strip}</text>'
+        )
+        draw.text((left, top + size + 46), strip, fill=(51, 51, 51))
     svg.append("</svg>")
     stem.parent.mkdir(parents=True, exist_ok=True)
     svg_path, png_path = stem.with_suffix(".svg"), stem.with_suffix(".png")
-    svg_path.write_text("\n".join(svg) + "\n", encoding="utf-8")
+    svg_path.write_text("\n".join(svg) + "\n", encoding="utf-8", newline="\n")
     image.save(png_path, optimize=False)
     return [str(svg_path), str(png_path)]
 
@@ -741,7 +741,7 @@ def run_analysis(
     render_reliability_diagram(
         report_dir / "figures" / "reliability_diagram",
         {name: reliability[name] for name in curve_names},
-        "OOF reliability (10 bins)" + (" — SYNTHETIC" if data_origin != "development_real" else ""),
+        "OOF reliability (10 bins)" + (" — SYNTHETIC — NOT REAL PERFORMANCE" if data_origin != "development_real" else ""),
     )
     (report_dir / "ANALYSIS_REPORT.md").write_text(render_report(summary), encoding="utf-8")
     return summary

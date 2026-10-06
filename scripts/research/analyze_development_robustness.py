@@ -404,7 +404,7 @@ def run_analysis(*, output_dir: Path, report_dir: Path, protocol_path: Path, rep
         report_dir / "figures" / "jpeg_degradation",
         metrics,
         intervals,
-        "Frozen-model degradation under JPEG re-encoding" + (" — SYNTHETIC ONLY" if data_origin != DATA_ORIGIN_REAL else ""),
+        "Frozen-model degradation under JPEG re-encoding" + (" — SYNTHETIC — NOT REAL PERFORMANCE" if data_origin != DATA_ORIGIN_REAL else ""),
     )
     (report_dir / "ROBUSTNESS_REPORT.md").write_text(render_report(summary), encoding="utf-8")
     return summary

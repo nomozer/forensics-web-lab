@@ -1,0 +1,99 @@
+{
+  "created_at_utc": "2026-10-05T08:42:20.426890+00:00",
+  "environment": {
+    "device": "cuda",
+    "extractor": "reference_mobilenet_v3_small_plus_dsp16",
+    "libjpeg": "8.0",
+    "numpy": "2.5.3",
+    "pillow": "12.3.0",
+    "platform": "Windows-11-10.0.26100-SP0",
+    "python": "3.12.10",
+    "scikit_learn": "1.9.1",
+    "scipy": "1.18.1",
+    "torch": "2.5.1+cu121",
+    "weights_sha256": "047dcff4addef86ea5bc2eff13c9614dc11f47ab1160d0a71a25e7db994f4e1f",
+    "zlib": "1.3.1.zlib-ng"
+  },
+  "run_bindings": {
+    "data_origin": "development_real",
+    "experiment_id": "development_robustness",
+    "fold_lock_outer_test": [
+      "48a038271d75a5d6082bcd77c5138505329a514070e8ed70cd8fb7696dd5a3b5",
+      "a770bb9be254a4b79a4d6855c509c7179b296b031d74fa5b66c6ffe9f13996f5",
+      "2314b58853f21950000d20a95dbceb41838937a481fb25525ea2d0699ba8cb8a",
+      "a04b43b116e12344d0f8071f6e20a550d81139a432756e62b0fde111d88b5582",
+      "31385d00586f68b2673c8d3ef4cd93f5d08c6d85ca6ca9f00e01ad4cc5fa88fc"
+    ],
+    "frozen_artifact_hashes": {
+      "early_fusion": [
+        {
+          "model_sha256": "f4148e1b57a34f8769519538ae3fafe13d48ecb565908c999d14e0a2366e0867",
+          "outer_fold": 0,
+          "predictions_sha256": "a413a42995faa5aa26e5e47c50f677d9d8d375457833c177469d36b7a28dccc6"
+        },
+        {
+          "model_sha256": "8e6ad797fb843f34fb84855284bed89a27d32583a8e5636acb58e400fec1d569",
+          "outer_fold": 1,
+          "predictions_sha256": "630f9341eaef6a90ed7426cf3c23cef5d680c19b9fe9ad133d8588bf3e7b926a"
+        },
+        {
+          "model_sha256": "9f4bfb07a7277c664993b05dc0bfd49892683264cc62c0cc3d89ad37a1e26583",
+          "outer_fold": 2,
+          "predictions_sha256": "54cba0af0d12c1a3ed23639512ee7b31137c360ca854b735576b7772525da8e2"
+        },
+        {
+          "model_sha256": "e1bff14a5687a37bd8b954978584ae1e270334cce88a658e5eefda0a4169b129",
+          "outer_fold": 3,
+          "predictions_sha256": "dc194e445bb88e7335cfda59dcc2340420a4febc825cdcdc1b77ef24e58e2906"
+        },
+        {
+          "model_sha256": "1f397ff15fc117b9ec8fac2cd784a2066bb2e9c97b47477924a271959fb1ab3d",
+          "outer_fold": 4,
+          "predictions_sha256": "19f1a8fc9b32040e5a69621baaae5d985adc36d9fe44575da4fa19b67dab8c2f"
+        }
+      ],
+      "late_fusion": [
+        {
+          "model_sha256": "aec184fdbc965ead75bd601032b67806ae8d2bc25ba04b0c49bf02935c3f0b6f",
+          "outer_fold": 0,
+          "predictions_sha256": "3a415f5fbc3601149521fb0971cd6c3d75c346e14927c239b1d9fb123e77bfa4"
+        },
+        {
+          "model_sha256": "a7c730a6fc82a2e606442c8f3ca86fb80d88e4be3e9242677f50b240b2b3a6f3",
+          "outer_fold": 1,
+          "predictions_sha256": "457cdc11350d930f5871277cc7e10c09c3b4d9a7ec6d74a85020c280f67d90c8"
+        },
+        {
+          "model_sha256": "4ca76b7bb276df5298f649b85008818f6c78a08fa1b1c902fd5e33448e5512e0",
+          "outer_fold": 2,
+          "predictions_sha256": "ed225d7f9149384bcdbfd653baaecadf78fc458f781ab564573ec59107f1361d"
+        },
+        {
+          "model_sha256": "97f3503412f8ca154a1539e797c4dc553a855bd3861a553f61883e86b6d91800",
+          "outer_fold": 3,
+          "predictions_sha256": "24db23d0c14329bf82a811d88bb7aa3f2455ebeeaa135eea549c7fe8490d5a53"
+        },
+        {
+          "model_sha256": "9eaa29a1a0b3181b57e4ebf288d3cf570280552dc29e0eecccda85b73b423455",
+          "outer_fold": 4,
+          "predictions_sha256": "f8f598e87b77979a0874af114ba6cc62a640aa22db354b1f1af82cc298317b30"
+        }
+      ]
+    },
+    "frozen_parameter_digests": [
+      "f65b2695649e0bbb623043348b1af17b416a3dd740a4a420868642ad0c5e0e45",
+      "d2268d63188eb1568794276376a50e4ca99576a85f4881d13d9ae29c71f74e9c",
+      "19edfff08cf28bd3a3a7d49dd0b964353fd72c62c6960f831d5ad074e058baad",
+      "db1b5ab1ad61799889f166a04396cea554c0d1e9686854d6bc25c62c6c995ee9",
+      "aea9838d208d26a8352afb045313dc09b432898c23839c2d3e61152046c06150"
+    ],
+    "late_fusion_run_manifest_sha256": "99b95ff25f5566a673d71a2148e85240f8bb127ed368cd79da527d1b3fc4f6d3",
+    "manifest_sha256": "e1e6b6d282002108d6a15000b755c20dd569cc8aa68c4eebbfa2aab3cee3b626",
+    "protocol_sha256": "b711cdd9eeb56e9b8167daa508b5b85e400cdb8ec2006272fcc922f0061734d6",
+    "source_membership_commitment": "025cbc4d7990a4ad0a3554507854e2a16d27e04cf2aeef1d8485a2c50e99e6af"
+  },
+  "samples": 682,
+  "schema_version": "1.0.0",
+  "scope": "full",
+  "sources": 341
+}

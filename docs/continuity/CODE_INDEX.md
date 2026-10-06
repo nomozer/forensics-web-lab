@@ -235,12 +235,13 @@ graph TD
 | **Calibrated Late Fusion Colab Notebook** | `notebooks/calibrated_late_fusion_colab.ipynb` (6 cells; default `MODE="preflight"`, `ALLOW_FULL=False`; snapshot-manifest verification; results bundle) | `implemented-and-tested` (structure only) |
 | **Calibrated Late Fusion Tests** | `ml/tests/test_calibrated_late_fusion.py` (24), `ml/tests/test_calibrated_late_fusion_analysis.py` (15) — 39/39 PASS | `implemented-and-tested` |
 | **Development Robustness Protocol** | `ml/configs/development_robustness_protocol.yaml` (Phase 4C.4A: 6 locked image conditions × 3 frozen 4C.3B recipes, image-pipeline lock, original-reproduction gate, primary ΔMacro-F1 jpeg_q75−original, source-cluster bootstrap) | `protocol-locked` |
-| **Development Robustness Core** | `ml/training/development_robustness.py` (deterministic transforms, reference MobileNetV3-Small+DSP16 extractor, frozen estimator rebuild without fitting, per-fold scoring, gate, hash-bound condition resume, `MissingArtifactsError`) | `implemented-and-tested` (synthetic) |
-| **Development Robustness Runner** | `ml/training/run_development_robustness.py` (CLI `--mode preflight\|pilot\|full`, data paths via CLI only, in-repo output guard) | `implemented-and-tested` (synthetic); real run pending |
-| **Development Robustness Analyzer** | `scripts/research/analyze_development_robustness.py` (per-condition metrics incl. coverage/selective accuracy at τ=0.65, paired deltas/CI, JPEG degradation figure, conditions table; refuses synthetic output in research/evidence) | `implemented-and-tested` (synthetic) |
+| **Development Robustness Core** | `ml/training/development_robustness.py` (deterministic transforms, reference MobileNetV3-Small+DSP16 extractor, frozen estimator rebuild without fitting, per-fold scoring, gate, hash-bound condition resume, `MissingArtifactsError`) | `implemented-and-tested` |
+| **Development Robustness Runner** | `ml/training/run_development_robustness.py` (CLI `--mode preflight\|pilot\|full`, data paths via CLI only, in-repo output guard) | `implemented-and-tested-real-run-verified` |
+| **Development Robustness Analyzer** | `scripts/research/analyze_development_robustness.py` (per-condition metrics incl. coverage/selective accuracy at τ=0.65, paired deltas/CI, JPEG degradation figure, conditions table; refuses synthetic output in research/evidence) | `implemented-and-tested-real-run-verified` |
 | **Development Robustness Notebook** | `notebooks/development_robustness_colab.ipynb` (4 code cells, default preflight) | `implemented-and-tested` (structure only) |
 | **Development Robustness Tests** | `ml/tests/test_development_robustness.py` (28), fixture `ml/tests/fixtures/robustness_fixture.py` | `implemented-and-tested` |
-| **Reliability Figure Re-render** | `scripts/research/analyze_calibrated_late_fusion.py::rerender_reliability_from_bins` (per-recipe panels with ticks and per-bin n from `reliability_bins.csv`) | `implemented-and-tested` |
+| **Reliability Figure Re-render** | `scripts/research/analyze_calibrated_late_fusion.py::rerender_reliability_from_bins` (per-recipe panels with ticks and per-bin n strip from `reliability_bins.csv`) | `implemented-and-tested` |
+| **Phase 4C.4B Evidence Package** | `research/evidence/development_robustness/`, `research/evidence/phase-4c.4b/` (PHASE_REPORT.md, environment.json, condition_metrics.csv, paired_deltas.csv, ROBUSTNESS_REPORT.md, jpeg_degradation figure) | `executed-and-verified` |
 
 ---
 
