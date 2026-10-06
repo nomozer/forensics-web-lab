@@ -1,3 +1,31 @@
+## Phase 4C.4B — Development Robustness: Execution and Analysis
+
+- **Mục tiêu**: Execute the locked Phase 4C.4A development robustness protocol on the 341 Option P development sources (682 images) across 6 conditions and 3 frozen recipes; 0 fits.
+- **Execution**: Preflight verified image/artifact hashes and exact reproduction (max |Δp| = 0.0); pilot (outer fold 0) passed gate; full run completed all 341 sources (12,276 predictions across 18 cells); original reproduction gate passed (max |Δp| = 0.0 vs Phase 4C.3B).
+- **Primary endpoint**: `late_fusion_stacked`, Macro-F1, `jpeg_q75 − original`: Δ = -0.1625 [95% CI: -0.1971, -0.1292] (fell from 0.6026 to 0.4401); verdict `EXPLORATORY_JPEG75_MACRO_F1_DROP_RESOLVED`.
+- **Secondary findings**: Late fusion degrades under all transforms except q95 (q50 Δ = -0.2000, resize 0.5 Δ = -0.1726, resize→q75 Δ = -0.1526; decisions collapse towards authentic under JPEG and ai_edited under resize); early fusion degrades less (q75 Δ = -0.0235, q50 Δ = -0.0577); visual_calibrated unchanged (|ΔMacro-F1| ≤ 0.0028, CIs span 0).
+- **Limits**: Development/exploratory only; 0 locked-test access; Phase 4C.3B Brier gain does not survive re-encoding; web UI remains uncertain / Model not installed.
+- **Verification**: 28/28 robustness tests PASS; targeted tests PASS; continuity checker PASS.
+- **Kết quả**: `EXPLORATORY_JPEG75_MACRO_F1_DROP_RESOLVED`.
+- **Evidence**: `research/evidence/development_robustness/`, `research/evidence/phase-4c.4b/`.
+- **Next**: Merge `claude/keen-knuth-4esvaw` into `main` via merge commit, verify branch and main CI, delete branch.
+
+---
+
+## Phase 4C.4A — Development Robustness: Report Normalisation, Protocol Lock and Implementation
+
+- **Mục tiêu**: Measure degradation of the frozen 4C.3B models under JPEG/resize transforms on the 341 development sources, after correcting over-strong 4C.3B wording.
+- **Normalisation**: 4C.3B report no longer claims late fusion beats early fusion on every metric (ΔMacro-F1 CI `[-0.0056, +0.0439]` contains 0) nor that the Brier gain vs calibrated visual is a calibration gain (ΔECE `+0.0324`, CI contains 0); "p < 0.002" removed; reliability diagram re-rendered with axes, ticks and per-bin n from unchanged bins. Numbers and raw artifacts unchanged.
+- **Protocol lock**: `ml/configs/development_robustness_protocol.yaml` (SHA-256 `b711cdd9…`): 6 conditions (original, JPEG 95/75/50, resize 0.5, resize 0.5→JPEG 75) × 3 frozen recipes; locked decoder/RGB/bicubic/round-half-up/4:2:0/order; per-fold frozen models; 0 fits; original-reproduction gate; primary ΔMacro-F1 `jpeg_q75 − original` (`late_fusion_stacked`); source-cluster bootstrap 10,000 / PCG64 20261005.
+- **Implementation**: `development_robustness.py`, `run_development_robustness.py` (preflight/pilot/full/resume), `analyze_development_robustness.py`, Colab notebook, synthetic 4C.3B-world fixture.
+- **Verification**: 28/28 robustness tests PASS (exact frozen-model reproduction, fold isolation, no fit, gate blocking, resume/tamper, deterministic transforms, synthetic labelling); hermetic suite in `test_summary.json`.
+- **Not run**: real preflight/pilot/full/analysis (data and fitted artifacts outside Git); robustness metrics not measured; 0 locked-test access.
+- **Kết quả**: `IMPLEMENTED_SYNTHETIC_VERIFIED_AWAITING_REAL_EXECUTION`.
+- **Evidence**: `research/evidence/phase-4c.4a/` (PHASE_REPORT, HANDOFF, test summary).
+- **Next**: Local agent executes HANDOFF on this branch, records Phase 4C.4B, then merges.
+
+---
+
 ## Phase 4C.3B — Calibrated Late Fusion: Execution, OOF Analysis and Reproduction Verification
 
 - **Mục tiêu**: Execute the locked 305-fit Calibrated Late Fusion protocol on 341 Option P development sources, test whether late fusion improves Brier calibration over calibrated visual control, and verify reproduction of ablation baselines.

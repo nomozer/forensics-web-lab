@@ -1,65 +1,202 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="560" height="560" viewBox="0 0 560 560">
-<rect width="560" height="560" fill="#ffffff"/>
-<text x="280.0" y="32" text-anchor="middle" font-family="sans-serif" font-size="16" font-weight="bold" fill="#333333">OOF reliability (10 bins)</text>
-<rect x="70" y="60" width="420" height="420" fill="none" stroke="#999999"/>
-<line x1="70" y1="480" x2="490" y2="60" stroke="#cccccc" stroke-dasharray="4 4"/>
-<text x="280.0" y="520" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#555555">Mean predicted P(ai_edited) per bin</text>
-<text x="20" y="270.0" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#555555" transform="rotate(-90 20 270.0)">Observed fraction ai_edited</text>
-<polyline fill="none" stroke="#4A90E2" stroke-width="2" points="132.2,270.0 177.4,375.0 222.7,307.5 263.9,297.3 296.7,242.4 336.4,210.0 377.3,165.0 423.3,240.0 453.3,270.0"/>
-<circle cx="132.2" cy="270.0" r="3" fill="#4A90E2"/>
-<circle cx="177.4" cy="375.0" r="3" fill="#4A90E2"/>
-<circle cx="222.7" cy="307.5" r="3" fill="#4A90E2"/>
-<circle cx="263.9" cy="297.3" r="3" fill="#4A90E2"/>
-<circle cx="296.7" cy="242.4" r="3" fill="#4A90E2"/>
-<circle cx="336.4" cy="210.0" r="3" fill="#4A90E2"/>
-<circle cx="377.3" cy="165.0" r="3" fill="#4A90E2"/>
-<circle cx="423.3" cy="240.0" r="3" fill="#4A90E2"/>
-<circle cx="453.3" cy="270.0" r="3" fill="#4A90E2"/>
-<rect x="80" y="65" width="12" height="12" fill="#4A90E2"/>
-<text x="98" y="75" font-family="sans-serif" font-size="12" fill="#333333">visual_raw</text>
-<polyline fill="none" stroke="#F5A623" stroke-width="2" points="142.0,480.0 181.5,331.8 223.9,328.2 261.1,290.0 299.1,247.4 338.7,218.1 380.2,183.5 429.9,165.0"/>
-<circle cx="142.0" cy="480.0" r="3" fill="#F5A623"/>
-<circle cx="181.5" cy="331.8" r="3" fill="#F5A623"/>
-<circle cx="223.9" cy="328.2" r="3" fill="#F5A623"/>
-<circle cx="261.1" cy="290.0" r="3" fill="#F5A623"/>
-<circle cx="299.1" cy="247.4" r="3" fill="#F5A623"/>
-<circle cx="338.7" cy="218.1" r="3" fill="#F5A623"/>
-<circle cx="380.2" cy="183.5" r="3" fill="#F5A623"/>
-<circle cx="429.9" cy="165.0" r="3" fill="#F5A623"/>
-<rect x="80" y="83" width="12" height="12" fill="#F5A623"/>
-<text x="98" y="93" font-family="sans-serif" font-size="12" fill="#333333">visual_calibrated</text>
-<polyline fill="none" stroke="#7ED321" stroke-width="2" points="139.6,480.0 179.7,246.7 219.9,263.6 265.4,308.6 294.2,243.5 337.7,221.5 379.3,270.0"/>
-<circle cx="139.6" cy="480.0" r="3" fill="#7ED321"/>
-<circle cx="179.7" cy="246.7" r="3" fill="#7ED321"/>
-<circle cx="219.9" cy="263.6" r="3" fill="#7ED321"/>
-<circle cx="265.4" cy="308.6" r="3" fill="#7ED321"/>
-<circle cx="294.2" cy="243.5" r="3" fill="#7ED321"/>
-<circle cx="337.7" cy="221.5" r="3" fill="#7ED321"/>
-<circle cx="379.3" cy="270.0" r="3" fill="#7ED321"/>
-<rect x="80" y="101" width="12" height="12" fill="#7ED321"/>
-<text x="98" y="111" font-family="sans-serif" font-size="12" fill="#333333">dsp_calibrated</text>
-<polyline fill="none" stroke="#D0021B" stroke-width="2" points="144.6,480.0 180.4,316.7 221.6,316.7 260.8,307.4 299.7,236.4 340.0,224.9 381.2,133.0 423.3,270.0"/>
-<circle cx="144.6" cy="480.0" r="3" fill="#D0021B"/>
-<circle cx="180.4" cy="316.7" r="3" fill="#D0021B"/>
-<circle cx="221.6" cy="316.7" r="3" fill="#D0021B"/>
-<circle cx="260.8" cy="307.4" r="3" fill="#D0021B"/>
-<circle cx="299.7" cy="236.4" r="3" fill="#D0021B"/>
-<circle cx="340.0" cy="224.9" r="3" fill="#D0021B"/>
-<circle cx="381.2" cy="133.0" r="3" fill="#D0021B"/>
-<circle cx="423.3" cy="270.0" r="3" fill="#D0021B"/>
-<rect x="80" y="119" width="12" height="12" fill="#D0021B"/>
-<text x="98" y="129" font-family="sans-serif" font-size="12" fill="#333333">late_fusion_stacked</text>
-<polyline fill="none" stroke="#9013FE" stroke-width="2" points="98.2,403.6 132.8,262.8 177.1,317.1 222.7,281.7 261.5,309.8 298.8,242.5 338.1,240.0 385.8,173.1 428.6,191.2 467.0,270.0"/>
-<circle cx="98.2" cy="403.6" r="3" fill="#9013FE"/>
-<circle cx="132.8" cy="262.8" r="3" fill="#9013FE"/>
-<circle cx="177.1" cy="317.1" r="3" fill="#9013FE"/>
-<circle cx="222.7" cy="281.7" r="3" fill="#9013FE"/>
-<circle cx="261.5" cy="309.8" r="3" fill="#9013FE"/>
-<circle cx="298.8" cy="242.5" r="3" fill="#9013FE"/>
-<circle cx="338.1" cy="240.0" r="3" fill="#9013FE"/>
-<circle cx="385.8" cy="173.1" r="3" fill="#9013FE"/>
-<circle cx="428.6" cy="191.2" r="3" fill="#9013FE"/>
-<circle cx="467.0" cy="270.0" r="3" fill="#9013FE"/>
-<rect x="80" y="137" width="12" height="12" fill="#9013FE"/>
-<text x="98" y="147" font-family="sans-serif" font-size="12" fill="#333333">early_fusion</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="715" viewBox="0 0 960 715">
+<rect width="960" height="715" fill="#ffffff"/>
+<text x="480.0" y="30" text-anchor="middle" font-family="sans-serif" font-size="16" font-weight="bold" fill="#333333">OOF reliability (10 bins)</text>
+<text x="480.0" y="50" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#666666">Points: bins with n &gt; 0 (n = images in bin); dashed line: perfect calibration</text>
+<rect x="70" y="70" width="230" height="230" fill="none" stroke="#999999"/>
+<line x1="70" y1="300" x2="300" y2="70" stroke="#bbbbbb" stroke-dasharray="4 4"/>
+<text x="185.0" y="62" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="bold" fill="#4A90E2">visual_raw</text>
+<line x1="70.0" y1="300" x2="70.0" y2="304" stroke="#999999"/>
+<text x="70.0" y="316" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555555">0.0</text>
+<line x1="66" y1="300.0" x2="70" y2="300.0" stroke="#999999"/>
+<text x="63" y="303.0" text-anchor="end" font-family="sans-serif" font-size="10" fill="#555555">0.0</text>
+<line x1="116.0" y1="300" x2="116.0" y2="304" stroke="#999999"/>
+<text x="116.0" y="316" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555555">0.2</text>
+<line x1="66" y1="254.0" x2="70" y2="254.0" stroke="#999999"/>
+<text x="63" y="257.0" text-anchor="end" font-family="sans-serif" font-size="10" fill="#555555">0.2</text>
+<line x1="162.0" y1="300" x2="162.0" y2="304" stroke="#999999"/>
+<text x="162.0" y="316" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555555">0.4</text>
+<line x1="66" y1="208.0" x2="70" y2="208.0" stroke="#999999"/>
+<text x="63" y="211.0" text-anchor="end" font-family="sans-serif" font-size="10" fill="#555555">0.4</text>
+<line x1="208.0" y1="300" x2="208.0" y2="304" stroke="#999999"/>
+<text x="208.0" y="316" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555555">0.6</text>
+<line x1="66" y1="162.0" x2="70" y2="162.0" stroke="#999999"/>
+<text x="63" y="165.0" text-anchor="end" font-family="sans-serif" font-size="10" fill="#555555">0.6</text>
+<line x1="254.0" y1="300" x2="254.0" y2="304" stroke="#999999"/>
+<text x="254.0" y="316" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555555">0.8</text>
+<line x1="66" y1="116.0" x2="70" y2="116.0" stroke="#999999"/>
+<text x="63" y="119.0" text-anchor="end" font-family="sans-serif" font-size="10" fill="#555555">0.8</text>
+<line x1="300.0" y1="300" x2="300.0" y2="304" stroke="#999999"/>
+<text x="300.0" y="316" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555555">1.0</text>
+<line x1="66" y1="70.0" x2="70" y2="70.0" stroke="#999999"/>
+<text x="63" y="73.0" text-anchor="end" font-family="sans-serif" font-size="10" fill="#555555">1.0</text>
+<text x="185.0" y="334" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#333333">Mean predicted P(ai_edited) in bin</text>
+<text x="30" y="185.0" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#333333" transform="rotate(-90 30 185.0)">Observed fraction ai_edited</text>
+<polyline fill="none" stroke="#4A90E2" stroke-width="2" points="104.1,185.0 128.8,242.5 153.6,205.5 176.2,200.0 194.1,169.9 215.9,152.1 238.3,127.5 263.5,168.6 279.9,185.0"/>
+<circle cx="104.1" cy="185.0" r="3" fill="#4A90E2"/>
+<circle cx="128.8" cy="242.5" r="3" fill="#4A90E2"/>
+<circle cx="153.6" cy="205.5" r="3" fill="#4A90E2"/>
+<circle cx="176.2" cy="200.0" r="3" fill="#4A90E2"/>
+<circle cx="194.1" cy="169.9" r="3" fill="#4A90E2"/>
+<circle cx="215.9" cy="152.1" r="3" fill="#4A90E2"/>
+<circle cx="238.3" cy="127.5" r="3" fill="#4A90E2"/>
+<circle cx="263.5" cy="168.6" r="3" fill="#4A90E2"/>
+<circle cx="279.9" cy="185.0" r="3" fill="#4A90E2"/>
+<text x="70" y="352" font-family="sans-serif" font-size="8" fill="#333333">n per bin: 4 12 56 292 251 42 16 7 2</text>
+<rect x="385" y="70" width="230" height="230" fill="none" stroke="#999999"/>
+<line x1="385" y1="300" x2="615" y2="70" stroke="#bbbbbb" stroke-dasharray="4 4"/>
+<text x="500.0" y="62" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="bold" fill="#F5A623">visual_calibrated</text>
+<line x1="385.0" y1="300" x2="385.0" y2="304" stroke="#999999"/>
+<text x="385.0" y="316" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555555">0.0</text>
+<line x1="381" y1="300.0" x2="385" y2="300.0" stroke="#999999"/>
+<text x="378" y="303.0" text-anchor="end" font-family="sans-serif" font-size="10" fill="#555555">0.0</text>
+<line x1="431.0" y1="300" x2="431.0" y2="304" stroke="#999999"/>
+<text x="431.0" y="316" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555555">0.2</text>
+<line x1="381" y1="254.0" x2="385" y2="254.0" stroke="#999999"/>
+<text x="378" y="257.0" text-anchor="end" font-family="sans-serif" font-size="10" fill="#555555">0.2</text>
+<line x1="477.0" y1="300" x2="477.0" y2="304" stroke="#999999"/>
+<text x="477.0" y="316" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555555">0.4</text>
+<line x1="381" y1="208.0" x2="385" y2="208.0" stroke="#999999"/>
+<text x="378" y="211.0" text-anchor="end" font-family="sans-serif" font-size="10" fill="#555555">0.4</text>
+<line x1="523.0" y1="300" x2="523.0" y2="304" stroke="#999999"/>
+<text x="523.0" y="316" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555555">0.6</text>
+<line x1="381" y1="162.0" x2="385" y2="162.0" stroke="#999999"/>
+<text x="378" y="165.0" text-anchor="end" font-family="sans-serif" font-size="10" fill="#555555">0.6</text>
+<line x1="569.0" y1="300" x2="569.0" y2="304" stroke="#999999"/>
+<text x="569.0" y="316" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555555">0.8</text>
+<line x1="381" y1="116.0" x2="385" y2="116.0" stroke="#999999"/>
+<text x="378" y="119.0" text-anchor="end" font-family="sans-serif" font-size="10" fill="#555555">0.8</text>
+<line x1="615.0" y1="300" x2="615.0" y2="304" stroke="#999999"/>
+<text x="615.0" y="316" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555555">1.0</text>
+<line x1="381" y1="70.0" x2="385" y2="70.0" stroke="#999999"/>
+<text x="378" y="73.0" text-anchor="end" font-family="sans-serif" font-size="10" fill="#555555">1.0</text>
+<text x="500.0" y="334" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#333333">Mean predicted P(ai_edited) in bin</text>
+<text x="345" y="185.0" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#333333" transform="rotate(-90 345 185.0)">Observed fraction ai_edited</text>
+<polyline fill="none" stroke="#F5A623" stroke-width="2" points="424.4,300.0 446.1,218.8 469.3,216.9 489.7,195.9 510.5,172.6 532.1,156.6 554.9,137.6 582.1,127.5"/>
+<circle cx="424.4" cy="300.0" r="3" fill="#F5A623"/>
+<circle cx="446.1" cy="218.8" r="3" fill="#F5A623"/>
+<circle cx="469.3" cy="216.9" r="3" fill="#F5A623"/>
+<circle cx="489.7" cy="195.9" r="3" fill="#F5A623"/>
+<circle cx="510.5" cy="172.6" r="3" fill="#F5A623"/>
+<circle cx="532.1" cy="156.6" r="3" fill="#F5A623"/>
+<circle cx="554.9" cy="137.6" r="3" fill="#F5A623"/>
+<circle cx="582.1" cy="127.5" r="3" fill="#F5A623"/>
+<text x="385" y="352" font-family="sans-serif" font-size="8" fill="#333333">n per bin: 1 17 83 263 204 93 17 4</text>
+<rect x="700" y="70" width="230" height="230" fill="none" stroke="#999999"/>
+<line x1="700" y1="300" x2="930" y2="70" stroke="#bbbbbb" stroke-dasharray="4 4"/>
+<text x="815.0" y="62" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="bold" fill="#2E8B57">dsp_calibrated</text>
+<line x1="700.0" y1="300" x2="700.0" y2="304" stroke="#999999"/>
+<text x="700.0" y="316" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555555">0.0</text>
+<line x1="696" y1="300.0" x2="700" y2="300.0" stroke="#999999"/>
+<text x="693" y="303.0" text-anchor="end" font-family="sans-serif" font-size="10" fill="#555555">0.0</text>
+<line x1="746.0" y1="300" x2="746.0" y2="304" stroke="#999999"/>
+<text x="746.0" y="316" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555555">0.2</text>
+<line x1="696" y1="254.0" x2="700" y2="254.0" stroke="#999999"/>
+<text x="693" y="257.0" text-anchor="end" font-family="sans-serif" font-size="10" fill="#555555">0.2</text>
+<line x1="792.0" y1="300" x2="792.0" y2="304" stroke="#999999"/>
+<text x="792.0" y="316" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555555">0.4</text>
+<line x1="696" y1="208.0" x2="700" y2="208.0" stroke="#999999"/>
+<text x="693" y="211.0" text-anchor="end" font-family="sans-serif" font-size="10" fill="#555555">0.4</text>
+<line x1="838.0" y1="300" x2="838.0" y2="304" stroke="#999999"/>
+<text x="838.0" y="316" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555555">0.6</text>
+<line x1="696" y1="162.0" x2="700" y2="162.0" stroke="#999999"/>
+<text x="693" y="165.0" text-anchor="end" font-family="sans-serif" font-size="10" fill="#555555">0.6</text>
+<line x1="884.0" y1="300" x2="884.0" y2="304" stroke="#999999"/>
+<text x="884.0" y="316" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555555">0.8</text>
+<line x1="696" y1="116.0" x2="700" y2="116.0" stroke="#999999"/>
+<text x="693" y="119.0" text-anchor="end" font-family="sans-serif" font-size="10" fill="#555555">0.8</text>
+<line x1="930.0" y1="300" x2="930.0" y2="304" stroke="#999999"/>
+<text x="930.0" y="316" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555555">1.0</text>
+<line x1="696" y1="70.0" x2="700" y2="70.0" stroke="#999999"/>
+<text x="693" y="73.0" text-anchor="end" font-family="sans-serif" font-size="10" fill="#555555">1.0</text>
+<text x="815.0" y="334" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#333333">Mean predicted P(ai_edited) in bin</text>
+<text x="660" y="185.0" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#333333" transform="rotate(-90 660 185.0)">Observed fraction ai_edited</text>
+<polyline fill="none" stroke="#2E8B57" stroke-width="2" points="738.1,300.0 760.1,172.2 782.1,181.5 807.0,206.1 822.8,170.5 846.6,158.5 869.4,185.0"/>
+<circle cx="738.1" cy="300.0" r="3" fill="#2E8B57"/>
+<circle cx="760.1" cy="172.2" r="3" fill="#2E8B57"/>
+<circle cx="782.1" cy="181.5" r="3" fill="#2E8B57"/>
+<circle cx="807.0" cy="206.1" r="3" fill="#2E8B57"/>
+<circle cx="822.8" cy="170.5" r="3" fill="#2E8B57"/>
+<circle cx="846.6" cy="158.5" r="3" fill="#2E8B57"/>
+<circle cx="869.4" cy="185.0" r="3" fill="#2E8B57"/>
+<text x="700" y="352" font-family="sans-serif" font-size="8" fill="#333333">n per bin: 2 9 33 272 325 39 2</text>
+<rect x="70" y="395" width="230" height="230" fill="none" stroke="#999999"/>
+<line x1="70" y1="625" x2="300" y2="395" stroke="#bbbbbb" stroke-dasharray="4 4"/>
+<text x="185.0" y="387" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="bold" fill="#D0021B">late_fusion_stacked</text>
+<line x1="70.0" y1="625" x2="70.0" y2="629" stroke="#999999"/>
+<text x="70.0" y="641" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555555">0.0</text>
+<line x1="66" y1="625.0" x2="70" y2="625.0" stroke="#999999"/>
+<text x="63" y="628.0" text-anchor="end" font-family="sans-serif" font-size="10" fill="#555555">0.0</text>
+<line x1="116.0" y1="625" x2="116.0" y2="629" stroke="#999999"/>
+<text x="116.0" y="641" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555555">0.2</text>
+<line x1="66" y1="579.0" x2="70" y2="579.0" stroke="#999999"/>
+<text x="63" y="582.0" text-anchor="end" font-family="sans-serif" font-size="10" fill="#555555">0.2</text>
+<line x1="162.0" y1="625" x2="162.0" y2="629" stroke="#999999"/>
+<text x="162.0" y="641" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555555">0.4</text>
+<line x1="66" y1="533.0" x2="70" y2="533.0" stroke="#999999"/>
+<text x="63" y="536.0" text-anchor="end" font-family="sans-serif" font-size="10" fill="#555555">0.4</text>
+<line x1="208.0" y1="625" x2="208.0" y2="629" stroke="#999999"/>
+<text x="208.0" y="641" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555555">0.6</text>
+<line x1="66" y1="487.0" x2="70" y2="487.0" stroke="#999999"/>
+<text x="63" y="490.0" text-anchor="end" font-family="sans-serif" font-size="10" fill="#555555">0.6</text>
+<line x1="254.0" y1="625" x2="254.0" y2="629" stroke="#999999"/>
+<text x="254.0" y="641" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555555">0.8</text>
+<line x1="66" y1="441.0" x2="70" y2="441.0" stroke="#999999"/>
+<text x="63" y="444.0" text-anchor="end" font-family="sans-serif" font-size="10" fill="#555555">0.8</text>
+<line x1="300.0" y1="625" x2="300.0" y2="629" stroke="#999999"/>
+<text x="300.0" y="641" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555555">1.0</text>
+<line x1="66" y1="395.0" x2="70" y2="395.0" stroke="#999999"/>
+<text x="63" y="398.0" text-anchor="end" font-family="sans-serif" font-size="10" fill="#555555">1.0</text>
+<text x="185.0" y="659" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#333333">Mean predicted P(ai_edited) in bin</text>
+<text x="30" y="510.0" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#333333" transform="rotate(-90 30 510.0)">Observed fraction ai_edited</text>
+<polyline fill="none" stroke="#D0021B" stroke-width="2" points="110.9,625.0 130.4,535.6 153.0,535.6 174.5,530.5 195.8,491.6 217.9,485.3 240.4,435.0 263.5,510.0"/>
+<circle cx="110.9" cy="625.0" r="3" fill="#D0021B"/>
+<circle cx="130.4" cy="535.6" r="3" fill="#D0021B"/>
+<circle cx="153.0" cy="535.6" r="3" fill="#D0021B"/>
+<circle cx="174.5" cy="530.5" r="3" fill="#D0021B"/>
+<circle cx="195.8" cy="491.6" r="3" fill="#D0021B"/>
+<circle cx="217.9" cy="485.3" r="3" fill="#D0021B"/>
+<circle cx="240.4" cy="435.0" r="3" fill="#D0021B"/>
+<circle cx="263.5" cy="510.0" r="3" fill="#D0021B"/>
+<text x="70" y="677" font-family="sans-serif" font-size="8" fill="#333333">n per bin: 3 18 108 219 200 107 23 4</text>
+<rect x="385" y="395" width="230" height="230" fill="none" stroke="#999999"/>
+<line x1="385" y1="625" x2="615" y2="395" stroke="#bbbbbb" stroke-dasharray="4 4"/>
+<text x="500.0" y="387" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="bold" fill="#9013FE">early_fusion</text>
+<line x1="385.0" y1="625" x2="385.0" y2="629" stroke="#999999"/>
+<text x="385.0" y="641" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555555">0.0</text>
+<line x1="381" y1="625.0" x2="385" y2="625.0" stroke="#999999"/>
+<text x="378" y="628.0" text-anchor="end" font-family="sans-serif" font-size="10" fill="#555555">0.0</text>
+<line x1="431.0" y1="625" x2="431.0" y2="629" stroke="#999999"/>
+<text x="431.0" y="641" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555555">0.2</text>
+<line x1="381" y1="579.0" x2="385" y2="579.0" stroke="#999999"/>
+<text x="378" y="582.0" text-anchor="end" font-family="sans-serif" font-size="10" fill="#555555">0.2</text>
+<line x1="477.0" y1="625" x2="477.0" y2="629" stroke="#999999"/>
+<text x="477.0" y="641" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555555">0.4</text>
+<line x1="381" y1="533.0" x2="385" y2="533.0" stroke="#999999"/>
+<text x="378" y="536.0" text-anchor="end" font-family="sans-serif" font-size="10" fill="#555555">0.4</text>
+<line x1="523.0" y1="625" x2="523.0" y2="629" stroke="#999999"/>
+<text x="523.0" y="641" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555555">0.6</text>
+<line x1="381" y1="487.0" x2="385" y2="487.0" stroke="#999999"/>
+<text x="378" y="490.0" text-anchor="end" font-family="sans-serif" font-size="10" fill="#555555">0.6</text>
+<line x1="569.0" y1="625" x2="569.0" y2="629" stroke="#999999"/>
+<text x="569.0" y="641" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555555">0.8</text>
+<line x1="381" y1="441.0" x2="385" y2="441.0" stroke="#999999"/>
+<text x="378" y="444.0" text-anchor="end" font-family="sans-serif" font-size="10" fill="#555555">0.8</text>
+<line x1="615.0" y1="625" x2="615.0" y2="629" stroke="#999999"/>
+<text x="615.0" y="641" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555555">1.0</text>
+<line x1="381" y1="395.0" x2="385" y2="395.0" stroke="#999999"/>
+<text x="378" y="398.0" text-anchor="end" font-family="sans-serif" font-size="10" fill="#555555">1.0</text>
+<text x="500.0" y="659" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#333333">Mean predicted P(ai_edited) in bin</text>
+<text x="345" y="510.0" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#333333" transform="rotate(-90 345 510.0)">Observed fraction ai_edited</text>
+<polyline fill="none" stroke="#9013FE" stroke-width="2" points="400.4,583.2 419.4,506.0 443.6,535.8 468.6,516.4 489.9,531.8 510.3,494.9 531.8,493.6 557.9,456.9 581.4,466.9 602.4,510.0"/>
+<circle cx="400.4" cy="583.2" r="3" fill="#9013FE"/>
+<circle cx="419.4" cy="506.0" r="3" fill="#9013FE"/>
+<circle cx="443.6" cy="535.8" r="3" fill="#9013FE"/>
+<circle cx="468.6" cy="516.4" r="3" fill="#9013FE"/>
+<circle cx="489.9" cy="531.8" r="3" fill="#9013FE"/>
+<circle cx="510.3" cy="494.9" r="3" fill="#9013FE"/>
+<circle cx="531.8" cy="493.6" r="3" fill="#9013FE"/>
+<circle cx="557.9" cy="456.9" r="3" fill="#9013FE"/>
+<circle cx="581.4" cy="466.9" r="3" fill="#9013FE"/>
+<circle cx="602.4" cy="510.0" r="3" fill="#9013FE"/>
+<text x="385" y="677" font-family="sans-serif" font-size="8" fill="#333333">n per bin: 11 29 49 72 190 191 56 26 32 26</text>
 </svg>

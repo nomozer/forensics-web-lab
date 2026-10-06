@@ -1,0 +1,160 @@
+schema_version: "1.0.0"
+experiment_id: "development_robustness"
+phase: "4C.4A"
+status: "DEVELOPMENT_PROTOCOL_LOCKED_PRE_EXECUTION"
+evidence_class: "development_exploratory"
+created_at_utc: "2026-10-05T09:00:00Z"
+purpose: >-
+  Measure how the already-fitted Phase 4C.3B models degrade under common
+  re-encoding and down-scaling of the same 341 development sources. Every
+  outer-test image is transformed, its visual and DSP features are re-extracted
+  from the transformed pixels, and it is scored only by the frozen models of
+  its own outer fold. Nothing is refit, recalibrated, trained or tuned.
+
+data_scope:
+  expected_sources: 341
+  expected_samples: 682
+  allowed_partitions: ["development_train", "inner_validation"]
+  forbidden_partitions: ["locked_test"]
+
+grouped_nested_cv:
+  outer_folds: 5
+  inner_folds: 4
+  outer_seed: 42
+  inner_seed: 1337
+
+recipes:
+  - id: "visual_calibrated"
+    source: "late_fusion_fold_model"
+  - id: "early_fusion"
+    source: "ablation_visual_dsp_fusion_model"
+  - id: "late_fusion_stacked"
+    source: "late_fusion_fold_model"
+
+frozen_models:
+  late_fusion:
+    experiment_id: "calibrated_late_fusion"
+    protocol_sha256: "85dcb2427a16507e8ba55eba5b010fc6a59e6763fc2b16bf29514913bab731e1"
+    run_manifest_sha256: "99b95ff25f5566a673d71a2148e85240f8bb127ed368cd79da527d1b3fc4f6d3"
+    fold_predictions_sha256:
+      - "3a415f5fbc3601149521fb0971cd6c3d75c346e14927c239b1d9fb123e77bfa4"
+      - "457cdc11350d930f5871277cc7e10c09c3b4d9a7ec6d74a85020c280f67d90c8"
+      - "ed225d7f9149384bcdbfd653baaecadf78fc458f781ab564573ec59107f1361d"
+      - "24db23d0c14329bf82a811d88bb7aa3f2455ebeeaa135eea549c7fe8490d5a53"
+      - "f8f598e87b77979a0874af114ba6cc62a640aa22db354b1f1af82cc298317b30"
+    reference_summary_path: "research/evidence/calibrated_late_fusion/analysis_summary.json"
+    reference_summary_sha256: "6a668afe561ac83f93b380ba29b434e45a5eaaf24aec67a63a6ebe5cadb26af6"
+  early_fusion:
+    experiment_id: "visual_dsp_ablation"
+    recipe: "visual_dsp_fusion"
+    model_file: "model.pt"
+    receipt_file: "fit_receipt.json"
+  feature_caches:
+    visual_feature_commitment: "351e4952dc0d3d78d46db4bb4adddf35381e89c8909f75b7358dc6e3d9472cef"
+    dsp_feature_commitment: "582108a2033ebd1f27d829fbdaeb1fd6b107e69d47e9bb9236df3aeba5b6b57f"
+  frozen_parameters: ["scaler", "C", "coef", "intercept", "temperatures", "stacker", "threshold"]
+  decision_threshold: 0.5
+  fitting_allowed: false
+
+image_pipeline:
+  decoder: "Pillow Image.open + load"
+  exif_orientation: "ignored (no exif_transpose), identical to the 4C.3B feature caches"
+  original_condition: "decoded file without any transform (exactly the 4C.3B feature path)"
+  transformed_input: "decoded file converted to RGB 8-bit before the first operation"
+  operation_order: "operations applied left to right as listed per condition, then model preprocessing"
+  resize:
+    interpolation: "PIL BICUBIC (reducing_gap=None)"
+    size_rounding: "round_half_up(dimension * scale), minimum 1 pixel, per axis"
+  jpeg:
+    encoder: "Pillow JPEG"
+    subsampling: "4:2:0"
+    optimize: false
+    progressive: false
+    keep_exif: false
+    decode_back: "Image.open(BytesIO(bytes)).convert('RGB')"
+  lossless_intermediate: "resize-only output is kept as an in-memory RGB array; saved copies use PNG"
+  model_preprocessing:
+    visual: "phase_4c2h_development.build_canonical_transform (bicubic 224x224, ImageNet normalisation)"
+    dsp: "dsp_features.extract_dsp_features on the same transformed image"
+  label_policy: "authentic and ai_edited images receive the identical condition"
+
+conditions:
+  - id: "original"
+    operations: []
+  - id: "jpeg_q95"
+    operations: [{op: "jpeg", quality: 95}]
+  - id: "jpeg_q75"
+    operations: [{op: "jpeg", quality: 75}]
+  - id: "jpeg_q50"
+    operations: [{op: "jpeg", quality: 50}]
+  - id: "resize_0.5"
+    operations: [{op: "resize", scale: 0.5}]
+  - id: "resize_0.5_jpeg_q75"
+    operations: [{op: "resize", scale: 0.5}, {op: "jpeg", quality: 75}]
+
+original_reproduction_gate:
+  cached_feature_model_check:
+    description: "4C.3B cached features + loaded frozen models must reproduce stored 4C.3B / ablation predictions"
+    max_abs_probability_difference: 1.0e-9
+  recomputed_original_check:
+    description: "original condition re-extracted from image files must reproduce 4C.3B predictions"
+    max_abs_probability_difference: 1.0e-4
+    decisions: "identical except samples whose reference probability lies within 1e-4 of the threshold"
+    full_metric_tolerance: 1.0e-3
+  transformed_conditions_require: "PASS for the same run scope (pilot or full)"
+
+endpoints:
+  primary:
+    recipe: "late_fusion_stacked"
+    comparison: "jpeg_q75_minus_original"
+    metric: "macro_f1"
+  exploratory:
+    - "every recipe x every transformed condition minus original, all reported metrics"
+    - "late_fusion_stacked minus visual_calibrated within each condition"
+    - "late_fusion_stacked minus early_fusion within each condition"
+  reported_metrics:
+    - "macro_f1"
+    - "balanced_accuracy"
+    - "auroc"
+    - "brier_score"
+    - "log_loss"
+    - "ece"
+    - "fpr"
+    - "fnr"
+  selective:
+    tau_conf: 0.65
+    reported: ["coverage", "selective_accuracy"]
+  interval:
+    method: "paired_source_cluster_bootstrap_percentile"
+    unit: "source_id (both images and all conditions of a drawn source move together)"
+    replicates: 10000
+    rng: "PCG64"
+    seed: 20261005
+    confidence: 0.95
+    held_fixed: ["fitted models", "outer folds", "transformed images"]
+    limits: >-
+      Folds, image variants and the two images of a source are not independent
+      observations; the interval reflects source sampling only, not model-fitting
+      or fold-assignment variability, and is not multiplicity-adjusted.
+  verdict_rule: >-
+    Exploratory only. EXPLORATORY_JPEG75_MACRO_F1_DROP_RESOLVED if the primary
+    95% interval upper bound is below 0; EXPLORATORY_JPEG75_MACRO_F1_GAIN_RESOLVED
+    if the lower bound is above 0; otherwise NO_RESOLVED_JPEG75_MACRO_F1_CHANGE.
+    Pilot results never change this protocol.
+
+execution:
+  pilot_scope: "outer fold 0 outer-test sources only, all six conditions (technical check)"
+  full_scope: "all 341 sources, original first, then the five transformed conditions"
+  budget:
+    fits: 0
+    feature_extractions_full: 4092 # 682 images x 6 conditions
+    predictions_full: 12276 # 4092 x 3 recipes
+  outputs_outside_git: true
+
+artifact_bindings:
+  dataset_archive:
+    manifest_name: "manifest_pilot_a_option_p.csv"
+    manifest_sha256: "e1e6b6d282002108d6a15000b755c20dd569cc8aa68c4eebbfa2aab3cee3b626"
+  pretrained_weights:
+    filename: "mobilenet_v3_small-047dcff4.pth"
+    sha256: "047dcff4addef86ea5bc2eff13c9614dc11f47ab1160d0a71a25e7db994f4e1f"

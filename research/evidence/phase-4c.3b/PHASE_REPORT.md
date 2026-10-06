@@ -67,24 +67,30 @@ This guarantees that the visual and DSP baselines in this experiment are bit-for
 
 ### 4.2 Paired Differences (95% Source-Cluster Bootstrap Percentile Interval)
 
-| Comparison | Metric | $\Delta$ | 95% Bootstrap CI | Significant? |
+The last column only says whether the 95% percentile interval excludes 0. It is not a p-value, and apart from the primary endpoint no row was prespecified or multiplicity-adjusted.
+
+| Comparison | Metric | $\Delta$ | 95% Bootstrap CI | CI excludes 0? |
 | :--- | :--- | ---: | :---: | :---: |
-| **`late_fusion_stacked − visual_calibrated` (Primary)** | **brier_score** | **-0.0036** | **[-0.0056, -0.0013]** | **Yes (p < 0.002)** |
+| **`late_fusion_stacked − visual_calibrated` (Primary)** | **brier_score** | **-0.0036** | **[-0.0056, -0.0013]** | **Yes** |
 | `late_fusion_stacked − visual_calibrated` | log_loss | -0.0078 | [-0.0121, -0.0027] | Yes |
-| `late_fusion_stacked − visual_calibrated` | macro_f1 | +0.0239 | [-0.0000, +0.0475] | Borderline |
+| `late_fusion_stacked − visual_calibrated` | macro_f1 | +0.0239 | [-0.0000, +0.0475] | No (lower bound -0.00004) |
 | `late_fusion_stacked − visual_calibrated` | auroc | +0.0191 | [+0.0083, +0.0298] | Yes |
-| `late_fusion_stacked − visual_calibrated` | ece | +0.0324 | [-0.0105, +0.0512] | No |
+| `late_fusion_stacked − visual_calibrated` | ece | +0.0324 | [-0.0105, +0.0512] | No (point estimate worse) |
 | `late_fusion_stacked − early_fusion` | brier_score | -0.0187 | [-0.0251, -0.0122] | Yes |
+| `late_fusion_stacked − early_fusion` | log_loss | -0.0601 | [-0.0821, -0.0391] | Yes |
 | `late_fusion_stacked − early_fusion` | ece | -0.0469 | [-0.0809, -0.0128] | Yes |
 | `late_fusion_stacked − early_fusion` | auroc | +0.0329 | [+0.0151, +0.0512] | Yes |
+| `late_fusion_stacked − early_fusion` | macro_f1 | +0.0191 | [-0.0056, +0.0439] | No |
+| `late_fusion_stacked − early_fusion` | fpr / fnr | -0.0147 / -0.0235 | [-0.0557, +0.0264] / [-0.0704, +0.0235] | No / No |
 | `visual_calibrated − visual_raw` | brier_score | -0.0018 | [-0.0044, +0.0007] | No |
 | `visual_calibrated − visual_raw` | ece | -0.0218 | [-0.0359, +0.0154] | No |
 
-### 4.3 Scientific Conclusions
+### 4.3 Scientific Conclusions (normalised in Phase 4C.4A; numbers unchanged)
 
-1. **Late Fusion vs. Early Fusion**: Late stacked fusion decisively outperforms early fusion on every probabilistic metric ($\Delta \text{Brier} = -0.0187$, $\Delta \text{ECE} = -0.0469$) while simultaneously achieving superior discriminative power ($\Delta \text{Macro-F1} = +0.0191$, $\Delta \text{AUROC} = +0.0329$).
-2. **Late Fusion vs. Calibrated Visual**: Calibrated late fusion achieves statistically resolved Brier improvement over calibrated visual control ($\Delta \text{Brier} = -0.0036$, 95% CI $[-0.0056, -0.0013]$, 99.83% bootstrap replicates below 0). The pre-registered verdict is `EXPLORATORY_LATE_FUSION_BRIER_IMPROVEMENT`.
-3. **Decoupled Calibration Effect**: Calibrating the visual model reduces ECE from 0.0320 to 0.0102 while preserving ranking; late fusion then integrates orthogonal DSP forensic signal (stacker weights $w_{\text{visual}} \approx 0.91$, $w_{\text{dsp}} \approx 0.82$), yielding improved AUROC (0.6249 vs 0.6058) and Macro-F1 (0.6026 vs 0.5787).
+1. **Late stacked fusion vs. early fusion**: On these 341 development sources the intervals for Brier ($-0.0187$), log-loss ($-0.0601$), ECE ($-0.0469$) and AUROC ($+0.0329$) all exclude 0 in favour of late stacked fusion. The Macro-F1 difference ($+0.0191$, CI $[-0.0056, +0.0439]$) and the FPR/FNR differences are **not resolved**: their intervals contain 0. Late fusion is therefore not shown to be better on every metric, and in particular not on thresholded classification.
+2. **Late stacked fusion vs. calibrated visual (primary)**: The prespecified primary endpoint is resolved: $\Delta \text{Brier} = -0.0036$, 95% CI $[-0.0056, -0.0013]$ (99.83% of bootstrap replicates below 0), verdict `EXPLORATORY_LATE_FUSION_BRIER_IMPROVEMENT`. Brier score mixes discrimination and calibration, so a lower Brier does **not** by itself show better calibration. Here AUROC improves (CI excludes 0) while ECE is numerically worse ($+0.0324$, CI $[-0.0105, +0.0512]$, not resolved), which is consistent with the Brier gain coming mainly from discrimination. Macro-F1 ($+0.0239$) has a CI lower bound of $-0.00004$ and is not resolved.
+3. **Calibration step alone**: Temperature scaling lowered visual ECE from 0.0320 to 0.0102, but neither ΔECE nor ΔBrier versus `visual_raw` excludes 0, so a calibration benefit is not resolved either. Stacker weights ($w_{\text{visual}} \approx 0.91$, $w_{\text{dsp}} \approx 0.82$) show that the stacker uses both inputs; they do not establish that the DSP signal is independent of the visual signal.
+4. **Reliability figure**: `figures/reliability_diagram.svg/.png` was re-rendered from the unchanged `reliability_bins.csv` with one panel per recipe, axis labels, ticks and the image count `n` of every bin. Bins with very small n (e.g. n ≤ 4 at the extremes) carry little information. No metric, prediction or raw artifact was changed.
 
 ---
 
