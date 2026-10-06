@@ -113,6 +113,20 @@ def load_candidate_models(
         raise FileNotFoundError(f"Bindings file not found at {b_path}")
 
     bindings = json.loads(b_path.read_text(encoding="utf-8"))
+
+    # Verify DSP feature contract against canonical extractor if specified
+    from ml.training.dsp_features import DSP_FEATURE_NAMES
+
+    feature_contracts = bindings.get("feature_contracts")
+    if feature_contracts is not None:
+        dsp_contract = feature_contracts.get("dsp")
+        if dsp_contract is not None and "feature_order" in dsp_contract:
+            bound_order = tuple(dsp_contract.get("feature_order", []))
+            if bound_order != DSP_FEATURE_NAMES:
+                raise ModelIntegrityError(
+                    f"DSP feature order mismatch in bindings! Expected {DSP_FEATURE_NAMES}, got {bound_order}"
+                )
+
     folds_spec = bindings.get("outer_folds", [])
     if len(folds_spec) != 5:
         raise ModelIntegrityError(f"Expected exactly 5 outer folds in bindings, found {len(folds_spec)}")

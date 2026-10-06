@@ -52,7 +52,7 @@ from ml.evaluation.independent_model_bindings import (
 EVIDENCE_DIR = REPO_ROOT / "research/evidence/phase-4c.7a"
 
 
-def check_readiness(repo_root: Path | None = None) -> dict[str, Any]:
+def check_readiness(repo_root: Path | None = None, write_artifact: bool = True) -> dict[str, Any]:
     """Inspect readiness of protocol, candidate model bindings, and data cohort."""
     root = repo_root or REPO_ROOT
     protocol_path = root / "ml/configs/independent_validation_protocol.yaml"
@@ -112,9 +112,10 @@ def check_readiness(repo_root: Path | None = None) -> dict[str, Any]:
         "checked_at_utc": datetime.now(timezone.utc).isoformat(),
     }
 
-    EVIDENCE_DIR.mkdir(parents=True, exist_ok=True)
-    out_file = EVIDENCE_DIR / "readiness.json"
-    out_file.write_text(json.dumps(readiness, indent=2), encoding="utf-8")
+    if write_artifact:
+        EVIDENCE_DIR.mkdir(parents=True, exist_ok=True)
+        out_file = EVIDENCE_DIR / "readiness.json"
+        out_file.write_text(json.dumps(readiness, indent=2), encoding="utf-8")
     return readiness
 
 
