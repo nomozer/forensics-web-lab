@@ -173,3 +173,37 @@ def load_candidate_models(
         )
 
     return sorted(models, key=lambda m: m.outer_fold)
+
+
+def create_mock_candidate_models(num_models: int = 5, seed: int = 42) -> list[FoldCandidateModel]:
+    """Create in-memory deterministic candidate models for hermetic unit testing and CI gates."""
+    rng = np.random.Generator(np.random.PCG64(seed))
+    models: list[FoldCandidateModel] = []
+    for k in range(num_models):
+        vis = LinearScorer(
+            scaler_mean=np.zeros(576, dtype=np.float64),
+            scaler_scale=np.ones(576, dtype=np.float64),
+            coef=rng.normal(0.0, 0.1, size=576).astype(np.float64),
+            intercept=float(rng.normal(0.0, 0.1)),
+            temperature=1.0,
+        )
+        dsp = LinearScorer(
+            scaler_mean=np.zeros(16, dtype=np.float64),
+            scaler_scale=np.ones(16, dtype=np.float64),
+            coef=rng.normal(0.0, 0.1, size=16).astype(np.float64),
+            intercept=float(rng.normal(0.0, 0.1)),
+            temperature=1.0,
+        )
+        stk = StackerScorer(
+            coef=np.array([1.0, 0.5], dtype=np.float64),
+            intercept=0.0,
+        )
+        models.append(
+            FoldCandidateModel(
+                outer_fold=k,
+                visual_scorer=vis,
+                dsp_augmented_scorer=dsp,
+                stacker=stk,
+            )
+        )
+    return models

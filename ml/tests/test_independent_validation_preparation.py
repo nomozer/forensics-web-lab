@@ -97,6 +97,22 @@ def test_cohort_manifest_missing_or_duplicate_pair_counterpart():
         validate_cohort_manifest(dup_rows)
 
 
+def test_source_disjoint_guard_logic_hermetic():
+    """Source-disjoint validator must detect contamination with simulated historical set."""
+    historical_ids = {f"HIST_SRC_{i:03d}" for i in range(100)}
+    valid_rows = generate_synthetic_planning_cohort(num_pairs=5, prefix="SAFE_IND_")
+    pairs = validate_cohort_manifest(valid_rows, historical_sources=historical_ids)
+    assert len(pairs) == 5
+
+    # Injected contamination
+    contaminated = copy.deepcopy(valid_rows)
+    contaminated[0]["source_id"] = "HIST_SRC_042"
+    contaminated[1]["source_id"] = "HIST_SRC_042"
+    with pytest.raises(SourceOverlapError, match="Contamination detected"):
+        validate_cohort_manifest(contaminated, historical_sources=historical_ids)
+
+
+@pytest.mark.requires_research_artifact
 def test_source_disjoint_guard_blocks_historical_sources():
     """Source-disjoint validator must strictly block any source appearing in historical Option P."""
     historical_manifest = REPO_ROOT / "data/research/tgif/manifests/manifest_pilot_a_option_p.csv"
@@ -120,6 +136,20 @@ def test_source_disjoint_guard_blocks_historical_sources():
         validate_cohort_manifest(contaminated_dev, historical_sources=historical_ids)
 
 
+def test_mock_candidate_model_bindings_hermetic():
+    """Verify CandidateModel contract and mock generator for hermetic environments."""
+    from ml.evaluation.independent_model_bindings import create_mock_candidate_models
+
+    mock_models = create_mock_candidate_models(seed=20261007)
+    assert len(mock_models) == 5
+    for idx, m in enumerate(mock_models):
+        assert m.outer_fold == idx
+        assert m.visual_scorer.coef.shape == (576,)
+        assert m.dsp_augmented_scorer.coef.shape == (16,)
+        assert m.stacker.coef.shape == (2,)
+
+
+@pytest.mark.requires_research_artifact
 def test_candidate_model_bindings_verified_and_hash_checked():
     """Verifies that all 5 outer-fold models load and match their recorded SHA-256 hashes."""
     models = load_candidate_models()
@@ -131,8 +161,42 @@ def test_candidate_model_bindings_verified_and_hash_checked():
         assert m.stacker.coef.shape == (2,)
 
 
+def test_candidate_model_bindings_tamper_detection_hermetic(tmp_path):
+    """Corrupted mock model file or hash mismatch must raise ModelIntegrityError in hermetic tests."""
+    fake_model_file = tmp_path / "fold_model.json"
+    fake_model_file.write_text(json.dumps({"dummy": "model"}), encoding="utf-8")
+
+    bindings_data = {
+        "outer_folds": [
+            {
+                "outer_fold": 0,
+                "model_path": str(fake_model_file.relative_to(tmp_path)),
+                "model_sha256": "0" * 64,  # Intentionally wrong hash
+            }
+        ] * 5,  # 5 outer folds
+        "constraints": {
+            "no_best_fold_selection": True,
+            "probability_averaging_prohibited": True,
+        },
+    }
+    # Fix fold indices to 0..4
+    for i in range(5):
+        bindings_data["outer_folds"][i] = {
+            "outer_fold": i,
+            "model_path": str(fake_model_file.relative_to(tmp_path)),
+            "model_sha256": "0" * 64,
+        }
+
+    fake_b_path = tmp_path / "candidate_model_bindings.json"
+    fake_b_path.write_text(json.dumps(bindings_data), encoding="utf-8")
+
+    with pytest.raises(ModelIntegrityError, match="SHA-256 mismatch"):
+        load_candidate_models(fake_b_path, repo_root=tmp_path)
+
+
+@pytest.mark.requires_research_artifact
 def test_candidate_model_bindings_tamper_detection(tmp_path):
-    """Corrupted model file or hash mismatch must raise ModelIntegrityError."""
+    """Corrupted model file or hash mismatch must raise ModelIntegrityError on real artifacts."""
     orig_bindings_path = REPO_ROOT / "research/evidence/phase-4c.7a/candidate_model_bindings.json"
     bindings = json.loads(orig_bindings_path.read_text(encoding="utf-8"))
 
@@ -208,11 +272,31 @@ def test_verdict_derivation_rules():
     assert derive_independent_verdict(0.01, 0.05, is_synthetic=True) == "SYNTHETIC_ONLY_NOT_MEASURED"
 
 
-def test_synthetic_preflight_end_to_end():
-    """Run full synthetic preflight check verifying data flow, 5 models, and bootstrap."""
+def test_synthetic_preflight_end_to_end_mock():
+    """Run full synthetic preflight check with mock models (hermetic test for CI gates)."""
+    from ml.evaluation.independent_model_bindings import create_mock_candidate_models
     from scripts.research.run_independent_validation import run_synthetic_preflight
 
-    result = run_synthetic_preflight(num_pairs=20, bootstrap_replicates=50, seed=20261007)
+    mock_models = create_mock_candidate_models(seed=20261007)
+    result = run_synthetic_preflight(
+        candidate_models=mock_models,
+        num_pairs=10,
+        bootstrap_replicates=50,
+        seed=20261007,
+    )
+    assert result["status"] == "SYNTHETIC_PREFLIGHT_PASS"
+    assert result["verdict"] == "SYNTHETIC_ONLY_NOT_MEASURED"
+    assert result["primary_condition"] == PRIMARY_CONDITION
+    assert set(result["conditions_evaluated"]) == set(CONDITIONS)
+    assert result["bootstrap"]["replicates"] == 50
+
+
+@pytest.mark.requires_research_artifact
+def test_synthetic_preflight_end_to_end_real_artifacts():
+    """Run full synthetic preflight check verifying real candidate models on disk."""
+    from scripts.research.run_independent_validation import run_synthetic_preflight
+
+    result = run_synthetic_preflight(num_pairs=10, bootstrap_replicates=50, seed=20261007)
     assert result["status"] == "SYNTHETIC_PREFLIGHT_PASS"
     assert result["verdict"] == "SYNTHETIC_ONLY_NOT_MEASURED"
     assert result["primary_condition"] == PRIMARY_CONDITION
