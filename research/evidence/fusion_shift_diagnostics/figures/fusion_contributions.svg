@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="386" viewBox="0 0 920 386">
+<rect width="920" height="386" fill="#ffffff"/>
+<text x="16.0" y="26.0" font-family="sans-serif" font-size="16" text-anchor="start" fill="#1f1f1e" font-weight="bold">Exact decomposition of the fusion-logit change</text>
+<text x="16.0" y="46.0" font-family="sans-serif" font-size="12" text-anchor="start" fill="#5f5e5a" font-weight="normal">development_real · post-hoc exploratory · frozen 4C.3B models, 0 fits</text>
+<rect x="170.0" y="68" width="12" height="12" rx="2" fill="#2a78d6"/>
+<text x="188.0" y="78.0" font-family="sans-serif" font-size="12" text-anchor="start" fill="#1f1f1e" font-weight="normal">Δ visual contribution</text>
+<rect x="360.0" y="68" width="12" height="12" rx="2" fill="#eb6834"/>
+<text x="378.0" y="78.0" font-family="sans-serif" font-size="12" text-anchor="start" fill="#1f1f1e" font-weight="normal">Δ DSP contribution</text>
+<rect x="550.0" y="68" width="12" height="12" rx="2" fill="#1f1f1e"/>
+<text x="568.0" y="78.0" font-family="sans-serif" font-size="12" text-anchor="start" fill="#1f1f1e" font-weight="normal">Δ fusion logit (sum)</text>
+<rect x="170" y="104" width="330" height="210" fill="none" stroke="#e6e5e1"/>
+<line x1="170.0" y1="104" x2="170.0" y2="314" stroke="#e6e5e1"/>
+<text x="170.0" y="329.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">-1.5</text>
+<line x1="236.0" y1="104" x2="236.0" y2="314" stroke="#e6e5e1"/>
+<text x="236.0" y="329.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">-1</text>
+<line x1="302.0" y1="104" x2="302.0" y2="314" stroke="#e6e5e1"/>
+<text x="302.0" y="329.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">-0.5</text>
+<line x1="368.0" y1="104" x2="368.0" y2="314" stroke="#e6e5e1"/>
+<text x="368.0" y="329.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0</text>
+<line x1="434.0" y1="104" x2="434.0" y2="314" stroke="#e6e5e1"/>
+<text x="434.0" y="329.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0.5</text>
+<line x1="500.0" y1="104" x2="500.0" y2="314" stroke="#e6e5e1"/>
+<text x="500.0" y="329.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">1</text>
+<line x1="368.0" y1="104" x2="368.0" y2="314" stroke="#5f5e5a" stroke-width="1"/>
+<text x="335.0" y="346.0" font-family="sans-serif" font-size="12" text-anchor="middle" fill="#1f1f1e" font-weight="normal">mean paired Δ, logit units</text>
+<text x="335.0" y="98.0" font-family="sans-serif" font-size="12" text-anchor="middle" fill="#1f1f1e" font-weight="bold">authentic images (n = 341)</text>
+<text x="160.0" y="129.0" font-family="sans-serif" font-size="12" text-anchor="end" fill="#1f1f1e" font-weight="normal">jpeg_q95</text>
+<rect x="367.7" y="113.0" width="1.0" height="10" rx="2" fill="#2a78d6"><title>jpeg_q95 · authentic · Δ visual contribution: mean -0.003 (IQR -0.007 to +0.001)</title></rect>
+<rect x="363.8" y="127.0" width="4.2" height="10" rx="2" fill="#eb6834"><title>jpeg_q95 · authentic · Δ DSP contribution: mean -0.032 (IQR -0.049 to -0.011)</title></rect>
+<path d="M 363.5 119.0 L 369.5 125.0 L 363.5 131.0 L 357.5 125.0 Z" fill="#1f1f1e" stroke="#ffffff" stroke-width="1.5"><title>jpeg_q95 · authentic · Δ fusion logit -0.034</title></path>
+<text x="160.0" y="171.0" font-family="sans-serif" font-size="12" text-anchor="end" fill="#1f1f1e" font-weight="normal">jpeg_q75</text>
+<rect x="367.3" y="155.0" width="1.0" height="10" rx="2" fill="#2a78d6"><title>jpeg_q75 · authentic · Δ visual contribution: mean -0.005 (IQR -0.015 to +0.006)</title></rect>
+<rect x="276.8" y="169.0" width="91.2" height="10" rx="2" fill="#eb6834"><title>jpeg_q75 · authentic · Δ DSP contribution: mean -0.691 (IQR -0.999 to -0.355)</title></rect>
+<path d="M 276.1 161.0 L 282.1 167.0 L 276.1 173.0 L 270.1 167.0 Z" fill="#1f1f1e" stroke="#ffffff" stroke-width="1.5"><title>jpeg_q75 · authentic · Δ fusion logit -0.696</title></path>
+<text x="160.0" y="213.0" font-family="sans-serif" font-size="12" text-anchor="end" fill="#1f1f1e" font-weight="normal">jpeg_q50</text>
+<rect x="367.1" y="197.0" width="1.0" height="10" rx="2" fill="#2a78d6"><title>jpeg_q50 · authentic · Δ visual contribution: mean -0.007 (IQR -0.027 to +0.013)</title></rect>
+<rect x="216.2" y="211.0" width="151.8" height="10" rx="2" fill="#eb6834"><title>jpeg_q50 · authentic · Δ DSP contribution: mean -1.150 (IQR -1.594 to -0.644)</title></rect>
+<path d="M 215.4 203.0 L 221.4 209.0 L 215.4 215.0 L 209.4 209.0 Z" fill="#1f1f1e" stroke="#ffffff" stroke-width="1.5"><title>jpeg_q50 · authentic · Δ fusion logit -1.156</title></path>
+<text x="160.0" y="255.0" font-family="sans-serif" font-size="12" text-anchor="end" fill="#1f1f1e" font-weight="normal">resize_0.5</text>
+<rect x="368.0" y="239.0" width="1.0" height="10" rx="2" fill="#2a78d6"><title>resize_0.5 · authentic · Δ visual contribution: mean -0.000 (IQR -0.008 to +0.007)</title></rect>
+<rect x="368.0" y="253.0" width="88.1" height="10" rx="2" fill="#eb6834"><title>resize_0.5 · authentic · Δ DSP contribution: mean +0.667 (IQR +0.362 to +0.884)</title></rect>
+<path d="M 456.0 245.0 L 462.0 251.0 L 456.0 257.0 L 450.0 251.0 Z" fill="#1f1f1e" stroke="#ffffff" stroke-width="1.5"><title>resize_0.5 · authentic · Δ fusion logit +0.667</title></path>
+<text x="160.0" y="297.0" font-family="sans-serif" font-size="12" text-anchor="end" fill="#1f1f1e" font-weight="normal">resize_0.5_jpeg_q75</text>
+<rect x="366.6" y="281.0" width="1.4" height="10" rx="2" fill="#2a78d6"><title>resize_0.5_jpeg_q75 · authentic · Δ visual contribution: mean -0.010 (IQR -0.035 to +0.016)</title></rect>
+<rect x="292.6" y="295.0" width="75.4" height="10" rx="2" fill="#eb6834"><title>resize_0.5_jpeg_q75 · authentic · Δ DSP contribution: mean -0.571 (IQR -0.818 to -0.296)</title></rect>
+<path d="M 291.2 287.0 L 297.2 293.0 L 291.2 299.0 L 285.2 293.0 Z" fill="#1f1f1e" stroke="#ffffff" stroke-width="1.5"><title>resize_0.5_jpeg_q75 · authentic · Δ fusion logit -0.582</title></path>
+<rect x="560" y="104" width="330" height="210" fill="none" stroke="#e6e5e1"/>
+<line x1="560.0" y1="104" x2="560.0" y2="314" stroke="#e6e5e1"/>
+<text x="560.0" y="329.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">-1.5</text>
+<line x1="626.0" y1="104" x2="626.0" y2="314" stroke="#e6e5e1"/>
+<text x="626.0" y="329.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">-1</text>
+<line x1="692.0" y1="104" x2="692.0" y2="314" stroke="#e6e5e1"/>
+<text x="692.0" y="329.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">-0.5</text>
+<line x1="758.0" y1="104" x2="758.0" y2="314" stroke="#e6e5e1"/>
+<text x="758.0" y="329.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0</text>
+<line x1="824.0" y1="104" x2="824.0" y2="314" stroke="#e6e5e1"/>
+<text x="824.0" y="329.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0.5</text>
+<line x1="890.0" y1="104" x2="890.0" y2="314" stroke="#e6e5e1"/>
+<text x="890.0" y="329.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">1</text>
+<line x1="758.0" y1="104" x2="758.0" y2="314" stroke="#5f5e5a" stroke-width="1"/>
+<text x="725.0" y="346.0" font-family="sans-serif" font-size="12" text-anchor="middle" fill="#1f1f1e" font-weight="normal">mean paired Δ, logit units</text>
+<text x="725.0" y="98.0" font-family="sans-serif" font-size="12" text-anchor="middle" fill="#1f1f1e" font-weight="bold">ai_edited images (n = 341)</text>
+<rect x="757.6" y="113.0" width="1.0" height="10" rx="2" fill="#2a78d6"><title>jpeg_q95 · ai_edited · Δ visual contribution: mean -0.003 (IQR -0.007 to +0.001)</title></rect>
+<rect x="751.0" y="127.0" width="7.0" height="10" rx="2" fill="#eb6834"><title>jpeg_q95 · ai_edited · Δ DSP contribution: mean -0.053 (IQR -0.074 to -0.024)</title></rect>
+<path d="M 750.6 119.0 L 756.6 125.0 L 750.6 131.0 L 744.6 125.0 Z" fill="#1f1f1e" stroke="#ffffff" stroke-width="1.5"><title>jpeg_q95 · ai_edited · Δ fusion logit -0.056</title></path>
+<rect x="757.2" y="155.0" width="1.0" height="10" rx="2" fill="#2a78d6"><title>jpeg_q75 · ai_edited · Δ visual contribution: mean -0.006 (IQR -0.018 to +0.004)</title></rect>
+<rect x="660.8" y="169.0" width="97.2" height="10" rx="2" fill="#eb6834"><title>jpeg_q75 · ai_edited · Δ DSP contribution: mean -0.737 (IQR -1.019 to -0.398)</title></rect>
+<path d="M 659.9 161.0 L 665.9 167.0 L 659.9 173.0 L 653.9 167.0 Z" fill="#1f1f1e" stroke="#ffffff" stroke-width="1.5"><title>jpeg_q75 · ai_edited · Δ fusion logit -0.743</title></path>
+<rect x="757.2" y="197.0" width="1.0" height="10" rx="2" fill="#2a78d6"><title>jpeg_q50 · ai_edited · Δ visual contribution: mean -0.006 (IQR -0.025 to +0.012)</title></rect>
+<rect x="599.7" y="211.0" width="158.3" height="10" rx="2" fill="#eb6834"><title>jpeg_q50 · ai_edited · Δ DSP contribution: mean -1.199 (IQR -1.610 to -0.697)</title></rect>
+<path d="M 598.9 203.0 L 604.9 209.0 L 598.9 215.0 L 592.9 209.0 Z" fill="#1f1f1e" stroke="#ffffff" stroke-width="1.5"><title>jpeg_q50 · ai_edited · Δ fusion logit -1.205</title></path>
+<rect x="757.9" y="239.0" width="1.0" height="10" rx="2" fill="#2a78d6"><title>resize_0.5 · ai_edited · Δ visual contribution: mean -0.001 (IQR -0.007 to +0.007)</title></rect>
+<rect x="758.0" y="253.0" width="79.3" height="10" rx="2" fill="#eb6834"><title>resize_0.5 · ai_edited · Δ DSP contribution: mean +0.601 (IQR +0.328 to +0.812)</title></rect>
+<path d="M 837.2 245.0 L 843.2 251.0 L 837.2 257.0 L 831.2 251.0 Z" fill="#1f1f1e" stroke="#ffffff" stroke-width="1.5"><title>resize_0.5 · ai_edited · Δ fusion logit +0.600</title></path>
+<rect x="756.5" y="281.0" width="1.5" height="10" rx="2" fill="#2a78d6"><title>resize_0.5_jpeg_q75 · ai_edited · Δ visual contribution: mean -0.011 (IQR -0.039 to +0.014)</title></rect>
+<rect x="673.3" y="295.0" width="84.7" height="10" rx="2" fill="#eb6834"><title>resize_0.5_jpeg_q75 · ai_edited · Δ DSP contribution: mean -0.642 (IQR -0.891 to -0.372)</title></rect>
+<path d="M 671.8 287.0 L 677.8 293.0 L 671.8 299.0 L 665.8 293.0 Z" fill="#1f1f1e" stroke="#ffffff" stroke-width="1.5"><title>resize_0.5_jpeg_q75 · ai_edited · Δ fusion logit -0.653</title></path>
+<text x="16.0" y="374.0" font-family="sans-serif" font-size="11" text-anchor="start" fill="#5f5e5a" font-weight="normal">Δ fusion = a_v·Δ(z_v/T_v) + a_d·Δ(z_d/T_d) exactly (linear stacker); algebraic, not causal. 5 outer folds pooled.</text>
+</svg>

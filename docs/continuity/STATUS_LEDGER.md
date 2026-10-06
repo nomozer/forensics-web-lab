@@ -1,3 +1,30 @@
+## Phase 4C.5B — Development Fusion-Shift Diagnostics: Real Artifact Execution and Report
+
+- **Mục tiêu**: Execute `diagnose_fusion_shift.py` on real Phase 4C.3B and 4C.4B artifacts; diagnose mechanism behind late-fusion degradation under JPEG/resize without refitting or inference.
+- **Execution**: Preflight `PREFLIGHT_PASS` (stored predictions reconstructed with max |Δp| = 0.0, max |Δlogit| = 0.0, 0 decision mismatches; linear decomposition residual $4.44 \times 10^{-16} \le 10^{-9}$; DSP scaler verified against outer-train stats).
+- **Verify**: Reproduction check `REPRODUCED` across all 15 output artifacts; Macro-F1 cross-check exact vs committed 4C.4B (original 0.6026, q75 0.4401, q50 0.4026).
+- **Findings**: DSP contribution dominates fusion logit delta (>99% across transforms); visual logit invariant (|Δ| ≤ 0.011 logit). JPEG induces severe negative DSP shift (`dct_mean_high_freq_energy`, `jpeg_periodic_grid_strength`), collapsing decisions to `authentic` (FNR 0.87-0.92). Resize induces positive DSP shift, collapsing to `ai_edited` (FPR 0.88). Consistent across all 5 folds and both classes. No implementation defect; failure stems from DSP out-of-distribution extrapolation against stationary stacker weights.
+- **Verification**: 35/35 diagnostics tests, 30/30 robustness tests, hermetic suite PASS; continuity checker PASS; 0 fits; 0 locked-test access.
+- **Kết quả**: `COMPLETED_EXPLORATORY_EVIDENCE_PRODUCED`.
+- **Evidence**: `research/evidence/fusion_shift_diagnostics/`, `research/evidence/phase-4c.5b/`.
+- **Next**: Merge `claude/elegant-edison-uentky` into `main` via merge commit, verify branch and main CI, delete branch.
+
+---
+
+## Phase 4C.5A — Fusion Shift Diagnostics: Contract, Implementation and Synthetic Verification
+
+- **Mục tiêu**: Diagnose the 4C.4B late-fusion failure under JPEG/resize from existing artifacts, separating technical defects from model sensitivity; DSP not presumed causal.
+- **Contract (from code)**: stacker inputs = temperature-scaled logits `[z_v/T_v, z_d/T_d]`; base LR float32, stacker float64; `p ≥ 0.5 → ai_edited`; τ_conf 0.65; DSP scaler fitted on outer-train originals.
+- **Implementation**: `scripts/research/diagnose_fusion_shift.py` (preflight/analyze/verify): exact reconstruction of stored predictions, exact decomposition with per-DSP-feature split, outer-train-only normalisation, per-fold-then-pooled tables, decision transitions, confidence, 5 SVG figures, hash-bound resume.
+- **Notebook**: robustness notebook pinned to full SHA `3a0292c8…`, no branch name, refuses empty SHA.
+- **Verification**: 35/35 diagnostics + 30/30 robustness tests PASS (synthetic); code review 9/10 findings fixed; hermetic suite in `test_summary.json`.
+- **Not run**: real diagnostics (artifacts outside Git); all real findings `NOT_MEASURED`; 0 fits; 0 locked-test access.
+- **Kết quả**: `IMPLEMENTED_SYNTHETIC_VERIFIED_AWAITING_REAL_EXECUTION`.
+- **Evidence**: `research/evidence/phase-4c.5a/` (PHASE_REPORT, HANDOFF, test summary).
+- **Next**: Local agent runs HANDOFF on `claude/elegant-edison-uentky`, records Phase 4C.5B, then merges.
+
+---
+
 ## Phase 4C.4B — Development Robustness: Execution and Analysis
 
 - **Mục tiêu**: Execute the locked Phase 4C.4A development robustness protocol on the 341 Option P development sources (682 images) across 6 conditions and 3 frozen recipes; 0 fits.

@@ -1,0 +1,232 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="608" viewBox="0 0 920 608">
+<rect width="920" height="608" fill="#ffffff"/>
+<text x="16.0" y="26.0" font-family="sans-serif" font-size="16" text-anchor="start" fill="#1f1f1e" font-weight="bold">DSP feature shift vs original</text>
+<text x="16.0" y="46.0" font-family="sans-serif" font-size="12" text-anchor="start" fill="#5f5e5a" font-weight="normal">development_real · post-hoc exploratory · frozen 4C.3B models, 0 fits</text>
+<text x="314.0" y="86.0" font-family="sans-serif" font-size="12" text-anchor="middle" fill="#1f1f1e" font-weight="normal">jpeg_q95</text>
+<text x="442.0" y="86.0" font-family="sans-serif" font-size="12" text-anchor="middle" fill="#1f1f1e" font-weight="normal">jpeg_q75</text>
+<text x="570.0" y="86.0" font-family="sans-serif" font-size="12" text-anchor="middle" fill="#1f1f1e" font-weight="normal">jpeg_q50</text>
+<text x="698.0" y="86.0" font-family="sans-serif" font-size="12" text-anchor="middle" fill="#1f1f1e" font-weight="normal">resize_0.5</text>
+<text x="826.0" y="86.0" font-family="sans-serif" font-size="12" text-anchor="middle" fill="#1f1f1e" font-weight="normal">resize_0.5_jpeg_q75</text>
+<text x="570.0" y="66.0" font-family="sans-serif" font-size="12" text-anchor="middle" fill="#5f5e5a" font-weight="normal">condition (paired with original)</text>
+<text x="242.0" y="113.0" font-family="sans-serif" font-size="11" text-anchor="end" fill="#1f1f1e" font-weight="normal">00 fft_high_freq_energy_ratio</text>
+<rect x="251" y="97" width="126" height="24" fill="#f0efec"><title>fft_high_freq_energy_ratio · jpeg_q95: -0.001 SD</title></rect>
+<text x="314.0" y="113.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.00</text>
+<rect x="379" y="97" width="126" height="24" fill="#f0efec"><title>fft_high_freq_energy_ratio · jpeg_q75: -0.002 SD</title></rect>
+<text x="442.0" y="113.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.00</text>
+<rect x="507" y="97" width="126" height="24" fill="#f0efec"><title>fft_high_freq_energy_ratio · jpeg_q50: -0.002 SD</title></rect>
+<text x="570.0" y="113.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.00</text>
+<rect x="635" y="97" width="126" height="24" fill="#efeeeb"><title>fft_high_freq_energy_ratio · resize_0.5: -0.024 SD</title></rect>
+<text x="698.0" y="113.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.02</text>
+<rect x="763" y="97" width="126" height="24" fill="#efeeeb"><title>fft_high_freq_energy_ratio · resize_0.5_jpeg_q75: -0.026 SD</title></rect>
+<text x="826.0" y="113.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.03</text>
+<text x="242.0" y="139.0" font-family="sans-serif" font-size="11" text-anchor="end" fill="#1f1f1e" font-weight="normal">01 fft_spectral_peak_count</text>
+<rect x="251" y="123" width="126" height="24" fill="#f0efec"><title>fft_spectral_peak_count · jpeg_q95: +0.000 SD</title></rect>
+<text x="314.0" y="139.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">+0.00</text>
+<rect x="379" y="123" width="126" height="24" fill="#f0efec"><title>fft_spectral_peak_count · jpeg_q75: +0.000 SD</title></rect>
+<text x="442.0" y="139.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">+0.00</text>
+<rect x="507" y="123" width="126" height="24" fill="#f0efec"><title>fft_spectral_peak_count · jpeg_q50: +0.000 SD</title></rect>
+<text x="570.0" y="139.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">+0.00</text>
+<rect x="635" y="123" width="126" height="24" fill="#f0efec"><title>fft_spectral_peak_count · resize_0.5: +0.000 SD</title></rect>
+<text x="698.0" y="139.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">+0.00</text>
+<rect x="763" y="123" width="126" height="24" fill="#f0efec"><title>fft_spectral_peak_count · resize_0.5_jpeg_q75: +0.000 SD</title></rect>
+<text x="826.0" y="139.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">+0.00</text>
+<text x="242.0" y="165.0" font-family="sans-serif" font-size="11" text-anchor="end" fill="#1f1f1e" font-weight="normal">02 fft_radial_anomaly_score</text>
+<rect x="251" y="149" width="126" height="24" fill="#f0efec"><title>fft_radial_anomaly_score · jpeg_q95: +0.000 SD</title></rect>
+<text x="314.0" y="165.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">+0.00</text>
+<rect x="379" y="149" width="126" height="24" fill="#f0eeec"><title>fft_radial_anomaly_score · jpeg_q75: +0.010 SD</title></rect>
+<text x="442.0" y="165.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">+0.01</text>
+<rect x="507" y="149" width="126" height="24" fill="#f0efec"><title>fft_radial_anomaly_score · jpeg_q50: +0.000 SD</title></rect>
+<text x="570.0" y="165.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">+0.00</text>
+<rect x="635" y="149" width="126" height="24" fill="#f0eeeb"><title>fft_radial_anomaly_score · resize_0.5: +0.020 SD</title></rect>
+<text x="698.0" y="165.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">+0.02</text>
+<rect x="763" y="149" width="126" height="24" fill="#f0efec"><title>fft_radial_anomaly_score · resize_0.5_jpeg_q75: +0.002 SD</title></rect>
+<text x="826.0" y="165.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">+0.00</text>
+<text x="242.0" y="191.0" font-family="sans-serif" font-size="11" text-anchor="end" fill="#1f1f1e" font-weight="normal">03 fft_spectral_decay_slope</text>
+<rect x="251" y="175" width="126" height="24" fill="#f0efec"><title>fft_spectral_decay_slope · jpeg_q95: -0.000 SD</title></rect>
+<text x="314.0" y="191.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.00</text>
+<rect x="379" y="175" width="126" height="24" fill="#f0efec"><title>fft_spectral_decay_slope · jpeg_q75: -0.002 SD</title></rect>
+<text x="442.0" y="191.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.00</text>
+<rect x="507" y="175" width="126" height="24" fill="#f0efec"><title>fft_spectral_decay_slope · jpeg_q50: -0.002 SD</title></rect>
+<text x="570.0" y="191.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.00</text>
+<rect x="635" y="175" width="126" height="24" fill="#efeeec"><title>fft_spectral_decay_slope · resize_0.5: -0.014 SD</title></rect>
+<text x="698.0" y="191.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.01</text>
+<rect x="763" y="175" width="126" height="24" fill="#efeeec"><title>fft_spectral_decay_slope · resize_0.5_jpeg_q75: -0.016 SD</title></rect>
+<text x="826.0" y="191.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.02</text>
+<text x="242.0" y="217.0" font-family="sans-serif" font-size="11" text-anchor="end" fill="#1f1f1e" font-weight="normal">04 dct_mean_high_freq_energy</text>
+<rect x="251" y="201" width="126" height="24" fill="#eeedeb"><title>dct_mean_high_freq_energy · jpeg_q95: -0.044 SD</title></rect>
+<text x="314.0" y="217.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.04</text>
+<rect x="379" y="201" width="126" height="24" fill="#d6dce2"><title>dct_mean_high_freq_energy · jpeg_q75: -0.464 SD</title></rect>
+<text x="442.0" y="217.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.46</text>
+<rect x="507" y="201" width="126" height="24" fill="#cad3dd"><title>dct_mean_high_freq_energy · jpeg_q50: -0.682 SD</title></rect>
+<text x="570.0" y="217.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.68</text>
+<rect x="635" y="201" width="126" height="24" fill="#ebe0dd"><title>dct_mean_high_freq_energy · resize_0.5: +0.306 SD</title></rect>
+<text x="698.0" y="217.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">+0.31</text>
+<rect x="763" y="201" width="126" height="24" fill="#dce0e4"><title>dct_mean_high_freq_energy · resize_0.5_jpeg_q75: -0.354 SD</title></rect>
+<text x="826.0" y="217.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.35</text>
+<text x="242.0" y="243.0" font-family="sans-serif" font-size="11" text-anchor="end" fill="#1f1f1e" font-weight="normal">05 dct_ac_energy_variance</text>
+<rect x="251" y="227" width="126" height="24" fill="#eeedeb"><title>dct_ac_energy_variance · jpeg_q95: -0.038 SD</title></rect>
+<text x="314.0" y="243.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.04</text>
+<rect x="379" y="227" width="126" height="24" fill="#dde1e4"><title>dct_ac_energy_variance · jpeg_q75: -0.335 SD</title></rect>
+<text x="442.0" y="243.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.33</text>
+<rect x="507" y="227" width="126" height="24" fill="#d4dae1"><title>dct_ac_energy_variance · jpeg_q50: -0.500 SD</title></rect>
+<text x="570.0" y="243.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.50</text>
+<rect x="635" y="227" width="126" height="24" fill="#e4e6e7"><title>dct_ac_energy_variance · resize_0.5: -0.213 SD</title></rect>
+<text x="698.0" y="243.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.21</text>
+<rect x="763" y="227" width="126" height="24" fill="#dbdfe3"><title>dct_ac_energy_variance · resize_0.5_jpeg_q75: -0.385 SD</title></rect>
+<text x="826.0" y="243.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.38</text>
+<text x="242.0" y="269.0" font-family="sans-serif" font-size="11" text-anchor="end" fill="#1f1f1e" font-weight="normal">06 dct_anomaly_score</text>
+<rect x="251" y="253" width="126" height="24" fill="#f0eeeb"><title>dct_anomaly_score · jpeg_q95: +0.027 SD</title></rect>
+<text x="314.0" y="269.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">+0.03</text>
+<rect x="379" y="253" width="126" height="24" fill="#eadbd8"><title>dct_anomaly_score · jpeg_q75: +0.409 SD</title></rect>
+<text x="442.0" y="269.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">+0.41</text>
+<rect x="507" y="253" width="126" height="24" fill="#e7d3d0"><title>dct_anomaly_score · jpeg_q50: +0.567 SD</title></rect>
+<text x="570.0" y="269.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">+0.57</text>
+<rect x="635" y="253" width="126" height="24" fill="#b4c3d4"><title>dct_anomaly_score · resize_0.5: -1.076 SD</title></rect>
+<text x="698.0" y="269.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-1.08</text>
+<rect x="763" y="253" width="126" height="24" fill="#ece2e0"><title>dct_anomaly_score · resize_0.5_jpeg_q75: +0.256 SD</title></rect>
+<text x="826.0" y="269.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">+0.26</text>
+<text x="242.0" y="295.0" font-family="sans-serif" font-size="11" text-anchor="end" fill="#1f1f1e" font-weight="normal">07 noise_global_level</text>
+<rect x="251" y="279" width="126" height="24" fill="#efeeeb"><title>noise_global_level · jpeg_q95: -0.025 SD</title></rect>
+<text x="314.0" y="295.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.03</text>
+<rect x="379" y="279" width="126" height="24" fill="#e7e9e9"><title>noise_global_level · jpeg_q75: -0.153 SD</title></rect>
+<text x="442.0" y="295.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.15</text>
+<rect x="507" y="279" width="126" height="24" fill="#e3e5e7"><title>noise_global_level · jpeg_q50: -0.237 SD</title></rect>
+<text x="570.0" y="295.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.24</text>
+<rect x="635" y="279" width="126" height="24" fill="#f0eeeb"><title>noise_global_level · resize_0.5: +0.015 SD</title></rect>
+<text x="698.0" y="295.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">+0.02</text>
+<rect x="763" y="279" width="126" height="24" fill="#efeeeb"><title>noise_global_level · resize_0.5_jpeg_q75: -0.025 SD</title></rect>
+<text x="826.0" y="295.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.02</text>
+<text x="242.0" y="321.0" font-family="sans-serif" font-size="11" text-anchor="end" fill="#1f1f1e" font-weight="normal">08 noise_max_to_min_ratio</text>
+<rect x="251" y="305" width="126" height="24" fill="#f0efec"><title>noise_max_to_min_ratio · jpeg_q95: -0.006 SD</title></rect>
+<text x="314.0" y="321.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.01</text>
+<rect x="379" y="305" width="126" height="24" fill="#ededeb"><title>noise_max_to_min_ratio · jpeg_q75: -0.047 SD</title></rect>
+<text x="442.0" y="321.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.05</text>
+<rect x="507" y="305" width="126" height="24" fill="#ece3e0"><title>noise_max_to_min_ratio · jpeg_q50: +0.240 SD</title></rect>
+<text x="570.0" y="321.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">+0.24</text>
+<rect x="635" y="305" width="126" height="24" fill="#e7e8e8"><title>noise_max_to_min_ratio · resize_0.5: -0.168 SD</title></rect>
+<text x="698.0" y="321.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.17</text>
+<rect x="763" y="305" width="126" height="24" fill="#ede7e4"><title>noise_max_to_min_ratio · resize_0.5_jpeg_q75: +0.167 SD</title></rect>
+<text x="826.0" y="321.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">+0.17</text>
+<text x="242.0" y="347.0" font-family="sans-serif" font-size="11" text-anchor="end" fill="#1f1f1e" font-weight="normal">09 noise_std_of_variances</text>
+<rect x="251" y="331" width="126" height="24" fill="#efeeeb"><title>noise_std_of_variances · jpeg_q95: -0.025 SD</title></rect>
+<text x="314.0" y="347.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.03</text>
+<rect x="379" y="331" width="126" height="24" fill="#e7e9e8"><title>noise_std_of_variances · jpeg_q75: -0.157 SD</title></rect>
+<text x="442.0" y="347.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.16</text>
+<rect x="507" y="331" width="126" height="24" fill="#e5e7e8"><title>noise_std_of_variances · jpeg_q50: -0.193 SD</title></rect>
+<text x="570.0" y="347.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.19</text>
+<rect x="635" y="331" width="126" height="24" fill="#e9eae9"><title>noise_std_of_variances · resize_0.5: -0.132 SD</title></rect>
+<text x="698.0" y="347.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.13</text>
+<rect x="763" y="331" width="126" height="24" fill="#ededeb"><title>noise_std_of_variances · resize_0.5_jpeg_q75: -0.054 SD</title></rect>
+<text x="826.0" y="347.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.05</text>
+<text x="242.0" y="373.0" font-family="sans-serif" font-size="11" text-anchor="end" fill="#1f1f1e" font-weight="normal">10 noise_coef_variation</text>
+<rect x="251" y="357" width="126" height="24" fill="#f0efec"><title>noise_coef_variation · jpeg_q95: -0.001 SD</title></rect>
+<text x="314.0" y="373.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.00</text>
+<rect x="379" y="357" width="126" height="24" fill="#eeedeb"><title>noise_coef_variation · jpeg_q75: -0.039 SD</title></rect>
+<text x="442.0" y="373.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.04</text>
+<rect x="507" y="357" width="126" height="24" fill="#eeeae7"><title>noise_coef_variation · jpeg_q50: +0.096 SD</title></rect>
+<text x="570.0" y="373.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">+0.10</text>
+<rect x="635" y="357" width="126" height="24" fill="#e3e5e7"><title>noise_coef_variation · resize_0.5: -0.237 SD</title></rect>
+<text x="698.0" y="373.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.24</text>
+<rect x="763" y="357" width="126" height="24" fill="#eeeeeb"><title>noise_coef_variation · resize_0.5_jpeg_q75: -0.028 SD</title></rect>
+<text x="826.0" y="373.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.03</text>
+<text x="242.0" y="399.0" font-family="sans-serif" font-size="11" text-anchor="end" fill="#1f1f1e" font-weight="normal">11 noise_inconsistency_score</text>
+<rect x="251" y="383" width="126" height="24" fill="#f0efec"><title>noise_inconsistency_score · jpeg_q95: -0.001 SD</title></rect>
+<text x="314.0" y="399.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.00</text>
+<rect x="379" y="383" width="126" height="24" fill="#eeedeb"><title>noise_inconsistency_score · jpeg_q75: -0.038 SD</title></rect>
+<text x="442.0" y="399.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.04</text>
+<rect x="507" y="383" width="126" height="24" fill="#efeae7"><title>noise_inconsistency_score · jpeg_q50: +0.094 SD</title></rect>
+<text x="570.0" y="399.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">+0.09</text>
+<rect x="635" y="383" width="126" height="24" fill="#e3e5e7"><title>noise_inconsistency_score · resize_0.5: -0.237 SD</title></rect>
+<text x="698.0" y="399.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.24</text>
+<rect x="763" y="383" width="126" height="24" fill="#efeeeb"><title>noise_inconsistency_score · resize_0.5_jpeg_q75: -0.025 SD</title></rect>
+<text x="826.0" y="399.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.03</text>
+<text x="242.0" y="425.0" font-family="sans-serif" font-size="11" text-anchor="end" fill="#1f1f1e" font-weight="normal">12 jpeg_boundary_difference_ratio</text>
+<rect x="251" y="409" width="126" height="24" fill="#eee8e5"><title>jpeg_boundary_difference_ratio · jpeg_q95: +0.134 SD</title></rect>
+<text x="314.0" y="425.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">+0.13</text>
+<rect x="379" y="409" width="126" height="24" fill="#d08b89"><title>jpeg_boundary_difference_ratio · jpeg_q75: +2.020 SD</title></rect>
+<text x="442.0" y="425.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">+2.02</text>
+<rect x="507" y="409" width="126" height="24" fill="#b43433"><title>jpeg_boundary_difference_ratio · jpeg_q50: +3.793 SD</title></rect>
+<text x="570.0" y="425.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#ffffff" font-weight="normal">+3.79</text>
+<rect x="635" y="409" width="126" height="24" fill="#bac7d6"><title>jpeg_boundary_difference_ratio · resize_0.5: -0.967 SD</title></rect>
+<text x="698.0" y="425.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.97</text>
+<rect x="763" y="409" width="126" height="24" fill="#e0bdba"><title>jpeg_boundary_difference_ratio · resize_0.5_jpeg_q75: +1.019 SD</title></rect>
+<text x="826.0" y="425.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">+1.02</text>
+<text x="242.0" y="451.0" font-family="sans-serif" font-size="11" text-anchor="end" fill="#1f1f1e" font-weight="normal">13 jpeg_periodic_grid_strength</text>
+<rect x="251" y="435" width="126" height="24" fill="#eee8e5"><title>jpeg_periodic_grid_strength · jpeg_q95: +0.134 SD</title></rect>
+<text x="314.0" y="451.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">+0.13</text>
+<rect x="379" y="435" width="126" height="24" fill="#d08a88"><title>jpeg_periodic_grid_strength · jpeg_q75: +2.056 SD</title></rect>
+<text x="442.0" y="451.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">+2.06</text>
+<rect x="507" y="435" width="126" height="24" fill="#b3302f"><title>jpeg_periodic_grid_strength · jpeg_q50: +3.869 SD</title></rect>
+<text x="570.0" y="451.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#ffffff" font-weight="normal">+3.87</text>
+<rect x="635" y="435" width="126" height="24" fill="#bdc9d8"><title>jpeg_periodic_grid_strength · resize_0.5: -0.907 SD</title></rect>
+<text x="698.0" y="451.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.91</text>
+<rect x="763" y="435" width="126" height="24" fill="#e0bcb9"><title>jpeg_periodic_grid_strength · resize_0.5_jpeg_q75: +1.036 SD</title></rect>
+<text x="826.0" y="451.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">+1.04</text>
+<text x="242.0" y="477.0" font-family="sans-serif" font-size="11" text-anchor="end" fill="#1f1f1e" font-weight="normal">14 jpeg_artifact_score</text>
+<rect x="251" y="461" width="126" height="24" fill="#eee8e5"><title>jpeg_artifact_score · jpeg_q95: +0.140 SD</title></rect>
+<text x="314.0" y="477.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">+0.14</text>
+<rect x="379" y="461" width="126" height="24" fill="#cf8886"><title>jpeg_artifact_score · jpeg_q75: +2.086 SD</title></rect>
+<text x="442.0" y="477.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">+2.09</text>
+<rect x="507" y="461" width="126" height="24" fill="#b94140"><title>jpeg_artifact_score · jpeg_q50: +3.519 SD</title></rect>
+<text x="570.0" y="477.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#ffffff" font-weight="normal">+3.52</text>
+<rect x="635" y="461" width="126" height="24" fill="#bbc8d7"><title>jpeg_artifact_score · resize_0.5: -0.941 SD</title></rect>
+<text x="698.0" y="477.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.94</text>
+<rect x="763" y="461" width="126" height="24" fill="#dfbab8"><title>jpeg_artifact_score · resize_0.5_jpeg_q75: +1.069 SD</title></rect>
+<text x="826.0" y="477.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">+1.07</text>
+<text x="242.0" y="503.0" font-family="sans-serif" font-size="11" text-anchor="end" fill="#1f1f1e" font-weight="normal">15 laplacian_variance</text>
+<rect x="251" y="487" width="126" height="24" fill="#efeeeb"><title>laplacian_variance · jpeg_q95: -0.023 SD</title></rect>
+<text x="314.0" y="503.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.02</text>
+<rect x="379" y="487" width="126" height="24" fill="#e8e9e9"><title>laplacian_variance · jpeg_q75: -0.135 SD</title></rect>
+<text x="442.0" y="503.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.14</text>
+<rect x="507" y="487" width="126" height="24" fill="#e6e7e8"><title>laplacian_variance · jpeg_q50: -0.188 SD</title></rect>
+<text x="570.0" y="503.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.19</text>
+<rect x="635" y="487" width="126" height="24" fill="#e8e9e9"><title>laplacian_variance · resize_0.5: -0.143 SD</title></rect>
+<text x="698.0" y="503.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.14</text>
+<rect x="763" y="487" width="126" height="24" fill="#e8e9e9"><title>laplacian_variance · resize_0.5_jpeg_q75: -0.147 SD</title></rect>
+<text x="826.0" y="503.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#1f1f1e" font-weight="normal">-0.15</text>
+<rect x="250.0" y="536" width="10.1" height="12" fill="#184f95"/>
+<rect x="259.6" y="536" width="10.1" height="12" fill="#235799"/>
+<rect x="269.2" y="536" width="10.1" height="12" fill="#2e5f9e"/>
+<rect x="278.8" y="536" width="10.1" height="12" fill="#3968a2"/>
+<rect x="288.4" y="536" width="10.1" height="12" fill="#4470a7"/>
+<rect x="298.0" y="536" width="10.1" height="12" fill="#4f78ab"/>
+<rect x="307.6" y="536" width="10.1" height="12" fill="#5a80b0"/>
+<rect x="317.2" y="536" width="10.1" height="12" fill="#6688b4"/>
+<rect x="326.8" y="536" width="10.1" height="12" fill="#7191b9"/>
+<rect x="336.4" y="536" width="10.1" height="12" fill="#7c99bd"/>
+<rect x="346.0" y="536" width="10.1" height="12" fill="#87a1c2"/>
+<rect x="355.6" y="536" width="10.1" height="12" fill="#92a9c6"/>
+<rect x="365.2" y="536" width="10.1" height="12" fill="#9db1cb"/>
+<rect x="374.8" y="536" width="10.1" height="12" fill="#a8bacf"/>
+<rect x="384.4" y="536" width="10.1" height="12" fill="#b3c2d3"/>
+<rect x="394.0" y="536" width="10.1" height="12" fill="#becad8"/>
+<rect x="403.6" y="536" width="10.1" height="12" fill="#c9d2dc"/>
+<rect x="413.2" y="536" width="10.1" height="12" fill="#d4dae1"/>
+<rect x="422.8" y="536" width="10.1" height="12" fill="#dfe3e5"/>
+<rect x="432.4" y="536" width="10.1" height="12" fill="#eaebea"/>
+<rect x="442.0" y="536" width="10.1" height="12" fill="#eeeae7"/>
+<rect x="451.6" y="536" width="10.1" height="12" fill="#ebe0dd"/>
+<rect x="461.2" y="536" width="10.1" height="12" fill="#e8d7d4"/>
+<rect x="470.8" y="536" width="10.1" height="12" fill="#e5cdca"/>
+<rect x="480.4" y="536" width="10.1" height="12" fill="#e2c3c0"/>
+<rect x="490.0" y="536" width="10.1" height="12" fill="#dfb9b7"/>
+<rect x="499.6" y="536" width="10.1" height="12" fill="#dcafad"/>
+<rect x="509.2" y="536" width="10.1" height="12" fill="#d9a6a3"/>
+<rect x="518.8" y="536" width="10.1" height="12" fill="#d59c9a"/>
+<rect x="528.4" y="536" width="10.1" height="12" fill="#d29290"/>
+<rect x="538.0" y="536" width="10.1" height="12" fill="#cf8886"/>
+<rect x="547.6" y="536" width="10.1" height="12" fill="#cc7e7d"/>
+<rect x="557.2" y="536" width="10.1" height="12" fill="#c97573"/>
+<rect x="566.8" y="536" width="10.1" height="12" fill="#c66b69"/>
+<rect x="576.4" y="536" width="10.1" height="12" fill="#c3615f"/>
+<rect x="586.0" y="536" width="10.1" height="12" fill="#c05756"/>
+<rect x="595.6" y="536" width="10.1" height="12" fill="#bc4d4c"/>
+<rect x="605.2" y="536" width="10.1" height="12" fill="#b94442"/>
+<rect x="614.8" y="536" width="10.1" height="12" fill="#b63a39"/>
+<rect x="624.4" y="536" width="10.1" height="12" fill="#b3302f"/>
+<text x="250.0" y="564.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">-3.87</text>
+<text x="442.0" y="564.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0</text>
+<text x="634.0" y="564.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">+3.87</text>
+<text x="646.0" y="547.0" font-family="sans-serif" font-size="11" text-anchor="start" fill="#1f1f1e" font-weight="normal">mean paired Δ in outer-training SD units</text>
+<text x="16.0" y="596.0" font-family="sans-serif" font-size="11" text-anchor="start" fill="#5f5e5a" font-weight="normal">n = 682 images per cell (5 outer folds pooled, both classes; mean over finite values); each image standardized by its own fold&#x27;s outer-training original mean/SD.</text>
+</svg>

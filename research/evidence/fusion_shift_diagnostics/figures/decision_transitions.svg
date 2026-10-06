@@ -1,0 +1,167 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="436" viewBox="0 0 960 436">
+<rect width="960" height="436" fill="#ffffff"/>
+<text x="16.0" y="26.0" font-family="sans-serif" font-size="16" text-anchor="start" fill="#1f1f1e" font-weight="bold">Decision transitions vs original</text>
+<text x="16.0" y="46.0" font-family="sans-serif" font-size="12" text-anchor="start" fill="#5f5e5a" font-weight="normal">development_real · post-hoc exploratory · frozen 4C.3B models, 0 fits</text>
+<rect x="230.0" y="68" width="12" height="12" rx="2" fill="#2a78d6"/>
+<text x="248.0" y="78.0" font-family="sans-serif" font-size="12" text-anchor="start" fill="#1f1f1e" font-weight="normal">correct → correct</text>
+<rect x="400.0" y="68" width="12" height="12" rx="2" fill="#eb6834"/>
+<text x="418.0" y="78.0" font-family="sans-serif" font-size="12" text-anchor="start" fill="#1f1f1e" font-weight="normal">correct → wrong</text>
+<rect x="570.0" y="68" width="12" height="12" rx="2" fill="#1baf7a"/>
+<text x="588.0" y="78.0" font-family="sans-serif" font-size="12" text-anchor="start" fill="#1f1f1e" font-weight="normal">wrong → correct</text>
+<rect x="740.0" y="68" width="12" height="12" rx="2" fill="#eda100"/>
+<text x="758.0" y="78.0" font-family="sans-serif" font-size="12" text-anchor="start" fill="#1f1f1e" font-weight="normal">wrong → wrong</text>
+<rect x="230" y="104" width="330" height="260" fill="none" stroke="#e6e5e1"/>
+<line x1="230.0" y1="104" x2="230.0" y2="364" stroke="#e6e5e1"/>
+<text x="230.0" y="379.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0</text>
+<line x1="312.5" y1="104" x2="312.5" y2="364" stroke="#e6e5e1"/>
+<text x="312.5" y="379.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0.25</text>
+<line x1="395.0" y1="104" x2="395.0" y2="364" stroke="#e6e5e1"/>
+<text x="395.0" y="379.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0.5</text>
+<line x1="477.5" y1="104" x2="477.5" y2="364" stroke="#e6e5e1"/>
+<text x="477.5" y="379.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0.75</text>
+<line x1="560.0" y1="104" x2="560.0" y2="364" stroke="#e6e5e1"/>
+<text x="560.0" y="379.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">1</text>
+<text x="395.0" y="396.0" font-family="sans-serif" font-size="12" text-anchor="middle" fill="#1f1f1e" font-weight="normal">fraction of images of the class</text>
+<text x="395.0" y="98.0" font-family="sans-serif" font-size="12" text-anchor="middle" fill="#1f1f1e" font-weight="bold">late_fusion_stacked</text>
+<text x="220.0" y="121.0" font-family="sans-serif" font-size="11" text-anchor="end" fill="#1f1f1e" font-weight="normal">jpeg_q95 · authentic</text>
+<rect x="230.0" y="108" width="200.3" height="18" fill="#2a78d6"><title>late_fusion_stacked · jpeg_q95 · authentic · correct → correct: 209 of 341</title></rect>
+<text x="330.1" y="121.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#ffffff" font-weight="normal">209</text>
+<rect x="432.3" y="108" width="11.5" height="18" fill="#1baf7a"><title>late_fusion_stacked · jpeg_q95 · authentic · wrong → correct: 14 of 341</title></rect>
+<rect x="445.8" y="108" width="112.2" height="18" fill="#eda100"><title>late_fusion_stacked · jpeg_q95 · authentic · wrong → wrong: 118 of 341</title></rect>
+<text x="501.9" y="121.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#1f1f1e" font-weight="normal">118</text>
+<text x="220.0" y="147.0" font-family="sans-serif" font-size="11" text-anchor="end" fill="#1f1f1e" font-weight="normal">jpeg_q95 · ai_edited</text>
+<rect x="230.0" y="134" width="175.1" height="18" fill="#2a78d6"><title>late_fusion_stacked · jpeg_q95 · ai_edited · correct → correct: 183 of 341</title></rect>
+<text x="317.5" y="147.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#ffffff" font-weight="normal">183</text>
+<rect x="407.1" y="134" width="16.4" height="18" fill="#eb6834"><title>late_fusion_stacked · jpeg_q95 · ai_edited · correct → wrong: 19 of 341</title></rect>
+<rect x="425.5" y="134" width="132.5" height="18" fill="#eda100"><title>late_fusion_stacked · jpeg_q95 · ai_edited · wrong → wrong: 139 of 341</title></rect>
+<text x="491.7" y="147.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#1f1f1e" font-weight="normal">139</text>
+<text x="220.0" y="173.0" font-family="sans-serif" font-size="11" text-anchor="end" fill="#1f1f1e" font-weight="normal">jpeg_q75 · authentic</text>
+<rect x="230.0" y="160" width="200.3" height="18" fill="#2a78d6"><title>late_fusion_stacked · jpeg_q75 · authentic · correct → correct: 209 of 341</title></rect>
+<text x="330.1" y="173.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#ffffff" font-weight="normal">209</text>
+<rect x="432.3" y="160" width="100.6" height="18" fill="#1baf7a"><title>late_fusion_stacked · jpeg_q75 · authentic · wrong → correct: 106 of 341</title></rect>
+<text x="482.5" y="173.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#1f1f1e" font-weight="normal">106</text>
+<rect x="534.8" y="160" width="23.2" height="18" fill="#eda100"><title>late_fusion_stacked · jpeg_q75 · authentic · wrong → wrong: 26 of 341</title></rect>
+<text x="220.0" y="199.0" font-family="sans-serif" font-size="11" text-anchor="end" fill="#1f1f1e" font-weight="normal">jpeg_q75 · ai_edited</text>
+<rect x="230.0" y="186" width="40.6" height="18" fill="#2a78d6"><title>late_fusion_stacked · jpeg_q75 · ai_edited · correct → correct: 44 of 341</title></rect>
+<text x="250.3" y="199.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#ffffff" font-weight="normal">44</text>
+<rect x="272.6" y="186" width="150.9" height="18" fill="#eb6834"><title>late_fusion_stacked · jpeg_q75 · ai_edited · correct → wrong: 158 of 341</title></rect>
+<text x="348.0" y="199.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#ffffff" font-weight="normal">158</text>
+<rect x="425.5" y="186" width="0.5" height="18" fill="#1baf7a"><title>late_fusion_stacked · jpeg_q75 · ai_edited · wrong → correct: 1 of 341</title></rect>
+<rect x="426.5" y="186" width="131.5" height="18" fill="#eda100"><title>late_fusion_stacked · jpeg_q75 · ai_edited · wrong → wrong: 138 of 341</title></rect>
+<text x="492.2" y="199.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#1f1f1e" font-weight="normal">138</text>
+<text x="220.0" y="225.0" font-family="sans-serif" font-size="11" text-anchor="end" fill="#1f1f1e" font-weight="normal">jpeg_q50 · authentic</text>
+<rect x="230.0" y="212" width="198.3" height="18" fill="#2a78d6"><title>late_fusion_stacked · jpeg_q50 · authentic · correct → correct: 207 of 341</title></rect>
+<text x="329.2" y="225.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#ffffff" font-weight="normal">207</text>
+<rect x="430.3" y="212" width="0.5" height="18" fill="#eb6834"><title>late_fusion_stacked · jpeg_q50 · authentic · correct → wrong: 2 of 341</title></rect>
+<rect x="432.3" y="212" width="116.1" height="18" fill="#1baf7a"><title>late_fusion_stacked · jpeg_q50 · authentic · wrong → correct: 122 of 341</title></rect>
+<text x="490.3" y="225.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#1f1f1e" font-weight="normal">122</text>
+<rect x="550.3" y="212" width="7.7" height="18" fill="#eda100"><title>late_fusion_stacked · jpeg_q50 · authentic · wrong → wrong: 10 of 341</title></rect>
+<text x="220.0" y="251.0" font-family="sans-serif" font-size="11" text-anchor="end" fill="#1f1f1e" font-weight="normal">jpeg_q50 · ai_edited</text>
+<rect x="230.0" y="238" width="21.2" height="18" fill="#2a78d6"><title>late_fusion_stacked · jpeg_q50 · ai_edited · correct → correct: 24 of 341</title></rect>
+<rect x="253.2" y="238" width="170.3" height="18" fill="#eb6834"><title>late_fusion_stacked · jpeg_q50 · ai_edited · correct → wrong: 178 of 341</title></rect>
+<text x="338.4" y="251.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#ffffff" font-weight="normal">178</text>
+<rect x="425.5" y="238" width="0.5" height="18" fill="#1baf7a"><title>late_fusion_stacked · jpeg_q50 · ai_edited · wrong → correct: 2 of 341</title></rect>
+<rect x="427.4" y="238" width="130.6" height="18" fill="#eda100"><title>late_fusion_stacked · jpeg_q50 · ai_edited · wrong → wrong: 137 of 341</title></rect>
+<text x="492.7" y="251.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#1f1f1e" font-weight="normal">137</text>
+<text x="220.0" y="277.0" font-family="sans-serif" font-size="11" text-anchor="end" fill="#1f1f1e" font-weight="normal">resize_0.5 · authentic</text>
+<rect x="230.0" y="264" width="37.7" height="18" fill="#2a78d6"><title>late_fusion_stacked · resize_0.5 · authentic · correct → correct: 41 of 341</title></rect>
+<text x="248.8" y="277.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#ffffff" font-weight="normal">41</text>
+<rect x="269.7" y="264" width="160.6" height="18" fill="#eb6834"><title>late_fusion_stacked · resize_0.5 · authentic · correct → wrong: 168 of 341</title></rect>
+<text x="350.0" y="277.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#ffffff" font-weight="normal">168</text>
+<rect x="432.3" y="264" width="125.7" height="18" fill="#eda100"><title>late_fusion_stacked · resize_0.5 · authentic · wrong → wrong: 132 of 341</title></rect>
+<text x="495.1" y="277.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#1f1f1e" font-weight="normal">132</text>
+<text x="220.0" y="303.0" font-family="sans-serif" font-size="11" text-anchor="end" fill="#1f1f1e" font-weight="normal">resize_0.5 · ai_edited</text>
+<rect x="230.0" y="290" width="193.5" height="18" fill="#2a78d6"><title>late_fusion_stacked · resize_0.5 · ai_edited · correct → correct: 202 of 341</title></rect>
+<text x="326.7" y="303.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#ffffff" font-weight="normal">202</text>
+<rect x="425.5" y="290" width="107.4" height="18" fill="#1baf7a"><title>late_fusion_stacked · resize_0.5 · ai_edited · wrong → correct: 113 of 341</title></rect>
+<text x="479.2" y="303.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#1f1f1e" font-weight="normal">113</text>
+<rect x="534.8" y="290" width="23.2" height="18" fill="#eda100"><title>late_fusion_stacked · resize_0.5 · ai_edited · wrong → wrong: 26 of 341</title></rect>
+<text x="220.0" y="329.0" font-family="sans-serif" font-size="11" text-anchor="end" fill="#1f1f1e" font-weight="normal">resize_0.5_jpeg_q75 · authentic</text>
+<rect x="230.0" y="316" width="200.3" height="18" fill="#2a78d6"><title>late_fusion_stacked · resize_0.5_jpeg_q75 · authentic · correct → correct: 209 of 341</title></rect>
+<text x="330.1" y="329.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#ffffff" font-weight="normal">209</text>
+<rect x="432.3" y="316" width="95.7" height="18" fill="#1baf7a"><title>late_fusion_stacked · resize_0.5_jpeg_q75 · authentic · wrong → correct: 101 of 341</title></rect>
+<text x="480.1" y="329.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#1f1f1e" font-weight="normal">101</text>
+<rect x="530.0" y="316" width="28.0" height="18" fill="#eda100"><title>late_fusion_stacked · resize_0.5_jpeg_q75 · authentic · wrong → wrong: 31 of 341</title></rect>
+<text x="544.0" y="329.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#1f1f1e" font-weight="normal">31</text>
+<text x="220.0" y="355.0" font-family="sans-serif" font-size="11" text-anchor="end" fill="#1f1f1e" font-weight="normal">resize_0.5_jpeg_q75 · ai_edited</text>
+<rect x="230.0" y="342" width="46.4" height="18" fill="#2a78d6"><title>late_fusion_stacked · resize_0.5_jpeg_q75 · ai_edited · correct → correct: 50 of 341</title></rect>
+<text x="253.2" y="355.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#ffffff" font-weight="normal">50</text>
+<rect x="278.4" y="342" width="145.1" height="18" fill="#eb6834"><title>late_fusion_stacked · resize_0.5_jpeg_q75 · ai_edited · correct → wrong: 152 of 341</title></rect>
+<text x="350.9" y="355.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#ffffff" font-weight="normal">152</text>
+<rect x="425.5" y="342" width="0.5" height="18" fill="#1baf7a"><title>late_fusion_stacked · resize_0.5_jpeg_q75 · ai_edited · wrong → correct: 1 of 341</title></rect>
+<rect x="426.5" y="342" width="131.5" height="18" fill="#eda100"><title>late_fusion_stacked · resize_0.5_jpeg_q75 · ai_edited · wrong → wrong: 138 of 341</title></rect>
+<text x="492.2" y="355.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#1f1f1e" font-weight="normal">138</text>
+<rect x="600" y="104" width="330" height="260" fill="none" stroke="#e6e5e1"/>
+<line x1="600.0" y1="104" x2="600.0" y2="364" stroke="#e6e5e1"/>
+<text x="600.0" y="379.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0</text>
+<line x1="682.5" y1="104" x2="682.5" y2="364" stroke="#e6e5e1"/>
+<text x="682.5" y="379.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0.25</text>
+<line x1="765.0" y1="104" x2="765.0" y2="364" stroke="#e6e5e1"/>
+<text x="765.0" y="379.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0.5</text>
+<line x1="847.5" y1="104" x2="847.5" y2="364" stroke="#e6e5e1"/>
+<text x="847.5" y="379.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0.75</text>
+<line x1="930.0" y1="104" x2="930.0" y2="364" stroke="#e6e5e1"/>
+<text x="930.0" y="379.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">1</text>
+<text x="765.0" y="396.0" font-family="sans-serif" font-size="12" text-anchor="middle" fill="#1f1f1e" font-weight="normal">fraction of images of the class</text>
+<text x="765.0" y="98.0" font-family="sans-serif" font-size="12" text-anchor="middle" fill="#1f1f1e" font-weight="bold">visual_calibrated</text>
+<rect x="600.0" y="108" width="198.3" height="18" fill="#2a78d6"><title>visual_calibrated · jpeg_q95 · authentic · correct → correct: 207 of 341</title></rect>
+<text x="699.2" y="121.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#ffffff" font-weight="normal">207</text>
+<rect x="800.3" y="108" width="0.5" height="18" fill="#eb6834"><title>visual_calibrated · jpeg_q95 · authentic · correct → wrong: 2 of 341</title></rect>
+<rect x="802.3" y="108" width="0.5" height="18" fill="#1baf7a"><title>visual_calibrated · jpeg_q95 · authentic · wrong → correct: 1 of 341</title></rect>
+<rect x="803.2" y="108" width="124.8" height="18" fill="#eda100"><title>visual_calibrated · jpeg_q95 · authentic · wrong → wrong: 131 of 341</title></rect>
+<text x="865.6" y="121.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#1f1f1e" font-weight="normal">131</text>
+<rect x="600.0" y="134" width="178.0" height="18" fill="#2a78d6"><title>visual_calibrated · jpeg_q95 · ai_edited · correct → correct: 186 of 341</title></rect>
+<text x="689.0" y="147.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#ffffff" font-weight="normal">186</text>
+<rect x="780.0" y="134" width="0.5" height="18" fill="#1baf7a"><title>visual_calibrated · jpeg_q95 · ai_edited · wrong → correct: 1 of 341</title></rect>
+<rect x="781.0" y="134" width="147.0" height="18" fill="#eda100"><title>visual_calibrated · jpeg_q95 · ai_edited · wrong → wrong: 154 of 341</title></rect>
+<text x="854.5" y="147.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#1f1f1e" font-weight="normal">154</text>
+<rect x="600.0" y="160" width="199.3" height="18" fill="#2a78d6"><title>visual_calibrated · jpeg_q75 · authentic · correct → correct: 208 of 341</title></rect>
+<text x="699.6" y="173.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#ffffff" font-weight="normal">208</text>
+<rect x="801.3" y="160" width="0.5" height="18" fill="#eb6834"><title>visual_calibrated · jpeg_q75 · authentic · correct → wrong: 1 of 341</title></rect>
+<rect x="802.3" y="160" width="0.5" height="18" fill="#1baf7a"><title>visual_calibrated · jpeg_q75 · authentic · wrong → correct: 2 of 341</title></rect>
+<rect x="804.2" y="160" width="123.8" height="18" fill="#eda100"><title>visual_calibrated · jpeg_q75 · authentic · wrong → wrong: 130 of 341</title></rect>
+<text x="866.1" y="173.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#1f1f1e" font-weight="normal">130</text>
+<rect x="600.0" y="186" width="176.1" height="18" fill="#2a78d6"><title>visual_calibrated · jpeg_q75 · ai_edited · correct → correct: 184 of 341</title></rect>
+<text x="688.0" y="199.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#ffffff" font-weight="normal">184</text>
+<rect x="778.1" y="186" width="0.5" height="18" fill="#eb6834"><title>visual_calibrated · jpeg_q75 · ai_edited · correct → wrong: 2 of 341</title></rect>
+<rect x="780.0" y="186" width="0.5" height="18" fill="#1baf7a"><title>visual_calibrated · jpeg_q75 · ai_edited · wrong → correct: 2 of 341</title></rect>
+<rect x="781.9" y="186" width="146.1" height="18" fill="#eda100"><title>visual_calibrated · jpeg_q75 · ai_edited · wrong → wrong: 153 of 341</title></rect>
+<text x="855.0" y="199.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#1f1f1e" font-weight="normal">153</text>
+<rect x="600.0" y="212" width="194.5" height="18" fill="#2a78d6"><title>visual_calibrated · jpeg_q50 · authentic · correct → correct: 203 of 341</title></rect>
+<text x="697.2" y="225.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#ffffff" font-weight="normal">203</text>
+<rect x="796.5" y="212" width="3.8" height="18" fill="#eb6834"><title>visual_calibrated · jpeg_q50 · authentic · correct → wrong: 6 of 341</title></rect>
+<rect x="802.3" y="212" width="3.8" height="18" fill="#1baf7a"><title>visual_calibrated · jpeg_q50 · authentic · wrong → correct: 6 of 341</title></rect>
+<rect x="808.1" y="212" width="119.9" height="18" fill="#eda100"><title>visual_calibrated · jpeg_q50 · authentic · wrong → wrong: 126 of 341</title></rect>
+<text x="868.0" y="225.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#1f1f1e" font-weight="normal">126</text>
+<rect x="600.0" y="238" width="172.2" height="18" fill="#2a78d6"><title>visual_calibrated · jpeg_q50 · ai_edited · correct → correct: 180 of 341</title></rect>
+<text x="686.1" y="251.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#ffffff" font-weight="normal">180</text>
+<rect x="774.2" y="238" width="3.8" height="18" fill="#eb6834"><title>visual_calibrated · jpeg_q50 · ai_edited · correct → wrong: 6 of 341</title></rect>
+<rect x="780.0" y="238" width="2.8" height="18" fill="#1baf7a"><title>visual_calibrated · jpeg_q50 · ai_edited · wrong → correct: 5 of 341</title></rect>
+<rect x="784.8" y="238" width="143.2" height="18" fill="#eda100"><title>visual_calibrated · jpeg_q50 · ai_edited · wrong → wrong: 150 of 341</title></rect>
+<text x="856.4" y="251.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#1f1f1e" font-weight="normal">150</text>
+<rect x="600.0" y="264" width="198.3" height="18" fill="#2a78d6"><title>visual_calibrated · resize_0.5 · authentic · correct → correct: 207 of 341</title></rect>
+<text x="699.2" y="277.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#ffffff" font-weight="normal">207</text>
+<rect x="800.3" y="264" width="0.5" height="18" fill="#eb6834"><title>visual_calibrated · resize_0.5 · authentic · correct → wrong: 2 of 341</title></rect>
+<rect x="802.3" y="264" width="0.5" height="18" fill="#1baf7a"><title>visual_calibrated · resize_0.5 · authentic · wrong → correct: 2 of 341</title></rect>
+<rect x="804.2" y="264" width="123.8" height="18" fill="#eda100"><title>visual_calibrated · resize_0.5 · authentic · wrong → wrong: 130 of 341</title></rect>
+<text x="866.1" y="277.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#1f1f1e" font-weight="normal">130</text>
+<rect x="600.0" y="290" width="177.0" height="18" fill="#2a78d6"><title>visual_calibrated · resize_0.5 · ai_edited · correct → correct: 185 of 341</title></rect>
+<text x="688.5" y="303.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#ffffff" font-weight="normal">185</text>
+<rect x="779.0" y="290" width="0.5" height="18" fill="#eb6834"><title>visual_calibrated · resize_0.5 · ai_edited · correct → wrong: 1 of 341</title></rect>
+<rect x="780.0" y="290" width="0.5" height="18" fill="#1baf7a"><title>visual_calibrated · resize_0.5 · ai_edited · wrong → correct: 1 of 341</title></rect>
+<rect x="781.0" y="290" width="147.0" height="18" fill="#eda100"><title>visual_calibrated · resize_0.5 · ai_edited · wrong → wrong: 154 of 341</title></rect>
+<text x="854.5" y="303.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#1f1f1e" font-weight="normal">154</text>
+<rect x="600.0" y="316" width="195.4" height="18" fill="#2a78d6"><title>visual_calibrated · resize_0.5_jpeg_q75 · authentic · correct → correct: 204 of 341</title></rect>
+<text x="697.7" y="329.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#ffffff" font-weight="normal">204</text>
+<rect x="797.4" y="316" width="2.8" height="18" fill="#eb6834"><title>visual_calibrated · resize_0.5_jpeg_q75 · authentic · correct → wrong: 5 of 341</title></rect>
+<rect x="802.3" y="316" width="5.7" height="18" fill="#1baf7a"><title>visual_calibrated · resize_0.5_jpeg_q75 · authentic · wrong → correct: 8 of 341</title></rect>
+<rect x="810.0" y="316" width="118.0" height="18" fill="#eda100"><title>visual_calibrated · resize_0.5_jpeg_q75 · authentic · wrong → wrong: 124 of 341</title></rect>
+<text x="869.0" y="329.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#1f1f1e" font-weight="normal">124</text>
+<rect x="600.0" y="342" width="169.3" height="18" fill="#2a78d6"><title>visual_calibrated · resize_0.5_jpeg_q75 · ai_edited · correct → correct: 177 of 341</title></rect>
+<text x="684.6" y="355.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#ffffff" font-weight="normal">177</text>
+<rect x="771.3" y="342" width="6.7" height="18" fill="#eb6834"><title>visual_calibrated · resize_0.5_jpeg_q75 · ai_edited · correct → wrong: 9 of 341</title></rect>
+<rect x="780.0" y="342" width="5.7" height="18" fill="#1baf7a"><title>visual_calibrated · resize_0.5_jpeg_q75 · ai_edited · wrong → correct: 8 of 341</title></rect>
+<rect x="787.7" y="342" width="140.3" height="18" fill="#eda100"><title>visual_calibrated · resize_0.5_jpeg_q75 · ai_edited · wrong → wrong: 147 of 341</title></rect>
+<text x="857.9" y="355.0" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#1f1f1e" font-weight="normal">147</text>
+<text x="16.0" y="424.0" font-family="sans-serif" font-size="11" text-anchor="start" fill="#5f5e5a" font-weight="normal">n = 341 images per class per row; decision = probability ≥ 0.5 → ai_edited; original decision vs condition decision, 5 outer folds pooled.</text>
+</svg>

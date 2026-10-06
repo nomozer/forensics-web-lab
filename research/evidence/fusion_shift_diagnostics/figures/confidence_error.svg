@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="356" viewBox="0 0 920 356">
+<rect width="920" height="356" fill="#ffffff"/>
+<text x="16.0" y="26.0" font-family="sans-serif" font-size="16" text-anchor="start" fill="#1f1f1e" font-weight="bold">Confidence and high-confidence errors</text>
+<text x="16.0" y="46.0" font-family="sans-serif" font-size="12" text-anchor="start" fill="#5f5e5a" font-weight="normal">development_real · post-hoc exploratory · frozen 4C.3B models, 0 fits</text>
+<rect x="170.0" y="68" width="12" height="12" rx="2" fill="#2a78d6"/>
+<text x="188.0" y="78.0" font-family="sans-serif" font-size="12" text-anchor="start" fill="#1f1f1e" font-weight="normal">late_fusion_stacked</text>
+<rect x="390.0" y="68" width="12" height="12" rx="2" fill="#eb6834"/>
+<text x="408.0" y="78.0" font-family="sans-serif" font-size="12" text-anchor="start" fill="#1f1f1e" font-weight="normal">visual_calibrated</text>
+<rect x="170" y="104" width="330" height="180" fill="none" stroke="#e6e5e1"/>
+<line x1="170.0" y1="104" x2="170.0" y2="284" stroke="#e6e5e1"/>
+<text x="170.0" y="299.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0</text>
+<line x1="252.5" y1="104" x2="252.5" y2="284" stroke="#e6e5e1"/>
+<text x="252.5" y="299.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0.25</text>
+<line x1="335.0" y1="104" x2="335.0" y2="284" stroke="#e6e5e1"/>
+<text x="335.0" y="299.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0.5</text>
+<line x1="417.5" y1="104" x2="417.5" y2="284" stroke="#e6e5e1"/>
+<text x="417.5" y="299.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0.75</text>
+<line x1="500.0" y1="104" x2="500.0" y2="284" stroke="#e6e5e1"/>
+<text x="500.0" y="299.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">1</text>
+<text x="335.0" y="316.0" font-family="sans-serif" font-size="12" text-anchor="middle" fill="#1f1f1e" font-weight="normal">coverage at τ = 0.65 (fraction of images)</text>
+<text x="160.0" y="123.0" font-family="sans-serif" font-size="12" text-anchor="end" fill="#1f1f1e" font-weight="normal">original</text>
+<circle cx="231.9" cy="115.0" r="4.5" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>late_fusion_stacked · original · coverage at τ = 0.65 (fraction of images): 0.188</title></circle>
+<circle cx="214.5" cy="123.0" r="4.5" fill="#eb6834" stroke="#ffffff" stroke-width="2"><title>visual_calibrated · original · coverage at τ = 0.65 (fraction of images): 0.135</title></circle>
+<text x="160.0" y="153.0" font-family="sans-serif" font-size="12" text-anchor="end" fill="#1f1f1e" font-weight="normal">jpeg_q95</text>
+<circle cx="231.5" cy="145.0" r="4.5" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>late_fusion_stacked · jpeg_q95 · coverage at τ = 0.65 (fraction of images): 0.186</title></circle>
+<circle cx="215.5" cy="153.0" r="4.5" fill="#eb6834" stroke="#ffffff" stroke-width="2"><title>visual_calibrated · jpeg_q95 · coverage at τ = 0.65 (fraction of images): 0.138</title></circle>
+<text x="160.0" y="183.0" font-family="sans-serif" font-size="12" text-anchor="end" fill="#1f1f1e" font-weight="normal">jpeg_q75</text>
+<circle cx="364.5" cy="175.0" r="4.5" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>late_fusion_stacked · jpeg_q75 · coverage at τ = 0.65 (fraction of images): 0.589</title></circle>
+<circle cx="213.5" cy="183.0" r="4.5" fill="#eb6834" stroke="#ffffff" stroke-width="2"><title>visual_calibrated · jpeg_q75 · coverage at τ = 0.65 (fraction of images): 0.132</title></circle>
+<text x="160.0" y="213.0" font-family="sans-serif" font-size="12" text-anchor="end" fill="#1f1f1e" font-weight="normal">jpeg_q50</text>
+<circle cx="425.5" cy="205.0" r="4.5" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>late_fusion_stacked · jpeg_q50 · coverage at τ = 0.65 (fraction of images): 0.774</title></circle>
+<circle cx="213.5" cy="213.0" r="4.5" fill="#eb6834" stroke="#ffffff" stroke-width="2"><title>visual_calibrated · jpeg_q50 · coverage at τ = 0.65 (fraction of images): 0.132</title></circle>
+<text x="160.0" y="243.0" font-family="sans-serif" font-size="12" text-anchor="end" fill="#1f1f1e" font-weight="normal">resize_0.5</text>
+<circle cx="336.5" cy="235.0" r="4.5" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>late_fusion_stacked · resize_0.5 · coverage at τ = 0.65 (fraction of images): 0.504</title></circle>
+<circle cx="215.5" cy="243.0" r="4.5" fill="#eb6834" stroke="#ffffff" stroke-width="2"><title>visual_calibrated · resize_0.5 · coverage at τ = 0.65 (fraction of images): 0.138</title></circle>
+<text x="160.0" y="273.0" font-family="sans-serif" font-size="12" text-anchor="end" fill="#1f1f1e" font-weight="normal">resize_0.5_jpeg_q75</text>
+<circle cx="341.3" cy="265.0" r="4.5" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>late_fusion_stacked · resize_0.5_jpeg_q75 · coverage at τ = 0.65 (fraction of images): 0.519</title></circle>
+<circle cx="211.1" cy="273.0" r="4.5" fill="#eb6834" stroke="#ffffff" stroke-width="2"><title>visual_calibrated · resize_0.5_jpeg_q75 · coverage at τ = 0.65 (fraction of images): 0.125</title></circle>
+<rect x="560" y="104" width="330" height="180" fill="none" stroke="#e6e5e1"/>
+<line x1="560.0" y1="104" x2="560.0" y2="284" stroke="#e6e5e1"/>
+<text x="560.0" y="299.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0</text>
+<line x1="642.5" y1="104" x2="642.5" y2="284" stroke="#e6e5e1"/>
+<text x="642.5" y="299.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0.25</text>
+<line x1="725.0" y1="104" x2="725.0" y2="284" stroke="#e6e5e1"/>
+<text x="725.0" y="299.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0.5</text>
+<line x1="807.5" y1="104" x2="807.5" y2="284" stroke="#e6e5e1"/>
+<text x="807.5" y="299.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0.75</text>
+<line x1="890.0" y1="104" x2="890.0" y2="284" stroke="#e6e5e1"/>
+<text x="890.0" y="299.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">1</text>
+<text x="725.0" y="316.0" font-family="sans-serif" font-size="12" text-anchor="middle" fill="#1f1f1e" font-weight="normal">errors among covered images at τ = 0.65</text>
+<circle cx="668.3" cy="115.0" r="4.5" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>late_fusion_stacked · original · errors among covered images at τ = 0.65: 0.328</title></circle>
+<circle cx="671.2" cy="123.0" r="4.5" fill="#eb6834" stroke="#ffffff" stroke-width="2"><title>visual_calibrated · original · errors among covered images at τ = 0.65: 0.337</title></circle>
+<circle cx="669.1" cy="145.0" r="4.5" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>late_fusion_stacked · jpeg_q95 · errors among covered images at τ = 0.65: 0.331</title></circle>
+<circle cx="668.8" cy="153.0" r="4.5" fill="#eb6834" stroke="#ffffff" stroke-width="2"><title>visual_calibrated · jpeg_q95 · errors among covered images at τ = 0.65: 0.330</title></circle>
+<circle cx="705.3" cy="175.0" r="4.5" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>late_fusion_stacked · jpeg_q75 · errors among covered images at τ = 0.65: 0.440</title></circle>
+<circle cx="662.7" cy="183.0" r="4.5" fill="#eb6834" stroke="#ffffff" stroke-width="2"><title>visual_calibrated · jpeg_q75 · errors among covered images at τ = 0.65: 0.311</title></circle>
+<circle cx="717.5" cy="205.0" r="4.5" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>late_fusion_stacked · jpeg_q50 · errors among covered images at τ = 0.65: 0.477</title></circle>
+<circle cx="662.7" cy="213.0" r="4.5" fill="#eb6834" stroke="#ffffff" stroke-width="2"><title>visual_calibrated · jpeg_q50 · errors among covered images at τ = 0.65: 0.311</title></circle>
+<circle cx="701.0" cy="235.0" r="4.5" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>late_fusion_stacked · resize_0.5 · errors among covered images at τ = 0.65: 0.427</title></circle>
+<circle cx="668.8" cy="243.0" r="4.5" fill="#eb6834" stroke="#ffffff" stroke-width="2"><title>visual_calibrated · resize_0.5 · errors among covered images at τ = 0.65: 0.330</title></circle>
+<circle cx="708.2" cy="265.0" r="4.5" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>late_fusion_stacked · resize_0.5_jpeg_q75 · errors among covered images at τ = 0.65: 0.449</title></circle>
+<circle cx="672.6" cy="273.0" r="4.5" fill="#eb6834" stroke="#ffffff" stroke-width="2"><title>visual_calibrated · resize_0.5_jpeg_q75 · errors among covered images at τ = 0.65: 0.341</title></circle>
+<text x="16.0" y="344.0" font-family="sans-serif" font-size="11" text-anchor="start" fill="#5f5e5a" font-weight="normal">n = 682 images per condition (both classes, 5 outer folds pooled). Higher coverage is not higher quality; see the error panel.</text>
+</svg>
