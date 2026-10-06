@@ -1,3 +1,18 @@
+## Phase 4C.6B — Controlled DSP-Augmentation Experiment: Real Execution and Analysis Report
+
+- **Mục tiêu**: Execute controlled DSP-augmentation protocol on real 341 development sources across 5 outer folds; evaluate if augmented DSP branch rescues late fusion under JPEG/resize.
+- **Execution**: Preflight `PREFLIGHT_PASS` (0 fits, exact reproduction $\le 10^{-9}$ vs 4C.3B/4C.4B); pilot completed fold 0 (92 fits, gate PASS); full completed all 5 folds (`baseline_model_equal: true`, `budget_check: PASS`); total 460 fits (305 baseline + 155 augmented), 0 unconverged, 0 failed attempts; 0 image reads/inference.
+- **Verify**: Analyzer verified 10,000 paired source-cluster bootstrap replicates (PCG64 seed 20261006); `--verify` mode `REPRODUCED` across all 7 output artifacts.
+- **Primary endpoint**: `late_fusion_dsp_augmented` − `late_fusion_original` at `jpeg_q75`: ΔMacro-F1 = +0.1363 [95% CI: +0.1057, +0.1681], verdict `EXPLORATORY_JPEG75_IMPROVEMENT` (Macro-F1 rescued from 0.4401 to 0.5764).
+- **Secondary findings**: Strong rescue on severe JPEG (q50 +0.1736 [0.1424, 0.2044]), downsampling (resize +0.1388 [0.1077, 0.1713]) and compound transforms (+0.1332 [0.1027, 0.1649]); trade-off on original clean images: Macro-F1 falls from 0.6026 to 0.5777 (Δ = -0.0249 [-0.0464, -0.0045]), matching visual-only (0.5787); high-confidence errors tightly bounded at 29-33 across all conditions.
+- **Limits**: Development/exploratory only; 0 locked-test access; web UI remains uncertain / Model not installed.
+- **Verification**: 49/49 augmentation tests, hermetic suite, Node test/typecheck/build, continuity PASS.
+- **Kết quả**: `EXPLORATORY_JPEG75_IMPROVEMENT` (status `COMPLETED_EXPLORATORY_EVIDENCE_PRODUCED`).
+- **Evidence**: `research/evidence/dsp_augmentation/`, `research/evidence/phase-4c.6b/`.
+- **Next**: Merge `claude/elegant-edison-uentky` into `main` via merge commit, verify branch and main CI, delete branch.
+
+---
+
 ## Phase 4C.6A — Controlled DSP-Augmentation Experiment: Protocol Lock, Implementation and Synthetic Verification
 
 - **Mục tiêu**: Test whether training the DSP branch on JPEG/resize variants reduces the 4C.4B late-fusion degradation while keeping original-image performance; development/exploratory only.
