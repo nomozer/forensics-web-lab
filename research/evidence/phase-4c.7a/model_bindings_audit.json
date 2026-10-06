@@ -1,0 +1,193 @@
+{
+  "audit_version": "1.0.0",
+  "phase": "Phase 4C.7A",
+  "source_experiment": "Phase 4C.6B Controlled DSP Augmentation",
+  "timestamp_utc": "2026-10-06T14:30:00Z",
+  "feature_contracts": {
+    "visual": {
+      "architecture": "MobileNetV3-Small (penultimate avgpool)",
+      "dimension": 576,
+      "weights_sha256_registered": "047dcff4addef86ea5bc2eff13c9614dc11f47ab1160d0a71a25e7db994f4e1f"
+    },
+    "dsp": {
+      "module": "ml/training/dsp_features.py",
+      "extractor_function": "extract_dsp_features",
+      "dimension": 16,
+      "feature_names_order": [
+        "fft_high_freq_energy_ratio",
+        "fft_spectral_peak_count",
+        "fft_radial_anomaly_score",
+        "fft_spectral_decay_slope",
+        "dct_mean_high_freq_energy",
+        "dct_ac_energy_variance",
+        "dct_anomaly_score",
+        "noise_global_level",
+        "noise_max_to_min_ratio",
+        "noise_std_of_variances",
+        "noise_coef_variation",
+        "noise_inconsistency_score",
+        "jpeg_boundary_difference_ratio",
+        "jpeg_periodic_grid_strength",
+        "jpeg_artifact_score",
+        "laplacian_variance"
+      ]
+    }
+  },
+  "outer_folds": [
+    {
+      "outer_fold": 0,
+      "model_path": "data/research/local-artifacts/dsp_augmentation/fits/outer_0/fold_model.json",
+      "model_exists": true,
+      "receipt_path": "data/research/local-artifacts/dsp_augmentation/fits/outer_0/fold_receipt.json",
+      "receipt_exists": true,
+      "model_size_bytes": 58418,
+      "model_sha256": "232d0994775a6e6cfdfb1bb3fd79f28557439e372e15e4760d0ffbbdba72f609",
+      "receipt_size_bytes": 8618,
+      "receipt_sha256": "97e9a1ddd4721bbf068932f30c9d0d26c3720a334f544647c2fe1733c6da8df8",
+      "receipt_cross_reference_match": true,
+      "parameters": {
+        "visual_dimension": 576,
+        "visual_scaler_dimension": [
+          576,
+          576
+        ],
+        "visual_temperature": 0.5420008590662588,
+        "dsp_dimension": 16,
+        "dsp_scaler_dimension": [
+          16,
+          16
+        ],
+        "dsp_temperature": 1.4215778631967944,
+        "stacker_coef_shape": 2,
+        "stacker_intercept": 0.0002861873153704029
+      },
+      "dimensions_valid": true,
+      "status": "AUDIT_VERIFIED"
+    },
+    {
+      "outer_fold": 1,
+      "model_path": "data/research/local-artifacts/dsp_augmentation/fits/outer_1/fold_model.json",
+      "model_exists": true,
+      "receipt_path": "data/research/local-artifacts/dsp_augmentation/fits/outer_1/fold_receipt.json",
+      "receipt_exists": true,
+      "model_size_bytes": 58030,
+      "model_sha256": "c07c582322f7671f3b9f352f5d5388f5a39cec5fa11c80d8441cbb366a3fc15f",
+      "receipt_size_bytes": 8629,
+      "receipt_sha256": "adc65030fd29517447d1bd411166b80ac3d0221615af4ef86797c2ed7e0f31eb",
+      "receipt_cross_reference_match": true,
+      "parameters": {
+        "visual_dimension": 576,
+        "visual_scaler_dimension": [
+          576,
+          576
+        ],
+        "visual_temperature": 2.299137530644595,
+        "dsp_dimension": 16,
+        "dsp_scaler_dimension": [
+          16,
+          16
+        ],
+        "dsp_temperature": 1.183542420040067,
+        "stacker_coef_shape": 2,
+        "stacker_intercept": 0.0021920462681607336
+      },
+      "dimensions_valid": true,
+      "status": "AUDIT_VERIFIED"
+    },
+    {
+      "outer_fold": 2,
+      "model_path": "data/research/local-artifacts/dsp_augmentation/fits/outer_2/fold_model.json",
+      "model_exists": true,
+      "receipt_path": "data/research/local-artifacts/dsp_augmentation/fits/outer_2/fold_receipt.json",
+      "receipt_exists": true,
+      "model_size_bytes": 58465,
+      "model_sha256": "8a979e35339f1ab2728f6c96d94ce2ef828ad13aad66e0e3ae8339a1be8fb324",
+      "receipt_size_bytes": 8620,
+      "receipt_sha256": "6f9bbb8274163f6ea2964f87c7e2ccda83b633a68c28e0220aa4380a23ccae56",
+      "receipt_cross_reference_match": true,
+      "parameters": {
+        "visual_dimension": 576,
+        "visual_scaler_dimension": [
+          576,
+          576
+        ],
+        "visual_temperature": 0.5927459179086769,
+        "dsp_dimension": 16,
+        "dsp_scaler_dimension": [
+          16,
+          16
+        ],
+        "dsp_temperature": 1.295468254638128,
+        "stacker_coef_shape": 2,
+        "stacker_intercept": -0.006892807839629521
+      },
+      "dimensions_valid": true,
+      "status": "AUDIT_VERIFIED"
+    },
+    {
+      "outer_fold": 3,
+      "model_path": "data/research/local-artifacts/dsp_augmentation/fits/outer_3/fold_model.json",
+      "model_exists": true,
+      "receipt_path": "data/research/local-artifacts/dsp_augmentation/fits/outer_3/fold_receipt.json",
+      "receipt_exists": true,
+      "model_size_bytes": 58455,
+      "model_sha256": "60358c2fbdfd54d96dee68a1ce43106560ee4da5792343c0d14d85beb1d5fca3",
+      "receipt_size_bytes": 8622,
+      "receipt_sha256": "8f142ebf42e1d009f5514290c7fb2a0abc5d79e7071b8589a16adc9963233cef",
+      "receipt_cross_reference_match": true,
+      "parameters": {
+        "visual_dimension": 576,
+        "visual_scaler_dimension": [
+          576,
+          576
+        ],
+        "visual_temperature": 0.5963652405885848,
+        "dsp_dimension": 16,
+        "dsp_scaler_dimension": [
+          16,
+          16
+        ],
+        "dsp_temperature": 1.2045839400628424,
+        "stacker_coef_shape": 2,
+        "stacker_intercept": -0.014392266196387336
+      },
+      "dimensions_valid": true,
+      "status": "AUDIT_VERIFIED"
+    },
+    {
+      "outer_fold": 4,
+      "model_path": "data/research/local-artifacts/dsp_augmentation/fits/outer_4/fold_model.json",
+      "model_exists": true,
+      "receipt_path": "data/research/local-artifacts/dsp_augmentation/fits/outer_4/fold_receipt.json",
+      "receipt_exists": true,
+      "model_size_bytes": 58390,
+      "model_sha256": "efe517db09c5aecdd219eabc878b6f538e908c03b8b8c0648b2d0f6ec4356a6c",
+      "receipt_size_bytes": 8625,
+      "receipt_sha256": "90c321316eaae111d036196b838d88376f4bfb019207d7418d62e2f50ceb5863",
+      "receipt_cross_reference_match": true,
+      "parameters": {
+        "visual_dimension": 576,
+        "visual_scaler_dimension": [
+          576,
+          576
+        ],
+        "visual_temperature": 0.5095913480208861,
+        "dsp_dimension": 16,
+        "dsp_scaler_dimension": [
+          16,
+          16
+        ],
+        "dsp_temperature": 1.5644952834717845,
+        "stacker_coef_shape": 2,
+        "stacker_intercept": -0.005972408955450188
+      },
+      "dimensions_valid": true,
+      "status": "AUDIT_VERIFIED"
+    }
+  ],
+  "hash_discrepancy_reconciliation": {
+    "findings": "The SHA-256 hashes in 'candidate_model_bindings.json' match 100% byte-for-byte with the physical fold_model.json files produced by Phase 4C.6B. The alternate hashes appearing in the prior conversation chat summary text (e.g., outer_0 starting with e5c1d6...) were hallucinated text in the Markdown response and never existed in any physical file, git commit, or receipt in the repository.",
+    "authoritative_source": "data/research/local-artifacts/dsp_augmentation/fits/outer_k/fold_model.json"
+  },
+  "all_candidate_models_verified": true
+}

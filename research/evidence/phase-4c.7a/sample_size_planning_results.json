@@ -1,0 +1,338 @@
+{
+  "metadata": {
+    "title": "Monte Carlo Sample Size Planning Simulation",
+    "phase": "Phase 4C.7A",
+    "methodology": "Paired Source-Cluster Simulation & True Estimand Bootstrap",
+    "simulation_class": "SYNTHETIC PLANNING \u2014 NOT REAL PERFORMANCE",
+    "prng": "PCG64",
+    "locked_seed": 20261007,
+    "cohorts_per_setting": 50,
+    "bootstrap_replicates_per_cohort": 500,
+    "alpha_twosided": 0.05,
+    "alpha_onesided": 0.025,
+    "timestamp_utc": "2026-10-06T14:40:00Z"
+  },
+  "scenarios": {
+    "null": {
+      "sample_size_evaluations": [
+        {
+          "num_pairs": 100,
+          "total_images": 200,
+          "empirical_mean_delta": 0.0013,
+          "empirical_sd_delta": 0.0103,
+          "power_or_rejection_rate": 0.04,
+          "monte_carlo_se": 0.0277,
+          "mean_ci_lower_95": -0.0174,
+          "mean_ci_upper_95": 0.0202,
+          "mean_ci_width": 0.0376,
+          "mean_margin_of_error": 0.0188
+        },
+        {
+          "num_pairs": 200,
+          "total_images": 400,
+          "empirical_mean_delta": -0.0013,
+          "empirical_sd_delta": 0.0067,
+          "power_or_rejection_rate": 0.02,
+          "monte_carlo_se": 0.0198,
+          "mean_ci_lower_95": -0.0147,
+          "mean_ci_upper_95": 0.012,
+          "mean_ci_width": 0.0266,
+          "mean_margin_of_error": 0.0133
+        },
+        {
+          "num_pairs": 300,
+          "total_images": 600,
+          "empirical_mean_delta": 0.0016,
+          "empirical_sd_delta": 0.0053,
+          "power_or_rejection_rate": 0.04,
+          "monte_carlo_se": 0.0277,
+          "mean_ci_lower_95": -0.0095,
+          "mean_ci_upper_95": 0.0124,
+          "mean_ci_width": 0.0219,
+          "mean_margin_of_error": 0.011
+        },
+        {
+          "num_pairs": 400,
+          "total_images": 800,
+          "empirical_mean_delta": -0.0007,
+          "empirical_sd_delta": 0.0051,
+          "power_or_rejection_rate": 0.02,
+          "monte_carlo_se": 0.0198,
+          "mean_ci_lower_95": -0.0101,
+          "mean_ci_upper_95": 0.0088,
+          "mean_ci_width": 0.0189,
+          "mean_margin_of_error": 0.0095
+        },
+        {
+          "num_pairs": 500,
+          "total_images": 1000,
+          "empirical_mean_delta": 0.0005,
+          "empirical_sd_delta": 0.0045,
+          "power_or_rejection_rate": 0.02,
+          "monte_carlo_se": 0.0198,
+          "mean_ci_lower_95": -0.0081,
+          "mean_ci_upper_95": 0.0091,
+          "mean_ci_width": 0.0172,
+          "mean_margin_of_error": 0.0086
+        }
+      ]
+    },
+    "subtle": {
+      "sample_size_evaluations": [
+        {
+          "num_pairs": 100,
+          "total_images": 200,
+          "empirical_mean_delta": 0.0279,
+          "empirical_sd_delta": 0.0101,
+          "power_or_rejection_rate": 0.82,
+          "monte_carlo_se": 0.0543,
+          "mean_ci_lower_95": 0.0089,
+          "mean_ci_upper_95": 0.0476,
+          "mean_ci_width": 0.0386,
+          "mean_margin_of_error": 0.0193
+        },
+        {
+          "num_pairs": 200,
+          "total_images": 400,
+          "empirical_mean_delta": 0.0276,
+          "empirical_sd_delta": 0.0067,
+          "power_or_rejection_rate": 0.96,
+          "monte_carlo_se": 0.0277,
+          "mean_ci_lower_95": 0.014,
+          "mean_ci_upper_95": 0.0418,
+          "mean_ci_width": 0.0278,
+          "mean_margin_of_error": 0.0139
+        },
+        {
+          "num_pairs": 300,
+          "total_images": 600,
+          "empirical_mean_delta": 0.0273,
+          "empirical_sd_delta": 0.0057,
+          "power_or_rejection_rate": 0.98,
+          "monte_carlo_se": 0.0198,
+          "mean_ci_lower_95": 0.016,
+          "mean_ci_upper_95": 0.0387,
+          "mean_ci_width": 0.0227,
+          "mean_margin_of_error": 0.0114
+        },
+        {
+          "num_pairs": 400,
+          "total_images": 800,
+          "empirical_mean_delta": 0.0282,
+          "empirical_sd_delta": 0.0052,
+          "power_or_rejection_rate": 1.0,
+          "monte_carlo_se": 0.0,
+          "mean_ci_lower_95": 0.0186,
+          "mean_ci_upper_95": 0.0382,
+          "mean_ci_width": 0.0196,
+          "mean_margin_of_error": 0.0098
+        },
+        {
+          "num_pairs": 500,
+          "total_images": 1000,
+          "empirical_mean_delta": 0.0282,
+          "empirical_sd_delta": 0.0047,
+          "power_or_rejection_rate": 1.0,
+          "monte_carlo_se": 0.0,
+          "mean_ci_lower_95": 0.0194,
+          "mean_ci_upper_95": 0.0371,
+          "mean_ci_width": 0.0177,
+          "mean_margin_of_error": 0.0088
+        }
+      ]
+    },
+    "small": {
+      "sample_size_evaluations": [
+        {
+          "num_pairs": 100,
+          "total_images": 200,
+          "empirical_mean_delta": 0.0548,
+          "empirical_sd_delta": 0.01,
+          "power_or_rejection_rate": 1.0,
+          "monte_carlo_se": 0.0,
+          "mean_ci_lower_95": 0.0339,
+          "mean_ci_upper_95": 0.0776,
+          "mean_ci_width": 0.0437,
+          "mean_margin_of_error": 0.0218
+        },
+        {
+          "num_pairs": 200,
+          "total_images": 400,
+          "empirical_mean_delta": 0.0563,
+          "empirical_sd_delta": 0.0072,
+          "power_or_rejection_rate": 1.0,
+          "monte_carlo_se": 0.0,
+          "mean_ci_lower_95": 0.0409,
+          "mean_ci_upper_95": 0.0724,
+          "mean_ci_width": 0.0315,
+          "mean_margin_of_error": 0.0158
+        },
+        {
+          "num_pairs": 300,
+          "total_images": 600,
+          "empirical_mean_delta": 0.0551,
+          "empirical_sd_delta": 0.0075,
+          "power_or_rejection_rate": 1.0,
+          "monte_carlo_se": 0.0,
+          "mean_ci_lower_95": 0.0425,
+          "mean_ci_upper_95": 0.0682,
+          "mean_ci_width": 0.0257,
+          "mean_margin_of_error": 0.0128
+        },
+        {
+          "num_pairs": 400,
+          "total_images": 800,
+          "empirical_mean_delta": 0.0545,
+          "empirical_sd_delta": 0.0063,
+          "power_or_rejection_rate": 1.0,
+          "monte_carlo_se": 0.0,
+          "mean_ci_lower_95": 0.0438,
+          "mean_ci_upper_95": 0.0657,
+          "mean_ci_width": 0.0218,
+          "mean_margin_of_error": 0.0109
+        },
+        {
+          "num_pairs": 500,
+          "total_images": 1000,
+          "empirical_mean_delta": 0.0553,
+          "empirical_sd_delta": 0.0048,
+          "power_or_rejection_rate": 1.0,
+          "monte_carlo_se": 0.0,
+          "mean_ci_lower_95": 0.0454,
+          "mean_ci_upper_95": 0.0654,
+          "mean_ci_width": 0.0199,
+          "mean_margin_of_error": 0.01
+        }
+      ]
+    },
+    "moderate": {
+      "sample_size_evaluations": [
+        {
+          "num_pairs": 100,
+          "total_images": 200,
+          "empirical_mean_delta": 0.1072,
+          "empirical_sd_delta": 0.016,
+          "power_or_rejection_rate": 1.0,
+          "monte_carlo_se": 0.0,
+          "mean_ci_lower_95": 0.0797,
+          "mean_ci_upper_95": 0.1372,
+          "mean_ci_width": 0.0576,
+          "mean_margin_of_error": 0.0288
+        },
+        {
+          "num_pairs": 200,
+          "total_images": 400,
+          "empirical_mean_delta": 0.1084,
+          "empirical_sd_delta": 0.0105,
+          "power_or_rejection_rate": 1.0,
+          "monte_carlo_se": 0.0,
+          "mean_ci_lower_95": 0.0886,
+          "mean_ci_upper_95": 0.1293,
+          "mean_ci_width": 0.0407,
+          "mean_margin_of_error": 0.0204
+        },
+        {
+          "num_pairs": 300,
+          "total_images": 600,
+          "empirical_mean_delta": 0.1084,
+          "empirical_sd_delta": 0.0097,
+          "power_or_rejection_rate": 1.0,
+          "monte_carlo_se": 0.0,
+          "mean_ci_lower_95": 0.0919,
+          "mean_ci_upper_95": 0.1256,
+          "mean_ci_width": 0.0337,
+          "mean_margin_of_error": 0.0169
+        },
+        {
+          "num_pairs": 400,
+          "total_images": 800,
+          "empirical_mean_delta": 0.1073,
+          "empirical_sd_delta": 0.0072,
+          "power_or_rejection_rate": 1.0,
+          "monte_carlo_se": 0.0,
+          "mean_ci_lower_95": 0.0931,
+          "mean_ci_upper_95": 0.1223,
+          "mean_ci_width": 0.0292,
+          "mean_margin_of_error": 0.0146
+        },
+        {
+          "num_pairs": 500,
+          "total_images": 1000,
+          "empirical_mean_delta": 0.1073,
+          "empirical_sd_delta": 0.0064,
+          "power_or_rejection_rate": 1.0,
+          "monte_carlo_se": 0.0,
+          "mean_ci_lower_95": 0.0945,
+          "mean_ci_upper_95": 0.1205,
+          "mean_ci_width": 0.026,
+          "mean_margin_of_error": 0.013
+        }
+      ]
+    },
+    "large": {
+      "sample_size_evaluations": [
+        {
+          "num_pairs": 100,
+          "total_images": 200,
+          "empirical_mean_delta": 0.1552,
+          "empirical_sd_delta": 0.0154,
+          "power_or_rejection_rate": 1.0,
+          "monte_carlo_se": 0.0,
+          "mean_ci_lower_95": 0.1209,
+          "mean_ci_upper_95": 0.1921,
+          "mean_ci_width": 0.0713,
+          "mean_margin_of_error": 0.0356
+        },
+        {
+          "num_pairs": 200,
+          "total_images": 400,
+          "empirical_mean_delta": 0.1567,
+          "empirical_sd_delta": 0.0154,
+          "power_or_rejection_rate": 1.0,
+          "monte_carlo_se": 0.0,
+          "mean_ci_lower_95": 0.1317,
+          "mean_ci_upper_95": 0.1826,
+          "mean_ci_width": 0.0509,
+          "mean_margin_of_error": 0.0254
+        },
+        {
+          "num_pairs": 300,
+          "total_images": 600,
+          "empirical_mean_delta": 0.1578,
+          "empirical_sd_delta": 0.0125,
+          "power_or_rejection_rate": 1.0,
+          "monte_carlo_se": 0.0,
+          "mean_ci_lower_95": 0.1374,
+          "mean_ci_upper_95": 0.1791,
+          "mean_ci_width": 0.0418,
+          "mean_margin_of_error": 0.0209
+        },
+        {
+          "num_pairs": 400,
+          "total_images": 800,
+          "empirical_mean_delta": 0.1546,
+          "empirical_sd_delta": 0.0095,
+          "power_or_rejection_rate": 1.0,
+          "monte_carlo_se": 0.0,
+          "mean_ci_lower_95": 0.1369,
+          "mean_ci_upper_95": 0.1728,
+          "mean_ci_width": 0.0359,
+          "mean_margin_of_error": 0.018
+        },
+        {
+          "num_pairs": 500,
+          "total_images": 1000,
+          "empirical_mean_delta": 0.1571,
+          "empirical_sd_delta": 0.0068,
+          "power_or_rejection_rate": 1.0,
+          "monte_carlo_se": 0.0,
+          "mean_ci_lower_95": 0.1411,
+          "mean_ci_upper_95": 0.1734,
+          "mean_ci_width": 0.0323,
+          "mean_margin_of_error": 0.0162
+        }
+      ]
+    }
+  },
+  "execution_wall_seconds": 110.08
+}

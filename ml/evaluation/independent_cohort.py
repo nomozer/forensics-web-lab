@@ -37,6 +37,8 @@ class CohortSample:
     image_sha256: str
     tool: str | None = None
     mask_relpath: str | None = None
+    width: int | None = None
+    height: int | None = None
 
 
 @dataclass(frozen=True)
@@ -52,7 +54,7 @@ class CohortPair:
 def load_historical_source_ids(manifest_path: Path | str | None = None) -> set[str]:
     """Extract historical source IDs from the committed Option P manifest.
 
-    Reads only source_id metadata. Strictly avoids reading locked-test images or features.
+    Reads only metadata. Strictly avoids reading locked-test images or features.
     """
     path = Path(manifest_path) if manifest_path is not None else DEFAULT_HISTORICAL_MANIFEST
     if not path.is_file():
@@ -68,21 +70,65 @@ def load_historical_source_ids(manifest_path: Path | str | None = None) -> set[s
     return source_ids
 
 
+def load_historical_image_hashes(manifest_path: Path | str | None = None) -> set[str]:
+    """Extract all historical image SHA-256 hashes from Option P manifest.
+
+    Used by the disjoint guard to block exact duplicates or renamed historic images.
+    """
+    path = Path(manifest_path) if manifest_path is not None else DEFAULT_HISTORICAL_MANIFEST
+    if not path.is_file():
+        raise FileNotFoundError(f"Historical manifest not found at {path}")
+
+    hashes: set[str] = set()
+    with path.open("r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            auth_sha = row.get("authentic_sha256", "").strip().lower()
+            edit_sha = row.get("canonical_edit_sha256", "").strip().lower()
+            if auth_sha:
+                hashes.add(auth_sha)
+            if edit_sha:
+                hashes.add(edit_sha)
+    return hashes
+
+
+def load_historical_origin_ids(manifest_path: Path | str | None = None) -> set[str]:
+    """Extract all historical instance/origin IDs from Option P manifest."""
+    path = Path(manifest_path) if manifest_path is not None else DEFAULT_HISTORICAL_MANIFEST
+    if not path.is_file():
+        raise FileNotFoundError(f"Historical manifest not found at {path}")
+
+    origins: set[str] = set()
+    with path.open("r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            inst_id = row.get("instance_id", "").strip()
+            if inst_id:
+                origins.add(inst_id)
+    return origins
+
+
 def validate_cohort_manifest(
     manifest_rows: Sequence[dict[str, Any]],
     historical_sources: set[str] | None = None,
+    historical_hashes: set[str] | None = None,
+    historical_origins: set[str] | None = None,
 ) -> list[CohortPair]:
     """Validate manifest rows for an independent validation cohort.
 
     Rules:
     - Must be non-empty.
     - Each source_id must appear exactly twice: once with label 'authentic' (0) and once with 'ai_edited' (1).
-    - No source_id may belong to historical_sources (disjoint guard).
-    - Image paths and non-empty SHA-256 strings must be provided.
+    - Source-Disjoint Guard: No source_id may belong to historical_sources.
+    - Image-Disjoint Guard: No image_sha256 may belong to historical_hashes.
+    - Origin-Disjoint Guard: No origin_id / instance_id may belong to historical_origins.
+    - Resolution Consistency: authentic and ai_edited of the same pair must share the same resolution if specified.
+    - Image paths and valid 64-char hex SHA-256 strings must be provided.
     """
     if not manifest_rows:
         raise CohortValidationError("Cohort manifest is empty.")
 
+    # 1. Source ID Disjoint Guard
     if historical_sources is not None and len(historical_sources) > 0:
         incoming_sources = {str(r.get("source_id", "")).strip() for r in manifest_rows}
         overlap = incoming_sources & historical_sources
@@ -91,6 +137,35 @@ def validate_cohort_manifest(
             raise SourceOverlapError(
                 f"Contamination detected: {len(overlap)} sources overlap with historical development/locked-test "
                 f"cohorts (e.g. {sample_overlap}). Independent cohort MUST be strictly source-disjoint."
+            )
+
+    # 2. Image SHA-256 Disjoint Guard (detects renamed historical files)
+    if historical_hashes is not None and len(historical_hashes) > 0:
+        incoming_hashes = {
+            str(r.get("image_sha256") or r.get("sha256") or "").strip().lower()
+            for r in manifest_rows
+        }
+        overlap_hashes = incoming_hashes & historical_hashes
+        if overlap_hashes:
+            sample_overlap_h = sorted(list(overlap_hashes))[:5]
+            raise SourceOverlapError(
+                f"Contamination detected: {len(overlap_hashes)} image SHA-256 hashes match historical Option P "
+                f"images (e.g. {sample_overlap_h}). Renamed historic images are strictly forbidden."
+            )
+
+    # 3. Origin / Instance ID Disjoint Guard
+    if historical_origins is not None and len(historical_origins) > 0:
+        incoming_origins = {
+            str(r.get("origin_id") or r.get("instance_id") or "").strip()
+            for r in manifest_rows
+            if r.get("origin_id") or r.get("instance_id")
+        }
+        overlap_origins = incoming_origins & historical_origins
+        if overlap_origins:
+            sample_overlap_o = sorted(list(overlap_origins))[:5]
+            raise SourceOverlapError(
+                f"Contamination detected: {len(overlap_origins)} origin IDs overlap with historical datasets "
+                f"(e.g. {sample_overlap_o})."
             )
 
     by_source: dict[str, dict[str, CohortSample]] = {}
@@ -119,6 +194,9 @@ def validate_cohort_manifest(
         if not sha256 or len(sha256) != 64:
             raise CohortValidationError(f"Row {idx} missing or invalid 64-char hex SHA-256")
 
+        w_val = int(row["width"]) if ("width" in row and row["width"] is not None and str(row["width"]).isdigit()) else None
+        h_val = int(row["height"]) if ("height" in row and row["height"] is not None and str(row["height"]).isdigit()) else None
+
         sample = CohortSample(
             source_id=source_id,
             label=label,
@@ -127,6 +205,8 @@ def validate_cohort_manifest(
             image_sha256=sha256,
             tool=row.get("tool"),
             mask_relpath=row.get("mask_relpath"),
+            width=w_val,
+            height=h_val,
         )
 
         if source_id not in by_source:
@@ -148,13 +228,27 @@ def validate_cohort_manifest(
         if "ai_edited" not in label_dict:
             raise CohortValidationError(f"Source '{source_id}' is missing required 'ai_edited' counterpart")
 
+        auth_s = label_dict["authentic"]
+        edit_s = label_dict["ai_edited"]
+
+        if (
+            auth_s.width is not None
+            and edit_s.width is not None
+            and (auth_s.width != edit_s.width or auth_s.height != edit_s.height)
+        ):
+            raise CohortValidationError(
+                f"Resolution mismatch for source '{source_id}': authentic is "
+                f"{auth_s.width}x{auth_s.height}, ai_edited is {edit_s.width}x{edit_s.height}. "
+                "Canvas dimensions must match."
+            )
+
         meta = pair_meta[source_id]
         pairs.append(
             CohortPair(
                 source_id=source_id,
-                authentic=label_dict["authentic"],
-                ai_edited=label_dict["ai_edited"],
-                tool=label_dict["ai_edited"].tool,
+                authentic=auth_s,
+                ai_edited=edit_s,
+                tool=edit_s.tool,
                 category=meta.get("category"),
                 license=meta.get("license"),
             )

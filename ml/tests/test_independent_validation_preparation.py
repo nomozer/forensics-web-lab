@@ -302,3 +302,102 @@ def test_synthetic_preflight_end_to_end_real_artifacts():
     assert result["primary_condition"] == PRIMARY_CONDITION
     assert set(result["conditions_evaluated"]) == set(CONDITIONS)
     assert result["bootstrap"]["replicates"] == 50
+
+
+def test_feature_order_exact_match_with_dsp_features():
+    """Verify that candidate model bindings feature contract matches DSP_FEATURE_NAMES exactly."""
+    from ml.training.dsp_features import DSP_FEATURE_NAMES
+
+    bindings_file = REPO_ROOT / "research/evidence/phase-4c.7a/candidate_model_bindings.json"
+    bindings = json.loads(bindings_file.read_text(encoding="utf-8"))
+    recorded_order = bindings["feature_contracts"]["dsp"]["feature_order"]
+
+    assert recorded_order == list(DSP_FEATURE_NAMES)
+    assert len(recorded_order) == 16
+
+
+def test_renamed_duplicate_source_detected_by_image_hash():
+    """Disjoint guard must detect and block renamed historical images matching historical SHA-256."""
+    fake_hist_hashes = {"a" * 64, "b" * 64}
+    valid_rows = generate_synthetic_planning_cohort(num_pairs=3, prefix="NEW_")
+
+    # Inject renamed historic image hash
+    bad_rows = copy.deepcopy(valid_rows)
+    bad_rows[0]["image_sha256"] = "a" * 64
+
+    with pytest.raises(SourceOverlapError, match="image SHA-256 hashes match historical"):
+        validate_cohort_manifest(bad_rows, historical_hashes=fake_hist_hashes)
+
+
+def test_origin_id_disjoint_guard():
+    """Disjoint guard must block duplicate origin / instance IDs."""
+    fake_hist_origins = {"surfboard_001", "car_002"}
+    valid_rows = generate_synthetic_planning_cohort(num_pairs=3, prefix="NEW_")
+
+    bad_rows = copy.deepcopy(valid_rows)
+    bad_rows[0]["origin_id"] = "surfboard_001"
+
+    with pytest.raises(SourceOverlapError, match="origin IDs overlap"):
+        validate_cohort_manifest(bad_rows, historical_origins=fake_hist_origins)
+
+
+def test_resolution_mismatch_in_pair_detected():
+    """Cohort validator must reject pairs where authentic and ai_edited resolutions differ."""
+    valid_rows = generate_synthetic_planning_cohort(num_pairs=2, prefix="RES_")
+    valid_rows[0]["width"] = 512
+    valid_rows[0]["height"] = 512
+    valid_rows[1]["width"] = 768  # mismatch!
+    valid_rows[1]["height"] = 512
+
+    with pytest.raises(CohortValidationError, match="Resolution mismatch"):
+        validate_cohort_manifest(valid_rows)
+
+
+def test_bootstrap_cluster_multiplicity():
+    """Source-cluster bootstrap must resample both authentic and ai_edited paired samples intact."""
+    source_ids = ["S1", "S1", "S2", "S2", "S3", "S3"]
+    labels = np.array([0, 1, 0, 1, 0, 1])
+    # Visual makes an error on sample 0 (authentic predicted as ai_edited with p=0.7)
+    vis_probs = [np.array([0.7, 0.8, 0.3, 0.7, 0.4, 0.6]) for _ in range(5)]
+    # Augmented correctly classifies all samples
+    aug_probs = [np.array([0.2, 0.9, 0.2, 0.8, 0.3, 0.7]) for _ in range(5)]
+
+    res = run_paired_source_cluster_bootstrap(
+        source_ids=source_ids,
+        labels=labels,
+        visual_model_probs=vis_probs,
+        augmented_model_probs=aug_probs,
+        replicates=200,
+        seed=20261007,
+    )
+    assert res["replicates"] == 200
+    assert res["mean_delta"] > 0
+
+
+def test_end_to_end_image_pipeline_hermetic():
+    """Verify complete image decode -> transform -> extraction -> scoring -> bootstrap with mock models."""
+    from ml.evaluation.independent_model_bindings import create_mock_candidate_models
+    from scripts.research.run_independent_validation import run_synthetic_image_preflight
+
+    mock_models = create_mock_candidate_models(seed=20261007)
+    res = run_synthetic_image_preflight(
+        num_pairs=4,
+        bootstrap_replicates=50,
+        seed=20261007,
+        models=mock_models,
+    )
+    assert res["status"] == "EVALUATION_SUCCESS"
+    assert res["is_synthetic"] is True
+    assert res["verdict"] == "SYNTHETIC_ONLY_NOT_MEASURED"
+    assert len(res["conditions_evaluated"]) == 6
+    assert res["bootstrap"]["replicates"] == 50
+
+
+def test_cli_execution_contract():
+    """Verify run_independent_validation CLI contract (--check-readiness)."""
+    from scripts.research.run_independent_validation import check_readiness
+
+    readiness = check_readiness()
+    assert readiness["phase"] == "4C.7A"
+    assert readiness["status"] == "PREPARATION_COMPLETE_PENDING_INDEPENDENT_COHORT"
+    assert readiness["ready_for_real_evaluation"] is False

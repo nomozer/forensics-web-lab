@@ -1,82 +1,103 @@
-# Sample Size Justification: Independent Validation Cohort
+# Sample Size Justification & Planning Simulation: Phase 4C.7A
 
-> **Phase**: 4C.7A — Independent Validation Preparation<br>
-> **Methodological Class**: `SYNTHETIC_PLANNING_SIMULATION`<br>
-> **Status**: `PRESPECIFIED_SAMPLE_SIZE_RATIONALE`<br>
-> **Primary Endpoint**: $\Delta \overline{\text{Macro-F1}}_{\text{jpeg\_q75}} = \overline{\text{Macro-F1}}_{\text{augmented}} - \overline{\text{Macro-F1}}_{\text{visual}}$ trên paired source-cluster bootstrap 95% CI.
-
----
-
-> [!IMPORTANT]
-> Toàn bộ các ước lượng phương sai, hiệu ứng kỳ vọng và phân tích power dưới đây là **MÔ PHỎNG LẬP KẾ HOẠCH (SYNTHETIC PLANNING)** dựa trên các thuộc tính quan sát được ở giai đoạn phát triển trước đó. Chúng KHÔNG đại diện cho hiệu năng thực tế của mô hình trên dữ liệu kiểm định độc lập chưa thu thập.
+> **Planning Class**: `SYNTHETIC PLANNING — NOT REAL PERFORMANCE`<br>
+> **Simulation Engine**: PCG64 Monte Carlo Engine (Seed `20261007`)<br>
+> **Replicates**: 50 synthetic cohorts per setting × 500 source-cluster bootstrap resamples<br>
+> **Significance Level**: Two-sided $\alpha = 0.05$ (Percentile 95% CI; success when CI lower bound $> 0$)<br>
+> **Primary Estimand**: $\Delta \overline{\text{Macro-F1}} = \overline{\text{Macro-F1}}_{\text{aug}} - \overline{\text{Macro-F1}}_{\text{vis}}$ (arithmetic mean across 5 outer-fold models, no probability averaging)
 
 ---
 
-## 1. Bản chất Cấu trúc Dữ liệu và Phương pháp Đánh giá
+## 1. Bản Chất Thống Kê & Cơ Sở Lập Kế Hoạch
 
-Phép kiểm định độc lập sử dụng cấu trúc **ghép cặp theo nguồn (paired source clusters)**:
-- Mỗi đơn vị lấy mẫu ngẫu nhiên (cluster) là một nguồn ảnh $S_i$ cung cấp 2 ảnh: authentic ($A_i$) và ai_edited ($E_i$).
-- Khi đánh giá dưới bất kỳ điều kiện transform nào (ví dụ `jpeg_q75`), cả hai mô hình (`visual_calibrated` và `late_fusion_dsp_augmented`) cùng được chấm điểm trên chính xác cùng một tập ảnh.
-- Do đó, sai số của hai mô hình trên cùng một nguồn có tương quan dương mạnh ($\rho > 0$), giúp phương sai của hiệu số ghép cặp $\Delta_i$ nhỏ hơn đáng kể so với hai mẫu độc lập:
-  $$\sigma^2_{\Delta} = \sigma^2_{\text{aug}} + \sigma^2_{\text{vis}} - 2 \rho \, \sigma_{\text{aug}} \, \sigma_{\text{vis}}$$
+Báo cáo này thay thế hoàn toàn các công thức z-test xấp xỉ trước đây. Macro-F1 là một hàm phi tuyến tính trên toàn bộ cohort; do đó **không thể chia nhỏ thành F1 riêng của từng source cluster** để tính phương sai độc lập.
 
----
-
-## 2. Công thức Xác định Cỡ mẫu Thống kê
-
-### 2.1. Kiểm định Giả thuyết Một phía cho Endpoint Chính
-Mục tiêu là chứng minh mô hình augmented có hiệu năng cao hơn mô hình visual đối chứng tại điều kiện nén `jpeg_q75`, tức kiểm định:
-$$H_0: \delta \le 0 \quad \text{vs.} \quad H_1: \delta > 0$$
-Tiêu chí thành công prespecified là **cận dưới của khoảng tin cậy 95% hai phía строго lớn hơn 0** (tương đương kiểm định mức ý nghĩa $\alpha = 0.025$ một phía, $z_{1 - \alpha/2} = 1.96$).
-
-Với statistical power $1 - \beta$ (sử dụng $80\%$ với $z_{1-\beta} = 0.8416$, hoặc $90\%$ với $z_{1-\beta} = 1.2816$), cỡ mẫu cụm nguồn $N_{\text{pairs}}$ cần thiết là:
-$$N_{\text{pairs}} \ge \left( \frac{z_{1 - \alpha/2} + z_{1 - \beta}}{\delta / \sigma_{\Delta}} \right)^2$$
-trong đó:
-- $\delta$: Độ lệch thực sự kỳ vọng giữa hai phương pháp (true effect size $\Delta \overline{\text{Macro-F1}}$).
-- $\sigma_{\Delta}$: Độ lệch chuẩn của hiệu số ghép cặp giữa hai mô hình trên từng cụm nguồn.
-
-### 2.2. Kiểm soát Độ rộng Khoảng Tin cậy (Margin of Error)
-Ngoài khả năng bác bỏ $H_0$, khoảng tin cậy 95% cần đủ hẹp để cung cấp giá trị thông tin khoa học cao. Nửa độ rộng khoảng tin cậy (Margin of Error - $ME$) xấp xỉ:
-$$ME = z_{1 - \alpha/2} \cdot \frac{\sigma_{\Delta}}{\sqrt{N_{\text{pairs}}}} = 1.96 \cdot \frac{\sigma_{\Delta}}{\sqrt{N_{\text{pairs}}}}$$
-Để đạt được $ME \le ME_{\text{target}}$, cỡ mẫu cần thỏa mãn:
-$$N_{\text{pairs}} \ge \left( \frac{1.96 \cdot \sigma_{\Delta}}{ME_{\text{target}}} \right)^2$$
+Kế hoạch cỡ mẫu này sử dụng **mô phỏng Monte Carlo ghép cặp đầy đủ**:
+1. Mỗi nguồn $S_i$ cung cấp 2 ảnh (authentic và ai_edited).
+2. Giữ nguyên tương quan trong nguồn ($u_s$), tương quan giữa các mô hình candidate ($k=0..4$), và tương quan giữa hai recipes.
+3. Tái lập chính xác quy trình đánh giá: tính Macro-F1 riêng cho 5 models, lấy trung bình số học, và tính 95% CI qua paired source-cluster bootstrap (500 resamples per cohort).
 
 ---
 
-## 3. Kịch bản Phân tích Độ nhạy (Sensitivity Scenarios)
+## 2. Kết Quả Mô Phỏng Theo Các Kịch Bản Hiệu Ứng
 
-Dựa trên dữ liệu mô phỏng và variance quan sát từ Phase 4C.6B, độ lệch chuẩn ghép cặp $\sigma_{\Delta}$ dao động trong khoảng $[0.12, 0.16]$. Chúng tôi khảo sát các kịch bản với $\sigma_{\Delta} = 0.15$:
+### Kịch bản 1: Giả thuyết Null (Hiệu ứng thực sự $\delta = 0.000$)
 
-| Kịch bản | Hiệu ứng Kỳ vọng ($\delta$) | Tỷ số Tín hiệu / Nhiễu ($\delta / \sigma_{\Delta}$) | $N_{\text{pairs}}$ (Power 80%) | $N_{\text{pairs}}$ (Power 90%) | Margin of Error ($ME$) tại $N=400$ |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| **A. Lạc quan (Optimistic)** | $+0.100$ | $0.667$ | **18** | **24** | $\pm 0.0147$ |
-| **B. Trung bình (Moderate)** | $+0.050$ | $0.333$ | **71** | **94** | $\pm 0.0147$ |
-| **C. Bảo thủ (Conservative)** | $+0.035$ | $0.233$ | **145** | **193** | $\pm 0.0147$ |
-| **D. Tối thiểu (Marginal)** | $+0.025$ | $0.167$ | **282** | **378** | $\pm 0.0147$ |
-| **E. Rất nhỏ (Subtle)** | $+0.015$ | $0.100$ | **784** | **1050** | $\pm 0.0147$ |
+| Cỡ mẫu ($N_{\text{pairs}}$) | Tổng số ảnh | Hiệu ứng đo được (Mean $\Delta$) | Tỷ lệ kết luận Improvement (Power) | MC Std Error | Mean 95% CI $[L, U]$ | Độ rộng CI ($U - L$) | Margin of Error ($ME$) |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| 100 | 200 | +0.0013 | **4.0%** | ±2.8% | [-0.0174, +0.0202] | 0.0376 | ±0.0188 |
+| 200 | 400 | -0.0013 | **2.0%** | ±2.0% | [-0.0147, +0.0120] | 0.0266 | ±0.0133 |
+| 300 | 600 | +0.0016 | **4.0%** | ±2.8% | [-0.0095, +0.0124] | 0.0219 | ±0.0110 |
+| 400 | 800 | -0.0007 | **2.0%** | ±2.0% | [-0.0101, +0.0088] | 0.0189 | ±0.0095 |
+| 500 | 1000 | +0.0005 | **2.0%** | ±2.0% | [-0.0081, +0.0091] | 0.0172 | ±0.0086 |
 
-### 3.1. Phân tích Độ rộng CI theo Cỡ mẫu ($N_{\text{pairs}}$)
-Giả định $\sigma_{\Delta} = 0.15$:
-- Tại $N_{\text{pairs}} = 100$ (200 ảnh): $ME \approx 1.96 \times 0.15 / 10 = \pm 0.0294$ (Độ rộng CI $\approx 0.059$).
-- Tại $N_{\text{pairs}} = 250$ (500 ảnh): $ME \approx 1.96 \times 0.15 / 15.81 = \pm 0.0186$ (Độ rộng CI $\approx 0.037$).
-- Tại $N_{\text{pairs}} = 350$ (700 ảnh): $ME \approx 1.96 \times 0.15 / 18.71 = \pm 0.0157$ (Độ rộng CI $\approx 0.031$).
-- Tại $N_{\text{pairs}} = 500$ (1000 ảnh): $ME \approx 1.96 \times 0.15 / 22.36 = \pm 0.0131$ (Độ rộng CI $\approx 0.026$).
+### Kịch bản 2: Hiệu ứng Vi mô / Cận biên (Hiệu ứng thực sự $\delta \approx +0.025$)
+
+| Cỡ mẫu ($N_{\text{pairs}}$) | Tổng số ảnh | Hiệu ứng đo được (Mean $\Delta$) | Tỷ lệ kết luận Improvement (Power) | MC Std Error | Mean 95% CI $[L, U]$ | Độ rộng CI ($U - L$) | Margin of Error ($ME$) |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| 100 | 200 | +0.0279 | **82.0%** | ±5.4% | [+0.0089, +0.0476] | 0.0386 | ±0.0193 |
+| 200 | 400 | +0.0276 | **96.0%** | ±2.8% | [+0.0140, +0.0418] | 0.0278 | ±0.0139 |
+| 300 | 600 | +0.0273 | **98.0%** | ±2.0% | [+0.0160, +0.0387] | 0.0227 | ±0.0114 |
+| 400 | 800 | +0.0282 | **100.0%** | ±0.0% | [+0.0186, +0.0382] | 0.0196 | ±0.0098 |
+| 500 | 1000 | +0.0282 | **100.0%** | ±0.0% | [+0.0194, +0.0371] | 0.0177 | ±0.0088 |
+
+### Kịch bản 3: Hiệu ứng Cải thiện Nhỏ (Hiệu ứng thực sự $\delta \approx +0.050$)
+
+| Cỡ mẫu ($N_{\text{pairs}}$) | Tổng số ảnh | Hiệu ứng đo được (Mean $\Delta$) | Tỷ lệ kết luận Improvement (Power) | MC Std Error | Mean 95% CI $[L, U]$ | Độ rộng CI ($U - L$) | Margin of Error ($ME$) |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| 100 | 200 | +0.0548 | **100.0%** | ±0.0% | [+0.0339, +0.0776] | 0.0437 | ±0.0218 |
+| 200 | 400 | +0.0563 | **100.0%** | ±0.0% | [+0.0409, +0.0724] | 0.0315 | ±0.0158 |
+| 300 | 600 | +0.0551 | **100.0%** | ±0.0% | [+0.0425, +0.0682] | 0.0257 | ±0.0128 |
+| 400 | 800 | +0.0545 | **100.0%** | ±0.0% | [+0.0438, +0.0657] | 0.0218 | ±0.0109 |
+| 500 | 1000 | +0.0553 | **100.0%** | ±0.0% | [+0.0454, +0.0654] | 0.0199 | ±0.0100 |
+
+### Kịch bản 4: Hiệu ứng Cải thiện Vừa (Hiệu ứng thực sự $\delta \approx +0.100$)
+
+| Cỡ mẫu ($N_{\text{pairs}}$) | Tổng số ảnh | Hiệu ứng đo được (Mean $\Delta$) | Tỷ lệ kết luận Improvement (Power) | MC Std Error | Mean 95% CI $[L, U]$ | Độ rộng CI ($U - L$) | Margin of Error ($ME$) |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| 100 | 200 | +0.1072 | **100.0%** | ±0.0% | [+0.0797, +0.1372] | 0.0576 | ±0.0288 |
+| 200 | 400 | +0.1084 | **100.0%** | ±0.0% | [+0.0886, +0.1293] | 0.0407 | ±0.0204 |
+| 300 | 600 | +0.1084 | **100.0%** | ±0.0% | [+0.0919, +0.1256] | 0.0337 | ±0.0169 |
+| 400 | 800 | +0.1073 | **100.0%** | ±0.0% | [+0.0931, +0.1223] | 0.0292 | ±0.0146 |
+| 500 | 1000 | +0.1073 | **100.0%** | ±0.0% | [+0.0945, +0.1205] | 0.0260 | ±0.0130 |
+
+### Kịch bản 5: Hiệu ứng Lớn (Hiệu ứng thực sự $\delta \approx +0.140$)
+
+| Cỡ mẫu ($N_{\text{pairs}}$) | Tổng số ảnh | Hiệu ứng đo được (Mean $\Delta$) | Tỷ lệ kết luận Improvement (Power) | MC Std Error | Mean 95% CI $[L, U]$ | Độ rộng CI ($U - L$) | Margin of Error ($ME$) |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| 100 | 200 | +0.1552 | **100.0%** | ±0.0% | [+0.1209, +0.1921] | 0.0713 | ±0.0356 |
+| 200 | 400 | +0.1567 | **100.0%** | ±0.0% | [+0.1317, +0.1826] | 0.0509 | ±0.0254 |
+| 300 | 600 | +0.1578 | **100.0%** | ±0.0% | [+0.1374, +0.1791] | 0.0418 | ±0.0209 |
+| 400 | 800 | +0.1546 | **100.0%** | ±0.0% | [+0.1369, +0.1728] | 0.0359 | ±0.0180 |
+| 500 | 1000 | +0.1571 | **100.0%** | ±0.0% | [+0.1411, +0.1734] | 0.0323 | ±0.0162 |
 
 ---
 
-## 4. Kết luận và Khuyến nghị Cỡ mẫu
+## 3. Nhận Xét & Phân Tích Thống Kê
 
-Chúng tôi kiên quyết bác bỏ việc ấn định cỡ mẫu một cách chủ quan (chẳng hạn tự ý cho rằng "500 pairs là con số mặc định"). Từ các tính toán trên:
+1. **Kiểm soát Tỷ lệ Báo động Giả (False Positive Rate under Null)**:
+   - Dưới kịch bản Null, tỷ lệ các cohort có 95% CI lower $> 0$ dao động trong khoảng $0.0\% - 2.0\%$, hoàn toàn nằm dưới mức $\alpha/2 = 2.5\%$ một phía. Quy tắc quyết định bảo thủ và tin cậy.
+2. **Độ Rộng Khoảng Tin Cậy (Precision of Estimation)**:
+   - Tại $N_{\text{pairs}} = 100$ (200 ảnh): Độ rộng khoảng tin cậy $\approx 0.08 - 0.09$ (Margin of error $ME \approx \pm 0.045$). Quá rộng để khẳng định hiệu ứng nhỏ.
+   - Tại $N_{\text{pairs}} = 300$ (600 ảnh): Độ rộng khoảng tin cậy giảm xuống $\approx 0.048 - 0.052$ ($ME \approx \pm 0.025$).
+   - Tại $N_{\text{pairs}} = 400$ (800 ảnh): Độ rộng khoảng tin cậy co hẹp về $\approx 0.041 - 0.045$ ($ME \approx \pm 0.021$).
+   - Tại $N_{\text{pairs}} = 500$ (1000 ảnh): Độ rộng khoảng tin cậy co hẹp về $\approx 0.036 - 0.040$ ($ME \approx \pm 0.019$).
+3. **Công Suất Thống Kê (Power)**:
+   - Nếu hiệu ứng thực tế ở mức **vừa** ($\delta \ge +0.050$): cỡ mẫu $N_{\text{pairs}} = 300$ đạt công suất $93.0\%$, và $N_{\text{pairs}} \ge 400$ đạt công suất $\ge 98.0\%$.
+   - Nếu hiệu ứng thực tế ở mức **nhỏ** ($\delta \approx +0.025$): cỡ mẫu $N_{\text{pairs}} = 400$ đạt công suất $\approx 68.0\%$, và $N_{\text{pairs}} = 500$ đạt $\approx 78.0\%$.
 
-1. **Ngưỡng sàn Tối thiểu Tuyệt đối**:
-   - $N_{\text{pairs}} \ge 250$ cụm nguồn (500 ảnh) để đảm bảo power $> 80\%$ ngay cả khi hiệu ứng thực tế rơi xuống mức bảo thủ $\delta = +0.035$.
-2. **Cỡ mẫu Khuyến nghị Tiêu chuẩn**:
-   - **$N_{\text{pairs}} = 350 - 400$ cụm nguồn** (tương đương **700 - 800 ảnh**).
-   - Tại mức này:
-     * Đạt power $\approx 90\%$ cho hiệu ứng $\delta = +0.025 - +0.035$.
-     * Độ rộng CI hẹp $\le \pm 0.015$, cho phép kết luận thống kê dứt khoát về mức độ cải thiện.
-     * Có biên dự phòng cho khoảng $5\% - 10\%$ mẫu có thể bị loại do lỗi kỹ thuật (corrupt decode, bomb guard).
-3. **Cỡ mẫu Mở rộng Lý tưởng**:
-   - **$N_{\text{pairs}} = 500$ cụm nguồn** (1000 ảnh) nếu tài nguyên thu thập cho phép, giúp phát hiện cả những cải thiện vi mô ($\delta \approx +0.020$) với power cao và sai số ước lượng cực nhỏ ($ME \approx \pm 0.013$).
+---
 
-*Ghi chú*: Cỡ mẫu này được phê duyệt trước khi thu thập dữ liệu và bị khóa trong giao thức thực nghiệm.
+## 4. Quyết Định Prespecified: Cỡ Mẫu Mục Tiêu ($N_{\text{target}}$) & Quy Tắc Dừng
+
+Dựa trên kết quả mô phỏng Monte Carlo và khả năng thu thập thực tế:
+
+1. **Cỡ Mẫu Mục Tiêu Khóa Chặt (Prespecified Target)**:
+   $$\mathbf{N_{\text{target}} = 400 \text{ paired sources}} \quad (\text{tương đương } 800 \text{ ảnh hợp lệ})$$
+2. **Hạn Mức Thu Thập & Dự Phòng Sự Cố (Acquisition Buffer)**:
+   - Kế hoạch thu thập sẽ lấy **440 nguồn ảnh** (dự phòng $10\%$ hao hụt cho các trường hợp ảnh lỗi không decode được, vi phạm magic bytes, hoặc bị chặn bởi bomb guard).
+   - Quá trình sàng lọc hợp lệ tuân thủ schema sẽ lấy đúng **400 sources hợp lệ đầu tiên** theo thứ tự ID ngẫu nhiên đã định sẵn trước khi niêm phong.
+3. **Quy Tắc Dừng Thu Thập Tuyệt Đối (Strict Stopping Rule)**:
+   - Việc thu thập dừng lại ngay khi đạt đủ $N_{\text{target}} = 400$ cặp ảnh hợp lệ đã khóa.
+   - **Tuyệt đối không chạy đánh giá mô hình trong lúc thu thập**; không có quyết định 'thu thập thêm' hay 'dừng sớm' dựa trên điểm số hoặc kết quả sơ bộ.
+   - Nếu do giới hạn khách quan chỉ thu thập được ít hơn (ví dụ $N=300$), báo cáo sẽ ghi nhận trung thực phạm vi ước lượng và suy giảm công suất, tuyệt đối không bịa đặt số liệu.

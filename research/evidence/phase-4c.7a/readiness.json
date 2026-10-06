@@ -3,12 +3,12 @@
   "status": "PREPARATION_COMPLETE_PENDING_INDEPENDENT_COHORT",
   "ready_for_real_evaluation": false,
   "protocol": {
-    "path": "ml\\configs\\independent_validation_protocol.yaml",
+    "path": "ml/configs/independent_validation_protocol.yaml",
     "exists": true,
     "sha256": "fd1ac2eef680e932ed1de0b085e68e86a6d3e30eb043594044753b736f643798"
   },
   "model_bindings": {
-    "path": "research\\evidence\\phase-4c.7a\\candidate_model_bindings.json",
+    "path": "research/evidence/phase-4c.7a/candidate_model_bindings.json",
     "exists": true,
     "models_verified_count": 5,
     "bindings_verified": true,
@@ -20,5 +20,5 @@
     "note": "Independent cohort acquisition plan locked; real cohort collection deferred to Phase 4C.7B."
   },
   "real_evaluation_performed": false,
-  "checked_at_utc": "2026-10-06T13:40:00Z"
+  "checked_at_utc": "2026-10-06T15:09:10.523882+00:00"
 }
