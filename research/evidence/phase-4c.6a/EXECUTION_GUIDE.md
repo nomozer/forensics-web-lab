@@ -15,6 +15,12 @@ feature comes from the verified 4C.3B / 4C.4B caches. Nothing reads the locked t
 | `--robustness-dir` | Phase 4C.4B robustness runner output (contains `full/`) | `full/scope_manifest.json`, `full/original_gate.json`, `full/conditions/<6>/{condition_receipt.json,features.npz,images.json,predictions.csv}` | `features.npz` keys `visual` `[682,576]`, `dsp` `[682,16]` float32; receipt SHAs bound in the protocol (`predecessors.robustness_full_scope`) |
 | `--output-dir` | **new** directory, outside Git or under `data/research/local-artifacts/` | — | refused inside the repository or inside any input directory |
 
+**Environment**: run on the same machine and Python/numpy/OpenBLAS build that produced the 4C.3B and
+4C.4B artifacts (the Windows workstation recorded in `research/evidence/development_robustness/full_scope_manifest.json`).
+float32 BLAS kernels differ between CPUs/builds by ~1e-7 in probability, which is enough to fail the 1e-9
+reconstruction gates (observed in the cloud with `OPENBLAS_CORETYPE` overrides). If a gate fails for this
+reason, stop and report it; do not loosen the tolerance and do not refit the history.
+
 ## 2. Commands
 
 ```powershell

@@ -161,7 +161,9 @@ def test_identical_variants_reproduce_baseline_c_selection(world, late_protocol)
         inner_folds=fold.inner_folds, base_config=late_protocol["base_classifier"],
     )
     assert augmented["best_C"] == base["best_C"] and augmented["inner_oof_keys"] == base["inner_oof_keys"]
-    np.testing.assert_allclose(augmented["inner_oof_logits"], base["inner_oof_logits"], atol=1e-4)
+    # Same objective summed differently (4 x 0.25 vs 1 x 1): agreement up to the L-BFGS stopping
+    # tolerance (sklearn tol=1e-4), not bit-for-bit; it varies with the float32 BLAS kernel.
+    np.testing.assert_allclose(augmented["inner_oof_logits"], base["inner_oof_logits"], rtol=1e-4, atol=1e-4)
     assert augmented["fits"] == base["fits"] == 4 * 7
 
 
@@ -257,14 +259,29 @@ def test_training_variants_change_only_the_augmented_dsp_branch(fold0, world, pr
 
 def test_each_prediction_depends_only_on_its_own_image(fold0, world):
     models = fold0["scorers"]
-    source = world["folds"][0].outer_test[0]
-    i = world["source_ids"].index(source)
-    single = aug.score_images(models, world["visual"]["jpeg_q75"][i, 1][None, :], world["dsp"]["jpeg_q75"][i, 1][None, :])
+    outer_test = world["folds"][0].outer_test
+    index = {s: i for i, s in enumerate(world["source_ids"])}
+    x_visual = clf.stack_sources(world["visual"]["jpeg_q75"], index, outer_test)[0]
+    x_dsp = clf.stack_sources(world["dsp"]["jpeg_q75"], index, outer_test)[0]
+    batch = aug.score_images(models, x_visual, x_dsp)
     row = next(
         r for r in fold0["rows"]
-        if r["condition"] == "jpeg_q75" and r["recipe"] == "late_fusion_dsp_augmented" and r["sample_id"] == f"{source}:ai_edited"
+        if r["condition"] == "jpeg_q75" and r["recipe"] == "late_fusion_dsp_augmented" and r["sample_id"] == f"{outer_test[0]}:ai_edited"
     )
-    assert single["late_fusion_dsp_augmented"]["logit"][0] == row["logit_ai_edited"]
+    assert batch["late_fusion_dsp_augmented"]["logit"][1] == row["logit_ai_edited"]
+    # Same batch shape, every OTHER image changed: row 1 must stay bit-identical.
+    other_visual, other_dsp = x_visual.copy(), x_dsp.copy()
+    other_visual[np.arange(len(x_visual)) != 1] += 5.0
+    other_dsp[np.arange(len(x_dsp)) != 1] -= 5.0
+    changed = aug.score_images(models, other_visual, other_dsp)
+    for recipe in aug.RECIPE_IDS:
+        assert changed[recipe]["logit"][1] == batch[recipe]["logit"][1]
+        assert not np.array_equal(changed[recipe]["logit"][2:], batch[recipe]["logit"][2:])
+    # A one-image batch agrees up to float32 BLAS rounding, which can depend on batch shape and
+    # CPU kernel (observed 1.3e-7 logit with OPENBLAS_CORETYPE=Haswell/Prescott; 0 on SkylakeX).
+    single = aug.score_images(models, x_visual[1:2], x_dsp[1:2])
+    for recipe in aug.RECIPE_IDS:
+        assert abs(single[recipe]["logit"][0] - batch[recipe]["logit"][1]) <= 1e-6
 
 
 def test_inner_validation_and_inner_oof_use_original_images_only(world, late_protocol, monkeypatch):
@@ -659,7 +676,10 @@ def test_staged_package_runs_preflight_and_analyzer_without_the_repository(tmp_p
     stage = tmp_path / "stage"
     with tarfile.open(tmp_path / "pkg.tar.gz", "r:gz") as archive:
         archive.extractall(stage, filter="data")
-    env = {"PATH": "/usr/bin:/bin", "PYTHONNOUSERSITE": "1"}
+    import os
+
+    # Same environment (incl. BLAS kernel selection) as the fixture, but no repository on sys.path.
+    env = {k: v for k, v in os.environ.items() if k != "PYTHONPATH"} | {"PYTHONNOUSERSITE": "1"}
     common = [
         "--protocol", str(full_world["aug_protocol_path"]), "--manifest", str(full_world["manifest"]),
         "--data-root", str(full_world["data_root"]), "--ablation-dir", str(full_world["ablation_dir"]),
