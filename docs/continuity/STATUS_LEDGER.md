@@ -1,3 +1,16 @@
+## Phase 4C.5B — Development Fusion-Shift Diagnostics: Real Artifact Execution and Report
+
+- **Mục tiêu**: Execute `diagnose_fusion_shift.py` on real Phase 4C.3B and 4C.4B artifacts; diagnose mechanism behind late-fusion degradation under JPEG/resize without refitting or inference.
+- **Execution**: Preflight `PREFLIGHT_PASS` (stored predictions reconstructed with max |Δp| = 0.0, max |Δlogit| = 0.0, 0 decision mismatches; linear decomposition residual $4.44 \times 10^{-16} \le 10^{-9}$; DSP scaler verified against outer-train stats).
+- **Verify**: Reproduction check `REPRODUCED` across all 15 output artifacts; Macro-F1 cross-check exact vs committed 4C.4B (original 0.6026, q75 0.4401, q50 0.4026).
+- **Findings**: DSP contribution dominates fusion logit delta (>99% across transforms); visual logit invariant (|Δ| ≤ 0.011 logit). JPEG induces severe negative DSP shift (`dct_mean_high_freq_energy`, `jpeg_periodic_grid_strength`), collapsing decisions to `authentic` (FNR 0.87-0.92). Resize induces positive DSP shift, collapsing to `ai_edited` (FPR 0.88). Consistent across all 5 folds and both classes. No implementation defect; failure stems from DSP out-of-distribution extrapolation against stationary stacker weights.
+- **Verification**: 35/35 diagnostics tests, 30/30 robustness tests, hermetic suite PASS; continuity checker PASS; 0 fits; 0 locked-test access.
+- **Kết quả**: `COMPLETED_EXPLORATORY_EVIDENCE_PRODUCED`.
+- **Evidence**: `research/evidence/fusion_shift_diagnostics/`, `research/evidence/phase-4c.5b/`.
+- **Next**: Merge `claude/elegant-edison-uentky` into `main` via merge commit, verify branch and main CI, delete branch.
+
+---
+
 ## Phase 4C.5A — Fusion Shift Diagnostics: Contract, Implementation and Synthetic Verification
 
 - **Mục tiêu**: Diagnose the 4C.4B late-fusion failure under JPEG/resize from existing artifacts, separating technical defects from model sensitivity; DSP not presumed causal.

@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="456" viewBox="0 0 920 456">
+<rect width="920" height="456" fill="#ffffff"/>
+<text x="16.0" y="26.0" font-family="sans-serif" font-size="16" text-anchor="start" fill="#1f1f1e" font-weight="bold">Stacker inputs and output: paired change vs original</text>
+<text x="16.0" y="46.0" font-family="sans-serif" font-size="12" text-anchor="start" fill="#5f5e5a" font-weight="normal">development_real · post-hoc exploratory · frozen 4C.3B models, 0 fits</text>
+<rect x="170.0" y="68" width="12" height="12" rx="2" fill="#2a78d6"/>
+<text x="188.0" y="78.0" font-family="sans-serif" font-size="12" text-anchor="start" fill="#1f1f1e" font-weight="normal">visual calibrated logit z_v/T_v</text>
+<rect x="360.0" y="68" width="12" height="12" rx="2" fill="#eb6834"/>
+<text x="378.0" y="78.0" font-family="sans-serif" font-size="12" text-anchor="start" fill="#1f1f1e" font-weight="normal">DSP calibrated logit z_d/T_d</text>
+<rect x="550.0" y="68" width="12" height="12" rx="2" fill="#1baf7a"/>
+<text x="568.0" y="78.0" font-family="sans-serif" font-size="12" text-anchor="start" fill="#1f1f1e" font-weight="normal">fusion logit</text>
+<rect x="170" y="104" width="330" height="280" fill="none" stroke="#e6e5e1"/>
+<line x1="170.0" y1="104" x2="170.0" y2="384" stroke="#e6e5e1"/>
+<text x="170.0" y="399.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">-2</text>
+<line x1="252.5" y1="104" x2="252.5" y2="384" stroke="#e6e5e1"/>
+<text x="252.5" y="399.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">-1</text>
+<line x1="335.0" y1="104" x2="335.0" y2="384" stroke="#e6e5e1"/>
+<text x="335.0" y="399.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0</text>
+<line x1="417.5" y1="104" x2="417.5" y2="384" stroke="#e6e5e1"/>
+<text x="417.5" y="399.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">1</text>
+<line x1="500.0" y1="104" x2="500.0" y2="384" stroke="#e6e5e1"/>
+<text x="500.0" y="399.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">2</text>
+<line x1="335.0" y1="104" x2="335.0" y2="384" stroke="#5f5e5a" stroke-width="1"/>
+<text x="335.0" y="416.0" font-family="sans-serif" font-size="12" text-anchor="middle" fill="#1f1f1e" font-weight="normal">Δ (transformed − original), logit units</text>
+<text x="335.0" y="98.0" font-family="sans-serif" font-size="12" text-anchor="middle" fill="#1f1f1e" font-weight="bold">authentic images (n = 341)</text>
+<text x="160.0" y="136.0" font-family="sans-serif" font-size="12" text-anchor="end" fill="#1f1f1e" font-weight="normal">jpeg_q95</text>
+<line x1="334.4" y1="118.0" x2="335.1" y2="118.0" stroke="#2a78d6" stroke-width="2"/>
+<circle cx="334.8" cy="118.0" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>jpeg_q95 · authentic · visual calibrated logit z_v/T_v: mean -0.003 (IQR -0.007 to +0.001)</title></circle>
+<line x1="330.4" y1="132.0" x2="333.8" y2="132.0" stroke="#eb6834" stroke-width="2"/>
+<circle cx="331.9" cy="132.0" r="4" fill="#eb6834" stroke="#ffffff" stroke-width="2"><title>jpeg_q95 · authentic · DSP calibrated logit z_d/T_d: mean -0.037 (IQR -0.056 to -0.015)</title></circle>
+<line x1="330.8" y1="146.0" x2="333.9" y2="146.0" stroke="#1baf7a" stroke-width="2"/>
+<circle cx="332.2" cy="146.0" r="4" fill="#1baf7a" stroke="#ffffff" stroke-width="2"><title>jpeg_q95 · authentic · fusion logit: mean -0.034 (IQR -0.051 to -0.014)</title></circle>
+<text x="160.0" y="192.0" font-family="sans-serif" font-size="12" text-anchor="end" fill="#1f1f1e" font-weight="normal">jpeg_q75</text>
+<line x1="333.6" y1="174.0" x2="335.6" y2="174.0" stroke="#2a78d6" stroke-width="2"/>
+<circle cx="334.5" cy="174.0" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>jpeg_q75 · authentic · visual calibrated logit z_v/T_v: mean -0.005 (IQR -0.017 to +0.007)</title></circle>
+<line x1="243.1" y1="188.0" x2="295.2" y2="188.0" stroke="#eb6834" stroke-width="2"/>
+<circle cx="267.9" cy="188.0" r="4" fill="#eb6834" stroke="#ffffff" stroke-width="2"><title>jpeg_q75 · authentic · DSP calibrated logit z_d/T_d: mean -0.813 (IQR -1.113 to -0.482)</title></circle>
+<line x1="252.6" y1="202.0" x2="305.1" y2="202.0" stroke="#1baf7a" stroke-width="2"/>
+<circle cx="277.6" cy="202.0" r="4" fill="#1baf7a" stroke="#ffffff" stroke-width="2"><title>jpeg_q75 · authentic · fusion logit: mean -0.696 (IQR -0.999 to -0.363)</title></circle>
+<text x="160.0" y="248.0" font-family="sans-serif" font-size="12" text-anchor="end" fill="#1f1f1e" font-weight="normal">jpeg_q50</text>
+<line x1="332.5" y1="230.0" x2="336.2" y2="230.0" stroke="#2a78d6" stroke-width="2"/>
+<circle cx="334.4" cy="230.0" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>jpeg_q50 · authentic · visual calibrated logit z_v/T_v: mean -0.007 (IQR -0.030 to +0.015)</title></circle>
+<line x1="188.7" y1="244.0" x2="266.5" y2="244.0" stroke="#eb6834" stroke-width="2"/>
+<circle cx="223.0" cy="244.0" r="4" fill="#eb6834" stroke="#ffffff" stroke-width="2"><title>jpeg_q50 · authentic · DSP calibrated logit z_d/T_d: mean -1.357 (IQR -1.773 to -0.830)</title></circle>
+<line x1="202.3" y1="258.0" x2="280.8" y2="258.0" stroke="#1baf7a" stroke-width="2"/>
+<circle cx="239.6" cy="258.0" r="4" fill="#1baf7a" stroke="#ffffff" stroke-width="2"><title>jpeg_q50 · authentic · fusion logit: mean -1.156 (IQR -1.608 to -0.657)</title></circle>
+<text x="160.0" y="304.0" font-family="sans-serif" font-size="12" text-anchor="end" fill="#1f1f1e" font-weight="normal">resize_0.5</text>
+<line x1="334.3" y1="286.0" x2="335.6" y2="286.0" stroke="#2a78d6" stroke-width="2"/>
+<circle cx="335.0" cy="286.0" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>resize_0.5 · authentic · visual calibrated logit z_v/T_v: mean -0.000 (IQR -0.008 to +0.007)</title></circle>
+<line x1="374.2" y1="300.0" x2="419.3" y2="300.0" stroke="#eb6834" stroke-width="2"/>
+<circle cx="399.8" cy="300.0" r="4" fill="#eb6834" stroke="#ffffff" stroke-width="2"><title>resize_0.5 · authentic · DSP calibrated logit z_d/T_d: mean +0.786 (IQR +0.475 to +1.022)</title></circle>
+<line x1="365.0" y1="314.0" x2="407.7" y2="314.0" stroke="#1baf7a" stroke-width="2"/>
+<circle cx="390.0" cy="314.0" r="4" fill="#1baf7a" stroke="#ffffff" stroke-width="2"><title>resize_0.5 · authentic · fusion logit: mean +0.667 (IQR +0.364 to +0.881)</title></circle>
+<text x="160.0" y="360.0" font-family="sans-serif" font-size="12" text-anchor="end" fill="#1f1f1e" font-weight="normal">resize_0.5_jpeg_q75</text>
+<line x1="331.9" y1="342.0" x2="336.4" y2="342.0" stroke="#2a78d6" stroke-width="2"/>
+<circle cx="334.1" cy="342.0" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>resize_0.5_jpeg_q75 · authentic · visual calibrated logit z_v/T_v: mean -0.011 (IQR -0.038 to +0.017)</title></circle>
+<line x1="259.5" y1="356.0" x2="301.7" y2="356.0" stroke="#eb6834" stroke-width="2"/>
+<circle cx="279.5" cy="356.0" r="4" fill="#eb6834" stroke="#ffffff" stroke-width="2"><title>resize_0.5_jpeg_q75 · authentic · DSP calibrated logit z_d/T_d: mean -0.673 (IQR -0.915 to -0.403)</title></circle>
+<line x1="267.2" y1="370.0" x2="309.6" y2="370.0" stroke="#1baf7a" stroke-width="2"/>
+<circle cx="287.0" cy="370.0" r="4" fill="#1baf7a" stroke="#ffffff" stroke-width="2"><title>resize_0.5_jpeg_q75 · authentic · fusion logit: mean -0.582 (IQR -0.822 to -0.308)</title></circle>
+<rect x="560" y="104" width="330" height="280" fill="none" stroke="#e6e5e1"/>
+<line x1="560.0" y1="104" x2="560.0" y2="384" stroke="#e6e5e1"/>
+<text x="560.0" y="399.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">-2</text>
+<line x1="642.5" y1="104" x2="642.5" y2="384" stroke="#e6e5e1"/>
+<text x="642.5" y="399.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">-1</text>
+<line x1="725.0" y1="104" x2="725.0" y2="384" stroke="#e6e5e1"/>
+<text x="725.0" y="399.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0</text>
+<line x1="807.5" y1="104" x2="807.5" y2="384" stroke="#e6e5e1"/>
+<text x="807.5" y="399.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">1</text>
+<line x1="890.0" y1="104" x2="890.0" y2="384" stroke="#e6e5e1"/>
+<text x="890.0" y="399.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">2</text>
+<line x1="725.0" y1="104" x2="725.0" y2="384" stroke="#5f5e5a" stroke-width="1"/>
+<text x="725.0" y="416.0" font-family="sans-serif" font-size="12" text-anchor="middle" fill="#1f1f1e" font-weight="normal">Δ (transformed − original), logit units</text>
+<text x="725.0" y="98.0" font-family="sans-serif" font-size="12" text-anchor="middle" fill="#1f1f1e" font-weight="bold">ai_edited images (n = 341)</text>
+<line x1="724.3" y1="118.0" x2="725.1" y2="118.0" stroke="#2a78d6" stroke-width="2"/>
+<circle cx="724.7" cy="118.0" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>jpeg_q95 · ai_edited · visual calibrated logit z_v/T_v: mean -0.004 (IQR -0.008 to +0.001)</title></circle>
+<line x1="718.0" y1="132.0" x2="722.4" y2="132.0" stroke="#eb6834" stroke-width="2"/>
+<circle cx="719.9" cy="132.0" r="4" fill="#eb6834" stroke="#ffffff" stroke-width="2"><title>jpeg_q95 · ai_edited · DSP calibrated logit z_d/T_d: mean -0.062 (IQR -0.085 to -0.031)</title></circle>
+<line x1="718.6" y1="146.0" x2="722.6" y2="146.0" stroke="#1baf7a" stroke-width="2"/>
+<circle cx="720.4" cy="146.0" r="4" fill="#1baf7a" stroke="#ffffff" stroke-width="2"><title>jpeg_q95 · ai_edited · fusion logit: mean -0.056 (IQR -0.077 to -0.029)</title></circle>
+<line x1="723.4" y1="174.0" x2="725.4" y2="174.0" stroke="#2a78d6" stroke-width="2"/>
+<circle cx="724.4" cy="174.0" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>jpeg_q75 · ai_edited · visual calibrated logit z_v/T_v: mean -0.007 (IQR -0.020 to +0.005)</title></circle>
+<line x1="630.6" y1="188.0" x2="683.3" y2="188.0" stroke="#eb6834" stroke-width="2"/>
+<circle cx="653.5" cy="188.0" r="4" fill="#eb6834" stroke="#ffffff" stroke-width="2"><title>jpeg_q75 · ai_edited · DSP calibrated logit z_d/T_d: mean -0.866 (IQR -1.144 to -0.505)</title></circle>
+<line x1="640.6" y1="202.0" x2="692.4" y2="202.0" stroke="#1baf7a" stroke-width="2"/>
+<circle cx="663.7" cy="202.0" r="4" fill="#1baf7a" stroke="#ffffff" stroke-width="2"><title>jpeg_q75 · ai_edited · fusion logit: mean -0.743 (IQR -1.023 to -0.395)</title></circle>
+<line x1="722.8" y1="230.0" x2="726.1" y2="230.0" stroke="#2a78d6" stroke-width="2"/>
+<circle cx="724.4" cy="230.0" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>jpeg_q50 · ai_edited · visual calibrated logit z_v/T_v: mean -0.007 (IQR -0.027 to +0.013)</title></circle>
+<line x1="575.9" y1="244.0" x2="653.7" y2="244.0" stroke="#eb6834" stroke-width="2"/>
+<circle cx="608.4" cy="244.0" r="4" fill="#eb6834" stroke="#ffffff" stroke-width="2"><title>jpeg_q50 · ai_edited · DSP calibrated logit z_d/T_d: mean -1.413 (IQR -1.807 to -0.865)</title></circle>
+<line x1="591.6" y1="258.0" x2="666.9" y2="258.0" stroke="#1baf7a" stroke-width="2"/>
+<circle cx="625.6" cy="258.0" r="4" fill="#1baf7a" stroke="#ffffff" stroke-width="2"><title>jpeg_q50 · ai_edited · fusion logit: mean -1.205 (IQR -1.617 to -0.705)</title></circle>
+<line x1="724.3" y1="286.0" x2="725.6" y2="286.0" stroke="#2a78d6" stroke-width="2"/>
+<circle cx="724.9" cy="286.0" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>resize_0.5 · ai_edited · visual calibrated logit z_v/T_v: mean -0.001 (IQR -0.008 to +0.008)</title></circle>
+<line x1="760.0" y1="300.0" x2="801.4" y2="300.0" stroke="#eb6834" stroke-width="2"/>
+<circle cx="783.3" cy="300.0" r="4" fill="#eb6834" stroke="#ffffff" stroke-width="2"><title>resize_0.5 · ai_edited · DSP calibrated logit z_d/T_d: mean +0.707 (IQR +0.424 to +0.926)</title></circle>
+<line x1="751.8" y1="314.0" x2="792.0" y2="314.0" stroke="#1baf7a" stroke-width="2"/>
+<circle cx="774.5" cy="314.0" r="4" fill="#1baf7a" stroke="#ffffff" stroke-width="2"><title>resize_0.5 · ai_edited · fusion logit: mean +0.600 (IQR +0.324 to +0.812)</title></circle>
+<line x1="721.5" y1="342.0" x2="726.2" y2="342.0" stroke="#2a78d6" stroke-width="2"/>
+<circle cx="724.0" cy="342.0" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>resize_0.5_jpeg_q75 · ai_edited · visual calibrated logit z_v/T_v: mean -0.012 (IQR -0.043 to +0.015)</title></circle>
+<line x1="640.9" y1="356.0" x2="685.0" y2="356.0" stroke="#eb6834" stroke-width="2"/>
+<circle cx="662.7" cy="356.0" r="4" fill="#eb6834" stroke="#ffffff" stroke-width="2"><title>resize_0.5_jpeg_q75 · ai_edited · DSP calibrated logit z_d/T_d: mean -0.756 (IQR -1.019 to -0.485)</title></circle>
+<line x1="652.1" y1="370.0" x2="694.3" y2="370.0" stroke="#1baf7a" stroke-width="2"/>
+<circle cx="671.1" cy="370.0" r="4" fill="#1baf7a" stroke="#ffffff" stroke-width="2"><title>resize_0.5_jpeg_q75 · ai_edited · fusion logit: mean -0.653 (IQR -0.883 to -0.372)</title></circle>
+<text x="16.0" y="444.0" font-family="sans-serif" font-size="11" text-anchor="start" fill="#5f5e5a" font-weight="normal">Dot = mean paired Δ, line = IQR of paired Δ; 5 outer folds pooled. Per-fold values in component_shift.csv.</text>
+</svg>
