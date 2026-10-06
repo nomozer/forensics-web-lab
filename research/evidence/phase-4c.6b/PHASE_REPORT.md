@@ -6,7 +6,7 @@
 > **Evidence class**: `development_exploratory`<br>
 > **Verdict (fixed vocabulary)**: `EXPLORATORY_JPEG75_IMPROVEMENT`<br>
 > **Data origin**: `development_real` — 341 sources / 682 images × 6 conditions × 3 recipes = 12,276 evaluated predictions<br>
-> **Fits budget**: 460 fits (305 baseline reconstruction + 155 augmented DSP); completed 460 / 460 (`budget_check: PASS`); 0 unconverged; 0 failed computation attempts<br>
+> **Fits accounting**: 460 logical completed fits (92 pilot + 368 continued in full run; 305 baseline reconstruction + 155 augmented DSP); completed 460 / 460 (`budget_check: PASS`); 0 unconverged recorded in receipts. Process-level computation attempts: 460 recorded in run receipts (process-level failed attempt logging was not tracked separately by runner).<br>
 > **Image reads / backbone forward passes**: 0 (all features reused from frozen Phase 4C.3B / 4C.4B caches)<br>
 > **Locked test**: `SEALED_AND_RETIRED` (0 access)<br>
 > **Protocol SHA-256 (LF-normalised)**: `ee62bb6818cc32da5e518265feb5529ff28fc5ec5b79b7fac82d190cee6931f4`<br>
@@ -45,6 +45,8 @@ Macro-F1 of late fusion under `jpeg_q75` was substantially rescued from **0.4401
 
 ## 3. Measured Results Across All Conditions (Threshold 0.5; τ = 0.65)
 
+### 3.1. Detailed Metrics per Condition and Recipe
+
 | Condition | Recipe | Macro-F1 | AUROC | Brier | ECE | FPR | FNR | Coverage | Sel. acc | High-conf errors |
 | :--- | :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | `original` | `visual_calibrated` | 0.5787 | 0.6058 | 0.2422 | 0.0102 | 0.3871 | 0.4545 | 0.1349 | 0.6630 | 31 |
@@ -66,29 +68,62 @@ Macro-F1 of late fusion under `jpeg_q75` was substantially rescued from **0.4401
 | `resize_0.5_jpeg_q75` | `late_fusion_original` | 0.4500 | 0.5729 | 0.2677 | 0.1452 | 0.0909 | 0.8504 | 0.5191 | 0.5508 | 159 |
 | `resize_0.5_jpeg_q75` | `late_fusion_dsp_augmented` | 0.5832 | 0.6060 | 0.2419 | 0.0260 | 0.3490 | 0.4809 | 0.1188 | 0.6420 | 29 |
 
+### 3.2. Canonical Comparative Summary (Baseline vs. Augmented)
+
+Generated directly from `condition_metrics.csv` and `paired_deltas.csv`:
+
+| Condition | Late-Fusion Original | Late-Fusion DSP Augmented | Paired ΔMacro-F1 [95% CI] | Balanced Acc (Base → Aug) | High-Conf Errors (Base → Aug) |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| `original` (original cost) | 0.6026 | 0.5777 | -0.0249 [-0.0464, -0.0045] | 0.6026 → 0.5777 | 42 → 29 |
+| `jpeg_q95` | 0.5939 | 0.5850 | -0.0089 [-0.0309, +0.0135] | 0.5953 → 0.5850 | 42 → 31 |
+| `jpeg_q75` **(primary)** | 0.4401 | 0.5764 | +0.1363 [+0.1057, +0.1681] | 0.5279 → 0.5777 | 177 → 30 |
+| `jpeg_q50` | 0.4026 | 0.5762 | +0.1736 [+0.1424, +0.2044] | 0.5205 → 0.5792 | 252 → 33 |
+| `resize_0.5` | 0.4300 | 0.5688 | +0.1388 [+0.1077, +0.1713] | 0.5220 → 0.5689 | 147 → 30 |
+| `resize_0.5_jpeg_q75` | 0.4500 | 0.5832 | +0.1332 [+0.1027, +0.1649] | 0.5293 → 0.5850 | 159 → 29 |
+
+### 3.3. Comparison with Visual-Only Baseline (`late_fusion_dsp_augmented` − `visual_calibrated`)
+
+| Condition | Visual Calibrated | Late-Fusion DSP Augmented | Paired ΔMacro-F1 [95% CI] | CI Contains 0? |
+| :--- | :---: | :---: | :---: | :---: |
+| `original` | 0.5787 | 0.5777 | -0.0010 [-0.0186, +0.0166] | True |
+| `jpeg_q95` | 0.5788 | 0.5850 | +0.0063 [-0.0110, +0.0235] | True |
+| `jpeg_q75` | 0.5801 | 0.5764 | -0.0037 [-0.0208, +0.0135] | True |
+| `jpeg_q50` | 0.5772 | 0.5762 | -0.0010 [-0.0194, +0.0175] | True |
+| `resize_0.5` | 0.5787 | 0.5688 | -0.0099 [-0.0266, +0.0065] | True |
+| `resize_0.5_jpeg_q75` | 0.5815 | 0.5832 | +0.0018 [-0.0169, +0.0198] | True |
+
 ---
 
 ## 4. Analysis of Trade-Offs and Stress Generalization
 
 ### 4.1. Original-Image Performance Cost (Trade-Off)
-Training the DSP branch on multi-condition variants acts as a strong regularizer that dampens out-of-distribution sensitivity, but imposes a modest performance cost on uncompressed original images:
+Training the DSP branch on multi-condition variants acts as a strong regularizer that dampens out-of-distribution sensitivity, but imposes a modest performance cost on original development images:
 - **`original` ΔMacro-F1**: **$-0.0249$ [95% CI: $-0.0464, -0.0045$]**
-  - Late fusion Macro-F1 on clean images falls from **0.6026** back to **0.5777**, which is statistically indistinguishable from the visual-only model (0.5787, Δ = $-0.0010$ [$-0.0195, +0.0185$]).
+  - Late fusion Macro-F1 on original development images falls from **0.6026** back to **0.5777**.
+  - Đối chiếu với visual-only calibrated model ($0.5787$), $\Delta = -0.0010$ [$-0.0186, +0.0166$]. Cả sáu khoảng tin cậy 95% của ΔMacro-F1 (`late_fusion_dsp_augmented` − `visual_calibrated`) đều chứa 0: chưa chứng minh augmented late fusion vượt trội so với visual-only; đồng thời khoảng tin cậy chứa 0 cũng không chứng minh tính tương đương (equivalence).
 - **`original` ΔBrier**: **$+0.0032$ [95% CI: $+0.0008, +0.0051$]**
-  - The Brier score improvement observed in Phase 4C.3B is largely surrendered in exchange for robustness.
+  - The Brier score improvement observed in Phase 4C.3B is surrendered in exchange for robustness.
 - **`original` ΔFPR**: $+0.0469$ [$+0.0117, +0.0821$]; **ΔFNR**: $+0.0029$ [$-0.0352, +0.0411$].
+- **Balanced Accuracy**: $0.6026 \to 0.5777$; High-confidence errors: $42 \to 29$.
 
 ### 4.2. Robustness Under Transformation Conditions
-Under every transformed condition, DSP augmentation dramatically halts the decision collapse:
-1. **Severe JPEG (`jpeg_q50` — unseen in augmentation)**:
+Under transformed conditions, DSP augmentation substantially stabilizes decisions:
+1. **Mild JPEG (`jpeg_q95`)**:
+   - ΔMacro-F1: **$-0.0089$ [95% CI: $-0.0309, +0.0135$]**. Khoảng tin cậy chứa 0; không có bằng chứng cải thiện hiệu năng trên JPEG nhẹ.
+   - Balanced Accuracy: $0.5953 \to 0.5850$; High-confidence errors: $42 \to 31$.
+2. **Primary Condition (`jpeg_q75`)**:
+   - ΔMacro-F1: **$+0.1363$ [95% CI: $+0.1057, +0.1681$]** (Macro-F1 recovers from 0.4401 to 0.5764).
+   - Balanced Accuracy: $0.5279 \to 0.5777$; High-confidence errors collapse from **177** down to **30**.
+   - Dịch chuyển DSP logit: mean DSP term delta dưới JPEG75 giảm từ **-0.7139 logit** (ở `late_fusion_original`) xuống **-0.0518 logit** (ở `late_fusion_dsp_augmented`). Đây là sự giảm độ nhạy quan sát được của đặc trưng DSP trước nén JPEG, chưa chứng minh việc loại bỏ hoàn toàn overfitting.
+3. **Severe JPEG (`jpeg_q50` — unseen in augmentation)**:
    - ΔMacro-F1: **$+0.1736$ [95% CI: $+0.1424, +0.2044$]** (Macro-F1 recovers from 0.4026 to 0.5762).
    - High-confidence errors collapse from **252** down to **33**.
    - FNR drops from **0.9238** back to **0.5044** (preventing the near-total collapse to `authentic`).
-2. **Downsampling (`resize_0.5` — included in augmentation)**:
+4. **Downsampling (`resize_0.5` — included in augmentation)**:
    - ΔMacro-F1: **$+0.1388$ [95% CI: $+0.1077, +0.1713$]** (Macro-F1 recovers from 0.4300 to 0.5688).
    - FPR drops from **0.8798** down to **0.4487** (preventing the false alarm collapse to `ai_edited`).
    - High-confidence errors decrease from **147** to **30**.
-3. **Compound Transform (`resize_0.5_jpeg_q75` — unseen in augmentation)**:
+5. **Compound Transform (`resize_0.5_jpeg_q75` — unseen in augmentation)**:
    - ΔMacro-F1: **$+0.1332$ [95% CI: $+0.1027, +0.1649$]** (Macro-F1 recovers from 0.4500 to 0.5832).
    - High-confidence errors decrease from **159** to **29**.
 
@@ -111,12 +146,10 @@ With DSP augmentation:
 
 ---
 
-## 6. Next Approved Action
+## 6. Verification and Status
 
-Following completion of Phase 4C.6B:
-1. Verify all quality gates across Python and TypeScript monorepo packages.
-2. Commit and push the branch `claude/elegant-edison-uentky`.
-3. Wait for branch CI to pass on GitHub Actions.
-4. Merge into `main` using a non-fast-forward merge commit (`git merge --no-ff`).
-5. Push to `origin/main` and verify main CI passes.
-6. Verify ancestry (`git merge-base --is-ancestor`) and clean up the local and remote branch.
+Phase 4C.6B verification completed:
+- All 18 confusion matrices match point metrics (FPR, FNR, Balanced Accuracy, Macro-F1).
+- All 132 paired point deltas match differences between recipe pairs.
+- Canonical comparative tables match machine-readable outputs in `condition_metrics.csv` and `paired_deltas.csv`.
+- Quality gates across Python and TypeScript monorepo packages PASS.

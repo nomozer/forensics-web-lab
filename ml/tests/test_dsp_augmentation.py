@@ -778,3 +778,107 @@ def test_package_receipt_binds_the_functional_commit_and_every_member():
     assert receipt["experiment"] == aug.EXPERIMENT_ID and not receipt["includes_weights"]
     assert len(receipt["source_commit"]) == 40
     assert sorted(m["path"] for m in receipt["members"]) == sorted(EXPERIMENT_MEMBERS[aug.EXPERIMENT_ID])
+
+
+# --------------------------------------------------------------------------- consistency & arithmetic guards
+
+
+def test_analysis_conditions_exact_and_no_extraneous(analysis):
+    """Enforces that analysis condition metrics and paired deltas match the locked protocol conditions exactly, with no extraneous condition like resize_0.25."""
+    import csv
+
+    report = analysis["report"]
+    with (report / "condition_metrics.csv").open(encoding="utf-8") as f:
+        cm_conditions = {r["condition"] for r in csv.DictReader(f)}
+    with (report / "paired_deltas.csv").open(encoding="utf-8") as f:
+        pd_conditions = {r["condition"] for r in csv.DictReader(f)}
+
+    expected_conditions = set(aug.CONDITIONS)
+    assert cm_conditions == expected_conditions
+    assert pd_conditions == expected_conditions
+    assert "resize_0.25" not in cm_conditions
+    assert "resize_0.25" not in pd_conditions
+
+
+def test_condition_metrics_confusion_matrix_arithmetic(analysis):
+    """Verifies that point metrics (FPR, FNR, Balanced Acc, Macro-F1, selective errors) derive consistently from the confusion matrix counts."""
+    import csv
+
+    with (analysis["report"] / "condition_metrics.csv").open(encoding="utf-8") as f:
+        rows = list(csv.DictReader(f))
+
+    assert len(rows) == len(aug.CONDITIONS) * len(aug.RECIPE_IDS)
+    for r in rows:
+        tn, fp, fn, tp = int(r["tn"]), int(r["fp"]), int(r["fn"]), int(r["tp"])
+        samples = int(r["samples"])
+        assert tn + fp + fn + tp == samples
+        assert abs(float(r["fpr"]) - fp / (tn + fp)) <= 1e-6
+        assert abs(float(r["fnr"]) - fn / (tp + fn)) <= 1e-6
+        assert abs(float(r["balanced_accuracy"]) - (1.0 - 0.5 * (fp / (tn + fp) + fn / (tp + fn)))) <= 1e-6
+        f1_1 = 2 * tp / (2 * tp + fp + fn)
+        f1_0 = 2 * tn / (2 * tn + fp + fn)
+        assert abs(float(r["macro_f1"]) - 0.5 * (f1_1 + f1_0)) <= 1e-6
+        hce = int(r["high_confidence_errors"])
+        assert abs(float(r["high_confidence_error_rate"]) - hce / samples) <= 1e-6
+        cov = float(r["selective_coverage"])
+        cov_count = round(cov * samples)
+        if cov_count > 0:
+            calc_sel_acc = (cov_count - hce) / cov_count
+            assert abs(calc_sel_acc - float(r["selective_accuracy"])) <= 1e-3
+
+
+def test_paired_deltas_match_point_metrics_differences(analysis):
+    """Verifies that paired deltas strictly match point metric differences between recipe pairs."""
+    import csv
+
+    with (analysis["report"] / "condition_metrics.csv").open(encoding="utf-8") as f:
+        cm = {(r["condition"], r["recipe"]): r for r in csv.DictReader(f)}
+    with (analysis["report"] / "paired_deltas.csv").open(encoding="utf-8") as f:
+        pd = list(csv.DictReader(f))
+
+    for d in pd:
+        comp, cond, metric = d["comparison"], d["condition"], d["metric"]
+        if comp == "late_fusion_dsp_augmented_minus_late_fusion_original":
+            rec_a, rec_b = "late_fusion_dsp_augmented", "late_fusion_original"
+        elif comp == "late_fusion_dsp_augmented_minus_visual_calibrated":
+            rec_a, rec_b = "late_fusion_dsp_augmented", "visual_calibrated"
+        else:
+            continue
+        val_a = float(cm[(cond, rec_a)][metric])
+        val_b = float(cm[(cond, rec_b)][metric])
+        assert abs(float(d["delta"]) - (val_a - val_b)) <= 1e-6
+
+
+def test_rendered_report_and_comparative_table_match_summary(analysis):
+    """Verifies that the markdown tables in report and comparative table match machine-readable summary values."""
+    from scripts.research.analyze_dsp_augmentation import (
+        render_comparative_table,
+        render_visual_comparison_table,
+    )
+
+    summary = analysis["summary"]
+    comp_table = render_comparative_table(summary)
+    vis_table = render_visual_comparison_table(summary)
+
+    for c in aug.CONDITIONS:
+        assert f"`{c}`" in comp_table
+        assert f"`{c}`" in vis_table
+
+    cm = {(r["condition"], r["recipe"]): r for r in summary["condition_metrics"]}
+    for c in aug.CONDITIONS:
+        f1_orig = cm[(c, "late_fusion_original")]["macro_f1"]
+        f1_aug = cm[(c, "late_fusion_dsp_augmented")]["macro_f1"]
+        assert f"{f1_orig:.4f}" in comp_table
+        assert f"{f1_aug:.4f}" in comp_table
+
+
+def test_derive_verdict_refuses_improvement_when_ci_crosses_or_touches_zero():
+    """Verifies that derive_verdict strictly rejects EXPLORATORY_JPEG75_IMPROVEMENT whenever CI includes or touches zero."""
+    from scripts.research.analyze_dsp_augmentation import derive_verdict
+
+    assert derive_verdict("development_real", {"ci_lower": -0.01, "ci_upper": 0.05}) == "EXPLORATORY_JPEG75_UNRESOLVED"
+    assert derive_verdict("development_real", {"ci_lower": 0.0, "ci_upper": 0.05}) == "EXPLORATORY_JPEG75_UNRESOLVED"
+    assert derive_verdict("development_real", {"ci_lower": 0.0001, "ci_upper": 0.05}) == "EXPLORATORY_JPEG75_IMPROVEMENT"
+    assert derive_verdict("development_real", {"ci_lower": -0.05, "ci_upper": -0.0001}) == "EXPLORATORY_JPEG75_DEGRADATION"
+    assert derive_verdict("development_real", {"ci_lower": -0.05, "ci_upper": 0.0}) == "EXPLORATORY_JPEG75_UNRESOLVED"
+    assert derive_verdict("synthetic_only", {"ci_lower": 0.05, "ci_upper": 0.10}) == "SYNTHETIC_ONLY_NO_SCIENTIFIC_VERDICT"
