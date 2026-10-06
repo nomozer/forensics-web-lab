@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "4C.5A",
+  "measured_in": "claude_code_cloud_container_linux_python_3.12.13_venv",
+  "data_origin_of_all_runs": "synthetic_only",
+  "targeted": {
+    "ml/tests/test_fusion_shift_diagnostics.py": {"passed": 35, "failed": 0},
+    "ml/tests/test_development_robustness.py": {"passed": 30, "failed": 0, "note": "28 historical + notebook full-SHA pin test + executable notebook checkout test"},
+    "ml/tests/test_calibrated_late_fusion.py + test_calibrated_late_fusion_analysis.py": {"passed": 39, "failed": 0}
+  },
+  "mutation_checks": "sample-order, reconstruction, fold, outer-train-only normalisation, resume/tamper, non-finite and zero-scale guards each disabled once: the matching tests failed",
+  "hermetic_ml_suite": {
+    "command": "python -m pytest ml/tests -m \"not requires_research_artifact\"",
+    "passed": 714,
+    "skipped": 23,
+    "deselected": 135,
+    "failed": 0
+  },
+  "ruff_new_and_changed_python_files": "PASS",
+  "git_diff_check": "PASS",
+  "continuity_check_staged": "PASS",
+  "continuity_unit_tests": {"passed": 13, "failed": 0},
+  "pnpm_typecheck": "PASS",
+  "pnpm_test": "PASS (57 vitest tests across 7 packages + 13 continuity tests)",
+  "figures": "synthetic SVGs rendered with headless Chromium and inspected; palette validated (dataviz validator: all checks pass, contrast WARN relieved by labels/tables)",
+  "not_run": [
+    "real preflight / analyze / verify on development_real artifacts (outside Git)",
+    "requires_research_artifact tests (135 deselected)",
+    "Windows execution",
+    "pnpm build (no TypeScript changes)",
+    "GitHub CI on the pushed branch (checked after push)"
+  ],
+  "real_findings": "NOT_MEASURED",
+  "fits": 0,
+  "locked_test_accesses": 0
+}

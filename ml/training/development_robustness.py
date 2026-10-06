@@ -453,6 +453,7 @@ def load_frozen_artifacts(
         reference[("early_fusion", row["sample_id"])] = {**row, "recipe": "early_fusion"}
     return {
         "frozen": frozen,
+        "late_models": late_models,
         "reference": reference,
         "late_fusion_bindings": bindings,
         "artifact_hashes": artifact_hashes,

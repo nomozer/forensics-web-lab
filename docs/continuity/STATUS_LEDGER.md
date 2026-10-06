@@ -1,3 +1,17 @@
+## Phase 4C.5A — Fusion Shift Diagnostics: Contract, Implementation and Synthetic Verification
+
+- **Mục tiêu**: Diagnose the 4C.4B late-fusion failure under JPEG/resize from existing artifacts, separating technical defects from model sensitivity; DSP not presumed causal.
+- **Contract (from code)**: stacker inputs = temperature-scaled logits `[z_v/T_v, z_d/T_d]`; base LR float32, stacker float64; `p ≥ 0.5 → ai_edited`; τ_conf 0.65; DSP scaler fitted on outer-train originals.
+- **Implementation**: `scripts/research/diagnose_fusion_shift.py` (preflight/analyze/verify): exact reconstruction of stored predictions, exact decomposition with per-DSP-feature split, outer-train-only normalisation, per-fold-then-pooled tables, decision transitions, confidence, 5 SVG figures, hash-bound resume.
+- **Notebook**: robustness notebook pinned to full SHA `3a0292c8…`, no branch name, refuses empty SHA.
+- **Verification**: 35/35 diagnostics + 30/30 robustness tests PASS (synthetic); code review 9/10 findings fixed; hermetic suite in `test_summary.json`.
+- **Not run**: real diagnostics (artifacts outside Git); all real findings `NOT_MEASURED`; 0 fits; 0 locked-test access.
+- **Kết quả**: `IMPLEMENTED_SYNTHETIC_VERIFIED_AWAITING_REAL_EXECUTION`.
+- **Evidence**: `research/evidence/phase-4c.5a/` (PHASE_REPORT, HANDOFF, test summary).
+- **Next**: Local agent runs HANDOFF on `claude/elegant-edison-uentky`, records Phase 4C.5B, then merges.
+
+---
+
 ## Phase 4C.4B — Development Robustness: Execution and Analysis
 
 - **Mục tiêu**: Execute the locked Phase 4C.4A development robustness protocol on the 341 Option P development sources (682 images) across 6 conditions and 3 frozen recipes; 0 fits.

@@ -473,3 +473,49 @@ def test_colab_notebook_defaults_to_preflight_and_uses_cli_paths():
     assert "D:\\\\" not in joined and "locked_test" not in joined
     assert not any(token in joined.lower() for token in ("password", "api_key", "token="))
     assert all(not c.get("outputs") for c in notebook["cells"] if c["cell_type"] == "code")
+    assert all(c.get("execution_count") is None for c in notebook["cells"] if c["cell_type"] == "code")
+
+
+def test_colab_notebook_pins_a_full_commit_and_never_a_branch():
+    import re
+
+    notebook = json.loads((REPO_ROOT / "notebooks/development_robustness_colab.ipynb").read_text(encoding="utf-8"))
+    joined = "\n".join("".join(c["source"]) for c in notebook["cells"] if c["cell_type"] == "code")
+    pinned = re.search(r'^EXPECTED_COMMIT = "([0-9a-f]*)"', joined, re.MULTILINE)
+    assert pinned and re.fullmatch(r"[0-9a-f]{40}", pinned.group(1))
+    assert "BRANCH" not in joined and "--branch" not in joined and "keen-knuth" not in joined
+    # Refuses to run without a full SHA, checks out exactly that commit and verifies HEAD.
+    assert 're.fullmatch(r"[0-9a-f]{40}", EXPECTED_COMMIT)' in joined
+    assert '"checkout", "--detach"' in joined and "assert head == EXPECTED_COMMIT" in joined
+
+
+def test_colab_checkout_cell_pins_commit_on_fresh_rerun_and_interrupted_clone(tmp_path):
+    import shutil
+    import subprocess
+
+    if shutil.which("git") is None:
+        pytest.skip("git not available")
+    notebook = json.loads((REPO_ROOT / "notebooks/development_robustness_colab.ipynb").read_text(encoding="utf-8"))
+    cell = "".join(notebook["cells"][2]["source"]).split("for path in (DATASET_ARCHIVE")[0]
+    cell = cell.replace("https://github.com/nomozer/forensics-web-lab", REPO_ROOT.as_uri())
+    commit = "3a0292c840d44ca255acfd6588c3a16f6d61bdd2"
+    if subprocess.run(["git", "cat-file", "-e", f"{commit}^{{commit}}"], cwd=REPO_ROOT, check=False).returncode != 0:
+        pytest.skip("pinned commit not in this checkout's history")
+    repo_dir = tmp_path / "repo"
+
+    def run(expected: str) -> dict:
+        namespace = {"MODE": "preflight", "ALLOW_FULL": False, "EXPECTED_COMMIT": expected, "REPO_DIR": repo_dir}
+        exec(cell, namespace)  # noqa: S102 - runs the notebook cell under test
+        return namespace
+
+    with pytest.raises(subprocess.CalledProcessError):
+        run("f" * 40)  # first run clones, then the fetch fails (interrupted setup)
+    assert run(commit)["head"] == commit  # rerun after the interrupted first run
+    assert run(commit)["head"] == commit  # rerun on the existing checkout
+    subprocess.run(["git", "checkout", "--quiet", "--detach", "HEAD~1"], cwd=repo_dir, check=True)
+    assert run(commit)["head"] == commit  # interrupted / moved checkout is re-pinned
+    with pytest.raises(AssertionError, match="full 40-hex"):
+        run("")
+    (repo_dir / "README.md").write_text("local edit", encoding="utf-8")
+    with pytest.raises(AssertionError, match="local changes"):
+        run(commit)

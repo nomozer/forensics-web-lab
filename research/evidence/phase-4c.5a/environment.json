@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-10-06T09:30:00Z",
+  "execution_context": "claude_code_cloud_container_linux",
+  "python": "3.12.13 (venv; CI version 3.12)",
+  "numpy": "2.5.3",
+  "scipy": "1.18.1",
+  "scikit_learn": "1.9.1",
+  "torch": "2.14.1+cu130 (CPU only, no CUDA device; not used by the diagnostics tool)",
+  "pillow": "12.3.0",
+  "node": "22",
+  "real_dataset_available": false,
+  "phase_4c4b_robustness_outputs_available": false,
+  "frozen_4c3b_artifacts_available": false,
+  "ablation_fits_and_caches_available": false,
+  "note": "Implementation and synthetic_only verification; no development-cohort artifacts present; all real findings NOT_MEASURED."
+}
