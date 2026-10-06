@@ -11,7 +11,7 @@ Phase 4C.3B / 4C.4B artifacts, writes the report and runs the gates, and only th
 | :--- | :--- |
 | Branch | `claude/elegant-edison-uentky` (cloud-assigned; the requested name `claude/fusion-shift-diagnostics` was not used because the cloud session must push to its assigned branch) |
 | Base `origin/main` | `3a0292c840d44ca255acfd6588c3a16f6d61bdd2` (CI run #30 `success`) |
-| Implementation commit | pinned in the commit that follows it (see `git log` on this branch; the first commit of this branch) |
+| Implementation commit | `ac5403ceffc1bc7e2745900ff41277045f53d249` (tool, tests, notebook, docs; this line was pinned in the next commit) |
 | Tool | `scripts/research/diagnose_fusion_shift.py` (`--mode preflight \| analyze \| verify`) |
 | Protocol it checks against | `ml/configs/development_robustness_protocol.yaml` (unchanged, SHA-256 LF `b711cdd9…`) |
 
