@@ -1,0 +1,105 @@
+schema_version: "1.0.0"
+experiment_id: "independent_validation_preparation"
+phase: "4C.7A"
+status: "PROTOCOL_LOCKED_PENDING_INDEPENDENT_COHORT"
+evidence_class: "independent_validation_prespecified"
+created_at_utc: "2026-10-06T13:30:00Z"
+purpose: >-
+  Prespecified independent validation protocol comparing the simple visual control
+  (visual_calibrated) against the multi-condition DSP augmented fusion model
+  (late_fusion_dsp_augmented) on a novel, source-disjoint evaluation cohort.
+  All models from Phase 4C.6B/4C.3B are frozen; no model selection, no refitting,
+  no hyperparameter tuning, and zero access to historical development or retired locked-test cohorts.
+
+scope:
+  task: "binary_classification"
+  classes:
+    0: "authentic"
+    1: "ai_edited"
+  note_on_three_class: >-
+    Evaluation of fully_generated (3-class generalization, RQ1) remains incomplete
+    and outside the scope of this phase due to absent fully-generated data.
+  cohort_requirements:
+    source_disjoint: true
+    forbidden_historical_sources: "data/research/tgif/manifests/manifest_pilot_a_option_p.csv"  # 684 sources (341 dev + 343 locked-test)
+    paired_structure: "Each independent source must provide both authentic (0) and ai_edited (1) images"
+    target_population: "Real camera/web photography paired with localized generative inpainting/editing from contemporary tools"
+
+recipes:
+  - id: "visual_calibrated"
+    role: "simple_visual_control"
+    description: "MobileNetV3-Small linear probe + Temperature Scaling (Phase 4C.3B frozen visual branch)"
+  - id: "late_fusion_dsp_augmented"
+    role: "dsp_augmented_fusion_candidate"
+    description: "MobileNetV3-Small + multi-variant augmented DSP LogisticRegression + Temperature Scaling + Stacker (Phase 4C.6B)"
+
+models:
+  selection_policy: "ALL_FIVE_OUTER_FOLDS_FROZEN"
+  fold_count: 5
+  aggregation: "ARITHMETIC_MEAN_OF_MACRO_F1"
+  rule: >-
+    Each recipe is evaluated by running each of its 5 outer-fold models across the entire
+    independent cohort. The primary recipe performance is the unweighted arithmetic mean of the
+    5 fold Macro-F1 scores. Predictions/probabilities MUST NOT be averaged prior to computing Macro-F1.
+    No ensemble is formed. The 5 models are not treated as independent observations.
+    This estimate must not be directly compared with historical pooled OOF as if they were the same estimand.
+
+evaluation:
+  conditions:
+    - "original"
+    - "jpeg_q95"
+    - "jpeg_q75"
+    - "jpeg_q50"
+    - "resize_0.5"
+    - "resize_0.5_jpeg_q75"
+  decision_threshold: 0.5   # p >= 0.5 -> ai_edited
+  tau_conf: 0.65
+  missing_or_corrupt_handling: "STRICT_FAIL_OR_RECORD_INVALID_NO_REPLACEMENT"
+
+endpoints:
+  primary:
+    comparison: "late_fusion_dsp_augmented_minus_visual_calibrated"
+    condition: "jpeg_q75"
+    metric: "mean_per_model_macro_f1"
+    formula: "mean_macro_f1(augmented, jpeg_q75) - mean_macro_f1(visual, jpeg_q75)"
+    success_criterion: "95% bootstrap confidence interval lower bound strictly > 0"
+    scientific_qualification: >-
+      A strictly positive primary interval demonstrates superiority solely on the prespecified
+      endpoint and transform condition; it does not automatically establish production readiness.
+  secondary_descriptive:
+    metrics:
+      - "macro_f1"
+      - "balanced_accuracy"
+      - "auroc"
+      - "brier_score"
+      - "ece"
+      - "fpr"
+      - "fnr"
+      - "selective_coverage"
+      - "selective_accuracy"
+      - "high_confidence_errors"
+    evaluations:
+      - "Absolute performance of both recipes at original and all 5 transform stress conditions"
+      - "Paired differences (augmented - visual) across all conditions"
+      - "Per-model metric variance across the 5 outer-fold models"
+
+resampling:
+  method: "paired_source_cluster_bootstrap_percentile"
+  unit: "source_cluster"
+  replicates: 10000
+  rng: "PCG64"
+  seed: 20261007
+  confidence: 0.95
+  shared_replicates: true  # identical bootstrap sample indices across recipes and all 5 fold models
+
+verdict_vocabulary:
+  improvement: "INDEPENDENT_JPEG75_IMPROVEMENT"     # primary 95% CI lower > 0
+  degradation: "INDEPENDENT_JPEG75_DEGRADATION"     # primary 95% CI upper < 0
+  inconclusive: "INDEPENDENT_JPEG75_INCONCLUSIVE"   # primary 95% CI contains 0
+  synthetic: "SYNTHETIC_ONLY_NOT_MEASURED"
+
+budget:
+  new_training_fits: 0
+  refits_or_recalibration: 0
+  model_tuning: 0
+  real_evaluations_phase_4c7a: 0

@@ -6,12 +6,13 @@
 > **Evidence class**: `development_exploratory`<br>
 > **Verdict (fixed vocabulary)**: `EXPLORATORY_JPEG75_IMPROVEMENT`<br>
 > **Data origin**: `development_real` — 341 sources / 682 images × 6 conditions × 3 recipes = 12,276 evaluated predictions<br>
-> **Fits accounting**: 460 logical completed fits (92 pilot + 368 continued in full run; 305 baseline reconstruction + 155 augmented DSP); completed 460 / 460 (`budget_check: PASS`); 0 unconverged recorded in receipts. Process-level computation attempts: 460 recorded in run receipts (process-level failed attempt logging was not tracked separately by runner).<br>
-> **Image reads / backbone forward passes**: 0 (all features reused from frozen Phase 4C.3B / 4C.4B caches)<br>
+> **Fits accounting**: 460 logical completed fits (92 pilot + 368 continued in full run; 305 baseline reconstruction + 155 augmented DSP); completed 460 / 460 (`budget_check: PASS`); 0 unconverged recorded in receipts. Process-level attempts / failed attempts: `NOT_INDEPENDENTLY_TRACKED` (run receipts record only completed fits; separate process failure/attempt logs are absent, so attempts cannot be inferred).<br>
+> **Execution device & inference**: Host contains GPU `cuda (NVIDIA GeForce GTX 1650)`, but fit and classifier scoring executed on CPU (scikit-learn LogisticRegression). 0 image reads and 0 backbone forward passes (visual and DSP features reused from frozen Phase 4C.3B / 4C.4B caches). Classifier scoring on cached features was executed to produce all 12,276 predictions.<br>
 > **Locked test**: `SEALED_AND_RETIRED` (0 access)<br>
 > **Protocol SHA-256 (LF-normalised)**: `ee62bb6818cc32da5e518265feb5529ff28fc5ec5b79b7fac82d190cee6931f4`<br>
 > **Package archive SHA-256**: `b9930244c5e7e211a074025ec51b8a764dfb637d3b098e8b8c58dc2c147f2f75`<br>
-> **Snapshot manifest SHA-256**: `4ed15a2bf8c72d4e2b4ae5c6e6d8e2bb3afae13eb2aae0efb2ae3260eab72206`
+> **Snapshot manifest SHA-256**: `4ed15a2bf8c72d4e2b4ae5c6e6d8e2bb3afae13eb2aae0efb2ae3260eab72206`<br>
+> **Package provenance**: Package archive and snapshot manifest bind to `research/evidence/phase-4c.6a/package_receipt.json` built from commit `97018d05942a76eb5e86730a7708493ac09ab0c2`. Workstation execution ran within the local repository tree matching these member hashes; whether an external tarball was extracted during local execution is `UNRESOLVED` (no tarball extraction log in run outputs).
 
 ---
 
@@ -22,12 +23,12 @@ The controlled DSP-augmentation experiment was executed strictly according to `m
 | Mode | Result | Details |
 | :--- | :--- | :--- |
 | `preflight` | `PREFLIGHT_PASS` | 341 sources / 682 images; 0 fits; exact reconstruction of stored Phase 4C.3B predictions (original) and Phase 4C.4B predictions (all 6 conditions) with max \|Δp\| = 0.0 and max \|Δlogit\| = 0.0 ($\le 10^{-9}$ tolerance); 0 decision mismatches. |
-| `pilot` | `COMPLETED` | Outer fold 0 only; 92 fits (61 baseline refits + 28 inner augmented + 1 outer augmented refit + 1 temperature + 1 stacker); gate `PASS` (baseline refit equal to frozen model); 0 unconverged; fit wall-clock time 7.02s. |
-| `full` | `COMPLETED` | Resumed verified outer fold 0 without refitting; completed outer folds 1 through 4 (368 fits this run); total 460 fits; all 5 fold baseline gates `PASS` (`baseline_model_equal: true`); 0 unconverged; total fit wall-clock time 14.50s. |
+| `pilot` | `COMPLETED` | Outer fold 0 only; 92 fits (61 baseline refits + 28 inner augmented + 1 outer augmented refit + 1 temperature + 1 stacker); gate `PASS` (baseline refit equal to frozen model); 0 unconverged; receipt `fit_wall_seconds`: **1.4030s** (earlier unverified process-level note of 7.02s was not fit wall clock). |
+| `full` | `COMPLETED` | Resumed verified outer fold 0 without refitting; completed outer folds 1 through 4 (368 fits this run); total 460 fits; all 5 fold baseline gates `PASS` (`baseline_model_equal: true`); 0 unconverged; receipt `fit_wall_seconds`: **6.9653s** for continued fits (cumulative fit_wall_seconds for 460 completed fits: **8.3684s**; earlier unverified process-level note of 14.50s was not fit wall clock). |
 | `analyze` | `COMPLETED` | Evaluated 18 condition × recipe combinations; computed primary and exploratory paired deltas via 10,000-replicate paired source-cluster bootstrap (PCG64 seed 20261006); generated aggregate CSV, JSON, MD, and SVG figures. |
 | `verify` | `REPRODUCED` | Re-evaluated entire analysis in memory; byte-for-byte matched all 7 output artifacts (`status: REPRODUCED`, `mismatched_files: []`). |
 
-Execution Environment: Windows 11 (10.0.26100), Python 3.12.10, PyTorch 2.5.1+cu121, NumPy 2.5.3 (scipy-openblas 0.3.34.106.0 Haswell MAX_THREADS=24), SciPy 1.18.1, scikit-learn 1.9.1, Pillow 12.3.0 (libjpeg 8.0).
+Execution Environment: Windows 11 (10.0.26100), Python 3.12.10, PyTorch 2.5.1+cu121, NumPy 2.5.3 (scipy-openblas 0.3.34.106.0 Haswell MAX_THREADS=24), SciPy 1.18.1, scikit-learn 1.9.1, Pillow 12.3.0 (libjpeg 8.0). Host has GPU `cuda (NVIDIA GeForce GTX 1650)`, but fit and classifier scoring executed on CPU (scikit-learn LogisticRegression).
 
 ---
 
@@ -130,9 +131,9 @@ Under transformed conditions, DSP augmentation substantially stabilizes decision
 ### 4.3. High-Confidence Reliability (τ = 0.65)
 In Phase 4C.4B/4C.5B, unaugmented late fusion showed pathological behavior under transform: coverage rose while selective accuracy crashed (high-confidence errors ballooned to 147–252).
 With DSP augmentation:
-- Selective coverage returns to a well-calibrated $11.9\% - 14.2\%$.
-- Selective accuracy remains stable at $64.0\% - 66.0\%$.
-- High-confidence errors remain tightly bounded at 29–33 across all 6 conditions.
+- Selective coverage (proportion of predictions retained at threshold τ = 0.65): $11.9\% - 14.2\%$ (note: coverage measures retention frequency above confidence threshold; it is reported separately and does not by itself prove probability calibration).
+- Selective accuracy (accuracy evaluated strictly on retained predictions): remains stable at $64.0\% - 66.0\%$.
+- High-confidence errors (absolute count of errors among retained predictions): remain tightly bounded at 29–33 across all 6 conditions.
 
 ---
 

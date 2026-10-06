@@ -1,15 +1,30 @@
+## Phase 4C.7A — Independent Validation Preparation: Protocol Lock, Model Bindings, and Synthetic Preflight
+
+- **Mục tiêu**: Prespecify independent validation protocol comparing visual_calibrated vs late_fusion_dsp_augmented on novel source-disjoint cohort; 0 tuning on 341 dev sources.
+- **Protocol lock**: `ml/configs/independent_validation_protocol.yaml` locks 6 conditions, 5 outer-fold models fixed, arithmetic mean of 5 fold Macro-F1 (no probability averaging, no ensemble); paired cluster bootstrap (10,000 / PCG64 20261007); primary endpoint Δ at jpeg_q75.
+- **Model bindings**: `candidate_model_bindings.json` binds and verifies exact SHA-256 for all 5 outer-fold models from Phase 4C.6B/4C.3B.
+- **Cohort design**: Binary task (authentic=0, ai_edited=1; fully_generated excluded); strict disjoint guard vs 684 Option P sources; acquisition plan + power justification (300-500 pairs recommended, synthetic planning).
+- **Implementation & Preflight**: Tools (`independent_cohort.py`, `independent_model_bindings.py`, `independent_evaluator.py`, runner) pass all 10 synthetic preflight & guard tests.
+- **Phase 4C.6B metadata reconciled**: Receipt fit_wall_seconds 1.4030s pilot, 6.9653s full (8.3684s total); host GPU vs CPU execution device; separate coverage vs selective accuracy.
+- **Not run**: Any real cohort evaluation (0 fits, 0 new evaluations, real performance `NOT_MEASURED`).
+- **Kết quả**: `PREPARATION_COMPLETE_PENDING_INDEPENDENT_COHORT`.
+- **Evidence**: `research/evidence/phase-4c.7a/` (protocol, bindings, acquisition plan, sample size justification, execution guide, readiness.json, report).
+- **Next**: Acquire independent cohort per plan (Phase 4C.7B), run independent evaluation.
+
+---
+
 ## Phase 4C.6B — Controlled DSP-Augmentation Experiment: Real Execution and Analysis Report
 
 - **Mục tiêu**: Execute controlled DSP-augmentation protocol on real 341 development sources across 5 outer folds; evaluate if augmented DSP branch rescues late fusion under JPEG/resize.
-- **Execution**: Preflight `PREFLIGHT_PASS` (0 fits, exact reproduction $\le 10^{-9}$ vs 4C.3B/4C.4B); pilot completed fold 0 (92 fits, gate PASS); full completed all 5 folds (`baseline_model_equal: true`, `budget_check: PASS`); 460 logical completed fits (92 pilot + 368 continued in full run [305 baseline + 155 augmented]), 0 unconverged recorded in receipts; 0 image reads/inference.
+- **Execution**: Preflight `PREFLIGHT_PASS` (0 fits, exact reproduction $\le 10^{-9}$ vs 4C.3B/4C.4B); pilot completed fold 0 (92 fits, gate PASS, receipt fit_wall_seconds 1.4030s); full completed all 5 folds (`baseline_model_equal: true`, `budget_check: PASS`, receipt fit_wall_seconds 6.9653s for 368 fits; 8.3684s total); 460 logical completed fits, 0 unconverged; process attempts `NOT_INDEPENDENTLY_TRACKED`; host GPU, execution device CPU; 0 image reads/backbone passes, classifier scoring executed on cached features.
 - **Verify**: Analyzer verified 10,000 paired source-cluster bootstrap replicates (PCG64 seed 20261006); `--verify` mode `REPRODUCED` across all 7 output artifacts.
 - **Primary endpoint**: `late_fusion_dsp_augmented` − `late_fusion_original` at `jpeg_q75`: ΔMacro-F1 = +0.1363 [95% CI: +0.1057, +0.1681], verdict `EXPLORATORY_JPEG75_IMPROVEMENT` (Macro-F1 rescued from 0.4401 to 0.5764).
-- **Secondary findings**: Strong rescue on severe JPEG (q50 +0.1736 [0.1424, 0.2044]), downsampling (resize +0.1388 [0.1077, 0.1713]) and compound transforms (+0.1332 [0.1027, 0.1649]); trade-off on original development images: Macro-F1 falls from 0.6026 to 0.5777 (Δ = -0.0249 [-0.0464, -0.0045]); all 6 CIs vs visual_calibrated contain 0 (neither superiority nor equivalence proven); mild JPEG (q95) shows no evidence of improvement (Δ = -0.0089 [-0.0309, +0.0135]); DSP JPEG75 logit shift dampened from -0.7139 to -0.0518 logit (observed sensitivity reduction, not proof of eliminating overfitting); high-confidence errors tightly bounded at 29-33 across all conditions.
+- **Secondary findings**: Strong rescue on severe JPEG (q50 +0.1736 [0.1424, 0.2044]), downsampling (resize +0.1388 [0.1077, 0.1713]) and compound transforms (+0.1332 [0.1027, 0.1649]); trade-off on original development images: Macro-F1 falls from 0.6026 to 0.5777 (Δ = -0.0249 [-0.0464, -0.0045]); all 6 CIs vs visual_calibrated contain 0 (neither superiority nor equivalence proven); mild JPEG (q95) shows no evidence of improvement (Δ = -0.0089 [-0.0309, +0.0135]); DSP JPEG75 logit shift dampened from -0.7139 to -0.0518 logit (observed sensitivity reduction, not proof of eliminating overfitting); selective coverage 11.9%-14.2% reported separately from selective accuracy (64.0%-66.0%); high-confidence errors tightly bounded at 29-33 across all conditions.
 - **Limits**: Development/exploratory only; 0 locked-test access; web UI remains uncertain / Model not installed.
 - **Verification**: 57/57 augmentation and guard tests, hermetic suite, Node test/typecheck/build, continuity PASS.
 - **Kết quả**: `EXPLORATORY_JPEG75_IMPROVEMENT` (status `COMPLETED_EXPLORATORY_EVIDENCE_PRODUCED`).
 - **Evidence**: `research/evidence/dsp_augmentation/`, `research/evidence/phase-4c.6b/`.
-- **Next**: Merge `fix/phase-4c6b-report-consistency` into `main` via merge commit, verify branch and main CI, delete branch.
+- **Next**: Phase 4C.7A independent validation preparation.
 
 ---
 

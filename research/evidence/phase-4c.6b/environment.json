@@ -4,7 +4,9 @@
   "platform": "Windows-11-10.0.26100-SP0",
   "python": "3.12.10",
   "torch": "2.5.1+cu121",
-  "device": "cuda (NVIDIA GeForce GTX 1650)",
+  "host_accelerator": "cuda (NVIDIA GeForce GTX 1650)",
+  "execution_device": "cpu (scikit-learn LogisticRegression)",
+  "device": "cpu",
   "numpy": "2.5.3",
   "scipy": "1.18.1",
   "scikit_learn": "1.9.1",
@@ -17,5 +19,5 @@
   "package_archive_sha256": "b9930244c5e7e211a074025ec51b8a764dfb637d3b098e8b8c58dc2c147f2f75",
   "snapshot_manifest_sha256": "4ed15a2bf8c72d4e2b4ae5c6e6d8e2bb3afae13eb2aae0efb2ae3260eab72206",
   "real_dataset_available": true,
-  "note": "Phase 4C.6B real development-cohort execution of controlled DSP-augmentation experiment; 460 fits (305 baseline reconstruction + 155 augmented DSP), 0 image reads, 0 inference."
+  "note": "Phase 4C.6B real development-cohort execution of controlled DSP-augmentation experiment; 460 completed fits (305 baseline reconstruction + 155 augmented DSP), 0 image reads, 0 backbone forward passes; classifier scoring on cached features executed to produce 12,276 predictions."
 }

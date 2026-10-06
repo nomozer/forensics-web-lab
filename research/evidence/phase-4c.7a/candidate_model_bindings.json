@@ -1,0 +1,95 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "4C.7A",
+  "experiment_id": "independent_validation_preparation",
+  "created_at_utc": "2026-10-06T13:30:00Z",
+  "status": "CANDIDATE_MODELS_BOUND_FROZEN",
+  "source_experiment": "Phase 4C.6B Controlled DSP Augmentation",
+  "recipes": [
+    {
+      "id": "visual_calibrated",
+      "components": ["visual_linear_probe", "visual_temperature_scaling"],
+      "decision_rule": "probability >= 0.5 -> 1 (ai_edited) else 0 (authentic)"
+    },
+    {
+      "id": "late_fusion_dsp_augmented",
+      "components": ["visual_linear_probe", "visual_temperature_scaling", "augmented_dsp_classifier", "augmented_dsp_temperature_scaling", "two_input_logistic_stacker"],
+      "decision_rule": "probability >= 0.5 -> 1 (ai_edited) else 0 (authentic)"
+    }
+  ],
+  "feature_contracts": {
+    "visual": {
+      "extractor": "mobilenet_v3_small_penultimate",
+      "dimension": 576,
+      "weights_sha256": "047dcff4addef86ea5bc2eff13c9614dc11f47ab1160d0a71a25e7db994f4e1f"
+    },
+    "dsp": {
+      "extractor": "extract_dsp_features_24_to_16",
+      "dimension": 16,
+      "feature_order": [
+        "fft_mean_high_freq_energy",
+        "fft_std_high_freq_energy",
+        "dct_mean_high_freq_energy",
+        "dct_std_high_freq_energy",
+        "noise_variance_gray",
+        "noise_variance_r",
+        "noise_variance_g",
+        "noise_variance_b",
+        "jpeg_periodic_grid_strength",
+        "jpeg_block_discontinuity",
+        "edge_inconsistency_metric",
+        "color_residual_correlation",
+        "laplacian_kurtosis",
+        "ela_mean_intensity",
+        "ela_p95_intensity",
+        "radial_azimuthal_energy_ratio"
+      ]
+    }
+  },
+  "outer_folds": [
+    {
+      "outer_fold": 0,
+      "model_path": "data/research/local-artifacts/dsp_augmentation/fits/outer_0/fold_model.json",
+      "model_sha256": "232d0994775a6e6cfdfb1bb3fd79f28557439e372e15e4760d0ffbbdba72f609",
+      "receipt_path": "data/research/local-artifacts/dsp_augmentation/fits/outer_0/fold_receipt.json",
+      "receipt_sha256": "97e9a1ddd4721bbf068932f30c9d0d26c3720a334f544647c2fe1733c6da8df8"
+    },
+    {
+      "outer_fold": 1,
+      "model_path": "data/research/local-artifacts/dsp_augmentation/fits/outer_1/fold_model.json",
+      "model_sha256": "c07c582322f7671f3b9f352f5d5388f5a39cec5fa11c80d8441cbb366a3fc15f",
+      "receipt_path": "data/research/local-artifacts/dsp_augmentation/fits/outer_1/fold_receipt.json",
+      "receipt_sha256": "adc65030fd29517447d1bd411166b80ac3d0221615af4ef86797c2ed7e0f31eb"
+    },
+    {
+      "outer_fold": 2,
+      "model_path": "data/research/local-artifacts/dsp_augmentation/fits/outer_2/fold_model.json",
+      "model_sha256": "8a979e35339f1ab2728f6c96d94ce2ef828ad13aad66e0e3ae8339a1be8fb324",
+      "receipt_path": "data/research/local-artifacts/dsp_augmentation/fits/outer_2/fold_receipt.json",
+      "receipt_sha256": "6f9bbb8274163f6ea2964f87c7e2ccda83b633a68c28e0220aa4380a23ccae56"
+    },
+    {
+      "outer_fold": 3,
+      "model_path": "data/research/local-artifacts/dsp_augmentation/fits/outer_3/fold_model.json",
+      "model_sha256": "60358c2fbdfd54d96dee68a1ce43106560ee4da5792343c0d14d85beb1d5fca3",
+      "receipt_path": "data/research/local-artifacts/dsp_augmentation/fits/outer_3/fold_receipt.json",
+      "receipt_sha256": "8f142ebf42e1d009f5514290c7fb2a0abc5d79e7071b8589a16adc9963233cef"
+    },
+    {
+      "outer_fold": 4,
+      "model_path": "data/research/local-artifacts/dsp_augmentation/fits/outer_4/fold_model.json",
+      "model_sha256": "efe517db09c5aecdd219eabc878b6f538e908c03b8b8c0648b2d0f6ec4356a6c",
+      "receipt_path": "data/research/local-artifacts/dsp_augmentation/fits/outer_4/fold_receipt.json",
+      "receipt_sha256": "90c321316eaae111d036196b838d88376f4bfb019207d7418d62e2f50ceb5863"
+    }
+  ],
+  "constraints": {
+    "no_best_fold_selection": true,
+    "all_folds_evaluated_across_full_cohort": true,
+    "primary_estimate": "mean_macro_f1_across_5_folds",
+    "probability_averaging_prohibited": true,
+    "ensemble_creation_prohibited": true,
+    "refitting_prohibited": true,
+    "recalibration_prohibited": true
+  }
+}
