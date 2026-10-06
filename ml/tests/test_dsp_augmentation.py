@@ -719,3 +719,42 @@ def test_interval_rows_report_how_many_replicates_were_finite(analysis):
         rows = list(csv.DictReader(handle))
     assert all(0 <= int(r["finite_replicates"]) <= 10000 for r in rows)
     assert all(int(r["finite_replicates"]) == 10000 for r in rows if r["metric"] == "macro_f1")
+
+
+# --------------------------------------------------------------------------- notebook
+
+
+def test_colab_notebook_is_short_pinned_and_defaults_to_preflight():
+    import ast
+    import json
+    import re
+
+    notebook = json.loads((REPO_ROOT / "notebooks/dsp_augmentation_colab.ipynb").read_text(encoding="utf-8"))
+    code_cells = [c for c in notebook["cells"] if c["cell_type"] == "code"]
+    assert len(code_cells) <= 4
+    assert all(not c.get("outputs") and c.get("execution_count") is None for c in code_cells)
+    sources = ["".join(c["source"]) for c in code_cells]
+    for source in sources:
+        ast.parse(source)
+    joined = "\n".join(sources)
+    assert 'MODE = "preflight"' in joined and "ALLOW_FULL = False" in joined
+    pinned = re.search(r'^EXPECTED_SNAPSHOT_MANIFEST_SHA256 = "([0-9a-f]*)"', joined, re.MULTILINE)
+    assert pinned and re.fullmatch(r"[0-9a-f]{64}", pinned.group(1))
+    receipt = json.loads((REPO_ROOT / "research/evidence/phase-4c.6a/package_receipt.json").read_text(encoding="utf-8"))
+    assert pinned.group(1) == receipt["snapshot_manifest_sha256"]
+    assert 're.fullmatch(r"[0-9a-f]{64}", EXPECTED_SNAPSHOT_MANIFEST_SHA256)' in joined
+    assert "ml.training.run_dsp_augmentation" in joined and "analyze_dsp_augmentation.py" in joined and "--verify" in joined
+    for flag in ("--manifest", "--data-root", "--ablation-dir", "--late-fusion-dir", "--robustness-dir", "--output-dir"):
+        assert flag in joined
+    assert "locked_test" not in joined and "BRANCH" not in joined
+
+
+def test_package_receipt_binds_the_functional_commit_and_every_member():
+    import json
+
+    from scripts.research.build_calibrated_late_fusion_package import EXPERIMENT_MEMBERS
+
+    receipt = json.loads((REPO_ROOT / "research/evidence/phase-4c.6a/package_receipt.json").read_text(encoding="utf-8"))
+    assert receipt["experiment"] == aug.EXPERIMENT_ID and not receipt["includes_weights"]
+    assert len(receipt["source_commit"]) == 40
+    assert sorted(m["path"] for m in receipt["members"]) == sorted(EXPERIMENT_MEMBERS[aug.EXPERIMENT_ID])

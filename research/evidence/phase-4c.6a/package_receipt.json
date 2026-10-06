@@ -1,0 +1,111 @@
+{
+  "archive_bytes": 86797,
+  "archive_filename": "phase_4c6_dsp_augmentation_code.tar.gz",
+  "archive_sha256": "b9930244c5e7e211a074025ec51b8a764dfb637d3b098e8b8c58dc2c147f2f75",
+  "builder_command": "python scripts/research/build_calibrated_late_fusion_package.py --experiment controlled_dsp_augmentation --source-commit 97018d05942a76eb5e86730a7708493ac09ab0c2 --output phase_4c6_dsp_augmentation_code.tar.gz",
+  "experiment": "controlled_dsp_augmentation",
+  "includes_weights": false,
+  "member_count": 20,
+  "members": [
+    {
+      "bytes": 5162,
+      "path": "ml/configs/calibrated_late_fusion_protocol.yaml",
+      "sha256": "85dcb2427a16507e8ba55eba5b010fc6a59e6763fc2b16bf29514913bab731e1"
+    },
+    {
+      "bytes": 6724,
+      "path": "ml/configs/development_robustness_protocol.yaml",
+      "sha256": "b711cdd9eeb56e9b8167daa508b5b85e400cdb8ec2006272fcc922f0061734d6"
+    },
+    {
+      "bytes": 6948,
+      "path": "ml/configs/dsp_augmentation_protocol.yaml",
+      "sha256": "ee62bb6818cc32da5e518265feb5529ff28fc5ec5b79b7fac82d190cee6931f4"
+    },
+    {
+      "bytes": 186,
+      "path": "ml/requirements.txt",
+      "sha256": "aa6408d0c7057641bb71d6433cd6b796a2d1ac45d110b2bc9c61113f02efa617"
+    },
+    {
+      "bytes": 203,
+      "path": "ml/training/__init__.py",
+      "sha256": "0eeb9dbcb52577c921a0026bdffab1f39ce3c996248b4a59057b0b0aebfd57ad"
+    },
+    {
+      "bytes": 31256,
+      "path": "ml/training/calibrated_late_fusion.py",
+      "sha256": "087696751e14c8e83dc035707f62e632b3817d61d82b7a192d2ef705139e254c"
+    },
+    {
+      "bytes": 38668,
+      "path": "ml/training/development_robustness.py",
+      "sha256": "02bebbf1cae7bf1702f619c70acdf2cf71761dc4965ca1e6a2ea54836a947801"
+    },
+    {
+      "bytes": 22133,
+      "path": "ml/training/dsp_augmentation.py",
+      "sha256": "9750e485caf8d10d1afc04b1b067b5f5d394eb5a21b6b0df41468f0913c45224"
+    },
+    {
+      "bytes": 12586,
+      "path": "ml/training/dsp_features.py",
+      "sha256": "4c6179006c7dfdcba333b9e0a1c540e0fa2ffdca0a986ba81f0bcdedf75ef26c"
+    },
+    {
+      "bytes": 1615,
+      "path": "ml/training/loss.py",
+      "sha256": "bb92dc961227f4e32a03f499c6a5f5356fbbf643a48ece1b05659a9ecf3c1829"
+    },
+    {
+      "bytes": 1961,
+      "path": "ml/training/mobilenetv3_forensics.py",
+      "sha256": "b60e936fffebffef42530e92a538ab7c279a027fa3e7e0091a41e3286c780592"
+    },
+    {
+      "bytes": 11614,
+      "path": "ml/training/phase_4c2h_development.py",
+      "sha256": "91921aed522707752facbb487a16303b80361250fe52866cfc294d9201bb0c32"
+    },
+    {
+      "bytes": 11722,
+      "path": "ml/training/run_development_robustness.py",
+      "sha256": "b9598db0d305808acef7220ba2508b2db33d5fe9b574fe19cfb0f2e77bb0ae77"
+    },
+    {
+      "bytes": 18788,
+      "path": "ml/training/run_dsp_augmentation.py",
+      "sha256": "9217a6ba128465213bf026672fb05786921afc1dbf9cb9b004bf5eff20073226"
+    },
+    {
+      "bytes": 13609,
+      "path": "ml/training/visual_dsp_ablation.py",
+      "sha256": "a3f74352965a355b50bd06dfcfaea39d619e5379535e983f39455121d4895b71"
+    },
+    {
+      "bytes": 35574,
+      "path": "scripts/research/analyze_calibrated_late_fusion.py",
+      "sha256": "750b062ca9ebf5e360ee157d8d2e9c2b109d9939664bb7b8d8b37ea214885865"
+    },
+    {
+      "bytes": 22186,
+      "path": "scripts/research/analyze_development_robustness.py",
+      "sha256": "fd87f68532f6da9edc20889ec91ead469038d6c97e183f4e9650088a43982abc"
+    },
+    {
+      "bytes": 23194,
+      "path": "scripts/research/analyze_dsp_augmentation.py",
+      "sha256": "06390da8162aae691fb6e980bad82595e6c892c4a2321e2402d18668348eec7f"
+    },
+    {
+      "bytes": 69044,
+      "path": "scripts/research/diagnose_fusion_shift.py",
+      "sha256": "1b4666b90ab69bf87cbb45ca4d0948cc6391cde45abe617654cb4e313d30dbb7"
+    }
+  ],
+  "note": "Archive bytes depend on the gzip/zlib build; SNAPSHOT_MANIFEST.json (and its SHA-256) is a pure function of the source commit and member list.",
+  "protocol_sha256_lf": "ee62bb6818cc32da5e518265feb5529ff28fc5ec5b79b7fac82d190cee6931f4",
+  "schema_version": "1.0.0",
+  "snapshot_manifest_sha256": "4ed15a2bf8c72d4e2b4ae5c6e6d8e2bb3afae13eb2aae0efb2ae3260eab72206",
+  "source_commit": "97018d05942a76eb5e86730a7708493ac09ab0c2"
+}

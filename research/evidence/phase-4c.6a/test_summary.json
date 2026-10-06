@@ -4,7 +4,11 @@
   "measured_in": "claude_code_cloud_container_linux_python_3.12.13_venv",
   "data_origin_of_all_runs": "synthetic_only",
   "targeted": {
-    "ml/tests/test_dsp_augmentation.py": {"passed": 47, "failed": 0, "note": "functional commit; the follow-up commit adds notebook and package-receipt tests"},
+    "ml/tests/test_dsp_augmentation.py": {
+      "passed": 49,
+      "failed": 0,
+      "note": "47 in the functional commit + notebook pin and package-receipt tests in the follow-up commit"
+    },
     "package tests incl. ml/tests/test_calibrated_late_fusion_analysis.py": "PASS (builder change keeps calibrated_late_fusion packaging unchanged)"
   },
   "mutation_checks": "scaler-on-all-variants, unit weights, q75 validation, outer-test in refit, q50 in training, disabled baseline gate, disabled receipt binding, no resume, image hash reads, verdict boundary, evidence refusal, unnormalised high-confidence rate: each made a test fail",
@@ -18,7 +22,10 @@
   "ruff_new_and_changed_python_files": "PASS",
   "git_diff_check": "PASS",
   "continuity_check_staged": "PASS",
-  "continuity_unit_tests": {"passed": 13, "failed": 0},
+  "continuity_unit_tests": {
+    "passed": 13,
+    "failed": 0
+  },
   "pnpm_typecheck": "PASS",
   "pnpm_build": "PASS (pre-existing chunk-size warning only)",
   "synthetic_pipeline": "preflight PASS, pilot 92 fits, full 460 fits (368 new, fold 0 resumed), 0 unconverged, every fold gate PASS, analyzer verdict SYNTHETIC_ONLY_NO_SCIENTIFIC_VERDICT, verify REPRODUCED",
@@ -31,5 +38,6 @@
   ],
   "real_performance": "NOT_MEASURED",
   "fits_on_real_data": 0,
-  "locked_test_accesses": 0
+  "locked_test_accesses": 0,
+  "package": "built from 97018d05 twice with identical bytes; staged package runs preflight and the analyzer without the repository; notebook setup cell simulated against the real package (members verified, preflight fails closed on synthetic inputs as expected)"
 }
