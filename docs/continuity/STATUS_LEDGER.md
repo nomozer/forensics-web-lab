@@ -1,14 +1,15 @@
-## Phase 4C.7A — Independent Validation Preparation: Protocol Lock, Model Bindings, and Synthetic Preflight
+## Phase 4C.7A — Independent Validation Preparation: Protocol Lock, Model Bindings Audit, and Pipeline Verification
 
 - **Mục tiêu**: Prespecify independent validation protocol comparing visual_calibrated vs late_fusion_dsp_augmented on novel source-disjoint cohort; 0 tuning on 341 dev sources.
-- **Protocol lock**: `ml/configs/independent_validation_protocol.yaml` locks 6 conditions, 5 outer-fold models fixed, arithmetic mean of 5 fold Macro-F1 (no probability averaging, no ensemble); paired cluster bootstrap (10,000 / PCG64 20261007); primary endpoint Δ at jpeg_q75.
-- **Model bindings**: `candidate_model_bindings.json` binds and verifies exact SHA-256 for all 5 outer-fold models from Phase 4C.6B/4C.3B.
-- **Cohort design**: Binary task (authentic=0, ai_edited=1; fully_generated excluded); strict disjoint guard vs 684 Option P sources; acquisition plan + power justification (300-500 pairs recommended, synthetic planning).
-- **Implementation & Preflight**: Tools (`independent_cohort.py`, `independent_model_bindings.py`, `independent_evaluator.py`, runner) pass all 10 synthetic preflight & guard tests.
-- **Phase 4C.6B metadata reconciled**: Receipt fit_wall_seconds 1.4030s pilot, 6.9653s full (8.3684s total); host GPU vs CPU execution device; separate coverage vs selective accuracy.
-- **Not run**: Any real cohort evaluation (0 fits, 0 new evaluations, real performance `NOT_MEASURED`).
+- **Protocol lock & Amendment v1.1**: `independent_validation_protocol.yaml` + `PROTOCOL_AMENDMENT_V1.1.md` lock 6 conditions, 5 outer-fold models fixed, arithmetic mean of 5 fold Macro-F1 (no probability averaging, no ensemble); paired cluster bootstrap (10,000 / PCG64 20261007); primary endpoint Δ at jpeg_q75; $N_{\text{target}}=400$ pairs locked with strict stopping rule; 16 DSP feature order aligned with `dsp_features.py`.
+- **Model bindings audit**: Machine audit (`model_bindings_audit.json`) streamed SHA-256 for all 5 outer-fold models on disk, confirmed 5/5 AUDIT_VERIFIED; reconciled chat markdown hash hallucination against immutable disk ground truth.
+- **Monte Carlo simulation**: Completed paired cluster bootstrap planning across 5 effect scenarios x 5 sample sizes with 50 cohorts x 500 replicates (`sample_size_planning_results.json`); null FPR <= 2.5%, subtle effect power 100%, ME +-0.0098 at N=400 pairs.
+- **Cohort design & Guard**: Multi-layer disjoint guard (`independent_cohort.py`) checks source_id, image_sha256, origin_id, and resolution parity vs 684 historical Option P sources; acquisition quotas locked (SD2 40%, SDXL 35%, Firefly 25%).
+- **Pipeline & CLI**: `IndependentEvaluationPipeline` verified end-to-end (PIL decode -> 6 transforms -> backbone/DSP extraction -> models -> arithmetic Macro-F1 -> bootstrap); CLI runner supports `--image-preflight` and `--evaluate`.
+- **Tests**: 21/21 tests PASS (17 hermetic CI tests + 4 artifact-gated tests).
+- **Not run**: Any real cohort evaluation (0 fits, 0 new evaluations, real independent performance `NOT_MEASURED`).
 - **Kết quả**: `PREPARATION_COMPLETE_PENDING_INDEPENDENT_COHORT`.
-- **Evidence**: `research/evidence/phase-4c.7a/` (protocol, bindings, acquisition plan, sample size justification, execution guide, readiness.json, report).
+- **Evidence**: `research/evidence/phase-4c.7a/` (protocol, amendment v1.1, audited bindings, audit report, Monte Carlo results & report, acquisition plan, execution guide, readiness.json, report).
 - **Next**: Acquire independent cohort per plan (Phase 4C.7B), run independent evaluation.
 
 ---
