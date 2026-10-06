@@ -250,6 +250,7 @@ graph TD
 | **Controlled DSP Augmentation Analyzer** | `scripts/research/analyze_dsp_augmentation.py` (condition metrics, paired deltas with finite-replicate counts, contribution shifts per fold/class, verdict, 2 SVG figures, `--verify`; refuses synthetic output in research/evidence and runs off-budget) | `implemented-and-tested` (synthetic) |
 | **Experiment Package Builder** | `scripts/research/build_calibrated_late_fusion_package.py` (`--experiment calibrated_late_fusion\|controlled_dsp_augmentation`; `EXPERIMENT_MEMBERS`) | `implemented-and-tested` |
 | **Controlled DSP Augmentation Tests** | `ml/tests/test_dsp_augmentation.py` (reuses `ml/tests/fixtures/robustness_fixture.py`) | `implemented-and-tested` |
+| **Controlled DSP Augmentation Notebook and Package Receipt** | `notebooks/dsp_augmentation_colab.ipynb` (3 code cells, default preflight, pinned snapshot manifest `4ed15a2b…`, refuses empty pin), `research/evidence/phase-4c.6a/package_receipt.json` (functional commit `97018d05…`, 19 members) | `implemented-and-tested` (structure; setup cell simulated against the real package) |
 | **Phase 4C.5B Evidence Package** | `research/evidence/fusion_shift_diagnostics/`, `research/evidence/phase-4c.5b/` (PHASE_REPORT.md, environment.json, preflight_receipt.json, diagnostics_summary.json, DIAGNOSTICS_REPORT.md, component_shift.csv, dsp_feature_shift.csv, dsp_feature_contribution.csv, decision_transitions.csv, confidence_histogram.csv, fold_parameters.csv, 5 figures SVG) | `executed-and-verified` |
 
 ---
