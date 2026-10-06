@@ -1,9 +1,24 @@
+## Phase 4C.6A — Controlled DSP-Augmentation Experiment: Protocol Lock, Implementation and Synthetic Verification
+
+- **Mục tiêu**: Test whether training the DSP branch on JPEG/resize variants reduces the 4C.4B late-fusion degradation while keeping original-image performance; development/exploratory only.
+- **Wording**: Phase 4C.5B report normalised (per-condition DSP/fusion ratios 0.935–1.001, not causal; "no deviation found in audited paths"; no "uncompressed"; coefficient roles; residual types; no visual-invariance claim); numbers unchanged.
+- **Protocol lock**: `ml/configs/dsp_augmentation_protocol.yaml`; 3 recipes; DSP variants original/q95/q75/resize×0.5 at weight 1/4, scaler on originals, C/temperature/stacker on original inner-OOF; visual branch unchanged; reused 4C.3B/4C.4B feature caches (0 extraction); primary ΔMacro-F1 jpeg_q75 augmented − original late fusion, bootstrap 10,000 / PCG64 20261006; locked verdict vocabulary.
+- **Budget**: 460 fits (305 baseline reconstruction + 155 augmented), pilot 92; derived in code and tested against receipts.
+- **Implementation**: core, runner (0-fit preflight reconstruction, per-fold baseline gate, resume, budget gate), analyzer (+verify), package builder `--experiment`, notebook, HANDOFF + EXECUTION_GUIDE.
+- **Verification**: synthetic tests/suites in `test_summary.json`; mutation checks; code review fixes.
+- **Not run**: any development_real execution; real performance `NOT_MEASURED`; 0 locked-test access.
+- **Kết quả**: `IMPLEMENTED_SYNTHETIC_VERIFIED_AWAITING_REAL_EXECUTION`.
+- **Evidence**: `research/evidence/phase-4c.6a/`.
+- **Next**: Local agent runs EXECUTION_GUIDE on `claude/elegant-edison-uentky`, records Phase 4C.6B, then merges.
+
+---
+
 ## Phase 4C.5B — Development Fusion-Shift Diagnostics: Real Artifact Execution and Report
 
 - **Mục tiêu**: Execute `diagnose_fusion_shift.py` on real Phase 4C.3B and 4C.4B artifacts; diagnose mechanism behind late-fusion degradation under JPEG/resize without refitting or inference.
 - **Execution**: Preflight `PREFLIGHT_PASS` (stored predictions reconstructed with max |Δp| = 0.0, max |Δlogit| = 0.0, 0 decision mismatches; linear decomposition residual $4.44 \times 10^{-16} \le 10^{-9}$; DSP scaler verified against outer-train stats).
 - **Verify**: Reproduction check `REPRODUCED` across all 15 output artifacts; Macro-F1 cross-check exact vs committed 4C.4B (original 0.6026, q75 0.4401, q50 0.4026).
-- **Findings**: DSP contribution dominates fusion logit delta (>99% across transforms); visual logit invariant (|Δ| ≤ 0.011 logit). JPEG induces severe negative DSP shift (`dct_mean_high_freq_energy`, `jpeg_periodic_grid_strength`), collapsing decisions to `authentic` (FNR 0.87-0.92). Resize induces positive DSP shift, collapsing to `ai_edited` (FPR 0.88). Consistent across all 5 folds and both classes. No implementation defect; failure stems from DSP out-of-distribution extrapolation against stationary stacker weights.
+- **Findings** (wording normalised in 4C.6A): mean DSP-term Δ / mean fusion Δ = 0.935–1.001 by condition (q95 lowest), not causal attribution; mean visual-term |Δ| ≤ 0.011 logit, per-image up to ±0.18 (no invariance claim). JPEG induces severe negative DSP shift (`dct_mean_high_freq_energy`, `jpeg_periodic_grid_strength`), collapsing decisions to `authentic` (FNR 0.87-0.92). Resize induces positive DSP shift, collapsing to `ai_edited` (FPR 0.88). Consistent across all 5 folds and both classes. No deviation found in the audited computation paths; consistent with DSP inputs outside their training range under fixed weights (not proven causal).
 - **Verification**: 35/35 diagnostics tests, 30/30 robustness tests, hermetic suite PASS; continuity checker PASS; 0 fits; 0 locked-test access.
 - **Kết quả**: `COMPLETED_EXPLORATORY_EVIDENCE_PRODUCED`.
 - **Evidence**: `research/evidence/fusion_shift_diagnostics/`, `research/evidence/phase-4c.5b/`.
