@@ -565,7 +565,19 @@ def run_outer_fold(
         },
         "fit_wall_seconds": time.perf_counter() - started,
     }
-    return {"rows": rows, "model": model_artifact, "receipt": receipt_body}
+    return {
+        "rows": rows,
+        "model": model_artifact,
+        "receipt": receipt_body,
+        # In-memory only (never persisted): reused by experiments that keep this
+        # fold's visual branch and need its outer-train inner-OOF scores.
+        "fitted": {"refits": refits, "temperatures": {m: temperatures[m]["temperature"] for m in MODALITIES}, "stacker": stacker},
+        "inner_oof": {
+            "keys": selections["visual"]["inner_oof_keys"],
+            "labels": inner_labels,
+            "logits": {m: selections[m]["inner_oof_logits"] for m in MODALITIES},
+        },
+    }
 
 
 # --------------------------------------------------------------------------- persistence

@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="940" height="380" viewBox="0 0 940 380">
+<rect width="940" height="380" fill="#ffffff"/>
+<text x="16.0" y="26.0" font-family="sans-serif" font-size="16" text-anchor="start" fill="#1f1f1e" font-weight="bold">Macro-F1 and Brier score by condition</text>
+<text x="16.0" y="46.0" font-family="sans-serif" font-size="12" text-anchor="start" fill="#5f5e5a" font-weight="normal">development_real · exploratory · fixed folds and fitted models</text>
+<rect x="190.0" y="68" width="12" height="12" rx="2" fill="#2a78d6"/>
+<text x="208.0" y="78.0" font-family="sans-serif" font-size="12" text-anchor="start" fill="#1f1f1e" font-weight="normal">visual_calibrated</text>
+<rect x="440.0" y="68" width="12" height="12" rx="2" fill="#eb6834"/>
+<text x="458.0" y="78.0" font-family="sans-serif" font-size="12" text-anchor="start" fill="#1f1f1e" font-weight="normal">late_fusion_original</text>
+<rect x="690.0" y="68" width="12" height="12" rx="2" fill="#1baf7a"/>
+<text x="708.0" y="78.0" font-family="sans-serif" font-size="12" text-anchor="start" fill="#1f1f1e" font-weight="normal">late_fusion_dsp_augmented</text>
+<rect x="190" y="104" width="330" height="204" fill="none" stroke="#e6e5e1"/>
+<line x1="190.0" y1="104" x2="190.0" y2="308" stroke="#e6e5e1"/>
+<text x="190.0" y="323.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0.35</text>
+<line x1="245.0" y1="104" x2="245.0" y2="308" stroke="#e6e5e1"/>
+<text x="245.0" y="323.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0.4</text>
+<line x1="300.0" y1="104" x2="300.0" y2="308" stroke="#e6e5e1"/>
+<text x="300.0" y="323.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0.45</text>
+<line x1="355.0" y1="104" x2="355.0" y2="308" stroke="#e6e5e1"/>
+<text x="355.0" y="323.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0.5</text>
+<line x1="410.0" y1="104" x2="410.0" y2="308" stroke="#e6e5e1"/>
+<text x="410.0" y="323.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0.55</text>
+<line x1="465.0" y1="104" x2="465.0" y2="308" stroke="#e6e5e1"/>
+<text x="465.0" y="323.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0.6</text>
+<line x1="520.0" y1="104" x2="520.0" y2="308" stroke="#e6e5e1"/>
+<text x="520.0" y="323.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0.65</text>
+<text x="355.0" y="340.0" font-family="sans-serif" font-size="12" text-anchor="middle" fill="#1f1f1e" font-weight="normal">Macro-F1 (threshold 0.5)</text>
+<text x="180.0" y="125.0" font-family="sans-serif" font-size="12" text-anchor="end" fill="#1f1f1e" font-weight="normal">original</text>
+<line x1="415.0" y1="113.0" x2="467.8" y2="113.0" stroke="#2a78d6" stroke-width="2"/>
+<circle cx="441.6" cy="113.0" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>original · visual_calibrated: 0.5787 [0.5545, 0.6025]</title></circle>
+<line x1="441.7" y1="121.0" x2="494.7" y2="121.0" stroke="#eb6834" stroke-width="2"/>
+<circle cx="467.9" cy="121.0" r="4" fill="#eb6834" stroke="#ffffff" stroke-width="2"><title>original · late_fusion_original: 0.6026 [0.5788, 0.6270]</title></circle>
+<line x1="415.6" y1="129.0" x2="464.7" y2="129.0" stroke="#1baf7a" stroke-width="2"/>
+<circle cx="440.4" cy="129.0" r="4" fill="#1baf7a" stroke="#ffffff" stroke-width="2"><title>original · late_fusion_dsp_augmented: 0.5777 [0.5551, 0.5997]</title></circle>
+<text x="180.0" y="159.0" font-family="sans-serif" font-size="12" text-anchor="end" fill="#1f1f1e" font-weight="normal">jpeg_q95</text>
+<line x1="414.6" y1="147.0" x2="467.9" y2="147.0" stroke="#2a78d6" stroke-width="2"/>
+<circle cx="441.7" cy="147.0" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>jpeg_q95 · visual_calibrated: 0.5788 [0.5542, 0.6026]</title></circle>
+<line x1="430.9" y1="155.0" x2="485.7" y2="155.0" stroke="#eb6834" stroke-width="2"/>
+<circle cx="458.3" cy="155.0" r="4" fill="#eb6834" stroke="#ffffff" stroke-width="2"><title>jpeg_q95 · late_fusion_original: 0.5939 [0.5690, 0.6189]</title></circle>
+<line x1="422.7" y1="163.0" x2="474.2" y2="163.0" stroke="#1baf7a" stroke-width="2"/>
+<circle cx="448.5" cy="163.0" r="4" fill="#1baf7a" stroke="#ffffff" stroke-width="2"><title>jpeg_q95 · late_fusion_dsp_augmented: 0.5850 [0.5616, 0.6084]</title></circle>
+<text x="180.0" y="193.0" font-family="sans-serif" font-size="12" text-anchor="end" fill="#1f1f1e" font-weight="normal">jpeg_q75 (primary)</text>
+<line x1="416.3" y1="181.0" x2="469.4" y2="181.0" stroke="#2a78d6" stroke-width="2"/>
+<circle cx="443.1" cy="181.0" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>jpeg_q75 · visual_calibrated: 0.5801 [0.5557, 0.6040]</title></circle>
+<line x1="260.2" y1="189.0" x2="317.1" y2="189.0" stroke="#eb6834" stroke-width="2"/>
+<circle cx="289.1" cy="189.0" r="4" fill="#eb6834" stroke="#ffffff" stroke-width="2"><title>jpeg_q75 · late_fusion_original: 0.4401 [0.4138, 0.4655]</title></circle>
+<line x1="413.7" y1="197.0" x2="464.9" y2="197.0" stroke="#1baf7a" stroke-width="2"/>
+<circle cx="439.0" cy="197.0" r="4" fill="#1baf7a" stroke="#ffffff" stroke-width="2"><title>jpeg_q75 · late_fusion_dsp_augmented: 0.5764 [0.5534, 0.5999]</title></circle>
+<text x="180.0" y="227.0" font-family="sans-serif" font-size="12" text-anchor="end" fill="#1f1f1e" font-weight="normal">jpeg_q50</text>
+<line x1="414.1" y1="215.0" x2="466.1" y2="215.0" stroke="#2a78d6" stroke-width="2"/>
+<circle cx="439.9" cy="215.0" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>jpeg_q50 · visual_calibrated: 0.5772 [0.5537, 0.6010]</title></circle>
+<line x1="222.8" y1="223.0" x2="274.0" y2="223.0" stroke="#eb6834" stroke-width="2"/>
+<circle cx="247.9" cy="223.0" r="4" fill="#eb6834" stroke="#ffffff" stroke-width="2"><title>jpeg_q50 · late_fusion_original: 0.4026 [0.3798, 0.4264]</title></circle>
+<line x1="414.3" y1="231.0" x2="464.0" y2="231.0" stroke="#1baf7a" stroke-width="2"/>
+<circle cx="438.8" cy="231.0" r="4" fill="#1baf7a" stroke="#ffffff" stroke-width="2"><title>jpeg_q50 · late_fusion_dsp_augmented: 0.5762 [0.5539, 0.5991]</title></circle>
+<text x="180.0" y="261.0" font-family="sans-serif" font-size="12" text-anchor="end" fill="#1f1f1e" font-weight="normal">resize_0.5</text>
+<line x1="414.6" y1="249.0" x2="468.6" y2="249.0" stroke="#2a78d6" stroke-width="2"/>
+<circle cx="441.6" cy="249.0" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>resize_0.5 · visual_calibrated: 0.5787 [0.5542, 0.6032]</title></circle>
+<line x1="250.3" y1="257.0" x2="305.5" y2="257.0" stroke="#eb6834" stroke-width="2"/>
+<circle cx="278.0" cy="257.0" r="4" fill="#eb6834" stroke="#ffffff" stroke-width="2"><title>resize_0.5 · late_fusion_original: 0.4300 [0.4048, 0.4550]</title></circle>
+<line x1="404.9" y1="265.0" x2="456.6" y2="265.0" stroke="#1baf7a" stroke-width="2"/>
+<circle cx="430.7" cy="265.0" r="4" fill="#1baf7a" stroke="#ffffff" stroke-width="2"><title>resize_0.5 · late_fusion_dsp_augmented: 0.5688 [0.5454, 0.5923]</title></circle>
+<text x="180.0" y="295.0" font-family="sans-serif" font-size="12" text-anchor="end" fill="#1f1f1e" font-weight="normal">resize_0.5_jpeg_q75</text>
+<line x1="419.0" y1="283.0" x2="470.5" y2="283.0" stroke="#2a78d6" stroke-width="2"/>
+<circle cx="444.6" cy="283.0" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>resize_0.5_jpeg_q75 · visual_calibrated: 0.5815 [0.5581, 0.6050]</title></circle>
+<line x1="271.3" y1="291.0" x2="329.1" y2="291.0" stroke="#eb6834" stroke-width="2"/>
+<circle cx="300.0" cy="291.0" r="4" fill="#eb6834" stroke="#ffffff" stroke-width="2"><title>resize_0.5_jpeg_q75 · late_fusion_original: 0.4500 [0.4239, 0.4764]</title></circle>
+<line x1="420.7" y1="299.0" x2="472.8" y2="299.0" stroke="#1baf7a" stroke-width="2"/>
+<circle cx="446.6" cy="299.0" r="4" fill="#1baf7a" stroke="#ffffff" stroke-width="2"><title>resize_0.5_jpeg_q75 · late_fusion_dsp_augmented: 0.5832 [0.5597, 0.6071]</title></circle>
+<rect x="580" y="104" width="330" height="204" fill="none" stroke="#e6e5e1"/>
+<line x1="580.0" y1="104" x2="580.0" y2="308" stroke="#e6e5e1"/>
+<text x="580.0" y="323.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0.22</text>
+<line x1="646.0" y1="104" x2="646.0" y2="308" stroke="#e6e5e1"/>
+<text x="646.0" y="323.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0.24</text>
+<line x1="712.0" y1="104" x2="712.0" y2="308" stroke="#e6e5e1"/>
+<text x="712.0" y="323.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0.26</text>
+<line x1="778.0" y1="104" x2="778.0" y2="308" stroke="#e6e5e1"/>
+<text x="778.0" y="323.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0.28</text>
+<line x1="844.0" y1="104" x2="844.0" y2="308" stroke="#e6e5e1"/>
+<text x="844.0" y="323.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0.3</text>
+<line x1="910.0" y1="104" x2="910.0" y2="308" stroke="#e6e5e1"/>
+<text x="910.0" y="323.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0.32</text>
+<text x="745.0" y="340.0" font-family="sans-serif" font-size="12" text-anchor="middle" fill="#1f1f1e" font-weight="normal">Brier score (lower is better)</text>
+<line x1="640.4" y1="113.0" x2="666.2" y2="113.0" stroke="#2a78d6" stroke-width="2"/>
+<circle cx="653.4" cy="113.0" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>original · visual_calibrated: 0.2422 [0.2383, 0.2461]</title></circle>
+<line x1="627.4" y1="121.0" x2="655.5" y2="121.0" stroke="#eb6834" stroke-width="2"/>
+<circle cx="641.4" cy="121.0" r="4" fill="#eb6834" stroke="#ffffff" stroke-width="2"><title>original · late_fusion_original: 0.2386 [0.2344, 0.2429]</title></circle>
+<line x1="639.5" y1="129.0" x2="664.2" y2="129.0" stroke="#1baf7a" stroke-width="2"/>
+<circle cx="651.9" cy="129.0" r="4" fill="#1baf7a" stroke="#ffffff" stroke-width="2"><title>original · late_fusion_dsp_augmented: 0.2418 [0.2380, 0.2455]</title></circle>
+<line x1="640.6" y1="147.0" x2="666.3" y2="147.0" stroke="#2a78d6" stroke-width="2"/>
+<circle cx="653.5" cy="147.0" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>jpeg_q95 · visual_calibrated: 0.2423 [0.2384, 0.2461]</title></circle>
+<line x1="635.3" y1="155.0" x2="663.1" y2="155.0" stroke="#eb6834" stroke-width="2"/>
+<circle cx="649.1" cy="155.0" r="4" fill="#eb6834" stroke="#ffffff" stroke-width="2"><title>jpeg_q95 · late_fusion_original: 0.2409 [0.2368, 0.2452]</title></circle>
+<line x1="639.7" y1="163.0" x2="664.5" y2="163.0" stroke="#1baf7a" stroke-width="2"/>
+<circle cx="652.1" cy="163.0" r="4" fill="#1baf7a" stroke="#ffffff" stroke-width="2"><title>jpeg_q95 · late_fusion_dsp_augmented: 0.2418 [0.2381, 0.2456]</title></circle>
+<line x1="640.4" y1="181.0" x2="665.9" y2="181.0" stroke="#2a78d6" stroke-width="2"/>
+<circle cx="653.3" cy="181.0" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>jpeg_q75 · visual_calibrated: 0.2422 [0.2383, 0.2460]</title></circle>
+<line x1="739.4" y1="189.0" x2="776.3" y2="189.0" stroke="#eb6834" stroke-width="2"/>
+<circle cx="757.7" cy="189.0" r="4" fill="#eb6834" stroke="#ffffff" stroke-width="2"><title>jpeg_q75 · late_fusion_original: 0.2739 [0.2683, 0.2795]</title></circle>
+<line x1="640.0" y1="197.0" x2="664.6" y2="197.0" stroke="#1baf7a" stroke-width="2"/>
+<circle cx="652.3" cy="197.0" r="4" fill="#1baf7a" stroke="#ffffff" stroke-width="2"><title>jpeg_q75 · late_fusion_dsp_augmented: 0.2419 [0.2382, 0.2456]</title></circle>
+<line x1="639.1" y1="215.0" x2="664.4" y2="215.0" stroke="#2a78d6" stroke-width="2"/>
+<circle cx="651.9" cy="215.0" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>jpeg_q50 · visual_calibrated: 0.2418 [0.2379, 0.2456]</title></circle>
+<line x1="855.9" y1="223.0" x2="905.5" y2="223.0" stroke="#eb6834" stroke-width="2"/>
+<circle cx="880.9" cy="223.0" r="4" fill="#eb6834" stroke="#ffffff" stroke-width="2"><title>jpeg_q50 · late_fusion_original: 0.3112 [0.3036, 0.3186]</title></circle>
+<line x1="639.9" y1="231.0" x2="664.5" y2="231.0" stroke="#1baf7a" stroke-width="2"/>
+<circle cx="652.3" cy="231.0" r="4" fill="#1baf7a" stroke="#ffffff" stroke-width="2"><title>jpeg_q50 · late_fusion_dsp_augmented: 0.2419 [0.2381, 0.2456]</title></circle>
+<line x1="640.5" y1="249.0" x2="666.0" y2="249.0" stroke="#2a78d6" stroke-width="2"/>
+<circle cx="653.3" cy="249.0" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>resize_0.5 · visual_calibrated: 0.2422 [0.2383, 0.2461]</title></circle>
+<line x1="725.9" y1="257.0" x2="756.6" y2="257.0" stroke="#eb6834" stroke-width="2"/>
+<circle cx="741.3" cy="257.0" r="4" fill="#eb6834" stroke="#ffffff" stroke-width="2"><title>resize_0.5 · late_fusion_original: 0.2689 [0.2642, 0.2735]</title></circle>
+<line x1="641.2" y1="265.0" x2="665.9" y2="265.0" stroke="#1baf7a" stroke-width="2"/>
+<circle cx="653.6" cy="265.0" r="4" fill="#1baf7a" stroke="#ffffff" stroke-width="2"><title>resize_0.5 · late_fusion_dsp_augmented: 0.2423 [0.2385, 0.2460]</title></circle>
+<line x1="639.8" y1="283.0" x2="664.9" y2="283.0" stroke="#2a78d6" stroke-width="2"/>
+<circle cx="652.5" cy="283.0" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>resize_0.5_jpeg_q75 · visual_calibrated: 0.2420 [0.2381, 0.2457]</title></circle>
+<line x1="721.7" y1="291.0" x2="753.2" y2="291.0" stroke="#eb6834" stroke-width="2"/>
+<circle cx="737.4" cy="291.0" r="4" fill="#eb6834" stroke="#ffffff" stroke-width="2"><title>resize_0.5_jpeg_q75 · late_fusion_original: 0.2677 [0.2629, 0.2725]</title></circle>
+<line x1="640.0" y1="299.0" x2="664.4" y2="299.0" stroke="#1baf7a" stroke-width="2"/>
+<circle cx="652.4" cy="299.0" r="4" fill="#1baf7a" stroke="#ffffff" stroke-width="2"><title>resize_0.5_jpeg_q75 · late_fusion_dsp_augmented: 0.2419 [0.2382, 0.2456]</title></circle>
+<text x="16.0" y="368.0" font-family="sans-serif" font-size="11" text-anchor="start" fill="#5f5e5a" font-weight="normal">n = 682 images / 341 sources per point; dots = point estimate, lines = 95% paired source-cluster bootstrap percentile intervals (10000 replicates, PCG64 20261006).</text>
+</svg>

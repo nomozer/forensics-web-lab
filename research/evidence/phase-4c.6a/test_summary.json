@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "4C.6A",
+  "measured_in": "claude_code_cloud_container_linux_python_3.12.13_venv",
+  "data_origin_of_all_runs": "synthetic_only",
+  "targeted": {
+    "ml/tests/test_dsp_augmentation.py": {
+      "passed": 49,
+      "failed": 0,
+      "note": "47 in the functional commit + notebook pin and package-receipt tests in the follow-up commit"
+    },
+    "package tests incl. ml/tests/test_calibrated_late_fusion_analysis.py": "PASS (builder change keeps calibrated_late_fusion packaging unchanged)"
+  },
+  "mutation_checks": "scaler-on-all-variants, unit weights, q75 validation, outer-test in refit, q50 in training, disabled baseline gate, disabled receipt binding, no resume, image hash reads, verdict boundary, evidence refusal, unnormalised high-confidence rate: each made a test fail",
+  "hermetic_ml_suite": {
+    "command": "OPENBLAS_CORETYPE=Haswell python -m pytest ml/tests -m \"not requires_research_artifact\" (CI kernel)",
+    "passed": 763,
+    "skipped": 23,
+    "deselected": 135,
+    "failed": 0
+  },
+  "ruff_new_and_changed_python_files": "PASS",
+  "git_diff_check": "PASS",
+  "continuity_check_staged": "PASS",
+  "continuity_unit_tests": {
+    "passed": 13,
+    "failed": 0
+  },
+  "pnpm_typecheck": "PASS",
+  "pnpm_build": "PASS (pre-existing chunk-size warning only)",
+  "synthetic_pipeline": "preflight PASS, pilot 92 fits, full 460 fits (368 new, fold 0 resumed), 0 unconverged, every fold gate PASS, analyzer verdict SYNTHETIC_ONLY_NO_SCIENTIFIC_VERDICT, verify REPRODUCED",
+  "figures": "synthetic SVGs rendered with headless Chromium and inspected; categorical palette = dataviz-validated slots",
+  "not_run": [
+    "development_real preflight / pilot / full / analyze / verify (artifacts outside Git)",
+    "requires_research_artifact tests (135 deselected)",
+    "Windows execution",
+    "GitHub CI on the final branch head (checked after push)"
+  ],
+  "real_performance": "NOT_MEASURED",
+  "fits_on_real_data": 0,
+  "locked_test_accesses": 0,
+  "package": "built from 97018d05 twice with identical bytes; staged package runs preflight and the analyzer without the repository; notebook setup cell simulated against the real package (members verified, preflight fails closed on synthetic inputs as expected)",
+  "blas_kernel_portability": "Branch CI runs 35/36 failed 1 test: a 1-row vs 138-row bit-exact comparison differs by 8e-8 logit under the OpenBLAS Haswell kernel (reproduced locally with OPENBLAS_CORETYPE=Haswell). Test now checks bit-identity under same batch shape with all other images changed, and 1-row agreement within 1e-6 (float32 rounding). test_dsp_augmentation.py passes under OPENBLAS_CORETYPE=Prescott, Haswell and SkylakeX; the 1e-9 reconstruction gates correctly fail closed across kernels, so local execution must use the environment that produced 4C.3B/4C.4B (EXECUTION_GUIDE)."
+}

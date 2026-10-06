@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="940" height="380" viewBox="0 0 940 380">
+<rect width="940" height="380" fill="#ffffff"/>
+<text x="16.0" y="26.0" font-family="sans-serif" font-size="16" text-anchor="start" fill="#1f1f1e" font-weight="bold">late_fusion_dsp_augmented − late_fusion_original</text>
+<text x="16.0" y="46.0" font-family="sans-serif" font-size="12" text-anchor="start" fill="#5f5e5a" font-weight="normal">development_real · exploratory · fixed folds and fitted models</text>
+<rect x="190" y="104" width="330" height="204" fill="none" stroke="#e6e5e1"/>
+<line x1="190.0" y1="104" x2="190.0" y2="308" stroke="#e6e5e1"/>
+<text x="190.0" y="323.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">-0.1</text>
+<line x1="272.5" y1="104" x2="272.5" y2="308" stroke="#e6e5e1"/>
+<text x="272.5" y="323.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0</text>
+<line x1="355.0" y1="104" x2="355.0" y2="308" stroke="#e6e5e1"/>
+<text x="355.0" y="323.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0.1</text>
+<line x1="437.5" y1="104" x2="437.5" y2="308" stroke="#e6e5e1"/>
+<text x="437.5" y="323.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0.2</text>
+<line x1="520.0" y1="104" x2="520.0" y2="308" stroke="#e6e5e1"/>
+<text x="520.0" y="323.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0.3</text>
+<line x1="272.5" y1="104" x2="272.5" y2="308" stroke="#5f5e5a" stroke-width="1"/>
+<text x="355.0" y="340.0" font-family="sans-serif" font-size="12" text-anchor="middle" fill="#1f1f1e" font-weight="normal">Δ Macro-F1 (positive = augmented better)</text>
+<text x="180.0" y="125.0" font-family="sans-serif" font-size="12" text-anchor="end" fill="#1f1f1e" font-weight="normal">original</text>
+<line x1="234.2" y1="121.0" x2="268.8" y2="121.0" stroke="#2a78d6" stroke-width="2"/>
+<circle cx="251.9" cy="121.0" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>original · paired difference: -0.0249 [-0.0464, -0.0045]</title></circle>
+<text x="180.0" y="159.0" font-family="sans-serif" font-size="12" text-anchor="end" fill="#1f1f1e" font-weight="normal">jpeg_q95</text>
+<line x1="247.0" y1="155.0" x2="283.6" y2="155.0" stroke="#2a78d6" stroke-width="2"/>
+<circle cx="265.2" cy="155.0" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>jpeg_q95 · paired difference: -0.0089 [-0.0309, 0.0135]</title></circle>
+<text x="180.0" y="193.0" font-family="sans-serif" font-size="12" text-anchor="end" fill="#1f1f1e" font-weight="normal">jpeg_q75 (primary)</text>
+<line x1="359.7" y1="189.0" x2="411.2" y2="189.0" stroke="#2a78d6" stroke-width="2"/>
+<circle cx="384.9" cy="189.0" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>jpeg_q75 · paired difference: 0.1363 [0.1057, 0.1681]</title></circle>
+<text x="180.0" y="227.0" font-family="sans-serif" font-size="12" text-anchor="end" fill="#1f1f1e" font-weight="normal">jpeg_q50</text>
+<line x1="390.0" y1="223.0" x2="441.1" y2="223.0" stroke="#2a78d6" stroke-width="2"/>
+<circle cx="415.7" cy="223.0" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>jpeg_q50 · paired difference: 0.1736 [0.1424, 0.2044]</title></circle>
+<text x="180.0" y="261.0" font-family="sans-serif" font-size="12" text-anchor="end" fill="#1f1f1e" font-weight="normal">resize_0.5</text>
+<line x1="361.3" y1="257.0" x2="413.8" y2="257.0" stroke="#2a78d6" stroke-width="2"/>
+<circle cx="387.0" cy="257.0" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>resize_0.5 · paired difference: 0.1388 [0.1077, 0.1713]</title></circle>
+<text x="180.0" y="295.0" font-family="sans-serif" font-size="12" text-anchor="end" fill="#1f1f1e" font-weight="normal">resize_0.5_jpeg_q75</text>
+<line x1="357.3" y1="291.0" x2="408.5" y2="291.0" stroke="#2a78d6" stroke-width="2"/>
+<circle cx="382.4" cy="291.0" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>resize_0.5_jpeg_q75 · paired difference: 0.1332 [0.1027, 0.1649]</title></circle>
+<rect x="580" y="104" width="330" height="204" fill="none" stroke="#e6e5e1"/>
+<line x1="580.0" y1="104" x2="580.0" y2="308" stroke="#e6e5e1"/>
+<text x="580.0" y="323.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">-0.08</text>
+<line x1="646.0" y1="104" x2="646.0" y2="308" stroke="#e6e5e1"/>
+<text x="646.0" y="323.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">-0.06</text>
+<line x1="712.0" y1="104" x2="712.0" y2="308" stroke="#e6e5e1"/>
+<text x="712.0" y="323.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">-0.04</text>
+<line x1="778.0" y1="104" x2="778.0" y2="308" stroke="#e6e5e1"/>
+<text x="778.0" y="323.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">-0.02</text>
+<line x1="844.0" y1="104" x2="844.0" y2="308" stroke="#e6e5e1"/>
+<text x="844.0" y="323.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0</text>
+<line x1="910.0" y1="104" x2="910.0" y2="308" stroke="#e6e5e1"/>
+<text x="910.0" y="323.0" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#5f5e5a" font-weight="normal">0.02</text>
+<line x1="844.0" y1="104" x2="844.0" y2="308" stroke="#5f5e5a" stroke-width="1"/>
+<text x="745.0" y="340.0" font-family="sans-serif" font-size="12" text-anchor="middle" fill="#1f1f1e" font-weight="normal">Δ Brier (negative = augmented lower)</text>
+<line x1="846.7" y1="121.0" x2="860.7" y2="121.0" stroke="#2a78d6" stroke-width="2"/>
+<circle cx="854.5" cy="121.0" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>original · paired difference: 0.0032 [0.0008, 0.0051]</title></circle>
+<line x1="839.3" y1="155.0" x2="852.9" y2="155.0" stroke="#2a78d6" stroke-width="2"/>
+<circle cx="847.0" cy="155.0" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>jpeg_q95 · paired difference: 0.0009 [-0.0014, 0.0027]</title></circle>
+<line x1="723.6" y1="189.0" x2="752.8" y2="189.0" stroke="#2a78d6" stroke-width="2"/>
+<circle cx="738.6" cy="189.0" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>jpeg_q75 · paired difference: -0.0320 [-0.0365, -0.0276]</title></circle>
+<line x1="593.4" y1="223.0" x2="637.6" y2="223.0" stroke="#2a78d6" stroke-width="2"/>
+<circle cx="615.4" cy="223.0" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>jpeg_q50 · paired difference: -0.0693 [-0.0759, -0.0625]</title></circle>
+<line x1="744.7" y1="257.0" x2="767.7" y2="257.0" stroke="#2a78d6" stroke-width="2"/>
+<circle cx="756.3" cy="257.0" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>resize_0.5 · paired difference: -0.0266 [-0.0301, -0.0231]</title></circle>
+<line x1="746.9" y1="291.0" x2="770.8" y2="291.0" stroke="#2a78d6" stroke-width="2"/>
+<circle cx="759.0" cy="291.0" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"><title>resize_0.5_jpeg_q75 · paired difference: -0.0258 [-0.0294, -0.0222]</title></circle>
+<text x="16.0" y="368.0" font-family="sans-serif" font-size="11" text-anchor="start" fill="#5f5e5a" font-weight="normal">n = 682 images / 341 sources per point; dots = point estimate, lines = 95% paired source-cluster bootstrap percentile intervals (10000 replicates, PCG64 20261006).</text>
+</svg>

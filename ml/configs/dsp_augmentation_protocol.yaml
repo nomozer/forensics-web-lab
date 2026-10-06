@@ -1,0 +1,136 @@
+schema_version: "1.0.0"
+experiment_id: "controlled_dsp_augmentation"
+phase: "4C.6A"
+status: "DEVELOPMENT_PROTOCOL_LOCKED_PRE_EXECUTION"
+evidence_class: "development_exploratory"
+created_at_utc: "2026-10-06T10:30:00Z"
+purpose: >-
+  Controlled development-only test of one change: train the DSP branch of the
+  Phase 4C.3B late fusion on the original image plus three locked Phase 4C.4
+  transforms of the same training image (JPEG q95, JPEG q75, bicubic x0.5),
+  each with weight 1/4, and leave everything else as in 4C.3B. The question is
+  whether this reduces the late-fusion degradation under JPEG q75 and what it
+  costs on original images. Same 341 development sources, same 5x4 folds, data
+  already used by every prior development phase: exploratory, not confirmatory,
+  not an independent validation.
+
+predecessors:
+  late_fusion_protocol:
+    path: "ml/configs/calibrated_late_fusion_protocol.yaml"
+    sha256: "85dcb2427a16507e8ba55eba5b010fc6a59e6763fc2b16bf29514913bab731e1"
+  robustness_protocol:
+    path: "ml/configs/development_robustness_protocol.yaml"
+    sha256: "b711cdd9eeb56e9b8167daa508b5b85e400cdb8ec2006272fcc922f0061734d6"
+  # Committed in research/evidence/fusion_shift_diagnostics/preflight_receipt.json (Phase 4C.5B).
+  robustness_full_scope:
+    run_bindings_sha256: "b5b393b314b802ad2b7fcaec6a423317fef75e453de57cbba714be56edb26e1b"
+    original_gate_sha256: "cc675f4c52fe360f19a126ba31653a4ae0ecdfa7e09fefa141bb429ee0a1475b"
+    condition_receipts_sha256:
+      original: "36e63fc0199bc567dbf2d75f29222107b6e15c105bef9a6e8932ea8f99af1b2f"
+      jpeg_q95: "bb7e18f0f8978c1ab21115bb939e2535e0cd78633f9840663c247a56de6be0a9"
+      jpeg_q75: "455793c5c23ab32be97bae0b2e3c2780b831645747c85391fea2874ab22df3e4"
+      jpeg_q50: "a469ea5bafb7569eff1ab0a841a04e1fa91d2e7409c10bde5ef7966198776d39"
+      resize_0.5: "eb06deb29d58167a89e831fc5474d52abdc1ab60ef7bbb130ed1e023906b5958"
+      resize_0.5_jpeg_q75: "6c8e47fb7c978570c13f9f7cd57094a9ea53fa909766ba9c752c34422efebe76"
+
+data_scope:
+  expected_sources: 341
+  expected_samples: 682
+  allowed_partitions: ["development_train", "inner_validation"]
+  forbidden_partitions: ["locked_test"]
+
+recipes:
+  - id: "visual_calibrated"
+    role: "historical_control_unchanged"
+  - id: "late_fusion_original"
+    role: "historical_late_fusion_control_unchanged (4C.3B late_fusion_stacked)"
+  - id: "late_fusion_dsp_augmented"
+    role: "only_the_dsp_training_policy_changes"
+
+features:
+  source: >-
+    Reused caches, no new extraction: original = 4C.3B ablation caches
+    (shared/visual_features.pt, shared/dsp_features.pt); transformed = 4C.4B
+    robustness full-scope condition features (same locked transforms, per-image
+    extraction with the frozen MobileNetV3-Small 576-d + 16 DSP features).
+  visual_dimension: 576
+  dsp_dimension: 16
+  original_condition_must_equal_ablation_cache: true
+
+dsp_augmentation:
+  training_variants: ["original", "jpeg_q95", "jpeg_q75", "resize_0.5"]
+  variant_weight: 0.25  # every training image has total weight 1, as in the baseline
+  variants_are_independent_sources: false
+  scaler: "StandardScaler fitted on the original images of the fit's own training rows; applied to every variant (baseline policy)"
+  c_selection: "inner folds of the outer-train sources; fit on augmented inner-train, score ORIGINAL inner-validation images; mean Macro-F1; first strictly greater in grid order"
+  inner_oof_scores: "held-out decision_function of the ORIGINAL inner-validation images at the selected C"
+  temperature: "fitted on the original inner-OOF DSP logits of outer-train only (bounds as 4C.3B)"
+  stacker: "two-input logistic stacker (4C.3B settings) fitted on [visual inner-OOF / T_v, augmented-DSP inner-OOF / T_d_aug] of outer-train only"
+  visual_branch: "unchanged: 4C.3B visual scorer, visual temperature and visual inner-OOF scores (reproduced by the baseline reconstruction)"
+  stress_only_conditions: ["jpeg_q50", "resize_0.5_jpeg_q75"]
+
+evaluation:
+  conditions: ["original", "jpeg_q95", "jpeg_q75", "jpeg_q50", "resize_0.5", "resize_0.5_jpeg_q75"]
+  decision_threshold: 0.5   # p >= 0.5 -> ai_edited
+  tau_conf: 0.65
+  predictor_inputs: "one image's own visual and DSP features under one condition; no paired image, source_id, filename, condition label or ground truth"
+
+grouped_nested_cv:
+  outer_folds: 5
+  inner_folds: 4
+  outer_seed: 42
+  inner_seed: 1337
+
+gates:
+  preflight_reconstruction:
+    description: "0 fits: stored 4C.3B fold models + reused features reproduce 4C.3B predictions (original) and 4C.4B predictions (all 6 conditions) for visual_calibrated and late_fusion_stacked"
+    max_abs_probability_difference: 1.0e-9
+  baseline_refit_reconstruction:
+    description: "per outer fold, the refitted 4C.3B baseline must equal the stored fold_model.json and predictions before the augmented branch is fitted"
+    model_parameters: "exact JSON equality"
+    max_abs_probability_difference: 1.0e-9
+
+endpoints:
+  primary:
+    comparison: "late_fusion_dsp_augmented_minus_late_fusion_original"
+    condition: "jpeg_q75"
+    metric: "macro_f1"
+  secondary_exploratory:
+    - "the same contrast at original and every other condition"
+    - "late_fusion_dsp_augmented_minus_visual_calibrated at every condition"
+  reported_metrics: ["macro_f1", "balanced_accuracy", "auroc", "brier_score", "log_loss", "ece", "fpr", "fnr", "selective_coverage", "selective_accuracy", "high_confidence_error_rate"]
+  interval:
+    method: "paired_source_cluster_bootstrap_percentile"
+    replicates: 10000
+    rng: "PCG64"
+    seed: 20261006
+    confidence: 0.95
+  verdict_vocabulary:
+    improvement: "EXPLORATORY_JPEG75_IMPROVEMENT"     # primary 95% interval entirely > 0
+    degradation: "EXPLORATORY_JPEG75_DEGRADATION"     # entirely < 0
+    unresolved: "EXPLORATORY_JPEG75_UNRESOLVED"       # contains 0
+    synthetic: "SYNTHETIC_ONLY_NO_SCIENTIFIC_VERDICT"
+  reporting_rules:
+    - "Report original performance and every stress condition whatever the direction."
+    - "An interval containing 0 is not equivalence; a lower Brier is not proof of better calibration."
+    - "Conditions and folds are not independent experiments; models and folds are fixed in the bootstrap, so training variability and development-reuse selection bias are not represented."
+    - "A primary improvement does not make the recipe production-eligible."
+
+budget:
+  outer_folds: 5
+  inner_folds: 4
+  grid_points: 7
+  baseline_reconstruction_fits: 305    # 4C.3B protocol: 61 per outer fold
+  augmented_dsp_inner_fits: 140        # 5 outer * 4 inner * 7 C
+  augmented_dsp_outer_refits: 5
+  augmented_dsp_temperature_fits: 5
+  augmented_stacker_fits: 5
+  visual_branch_new_fits: 0
+  total_fits: 460
+  fits_per_outer_fold: 92              # 61 baseline + 28 + 1 + 1 + 1
+  pilot_outer_folds: [0]
+  pilot_fits: 92
+  feature_extractions: 0
+  image_reads: 0
+  backbone_forward_passes: 0
+  predictions: 12276                   # 3 recipes * 6 conditions * 682 images

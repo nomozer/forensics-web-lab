@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Build the deterministic code package for the calibrated late fusion experiment.
+"""Build the deterministic code package for a development experiment.
+
+Experiments: calibrated_late_fusion (Phase 4C.3A) and controlled_dsp_augmentation
+(Phase 4C.6A); each has its own fixed member list.
 
 Members are read from Git objects at one exact commit (not the working tree), so
 the archive bytes are a pure function of that commit (plus optional weights).
@@ -36,6 +39,31 @@ SOURCE_MEMBERS = (
     "research/evidence/visual_dsp_ablation/analysis_summary.json",
     "scripts/research/analyze_calibrated_late_fusion.py",
 )
+DSP_AUGMENTATION_MEMBERS = (
+    "ml/configs/calibrated_late_fusion_protocol.yaml",
+    "ml/configs/development_robustness_protocol.yaml",
+    "ml/configs/dsp_augmentation_protocol.yaml",
+    "ml/requirements.txt",
+    "ml/training/__init__.py",
+    "ml/training/calibrated_late_fusion.py",
+    "ml/training/development_robustness.py",
+    "ml/training/dsp_augmentation.py",
+    "ml/training/dsp_features.py",
+    "ml/training/loss.py",
+    "ml/training/mobilenetv3_forensics.py",
+    "ml/training/phase_4c2h_development.py",
+    "ml/training/run_development_robustness.py",
+    "ml/training/run_dsp_augmentation.py",
+    "ml/training/visual_dsp_ablation.py",
+    "scripts/research/analyze_calibrated_late_fusion.py",
+    "scripts/research/analyze_development_robustness.py",
+    "scripts/research/analyze_dsp_augmentation.py",
+    "scripts/research/diagnose_fusion_shift.py",
+)
+EXPERIMENT_MEMBERS = {
+    "calibrated_late_fusion": SOURCE_MEMBERS,
+    "controlled_dsp_augmentation": DSP_AUGMENTATION_MEMBERS,
+}
 WEIGHTS_TARGET_DIR = "models/research/pretrained"
 
 
@@ -88,8 +116,10 @@ def build_package(
     source_commit: str = "HEAD",
     weights_path: Path | None = None,
     expected_weights_sha256: str | None = None,
-    members: Sequence[str] = SOURCE_MEMBERS,
+    members: Sequence[str] | None = None,
+    experiment: str = "calibrated_late_fusion",
 ) -> dict[str, object]:
+    members = EXPERIMENT_MEMBERS[experiment] if members is None else members
     commit = resolve_commit(repo, source_commit)
     payloads = {member: read_git_blob(repo, commit, member) for member in members}
 
@@ -101,7 +131,7 @@ def build_package(
 
     manifest = {
         "schema_version": "1.0.0",
-        "experiment": "calibrated_late_fusion",
+        "experiment": experiment,
         "source_commit": commit,
         "members": [
             {"path": name, "bytes": len(payload), "sha256": sha256_bytes(payload)}
@@ -125,7 +155,7 @@ def build_package(
 
     return {
         "schema_version": "1.0.0",
-        "experiment": "calibrated_late_fusion",
+        "experiment": experiment,
         "source_commit": commit,
         "archive_filename": output.name,
         "archive_bytes": output.stat().st_size,
@@ -137,7 +167,8 @@ def build_package(
 
 
 def main(argv: list[str] | None = None) -> None:
-    parser = argparse.ArgumentParser(description="Build the calibrated late fusion code package")
+    parser = argparse.ArgumentParser(description="Build a deterministic development-experiment code package")
+    parser.add_argument("--experiment", choices=sorted(EXPERIMENT_MEMBERS), default="calibrated_late_fusion")
     parser.add_argument("--repo-root", type=Path, default=Path("."))
     parser.add_argument("--source-commit", default="HEAD")
     parser.add_argument(
@@ -158,6 +189,7 @@ def main(argv: list[str] | None = None) -> None:
         source_commit=args.source_commit,
         weights_path=args.weights_path,
         expected_weights_sha256=args.expected_weights_sha256,
+        experiment=args.experiment,
     )
     text = json.dumps(result, indent=2, sort_keys=True) + "\n"
     if args.receipt is not None:
