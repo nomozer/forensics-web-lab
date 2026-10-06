@@ -343,3 +343,16 @@ pnpm continuity:check
 pnpm continuity:check -- --staged
 pnpm continuity:check -- --base <PR_BASE_SHA> --head <PR_HEAD_SHA>
 ```
+
+---
+
+## 9. Cấu trúc Mô-đun Nghiên cứu và Kiểm định Độc lập (Independent Evaluation & Acquisition)
+
+| File / Module | Vai trò và Trách nhiệm Kỹ thuật | Contracts / Guards |
+| :--- | :--- | :--- |
+| `ml/evaluation/independent_cohort.py` | Schema dữ liệu cohort độc lập (`CohortSample`, `CohortPair`), trích xuất metadata Option P lịch sử, xác thực manifest. | `validate_cohort_manifest`, `load_historical_source_ids`, `load_historical_image_hashes`, `load_historical_origin_ids`. |
+| `ml/evaluation/independent_cohort_acquisition.py` | Pipeline thu thập và inpainting cohort (Phase 4C.7B). Tạo plan 440 candidates cho 4 strata, chuẩn hóa canvas 512x512 RGB, mask nhị phân {0, 255}, Technical QC, stratum-preserving error replacement, Detector Isolation Guard. | `execute_cohort_acquisition`, `evaluate_technical_qc`, `assert_detector_isolation`, `generate_canonical_candidate_plan`. |
+| `ml/evaluation/independent_evaluator.py` | Engine đánh giá kiểm định độc lập (Phase 4C.7A). Đánh giá 6 điều kiện, tính arithmetic mean Macro-F1 của 5 outer-fold models, chạy paired source bootstrap. | `derive_independent_verdict`, `run_paired_source_cluster_bootstrap`. |
+| `ml/evaluation/independent_model_bindings.py` | Quản lý và kiểm toán mã băm SHA-256 của 5 outer-fold models cho hai candidate recipes (`visual_calibrated`, `late_fusion_dsp_augmented`). | `load_candidate_models`, `ModelIntegrityError`. |
+| `scripts/research/run_cohort_acquisition.py` | CLI điều khiển quy trình thu thập: xuất plan (`--export-plan`), thẩm tra quotas (`--verify-plan`), chạy hermetic technical smoke test (`--smoke-test`). | Ghi receipt `research/evidence/phase-4c.7b/acquisition_smoke_receipt.json`. |
+| `notebooks/independent_cohort_acquisition_colab.ipynb` | Google Colab notebook chạy trên T4/A100 GPU: tải plan 440 candidates, sinh inpainting thật bằng SD2 và SDXL fp16, chạy Technical QC, đóng gói ZIP. | Đảm bảo tính khả thi khi GPU local không đủ VRAM cho SDXL. |

@@ -1,0 +1,62 @@
+{
+  "timestamp_utc": "2026-10-06T18:47:27.313437+00:00",
+  "phase": "4C.7B",
+  "smoke_test_status": "PASS",
+  "elapsed_seconds": 2.628,
+  "detector_isolation_verified": true,
+  "plan_verification": {
+    "status": "PASS",
+    "total_candidates": 440,
+    "stratum_counts": {
+      "coco_sd2": 110,
+      "coco_sdxl": 110,
+      "unsplash_sd2": 110,
+      "unsplash_sdxl": 110
+    },
+    "modification_type_counts": {
+      "object_insertion": 132,
+      "object_replacement": 176,
+      "object_removal_and_infill": 132
+    },
+    "mask_area_counts": {
+      "medium_10_to_30pct": 176,
+      "large_over_30pct": 132,
+      "small_under_10pct": 132
+    },
+    "tool_counts": {
+      "stable_diffusion_2_inpainting": 220,
+      "sdxl_inpainting": 220
+    },
+    "source_origin_counts": {
+      "coco_2017": 220,
+      "unsplash_verified": 220
+    },
+    "historical_overlap_detected": false,
+    "overlap_sources": [],
+    "overlap_origins": []
+  },
+  "sample_size_target": 400,
+  "stratum_targets": {
+    "coco_sd2": 100,
+    "coco_sdxl": 100,
+    "unsplash_sd2": 100,
+    "unsplash_sdxl": 100
+  },
+  "buffer_pool_size": 440,
+  "stratum_buffers": {
+    "coco_sd2": 110,
+    "coco_sdxl": 110,
+    "unsplash_sd2": 110,
+    "unsplash_sdxl": 110
+  },
+  "replacement_rule_tested": "stratum_preserving_error_replacement",
+  "technical_qc_checks": [
+    "canvas_size_512x512_rgb",
+    "binary_mask_512x512",
+    "mask_area_bracket_match",
+    "solid_blank_image_rejection",
+    "masked_delta_threshold_verified",
+    "historical_option_p_disjoint_checked",
+    "checksum_atomicity_verified"
+  ]
+}

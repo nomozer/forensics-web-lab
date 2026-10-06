@@ -1,0 +1,198 @@
+{
+  "schema_version": "1.2.0",
+  "phase": "4C.7B",
+  "specification_name": "canonical_independent_cohort_specification_v1.2",
+  "amendment_reference": "research/evidence/phase-4c.7b/PROTOCOL_AMENDMENT_V1.2.md",
+  "status": "COHORT_SPECIFICATION_AMENDED_LOCKED_PRE_ACQUISITION",
+  "locked_at_utc": "2026-10-07T01:45:00Z",
+  "target_sample_size_pairs": 400,
+  "acquisition_buffer_pairs": 440,
+  "total_target_images": 800,
+  "task_scope": {
+    "classification": "binary",
+    "classes": {
+      "0": "authentic",
+      "1": "ai_edited"
+    },
+    "three_class_note": "fully_generated (3-class generalization, RQ1) is excluded from this cohort due to absent 3-class data."
+  },
+  "authentic_sources": [
+    {
+      "source_key": "coco_2017",
+      "name": "COCO 2017 Dataset (Clean Partitions outside Historical Option P)",
+      "quota_percentage": 50,
+      "target_pairs": 200,
+      "buffer_pairs": 220,
+      "license": "Per-image Flickr license verified (CC-BY 2.0, CC-BY-SA 2.0, CC0, Flickr Commons; annotations CC-BY 4.0)",
+      "license_audit_note": "Do NOT assume all COCO images are CC-BY 4.0; Flickr source license must be verified per sample.",
+      "provenance_tracking": "Flickr image ID, author ID, Flickr URL, license name",
+      "acquisition_readiness": "AUTOMATED_DOWNLOAD_READY",
+      "authenticity_note": "Pre-2017 capture prevents modern text-to-image AI artifacts; does not mathematically guarantee zero analog/digital editing."
+    },
+    {
+      "source_key": "unsplash_verified",
+      "name": "Unsplash Verified Open Photographic Collection (Published Pre-2022)",
+      "quota_percentage": 50,
+      "target_pairs": 200,
+      "buffer_pairs": 220,
+      "license": "Unsplash License (Free commercial/non-commercial research use and derivative creation)",
+      "license_audit_note": "Requires author attribution and record of photo ID and publication timestamp.",
+      "provenance_tracking": "Unsplash photo ID, author name, author profile URL, published_at date (<= 2021-12-31)",
+      "acquisition_readiness": "CURATED_DOWNLOAD_READY",
+      "authenticity_note": "Pre-2022 publication date is an operational filter against modern generative AI; not an absolute proof of zero prior manipulation."
+    }
+  ],
+  "inpainting_tools": [
+    {
+      "tool_key": "stable_diffusion_2_inpainting",
+      "name": "Stable Diffusion 2 Inpainting",
+      "checkpoint": "stabilityai/stable-diffusion-2-inpainting",
+      "revision": "main",
+      "model_type": "open_weights_diffusion",
+      "quota_percentage": 50,
+      "target_pairs": 200,
+      "parameters": {
+        "scheduler": "DDIM",
+        "num_inference_steps": 50,
+        "guidance_scale": 7.5,
+        "resolution": [512, 512],
+        "seed_policy": "fixed_prng_sequence"
+      },
+      "license": "CreativeML OpenRAIL-M",
+      "execution_environment": "Local GPU (if VRAM >= 8GB) or Google Colab T4 / A100 GPU",
+      "feasibility_status": "AVAILABLE_OPEN_WEIGHTS"
+    },
+    {
+      "tool_key": "sdxl_inpainting",
+      "name": "SDXL Inpainting 1.0",
+      "checkpoint": "diffusers/stable-diffusion-xl-1.0-inpainting-0.1",
+      "revision": "main",
+      "model_type": "open_weights_diffusion",
+      "quota_percentage": 50,
+      "target_pairs": 200,
+      "parameters": {
+        "scheduler": "EulerDiscreteScheduler",
+        "num_inference_steps": 30,
+        "guidance_scale": 7.5,
+        "resolution": [512, 512],
+        "seed_policy": "fixed_prng_sequence"
+      },
+      "license": "CreativeML OpenRAIL++",
+      "execution_environment": "Google Colab T4 / A100 GPU (fp16 requires ~6.6GB VRAM; exceeds local 4GB GTX 1650)",
+      "feasibility_status": "AVAILABLE_OPEN_WEIGHTS_VIA_COLAB"
+    }
+  ],
+  "orthogonal_allocation_matrix": {
+    "description": "2x2 Orthogonal balanced allocation of inpainting tools across authentic sources to control designed factors (does NOT eliminate unobserved confounding).",
+    "strata": [
+      {
+        "stratum_id": "coco_sd2",
+        "authentic_source": "coco_2017",
+        "inpainting_tool": "stable_diffusion_2_inpainting",
+        "target_pairs": 100,
+        "buffer_pairs": 110
+      },
+      {
+        "stratum_id": "coco_sdxl",
+        "authentic_source": "coco_2017",
+        "inpainting_tool": "sdxl_inpainting",
+        "target_pairs": 100,
+        "buffer_pairs": 110
+      },
+      {
+        "stratum_id": "unsplash_sd2",
+        "authentic_source": "unsplash_verified",
+        "inpainting_tool": "stable_diffusion_2_inpainting",
+        "target_pairs": 100,
+        "buffer_pairs": 110
+      },
+      {
+        "stratum_id": "unsplash_sdxl",
+        "authentic_source": "unsplash_verified",
+        "inpainting_tool": "sdxl_inpainting",
+        "target_pairs": 100,
+        "buffer_pairs": 110
+      }
+    ],
+    "column_totals": {
+      "sd2_pairs": 200,
+      "sdxl_pairs": 200,
+      "total_pairs": 400
+    },
+    "stratum_preserving_replacement_rule": "If a candidate in stratum (S, T) fails technical QC, content QC, or disjoint checks, it is replaced solely by the next pre-ordered candidate in the EXACT SAME stratum (S, T) from the buffer pool. Zero quota re-allocation between strata is permitted."
+  },
+  "modification_types": {
+    "object_replacement": {
+      "quota_percentage": 40,
+      "target_pairs": 160,
+      "per_stratum_pairs": 40
+    },
+    "object_removal_and_infill": {
+      "quota_percentage": 30,
+      "target_pairs": 120,
+      "per_stratum_pairs": 30
+    },
+    "object_insertion": {
+      "quota_percentage": 30,
+      "target_pairs": 120,
+      "per_stratum_pairs": 30
+    }
+  },
+  "mask_area_distribution": {
+    "small_under_10pct": {
+      "quota_percentage": 30,
+      "target_pairs": 120,
+      "per_stratum_pairs": 30
+    },
+    "medium_10_to_30pct": {
+      "quota_percentage": 40,
+      "target_pairs": 160,
+      "per_stratum_pairs": 40
+    },
+    "large_over_30pct": {
+      "quota_percentage": 30,
+      "target_pairs": 120,
+      "per_stratum_pairs": 30
+    }
+  },
+  "canvas_and_codec_controls": {
+    "standard_width": 512,
+    "standard_height": 512,
+    "color_space": "RGB_8bit",
+    "master_format": "PNG_lossless",
+    "mask_format": "PNG_binary_0_or_255",
+    "mask_semantics": "Mask defines inpainting request area supplied to diffusion pipeline (pixel 0 = keep background, pixel 255 = inpaint region); it is not guaranteed pixel invariance boundary due to VAE/latent encoding.",
+    "scientific_interpretation": "Canvas/codec normalization controls output container and resolution parity between pairs. It does NOT claim to erase pre-existing sensor JPEG compression history or eliminate all potential pipeline shortcuts."
+  },
+  "inclusion_criteria": [
+    "Image must decode successfully with Pillow without errors.",
+    "Pixel dimensions must be exactly 512x512 RGB.",
+    "Binary mask PNG (512x512) must accompany each ai_edited sample with values in {0, 255}.",
+    "Must pass decompression bomb guard (<= 50,000,000 pixels).",
+    "Verified provenance documentation for authentic image including license and author.",
+    "No solid black, white, blank, or NaN/Inf pixel tensors."
+  ],
+  "exclusion_criteria": [
+    "Overlap with any of 684 historical Option P sources by source_id.",
+    "Overlap with any historical Option P image by raw_sha256 or master_sha256.",
+    "Overlap with any historical Option P image by origin_id / Flickr URL.",
+    "Resolution mismatch between authentic and ai_edited within the same source.",
+    "Synthetic or non-photographic authentic images (e.g., pure computer graphics, screenshots, text diagrams)."
+  ],
+  "sampling_and_stopping_rule": {
+    "candidate_pool_size": 440,
+    "prespecified_random_ordering": true,
+    "stopping_threshold_valid_pairs": 400,
+    "stratum_quotas": {
+      "coco_sd2": 100,
+      "coco_sdxl": 100,
+      "unsplash_sd2": 100,
+      "unsplash_sdxl": 100
+    },
+    "rule": "Process candidate pairs in prespecified random order per stratum; lock and seal cohort manifest immediately upon reaching exactly 100 verified valid pairs per stratum (400 total). Zero model scoring permitted during collection."
+  },
+  "detector_isolation_invariant": {
+    "enforced": true,
+    "rule": "Zero calls to candidate detector models (visual_calibrated, late_fusion_dsp_augmented, or any of the 5 fold models) during candidate listing, downloading, inpainting generation, technical QC, content QC, or manifest creation."
+  }
+}
