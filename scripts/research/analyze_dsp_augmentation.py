@@ -28,6 +28,9 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
+if sys.stdout and hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
@@ -289,6 +292,54 @@ def render_report(summary: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def render_comparative_table(summary: dict[str, Any]) -> str:
+    """Renders the canonical comparative table between late_fusion_original and late_fusion_dsp_augmented."""
+    cm = {(r["condition"], r["recipe"]): r for r in summary["condition_metrics"]}
+    comp = COMPARISONS[0][0]
+    pd = {(d["comparison"], d["condition"], d["metric"]): d for d in summary["paired_deltas"]}
+    lines = [
+        "| Condition | Late-Fusion Original | Late-Fusion DSP Augmented | Paired ΔMacro-F1 [95% CI] | Balanced Acc (Base → Aug) | High-Conf Errors (Base → Aug) |",
+        "| :--- | :---: | :---: | :---: | :---: | :---: |",
+    ]
+    for c in aug.CONDITIONS:
+        r_base = cm[(c, "late_fusion_original")]
+        r_aug = cm[(c, "late_fusion_dsp_augmented")]
+        d_f1 = pd[(comp, c, "macro_f1")]
+        f1_base, f1_aug = r_base["macro_f1"], r_aug["macro_f1"]
+        delta_f1 = d_f1["delta"]
+        ci_low, ci_high = d_f1["ci_lower"], d_f1["ci_upper"]
+        ba_base, ba_aug = r_base["balanced_accuracy"], r_aug["balanced_accuracy"]
+        hce_base, hce_aug = r_base["high_confidence_errors"], r_aug["high_confidence_errors"]
+        marker = " **(primary)**" if c == "jpeg_q75" else (" (original cost)" if c == "original" else "")
+        lines.append(
+            f"| `{c}`{marker} | {f1_base:.4f} | {f1_aug:.4f} | {delta_f1:+.4f} [{ci_low:+.4f}, {ci_high:+.4f}] | {ba_base:.4f} → {ba_aug:.4f} | {hce_base} → {hce_aug} |"
+        )
+    return "\n".join(lines)
+
+
+def render_visual_comparison_table(summary: dict[str, Any]) -> str:
+    """Renders the comparative table between late_fusion_dsp_augmented and visual_calibrated."""
+    cm = {(r["condition"], r["recipe"]): r for r in summary["condition_metrics"]}
+    comp = COMPARISONS[1][0]
+    pd = {(d["comparison"], d["condition"], d["metric"]): d for d in summary["paired_deltas"]}
+    lines = [
+        "| Condition | Visual Calibrated | Late-Fusion DSP Augmented | Paired ΔMacro-F1 [95% CI] | CI Contains 0? |",
+        "| :--- | :---: | :---: | :---: | :---: |",
+    ]
+    for c in aug.CONDITIONS:
+        r_vis = cm[(c, "visual_calibrated")]
+        r_aug = cm[(c, "late_fusion_dsp_augmented")]
+        d_f1 = pd[(comp, c, "macro_f1")]
+        f1_vis, f1_aug = r_vis["macro_f1"], r_aug["macro_f1"]
+        delta_f1 = d_f1["delta"]
+        ci_low, ci_high = d_f1["ci_lower"], d_f1["ci_upper"]
+        contains_zero = ci_low <= 0.0 <= ci_high
+        lines.append(
+            f"| `{c}` | {f1_vis:.4f} | {f1_aug:.4f} | {delta_f1:+.4f} [{ci_low:+.4f}, {ci_high:+.4f}] | {contains_zero} |"
+        )
+    return "\n".join(lines)
+
+
 def build_outputs(run: dict[str, Any], protocol: dict[str, Any], plan: dict[str, int]) -> tuple[dict[str, bytes], dict[str, Any]]:
     data_origin = run["bindings"]["data_origin"]
     cells = cell_arrays(run["rows"])
@@ -415,14 +466,34 @@ def run_analysis(*, output_dir: Path, report_dir: Path, protocol_path: Path, ver
 
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Analyze the Phase 4C.6 controlled DSP-augmentation run")
-    parser.add_argument("--output-dir", type=Path, required=True, help="runner output dir (contains fits/)")
-    parser.add_argument("--report-dir", type=Path, required=True)
+    parser.add_argument("--output-dir", type=Path, default=None, help="runner output dir (contains fits/)")
+    parser.add_argument("--report-dir", type=Path, default=REPO_ROOT / "research/evidence/dsp_augmentation", help="evidence directory containing or receiving analysis artifacts")
     parser.add_argument("--protocol", type=Path, default=REPO_ROOT / "ml/configs/dsp_augmentation_protocol.yaml")
     parser.add_argument("--verify", action="store_true", help="rebuild outputs and compare bytes with --report-dir")
+    parser.add_argument("--summary-table", action="store_true", help="print canonical Markdown comparative tables to stdout")
     args = parser.parse_args(argv)
+
+    if args.summary_table and args.output_dir is None:
+        summary_path = args.report_dir / "analysis_summary.json"
+        if not summary_path.exists():
+            parser.error(f"Cannot render summary table: {summary_path} not found and --output-dir not provided.")
+        summary = json.loads(summary_path.read_text(encoding="utf-8"))
+        print(render_comparative_table(summary))
+        print()
+        print(render_visual_comparison_table(summary))
+        return
+
+    if args.output_dir is None:
+        parser.error("--output-dir is required unless --summary-table is used with an existing --report-dir")
+
     result = run_analysis(output_dir=args.output_dir, report_dir=args.report_dir, protocol_path=args.protocol, verify=args.verify)
     if args.verify:
         print(json.dumps(result, indent=2))
+        return
+    if args.summary_table:
+        print(render_comparative_table(result))
+        print()
+        print(render_visual_comparison_table(result))
         return
     print(f"Verdict: {result['verdict']}")
     print(json.dumps(result["primary_endpoint"], indent=2))
