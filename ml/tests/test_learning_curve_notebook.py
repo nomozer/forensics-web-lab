@@ -18,17 +18,17 @@ from pathlib import Path
 import pytest
 
 NOTEBOOKS_DIR = Path(__file__).parents[2] / "notebooks"
-CANONICAL_NOTEBOOK_PATH = NOTEBOOKS_DIR / "learning_curve_colab.ipynb"
-V2_NOTEBOOK_PATH = NOTEBOOKS_DIR / "learning_curve_colab_v2.ipynb"
+CANONICAL_NOTEBOOK_PATH = NOTEBOOKS_DIR / "phase_4c1_learning_curve_colab.ipynb"
+V2_NOTEBOOK_PATH = NOTEBOOKS_DIR / "phase_4c1_learning_curve_colab_v2.ipynb"
 
 
 def test_only_canonical_notebook_exists():
     """Test that only canonical notebook exists in notebooks/ and v2 is removed."""
     assert CANONICAL_NOTEBOOK_PATH.exists(), f"Canonical notebook missing: {CANONICAL_NOTEBOOK_PATH}"
     assert not V2_NOTEBOOK_PATH.exists(), f"Duplicate/v2 notebook must be removed: {V2_NOTEBOOK_PATH}"
-    all_notebooks = list(NOTEBOOKS_DIR.glob("*learning_curve*colab*.ipynb"))
-    assert len(all_notebooks) == 1, f"Expected exactly 1 learning-curve notebook, found: {[p.name for p in all_notebooks]}"
-    assert all_notebooks[0].name == "learning_curve_colab.ipynb"
+    all_notebooks = [p for p in NOTEBOOKS_DIR.glob("*.ipynb") if "phase_4c1" in p.name]
+    assert len(all_notebooks) == 1, f"Expected exactly 1 phase_4c1 notebook, found: {[p.name for p in all_notebooks]}"
+    assert all_notebooks[0].name == "phase_4c1_learning_curve_colab.ipynb"
 
 
 def test_notebook_loads_and_schema_valid():
@@ -55,8 +55,7 @@ def test_notebook_cell_count_and_types():
 
     # Check header of Markdown cell
     md_src = "".join(markdown_cells[0]["source"]) if isinstance(markdown_cells[0]["source"], list) else markdown_cells[0]["source"]
-    assert "# Learning Curve Colab Launcher" in md_src
-    assert "phase trace 4C.1" in md_src
+    assert "# Phase 4C.1" in md_src
     assert "T4" in md_src
     assert "inputs/" in md_src
 

@@ -10,12 +10,19 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 MAPPING = REPO_ROOT / "docs" / "REPOSITORY_NAMING_MAP.md"
 SEALED_PHASE_PATHS = {
+    "ml/configs/phase_4c1_learning_curve.yaml",
+    "ml/configs/phase_4c2_stage2_finetuning.yaml",
+    "ml/configs/phase_4c2h_development_nested_cv.yaml",
     "ml/evaluation/phase_4c2g_dataset.py",
     "ml/evaluation/phase_4c2g_io.py",
     "ml/evaluation/phase_4c2g_model.py",
     "ml/evaluation/phase_4c2g_windows.py",
     "ml/evaluation/run_phase_4c2f_evaluator.py",
     "ml/evaluation/run_phase_4c2g_confirmatory.py",
+    "notebooks/phase_4c1_learning_curve_colab.ipynb",
+    "notebooks/phase_4c2_finetuning_colab.ipynb",
+    "notebooks/phase_4c2h_development_colab.ipynb",
+    "scripts/phase_4c2_execute_all.sh",
     "scripts/research/build_phase4c2g_execution_package.py",
     "scripts/research/build_phase4c2g_manifest_custodian_package.py",
     "scripts/research/RUN_PHASE4C2G_AUTHORIZED_SESSION.ps1",
@@ -48,7 +55,7 @@ def mapping_rows() -> list[tuple[str, str]]:
 
 def test_naming_map_covers_all_renames() -> None:
     rows = mapping_rows()
-    assert len(rows) == 54
+    assert len(rows) == 47
     for previous, current in rows:
         assert not (REPO_ROOT / previous).exists(), previous
         assert (REPO_ROOT / current).is_file(), current

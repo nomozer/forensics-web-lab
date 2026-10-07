@@ -1,4 +1,4 @@
-# Learning Curve Execution Configuration (phase trace 4C.1)
+# Phase 4C.1 Learning Curve Execution Configuration
 # Derived from pilot_a_binary_preregistered.yaml (hash: 727fc316...)
 # This file contains the executable parameters for Phase 4C.1 learning curve runs.
 
@@ -6,7 +6,7 @@ schema_version: "1.0.0"
 config_id: "phase_4c1_learning_curve"
 pilot_id: "pilot_tgif_edit"
 pilot_branch: "Pilot A"
-title: "Binary Learning Curve: Authentic vs AI-Edited (Option P; phase trace 4C.1)"
+title: "Phase 4C.1 Binary Learning Curve: Authentic vs AI-Edited (Option P)"
 scientific_status: "preregistered_execution"
 license_track: "research-only"
 

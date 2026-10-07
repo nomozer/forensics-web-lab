@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Forensics Web Lab — Partial Fine-Tuning Colab Operator (phase trace 4C.2)
+# Forensics Web Lab — Phase 4C.2 Stage 2 Autonomous Colab Operator
 # ==============================================================================
 # Canonical Resumable 15-Run Fine-Tuning Operator
 # Protocol: Pre-registered Partial Fine-Tuning Protocol (features.12 + head)
@@ -29,7 +29,7 @@ for arg in "$@"; do
             ;;
         *)
             echo "[-] ERROR: Unknown CLI argument: $arg" >&2
-            echo "Usage: bash run_partial_finetuning_all.sh [--preflight-only | --execute]" >&2
+            echo "Usage: bash phase_4c2_execute_all.sh [--preflight-only | --execute]" >&2
             exit 1
             ;;
     esac
@@ -40,8 +40,8 @@ if [ "$SHOW_HELP" = true ] || [ -z "$EXEC_MODE" ]; then
     echo "Forensics Web Lab — Phase 4C.2 Stage 2 Training Operator"
     echo "=============================================================================="
     echo "Usage:"
-    echo "  bash run_partial_finetuning_all.sh --preflight-only   Run all preflight checks without training"
-    echo "  bash run_partial_finetuning_all.sh --execute          Execute all 15 Stage 2 fine-tuning runs"
+    echo "  bash phase_4c2_execute_all.sh --preflight-only   Run all preflight checks without training"
+    echo "  bash phase_4c2_execute_all.sh --execute          Execute all 15 Stage 2 fine-tuning runs"
     echo "=============================================================================="
     if [ -z "$EXEC_MODE" ]; then
         echo "[-] ERROR: Either --preflight-only or --execute must be explicitly specified." >&2
@@ -612,8 +612,8 @@ PY
 
 NORMALIZATION_MANIFEST_SHA=$("$SYS_PY3" -c 'import sys, hashlib; print(hashlib.sha256(open(sys.argv[1], "rb").read()).hexdigest())' "$NORMALIZATION_MANIFEST")
 
-CANONICAL_RUNNER="$CODE_DIR/ml/training/run_partial_finetuning.py"
-CANONICAL_CONFIG="$CODE_DIR/ml/configs/partial_finetuning_protocol.yaml"
+CANONICAL_RUNNER="$CODE_DIR/ml/training/run_phase_4c2.py"
+CANONICAL_CONFIG="$CODE_DIR/ml/configs/phase_4c2_stage2_finetuning.yaml"
 CANONICAL_SCHEMA="$CODE_DIR/docs/schemas/stage2-receipt.v1.schema.json"
 CANONICAL_DATASET_BINDING="$CODE_DIR/research/evidence/phase-4c.2a/dataset_binding.json"
 CANONICAL_REQUIREMENTS="$CODE_DIR/ml/requirements.txt"
@@ -737,7 +737,7 @@ if [ ! -f "$BUNDLE_DIR/manifest_pilot_a_option_p.csv" ]; then
 fi
 
 # Run canonical reusable-N250 validator
-PYTHONPATH="$CODE_DIR" "$SYS_PY3" -m ml.datasets.validate_learning_curve_bundle --bundle "$BUNDLE_DIR" --reusable-n250
+PYTHONPATH="$CODE_DIR" "$SYS_PY3" -m ml.datasets.validate_phase_4c1_bundle --bundle "$BUNDLE_DIR" --reusable-n250
 echo "[+] Dataset reusable-N250 bundle validation PASS"
 
 # ------------------------------------------------------------------------------
@@ -749,7 +749,7 @@ echo "[*] Step 4: Verifying Stage 2 implementation contract..."
 PYTHONPATH="$CODE_DIR" "$SYS_PY3" - "$CANONICAL_WEIGHTS_FILE" <<'PY'
 import sys, torch
 from ml.training.mobilenetv3_forensics import MobileNetV3Forensics
-from ml.training.run_partial_finetuning import (
+from ml.training.run_phase_4c2 import (
     verify_trainable_allowlist,
     apply_frozen_bn_policy,
     build_stage2_optimizer,
@@ -1443,7 +1443,7 @@ for N in "${SAMPLE_SIZES[@]}"; do
 
         # Execute training runner
         echo "[RUN] Training $RUN_ID..."
-        PYTHONPATH="$CODE_DIR" "$SYS_PY3" -m ml.training.run_partial_finetuning \
+        PYTHONPATH="$CODE_DIR" "$SYS_PY3" -m ml.training.run_phase_4c2 \
             --config "$CANONICAL_CONFIG" \
             --bundle "$BUNDLE_DIR" \
             --sample-size "$N" \

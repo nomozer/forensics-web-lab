@@ -31,7 +31,7 @@ Upload the entire `phase_4c1_bundle/` folder to Google Drive at:
 
 ## Step 2: Configure Colab Secrets
 
-1. Open Colab notebook: `notebooks/learning_curve_colab.ipynb`
+1. Open Colab notebook: `notebooks/phase_4c1_learning_curve_colab.ipynb`
 2. Click **Settings** (gear icon) → **Secrets**
 3. Add secret:
    - Name: `GITHUB_TOKEN`
@@ -43,7 +43,7 @@ Upload the entire `phase_4c1_bundle/` folder to Google Drive at:
 ## Step 3: Open & Run Notebook
 
 1. Open the notebook in Colab:
-   - File → Open notebook → GitHub → nomozer/forensics-web-lab → notebooks/learning_curve_colab.ipynb
+   - File → Open notebook → GitHub → nomozer/forensics-web-lab → notebooks/phase_4c1_learning_curve_colab.ipynb
 2. **Runtime → Change runtime type** → GPU → T4 (or A100 if available)
 3. Run cells sequentially:
    - Cell 1: Environment check
@@ -60,7 +60,7 @@ Upload the entire `phase_4c1_bundle/` folder to Google Drive at:
 
 ## Configuration
 
-### Key Parameters (in `ml/configs/learning_curve_execution.yaml`)
+### Key Parameters (in `ml/configs/phase_4c1_learning_curve.yaml`)
 
 | Parameter | Value |
 |---|---|

@@ -296,7 +296,7 @@ def main() -> int:
     parser.add_argument(
         "--protocol",
         type=Path,
-        default=REPO_ROOT / "ml/configs/nested_cv_development_protocol.yaml",
+        default=REPO_ROOT / "ml/configs/phase_4c2h_development_nested_cv.yaml",
     )
     parser.add_argument(
         "--manifest",

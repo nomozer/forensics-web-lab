@@ -27,7 +27,7 @@ from ml.training.run_nested_cv_development import (
 
 
 REPO_ROOT = Path(__file__).parents[2]
-PROTOCOL = REPO_ROOT / "ml/configs/nested_cv_development_protocol.yaml"
+PROTOCOL = REPO_ROOT / "ml/configs/phase_4c2h_development_nested_cv.yaml"
 WEIGHTS = Path.home() / ".cache/torch/hub/checkpoints/mobilenet_v3_small-047dcff4.pth"
 WEIGHTS_SHA256 = "047dcff4addef86ea5bc2eff13c9614dc11f47ab1160d0a71a25e7db994f4e1f"
 

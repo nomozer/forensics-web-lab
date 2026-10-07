@@ -22,7 +22,7 @@ SOURCE_MEMBERS = (
     "ml/training/mobilenetv3_forensics.py",
     "ml/training/nested_cv_development.py",
     "ml/training/run_nested_cv_development.py",
-    "ml/configs/nested_cv_development_protocol.yaml",
+    "ml/configs/phase_4c2h_development_nested_cv.yaml",
     "ml/requirements.txt",
 )
 WEIGHTS_MEMBER = "models/research/pretrained/mobilenet_v3_small-047dcff4.pth"

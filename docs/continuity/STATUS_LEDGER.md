@@ -1,8 +1,8 @@
 ## Repository functional naming normalization (Phase trace 4C.7B preserved)
 
 - **Scope**: Repository-wide tracked source, scripts, configs, tests, notebooks, and current documentation; naming-only change.
-- **Result**: 54 active, unsealed paths renamed from phase-led names to short functional names. Imports, CLI examples, configs, tests, notebook references, package builders outside the sealed surface, and continuity links were updated. Full mapping: `docs/REPOSITORY_NAMING_MAP.md`.
-- **Historical integrity**: Phase IDs remain in metadata and this ledger. All `research/evidence/phase-*` trees, external raw artifacts, ZIPs, images, masks, receipts, ledgers, models, checkpoints, and historical run directories remain unchanged. Thirteen confirmatory execution paths remain unchanged because sealed package/source bindings and authorization contracts require their exact names.
+- **Result**: 47 active, unsealed paths renamed from phase-led names to short functional names. Imports, CLI examples, tests, package builders outside sealed surfaces, and continuity links were updated. Full mapping: `docs/REPOSITORY_NAMING_MAP.md`.
+- **Historical integrity**: Phase IDs remain in metadata and this ledger. All `research/evidence/phase-*` trees, external raw artifacts, ZIPs, images, masks, receipts, ledgers, models, checkpoints, and historical run directories remain unchanged. Twenty config/notebook/operator/confirmatory paths remain unchanged because sealed hash/path, package/source, or authorization bindings require their exact names.
 - **Scientific boundary**: 0 generation, 0 training, 0 detector/evaluator execution, 0 metric/result changes, and 0 human Content QC approvals.
 - **Verification**: Naming regressions 3/3 PASS; notebook/path tests 45/45 PASS; renamed Python sources compile; continuity check PASS; TypeScript typecheck PASS; workspace unit tests PASS; production build PASS. Full local Python ML collection is unavailable because the system interpreter lacks the declared ML dependencies; GitHub CI remains authoritative for that gate.
 

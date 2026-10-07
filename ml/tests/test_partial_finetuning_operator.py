@@ -23,7 +23,7 @@ import pytest
 import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-OPERATOR_SCRIPT = REPO_ROOT / "scripts" / "run_partial_finetuning_all.sh"
+OPERATOR_SCRIPT = REPO_ROOT / "scripts" / "phase_4c2_execute_all.sh"
 
 CANONICAL_BUNDLE_ARCHIVE_SHA = "d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27"
 CANONICAL_BUNDLE_CONTENT_SHA = "c365c812cc814097f11b9e5ed5c82e672015e2ba093f09f975df0a2a01229e9b"
@@ -646,7 +646,7 @@ class TestTarSafetyAuditBehavioral:
         create_tar_fixture(arch, [
             ("ml", tarfile.DIRTYPE, None),
             ("ml/training", tarfile.DIRTYPE, None),
-            ("ml/training/run_partial_finetuning.py", tarfile.REGTYPE, None),
+            ("ml/training/run_phase_4c2.py", tarfile.REGTYPE, None),
             ("ml/configs/phase_4c2.yaml", tarfile.REGTYPE, None),
         ])
         res = run_tar_audit_subprocess(tar_audit_block, arch)
@@ -775,7 +775,7 @@ DEPLOYMENT_OPERATOR_SCRIPT = (
     / "forensics-web-lab-local-artifacts"
     / "phase_4c2"
     / "inputs"
-    / "run_partial_finetuning_all.sh"
+    / "phase_4c2_execute_all.sh"
 )
 
 

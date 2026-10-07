@@ -1,4 +1,4 @@
-# Partial Fine-Tuning Execution & Preregistration Configuration (phase trace 4C.2)
+# Phase 4C.2 Stage 2 Fine-Tuning Execution & Preregistration Configuration
 # Formal Preregistration for Partial Backbone Unfreezing Experiment
 # Derived from Pilot A learning curve outcomes (Phase 4C.1D.2 canonical evidence commit f6eb57d)
 
@@ -6,7 +6,7 @@ schema_version: "1.0.0"
 config_id: "phase_4c2_stage2_finetuning"
 pilot_id: "pilot_tgif_edit"
 pilot_branch: "Pilot A"
-title: "Stage 2 Partial Backbone Fine-Tuning (Option P, N=50,100,250; phase trace 4C.2)"
+title: "Phase 4C.2 Stage 2 Fine-Tuning: Partial Backbone Unfreezing (Option P, N=50,100,250)"
 scientific_status: "preregistered_protocol"
 license_track: "research-only"
 treatment_designation: "pre-registered partial fine-tuning protocol"
@@ -45,10 +45,10 @@ namespace_isolation:
     - "phase_4c1/runs/execution_79bb115/"
     - "phase_4c1/runs/"
   planned_artifacts:
-    config: "ml/configs/partial_finetuning_protocol.yaml"
+    config: "ml/configs/phase_4c2_stage2_finetuning.yaml"
     evidence_dir: "research/evidence/phase-4c.2a/"
     environment_lock: "phase4c2_environment_lock.json"
-    notebook_launcher: "notebooks/partial_finetuning_colab.ipynb"
+    notebook_launcher: "notebooks/phase_4c2_finetuning_colab.ipynb"
 
 initialization_contract:
   policy: "from_pretrained_backbone_with_fresh_head"

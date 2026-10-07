@@ -361,7 +361,7 @@ class TestFaultInjection:
 
         # Mock args
         args = argparse.Namespace(
-            config=str(REPO_ROOT / "ml/configs/learning_curve_execution.yaml"),
+            config=str(REPO_ROOT / "ml/configs/phase_4c1_learning_curve.yaml"),
             bundle=str(REPO_ROOT / "nonexistent_bundle"),
             sample_size=50,
             seed=42,
@@ -385,7 +385,7 @@ class TestFaultInjection:
         # Mock CUDA not available
         with patch("torch.cuda.is_available", return_value=False):
             args = argparse.Namespace(
-                config=str(REPO_ROOT / "ml/configs/learning_curve_execution.yaml"),
+                config=str(REPO_ROOT / "ml/configs/phase_4c1_learning_curve.yaml"),
                 bundle=str(REPO_ROOT / "test_bundle"),
                 sample_size=50,
                 seed=42,

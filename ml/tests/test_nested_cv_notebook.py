@@ -3,7 +3,7 @@ from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).parents[2]
-NOTEBOOK = REPO_ROOT / "notebooks/nested_cv_development_colab.ipynb"
+NOTEBOOK = REPO_ROOT / "notebooks/phase_4c2h_development_colab.ipynb"
 
 
 def test_notebook_is_exact_self_staging_pilot_launcher() -> None:

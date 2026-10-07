@@ -11,7 +11,7 @@ import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 NOTEBOOK_DIR = REPO_ROOT / "notebooks"
-CANONICAL_NOTEBOOK = NOTEBOOK_DIR / "partial_finetuning_colab.ipynb"
+CANONICAL_NOTEBOOK = NOTEBOOK_DIR / "phase_4c2_finetuning_colab.ipynb"
 
 
 def test_29_notebook_5_cell_structure():
@@ -26,9 +26,7 @@ def test_29_notebook_5_cell_structure():
 
     # Cell 0: markdown
     assert cells[0]["cell_type"] == "markdown"
-    title = "".join(cells[0]["source"])
-    assert "Partial Fine-Tuning Colab Launcher" in title
-    assert "phase trace 4C.2" in title
+    assert "Phase 4C.2" in "".join(cells[0]["source"])
 
     # Cells 1-4: code
     for idx, c in enumerate(cells[1:], start=1):
@@ -53,9 +51,11 @@ def test_30_notebook_execute_false_invokes_preflight_only():
 
 def test_31_no_duplicate_notebook():
     """31. Exactly one Stage 2 notebook exists; no duplicate _v2, (1), etc."""
-    nb_files = list(NOTEBOOK_DIR.glob("*partial_finetuning*colab*.ipynb"))
+    nb_files = [
+        f for f in NOTEBOOK_DIR.glob("phase_4c2*.ipynb") if not f.name.startswith("phase_4c2h_")
+    ]
     assert len(nb_files) == 1, f"Found multiple Stage 2 notebooks: {[f.name for f in nb_files]}"
-    assert nb_files[0].name == "partial_finetuning_colab.ipynb"
+    assert nb_files[0].name == "phase_4c2_finetuning_colab.ipynb"
 
 
 def test_33_notebook_operator_verification_and_restaging():
@@ -118,7 +118,7 @@ def test_35_notebook_exact_execution_directory():
 # Phase 4C.2B.3.2 Post-Execution Audit & Archive Parity Tests
 # ------------------------------------------------------------------------------
 
-OPERATOR_SCRIPT = REPO_ROOT / "scripts" / "run_partial_finetuning_all.sh"
+OPERATOR_SCRIPT = REPO_ROOT / "scripts" / "phase_4c2_execute_all.sh"
 
 
 def extract_operator_package_and_hash_names() -> list[str]:

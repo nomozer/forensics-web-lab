@@ -145,7 +145,7 @@ Before execution, the following must be approved:
 | File | Purpose |
 |---|---|
 | `ml/configs/pilot_a_binary_preregistered.yaml` | Preregistered protocol (authoritative) |
-| `ml/configs/learning_curve_execution.yaml` | Execution config (this phase) |
+| `ml/configs/phase_4c1_learning_curve.yaml` | Execution config (this phase) |
 | `ml/configs/validator.py` | Validates config against schema |
 
 ---
@@ -159,7 +159,7 @@ Before execution, the following must be approved:
 | Resource Budget | `research/evidence/phase-4c.1a/resource-budget.json` |
 | Dataset Readiness | `research/evidence/phase-4c.1a/dataset-readiness.json` |
 | Preregistration | `ml/configs/pilot_a_binary_preregistered.yaml` |
-| Execution Config | `ml/configs/learning_curve_execution.yaml` |
+| Execution Config | `ml/configs/phase_4c1_learning_curve.yaml` |
 
 ---
 

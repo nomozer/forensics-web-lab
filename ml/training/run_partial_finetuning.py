@@ -11,7 +11,7 @@ Treatment Designation:
 
 Usage:
     python -m ml.training.run_partial_finetuning \
-        --config ml/configs/partial_finetuning_protocol.yaml \
+        --config ml/configs/phase_4c2_stage2_finetuning.yaml \
         --bundle /content/bundle \
         --sample-size 50 \
         --seed 42 \

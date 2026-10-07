@@ -21,7 +21,7 @@ from ml.training.nested_cv_development import (
 
 
 REPO_ROOT = Path(__file__).parents[2]
-PROTOCOL = REPO_ROOT / "ml/configs/nested_cv_development_protocol.yaml"
+PROTOCOL = REPO_ROOT / "ml/configs/phase_4c2h_development_nested_cv.yaml"
 
 
 class TinyFrozenModel(nn.Module):

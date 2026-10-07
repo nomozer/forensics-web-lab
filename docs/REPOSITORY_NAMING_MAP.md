@@ -18,19 +18,12 @@ This document records the repository-wide functional naming normalization perfor
 | `docs/PHASE_4C_PREREGISTRATION.md` | `docs/BINARY_CLASSIFICATION_PREREGISTRATION.md` | Binary authentic-versus-edited preregistration |
 | `docs/PHASE_4C1_EXECUTION_PLAN.md` | `docs/LEARNING_CURVE_EXECUTION_PLAN.md` | Learning-curve execution plan |
 | `docs/PHASE_4C1_COLAB_GUIDE.md` | `docs/LEARNING_CURVE_COLAB_GUIDE.md` | Learning-curve Colab guide |
-| `ml/configs/phase_4c1_learning_curve.yaml` | `ml/configs/learning_curve_execution.yaml` | Learning-curve execution configuration |
-| `ml/configs/phase_4c2_stage2_finetuning.yaml` | `ml/configs/partial_finetuning_protocol.yaml` | Partial fine-tuning protocol |
-| `ml/configs/phase_4c2h_development_nested_cv.yaml` | `ml/configs/nested_cv_development_protocol.yaml` | Development-only nested-CV protocol |
 | `ml/datasets/export_phase_4c1_bundle.py` | `ml/datasets/export_learning_curve_bundle.py` | Export a learning-curve dataset bundle |
 | `ml/datasets/validate_phase_4c1_bundle.py` | `ml/datasets/validate_learning_curve_bundle.py` | Validate a learning-curve dataset bundle |
 | `ml/training/run_phase_4c1.py` | `ml/training/run_learning_curve.py` | Run learning-curve training |
 | `ml/training/run_phase_4c2.py` | `ml/training/run_partial_finetuning.py` | Run partial fine-tuning |
 | `ml/training/phase_4c2h_development.py` | `ml/training/nested_cv_development.py` | Nested-CV development contracts and utilities |
 | `ml/training/run_phase_4c2h.py` | `ml/training/run_nested_cv_development.py` | Run development-only nested CV |
-| `notebooks/phase_4c1_learning_curve_colab.ipynb` | `notebooks/learning_curve_colab.ipynb` | Learning-curve Colab launcher |
-| `notebooks/phase_4c2_finetuning_colab.ipynb` | `notebooks/partial_finetuning_colab.ipynb` | Partial fine-tuning Colab launcher |
-| `notebooks/phase_4c2h_development_colab.ipynb` | `notebooks/nested_cv_development_colab.ipynb` | Nested-CV development Colab launcher |
-| `scripts/phase_4c2_execute_all.sh` | `scripts/run_partial_finetuning_all.sh` | Run the resumable partial fine-tuning matrix |
 | `scripts/reconcile_phase4c0.py` | `scripts/reconcile_training_baseline.py` | Reconcile the smoke checkpoint and baselines |
 | `scripts/reproduce-phase-4b3-evidence.py` | `scripts/reproduce_dataset_evidence.py` | Reproduce dataset and environment evidence |
 | `scripts/research/analyze_phase_4c1d_runs.py` | `scripts/research/analyze_learning_curve_runs.py` | Analyze learning-curve runs |
@@ -75,11 +68,11 @@ This document records the repository-wide functional naming normalization perfor
 |---|---|---|
 | `4A` | Dataset feasibility | `docs/DATA_FEASIBILITY.md` |
 | `4C.0` | Binary protocol and baseline reconciliation | `docs/BINARY_CLASSIFICATION_PREREGISTRATION.md`, `scripts/reconcile_training_baseline.py` |
-| `4C.1` | Learning curve | `docs/LEARNING_CURVE_EXECUTION_PLAN.md`, `ml/training/run_learning_curve.py`, `notebooks/learning_curve_colab.ipynb` |
-| `4C.2A-C` | Partial fine-tuning | `ml/configs/partial_finetuning_protocol.yaml`, `ml/training/run_partial_finetuning.py`, `notebooks/partial_finetuning_colab.ipynb` |
+| `4C.1` | Learning curve | `docs/LEARNING_CURVE_EXECUTION_PLAN.md`, `ml/training/run_learning_curve.py`; sealed config/notebook paths listed below |
+| `4C.2A-C` | Partial fine-tuning | `ml/training/run_partial_finetuning.py`; sealed protocol/operator/notebook paths listed below |
 | `4C.2D` | Candidate model selection | `scripts/research/finalize_candidate_model_selection.py` |
 | `4C.2E-G` | Locked-test confirmatory evaluation | Sealed execution names listed below; current analyses use `scripts/research/analyze_confirmatory_closure.py` |
-| `4C.2H` | Development-only nested CV | `ml/configs/nested_cv_development_protocol.yaml`, `ml/training/run_nested_cv_development.py`, `notebooks/nested_cv_development_colab.ipynb` |
+| `4C.2H` | Development-only nested CV | `ml/training/run_nested_cv_development.py`; sealed protocol/notebook paths listed below |
 | `4C.3` | Calibrated late fusion | `ml/configs/calibrated_late_fusion_protocol.yaml`, `ml/training/run_calibrated_late_fusion.py` |
 | `4C.4` | Development robustness | `ml/configs/development_robustness_protocol.yaml`, `ml/training/run_development_robustness.py` |
 | `4C.5` | Fusion-shift diagnostics | `scripts/research/diagnose_fusion_shift.py` |
@@ -89,7 +82,15 @@ This document records the repository-wide functional naming normalization perfor
 
 ## Exact-path exceptions
 
-The following Git-tracked paths remain unchanged because the sealed confirmatory package, source-binding manifests, component-hash keys, and authorization schema refer to their exact names:
+The following Git-tracked paths remain unchanged because sealed configs, notebooks, execution packages, source-binding manifests, component-hash keys, or authorization schemas refer to their exact names:
+
+- `ml/configs/phase_4c1_learning_curve.yaml`
+- `ml/configs/phase_4c2_stage2_finetuning.yaml`
+- `ml/configs/phase_4c2h_development_nested_cv.yaml`
+- `notebooks/phase_4c1_learning_curve_colab.ipynb`
+- `notebooks/phase_4c2_finetuning_colab.ipynb`
+- `notebooks/phase_4c2h_development_colab.ipynb`
+- `scripts/phase_4c2_execute_all.sh`
 
 - `ml/evaluation/phase_4c2g_dataset.py`
 - `ml/evaluation/phase_4c2g_io.py`
@@ -106,5 +107,3 @@ The following Git-tracked paths remain unchanged because the sealed confirmatory
 - `scripts/research/verify_phase_4c2g_offline_runtime.py`
 
 All `research/evidence/phase-*` trees and their internal filenames are also immutable historical evidence. External ZIP files, extracted images/masks, receipts, ledgers, models, datasets, checkpoints, and historical run directories remain untouched. References in older `STATUS_LEDGER.md` entries intentionally preserve the paths that were true at the recorded commit.
-
-The renamed partial-finetuning and nested-CV notebooks still refer internally to their original sealed operator/snapshot member names. Those strings identify external hash-bound inputs (`phase_4c2_execute_all.sh`, `ml.training.run_phase_4c2h`, and `ml/configs/phase_4c2h_development_nested_cv.yaml`); they are not stale links to the current worktree.

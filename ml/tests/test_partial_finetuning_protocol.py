@@ -26,7 +26,7 @@ from ml.training.mobilenetv3_forensics import MobileNetV3Forensics
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 STAGE2_EVIDENCE_DIR = REPO_ROOT / "research" / "evidence" / "phase-4c.2a"
-STAGE2_CONFIG_PATH = REPO_ROOT / "ml" / "configs" / "partial_finetuning_protocol.yaml"
+STAGE2_CONFIG_PATH = REPO_ROOT / "ml" / "configs" / "phase_4c2_stage2_finetuning.yaml"
 
 EXPECTED_BUNDLE_ARCHIVE_SHA = "d49a106f0c4991ca8d79776277cbf7331df209157725c438288720dc42226a27"
 EXPECTED_BUNDLE_CONTENT_SHA = "c365c812cc814097f11b9e5ed5c82e672015e2ba093f09f975df0a2a01229e9b"

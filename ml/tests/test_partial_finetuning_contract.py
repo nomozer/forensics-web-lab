@@ -97,7 +97,7 @@ def test_2_exact_tensor_shapes_and_numel():
 
 def test_3_initialization_contract():
     """Verify initialization contract is sealed to fresh head from pretrained backbone."""
-    config_p = REPO_ROOT / "ml" / "configs" / "partial_finetuning_protocol.yaml"
+    config_p = REPO_ROOT / "ml" / "configs" / "phase_4c2_stage2_finetuning.yaml"
     with open(config_p, "r", encoding="utf-8") as f:
         config = yaml.safe_load(f)
 
@@ -332,7 +332,7 @@ def test_11_stage1_output_path_rejection():
 
 def test_12_locked_test_rejection():
     """Verify locked-test rejection contract."""
-    config_p = REPO_ROOT / "ml" / "configs" / "partial_finetuning_protocol.yaml"
+    config_p = REPO_ROOT / "ml" / "configs" / "phase_4c2_stage2_finetuning.yaml"
     with open(config_p, "r", encoding="utf-8") as f:
         cfg = yaml.safe_load(f)
 
@@ -346,7 +346,7 @@ def test_12_locked_test_rejection():
 
 def test_13_gpu_capability_policy():
     """Verify GPU capability policy does not lock to Tesla T4 only."""
-    config_p = REPO_ROOT / "ml" / "configs" / "partial_finetuning_protocol.yaml"
+    config_p = REPO_ROOT / "ml" / "configs" / "phase_4c2_stage2_finetuning.yaml"
     with open(config_p, "r", encoding="utf-8") as f:
         cfg = yaml.safe_load(f)
 

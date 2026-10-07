@@ -8,7 +8,7 @@ Supports sample sizes N in {50, 100, 250} and multiple seeds with frozen cohort 
 
 Usage:
     python -m ml.training.run_learning_curve \
-        --config ml/configs/learning_curve_execution.yaml \
+        --config ml/configs/phase_4c1_learning_curve.yaml \
         --bundle /content/bundle \
         --sample-size 50 \
         --seed 42 \

@@ -1508,19 +1508,19 @@ echo "[+] Validated GPU: $ACTUAL_GPU_MODEL ($ACTUAL_GPU_VRAM_GB GB VRAM)"
         assert "Validated GPU: Tesla T4 (14.56 GB VRAM)" in out_bash
 
     def test_operator_invokes_reusable_n250_validator_mode(self):
-        """Phase 4C.1C.14: Operator invokes validate_learning_curve_bundle with --reusable-n250 in Step 3."""
+        """Phase 4C.1C.14: Sealed operator invokes its bound validator with --reusable-n250."""
         text = OPERATOR_SCRIPT.read_text(encoding="utf-8")
 
-        # 1. Operator calls module ml.datasets.validate_learning_curve_bundle
-        assert "ml.datasets.validate_learning_curve_bundle" in text
+        # 1. The sealed operator keeps the historical module path from its code archive.
+        assert "ml.datasets.validate_phase_4c1_bundle" in text
 
         # 2. Exactly passes --bundle "$BUNDLE_ROOT" and --reusable-n250
         assert '--bundle "$BUNDLE_ROOT"' in text
         assert "--reusable-n250" in text
 
         # 3. No canonical validator invocation lacks --reusable-n250
-        assert 'validate_learning_curve_bundle.py --bundle "$BUNDLE_ROOT"\n' not in text
-        assert 'validate_learning_curve_bundle.py --bundle "$BUNDLE_ROOT"' not in text
+        assert 'validate_phase_4c1_bundle.py --bundle "$BUNDLE_ROOT"\n' not in text
+        assert 'validate_phase_4c1_bundle.py --bundle "$BUNDLE_ROOT"' not in text
 
         # 4. Check real parser via subprocess --help
         cp_help = subprocess.run(
