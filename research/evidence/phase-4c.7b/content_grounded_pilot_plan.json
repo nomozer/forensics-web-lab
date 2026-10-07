@@ -1,0 +1,109 @@
+{
+  "schema_version": "1.0.0",
+  "workstream": "independent_cohort_acquisition",
+  "phase_trace": "4C.7B",
+  "purpose": "Bounded eight-pair follow-up pilot plan; no automatic replacement candidates are authorized.",
+  "human_review_status": "PENDING",
+  "human_reviewer": null,
+  "human_reviewed_at_utc": null,
+  "coordinate_space": "normalized_512x512_canvas_xyxy_half_open",
+  "attempt_budget": 8,
+  "candidates": [
+    {
+      "candidate_id": "IND_COCO_SD2_001",
+      "stratum_id": "coco_sd2",
+      "tool_key": "stable_diffusion_2_inpainting",
+      "modification_type": "object_replacement",
+      "mask_area_class": "small_under_10pct",
+      "target_description": "the round copper pan hanging above the center-left cooking range",
+      "placement_rationale": "The target is visible before generation and the mask stays around one hanging object without covering the cook.",
+      "target_bbox_xyxy": [194, 108, 267, 190],
+      "mask_bbox_xyxy": [165, 80, 295, 215],
+      "prompt": "a round brass wall clock mounted naturally on the kitchen wall, matching the warm indoor lighting"
+    },
+    {
+      "candidate_id": "IND_COCO_SD2_002",
+      "stratum_id": "coco_sd2",
+      "tool_key": "stable_diffusion_2_inpainting",
+      "modification_type": "object_replacement",
+      "mask_area_class": "large_over_30pct",
+      "target_description": "the white stove and surrounding central wooden cabinet unit",
+      "placement_rationale": "A large replacement class requires a scene-scale target; the registered region contains the stove/cabinet unit and excludes the foreground fruit bowl.",
+      "target_bbox_xyxy": [165, 125, 410, 360],
+      "mask_bbox_xyxy": [95, 75, 465, 395],
+      "prompt": "a stainless-steel kitchen range integrated with matching dark-wood cabinets, realistic residential interior photograph"
+    },
+    {
+      "candidate_id": "IND_COCO_SDXL_001",
+      "stratum_id": "coco_sdxl",
+      "tool_key": "sdxl_inpainting",
+      "modification_type": "object_insertion",
+      "mask_area_class": "large_over_30pct",
+      "target_description": "a framed botanical print to insert on the empty upper-left wall",
+      "placement_rationale": "The upper-left wall is a scene-compatible support surface; the intended object is defined before generation and does not replace the cat.",
+      "target_bbox_xyxy": [65, 55, 220, 245],
+      "mask_bbox_xyxy": [0, 0, 300, 300],
+      "prompt": "a framed botanical print hanging flat on the bathroom wall, realistic perspective and indoor lighting"
+    },
+    {
+      "candidate_id": "IND_COCO_SDXL_002",
+      "stratum_id": "coco_sdxl",
+      "tool_key": "sdxl_inpainting",
+      "modification_type": "object_insertion",
+      "mask_area_class": "small_under_10pct",
+      "target_description": "a small red cherry tomato to insert on the bread slice",
+      "placement_rationale": "The bread provides a visible horizontal support surface and the small mask avoids the surrounding lunch compartments.",
+      "target_bbox_xyxy": [375, 265, 430, 320],
+      "mask_bbox_xyxy": [345, 245, 455, 335],
+      "prompt": "a small red cherry tomato resting on the slice of bread, matching the lunchbox lighting and camera angle"
+    },
+    {
+      "candidate_id": "IND_COMMONS_SD2_001",
+      "stratum_id": "commons_sd2",
+      "tool_key": "stable_diffusion_2_inpainting",
+      "modification_type": "object_removal_and_infill",
+      "mask_area_class": "medium_10_to_30pct",
+      "target_description": "the forested rocky headland projecting into the sea at center-right",
+      "placement_rationale": "The existing landform is fully identified before removal; adjacent sea and horizon provide the intended infill context.",
+      "target_bbox_xyxy": [320, 285, 505, 455],
+      "mask_bbox_xyxy": [275, 260, 510, 480],
+      "prompt": "open sea and distant coastline continuing naturally through the removed headland, photorealistic sunset landscape"
+    },
+    {
+      "candidate_id": "IND_COMMONS_SD2_002",
+      "stratum_id": "commons_sd2",
+      "tool_key": "stable_diffusion_2_inpainting",
+      "modification_type": "object_insertion",
+      "mask_area_class": "medium_10_to_30pct",
+      "target_description": "a brown leather travel suitcase to insert on the cobblestones beside the car",
+      "placement_rationale": "The lower-left cobblestone area is a visible ground plane beside the vehicle and does not cover the front wheel assembly.",
+      "target_bbox_xyxy": [55, 345, 205, 475],
+      "mask_bbox_xyxy": [0, 320, 250, 500],
+      "prompt": "a brown leather travel suitcase standing on the cobblestones beside the vintage car, realistic scale and daylight shadows"
+    },
+    {
+      "candidate_id": "IND_COMMONS_SDXL_001",
+      "stratum_id": "commons_sdxl",
+      "tool_key": "sdxl_inpainting",
+      "modification_type": "object_insertion",
+      "mask_area_class": "small_under_10pct",
+      "target_description": "a small dark bird to insert in the open cloudy sky at upper-right",
+      "placement_rationale": "The sky region is visually unobstructed and supports a small airborne object without altering the monument text or sculpture.",
+      "target_bbox_xyxy": [395, 75, 455, 125],
+      "mask_bbox_xyxy": [350, 45, 500, 160],
+      "prompt": "a small dark bird flying in the cloudy sky, distant scale and natural daylight"
+    },
+    {
+      "candidate_id": "IND_COMMONS_SDXL_002",
+      "stratum_id": "commons_sdxl",
+      "tool_key": "sdxl_inpainting",
+      "modification_type": "object_replacement",
+      "mask_area_class": "large_over_30pct",
+      "target_description": "the bronze child figure held across the adult figure's arms",
+      "placement_rationale": "The child figure is visibly bounded before generation; the large registered region covers it and its contact with the adult's arms.",
+      "target_bbox_xyxy": [150, 220, 410, 430],
+      "mask_bbox_xyxy": [60, 185, 460, 455],
+      "prompt": "a bronze bouquet of flowers held naturally in the figure's arms, matching the sculpture material, patina, and daylight"
+    }
+  ]
+}

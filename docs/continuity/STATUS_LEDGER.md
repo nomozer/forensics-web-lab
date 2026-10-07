@@ -1,3 +1,30 @@
+## Phase 4C.7B trace — Real Pilot Diagnosis & Content-Grounded Corrective Preparation
+
+- **Scope**: Diagnosed the exact 8 pairs from `pilot-20261007T132003Z`; no regeneration, full acquisition, training, detector, or evaluator run.
+- **Proven findings**: Generic prompt assignment and seeded random masks had no content target; all 8 outputs exceed the locked outside-mask L1 maximum (3.808–9.311 observed vs 0.5); Technical QC omitted that check and used std threshold 2.0 instead of 5.0. Model revisions/schedulers/steps/guidance match protocol; crop/resize drift is not demonstrated.
+- **Implementation correction**: Production now requires a bound content-grounded prompt/target/rationale/target bbox/mask bbox; generated pixels are retained only inside the binary mask; locked Technical QC thresholds are enforced; logs use Technical QC terminology.
+- **Controlled next pilot**: Proposed maximum budget 8 attempts, 2 registered candidates/stratum, preserving the original source/tool/modification/mask quotas with no automatic replacement. The CLI blocks generation while the plan remains `PENDING`; amendment and overlay require human review.
+- **Naming**: New runs use `independent_cohort_acquisition/runs/<RUN_ID>`; phase codes remain trace metadata; historical `phase_4c7b_runs` and `phase_4c7b/runs` locations remain unchanged and documented.
+- **Incident reconciliation**: Corrected `pilot-20261007T093824Z` to 220 SDXL attempt records / 110 unique candidates (222 total minus 2 accepted SD2 records). Original ledger is not present locally, so duplicate-record mechanism remains unverified.
+- **Verification**: 21 acquisition tests PASS; 56 binding/notebook tests PASS with 2 artifact-gated skips; smoke test 6/6 PASS; allocation plan 440/440 PASS; full-mode plan gate and continuity checker PASS.
+- **Status**: `PILOT_DIAGNOSED_CORRECTIVE_PLAN_PENDING_HUMAN_REVIEW`; existing 8 pairs remain `PENDING_CONTENT_QC`; full acquisition locked; independent performance `NOT_MEASURED`.
+- **Evidence**: `research/evidence/phase-4c.7b/PILOT_CONTENT_DIAGNOSIS.md`, `CONTENT_GROUNDED_EDITING_AMENDMENT.md`, `content_grounded_pilot_plan.json`.
+
+---
+
+## Phase 4C.7B — Real Pilot Intake & Audit (Human Content QC Pending)
+
+- **Run & binding**: Safely received `pilot-20261007T132003Z_package.zip` (6,112,677 bytes; SHA-256 `1fcd1de57373c7250583d87a4a4050a91d918b8bd62ec105d4aab737d340053d`), extracted without overwrite, and audited against exact functional commit `7d2eea4027e2a17b51e6665ff81d481e4e333d48`.
+- **Production audit**: PASS — 8 pairs; manifest SHA-256 `caa0766addff4d87d9d11206f1e398a29ca04c58f0013866fac749fac09bc416`; receipt/manifest/ledger/file hashes and inventories agree.
+- **Attempts and quotas**: Direct attempt ledger contains 8 attempts: 8 accepted, 0 rejected/failed, no rejection reasons; exactly 2 accepted pairs in each of four strata.
+- **Canvas contract**: 16/16 authentic/edited images are 512x512 RGB; 8/8 masks are 512x512 `L`, binary `{0,255}`, and within declared area brackets.
+- **Visual screening**: Agent-only review raised material concerns on all 8 pairs (7 likely reject, 1 inconclusive/recommend reject). This was not recorded as human approval; all samples remain `PENDING_CONTENT_QC`.
+- **Scientific status**: Detector calls 0; independent performance `NOT_MEASURED`; full 400-pair acquisition, training, and evaluator `NOT_RUN`.
+- **Gate**: `PILOT_TECHNICAL_PASS_PENDING_HUMAN_CONTENT_QC`; full acquisition remains locked. Next action is explicit human per-pair Content QC using the external contact sheet.
+- **Evidence**: `research/evidence/phase-4c.7b/PILOT_AUDIT_SUMMARY.md`; detailed source artifacts and the sibling per-pair report remain Git-ignored under `data/research/local-artifacts/phase-4c.7b/`.
+
+---
+
 ## Phase 4C.7B — Revision 5: Generation Contract Enforcement & Systematic Failure Gate Hotfix
 
 - **Mục tiêu**: Điều tra và sửa sự cố pilot run `pilot-20261007T093824Z` (commit `cdacb41a5501568c1a11435dfcb00d327bc69a6d`); bảo vệ ứng viên khỏi việc cháy pool do lỗi cấu hình generation; chuẩn hóa logging bền vững và cập nhật Colab notebook.

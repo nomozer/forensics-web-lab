@@ -1,8 +1,8 @@
-"""Independent Validation Cohort Acquisition and Generation Pipeline (Phase 4C.7B).
+"""Independent cohort acquisition and generation pipeline.
 
 This module implements the production acquisition runner, real image downloader,
 and quality control framework for the amended Phase 4C.7B independent cohort protocol:
-1. 2x2 Orthogonal balanced design (COCO 2017 Clean x Unsplash Verified) x (SD2 x SDXL).
+1. 2x2 orthogonal design (COCO 2017 x Wikimedia Commons) x (SD2 x SDXL).
 2. Exactly 400 target pairs (100 per stratum) with 440 buffer candidate pool (110 per stratum).
 3. Real authentic photographs with verified provenance from official sources (no synthetic noise).
 4. Fail-closed production pipeline: zero fallback to random or placeholder pixels on download failure.
@@ -19,7 +19,7 @@ and quality control framework for the amended Phase 4C.7B independent cohort pro
 from __future__ import annotations
 
 import csv
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from datetime import datetime, timezone
 import hashlib
 import io
@@ -51,6 +51,14 @@ from ml.evaluation.independent_cohort import (
 # Standard target resolutions and thresholds
 TARGET_CANVAS_SIZE = (512, 512)
 MAX_PIXEL_DECOMPRESSION_BOMB = 50_000_000
+NON_BLANK_STD_THRESHOLD = 5.0
+MIN_MASKED_PIXEL_DELTA_L1 = 3.0
+MAX_UNMASKED_PIXEL_DELTA_L1 = 0.5
+MASK_AREA_BOUNDS = {
+    "small_under_10pct": (0.0, 0.12),
+    "medium_10_to_30pct": (0.08, 0.32),
+    "large_over_30pct": (0.28, 0.52),
+}
 
 # Stratum keys
 STRATA_KEYS = ("coco_sd2", "coco_sdxl", "commons_sd2", "commons_sdxl")
@@ -141,6 +149,10 @@ class QuotaDeficitError(RuntimeError):
 
 class CandidateEligibilityError(ValueError):
     """Raised when a catalog cannot supply the pre-registered quota of eligible candidates."""
+
+
+class ContentGroundingError(ValueError):
+    """Raised when production generation lacks a reviewed, content-grounded edit instruction."""
 
 
 class RunBindingMismatchError(RuntimeError):
@@ -305,6 +317,10 @@ class CandidateSpec:
     date_captured: str = ""
     provenance_checked_at_utc: str = ""
     download_rendition: str = ""
+    target_description: str = ""
+    placement_rationale: str = ""
+    target_bbox_xyxy: tuple[int, int, int, int] | None = None
+    mask_bbox_xyxy: tuple[int, int, int, int] | None = None
 
 
 @dataclass
@@ -348,6 +364,10 @@ class AcquisitionReceipt:
     raw_width: int = 0
     raw_height: int = 0
     engine_config: dict[str, Any] | None = None
+    target_description: str = ""
+    placement_rationale: str = ""
+    target_bbox_xyxy: tuple[int, int, int, int] | None = None
+    mask_bbox_xyxy: tuple[int, int, int, int] | None = None
 
 
 def download_authentic_image(
@@ -522,27 +542,6 @@ def generate_canonical_candidate_plan(
     candidates: list[CandidateSpec] = []
 
 
-    prompts_by_mod = {
-        "object_replacement": [
-            "a bronze decorative statue standing on a pedestal",
-            "a vintage wooden acoustic guitar leaning against the wall",
-            "a ceramic porcelain teacup filled with steaming green tea",
-            "a wicker woven fruit basket filled with ripe red apples",
-        ],
-        "object_removal_and_infill": [
-            "empty natural background, seamlessly continuous surrounding texture, photorealistic",
-            "clean unobstructed natural pavement, smooth surface, photo",
-            "clear open blue sky with subtle wisps of cirrus clouds",
-            "pristine indoor hardwood flooring, uniform lighting and grain",
-        ],
-        "object_insertion": [
-            "a small ginger kitten resting peacefully on a woven mat",
-            "a brass table lamp with a dark emerald green glass shade",
-            "a stack of leatherbound hardcover books with gilded edges",
-            "a vibrant potted lavender plant in a terracotta pot",
-        ],
-    }
-
     strata_configs = [
         ("coco_sd2", "coco_2017", "stable_diffusion_2_inpainting", coco_catalog[:buffer_per_stratum]),
         ("coco_sdxl", "coco_2017", "sdxl_inpainting", coco_catalog[buffer_per_stratum : buffer_per_stratum * 2]),
@@ -560,8 +559,6 @@ def generate_canonical_candidate_plan(
             mod_type = perm_mods[idx]
             mask_class = perm_masks[idx]
 
-            prompt_pool = prompts_by_mod[mod_type]
-            prompt = prompt_pool[idx % len(prompt_pool)]
             gen_seed = int(seed + global_pool_idx * 101)
 
             candidates.append(
@@ -579,7 +576,9 @@ def generate_canonical_candidate_plan(
                     license_name=item["license_name"],
                     license_evidence_source=item["license_evidence_source"],
                     published_date=item.get("published_date") or "",
-                    prompt=prompt,
+                    # The catalog plan allocates quotas only. Production prompts and
+                    # regions are supplied later by a content-grounded edit plan.
+                    prompt="",
                     generation_seed=gen_seed,
                     pool_index=idx,
                     is_synthetic=catalog_synthetic,
@@ -596,6 +595,97 @@ def generate_canonical_candidate_plan(
             )
 
     return candidates
+
+
+def _validated_bbox(value: Any, field_name: str, candidate_id: str) -> tuple[int, int, int, int]:
+    if not isinstance(value, (list, tuple)) or len(value) != 4:
+        raise ContentGroundingError(f"{candidate_id}: {field_name} must contain four integer coordinates")
+    try:
+        x0, y0, x1, y1 = (int(v) for v in value)
+    except (TypeError, ValueError) as exc:
+        raise ContentGroundingError(f"{candidate_id}: {field_name} must contain integers") from exc
+    width, height = TARGET_CANVAS_SIZE
+    if not (0 <= x0 < x1 <= width and 0 <= y0 < y1 <= height):
+        raise ContentGroundingError(
+            f"{candidate_id}: {field_name} {(x0, y0, x1, y1)} is outside the normalized 512x512 canvas"
+        )
+    return x0, y0, x1, y1
+
+
+def _validate_content_grounded_candidate(spec: CandidateSpec) -> None:
+    if not spec.prompt.strip():
+        raise ContentGroundingError(f"{spec.candidate_id}: prompt is required")
+    if not spec.target_description.strip():
+        raise ContentGroundingError(f"{spec.candidate_id}: target_description is required")
+    if not spec.placement_rationale.strip():
+        raise ContentGroundingError(f"{spec.candidate_id}: placement_rationale is required")
+    target = _validated_bbox(spec.target_bbox_xyxy, "target_bbox_xyxy", spec.candidate_id)
+    mask = _validated_bbox(spec.mask_bbox_xyxy, "mask_bbox_xyxy", spec.candidate_id)
+    tx0, ty0, tx1, ty1 = target
+    mx0, my0, mx1, my1 = mask
+    if not (mx0 <= tx0 < tx1 <= mx1 and my0 <= ty0 < ty1 <= my1):
+        raise ContentGroundingError(f"{spec.candidate_id}: target_bbox_xyxy must be contained by mask_bbox_xyxy")
+    ratio = ((mx1 - mx0) * (my1 - my0)) / (TARGET_CANVAS_SIZE[0] * TARGET_CANVAS_SIZE[1])
+    low, high = MASK_AREA_BOUNDS[spec.mask_area_class]
+    if not low <= ratio <= high:
+        raise ContentGroundingError(
+            f"{spec.candidate_id}: planned mask ratio {ratio:.4f} outside [{low}, {high}] "
+            f"for {spec.mask_area_class}"
+        )
+
+
+def load_content_grounded_edit_plan(
+    candidates: Sequence[CandidateSpec],
+    edit_plan_path: Path | str,
+    target_per_stratum: int,
+    require_human_approval: bool = False,
+) -> list[CandidateSpec]:
+    """Bind reviewed prompts and normalized-canvas regions to an allocation plan.
+
+    The edit-plan file selects the only candidates that may be attempted. This
+    deliberately disables unreviewed automatic replacements: a rejected pilot
+    candidate produces a quota deficit instead of silently trying a random region.
+    """
+    data = json.loads(Path(edit_plan_path).read_text(encoding="utf-8"))
+    if require_human_approval and data.get("human_review_status") != "APPROVED":
+        raise ContentGroundingError(
+            "content-grounded edit plan is not human-approved; generation remains blocked"
+        )
+    entries = data.get("candidates")
+    if not isinstance(entries, list):
+        raise ContentGroundingError("edit plan must contain a candidates list")
+    by_id = {candidate.candidate_id: candidate for candidate in candidates}
+    selected: list[CandidateSpec] = []
+    seen: set[str] = set()
+    for entry in entries:
+        candidate_id = str(entry.get("candidate_id", ""))
+        if not candidate_id or candidate_id in seen:
+            raise ContentGroundingError(f"duplicate or empty candidate_id: {candidate_id!r}")
+        seen.add(candidate_id)
+        if candidate_id not in by_id:
+            raise ContentGroundingError(f"{candidate_id}: not present in the verified allocation plan")
+        base = by_id[candidate_id]
+        for locked_field in ("stratum_id", "tool_key", "modification_type", "mask_area_class"):
+            if entry.get(locked_field) != getattr(base, locked_field):
+                raise ContentGroundingError(f"{candidate_id}: edit plan changes locked field {locked_field}")
+        grounded = replace(
+            base,
+            prompt=str(entry.get("prompt", "")),
+            target_description=str(entry.get("target_description", "")),
+            placement_rationale=str(entry.get("placement_rationale", "")),
+            target_bbox_xyxy=_validated_bbox(entry.get("target_bbox_xyxy"), "target_bbox_xyxy", candidate_id),
+            mask_bbox_xyxy=_validated_bbox(entry.get("mask_bbox_xyxy"), "mask_bbox_xyxy", candidate_id),
+        )
+        _validate_content_grounded_candidate(grounded)
+        selected.append(grounded)
+
+    counts = {key: 0 for key in STRATA_KEYS}
+    for spec in selected:
+        counts[spec.stratum_id] += 1
+    expected = {key: target_per_stratum for key in STRATA_KEYS}
+    if counts != expected:
+        raise ContentGroundingError(f"edit plan stratum counts {counts} do not match required {expected}")
+    return selected
 
 
 def generate_synthetic_fixture_plan(
@@ -732,6 +822,31 @@ def synthesize_canonical_mask(
     return mask_img, actual_ratio
 
 
+def build_content_grounded_mask(spec: CandidateSpec) -> tuple[Image.Image, float]:
+    """Build the exact binary rectangle registered on the normalized canvas."""
+    _validate_content_grounded_candidate(spec)
+    x0, y0, x1, y1 = spec.mask_bbox_xyxy  # type: ignore[misc]
+    mask_arr = np.zeros((TARGET_CANVAS_SIZE[1], TARGET_CANVAS_SIZE[0]), dtype=np.uint8)
+    mask_arr[y0:y1, x0:x1] = 255
+    return Image.fromarray(mask_arr, mode="L"), float(np.mean(mask_arr == 255))
+
+
+def composite_generated_region(
+    authentic_img: Image.Image,
+    generated_img: Image.Image,
+    mask_img: Image.Image,
+) -> Image.Image:
+    """Keep generated pixels only inside the registered binary request mask."""
+    if authentic_img.size != generated_img.size or authentic_img.size != mask_img.size:
+        raise GenerationContractError("Cannot composite images and mask with different sizes")
+    if authentic_img.mode != "RGB" or generated_img.mode != "RGB" or mask_img.mode != "L":
+        raise GenerationContractError("Compositing requires RGB authentic/generated images and an L mask")
+    mask_arr = np.array(mask_img)
+    if not set(np.unique(mask_arr)).issubset({0, 255}):
+        raise GenerationContractError("Compositing requires a binary mask containing only 0 and 255")
+    return Image.composite(generated_img, authentic_img, mask_img)
+
+
 def evaluate_technical_qc(
     authentic_img: Image.Image,
     edited_img: Image.Image,
@@ -772,12 +887,7 @@ def evaluate_technical_qc(
     total_pixels = mask_arr.size
     ratio = float(mask_pixels / total_pixels)
 
-    bounds = {
-        "small_under_10pct": (0.01, 0.105),
-        "medium_10_to_30pct": (0.095, 0.305),
-        "large_over_30pct": (0.295, 0.55),
-    }
-    low, high = bounds[mask_area_class]
+    low, high = MASK_AREA_BOUNDS[mask_area_class]
     if not (low <= ratio <= high):
         return False, f"Mask ratio {ratio:.4f} outside bounds [{low}, {high}] for {mask_area_class}", ratio
 
@@ -789,7 +899,7 @@ def evaluate_technical_qc(
 
     auth_std = float(np.std(auth_arr))
     edit_std = float(np.std(edit_arr))
-    if auth_std < 2.0 or edit_std < 2.0:
+    if auth_std < NON_BLANK_STD_THRESHOLD or edit_std < NON_BLANK_STD_THRESHOLD:
         return False, f"Degenerate solid or near-blank image detected (auth_std={auth_std:.2f}, edit_std={edit_std:.2f})", ratio
 
     masked_diff = np.abs(auth_arr - edit_arr)[mask_arr == 255]
@@ -797,8 +907,16 @@ def evaluate_technical_qc(
         return False, "Mask has zero foreground pixels", ratio
 
     mean_masked_diff = float(np.mean(masked_diff))
-    if mean_masked_diff < 3.0:
+    if mean_masked_diff < MIN_MASKED_PIXEL_DELTA_L1:
         return False, f"Edited image exhibits near-zero change in masked region (mean_diff={mean_masked_diff:.2f})", ratio
+
+    unmasked_diff = np.abs(auth_arr - edit_arr)[mask_arr == 0]
+    mean_unmasked_diff = float(np.mean(unmasked_diff)) if len(unmasked_diff) else 0.0
+    if mean_unmasked_diff > MAX_UNMASKED_PIXEL_DELTA_L1:
+        return False, (
+            f"Edited image changes pixels outside request mask "
+            f"(mean_diff={mean_unmasked_diff:.2f}, max={MAX_UNMASKED_PIXEL_DELTA_L1:.2f})"
+        ), ratio
 
     if source_id and historical_sources and source_id in historical_sources:
         return False, f"Source ID '{source_id}' overlaps with historical Option P", ratio
@@ -1298,6 +1416,8 @@ def execute_cohort_acquisition(
                     f"Candidate {spec.candidate_id} is marked synthetic, which is strictly prohibited "
                     "for production independent cohort acquisition!"
                 )
+            if mode == "production":
+                _validate_content_grounded_candidate(spec)
 
     out_path = Path(output_dir)
     out_path.mkdir(parents=True, exist_ok=True)
@@ -1471,6 +1591,10 @@ def execute_cohort_acquisition(
                     "origin_id": spec.origin_id,
                     "pool_index": spec.pool_index,
                     "prompt": spec.prompt,
+                    "target_description": spec.target_description,
+                    "placement_rationale": spec.placement_rationale,
+                    "target_bbox_xyxy": spec.target_bbox_xyxy,
+                    "mask_bbox_xyxy": spec.mask_bbox_xyxy,
                     "generation_seed": spec.generation_seed,
                 }
 
@@ -1497,11 +1621,14 @@ def execute_cohort_acquisition(
                             f"expected {TARGET_CANVAS_SIZE}, RGB"
                         )
 
-                    # Step B: Synthesize request mask
-                    mask_canvas, _target_ratio = synthesize_canonical_mask(
-                        spec.mask_area_class,
-                        seed=spec.generation_seed,
-                    )
+                    # Step B: Use the pre-registered content-grounded region in production.
+                    if mode == "production":
+                        mask_canvas, _target_ratio = build_content_grounded_mask(spec)
+                    else:
+                        mask_canvas, _target_ratio = synthesize_canonical_mask(
+                            spec.mask_area_class,
+                            seed=spec.generation_seed,
+                        )
                     if mask_canvas.size != TARGET_CANVAS_SIZE or mask_canvas.mode not in ("L", "1"):
                         raise GenerationContractError(
                             f"Input mask canvas size/mode invalid: {mask_canvas.size}, {mask_canvas.mode}; "
@@ -1509,17 +1636,18 @@ def execute_cohort_acquisition(
                         )
 
                     # Step C: Generate inpainting
-                    edited_canvas = engine.inpaint(
+                    generated_canvas = engine.inpaint(
                         auth_canvas,
                         mask_canvas,
                         prompt=spec.prompt,
                         seed=spec.generation_seed,
                     )
-                    if edited_canvas.size != TARGET_CANVAS_SIZE or edited_canvas.mode != "RGB":
+                    if generated_canvas.size != TARGET_CANVAS_SIZE or generated_canvas.mode != "RGB":
                         raise GenerationContractError(
-                            f"Inpainting engine output size/mode invalid: {edited_canvas.size}, {edited_canvas.mode}; "
+                            f"Inpainting engine output size/mode invalid: {generated_canvas.size}, {generated_canvas.mode}; "
                             f"expected {TARGET_CANVAS_SIZE}, RGB"
                         )
+                    edited_canvas = composite_generated_region(auth_canvas, generated_canvas, mask_canvas)
 
                     # Step D: Technical Quality Control
                     is_pass, fail_reason, actual_ratio = evaluate_technical_qc(
@@ -1536,7 +1664,7 @@ def execute_cohort_acquisition(
                         attempt_meta["reason"] = fail_reason
                         attempt_meta["elapsed_seconds"] = round(time.perf_counter() - attempt_t0, 3)
                         log_attempt(attempt_meta)
-                        log_msg(f"  [QC REJECT] Candidate {spec.candidate_id} rejected by content QC: {fail_reason}")
+                        log_msg(f"  [TECHNICAL QC REJECT] Candidate {spec.candidate_id}: {fail_reason}")
                         continue  # Stratum-preserving replacement: move to next candidate
 
                     # Step E: Save verified master files
@@ -1591,6 +1719,10 @@ def execute_cohort_acquisition(
                         raw_width=raw_auth_img.size[0],
                         raw_height=raw_auth_img.size[1],
                         engine_config=engine_config,
+                        target_description=spec.target_description,
+                        placement_rationale=spec.placement_rationale,
+                        target_bbox_xyxy=spec.target_bbox_xyxy,
+                        mask_bbox_xyxy=spec.mask_bbox_xyxy,
                     )
 
                     log_receipt(receipt)

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""CLI Runner for Independent Validation Cohort Acquisition (Phase 4C.7B).
+"""CLI runner for independent cohort acquisition.
 
 Usage:
   # 1. Verify the eligible candidate plan (exits non-zero unless 440 eligible candidates)
@@ -10,7 +10,8 @@ Usage:
 
   # 3. Pilot (2 pairs per stratum = 8 pairs) in a new run directory <output-root>/<run-id>
   python scripts/research/run_cohort_acquisition.py --mode pilot --run-id <id> \
-      --expected-commit <full sha> --output-root <drive dir> --contact-sheet
+      --expected-commit <full sha> --output-root <drive dir> \
+      --edit-plan-path <reviewed plan.json> --contact-sheet
 
   # 4. Audit a finished run against this checkout and the same run id
   python scripts/research/run_cohort_acquisition.py --audit-run <output-root>/<run-id> \
@@ -65,15 +66,18 @@ from ml.evaluation.independent_cohort_acquisition import (
     execute_cohort_acquisition,
     generate_canonical_candidate_plan,
     generate_synthetic_fixture_plan,
+    load_content_grounded_edit_plan,
     load_historical_source_keys,
     verify_model_access_preflight,
 )
 
 EVIDENCE_DIR = REPO_ROOT / "research/evidence/phase-4c.7b"
+DEFAULT_EDIT_PLAN_PATH = EVIDENCE_DIR / "content_grounded_pilot_plan.json"
 LEGACY_CATALOG_PATH = EVIDENCE_DIR / "verified_candidate_catalog.json"
 PROTOCOL_FILES = (
     EVIDENCE_DIR / "PROTOCOL_AMENDMENT_V1.3.md",
     EVIDENCE_DIR / "PROTOCOL_AMENDMENT_V1.3_MODEL_SOURCE.md",
+    EVIDENCE_DIR / "CONTENT_GROUNDED_EDITING_AMENDMENT.md",
     EVIDENCE_DIR / "cohort_specification.json",
 )
 
@@ -96,9 +100,17 @@ def _sha256_bytes(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def build_run_binding(run_id: str, commit: str, catalog_path: Path, plan: list[CandidateSpec], mode: str, target: int) -> dict[str, Any]:
+def build_run_binding(
+    run_id: str,
+    commit: str,
+    catalog_path: Path,
+    plan: list[CandidateSpec],
+    mode: str,
+    target: int,
+    edit_plan_path: Path | None = None,
+) -> dict[str, Any]:
     """Everything a run's artifacts must match: run, code, protocol, catalog, plan, quota."""
-    return {
+    binding = {
         "run_id": run_id,
         "git_commit": commit,
         "protocol_sha256": _sha256_bytes(b"".join(p.read_bytes() for p in PROTOCOL_FILES)),
@@ -107,6 +119,9 @@ def build_run_binding(run_id: str, commit: str, catalog_path: Path, plan: list[C
         "mode": mode,
         "target_per_stratum": target,
     }
+    if edit_plan_path is not None:
+        binding["edit_plan_sha256"] = _sha256_bytes(edit_plan_path.read_bytes())
+    return binding
 
 
 def check_runtime_gpu() -> dict[str, Any]:
@@ -203,7 +218,7 @@ def generate_content_qc_contact_sheet(
 
     html = [
         "<!DOCTYPE html>",
-        "<html><head><meta charset='utf-8'><title>Content QC Contact Sheet (Phase 4C.7B)</title>",
+        "<html><head><meta charset='utf-8'><title>Independent Cohort Content QC Contact Sheet</title>",
         "<style>",
         "body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #f8fafc; padding: 24px; }",
         "h1 { color: #38bdf8; }",
@@ -215,7 +230,7 @@ def generate_content_qc_contact_sheet(
         ".image-box span { display: block; margin-top: 6px; font-size: 12px; color: #cbd5e1; }",
         ".qc-status { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; background: #b45309; color: #fef3c7; }",
         "</style></head><body>",
-        "<h1>Phase 4C.7B — Independent Cohort Content QC Contact Sheet</h1>",
+        "<h1>Independent Cohort — Human Content QC Contact Sheet</h1>",
         f"<p>Generated at: {datetime.now(timezone.utc).isoformat()} | Total Pairs: {len(by_source)}</p>",
         "<p><em>Note: Visual inspection verifies semantic plausibility of inpainting edits. Zero detector scores shown.</em></p>",
     ]
@@ -340,7 +355,7 @@ def run_technical_smoke_test(receipt_path: Path | None = None) -> dict[str, Any]
 
 
 def main(argv: list[str] | None = None) -> None:
-    parser = argparse.ArgumentParser(description="Independent Cohort Acquisition Runner (Phase 4C.7B)")
+    parser = argparse.ArgumentParser(description="Independent Cohort Acquisition Runner")
     parser.add_argument("--export-plan", type=str, help="Export eligible candidate acquisition plan to JSON path")
     parser.add_argument("--verify-plan", action="store_true", help="Verify plan eligibility, quotas and disjointness (non-zero on FAIL)")
     parser.add_argument("--smoke-test", action="store_true", help="Run hermetic SYNTHETIC smoke test and write receipt")
@@ -353,6 +368,12 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--output-root", type=str, help="Parent directory for run directories (Drive on Colab)")
     parser.add_argument("--resume", action="store_true", help="Resume an existing run directory with the same binding")
     parser.add_argument("--catalog-path", type=str, default=str(DEFAULT_CATALOG_PATH), help="Path to candidate catalog")
+    parser.add_argument(
+        "--edit-plan-path",
+        type=str,
+        default=str(DEFAULT_EDIT_PLAN_PATH),
+        help="Reviewed content-grounded prompts and normalized-canvas regions for the requested run",
+    )
     parser.add_argument("--contact-sheet", action="store_true", help="Generate Content QC HTML contact sheet")
     parser.add_argument("--receipt-path", type=str, default=str(EVIDENCE_DIR / "acquisition_smoke_receipt_v2.json"), help="Smoke receipt path")
     parser.add_argument("--check-models", action="store_true", help="Run inpainting model preflight check (metadata, configs, and weights access)")
@@ -397,8 +418,27 @@ def main(argv: list[str] | None = None) -> None:
         raise SystemExit("--run-id and --expected-commit are required.")
     target = 2 if args.mode == "pilot" else STRATUM_TARGET_PAIRS
     commit = verify_checkout(REPO_ROOT, args.expected_commit)
-    plan = generate_canonical_candidate_plan(catalog_path=args.catalog_path)
-    binding = build_run_binding(args.run_id, commit, Path(args.catalog_path), plan, args.mode, target)
+    allocation_plan = generate_canonical_candidate_plan(catalog_path=args.catalog_path)
+    edit_plan_path: Path | None = None
+    if args.allow_synthetic:
+        plan = allocation_plan
+    else:
+        edit_plan_path = Path(args.edit_plan_path)
+        plan = load_content_grounded_edit_plan(
+            allocation_plan,
+            edit_plan_path,
+            target_per_stratum=target,
+            require_human_approval=True,
+        )
+    binding = build_run_binding(
+        args.run_id,
+        commit,
+        Path(args.catalog_path),
+        plan,
+        args.mode,
+        target,
+        edit_plan_path=edit_plan_path,
+    )
 
     if args.audit_run:
         print(json.dumps(audit_acquisition_run(Path(args.audit_run), binding), indent=2))

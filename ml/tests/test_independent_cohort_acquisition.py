@@ -18,6 +18,7 @@ Verifies:
 from __future__ import annotations
 
 import csv
+from dataclasses import replace
 import hashlib
 import json
 from pathlib import Path
@@ -45,6 +46,7 @@ from ml.evaluation.independent_cohort_acquisition import (
     TOTAL_BUFFER_PAIRS,
     TOTAL_TARGET_PAIRS,
     CandidateSpec,
+    ContentGroundingError,
     DetectorIsolationViolationError,
     ImageDownloadError,
     MissingProvenanceError,
@@ -54,11 +56,13 @@ from ml.evaluation.independent_cohort_acquisition import (
     SyntheticSourceProhibitedError,
     TamperDetectedError,
     assert_detector_isolation,
+    composite_generated_region,
     download_authentic_image,
     evaluate_technical_qc,
     execute_cohort_acquisition,
     generate_canonical_candidate_plan,
     generate_synthetic_fixture_plan,
+    load_content_grounded_edit_plan,
     load_historical_source_keys,
     normalize_image_to_canvas,
     synthesize_canonical_mask,
@@ -199,6 +203,101 @@ def test_technical_qc_rejection_rules():
     is_pass, reason, _ = evaluate_technical_qc(auth, edited, mask, "small_under_10pct")
     assert is_pass is False
     assert "outside bounds" in reason
+
+
+def test_technical_qc_enforces_locked_blank_and_unmasked_delta_thresholds():
+    """Protocol v1.3 locks std >=5 and mean outside-mask L1 <=0.5."""
+    rng = np.random.default_rng(123)
+    auth = Image.fromarray(rng.integers(30, 220, size=(512, 512, 3), dtype=np.uint8), mode="RGB")
+    mask, _ = synthesize_canonical_mask("medium_10_to_30pct", seed=123)
+    edited = MockInpaintingEngine().inpaint(auth, mask, prompt="test", seed=123)
+
+    edited_arr = np.array(edited).copy()
+    edited_arr[np.array(mask) == 0] = np.clip(edited_arr[np.array(mask) == 0] + 2, 0, 255)
+    is_pass, reason, _ = evaluate_technical_qc(
+        auth, Image.fromarray(edited_arr, mode="RGB"), mask, "medium_10_to_30pct"
+    )
+    assert is_pass is False
+    assert "outside request mask" in reason
+
+    near_blank = Image.fromarray(
+        np.tile(np.arange(8, dtype=np.uint8).reshape(1, 8, 1), (512, 64, 3)), mode="RGB"
+    )
+    near_blank_edit = MockInpaintingEngine().inpaint(near_blank, mask, prompt="test", seed=123)
+    is_pass, reason, _ = evaluate_technical_qc(
+        near_blank, near_blank_edit, mask, "medium_10_to_30pct"
+    )
+    assert is_pass is False
+    assert "near-blank" in reason
+
+
+def test_generated_output_is_composited_only_inside_binary_mask():
+    auth = Image.new("RGB", (512, 512), color=(10, 20, 30))
+    generated = Image.new("RGB", (512, 512), color=(200, 210, 220))
+    mask = Image.new("L", (512, 512), color=0)
+    mask_arr = np.array(mask)
+    mask_arr[100:200, 150:250] = 255
+    mask = Image.fromarray(mask_arr, mode="L")
+
+    composited = composite_generated_region(auth, generated, mask)
+    arr = np.array(composited)
+    assert np.all(arr[100:200, 150:250] == (200, 210, 220))
+    assert np.all(arr[:100] == (10, 20, 30))
+    assert np.all(arr[200:] == (10, 20, 30))
+
+
+def test_content_grounded_edit_plan_requires_targets_and_preserves_pilot_quotas(tmp_path):
+    plan = _synthetic_plan(seed=20261007)
+    selected = [c for c in plan if c.pool_index < 2]
+    entries = []
+    for c in selected:
+        mask_bbox = {
+            "small_under_10pct": [100, 100, 220, 220],
+            "medium_10_to_30pct": [100, 100, 350, 350],
+            "large_over_30pct": [50, 50, 450, 350],
+        }[c.mask_area_class]
+        entries.append({
+            "candidate_id": c.candidate_id,
+            "stratum_id": c.stratum_id,
+            "tool_key": c.tool_key,
+            "modification_type": c.modification_type,
+            "mask_area_class": c.mask_area_class,
+            "prompt": "content-grounded prompt",
+            "target_description": "existing target" if c.modification_type != "object_insertion" else "new object",
+            "placement_rationale": "Chosen from the normalized authentic image before generation.",
+            "target_bbox_xyxy": [140, 140, 200, 200],
+            "mask_bbox_xyxy": mask_bbox,
+        })
+    path = tmp_path / "edit-plan.json"
+    path.write_text(json.dumps({"schema_version": "1.0.0", "candidates": entries}), encoding="utf-8")
+
+    grounded = load_content_grounded_edit_plan(plan, path, target_per_stratum=2)
+    assert len(grounded) == 8
+    assert all(c.prompt == "content-grounded prompt" for c in grounded)
+    assert all(c.target_description and c.placement_rationale and c.mask_bbox_xyxy for c in grounded)
+    with pytest.raises(ContentGroundingError, match="not human-approved"):
+        load_content_grounded_edit_plan(
+            plan, path, target_per_stratum=2, require_human_approval=True
+        )
+
+    entries[0]["target_description"] = ""
+    path.write_text(json.dumps({"schema_version": "1.0.0", "candidates": entries}), encoding="utf-8")
+    with pytest.raises(ContentGroundingError, match="target_description"):
+        load_content_grounded_edit_plan(plan, path, target_per_stratum=2)
+
+
+def test_production_fails_before_writes_without_content_grounding(tmp_path):
+    ungrounded = [replace(c, is_synthetic=False) for c in _synthetic_plan() if c.pool_index == 0]
+    output = tmp_path / "must-not-exist"
+    with pytest.raises(ContentGroundingError, match="prompt is required"):
+        execute_cohort_acquisition(
+            output_dir=output,
+            candidate_specs=ungrounded,
+            target_per_stratum=1,
+            mode="production",
+            allow_synthetic=False,
+        )
+    assert not output.exists()
 
 
 def test_stratum_preserving_error_replacement():

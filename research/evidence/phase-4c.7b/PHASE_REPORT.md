@@ -1,11 +1,37 @@
 # Phase 4C.7B — Independent Cohort Acquisition: Protocol Amendment, Automated Pipeline, and Feasibility Alignment
 
-> **Phase**: Phase 4C.7B — Independent Cohort Acquisition & Feasibility Alignment (revision 5: Generation Contract Enforcement, Systematic Failure Gate Hotfix, durable logging, pilot NOT_RUN)<br>
-> **Status**: `READY_FOR_COLAB_REAL_ACQUISITION_PILOT` (revision 5, supersedes revision 4). Incident in pilot run `pilot-20261007T093824Z` (commit `cdacb41a5501568c1a11435dfcb00d327bc69a6d`) investigated and root cause proven: `StableDiffusionXLInpaintPipeline` defaults resolution to 1024x1024 without explicit `height`/`width` arguments, causing QC dimension failures misclassified as content QC rejections that burned the 110-candidate pool in `coco_sdxl`. Resolved via explicit `height=512, width=512` in Diffusers pipeline call, canvas contract assertions, immediate halt on `GenerationContractError`, persistent `acquisition.log`, and updated Colab notebook runs path.<br>
+> **Phase**: Phase 4C.7B — Independent Cohort Acquisition & Feasibility Alignment (revision 5 implementation plus audited real-pilot intake)<br>
+> **Status**: `PILOT_DIAGNOSED_CORRECTIVE_PLAN_PENDING_HUMAN_REVIEW`. The historical run remains audit-valid as produced, but post-audit diagnosis proves its Technical QC omitted locked checks and its prompts/masks were not content-grounded. Human Content QC remains pending and full acquisition remains locked.<br>
 > **Findings status**: `NOT_MEASURED` (0 detector calls, 0 cohort evaluation)<br>
-> **Functional commit**: will be pinned to functional commit SHA before notebook push<br>
-> **Real pilot**: `NOT_RUN` (Colab T4 GPU execution required; 8-pair pilot ready with fresh RUN_ID)<br>
+> **Functional commit**: `7d2eea4027e2a17b51e6665ff81d481e4e333d48` (notebook pin commit `99b334c0261ee425c006ba9337999043b7f7a049`)<br>
+> **Real pilot**: `TECHNICAL_PASS_PENDING_HUMAN_CONTENT_QC` (8 pairs acquired; full 400-pair run remains `NOT_RUN`)<br>
 > **Training runs**: 0 fits, 0 refits; frozen models untouched; retired locked-test not accessed (only its 343 source IDs are read for the disjoint guard)<br>
+
+---
+
+## W. Content diagnosis and controlled corrective preparation (2026-10-07)
+
+- Inspected all 8 authentic–mask–edited tuples at 512×512 and reconciled prompts, mask geometry, crop transforms, and recorded engine configuration. Model revisions, schedulers, steps, guidance, and output dimensions match their model-specific protocol.
+- Demonstrated that prompts came from a generic index and masks from seeded random ellipses on the normalized canvas. No source target coordinates existed, so crop/resize drift is not demonstrated; missing target registration is the proven defect.
+- Measured outside-mask mean L1 3.808–9.311 on all 8 pairs versus locked maximum 0.5. Fixed future execution by compositing only inside the binary mask and enforcing locked std/masked/unmasked thresholds (5.0/3.0/0.5).
+- Added fail-closed content-grounded instructions (prompt, target, rationale, target bbox, mask bbox), a maximum-eight-attempt amendment/plan preserving the pilot's source/tool/modification/mask quotas, and a review-only overlay contact sheet outside Git. There are no automatic replacements, and the CLI refuses generation while human review status remains `PENDING`.
+- Standardized new run storage to `MyDrive/Colab Notebooks/forensics-web-lab/independent_cohort_acquisition/runs/<RUN_ID>` while preserving and documenting both historical phase-coded roots.
+- Corrected the old incident wording from 110 SDXL attempts to 220 SDXL attempt records / 110 unique candidates. The original ledger is not locally available, so no unsupported explanation for the two records per candidate is asserted.
+- Verification before commit: acquisition tests 21/21 PASS; binding/notebook tests 56 PASS / 2 artifact-gated skips; hermetic smoke 6/6 PASS; 440-candidate allocation verification PASS; full target rejects the 8-entry plan; `pnpm continuity:check` PASS.
+- No generation, full acquisition, training, detector scoring, or evaluator execution occurred. All existing Content QC statuses remain `PENDING_CONTENT_QC`.
+
+Evidence: `PILOT_CONTENT_DIAGNOSIS.md`, `CONTENT_GROUNDED_EDITING_AMENDMENT.md`, `content_grounded_pilot_plan.json`, and `docs/RESEARCH_WORKSTREAM_INDEX.md`.
+
+---
+
+## V. Real pilot intake and audit (`pilot-20261007T132003Z`)
+
+- ZIP SHA-256 `1fcd1de57373c7250583d87a4a4050a91d918b8bd62ec105d4aab737d340053d`; archive paths passed traversal/absolute-path/duplicate/symlink checks and were extracted beside the untouched ZIP without overwrite.
+- Exact production audit at binding commit `7d2eea4027e2a17b51e6665ff81d481e4e333d48`: `PASS`, 8 pairs, manifest SHA-256 `caa0766addff4d87d9d11206f1e398a29ca04c58f0013866fac749fac09bc416`.
+- Direct attempt-ledger result: 8 attempts, 8 accepted, 0 rejected/failed, no rejection reasons; exactly 2 accepted pairs per stratum.
+- Contract verification: 16/16 images are 512x512 RGB; 8/8 masks are 512x512 `L`, binary `{0,255}`, and within declared area brackets; hashes and inventories match receipts, manifest, and ledgers.
+- Agent-only visual screening: concerns on all 8 pairs (7 likely reject, 1 inconclusive/recommend reject). Canonical statuses remain `PENDING_CONTENT_QC`; no agent observation is represented as human approval.
+- Full acquisition gate: **LOCKED pending human Content QC**. Detector calls remain 0; full acquisition, training, and evaluator were not run. Summary: `PILOT_AUDIT_SUMMARY.md`; detailed artifacts and per-pair notes remain outside Git.
 
 ---
 
@@ -19,7 +45,7 @@
   * `attempt_ledger.jsonl`: Có 222 records tổng cộng.
   * Phân tích theo stratum và tool:
     - Stratum `coco_sd2` (`stable_diffusion_2_inpainting`): 2 attempts đều `ACCEPTED` (đạt quota 2/2).
-    - Stratum `coco_sdxl` (`sdxl_inpainting`): 110 attempts liên tiếp đều thất bại với cùng lý do:
+    - Stratum `coco_sdxl` (`sdxl_inpainting`): 220 attempt records trên 110 unique candidates đều ghi cùng lý do (đối soát từ 222 tổng records trừ 2 `coco_sd2` accepted records; ledger gốc không có trong local artifacts hiện tại để xác định vì sao mỗi candidate có hai records):
       `QC_FAILED — Edited image size/mode invalid: (1024, 1024), RGB`.
 - **Root Cause Kỹ thuật**:
   * Trong `DiffusersInpaintingEngine.inpaint()`, `self.pipeline(...)` được gọi mà không truyền tham số `height` và `width`.
@@ -27,7 +53,7 @@
     `height = height or self.default_sample_size * self.vae_scale_factor`
     Với SDXL: `default_sample_size = 128`, `vae_scale_factor = 8` $\to 128 \times 8 = 1024$. Do đó pipeline sinh ảnh $1024 \times 1024$ mặc dù ảnh đầu vào và mask là $512 \times 512$.
     Với SD2: `default_sample_size = 64`, `vae_scale_factor = 8` $\to 64 \times 8 = 512$. Do đó SD2 tình cờ sinh đúng $512 \times 512$.
-  * Lỗi generation contract hệ thống này bị hàm `evaluate_technical_qc` trả về `False, "Edited image size/mode invalid: (1024, 1024), RGB"`, khiến runner ghi nhận `status: QC_FAILED` và tiếp tục thử các ứng viên tiếp theo trong pool (`continue`), làm cạn kiệt toàn bộ 110 ứng viên của `coco_sdxl` trước khi dừng với `StratumQuotaDeficitError`.
+  * Lỗi generation contract hệ thống này bị hàm `evaluate_technical_qc` trả về `False, "Edited image size/mode invalid: (1024, 1024), RGB"`, khiến runner ghi nhận `status: QC_FAILED` và tiếp tục qua toàn bộ 110 unique candidates của `coco_sdxl` trước khi dừng với `StratumQuotaDeficitError`; incident transcription ghi 220 SDXL attempt records.
 
 ### U2. Giải pháp Generation Contract & Systematic Failure Gate
 1. **Khóa Kích thước Tường minh**:
@@ -340,18 +366,13 @@ Kết quả tại `research/evidence/phase-4c.7b/acquisition_smoke_receipt.json`
 
 ---
 
-## 5. Hướng Dẫn Chuyển Giao và Quy Trình Thực Thi Colab (Handoff & Next Steps)
+## 5. Current handoff and Colab execution gate
 
-- **Trạng thái kết thúc Phase 4C.7B**: `READY_FOR_COLAB_REAL_ACQUISITION_PILOT`.
-- **Cấu hình Colab**:
-  1. Mở file `notebooks/independent_cohort_acquisition_colab.ipynb` trên Google Colab.
-  2. Chọn `Runtime` $\rightarrow$ `Change runtime type` $\rightarrow$ `T4 GPU`.
-  3. Chạy **Cell 1** (Mount Google Drive) và **Cell 2** (Git clone branch `research/independent-cohort-acquisition`).
-  4. Chạy **Cell 3 (Technical Pilot)**: Mặc định chạy pilot 2 pairs/stratum (8 pairs total) trên ảnh chụp thật để đo đạc latency, peak memory và xuất HTML contact sheet.
-  5. Thẩm định kết quả Pilot: Mở file `pilot_cohort/content_qc_contact_sheet.html` trên trình duyệt để kiểm tra chất lượng inpainting.
-  6. Sau khi Pilot đạt, mở khóa dòng lệnh Full Acquisition trong Cell 3 để sinh đủ 400 pairs (100 pairs/stratum).
-  7. Chạy **Cell 4**: Kiểm toán manifest, SHA-256 checksum, và đóng gói ZIP lưu trữ trực tiếp vào Google Drive (`/content/drive/MyDrive/forensics-web-lab/phase_4c7b_cohort/`).
-  8. Tải file ZIP về máy trạm, giải nén vào `data/research/independent_cohort/` và thực hiện Content QC trước khi chuyển sang Phase 4C.7C (Evaluation).
+- **Status**: `PILOT_DIAGNOSED_CORRECTIVE_PLAN_PENDING_HUMAN_REVIEW`.
+- Review the existing eight-pair Content QC sheet and `next_pilot_edit_plan_contact_sheet.html`; record explicit human decisions separately from agent notes.
+- The canonical notebook checks out a detached full commit SHA. New runs use `MyDrive/Colab Notebooks/forensics-web-lab/independent_cohort_acquisition/runs/<RUN_ID>`; historical roots remain in `docs/RESEARCH_WORKSTREAM_INDEX.md` and are not moved.
+- The proposed content-grounded plan remains `PENDING`. The production CLI refuses generation until a human changes the review status through a reviewed commit. No follow-up pilot is authorized by this report.
+- Full acquisition is not present as an executable notebook path and remains locked. Do not run the evaluator until a later pilot has completed and received explicit Human Content QC approval.
 
 ---
 
@@ -359,9 +380,9 @@ Kết quả tại `research/evidence/phase-4c.7b/acquisition_smoke_receipt.json`
 
 | Hạng Mục | Trạng Thái Ghi Nhận |
 | :--- | :--- |
-| **Giao thức nghiên cứu** | Protocol Amendment v1.2 đã khóa trước thu thập (`AMENDMENT_LOCKED_PRE_ACQUISITION`) |
+| **Giao thức nghiên cứu** | Historical v1.2/v1.3 model/source bindings retained; content-grounded amendment v1.4 proposed and pending human review |
 | **Mô hình candidate** | 5 outer-fold models giữ nguyên 100% trọng số và SHA-256 hash đã kiểm toán |
-| **Candidate sources** | 100% ảnh chụp thật có provenance xác minh từ COCO test2017 và Unsplash pre-2022 |
+| **Candidate sources** | Verified real photographs from COCO 2017 and Wikimedia Commons; historical Option P disjoint guards retained |
 | **Detector isolation** | Tuyệt đối tuân thủ, zero detector calls trong thu thập và QC |
 | **Independent Performance** | Tiếp tục giữ trạng thái **`NOT_MEASURED`** (chưa đánh giá) |
 | **Cohort Acquisition Status** | **`NOT_ACQUIRED`** (in progress, ready for remote GPU pilot execution) |

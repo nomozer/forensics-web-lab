@@ -151,7 +151,7 @@ def test_failed_pilot_cli_blocks_audit_and_packaging(tmp_path):
         raise subprocess.CalledProcessError(2, cmd)
 
     ns.update(run=failing_run, REPO_DIR=tmp_path, EXPECTED_COMMIT="a" * 40, RUN_ID="r1",
-              RUNS_ROOT=tmp_path / "runs", RESUME_RUN_ID=None)
+              RUNS_ROOT=tmp_path / "runs", RESUME_RUN_ID=None, EDIT_PLAN_PATH=tmp_path / "plan.json")
     with pytest.raises(subprocess.CalledProcessError):
         exec(cells[3], ns)
     assert "PILOT_RUN_COMPLETED" not in ns
@@ -183,6 +183,8 @@ def test_notebook_has_no_shell_magics_or_scratch_fallback():
     assert "/content/phase_4c7b" not in code
     assert "DRIVE_AVAILABLE = False" not in code
     assert '"full"' not in code and "'full'" not in code, "notebook only launches the pilot"
+    assert '"independent_cohort_acquisition" / "runs"' in code
+    assert '"--edit-plan-path", EDIT_PLAN_PATH' in code
 
 
 def test_notebook_pin_is_full_sha_in_history_and_covers_functional_code():
@@ -661,6 +663,10 @@ def test_preflight_failure_does_not_create_run_directory(tmp_path, monkeypatch):
         "scripts.research.run_cohort_acquisition.verify_checkout",
         lambda repo_root, expected: expected,
     )
+    monkeypatch.setattr(
+        "scripts.research.run_cohort_acquisition.load_content_grounded_edit_plan",
+        lambda candidates, *args, **kwargs: candidates,
+    )
 
     out_root = tmp_path / "runs"
     run_id = "test-fail-preflight-run"
@@ -777,8 +783,8 @@ def test_output_1024_halts_immediately_and_does_not_try_next_candidate(tmp_path)
     assert not (run_dir / "run_receipt.json").exists()
 
 
-def test_output_correct_size_proceeds_through_qc_and_handles_content_qc_rejection(tmp_path):
-    """Verify that 512x512 images proceed through technical QC, and content QC failures trigger quota replacement."""
+def test_output_correct_size_proceeds_through_qc_and_handles_technical_qc_rejection(tmp_path):
+    """Verify that 512x512 images proceed and candidate-level Technical QC failures trigger replacement."""
     plan = generate_synthetic_fixture_plan()
     run_dir = tmp_path / "run_qc_replace"
     binding = _binding("run-qc-replace")
@@ -789,7 +795,7 @@ def test_output_correct_size_proceeds_through_qc_and_handles_content_qc_rejectio
         nonlocal candidate_call_count
         candidate_call_count += 1
         if candidate_call_count == 1:
-            # Degenerate solid black image (content QC failure, NOT generation contract violation)
+            # Degenerate solid black image (Technical QC failure, not a generation-contract violation)
             img = Image.new("RGB", (512, 512), color=(0, 0, 0))
             return img, b"solid", "sha_solid"
         rng = np.random.default_rng(spec.generation_seed)
@@ -841,8 +847,8 @@ def test_generation_contract_failure_prevents_completion_receipt_and_blocks_audi
     # Notebook cell 4 check: without completion flag in session globals, packaging is refused
     cells = _cells()
     ns = _helpers()
-    ns.update(REPO_DIR=tmp_path, EXPECTED_COMMIT="a" * 40, RUN_ID="failed-run-id", RUNS_ROOT=tmp_path)
+    ns.update(REPO_DIR=tmp_path, EXPECTED_COMMIT="a" * 40, RUN_ID="failed-run-id", RUNS_ROOT=tmp_path,
+              EDIT_PLAN_PATH=tmp_path / "plan.json")
     with pytest.raises(RuntimeError, match="did not complete"):
         exec(cells[4], ns)
     assert not list(tmp_path.rglob("*.zip"))
-
