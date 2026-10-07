@@ -51,7 +51,7 @@ TARGET_CANVAS_SIZE = (512, 512)
 MAX_PIXEL_DECOMPRESSION_BOMB = 50_000_000
 
 # Stratum keys
-STRATA_KEYS = ("coco_sd2", "coco_sdxl", "unsplash_sd2", "unsplash_sdxl")
+STRATA_KEYS = ("coco_sd2", "coco_sdxl", "commons_sd2", "commons_sdxl")
 STRATUM_TARGET_PAIRS = 100
 STRATUM_BUFFER_PAIRS = 110
 TOTAL_TARGET_PAIRS = 400
@@ -88,6 +88,7 @@ CC_NO_DERIVATIVES = {"by-nd", "by-nc-nd"}
 # Acquisition channels and whether their own terms cover creating + sharing edited derivatives.
 CHANNEL_TERMS = {
     "coco_2017_image_info": True,  # per-image Flickr CC license governs; COCO terms defer to Flickr
+    "wikimedia_commons_api": True,  # MediaWiki / Wikimedia Commons photographic works under CC
     # Unsplash Dataset Terms s.2A/s.3A-B: Lite = download/store + internal ML training only;
     # disseminating/redistributing Licensed Data is prohibited without written permission.
     "unsplash_lite_dataset": False,
@@ -97,7 +98,7 @@ REQUIRED_PROVENANCE_FIELDS = (
     "download_url", "source_page_url", "license_name", "license_url", "license_version",
     "license_evidence_source", "provenance_checked_at_utc", "download_rendition",
 )
-SOURCE_KEY_NAMESPACES = ("coco", "flickr", "unsplash")
+SOURCE_KEY_NAMESPACES = ("coco", "flickr", "commons", "wikimedia", "unsplash")
 
 
 class DetectorIsolationViolationError(RuntimeError):
@@ -376,7 +377,15 @@ def download_authentic_image(
             raise ImageDownloadError(f"Local file not found for candidate {spec.candidate_id}: {local_p}")
         data = local_p.read_bytes()
     else:
-        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (ForensicsWebLab-IndependentAcquisition/1.2)"})
+        req = urllib.request.Request(
+            url,
+            headers={
+                "User-Agent": (
+                    "ForensicsWebLabResearch/2.0 "
+                    "(https://github.com/nomozer/forensics-web-lab; contact: nomozer on GitHub) Python/3.12"
+                )
+            },
+        )
         last_err: Exception | None = None
         for attempt in range(max_retries + 1):
             try:
@@ -464,8 +473,12 @@ def generate_canonical_candidate_plan(
 
     # Eligible entries in frozen catalog order; excluded entries are skipped, never edited.
     need = buffer_per_stratum * 2
+    second_key = "commons_candidates" if "commons_candidates" in catalog_data else "unsplash_candidates"
+    source_origin_name = "wikimedia_commons" if second_key == "commons_candidates" else "unsplash_verified"
+    stratum_prefix = "commons" if second_key == "commons_candidates" else "unsplash"
+
     pools: dict[str, list[tuple[dict[str, Any], dict[str, Any]]]] = {}
-    for key in ("coco_candidates", "unsplash_candidates"):
+    for key in ("coco_candidates", second_key):
         evaluated = [(e, evaluate_candidate_eligibility(e, historical_keys)) for e in catalog_data.get(key, [])]
         eligible = [(e, r) for e, r in evaluated if r["status"] != "EXCLUDED"]
         if len(eligible) < need:
@@ -479,7 +492,7 @@ def generate_canonical_candidate_plan(
             )
         pools[key] = eligible[:need]
     coco_catalog = pools["coco_candidates"]
-    unsplash_catalog = pools["unsplash_candidates"]
+    second_catalog = pools[second_key]
 
     rng = np.random.default_rng(seed)
     candidates: list[CandidateSpec] = []
@@ -509,8 +522,8 @@ def generate_canonical_candidate_plan(
     strata_configs = [
         ("coco_sd2", "coco_2017", "stable_diffusion_2_inpainting", coco_catalog[:buffer_per_stratum]),
         ("coco_sdxl", "coco_2017", "sdxl_inpainting", coco_catalog[buffer_per_stratum : buffer_per_stratum * 2]),
-        ("unsplash_sd2", "unsplash_verified", "stable_diffusion_2_inpainting", unsplash_catalog[:buffer_per_stratum]),
-        ("unsplash_sdxl", "unsplash_verified", "sdxl_inpainting", unsplash_catalog[buffer_per_stratum : buffer_per_stratum * 2]),
+        (f"{stratum_prefix}_sd2", source_origin_name, "stable_diffusion_2_inpainting", second_catalog[:buffer_per_stratum]),
+        (f"{stratum_prefix}_sdxl", source_origin_name, "sdxl_inpainting", second_catalog[buffer_per_stratum : buffer_per_stratum * 2]),
     ]
 
     global_pool_idx = 0
@@ -576,8 +589,8 @@ def generate_synthetic_fixture_plan(
     strata_definitions = [
         ("coco_sd2", "coco_2017", "stable_diffusion_2_inpainting"),
         ("coco_sdxl", "coco_2017", "sdxl_inpainting"),
-        ("unsplash_sd2", "unsplash_verified", "stable_diffusion_2_inpainting"),
-        ("unsplash_sdxl", "unsplash_verified", "sdxl_inpainting"),
+        ("commons_sd2", "wikimedia_commons", "stable_diffusion_2_inpainting"),
+        ("commons_sdxl", "wikimedia_commons", "sdxl_inpainting"),
     ]
 
     global_pool_idx = 0

@@ -58,7 +58,10 @@ def build_synthetic_catalog(per_source: int = 220) -> dict[str, Any]:
     second = []
     for i in range(per_source):
         e = synthetic_coco_entry(10_000 + i)
-        e["source_origin"] = "unsplash_verified"
+        e["source_origin"] = "wikimedia_commons"
+        e["acquisition_channel"] = "wikimedia_commons_api"
+        e["source_keys"] = [f"commons:{10_000 + i}"]
+        e["origin_id"] = f"commons:{10_000 + i}"
         second.append(e)
     return {
         "schema_version": "2.0.0",
@@ -66,6 +69,7 @@ def build_synthetic_catalog(per_source: int = 220) -> dict[str, Any]:
         "is_synthetic": True,
         "synthetic_note": "SYNTHETIC test catalog; not real provenance.",
         "coco_candidates": coco,
+        "commons_candidates": second,
         "unsplash_candidates": second,
     }
 

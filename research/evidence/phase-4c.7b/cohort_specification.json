@@ -1,10 +1,10 @@
 {
-  "schema_version": "1.2.0",
+  "schema_version": "1.3.0",
   "phase": "4C.7B",
-  "specification_name": "canonical_independent_cohort_specification_v1.2",
-  "amendment_reference": "research/evidence/phase-4c.7b/PROTOCOL_AMENDMENT_V1.2.md",
+  "specification_name": "canonical_independent_cohort_specification_v1.3",
+  "amendment_reference": "research/evidence/phase-4c.7b/PROTOCOL_AMENDMENT_V1.3.md",
   "status": "COHORT_SPECIFICATION_AMENDED_LOCKED_PRE_ACQUISITION",
-  "locked_at_utc": "2026-10-07T01:45:00Z",
+  "locked_at_utc": "2026-10-07T05:55:00Z",
   "target_sample_size_pairs": 400,
   "acquisition_buffer_pairs": 440,
   "total_target_images": 800,
@@ -23,23 +23,23 @@
       "quota_percentage": 50,
       "target_pairs": 200,
       "buffer_pairs": 220,
-      "license": "Per-image Flickr license verified (CC-BY 2.0, CC-BY-SA 2.0, CC0, Flickr Commons; annotations CC-BY 4.0)",
-      "license_audit_note": "Do NOT assume all COCO images are CC-BY 4.0; Flickr source license must be verified per sample.",
-      "provenance_tracking": "Flickr image ID, author ID, Flickr URL, license name",
+      "license": "Per-image Flickr license verified via oEmbed (CC-BY 2.0, CC-BY-SA 2.0, CC-BY 3.0, CC-BY-SA 3.0, CC-BY 4.0, CC-BY-SA 4.0)",
+      "license_audit_note": "Do NOT assume all COCO images share a single license; Flickr source license must be verified per sample. NoDerivs strictly excluded.",
+      "provenance_tracking": "Flickr image ID, author name, Flickr URL, license name, license URL, date_captured",
       "acquisition_readiness": "AUTOMATED_DOWNLOAD_READY",
       "authenticity_note": "Pre-2017 capture prevents modern text-to-image AI artifacts; does not mathematically guarantee zero analog/digital editing."
     },
     {
-      "source_key": "unsplash_verified",
-      "name": "Unsplash Verified Open Photographic Collection (Published Pre-2022)",
+      "source_key": "wikimedia_commons",
+      "name": "Wikimedia Commons Quality & Featured Photographic Works",
       "quota_percentage": 50,
       "target_pairs": 200,
       "buffer_pairs": 220,
-      "license": "Unsplash License (Free commercial/non-commercial research use and derivative creation)",
-      "license_audit_note": "Requires author attribution and record of photo ID and publication timestamp.",
-      "provenance_tracking": "Unsplash photo ID, author name, author profile URL, published_at date (<= 2021-12-31)",
-      "acquisition_readiness": "CURATED_DOWNLOAD_READY",
-      "authenticity_note": "Pre-2022 publication date is an operational filter against modern generative AI; not an absolute proof of zero prior manipulation."
+      "license": "Creative Commons Attribution licenses permitting derivative works and redistribution (CC-BY, CC-BY-SA)",
+      "license_audit_note": "Requires artist attribution and record of page ID, creation date, and publication timestamp. NoDerivs strictly excluded.",
+      "provenance_tracking": "Wikimedia Commons page ID, title, artist name, source page URL, DateTimeOriginal, DateTime",
+      "acquisition_readiness": "AUTOMATED_DOWNLOAD_READY",
+      "authenticity_note": "High-resolution curated photography with verified creator metadata and explicit CC licensing permitting derivatives."
     }
   ],
   "inpainting_tools": [
@@ -100,15 +100,15 @@
         "buffer_pairs": 110
       },
       {
-        "stratum_id": "unsplash_sd2",
-        "authentic_source": "unsplash_verified",
+        "stratum_id": "commons_sd2",
+        "authentic_source": "wikimedia_commons",
         "inpainting_tool": "stable_diffusion_2_inpainting",
         "target_pairs": 100,
         "buffer_pairs": 110
       },
       {
-        "stratum_id": "unsplash_sdxl",
-        "authentic_source": "unsplash_verified",
+        "stratum_id": "commons_sdxl",
+        "authentic_source": "wikimedia_commons",
         "inpainting_tool": "sdxl_inpainting",
         "target_pairs": 100,
         "buffer_pairs": 110
@@ -138,61 +138,46 @@
       "per_stratum_pairs": 30
     }
   },
-  "mask_area_distribution": {
+  "mask_area_classes": {
     "small_under_10pct": {
       "quota_percentage": 30,
       "target_pairs": 120,
-      "per_stratum_pairs": 30
+      "per_stratum_pairs": 30,
+      "range": [0.01, 0.10]
     },
     "medium_10_to_30pct": {
       "quota_percentage": 40,
       "target_pairs": 160,
-      "per_stratum_pairs": 40
+      "per_stratum_pairs": 40,
+      "range": [0.10, 0.30]
     },
     "large_over_30pct": {
       "quota_percentage": 30,
       "target_pairs": 120,
-      "per_stratum_pairs": 30
+      "per_stratum_pairs": 30,
+      "range": [0.30, 0.50]
     }
   },
-  "canvas_and_codec_controls": {
-    "standard_width": 512,
-    "standard_height": 512,
-    "color_space": "RGB_8bit",
-    "master_format": "PNG_lossless",
-    "mask_format": "PNG_binary_0_or_255",
-    "mask_semantics": "Mask defines inpainting request area supplied to diffusion pipeline (pixel 0 = keep background, pixel 255 = inpaint region); it is not guaranteed pixel invariance boundary due to VAE/latent encoding.",
-    "scientific_interpretation": "Canvas/codec normalization controls output container and resolution parity between pairs. It does NOT claim to erase pre-existing sensor JPEG compression history or eliminate all potential pipeline shortcuts."
+  "technical_qc_gates": {
+    "canvas_resolution": [512, 512],
+    "image_format": "PNG",
+    "color_channels": 3,
+    "color_mode": "RGB",
+    "bit_depth": 8,
+    "mask_values": [0, 255],
+    "mask_area_tolerance": 0.02,
+    "min_masked_pixel_delta_l1": 3.0,
+    "max_unmasked_pixel_delta_l1": 0.5,
+    "non_blank_std_threshold": 5.0
   },
-  "inclusion_criteria": [
-    "Image must decode successfully with Pillow without errors.",
-    "Pixel dimensions must be exactly 512x512 RGB.",
-    "Binary mask PNG (512x512) must accompany each ai_edited sample with values in {0, 255}.",
-    "Must pass decompression bomb guard (<= 50,000,000 pixels).",
-    "Verified provenance documentation for authentic image including license and author.",
-    "No solid black, white, blank, or NaN/Inf pixel tensors."
-  ],
-  "exclusion_criteria": [
-    "Overlap with any of 684 historical Option P sources by source_id.",
-    "Overlap with any historical Option P image by raw_sha256 or master_sha256.",
-    "Overlap with any historical Option P image by origin_id / Flickr URL.",
-    "Resolution mismatch between authentic and ai_edited within the same source.",
-    "Synthetic or non-photographic authentic images (e.g., pure computer graphics, screenshots, text diagrams)."
-  ],
-  "sampling_and_stopping_rule": {
-    "candidate_pool_size": 440,
-    "prespecified_random_ordering": true,
-    "stopping_threshold_valid_pairs": 400,
-    "stratum_quotas": {
-      "coco_sd2": 100,
-      "coco_sdxl": 100,
-      "unsplash_sd2": 100,
-      "unsplash_sdxl": 100
-    },
-    "rule": "Process candidate pairs in prespecified random order per stratum; lock and seal cohort manifest immediately upon reaching exactly 100 verified valid pairs per stratum (400 total). Zero model scoring permitted during collection."
-  },
-  "detector_isolation_invariant": {
-    "enforced": true,
-    "rule": "Zero calls to candidate detector models (visual_calibrated, late_fusion_dsp_augmented, or any of the 5 fold models) during candidate listing, downloading, inpainting generation, technical QC, content QC, or manifest creation."
+  "content_qc_protocol": {
+    "contact_sheet_format": "HTML",
+    "evaluation_mode": "PENDING_CONTENT_QC",
+    "prohibition": "Zero detector scores may be rendered on content QC sheets (Detector Isolation Invariant).",
+    "criteria": [
+      "Inpainted object semantically satisfies the assigned prompt category.",
+      "No severe visual boundary tearing or unnatural seam artifacts.",
+      "Unmodified background outside the request mask remains photorealistic and consistent."
+    ]
   }
 }

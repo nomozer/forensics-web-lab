@@ -1,11 +1,50 @@
 # Phase 4C.7B — Independent Cohort Acquisition: Protocol Amendment, Automated Pipeline, and Feasibility Alignment
 
-> **Phase**: Phase 4C.7B — Independent Cohort Acquisition & Feasibility Alignment (revision 2: provenance, notebook binding, fail-closed correction)<br>
-> **Status**: `BLOCKED_PENDING_ELIGIBLE_CANDIDATE_CATALOG` — code, tests and pinned notebook are ready; the real pilot cannot start until an eligible catalog v2 exists (see §R3). Not `READY_FOR_COLAB_REAL_PILOT`.<br>
+> **Phase**: Phase 4C.7B — Independent Cohort Acquisition & Feasibility Alignment (revision 3: Protocol Amendment v1.3 Wikimedia Commons, local verified catalog v2 build)<br>
+> **Status**: `READY_FOR_COLAB_REAL_ACQUISITION_PILOT` (revision 3, supersedes revision 2 blocked status). 440 eligible candidates verified and frozen; plan verification PASS; Colab launcher notebook ready for 8-pair pilot.<br>
 > **Findings status**: `NOT_MEASURED` (0 detector calls, 0 cohort evaluation)<br>
-> **Functional commit**: `d487d1e79fcc626333c9f1b23e7854ef60f6a820` (notebook `EXPECTED_COMMIT`)<br>
-> **Real pilot**: `NOT_RUN` (no Colab GPU / user Drive in this environment; no real images generated)<br>
+> **Functional commit**: will be pinned to functional commit SHA before notebook push<br>
+> **Real pilot**: `NOT_RUN` (Colab T4 GPU execution required; 8-pair pilot ready)<br>
 > **Training runs**: 0 fits, 0 refits; frozen models untouched; retired locked-test not accessed (only its 343 source IDs are read for the disjoint guard)<br>
+
+---
+
+## S. Revision 3 — Protocol Amendment v1.3 & Local Verified Catalog Build (2026-10-07)
+
+### S1. Protocol Amendment v1.3 Resolution
+- **Thay thế Unsplash Lite bằng Wikimedia Commons**: Do điều khoản Unsplash Lite Dataset Terms §2.A/§3.A–B chỉ cho phép download/store cho nghiên cứu nội bộ và cấm tái phân phối dữ liệu, việc tạo và công bố tập dữ liệu chỉnh sửa (inpainting) không được bảo hộ. Protocol Amendment v1.3 chính thức thay thế Unsplash Lite bằng ảnh chụp từ **Wikimedia Commons** (`Category:Quality_images`).
+- **Nguồn COCO 2017 Clean val split**: Giữ nguyên nguồn COCO với điều kiện kiểm tra creator và license qua Flickr oEmbed live API. Trích xuất metadata từ `captions_val2017.json` (chứa đầy đủ `flickr_url` và Flickr photo ID; phân vùng `test2017` không chứa trường này). Loại bỏ toàn bộ 684 Option P IDs (còn 4,316 ảnh hoàn toàn disjoint).
+- **Bốn Strata đối xứng**:
+  1. `coco_sd2`: 100 cặp mục tiêu (110 pool)
+  2. `coco_sdxl`: 100 cặp mục tiêu (110 pool)
+  3. `commons_sd2`: 100 cặp mục tiêu (110 pool)
+  4. `commons_sdxl`: 100 cặp mục tiêu (110 pool)
+  Tổng cộng: 400 cặp mục tiêu chính thức, 440 candidates trong buffer pool.
+- **Bảo toàn hạn ngạch (Quota Preservation)**: 40% replacement (160/176), 30% removal (120/132), 30% insertion (120/132); 30% small (120/132), 40% medium (160/176), 30% large (120/132).
+- **Bất biến Zero Detector Scoring**: Tuyệt đối không gọi hay suy luận bất kỳ mô hình detector nào trong quá trình tuyển chọn hoặc tạo dữ liệu.
+
+### S2. Kết quả Chạy Production Catalog Builder v2 ở Local
+Chạy `scripts/research/build_verified_candidate_catalog.py` qua mạng local có checkpointing tại `artifacts/catalog_checkpoints/`:
+- **COCO 2017**: Dùng `RemoteZipFile` range-based streaming đọc trực tiếp `captions_val2017.json` (chỉ tải 805 KB thay vì toàn bộ archive annotations). Thẩm tra 220 ứng viên hợp lệ qua Flickr oEmbed live API với bounded retry và rate limiting (loại các ảnh bị xóa/private/lỗi license).
+- **Wikimedia Commons**: Truy vấn MediaWiki API `Category:Quality_images`, đọc `imageinfo` extmetadata, hỗ trợ continuation token (`gcmcontinue`), lọc giấy phép CC BY / CC BY-SA, loại NoDerivs. Thêm header `User-Agent` chuẩn MediaWiki policy giải quyết lỗi HTTP 403 Forbidden.
+- **Tổng kết catalog**:
+  * Đạt chính xác **220 COCO + 220 Wikimedia Commons = 440 eligible candidates** trong `research/evidence/phase-4c.7b/verified_candidate_catalog_v2.json`.
+  * Ghi nhận 221 excluded candidates kèm lý do chi tiết (CREATOR_UNVERIFIED, LICENSE_ND_NO_EDITED_EXPORT, NO_CC_LICENSE_AT_SOURCE, HTTP_ERROR, v.v.).
+- **Xác minh Kế hoạch**: Chạy `python scripts/research/run_cohort_acquisition.py --verify-plan` đạt kết quả **PASS** (440 candidates, đúng 110 per stratum, 0 historical overlap). Xuất file kế hoạch `research/evidence/phase-4c.7b/candidate_acquisition_plan_v2.json`.
+
+### S3. Thực nghiệm Tải và Decode Mẫu Thật Ngoài Git
+Thực hiện tải và chuẩn hóa canvas thật trên 4 mẫu ảnh đại diện cho 4 strata tại `artifacts/pilot_download_test/`:
+- `IND_COCO_SD2_001` (COCO): Pot Noodle, Attribution License, 200,576 bytes, tỷ lệ mask 0.0773 (small).
+- `IND_COCO_SDXL_001` (COCO): mike ambs, CC BY-NC-SA, 106,547 bytes, tỷ lệ mask 0.4451 (large).
+- `IND_COMMONS_SD2_001` (Commons): Moahim, CC BY-SA 4.0, 4,205,835 bytes, tỷ lệ mask 0.2397 (medium).
+- `IND_COMMONS_SDXL_001` (Commons): Crisco 1492, CC BY-SA 4.0, 3,355,898 bytes, tỷ lệ mask 0.0700 (small).
+Tất cả 4 mẫu giải mã PIL RGB hoàn hảo, chuẩn hóa canvas $512 \times 512$ PNG thành công.
+
+### S4. Kết quả Kiểm thử Toàn diện
+- Targeted & contract tests: 63/63 tests PASS trong `test_independent_cohort_bindings.py` (46/46) và `test_independent_cohort_acquisition.py` (17/17).
+- Smoke test hermetic: `run_cohort_acquisition.py --smoke-test` PASS trong 1.22s (`acquisition_smoke_receipt_v2.json`).
+- Continuity checker: `pnpm continuity:check` PASS.
+- Monorepo test suite: `pnpm test` PASS (13/13 unit and contract tests).
 
 ---
 

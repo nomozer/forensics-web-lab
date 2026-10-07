@@ -108,9 +108,9 @@ def test_candidate_plan_quotas_and_orthogonal_balance():
     assert tool_counts["stable_diffusion_2_inpainting"] == 220
     assert tool_counts["sdxl_inpainting"] == 220
 
-    # Sources: 50% COCO, 50% Unsplash
+    # Sources: 50% COCO, 50% Wikimedia Commons
     assert source_counts["coco_2017"] == 220
-    assert source_counts["unsplash_verified"] == 220
+    assert source_counts["wikimedia_commons"] == 220
 
 
 def test_deterministic_seed_assignment():

@@ -1,3 +1,23 @@
+## Phase 4C.7B — Revision 3: Protocol Amendment v1.3, Live Local Catalog Build & Verified Real Pipeline
+
+- **Mục tiêu**: Thay thế nguồn Unsplash Lite bằng Wikimedia Commons theo Protocol Amendment v1.3; xây dựng catalog 440 ứng viên thực tế tại local có checkpoint và bounded retry; xác minh download/decode ảnh thật ngoài Git; kiểm chứng pipeline và chuẩn bị Colab pilot 8 cặp.
+- **Protocol Amendment v1.3 & Cohort Spec v1.3.0**: Thay thế Unsplash Lite bằng Wikimedia Commons Quality Images (do điều khoản Unsplash Lite §2.A/§3.A–B cấm tái phân phối và chia sẻ ảnh phái sinh). Giữ COCO 2017 Clean val split hoàn toàn disjoint với Option P (4,316 ứng viên ngoài Option P), thẩm tra tác giả/giấy phép qua Flickr oEmbed live API. Thiết lập 4 strata đối xứng: `coco_sd2`, `coco_sdxl`, `commons_sd2`, `commons_sdxl` (100 cặp mục tiêu, 110 pool per stratum = 440 candidates). Giữ nguyên khóa quota 40% replacement / 30% removal / 30% insertion và diện tích mask 30% small / 40% medium / 30% large. Bất biến Zero Detector Scoring.
+- **Production Catalog Builder v2 (`build_verified_candidate_catalog.py`)**:
+  - COCO: Dùng range-based streaming qua `RemoteZipFile` đọc trực tiếp `captions_val2017.json` (chỉ tải 805 KB nén); loại bỏ toàn bộ 684 Option P IDs; thẩm tra Flickr oEmbed live với bounded retry và rate limit.
+  - Commons: Truy vấn MediaWiki API `Category:Quality_images`, bóc tách `imageinfo` extmetadata (`Artist`, `LicenseShortName`, `LicenseUrl`), hỗ trợ continuation token (`gcmcontinue`), lọc giấy phép CC BY / CC BY-SA, loại NoDerivs. Thêm User-Agent chuẩn MediaWiki giải quyết lỗi 403 Forbidden.
+  - Chạy thật trên mạng local: Thu thập thành công **220 COCO + 220 Wikimedia Commons = 440 eligible candidates**, ghi nhận 221 excluded candidates kèm lý do rõ ràng vào `verified_candidate_catalog_v2.json`. Checkpoint an toàn tại `artifacts/catalog_checkpoints/`.
+- **Xác minh Kế hoạch & Thực nghiệm Tải/Decode Thực tế**:
+  - Chạy `run_cohort_acquisition.py --verify-plan`: PASS (440 ứng viên, đúng 110 per stratum, 0 historical overlap). Xuất `candidate_acquisition_plan_v2.json`.
+  - Tải và decode thực tế ngoài Git (`artifacts/pilot_download_test/`) 4 mẫu thật từ 4 strata (2 COCO, 2 Commons), kiểm tra kích thước file (106 KB – 4.2 MB), giải mã PIL RGB không lỗi, chuẩn hóa canvas $512 \times 512$, đo tỷ lệ mask thực tế (small: 0.070, 0.077; medium: 0.240; large: 0.445).
+  - Smoke test hermetic (`run_cohort_acquisition.py --smoke-test`): PASS trong 1.22s, ghi `acquisition_smoke_receipt_v2.json`.
+- **Kiểm thử**: 63/63 tests PASS trong `test_independent_cohort_bindings.py` (46/46) và `test_independent_cohort_acquisition.py` (17/17).
+- **Trạng thái**: `READY_FOR_COLAB_REAL_ACQUISITION_PILOT` (Colab pilot 8 cặp đã sẵn sàng; full 400 cặp và evaluator chưa chạy; độc lập metrics giữ `NOT_MEASURED`).
+- **Bàn giao**: Notebook Colab ghim đúng full commit SHA, fail-closed khi lỗi.
+- **Evidence**: `research/evidence/phase-4c.7b/` (`PROTOCOL_AMENDMENT_V1.3.md`, `cohort_specification.json`, `verified_candidate_catalog_v2.json`, `candidate_acquisition_plan_v2.json`, `acquisition_smoke_receipt_v2.json`, `PHASE_REPORT.md`).
+- **Next**: Chạy pilot 8 cặp trên Google Colab T4 GPU, thẩm định contact sheet QC, sau đó mới unlock full 400 pairs.
+
+---
+
 ## Phase 4C.7B — Revision 2: Provenance, Notebook Binding & Fail-Closed Correction
 
 - **Mục tiêu**: Re-verify revision 1 from source; fix notebook commit binding, candidate provenance/licensing, and fail-closed execution; prepare the 8-pair Colab pilot.
