@@ -12,7 +12,7 @@ The complete old-path to current-path migration table and sealed exceptions are 
 | `4C.2A-C` | Partial fine-tuning | `ml/configs/phase_4c2_stage2_finetuning.yaml` | `ml/training/run_partial_finetuning.py`, `notebooks/phase_4c2_finetuning_colab.ipynb` |
 | `4C.2D` | Candidate model selection | Historical evidence remains under `research/evidence/phase-4c.2d/` | `scripts/research/finalize_candidate_model_selection.py` |
 | `4C.2E-G` | Locked-test confirmatory evaluation | Historical evidence remains under `research/evidence/phase-4c.2e/` through `phase-4c.2g.0.14/` | Sealed executor paths retain their historical names; see the exception table in `docs/REPOSITORY_NAMING_MAP.md` |
-| `4C.2H` | Development-only nested CV | `ml/configs/phase_4c2h_development_nested_cv.yaml` | `ml/training/run_nested_cv_development.py`, `notebooks/phase_4c2h_development_colab.ipynb` |
+| `4C.2H` | Development-only nested CV | sealed `ml/configs/phase_4c2h_development_nested_cv.yaml` | sealed contract module `ml/training/phase_4c2h_development.py`, `ml/training/run_nested_cv_development.py`, sealed notebook `notebooks/phase_4c2h_development_colab.ipynb` |
 | `4C.3` | Calibrated late fusion | `ml/configs/calibrated_late_fusion_protocol.yaml` | `ml/training/run_calibrated_late_fusion.py`, `notebooks/calibrated_late_fusion_colab.ipynb` |
 | `4C.4` | Development robustness | `ml/configs/development_robustness_protocol.yaml` | `ml/training/run_development_robustness.py`, `notebooks/development_robustness_colab.ipynb` |
 | `4C.5` | Fusion-shift diagnostics | Historical evidence remains under `research/evidence/phase-4c.5a/` and `phase-4c.5b/` | `scripts/research/diagnose_fusion_shift.py` |

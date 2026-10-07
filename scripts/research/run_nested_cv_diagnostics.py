@@ -24,7 +24,7 @@ if str(REPO_ROOT) not in sys.path:
 from ml.evaluation.phase_4c2g_model import build_locked_validation_transform
 from ml.training.loss import FocalLoss
 from ml.training.mobilenetv3_forensics import MobileNetV3Forensics
-from ml.training.nested_cv_development import (
+from ml.training.phase_4c2h_development import (
     DEVELOPMENT_PARTITIONS,
     LABEL_TO_INDEX,
     apply_frozen_backbone_policy,

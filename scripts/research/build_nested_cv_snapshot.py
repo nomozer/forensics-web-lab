@@ -20,7 +20,7 @@ SOURCE_MEMBERS = (
     "ml/training/__init__.py",
     "ml/training/loss.py",
     "ml/training/mobilenetv3_forensics.py",
-    "ml/training/nested_cv_development.py",
+    "ml/training/phase_4c2h_development.py",
     "ml/training/run_nested_cv_development.py",
     "ml/configs/phase_4c2h_development_nested_cv.yaml",
     "ml/requirements.txt",

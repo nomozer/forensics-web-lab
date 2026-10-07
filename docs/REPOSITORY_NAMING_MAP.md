@@ -22,7 +22,6 @@ This document records the repository-wide functional naming normalization perfor
 | `ml/datasets/validate_phase_4c1_bundle.py` | `ml/datasets/validate_learning_curve_bundle.py` | Validate a learning-curve dataset bundle |
 | `ml/training/run_phase_4c1.py` | `ml/training/run_learning_curve.py` | Run learning-curve training |
 | `ml/training/run_phase_4c2.py` | `ml/training/run_partial_finetuning.py` | Run partial fine-tuning |
-| `ml/training/phase_4c2h_development.py` | `ml/training/nested_cv_development.py` | Nested-CV development contracts and utilities |
 | `ml/training/run_phase_4c2h.py` | `ml/training/run_nested_cv_development.py` | Run development-only nested CV |
 | `scripts/reconcile_phase4c0.py` | `scripts/reconcile_training_baseline.py` | Reconcile the smoke checkpoint and baselines |
 | `scripts/reproduce-phase-4b3-evidence.py` | `scripts/reproduce_dataset_evidence.py` | Reproduce dataset and environment evidence |
@@ -87,6 +86,7 @@ The following Git-tracked paths remain unchanged because sealed configs, noteboo
 - `ml/configs/phase_4c1_learning_curve.yaml`
 - `ml/configs/phase_4c2_stage2_finetuning.yaml`
 - `ml/configs/phase_4c2h_development_nested_cv.yaml`
+- `ml/training/phase_4c2h_development.py`
 - `notebooks/phase_4c1_learning_curve_colab.ipynb`
 - `notebooks/phase_4c2_finetuning_colab.ipynb`
 - `notebooks/phase_4c2h_development_colab.ipynb`

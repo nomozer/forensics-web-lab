@@ -1,4 +1,4 @@
-"""Development-only diagnostics and nested-CV contracts (phase trace 4C.2H).
+"""Phase 4C.2H development-only diagnostics and nested-CV contracts.
 
 This module is deliberately independent from all locked-test artifacts.  It binds
 the 341-source development pool, creates deterministic grouped nested folds, and

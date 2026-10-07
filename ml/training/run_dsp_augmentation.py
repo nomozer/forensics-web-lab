@@ -26,7 +26,7 @@ import numpy as np
 from ml.training import calibrated_late_fusion as clf
 from ml.training import development_robustness as dr
 from ml.training import dsp_augmentation as aug
-from ml.training.nested_cv_development import source_membership_commitment
+from ml.training.phase_4c2h_development import source_membership_commitment
 from ml.training.run_development_robustness import check_output_dir, load_cached_features
 from ml.training.visual_dsp_ablation import (
     build_grouped_nested_folds,

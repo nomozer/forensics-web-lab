@@ -623,7 +623,7 @@ def build_run_bindings(
     fold_lock: dict[str, Any],
     feature_cache_receipts: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    from ml.training.nested_cv_development import source_membership_commitment
+    from ml.training.phase_4c2h_development import source_membership_commitment
 
     if data_origin not in DATA_ORIGINS:
         raise ValueError(f"Unknown data_origin {data_origin!r}")

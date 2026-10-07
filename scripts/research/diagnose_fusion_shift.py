@@ -56,7 +56,7 @@ from ml.training.calibrated_late_fusion import (
     utc_now,
 )
 from ml.training.dsp_features import DSP_FEATURE_NAMES
-from ml.training.nested_cv_development import source_membership_commitment
+from ml.training.phase_4c2h_development import source_membership_commitment
 from ml.training.run_development_robustness import check_output_dir
 from scripts.research.analyze_development_robustness import load_full_scope
 

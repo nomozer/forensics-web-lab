@@ -144,7 +144,7 @@ def run_pipeline(
     print(f"[{utc_now()}] Verifying frozen 4C.3B late-fusion and ablation early-fusion artifacts...")
     loaded = load_frozen_artifacts(protocol=protocol, late_fusion_dir=late_fusion_dir, ablation_dir=ablation_dir)
     bindings = loaded["late_fusion_bindings"]
-    from ml.training.nested_cv_development import source_membership_commitment
+    from ml.training.phase_4c2h_development import source_membership_commitment
 
     if bindings["source_membership_commitment"] != source_membership_commitment(source_ids):
         raise ValueError("Development manifest sources differ from the 4C.3B run")

@@ -19,6 +19,7 @@ SEALED_PHASE_PATHS = {
     "ml/evaluation/phase_4c2g_windows.py",
     "ml/evaluation/run_phase_4c2f_evaluator.py",
     "ml/evaluation/run_phase_4c2g_confirmatory.py",
+    "ml/training/phase_4c2h_development.py",
     "notebooks/phase_4c1_learning_curve_colab.ipynb",
     "notebooks/phase_4c2_finetuning_colab.ipynb",
     "notebooks/phase_4c2h_development_colab.ipynb",
@@ -55,7 +56,7 @@ def mapping_rows() -> list[tuple[str, str]]:
 
 def test_naming_map_covers_all_renames() -> None:
     rows = mapping_rows()
-    assert len(rows) == 47
+    assert len(rows) == 46
     for previous, current in rows:
         assert not (REPO_ROOT / previous).exists(), previous
         assert (REPO_ROOT / current).is_file(), current

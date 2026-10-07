@@ -8,7 +8,7 @@ import pytest
 import torch
 from PIL import Image
 
-from ml.training.nested_cv_development import load_protocol
+from ml.training.phase_4c2h_development import load_protocol
 from ml.training.run_nested_cv_development import (
     DevelopmentPair,
     DevelopmentSample,

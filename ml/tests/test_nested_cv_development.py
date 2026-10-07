@@ -7,7 +7,7 @@ import pytest
 import torch
 from torch import nn
 
-from ml.training.nested_cv_development import (
+from ml.training.phase_4c2h_development import (
     apply_frozen_backbone_policy,
     build_grouped_nested_folds,
     label_to_index,
