@@ -2,20 +2,21 @@
 """CLI Runner for Independent Validation Cohort Acquisition (Phase 4C.7B).
 
 Usage:
-  # 1. Export canonical candidate acquisition plan (440 verified real candidates)
-  python scripts/research/run_cohort_acquisition.py --export-plan research/evidence/phase-4c.7b/candidate_acquisition_plan.json
-
-  # 2. Verify plan quotas, stratum balance, and historical disjoint guards
+  # 1. Verify the eligible candidate plan (exits non-zero unless 440 eligible candidates)
   python scripts/research/run_cohort_acquisition.py --verify-plan
 
-  # 3. Execute hermetic technical smoke test on non-cohort fixture
+  # 2. Hermetic technical smoke test on a SYNTHETIC fixture
   python scripts/research/run_cohort_acquisition.py --smoke-test
 
-  # 4. Execute pilot run (2 pairs per stratum = 8 pairs total)
-  python scripts/research/run_cohort_acquisition.py --mode pilot --output-dir data/research/cohort_pilot
+  # 3. Pilot (2 pairs per stratum = 8 pairs) in a new run directory <output-root>/<run-id>
+  python scripts/research/run_cohort_acquisition.py --mode pilot --run-id <id> \
+      --expected-commit <full sha> --output-root <drive dir> --contact-sheet
 
-  # 5. Execute full production cohort run (100 pairs per stratum = 400 pairs total)
-  python scripts/research/run_cohort_acquisition.py --mode full --output-dir data/research/independent_cohort
+  # 4. Audit a finished run against this checkout and the same run id
+  python scripts/research/run_cohort_acquisition.py --audit-run <output-root>/<run-id> \
+      --mode pilot --run-id <id> --expected-commit <full sha>
+
+  Full mode (100 pairs per stratum) is run only after the pilot and its content QC are reviewed.
 """
 
 from __future__ import annotations
@@ -26,7 +27,7 @@ from datetime import datetime, timezone
 import hashlib
 import json
 from pathlib import Path
-import shutil
+import subprocess
 import sys
 import tempfile
 import time
@@ -43,44 +44,76 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from ml.evaluation.independent_cohort import (
-    DEFAULT_HISTORICAL_MANIFEST,
-    load_historical_image_hashes,
-    load_historical_origin_ids,
-    load_historical_source_ids,
-)
 from ml.evaluation.independent_cohort_acquisition import (
     DEFAULT_CATALOG_PATH,
     STRATA_KEYS,
     STRATUM_BUFFER_PAIRS,
     STRATUM_TARGET_PAIRS,
     TOTAL_BUFFER_PAIRS,
-    TOTAL_TARGET_PAIRS,
+    CandidateEligibilityError,
     CandidateSpec,
-    DiffusersInpaintingEngine,
-    ImageDownloadError,
-    MissingProvenanceError,
     MockInpaintingEngine,
+    RunAuditError,
     SyntheticSourceProhibitedError,
     TamperDetectedError,
     assert_detector_isolation,
-    download_authentic_image,
-    evaluate_technical_qc,
+    audit_acquisition_run,
+    check_gpu_policy,
     execute_cohort_acquisition,
     generate_canonical_candidate_plan,
     generate_synthetic_fixture_plan,
-    normalize_image_to_canvas,
-    synthesize_canonical_mask,
+    load_historical_source_keys,
 )
 
 EVIDENCE_DIR = REPO_ROOT / "research/evidence/phase-4c.7b"
+LEGACY_CATALOG_PATH = EVIDENCE_DIR / "verified_candidate_catalog.json"
+PROTOCOL_FILES = (EVIDENCE_DIR / "PROTOCOL_AMENDMENT_V1.2.md", EVIDENCE_DIR / "cohort_specification.json")
+
+
+def verify_checkout(repo_root: Path, expected_commit: str) -> str:
+    """Fail closed unless repo_root is a clean checkout exactly at expected_commit."""
+    def git(*args: str) -> str:
+        return subprocess.run(["git", *args], cwd=repo_root, check=True, capture_output=True, text=True).stdout.strip()
+
+    head = git("rev-parse", "HEAD")
+    if head != expected_commit:
+        raise SystemExit(f"HEAD {head} != expected commit {expected_commit}; refusing to run.")
+    dirty = git("status", "--porcelain")
+    if dirty:
+        raise SystemExit(f"Working tree is not clean; refusing to run:\n{dirty}")
+    return head
+
+
+def _sha256_bytes(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
+
+
+def build_run_binding(run_id: str, commit: str, catalog_path: Path, plan: list[CandidateSpec], mode: str, target: int) -> dict[str, Any]:
+    """Everything a run's artifacts must match: run, code, protocol, catalog, plan, quota."""
+    return {
+        "run_id": run_id,
+        "git_commit": commit,
+        "protocol_sha256": _sha256_bytes(b"".join(p.read_bytes() for p in PROTOCOL_FILES)),
+        "catalog_sha256": _sha256_bytes(Path(catalog_path).read_bytes()),
+        "plan_sha256": _sha256_bytes(json.dumps([asdict(c) for c in plan], sort_keys=True).encode("utf-8")),
+        "mode": mode,
+        "target_per_stratum": target,
+    }
+
+
+def check_runtime_gpu() -> dict[str, Any]:
+    import torch
+
+    available = torch.cuda.is_available()
+    name = torch.cuda.get_device_name(0) if available else ""
+    total = torch.cuda.get_device_properties(0).total_memory if available else 0
+    check_gpu_policy(available, total, name)
+    return {"device": name, "total_vram_bytes": total}
 
 
 def run_plan_verification(candidates: list[CandidateSpec]) -> dict[str, Any]:
-    """Verify statistical quotas, stratum balance, and disjointness of candidate plan."""
-    hist_sources = load_historical_source_ids(DEFAULT_HISTORICAL_MANIFEST)
-    hist_hashes = load_historical_image_hashes(DEFAULT_HISTORICAL_MANIFEST)
-    hist_origins = load_historical_origin_ids(DEFAULT_HISTORICAL_MANIFEST)
+    """Verify statistical quotas, stratum balance, and namespaced disjointness of candidate plan."""
+    hist_keys = load_historical_source_keys()
 
     stratum_counts: dict[str, int] = {k: 0 for k in STRATA_KEYS}
     mod_counts: dict[str, int] = {}
@@ -99,12 +132,13 @@ def run_plan_verification(candidates: list[CandidateSpec]) -> dict[str, Any]:
         tool_counts[c.tool_key] = tool_counts.get(c.tool_key, 0) + 1
         source_counts[c.source_origin] = source_counts.get(c.source_origin, 0) + 1
 
-        if c.candidate_id in hist_sources:
+        overlap = sorted(set(c.source_keys) & hist_keys)
+        if overlap:
             overlap_sources.append(c.candidate_id)
-        if c.origin_id in hist_origins:
-            overlap_origins.append(c.origin_id)
+            overlap_origins.extend(overlap)
 
-        if not (c.download_url and c.license_name and c.license_evidence_source and c.author):
+        if not (c.download_url and c.license_url and c.license_evidence_source and c.author
+                and c.source_keys and c.provenance_checked_at_utc and c.download_rendition):
             missing_provenance.append(c.candidate_id)
 
     total_candidates = len(candidates)
@@ -127,6 +161,8 @@ def run_plan_verification(candidates: list[CandidateSpec]) -> dict[str, Any]:
         "tool_counts": tool_counts,
         "source_origin_counts": source_counts,
         "historical_overlap_detected": bool(overlap_sources or overlap_origins),
+        "disjointness_basis": "namespaced COCO image IDs vs 684 historical Option P COCO IDs; "
+                              "Flickr photo IDs NOT_CHECKED (historical Flickr IDs not available)",
         "missing_provenance_detected": bool(missing_provenance),
         "overlap_sources": overlap_sources,
         "overlap_origins": overlap_origins,
@@ -201,79 +237,70 @@ def generate_content_qc_contact_sheet(
 
 
 def run_technical_smoke_test(receipt_path: Path | None = None) -> dict[str, Any]:
-    """Execute hermetic end-to-end technical smoke test on non-cohort fixture in temp dir."""
-    print(">>> [Phase 4C.7B Smoke Test] Starting hermetic technical smoke test...")
+    """Hermetic end-to-end technical smoke test on a SYNTHETIC fixture in a temp dir.
+
+    Not evidence about real photographs, real inpainting or GPU behaviour.
+    """
+    print(">>> [Phase 4C.7B Smoke Test] Starting hermetic technical smoke test (SYNTHETIC fixture)...")
     start_time = time.perf_counter()
 
-    # Step 1: Detector Isolation assertion
     assert_detector_isolation()
-    print("  [1/7] Detector Isolation Invariant: PASSED (zero detector modules loaded)")
+    print("  [1/6] Detector Isolation Invariant: PASSED (zero detector modules loaded)")
 
-    # Step 2: Plan Generation & Verification
-    catalog_path = DEFAULT_CATALOG_PATH
-    real_candidates = generate_canonical_candidate_plan(catalog_path=catalog_path)
-    verification = run_plan_verification(real_candidates)
-    assert verification["status"] == "PASS", f"Real plan verification failed: {verification}"
-    print(f"  [2/7] Verified Real Plan: PASSED ({len(real_candidates)} candidates, 110 per stratum, 0 Option P overlap)")
-
-    # Step 3: Verify Fail-Closed Guards against Synthetic Ingestion in Production Mode
-    synth_candidates = generate_synthetic_fixture_plan()
+    # The superseded v1 catalog must be refused by the eligibility gate.
     try:
-        execute_cohort_acquisition(
-            output_dir=tempfile.gettempdir(),
-            candidate_specs=synth_candidates,
-            mode="production",
-            allow_synthetic=False,
-        )
-        raise AssertionError("Production runner failed to reject synthetic candidates!")
-    except SyntheticSourceProhibitedError:
-        print("  [3/7] Fail-Closed Synthetic Guard: PASSED (rejected synthetic fixture in production mode)")
+        generate_canonical_candidate_plan(catalog_path=LEGACY_CATALOG_PATH)
+        raise AssertionError("Eligibility gate accepted the superseded v1 catalog!")
+    except CandidateEligibilityError as e:
+        legacy_rejection = str(e)
+    print("  [2/6] Superseded v1 catalog rejected by eligibility gate: PASSED")
 
-    # Step 4: Temporary fixture test outside official cohort
+    synth_candidates = generate_synthetic_fixture_plan()
     with tempfile.TemporaryDirectory(prefix="cohort_smoke_") as temp_dir:
         temp_path = Path(temp_dir)
-        print(f"  [4/7] Running acquisition pipeline on temporary fixture in {temp_path.name}...")
-
-        # Run fixture mode test with mock engine
-        result = execute_cohort_acquisition(
-            output_dir=temp_path / "smoke_cohort",
-            candidate_specs=synth_candidates,
-            target_per_stratum=2,
-            historical_manifest_path=DEFAULT_HISTORICAL_MANIFEST,
-            mode="fixture_test",
-            allow_synthetic=True,
-        )
-
-        assert result["total_valid_pairs"] == 8
-        assert all(count == 2 for count in result["stratum_counts"].values())
-        print(f"  [5/7] Acquisition Pipeline Execution: PASSED ({result['total_images']} images created, all QC passed)")
-
-        # Step 5: Verify manifest and checksum integrity
-        manifest_file = Path(result["manifest_path"])
-        sha_file = Path(result["manifest_path"]).parent / "manifest_checksum.sha256"
-        calculated_sha = hashlib.sha256(manifest_file.read_bytes()).hexdigest()
-        assert calculated_sha == result["manifest_sha256"]
-        print(f"  [6/7] Manifest & Checksum Verification: PASSED (SHA: {calculated_sha[:16]}...)")
-
-        # Step 6: Test stratum-preserving error injection & durable resume
-        print("  [7/7] Verifying stratum replacement and durable resume tamper detection...")
-        # Tamper 1 file on disk and verify resume detects tamper
-        img_p = temp_path / "smoke_cohort" / "images" / f"{synth_candidates[0].candidate_id}_auth.png"
-        img_p.write_bytes(img_p.read_bytes() + b"tamper_bytes")
-
         try:
             execute_cohort_acquisition(
-                output_dir=temp_path / "smoke_cohort",
+                output_dir=temp_path / "must_not_exist",
                 candidate_specs=synth_candidates,
-                target_per_stratum=2,
-                historical_manifest_path=DEFAULT_HISTORICAL_MANIFEST,
-                mode="fixture_test",
-                allow_synthetic=True,
-                resume=True,
+                mode="production",
+                allow_synthetic=False,
+            )
+            raise AssertionError("Production runner failed to reject synthetic candidates!")
+        except SyntheticSourceProhibitedError:
+            assert not (temp_path / "must_not_exist").exists()
+        print("  [3/6] Fail-Closed Synthetic Guard: PASSED (rejected before writing any artifact)")
+
+        binding = {"run_id": "smoke", "git_commit": "SYNTHETIC", "mode": "fixture_test", "target_per_stratum": 2}
+        run_dir = temp_path / "smoke_cohort"
+        result = execute_cohort_acquisition(
+            output_dir=run_dir,
+            candidate_specs=synth_candidates,
+            target_per_stratum=2,
+            mode="fixture_test",
+            allow_synthetic=True,
+            run_binding=binding,
+        )
+        assert result["total_valid_pairs"] == 8
+        print(f"  [4/6] SYNTHETIC pipeline execution: PASSED ({result['total_images']} images)")
+
+        audit = audit_acquisition_run(run_dir, binding)
+        try:
+            audit_acquisition_run(run_dir, binding | {"run_id": "other"})
+            raise AssertionError("Audit accepted a receipt bound to another run!")
+        except RunAuditError as e:
+            assert "run_id" in str(e)
+        print(f"  [5/6] Run audit + foreign-binding rejection: PASSED (manifest {audit['manifest_sha256'][:16]}...)")
+
+        img_p = run_dir / "images" / f"{synth_candidates[0].candidate_id}_auth.png"
+        img_p.write_bytes(img_p.read_bytes() + b"tamper_bytes")
+        try:
+            execute_cohort_acquisition(
+                output_dir=run_dir, candidate_specs=synth_candidates, target_per_stratum=2,
+                mode="fixture_test", allow_synthetic=True, resume=True, run_binding=binding,
             )
             raise AssertionError("Resume failed to detect disk tampering!")
         except TamperDetectedError:
-            print("        -> SHA-256 Tamper Detection on resume: PASSED!")
+            print("  [6/6] SHA-256 tamper detection on resume: PASSED")
 
     elapsed_sec = time.perf_counter() - start_time
     receipt_data = {
@@ -281,24 +308,17 @@ def run_technical_smoke_test(receipt_path: Path | None = None) -> dict[str, Any]
         "phase": "4C.7B",
         "smoke_test_status": "PASS",
         "elapsed_seconds": round(elapsed_sec, 3),
-        "detector_isolation_verified": True,
-        "plan_verification": verification,
-        "sample_size_target": TOTAL_TARGET_PAIRS,
-        "stratum_targets": {k: STRATUM_TARGET_PAIRS for k in STRATA_KEYS},
-        "buffer_pool_size": TOTAL_BUFFER_PAIRS,
-        "stratum_buffers": {k: STRATUM_BUFFER_PAIRS for k in STRATA_KEYS},
         "evidence_class": "synthetic_smoke",
         "eligible_for_independent_cohort": False,
-        "technical_qc_checks": [
-            "canvas_size_512x512_rgb",
-            "binary_mask_512x512",
-            "mask_area_bracket_match",
-            "solid_blank_image_rejection",
-            "masked_delta_threshold_verified",
-            "historical_option_p_disjoint_checked",
-            "fail_closed_synthetic_rejection",
+        "note": "SYNTHETIC fixture only; not a real-image or GPU pilot.",
+        "detector_isolation_verified": True,
+        "legacy_catalog_rejection": legacy_rejection,
+        "checks": [
+            "superseded_v1_catalog_rejected",
+            "fail_closed_synthetic_rejection_before_writes",
+            "run_binding_and_audit",
+            "foreign_binding_rejected",
             "sha256_tamper_detection_on_resume",
-            "checksum_atomicity_verified",
         ],
     }
 
@@ -307,94 +327,94 @@ def run_technical_smoke_test(receipt_path: Path | None = None) -> dict[str, Any]
         receipt_path.write_text(json.dumps(receipt_data, indent=2), encoding="utf-8")
         print(f"\n[Phase 4C.7B Smoke Test] Wrote receipt to: {receipt_path}")
 
-    print(f"\n>>> [Phase 4C.7B Smoke Test] ALL CHECKS PASSED in {elapsed_sec:.2f}s!")
+    print(f"\n>>> [Phase 4C.7B Smoke Test] ALL CHECKS PASSED in {elapsed_sec:.2f}s")
     return receipt_data
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Independent Cohort Acquisition Runner (Phase 4C.7B)")
-    parser.add_argument("--export-plan", type=str, help="Export canonical candidate acquisition plan to JSON path")
-    parser.add_argument("--export-synthetic-plan", type=str, help="Export synthetic fixture plan to JSON path")
-    parser.add_argument("--verify-plan", action="store_true", help="Verify canonical candidate plan quotas and disjointness")
-    parser.add_argument("--smoke-test", action="store_true", help="Run hermetic technical smoke test and output receipt")
-    parser.add_argument("--mode", choices=["pilot", "full"], default="pilot", help="Execution mode (pilot=2/stratum, full=100/stratum)")
+    parser.add_argument("--export-plan", type=str, help="Export eligible candidate acquisition plan to JSON path")
+    parser.add_argument("--verify-plan", action="store_true", help="Verify plan eligibility, quotas and disjointness (non-zero on FAIL)")
+    parser.add_argument("--smoke-test", action="store_true", help="Run hermetic SYNTHETIC smoke test and write receipt")
+    parser.add_argument("--audit-run", type=str, help="Audit a finished run directory against this checkout")
+    parser.add_argument("--mode", choices=["pilot", "full"], help="Acquisition mode (pilot=2/stratum, full=100/stratum)")
     parser.add_argument("--engine", choices=["diffusers", "mock"], default="diffusers", help="Inpainting engine")
-    parser.add_argument("--allow-synthetic", action="store_true", help="Allow synthetic images (only for fixture_test)")
-    parser.add_argument("--output-dir", type=str, default="data/research/independent_cohort", help="Output directory")
-    parser.add_argument("--catalog-path", type=str, default=str(DEFAULT_CATALOG_PATH), help="Path to verified candidate catalog")
+    parser.add_argument("--allow-synthetic", action="store_true", help="SYNTHETIC fixture_test mode (mock engine allowed)")
+    parser.add_argument("--run-id", type=str, help="Unique run id; the run directory is <output-root>/<run-id>")
+    parser.add_argument("--expected-commit", type=str, help="Full SHA the checkout must be at (clean tree)")
+    parser.add_argument("--output-root", type=str, help="Parent directory for run directories (Drive on Colab)")
+    parser.add_argument("--resume", action="store_true", help="Resume an existing run directory with the same binding")
+    parser.add_argument("--catalog-path", type=str, default=str(DEFAULT_CATALOG_PATH), help="Path to candidate catalog")
     parser.add_argument("--contact-sheet", action="store_true", help="Generate Content QC HTML contact sheet")
-    parser.add_argument("--receipt-path", type=str, default=str(EVIDENCE_DIR / "acquisition_smoke_receipt.json"), help="Path to save smoke receipt")
-    args = parser.parse_args()
+    parser.add_argument("--receipt-path", type=str, default=str(EVIDENCE_DIR / "acquisition_smoke_receipt_v2.json"), help="Smoke receipt path")
+    args = parser.parse_args(argv)
 
-    if args.export_plan:
-        out_file = Path(args.export_plan)
-        out_file.parent.mkdir(parents=True, exist_ok=True)
-        plan = generate_canonical_candidate_plan(catalog_path=args.catalog_path)
-        data = {
-            "version": "1.2.0",
-            "phase": "4C.7B",
-            "evidence_class": "verified_real_catalog",
-            "eligible_for_independent_cohort": True,
-            "is_synthetic": False,
-            "generated_at_utc": datetime.now(timezone.utc).isoformat(),
-            "total_candidates": len(plan),
-            "candidates": [asdict(c) for c in plan],
-        }
-        out_file.write_text(json.dumps(data, indent=2), encoding="utf-8")
-        print(f"Exported verified real candidate acquisition plan ({len(plan)} candidates) to {out_file}")
+    if args.smoke_test:
+        run_technical_smoke_test(receipt_path=Path(args.receipt_path))
         return
 
-    if args.export_synthetic_plan:
-        out_file = Path(args.export_synthetic_plan)
-        out_file.parent.mkdir(parents=True, exist_ok=True)
-        plan = generate_synthetic_fixture_plan()
-        data = {
-            "version": "1.2.0",
-            "phase": "4C.7B",
-            "evidence_class": "synthetic",
-            "eligible_for_independent_cohort": False,
-            "is_synthetic": True,
-            "synthetic_note": "Synthetic development fixture with synthetic placeholder IDs; strictly ineligible for official independent cohort evaluation.",
-            "generated_at_utc": datetime.now(timezone.utc).isoformat(),
-            "total_candidates": len(plan),
-            "candidates": [asdict(c) for c in plan],
-        }
-        out_file.write_text(json.dumps(data, indent=2), encoding="utf-8")
-        print(f"Exported synthetic fixture candidate plan ({len(plan)} candidates) to {out_file}")
-        return
-
-    if args.verify_plan:
+    if args.export_plan or args.verify_plan:
         plan = generate_canonical_candidate_plan(catalog_path=args.catalog_path)
         res = run_plan_verification(plan)
         print(json.dumps(res, indent=2))
+        if res["status"] != "PASS":
+            raise SystemExit("Plan verification FAILED.")
+        if args.export_plan:
+            data = {
+                "version": "2.0.0",
+                "phase": "4C.7B",
+                "catalog_path": str(args.catalog_path),
+                "catalog_sha256": _sha256_bytes(Path(args.catalog_path).read_bytes()),
+                "is_synthetic": res["is_synthetic"],
+                "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+                "total_candidates": len(plan),
+                "candidates": [asdict(c) for c in plan],
+            }
+            Path(args.export_plan).write_text(json.dumps(data, indent=2), encoding="utf-8")
         return
 
-    if args.smoke_test:
-        receipt_p = Path(args.receipt_path) if args.receipt_path else EVIDENCE_DIR / "acquisition_smoke_receipt.json"
-        run_technical_smoke_test(receipt_path=receipt_p)
-        return
-
-    # Execution (Pilot or Full)
+    if not args.mode:
+        parser.error("one of --mode, --verify-plan, --export-plan, --smoke-test or --audit-run is required")
+    if args.engine == "mock" and not args.allow_synthetic:
+        raise SystemExit("--engine mock produces SYNTHETIC edits; it is refused for real acquisition.")
+    if not (args.run_id and args.expected_commit):
+        raise SystemExit("--run-id and --expected-commit are required.")
     target = 2 if args.mode == "pilot" else STRATUM_TARGET_PAIRS
-    exec_mode = "fixture_test" if args.allow_synthetic else "production"
-
+    commit = verify_checkout(REPO_ROOT, args.expected_commit)
     plan = generate_canonical_candidate_plan(catalog_path=args.catalog_path)
+    binding = build_run_binding(args.run_id, commit, Path(args.catalog_path), plan, args.mode, target)
+
+    if args.audit_run:
+        print(json.dumps(audit_acquisition_run(Path(args.audit_run), binding), indent=2))
+        return
+
+    if not args.output_root:
+        raise SystemExit("--output-root is required.")
+    run_dir = Path(args.output_root) / args.run_id
+    if run_dir.exists() and not args.resume:
+        raise SystemExit(f"{run_dir} already exists; historical runs are never overwritten (use a new --run-id or --resume).")
+
+    exec_mode = "fixture_test" if args.allow_synthetic else "production"
+    if args.engine == "diffusers":
+        binding_gpu = check_runtime_gpu()
+        print(f"GPU policy: PASS ({binding_gpu['device']}, {binding_gpu['total_vram_bytes'] / 1024**3:.2f} GiB)")
     engine_provider = (lambda _: MockInpaintingEngine()) if args.engine == "mock" else None
 
-    print(f">>> Starting Independent Cohort Acquisition (Mode: {args.mode}, Target: {target}/stratum, Output: {args.output_dir}) ...")
+    print(f">>> Acquisition run {args.run_id} (mode={args.mode}, {target}/stratum) -> {run_dir}")
     res = execute_cohort_acquisition(
-        output_dir=args.output_dir,
+        output_dir=run_dir,
         candidate_specs=plan,
         engine_provider=engine_provider,
         target_per_stratum=target,
         mode=exec_mode,
         allow_synthetic=args.allow_synthetic,
+        resume=args.resume,
+        run_binding=binding,
     )
     print(json.dumps(res, indent=2))
 
     if args.contact_sheet:
-        sheet_path = Path(args.output_dir) / "content_qc_contact_sheet.html"
-        generate_content_qc_contact_sheet(args.output_dir, sheet_path)
+        generate_content_qc_contact_sheet(run_dir, run_dir / "content_qc_contact_sheet.html")
 
 
 if __name__ == "__main__":

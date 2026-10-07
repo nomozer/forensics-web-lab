@@ -1,22 +1,36 @@
 #!/usr/bin/env python3
-"""Build and freeze verified real candidate catalog from official COCO and Unsplash sources.
+"""Build candidate catalog v2 with per-image verified provenance (Phase 4C.7B).
 
-Guarantees:
-- Real authentic photographs with verifiable provenance.
-- Zero synthetic images or mock IDs.
-- Zero overlap with historical Option P sources (disjoint guard).
-- 220 COCO test2017 images (110 for coco_sd2, 110 for coco_sdxl).
-- 220 Unsplash Lite pre-2022 images (110 for unsplash_sd2, 110 for unsplash_sdxl).
-- Total: 440 real candidates (110 buffer pool per stratum).
+Run on a host that can reach images.cocodataset.org and www.flickr.com (e.g. Colab):
+    python scripts/research/build_verified_candidate_catalog.py [--out PATH]
+Offline eligibility audit of the superseded v1 catalog (no network):
+    python scripts/research/build_verified_candidate_catalog.py --audit-legacy
+
+COCO 2017 test images, in the order of the official image_info_test2017.json:
+- COCO image ID, license (id, name, URL, version) and date_captured come from image_info.
+- The Flickr photo ID is parsed from that file's flickr_url (never invented).
+- Creator name/URL and the license currently shown on Flickr come from the Flickr oEmbed
+  response for that photo; the request URL, response SHA-256 and check time are stored.
+- Entries are evaluated with the pre-registered rules in
+  ml.evaluation.independent_cohort_acquisition.evaluate_candidate_eligibility; excluded
+  entries are kept in `excluded_candidates` with their reasons.
+
+Unsplash: the previous source was the Unsplash Lite dataset (via a Hugging Face mirror).
+Its terms do not cover exporting/sharing edited derivatives, so no Unsplash candidates are
+produced; the Unsplash strata stay blocked until a source decision is recorded.
 """
 
 from __future__ import annotations
 
+import argparse
 from datetime import datetime, timezone
+import hashlib
 import io
 import json
 from pathlib import Path
+import re
 import sys
+import urllib.parse
 import urllib.request
 import zipfile
 
@@ -24,161 +38,205 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from ml.evaluation.independent_cohort import (
-    DEFAULT_HISTORICAL_MANIFEST,
-    load_historical_origin_ids,
-    load_historical_source_ids,
+from ml.evaluation.independent_cohort_acquisition import (  # noqa: E402
+    CC_LICENSE_RE,
+    DEFAULT_CATALOG_PATH,
+    evaluate_candidate_eligibility,
+    load_historical_source_keys,
 )
 
-CATALOG_OUTPUT = REPO_ROOT / "research/evidence/phase-4c.7b/verified_candidate_catalog.json"
+COCO_IMAGE_INFO_URL = "http://images.cocodataset.org/annotations/image_info_test2017.zip"
+FLICKR_OEMBED = "https://www.flickr.com/services/oembed/?format=json&url="
+FLICKR_URL_RE = re.compile(r"/(\d+)_[0-9a-f]+(?:_([a-z]))?\.jpg$")
+BASE58 = "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ"
+USER_AGENT = "ForensicsWebLab-CatalogBuilder/2.0"
 
 
-def fetch_coco_candidates(count: int = 220) -> list[dict]:
-    """Fetch real COCO 2017 test images from official COCO annotations."""
-    hist_sources = load_historical_source_ids(DEFAULT_HISTORICAL_MANIFEST)
-    hist_origins = load_historical_origin_ids(DEFAULT_HISTORICAL_MANIFEST)
+def flickr_short_url(photo_id: str) -> str:
+    n, out = int(photo_id), ""
+    while n:
+        n, r = divmod(n, 58)
+        out = BASE58[r] + out
+    return f"https://flic.kr/p/{out}"
 
-    url = "http://images.cocodataset.org/annotations/image_info_test2017.zip"
-    print(f"Fetching official COCO metadata from {url} ...")
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        zip_bytes = resp.read()
 
-    z = zipfile.ZipFile(io.BytesIO(zip_bytes))
-    data = json.loads(z.read("annotations/image_info_test2017.json"))
+def _norm_license_url(url: str) -> str:
+    m = CC_LICENSE_RE.search(url or "")
+    return f"{m.group(1)}/{m.group(2)}" if m else ""
 
-    licenses_map = {lic["id"]: lic for lic in data.get("licenses", [])}
-    candidates = []
 
-    for img in data["images"]:
-        sid = str(img["id"]).zfill(12)
-        if sid in hist_sources or sid in hist_origins:
-            continue
+def coco_entry(img: dict, licenses: dict[int, dict], oembed: dict | None, oembed_url: str,
+               oembed_sha256: str, checked_at: str) -> dict:
+    """Catalog entry built only from fields present in the source responses."""
+    lic = licenses.get(img.get("license"), {})
+    lic_url = lic.get("url", "")
+    m_lic = CC_LICENSE_RE.search(lic_url)
+    m_flickr = FLICKR_URL_RE.search(img.get("flickr_url", ""))
+    flickr_id = m_flickr.group(1) if m_flickr else ""
+    size = (m_flickr.group(2) if m_flickr else None) or "unknown"
 
-        lic = licenses_map.get(img["license"], {})
-        lic_name = lic.get("name", "Attribution License")
-        lic_url = lic.get("url", "http://creativecommons.org/licenses/by/2.0/")
-
-        candidates.append(
-            {
-                "source_origin": "coco_2017",
-                "origin_id": sid,
-                "coco_id": img["id"],
-                "download_url": img["coco_url"],
-                "origin_url": f"http://images.cocodataset.org/test2017/{img['file_name']}",
-                "author": f"flickr_contributor_{img['id']}",
-                "license_name": lic_name,
-                "license_url": lic_url,
-                "license_evidence_source": "http://images.cocodataset.org/annotations/image_info_test2017.zip",
-                "published_date": img.get("date_captured", "2013-11-14"),
-                "width": img["width"],
-                "height": img["height"],
-            }
+    entry = {
+        "source_origin": "coco_2017",
+        "acquisition_channel": "coco_2017_image_info",
+        "coco_image_id": img["id"],
+        "flickr_photo_id": flickr_id or None,
+        "source_keys": [f"coco:{img['id']}"] + ([f"flickr:{flickr_id}"] if flickr_id else []),
+        "origin_id": f"coco:{img['id']}",
+        "download_url": img.get("coco_url", ""),
+        "flickr_url": img.get("flickr_url", ""),
+        "license_id": img.get("license"),
+        "license_name": lic.get("name", ""),
+        "license_url": lic_url,
+        "license_version": m_lic.group(2) if m_lic else "",
+        "license_evidence_source": f"{COCO_IMAGE_INFO_URL} (images[].license -> licenses[])",
+        "date_captured": img.get("date_captured") or None,
+        "date_captured_source": "COCO image_info_test2017.json images[].date_captured" if img.get("date_captured") else None,
+        "published_date": None,
+        "provenance_checked_at_utc": checked_at,
+        "download_rendition": (
+            f"COCO-hosted copy of the Flickr size-'{size}' JPEG rendition ({img.get('width')}x{img.get('height')}); "
+            "re-encoded by Flickr, not the original upload"
+        ),
+        "width": img.get("width"),
+        "height": img.get("height"),
+        "source_page_url": "",
+        "creator_name": "",
+        "creator_url": "",
+        "creator_verification": "NOT_VERIFIED",
+        "creator_evidence_url": "",
+    }
+    if oembed:
+        page = oembed.get("web_page", "")
+        author = (oembed.get("author_name") or "").strip()
+        author_url = oembed.get("author_url", "")
+        current = _norm_license_url(oembed.get("license_url", ""))
+        entry.update(
+            source_page_url=page,
+            license_current_at_source=oembed.get("license_url", ""),
+            creator_evidence_sha256=oembed_sha256,
         )
+        if author and author_url.startswith("https://www.flickr.com/photos/") and flickr_id and flickr_id in page:
+            entry.update(creator_name=author, creator_url=author_url, creator_evidence_url=oembed_url,
+                         creator_verification="VERIFIED_FROM_SOURCE")
+        if current != _norm_license_url(lic_url):  # includes "no CC license shown on Flickr now"
+            # Pre-registered conservative rule: the license must agree at both sources.
+            entry["license_url"] = ""
+            entry["license_conflict"] = {"coco": lic_url, "flickr_current": oembed.get("license_url")}
+    return entry
 
-        if len(candidates) >= count:
+
+def _fetch(url: str, timeout: float = 30.0) -> bytes:
+    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        return resp.read()
+
+
+def build(per_source: int = 220) -> dict:
+    hist = load_historical_source_keys()
+    info_bytes = _fetch(COCO_IMAGE_INFO_URL, timeout=120)
+    info = json.loads(zipfile.ZipFile(io.BytesIO(info_bytes)).read("annotations/image_info_test2017.json"))
+    licenses = {lic["id"]: lic for lic in info["licenses"]}
+
+    eligible, excluded = [], []
+    for img in info["images"]:
+        if len(eligible) >= per_source:
             break
+        checked_at = datetime.now(timezone.utc).isoformat()
+        pre = coco_entry(img, licenses, None, "", "", checked_at)
+        pre_reasons = set(evaluate_candidate_eligibility(pre, hist)["reasons"])
+        # Skip the network call when the entry fails on source-independent grounds.
+        blocking = pre_reasons - {"CREATOR_PLACEHOLDER", "CREATOR_UNVERIFIED", "PROVENANCE_FIELD_MISSING:source_page_url"}
+        oembed, oembed_url, sha = None, "", ""
+        if not blocking and pre["flickr_photo_id"]:
+            oembed_url = FLICKR_OEMBED + urllib.parse.quote(flickr_short_url(pre["flickr_photo_id"]), safe="")
+            try:
+                raw = _fetch(oembed_url)
+                oembed, sha = json.loads(raw), hashlib.sha256(raw).hexdigest()
+            except Exception as e:  # deleted/private photo, network error: unverifiable -> excluded
+                pre["oembed_error"] = f"{type(e).__name__}: {e}"
+        entry = coco_entry(img, licenses, oembed, oembed_url, sha, checked_at) if oembed else pre
+        result = evaluate_candidate_eligibility(entry, hist)
+        if result["status"] == "EXCLUDED":
+            excluded.append({"coco_image_id": img["id"], "reasons": result["reasons"], "entry": entry})
+        else:
+            eligible.append(entry)
 
-    print(f"Discovered {len(candidates)} real COCO candidates (0 Option P overlap).")
-    return candidates
+    return {
+        "schema_version": "2.0.0",
+        "evidence_class": "verified_real_catalog",
+        "is_synthetic": False,
+        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "supersedes": "research/evidence/phase-4c.7b/verified_candidate_catalog.json",
+        "coco_image_info_sha256": hashlib.sha256(info_bytes).hexdigest(),
+        "coco_candidates": eligible,
+        "unsplash_candidates": [],
+        "unsplash_status": "BLOCKED: Unsplash Lite dataset terms do not cover sharing edited derivatives; source decision pending",
+        "excluded_candidates": excluded,
+    }
 
 
-def fetch_unsplash_candidates(count: int = 220) -> list[dict]:
-    """Fetch real Unsplash Lite pre-2022 photos via official HuggingFace dataset server."""
-    hist_sources = load_historical_source_ids(DEFAULT_HISTORICAL_MANIFEST)
-    hist_origins = load_historical_origin_ids(DEFAULT_HISTORICAL_MANIFEST)
+LEGACY_CATALOG = REPO_ROOT / "research/evidence/phase-4c.7b/verified_candidate_catalog.json"
+LEGACY_AUDIT = REPO_ROOT / "research/evidence/phase-4c.7b/catalog_eligibility_audit.json"
+# The v1 builder (commit dc00895) fetched Unsplash rows from the Hugging Face mirror
+# 1aurent/unsplash-lite of the Unsplash Lite dataset; COCO rows from image_info_test2017.
+LEGACY_CHANNELS = {"coco_2017": "coco_2017_image_info", "unsplash_verified": "unsplash_lite_dataset_hf_mirror"}
 
-    candidates = []
-    offset = 0
-    limit = 100
 
-    print("Fetching Unsplash Lite pre-2022 metadata...")
-    while len(candidates) < count and offset <= 400:
-        url = (
-            f"https://datasets-server.huggingface.co/rows?"
-            f"dataset=1aurent%2Funsplash-lite&config=default&split=train&offset={offset}&limit={limit}"
-        )
-        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-        with urllib.request.urlopen(req, timeout=25) as resp:
-            data = json.loads(resp.read())
-
-        rows = data.get("rows", [])
-        if not rows:
-            break
-
-        for item in rows:
-            row = item.get("row", {})
-            photo = row.get("photo", {})
-            photographer = row.get("photographer", {})
-
-            pid = photo.get("id", "")
-            if not pid or pid in hist_sources or pid in hist_origins:
-                continue
-
-            submitted_at = photo.get("submitted_at", "")
-            if not submitted_at:
-                continue
-
-            # Verify published pre-2022
-            year = int(submitted_at[:4])
-            if year > 2021:
-                continue
-
-            author_username = photographer.get("username", f"photographer_{pid}")
-            img_url = photo.get("image_url", "")
-            if not img_url:
-                continue
-
-            # Official standard CDN format parameter
-            download_url = f"{img_url}?auto=format&fit=crop&w=600&q=80"
-
-            candidates.append(
-                {
-                    "source_origin": "unsplash_verified",
-                    "origin_id": pid,
-                    "download_url": download_url,
-                    "origin_url": photo.get("url", f"https://unsplash.com/photos/{pid}"),
-                    "author": author_username,
-                    "license_name": "Unsplash License",
-                    "license_url": "https://unsplash.com/license",
-                    "license_evidence_source": "https://unsplash.com/license",
-                    "published_date": submitted_at[:10],
-                    "width": photo.get("width", 0),
-                    "height": photo.get("height", 0),
-                }
-            )
-
-            if len(candidates) >= count:
-                break
-
-        offset += limit
-
-    print(f"Discovered {len(candidates)} real Unsplash pre-2022 candidates (0 Option P overlap).")
-    return candidates
+def audit_legacy_catalog() -> dict:
+    """Apply the pre-registered rules to the v1 catalog without modifying it."""
+    raw = LEGACY_CATALOG.read_bytes()
+    catalog = json.loads(raw)
+    hist = load_historical_source_keys()
+    rows, reason_counts, license_counts = [], {}, {}
+    for e in catalog["coco_candidates"] + catalog["unsplash_candidates"]:
+        res = evaluate_candidate_eligibility(e | {"acquisition_channel": LEGACY_CHANNELS[e["source_origin"]]}, hist)
+        for r in res["reasons"]:
+            reason_counts[r] = reason_counts.get(r, 0) + 1
+        license_counts[e["license_name"]] = license_counts.get(e["license_name"], 0) + 1
+        rows.append({"source_origin": e["source_origin"], "origin_id": e["origin_id"], "author_in_catalog": e["author"],
+                     "license_name": e["license_name"], "status": res["status"], "reasons": res["reasons"]})
+    return {
+        "audited_catalog": "research/evidence/phase-4c.7b/verified_candidate_catalog.json",
+        "audited_catalog_sha256": hashlib.sha256(raw).hexdigest(),
+        "catalog_status": "SUPERSEDED",
+        "generated_by": "python scripts/research/build_verified_candidate_catalog.py --audit-legacy",
+        "total": len(rows),
+        "eligible": sum(r["status"] != "EXCLUDED" for r in rows),
+        "excluded": sum(r["status"] == "EXCLUDED" for r in rows),
+        "reason_counts": dict(sorted(reason_counts.items())),
+        "license_counts": dict(sorted(license_counts.items())),
+        "findings": {
+            "coco_author": "all 220 COCO authors are generated labels 'flickr_contributor_<coco_id>', not verified creators",
+            "coco_published_date": "field holds COCO date_captured, not a publication date",
+            "coco_origin_url": "points to the COCO-hosted copy, not the Flickr photo page; no Flickr photo ID recorded",
+            "coco_nd": "91 entries are BY-ND or BY-NC-ND: no sharing of edited derivatives without separate permission",
+            "unsplash_channel": "Unsplash Lite dataset (HF mirror): dataset terms grant download/store and internal ML "
+                                "training only and prohibit disseminating/redistributing the data; editing and sharing "
+                                "the cohort is not covered. The generic Unsplash License was assumed without checking "
+                                "the dataset terms.",
+            "unsplash_rendition": "download_url requests a processed rendition (auto=format, fit=crop, w=600, q=80): "
+                                  "resized, re-compressed, format negotiated; not the original upload",
+            "historical_disjointness": "v1 compared zero-padded COCO IDs to Option P source IDs (same COCO namespace); "
+                                       "Unsplash IDs were compared to COCO IDs, which proves nothing",
+        },
+        "candidates": rows,
+    }
 
 
 def main() -> None:
-    print(">>> Building verified real candidate catalog...")
-    coco_cands = fetch_coco_candidates(count=220)
-    unsplash_cands = fetch_unsplash_candidates(count=220)
-
-    assert len(coco_cands) == 220, f"Expected 220 COCO candidates, got {len(coco_cands)}"
-    assert len(unsplash_cands) == 220, f"Expected 220 Unsplash candidates, got {len(unsplash_cands)}"
-
-    catalog = {
-        "schema_version": "1.2.0",
-        "evidence_class": "verified_real_catalog",
-        "eligible_for_independent_cohort": True,
-        "is_synthetic": False,
-        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
-        "total_verified_candidates": len(coco_cands) + len(unsplash_cands),
-        "coco_candidates": coco_cands,
-        "unsplash_candidates": unsplash_cands,
-    }
-
-    CATALOG_OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    CATALOG_OUTPUT.write_text(json.dumps(catalog, indent=2), encoding="utf-8")
-    print(f"\nSuccessfully wrote verified real candidate catalog to: {CATALOG_OUTPUT}")
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--out", default=str(DEFAULT_CATALOG_PATH))
+    parser.add_argument("--audit-legacy", action="store_true", help="Offline eligibility audit of the v1 catalog")
+    args = parser.parse_args()
+    if args.audit_legacy:
+        audit = audit_legacy_catalog()
+        LEGACY_AUDIT.write_text(json.dumps(audit, indent=1), encoding="utf-8")
+        print(f"v1 catalog: {audit['eligible']}/{audit['total']} eligible; reasons {audit['reason_counts']}")
+        return
+    catalog = build()
+    Path(args.out).write_text(json.dumps(catalog, indent=1), encoding="utf-8")
+    print(f"COCO eligible: {len(catalog['coco_candidates'])}/220, excluded: {len(catalog['excluded_candidates'])}, "
+          f"Unsplash: {catalog['unsplash_status']}\nWrote {args.out}")
 
 
 if __name__ == "__main__":

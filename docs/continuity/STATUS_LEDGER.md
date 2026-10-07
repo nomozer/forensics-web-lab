@@ -1,3 +1,16 @@
+## Phase 4C.7B — Revision 2: Provenance, Notebook Binding & Fail-Closed Correction
+
+- **Mục tiêu**: Re-verify revision 1 from source; fix notebook commit binding, candidate provenance/licensing, and fail-closed execution; prepare the 8-pair Colab pilot.
+- **Reproduced defects (`dc00895`)**: notebook `PINNED_COMMIT` unused (existing clone only fetched), `!` shell calls ignore exit codes, Drive failure fell back to `/content`, audit accepted stale manifest/ZIP; disjoint guard needed the Git-excluded Option P manifest (CI run 37564295722 FAILED, 7 tests); 220 generated COCO authors, `date_captured` stored as `published_date`, 91 ND entries; Unsplash Lite dataset terms (download/store + internal training, no redistribution) do not cover the edited cohort; full-run quota logic unsatisfiable; mock engine accepted in production; `--verify-plan` exited 0 on FAIL.
+- **Fixes**: detached checkout at full SHA + HEAD assert + dirty-tree stop + `subprocess.run(check=True)` + Drive fail-stop + per-session run id + bound audit/packaging; pre-registered eligibility rules; namespaced disjoint guard from committed `real-variant-map.json`; `run_binding.json`/`run_receipt.json`/`--audit-run`; GPU policy; quota layout 100 exact + 10 cell-covering buffer; catalog builder v2 (COCO + Flickr oEmbed).
+- **Catalog**: v1 0/440 eligible (`catalog_eligibility_audit.json`); 0 replaced; v1 catalog/plan/smoke receipt kept SUPERSEDED; v2 not built (egress to flickr.com, images.cocodataset.org, huggingface.co, unsplash.com denied in this environment).
+- **Tests**: see CURRENT_STATE §6 (SYNTHETIC fixtures only; no real-image or GPU pilot).
+- **Status**: `BLOCKED_PENDING_ELIGIBLE_CANDIDATE_CATALOG`; real pilot `NOT_RUN`; timing/VRAM/QC `NOT_MEASURED`; independent performance `NOT_MEASURED`.
+- **Evidence**: `research/evidence/phase-4c.7b/` (PHASE_REPORT §R, `catalog_eligibility_audit.json`, `acquisition_smoke_receipt_v2.json`).
+- **Next**: user decides Unsplash-strata source (amendment v1.3 / permission / API) and builds + commits catalog v2 on a networked host; re-pin notebook; run 8-pair pilot; full run only after pilot + content QC review.
+
+---
+
 ## Phase 4C.7B — Independent Cohort Acquisition: Protocol Amendment, Automated Pipeline, and Feasibility Alignment
 
 - **Mục tiêu**: Amend independent validation cohort acquisition plan based on realistic operational resources, construct automated acquisition/generation pipeline with technical QC, and verify execution runtime.

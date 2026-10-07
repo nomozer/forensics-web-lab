@@ -20,11 +20,14 @@ from __future__ import annotations
 
 import csv
 from dataclasses import asdict, dataclass
+from datetime import datetime, timezone
 import hashlib
 import io
 import json
 import math
 from pathlib import Path
+import platform
+import re
 import sys
 import time
 from typing import Any, Callable, Sequence
@@ -39,11 +42,8 @@ if str(REPO_ROOT) not in sys.path:
 
 from ml.evaluation.independent_cohort import (
     DEFAULT_HISTORICAL_MANIFEST,
-    CohortValidationError,
     SourceOverlapError,
     load_historical_image_hashes,
-    load_historical_origin_ids,
-    load_historical_source_ids,
 )
 
 # Standard target resolutions and thresholds
@@ -59,8 +59,45 @@ TOTAL_BUFFER_PAIRS = 440
 
 MODIFICATION_TYPES = ("object_replacement", "object_removal_and_infill", "object_insertion")
 MASK_AREA_CLASSES = ("small_under_10pct", "medium_10_to_30pct", "large_over_30pct")
+TARGET_MOD_PER_STRATUM = {"object_replacement": 40, "object_removal_and_infill": 30, "object_insertion": 30}
+TARGET_MASK_PER_STRATUM = {"small_under_10pct": 30, "medium_10_to_30pct": 40, "large_over_30pct": 30}
 
-DEFAULT_CATALOG_PATH = REPO_ROOT / "research/evidence/phase-4c.7b/verified_candidate_catalog.json"
+# v1 catalog (verified_candidate_catalog.json) is SUPERSEDED: its 440 entries fail the
+# eligibility rules below (see catalog_eligibility_audit.json). v2 must be built with
+# scripts/research/build_verified_candidate_catalog.py on a host that can reach the sources.
+DEFAULT_CATALOG_PATH = REPO_ROOT / "research/evidence/phase-4c.7b/verified_candidate_catalog_v2.json"
+
+# Committed map of the 684 historical Option P sources (all COCO 2017 image IDs, incl. the
+# 343 retired locked-test sources). Only IDs are read; no locked-test image or feature.
+HISTORICAL_SOURCE_MAP = REPO_ROOT / "research/evidence/phase-4c.0/real-variant-map.json"
+
+# Locked execution policy (Protocol v1.2: Colab T4 / A100; SDXL fp16 needs a >=12 GB GPU).
+MIN_GPU_VRAM_BYTES = 12 * 1024**3
+
+# ---- Pre-registered candidate eligibility rules (independent of any detector output) ----
+# Use = create AI-edited derivatives and export/share the edited cohort for research.
+CREATOR_PLACEHOLDER_RE = re.compile(r"^(flickr_contributor_|photographer_|synthetic_author|unknown|anonymous)", re.I)
+CC_LICENSE_RE = re.compile(r"creativecommons\.org/licenses/([a-z-]+)/(\d\.\d)/?$")
+CC_USAGE_POLICY = {
+    "by": ("ELIGIBLE", "Attribution required (creator, source, license link); indicate changes."),
+    "by-sa": ("ELIGIBLE_WITH_POLICY", "Attribution required; indicate changes; edited derivatives shared only under CC BY-SA (ShareAlike)."),
+    "by-nc": ("ELIGIBLE_WITH_POLICY", "Attribution required; indicate changes; NonCommercial research use only."),
+    "by-nc-sa": ("ELIGIBLE_WITH_POLICY", "Attribution required; indicate changes; NonCommercial research use only; edited derivatives shared only under CC BY-NC-SA (ShareAlike)."),
+}
+CC_NO_DERIVATIVES = {"by-nd", "by-nc-nd"}
+# Acquisition channels and whether their own terms cover creating + sharing edited derivatives.
+CHANNEL_TERMS = {
+    "coco_2017_image_info": True,  # per-image Flickr CC license governs; COCO terms defer to Flickr
+    # Unsplash Dataset Terms s.2A/s.3A-B: Lite = download/store + internal ML training only;
+    # disseminating/redistributing Licensed Data is prohibited without written permission.
+    "unsplash_lite_dataset": False,
+    "unsplash_lite_dataset_hf_mirror": False,
+}
+REQUIRED_PROVENANCE_FIELDS = (
+    "download_url", "source_page_url", "license_name", "license_url", "license_version",
+    "license_evidence_source", "provenance_checked_at_utc", "download_rendition",
+)
+SOURCE_KEY_NAMESPACES = ("coco", "flickr", "unsplash")
 
 
 class DetectorIsolationViolationError(RuntimeError):
@@ -93,6 +130,107 @@ class TamperDetectedError(RuntimeError):
 
 class QuotaDeficitError(RuntimeError):
     """Raised when final cohort fails to meet the exact required quotas."""
+
+
+class CandidateEligibilityError(ValueError):
+    """Raised when a catalog cannot supply the pre-registered quota of eligible candidates."""
+
+
+class RunBindingMismatchError(RuntimeError):
+    """Raised when existing run artifacts belong to a different run/commit/catalog/plan."""
+
+
+class RunAuditError(RuntimeError):
+    """Raised when a run directory does not prove a complete, correctly bound acquisition."""
+
+
+def load_historical_source_keys(source_map_path: Path | str = HISTORICAL_SOURCE_MAP) -> set[str]:
+    """Namespaced identifiers ('coco:<image_id>') of all 684 historical Option P sources."""
+    data = json.loads(Path(source_map_path).read_text(encoding="utf-8"))
+    return {f"coco:{int(sid)}" for sid in data["source_mapping"]}
+
+
+def _sha256_file(path: Path) -> str:
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def evaluate_candidate_eligibility(entry: dict[str, Any], historical_keys: set[str]) -> dict[str, Any]:
+    """Apply the pre-registered eligibility rules to one catalog entry.
+
+    A field counts as verified only when the entry carries the verification marker and an
+    evidence URL from the source; a non-empty value alone is never enough.
+    """
+    reasons: list[str] = []
+
+    channel = entry.get("acquisition_channel")
+    if channel not in CHANNEL_TERMS:
+        reasons.append("ACQUISITION_CHANNEL_UNDECLARED")
+    elif not CHANNEL_TERMS[channel]:
+        reasons.append("CHANNEL_TERMS_DO_NOT_COVER_EDITED_EXPORT")
+
+    raw_keys = entry.get("source_keys")
+    keys = set(raw_keys) if isinstance(raw_keys, list) else set()
+    if not keys or any(
+        not isinstance(k, str) or k.partition(":")[0] not in SOURCE_KEY_NAMESPACES or not k.partition(":")[2]
+        for k in keys
+    ):
+        reasons.append("SOURCE_KEYS_MISSING")
+    if keys & historical_keys:
+        reasons.append("HISTORICAL_OPTION_P_OVERLAP")
+
+    creator = entry.get("creator_name") or ""
+    if not creator:
+        reasons.append("CREATOR_MISSING")
+    if CREATOR_PLACEHOLDER_RE.match(creator) or CREATOR_PLACEHOLDER_RE.match(entry.get("author") or ""):
+        reasons.append("CREATOR_PLACEHOLDER")
+    if entry.get("creator_verification") != "VERIFIED_FROM_SOURCE" or not str(
+        entry.get("creator_evidence_url") or ""
+    ).startswith(("https://", "http://")):
+        reasons.append("CREATOR_UNVERIFIED")
+
+    for f in REQUIRED_PROVENANCE_FIELDS:
+        if not entry.get(f):
+            reasons.append(f"PROVENANCE_FIELD_MISSING:{f}")
+    if entry.get("published_date") and not entry.get("published_date_source"):
+        reasons.append("DATE_PROVENANCE_UNLABELED")
+    if entry.get("date_captured") and not entry.get("date_captured_source"):
+        reasons.append("DATE_PROVENANCE_UNLABELED")
+
+    usage_policy = ""
+    status = "EXCLUDED"
+    m = CC_LICENSE_RE.search(str(entry.get("license_url") or ""))
+    if not m:
+        reasons.append("LICENSE_NOT_IN_POLICY")
+    else:
+        code, version = m.groups()
+        if entry.get("license_version") and entry["license_version"] != version:
+            reasons.append("LICENSE_VERSION_MISMATCH")
+        if code in CC_NO_DERIVATIVES:
+            if entry.get("special_permission_evidence"):
+                status, usage_policy = "ELIGIBLE_WITH_POLICY", (
+                    f"Separate permission recorded ({entry['special_permission_evidence']}); attribution required."
+                )
+            else:
+                reasons.append("LICENSE_ND_NO_EDITED_EXPORT")
+        elif code in CC_USAGE_POLICY:
+            status, usage_policy = CC_USAGE_POLICY[code]
+        else:
+            reasons.append("LICENSE_NOT_IN_POLICY")
+
+    if reasons:
+        return {"status": "EXCLUDED", "reasons": sorted(set(reasons)), "usage_policy": ""}
+    return {"status": status, "reasons": [], "usage_policy": usage_policy}
+
+
+def check_gpu_policy(cuda_available: bool, total_vram_bytes: int, device_name: str) -> None:
+    """Fail closed unless the runtime matches the locked GPU execution policy."""
+    if not cuda_available:
+        raise RuntimeError("Execution policy requires a CUDA GPU (Colab T4/A100); none detected.")
+    if total_vram_bytes < MIN_GPU_VRAM_BYTES:
+        raise RuntimeError(
+            f"Execution policy requires >= {MIN_GPU_VRAM_BYTES / 1024**3:.0f} GiB VRAM; "
+            f"{device_name} has {total_vram_bytes / 1024**3:.2f} GiB."
+        )
 
 
 def assert_detector_isolation() -> None:
@@ -135,6 +273,13 @@ class CandidateSpec:
     is_synthetic: bool = False
     evidence_class: str = "verified_real_catalog"
     eligible_for_independent_cohort: bool = True
+    source_keys: tuple[str, ...] = ()
+    creator_url: str = ""
+    license_url: str = ""
+    usage_policy: str = ""
+    date_captured: str = ""
+    provenance_checked_at_utc: str = ""
+    download_rendition: str = ""
 
 
 @dataclass
@@ -167,15 +312,25 @@ class AcquisitionReceipt:
     qc_failure_reason: str | None = None
     content_qc_status: str = "PENDING_CONTENT_QC"
     is_synthetic: bool = False
+    run_id: str = ""
+    source_keys: tuple[str, ...] | list[str] = ()
+    creator_url: str = ""
+    license_url: str = ""
+    usage_policy: str = ""
+    date_captured: str = ""
+    download_rendition: str = ""
+    downloaded_at_utc: str = ""
+    raw_width: int = 0
+    raw_height: int = 0
+    engine_config: dict[str, Any] | None = None
 
 
 def download_authentic_image(
     spec: CandidateSpec,
     timeout: float = 25.0,
     max_retries: int = 2,
-    hist_sources: set[str] | None = None,
+    hist_keys: set[str] | None = None,
     hist_hashes: set[str] | None = None,
-    hist_origins: set[str] | None = None,
     allow_synthetic: bool = False,
 ) -> tuple[Image.Image, bytes, str]:
     """Download authentic photographic image with fail-closed integrity and provenance guards.
@@ -184,7 +339,8 @@ def download_authentic_image(
     - If spec.is_synthetic is True and allow_synthetic is False: FAIL-CLOSED.
     - If required provenance (download_url, license_name, author) is missing: FAIL-CLOSED.
     - If download encounters HTTP 404, network error, or timeout: FAIL-CLOSED (no synthetic fallback).
-    - Checks raw byte hash against historical Option P: FAIL-CLOSED if collision.
+    - Checks namespaced source keys (coco:/flickr:/unsplash:) against historical Option P.
+    - Checks raw byte hash against historical hashes (byte-identical files only).
     - Decodes with PIL: FAIL-CLOSED if corrupt.
 
     Returns:
@@ -205,11 +361,10 @@ def download_authentic_image(
     if not spec.author:
         raise MissingProvenanceError(f"Candidate {spec.candidate_id} missing author.")
 
-    # Disjoint checks on metadata before network
-    if hist_sources and spec.candidate_id in hist_sources:
-        raise SourceOverlapError(f"Candidate ID {spec.candidate_id} collides with historical Option P source.")
-    if hist_origins and spec.origin_id in hist_origins:
-        raise SourceOverlapError(f"Origin ID {spec.origin_id} collides with historical Option P instance.")
+    # Disjoint check on namespaced source identifiers before network
+    overlap = set(spec.source_keys) & (hist_keys or set())
+    if overlap:
+        raise SourceOverlapError(f"Candidate {spec.candidate_id} source keys {sorted(overlap)} overlap historical Option P.")
 
     # Support local file path or file:// URL for testing/offline mirrors
     data: bytes | None = None
@@ -264,6 +419,22 @@ def download_authentic_image(
     return img, data, raw_sha256
 
 
+def quota_layout(rng: np.random.Generator) -> tuple[list[str], list[str]]:
+    """Per-stratum (modification, mask) labels for 110 slots.
+
+    Slots 0-99 carry exactly the target quota (40/30/30 x 30/40/30, each dimension permuted).
+    Slots 100-109 hold every (modification, mask) cell once plus one extra
+    (object_replacement, medium) - marginals 4/3/3 and 3/4/3 - so a failed core slot of any
+    cell can be replaced without breaking either quota. (Permuting all 110 slots jointly left
+    the first 100 off-quota and made full runs unsatisfiable by in-order replacement.)
+    """
+    core_mods = list(rng.permutation([k for k, n in TARGET_MOD_PER_STRATUM.items() for _ in range(n)]))
+    core_masks = list(rng.permutation([k for k, n in TARGET_MASK_PER_STRATUM.items() for _ in range(n)]))
+    cells = [(m, a) for m in MODIFICATION_TYPES for a in MASK_AREA_CLASSES] + [("object_replacement", "medium_10_to_30pct")]
+    buffer = [cells[i] for i in rng.permutation(len(cells))]
+    return core_mods + [m for m, _ in buffer], core_masks + [a for _, a in buffer]
+
+
 def generate_canonical_candidate_plan(
     catalog_path: Path | str | None = None,
     seed: int = 20261007,
@@ -288,28 +459,31 @@ def generate_canonical_candidate_plan(
         )
 
     catalog_data = json.loads(cat_path.read_text(encoding="utf-8"))
-    coco_catalog = catalog_data.get("coco_candidates", [])
-    unsplash_catalog = catalog_data.get("unsplash_candidates", [])
+    catalog_synthetic = bool(catalog_data.get("is_synthetic", False))
+    historical_keys = load_historical_source_keys()
 
-    if len(coco_catalog) < buffer_per_stratum * 2:
-        raise ValueError(f"Catalog has only {len(coco_catalog)} COCO candidates, need {buffer_per_stratum * 2}")
-    if len(unsplash_catalog) < buffer_per_stratum * 2:
-        raise ValueError(f"Catalog has only {len(unsplash_catalog)} Unsplash candidates, need {buffer_per_stratum * 2}")
+    # Eligible entries in frozen catalog order; excluded entries are skipped, never edited.
+    need = buffer_per_stratum * 2
+    pools: dict[str, list[tuple[dict[str, Any], dict[str, Any]]]] = {}
+    for key in ("coco_candidates", "unsplash_candidates"):
+        evaluated = [(e, evaluate_candidate_eligibility(e, historical_keys)) for e in catalog_data.get(key, [])]
+        eligible = [(e, r) for e, r in evaluated if r["status"] != "EXCLUDED"]
+        if len(eligible) < need:
+            reasons: dict[str, int] = {}
+            for _, r in evaluated:
+                for reason in r["reasons"]:
+                    reasons[reason] = reasons.get(reason, 0) + 1
+            raise CandidateEligibilityError(
+                f"{cat_path.name}: {key} has {len(eligible)}/{need} eligible candidates "
+                f"({len(evaluated)} evaluated); exclusion reasons: {reasons}"
+            )
+        pools[key] = eligible[:need]
+    coco_catalog = pools["coco_candidates"]
+    unsplash_catalog = pools["unsplash_candidates"]
 
     rng = np.random.default_rng(seed)
     candidates: list[CandidateSpec] = []
 
-    # Quota layout for buffer of 110 items per stratum
-    mod_types_base = (
-        ["object_replacement"] * 44
-        + ["object_removal_and_infill"] * 33
-        + ["object_insertion"] * 33
-    )
-    mask_areas_base = (
-        ["small_under_10pct"] * 33
-        + ["medium_10_to_30pct"] * 44
-        + ["large_over_30pct"] * 33
-    )
 
     prompts_by_mod = {
         "object_replacement": [
@@ -341,10 +515,9 @@ def generate_canonical_candidate_plan(
 
     global_pool_idx = 0
     for stratum_id, source_origin, tool_key, raw_pool in strata_configs:
-        perm_mods = list(rng.permutation(mod_types_base))
-        perm_masks = list(rng.permutation(mask_areas_base))
+        perm_mods, perm_masks = quota_layout(rng)
 
-        for idx, item in enumerate(raw_pool):
+        for idx, (item, eligibility) in enumerate(raw_pool):
             global_pool_idx += 1
             cid = f"IND_{stratum_id.upper()}_{idx+1:03d}"
             mod_type = perm_mods[idx]
@@ -362,19 +535,26 @@ def generate_canonical_candidate_plan(
                     tool_key=tool_key,
                     modification_type=mod_type,
                     mask_area_class=mask_class,
-                    origin_id=item["origin_id"],
-                    author=item["author"],
-                    origin_url=item["origin_url"],
+                    origin_id=item.get("origin_id") or min(item["source_keys"]),
+                    author=item["creator_name"],
+                    origin_url=item["source_page_url"],
                     download_url=item["download_url"],
                     license_name=item["license_name"],
                     license_evidence_source=item["license_evidence_source"],
-                    published_date=item["published_date"],
+                    published_date=item.get("published_date") or "",
                     prompt=prompt,
                     generation_seed=gen_seed,
                     pool_index=idx,
-                    is_synthetic=False,
-                    evidence_class="verified_real_catalog",
-                    eligible_for_independent_cohort=True,
+                    is_synthetic=catalog_synthetic,
+                    evidence_class="synthetic" if catalog_synthetic else "verified_real_catalog",
+                    eligible_for_independent_cohort=not catalog_synthetic,
+                    source_keys=tuple(sorted(item["source_keys"])),
+                    creator_url=item.get("creator_url", ""),
+                    license_url=item["license_url"],
+                    usage_policy=eligibility["usage_policy"],
+                    date_captured=item.get("date_captured") or "",
+                    provenance_checked_at_utc=item["provenance_checked_at_utc"],
+                    download_rendition=item["download_rendition"],
                 )
             )
 
@@ -393,9 +573,6 @@ def generate_synthetic_fixture_plan(
     rng = np.random.default_rng(seed)
     candidates: list[CandidateSpec] = []
 
-    mod_types_base = ["object_replacement"] * 44 + ["object_removal_and_infill"] * 33 + ["object_insertion"] * 33
-    mask_areas_base = ["small_under_10pct"] * 33 + ["medium_10_to_30pct"] * 44 + ["large_over_30pct"] * 33
-
     strata_definitions = [
         ("coco_sd2", "coco_2017", "stable_diffusion_2_inpainting"),
         ("coco_sdxl", "coco_2017", "sdxl_inpainting"),
@@ -405,8 +582,7 @@ def generate_synthetic_fixture_plan(
 
     global_pool_idx = 0
     for stratum_id, source_origin, tool_key in strata_definitions:
-        perm_mods = list(rng.permutation(mod_types_base))
-        perm_masks = list(rng.permutation(mask_areas_base))
+        perm_mods, perm_masks = quota_layout(rng)
 
         for idx in range(buffer_per_stratum):
             global_pool_idx += 1
@@ -623,6 +799,12 @@ class MockInpaintingEngine:
 
         return Image.fromarray(auth_arr, mode="RGB")
 
+    def describe(self) -> dict[str, Any]:
+        return {"engine": "MockInpaintingEngine", "is_synthetic": True}
+
+    def peak_vram_bytes(self) -> int | str:
+        return "NOT_MEASURED"
+
 
 class DiffusersInpaintingEngine:
     """Production GPU inpainting engine using HuggingFace Diffusers for SD2 and SDXL."""
@@ -638,6 +820,8 @@ class DiffusersInpaintingEngine:
         self.pipeline: Any = None
 
         try:
+            import diffusers
+            from huggingface_hub import HfApi
             import torch
             from diffusers import (
                 DDIMScheduler,
@@ -655,29 +839,46 @@ class DiffusersInpaintingEngine:
         self.dtype = torch_dtype or (torch.float16 if torch.cuda.is_available() else torch.float32)
 
         if tool_key == "stable_diffusion_2_inpainting":
-            checkpoint = "stabilityai/stable-diffusion-2-inpainting"
-            self.pipeline = StableDiffusionInpaintPipeline.from_pretrained(
-                checkpoint,
-                torch_dtype=self.dtype,
-                safety_checker=None,
+            checkpoint, pipeline_cls, scheduler_cls, extra = (
+                "stabilityai/stable-diffusion-2-inpainting", StableDiffusionInpaintPipeline, DDIMScheduler,
+                {"safety_checker": None},
             )
-            self.pipeline.scheduler = DDIMScheduler.from_config(self.pipeline.scheduler.config)
-            self.pipeline.to(self.device)
             self.num_steps = 50
-            self.guidance_scale = 7.5
         elif tool_key == "sdxl_inpainting":
-            checkpoint = "diffusers/stable-diffusion-xl-1.0-inpainting-0.1"
-            self.pipeline = StableDiffusionXLInpaintPipeline.from_pretrained(
-                checkpoint,
-                torch_dtype=self.dtype,
-                variant="fp16",
+            checkpoint, pipeline_cls, scheduler_cls, extra = (
+                "diffusers/stable-diffusion-xl-1.0-inpainting-0.1", StableDiffusionXLInpaintPipeline,
+                EulerDiscreteScheduler, {"variant": "fp16"},
             )
-            self.pipeline.scheduler = EulerDiscreteScheduler.from_config(self.pipeline.scheduler.config)
-            self.pipeline.to(self.device)
             self.num_steps = 30
-            self.guidance_scale = 7.5
         else:
             raise ValueError(f"Unknown inpainting tool key: {tool_key}")
+        self.guidance_scale = 7.5
+
+        # Protocol pins revision "main" (mutable): resolve it once and load exactly that commit,
+        # so the receipt names the weights actually used.
+        self.revision = HfApi().model_info(checkpoint).sha
+        self.pipeline = pipeline_cls.from_pretrained(
+            checkpoint, revision=self.revision, torch_dtype=self.dtype, **extra
+        )
+        self.pipeline.scheduler = scheduler_cls.from_config(self.pipeline.scheduler.config)
+        self.pipeline.to(self.device)
+        self.config = {
+            "engine": "DiffusersInpaintingEngine",
+            "tool_key": tool_key,
+            "checkpoint": checkpoint,
+            "resolved_revision": self.revision,
+            "pipeline": pipeline_cls.__name__,
+            "scheduler": scheduler_cls.__name__,
+            "num_inference_steps": self.num_steps,
+            "guidance_scale": self.guidance_scale,
+            "dtype": str(self.dtype),
+            "variant": extra.get("variant"),
+            "device": torch.cuda.get_device_name(0) if torch.cuda.is_available() else device,
+            "diffusers_version": diffusers.__version__,
+            "torch_version": torch.__version__,
+        }
+        if torch.cuda.is_available():
+            torch.cuda.reset_peak_memory_stats()
 
     def inpaint(
         self,
@@ -697,12 +898,57 @@ class DiffusersInpaintingEngine:
         ).images[0]
         return result
 
+    def describe(self) -> dict[str, Any]:
+        return dict(self.config)
+
+    def peak_vram_bytes(self) -> int | str:
+        if self.torch.cuda.is_available():
+            return int(self.torch.cuda.max_memory_allocated())
+        return "NOT_MEASURED"
+
     def unload(self) -> None:
         """Release GPU memory cleanly."""
         del self.pipeline
         self.pipeline = None
         if self.torch.cuda.is_available():
             self.torch.cuda.empty_cache()
+
+
+MANIFEST_FIELDS = [
+    "source_id", "label", "label_id", "image_relpath", "image_sha256", "tool", "mask_relpath",
+    "width", "height", "stratum", "origin_id", "license",
+]
+
+
+def _manifest_rows(receipt: AcquisitionReceipt) -> list[dict[str, Any]]:
+    common = {
+        "source_id": receipt.source_id,
+        "width": TARGET_CANVAS_SIZE[0],
+        "height": TARGET_CANVAS_SIZE[1],
+        "stratum": receipt.stratum_id,
+        "origin_id": receipt.origin_id,
+        "license": receipt.license_name,
+    }
+    return [
+        common | {"label": "authentic", "label_id": 0, "image_relpath": receipt.authentic_relpath,
+                  "image_sha256": receipt.master_sha256, "tool": None, "mask_relpath": None},
+        common | {"label": "ai_edited", "label_id": 1, "image_relpath": receipt.edited_relpath,
+                  "image_sha256": receipt.edited_sha256, "tool": receipt.tool_key, "mask_relpath": receipt.mask_relpath},
+    ]
+
+
+def _check_run_binding(out_path: Path, run_binding: dict[str, Any], provenance_jsonl: Path) -> None:
+    """Bind the output directory to exactly one run; refuse foreign or unbound artifacts."""
+    binding_path = out_path / "run_binding.json"
+    if binding_path.is_file():
+        existing = json.loads(binding_path.read_text(encoding="utf-8"))
+        if existing != run_binding:
+            diff = sorted(k for k in set(existing) | set(run_binding) if existing.get(k) != run_binding.get(k))
+            raise RunBindingMismatchError(f"{out_path} is bound to another run (differs in {diff}).")
+    elif provenance_jsonl.is_file() or (out_path / "run_receipt.json").is_file():
+        raise RunBindingMismatchError(f"{out_path} holds unbound legacy artifacts; use a new output directory.")
+    else:
+        binding_path.write_text(json.dumps(run_binding, indent=2, sort_keys=True), encoding="utf-8")
 
 
 def execute_cohort_acquisition(
@@ -715,14 +961,21 @@ def execute_cohort_acquisition(
     mode: str = "production",  # "production" or "fixture_test"
     allow_synthetic: bool = False,
     resume: bool = True,
+    run_binding: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Execute independent cohort acquisition pipeline with fail-closed integrity.
 
     Modes:
     - 'production': Real photographic images only. Fails closed on download errors or synthetic sources.
     - 'fixture_test': Allows synthetic fixtures only if allow_synthetic=True. Emits provisional synthetic metadata.
+
+    run_binding (run_id, git commit, protocol/catalog/plan hashes, mode, target) is written to
+    run_binding.json; artifacts bound to anything else are refused. run_receipt.json is written
+    only after the quota is met, so its presence proves completion of this bound run.
     """
     assert_detector_isolation()
+    run_binding = dict(run_binding or {})
+    run_id = str(run_binding.get("run_id", ""))
 
     if mode == "production" and allow_synthetic:
         raise SyntheticSourceProhibitedError(
@@ -730,19 +983,7 @@ def execute_cohort_acquisition(
             "Production independent cohort must contain 100% verified real photographs."
         )
 
-    out_path = Path(output_dir)
-    out_path.mkdir(parents=True, exist_ok=True)
-    images_dir = out_path / "images"
-    masks_dir = out_path / "masks"
-    images_dir.mkdir(parents=True, exist_ok=True)
-    masks_dir.mkdir(parents=True, exist_ok=True)
-
-    # 1. Historical disjoint guards
-    hist_sources = load_historical_source_ids(historical_manifest_path)
-    hist_hashes = load_historical_image_hashes(historical_manifest_path)
-    hist_origins = load_historical_origin_ids(historical_manifest_path)
-
-    # 2. Candidate plan
+    # Candidate plan (validated before any artifact is written)
     if candidate_specs is None:
         if mode == "production":
             candidate_specs = generate_canonical_candidate_plan()
@@ -757,16 +998,32 @@ def execute_cohort_acquisition(
                     "for production independent cohort acquisition!"
                 )
 
+    out_path = Path(output_dir)
+    out_path.mkdir(parents=True, exist_ok=True)
+    images_dir = out_path / "images"
+    masks_dir = out_path / "masks"
+    images_dir.mkdir(parents=True, exist_ok=True)
+    masks_dir.mkdir(parents=True, exist_ok=True)
+    provenance_jsonl = out_path / "provenance_ledger.jsonl"
+    attempt_jsonl = out_path / "attempt_ledger.jsonl"
+    _check_run_binding(out_path, run_binding, provenance_jsonl)
+    started_at = datetime.now(timezone.utc).isoformat()
+
+    # 1. Historical disjoint guards: namespaced source IDs from the committed source map;
+    #    byte hashes only when the (Git-excluded) Option P manifest is present locally.
+    hist_keys = load_historical_source_keys()
+    hist_manifest = Path(historical_manifest_path or DEFAULT_HISTORICAL_MANIFEST)
+    hist_hashes = load_historical_image_hashes(hist_manifest) if hist_manifest.is_file() else set()
+    if not hist_hashes:
+        print(f"NOTICE: historical byte-hash guard inactive ({hist_manifest} not present); disjointness rests on "
+              "namespaced COCO IDs. Recorded in run_receipt.json historical_guard.")
+
     # 3. Setup default authentic provider
     if authentic_image_provider is None:
         if mode == "production":
             def real_downloader_provider(spec: CandidateSpec) -> tuple[Image.Image, bytes, str]:
                 return download_authentic_image(
-                    spec,
-                    hist_sources=hist_sources,
-                    hist_hashes=hist_hashes,
-                    hist_origins=hist_origins,
-                    allow_synthetic=False,
+                    spec, hist_keys=hist_keys, hist_hashes=hist_hashes, allow_synthetic=False,
                 )
             authentic_image_provider = real_downloader_provider
         else:
@@ -788,10 +1045,7 @@ def execute_cohort_acquisition(
         if spec.stratum_id in candidates_by_stratum:
             candidates_by_stratum[spec.stratum_id].append(spec)
 
-    # 5. Durable Ledgers
-    provenance_jsonl = out_path / "provenance_ledger.jsonl"
-    attempt_jsonl = out_path / "attempt_ledger.jsonl"
-
+    # 5. Durable ledgers
     receipts: list[AcquisitionReceipt] = []
     completed_sources: set[str] = set()
     stratum_valid_counts: dict[str, int] = {k: 0 for k in STRATA_KEYS}
@@ -801,17 +1055,29 @@ def execute_cohort_acquisition(
     stratum_mask_counts: dict[str, dict[str, int]] = {k: {m: 0 for m in MASK_AREA_CLASSES} for k in STRATA_KEYS}
     manifest_rows: list[dict[str, Any]] = []
 
-    # Resume check
+    def count_accepted(receipt: AcquisitionReceipt) -> None:
+        receipts.append(receipt)
+        completed_sources.add(receipt.source_id)
+        stratum_valid_counts[receipt.stratum_id] += 1
+        mod_counts[receipt.modification_type] += 1
+        mask_counts[receipt.mask_area_class] += 1
+        stratum_mod_counts[receipt.stratum_id][receipt.modification_type] += 1
+        stratum_mask_counts[receipt.stratum_id][receipt.mask_area_class] += 1
+        manifest_rows.extend(_manifest_rows(receipt))
+
+    # Resume: accept only receipts of this run whose files match their recorded checksums.
     if resume and provenance_jsonl.is_file():
         print(f"Resuming from existing provenance ledger: {provenance_jsonl} ...")
         with provenance_jsonl.open("r", encoding="utf-8") as f:
             for line in f:
                 if not line.strip():
                     continue
-                r_dict = json.loads(line)
-                receipt = AcquisitionReceipt(**r_dict)
+                receipt = AcquisitionReceipt(**json.loads(line))
+                if receipt.run_id != run_id:
+                    raise RunBindingMismatchError(
+                        f"Ledger receipt {receipt.source_id} belongs to run '{receipt.run_id}', not '{run_id}'."
+                    )
 
-                # Verify files on disk and checksums
                 auth_p = out_path / receipt.authentic_relpath
                 edit_p = out_path / receipt.edited_relpath
                 mask_p = out_path / receipt.mask_relpath
@@ -819,53 +1085,14 @@ def execute_cohort_acquisition(
                 if not (auth_p.is_file() and edit_p.is_file() and mask_p.is_file()):
                     raise TamperDetectedError(f"Missing file on disk for completed source: {receipt.source_id}")
 
-                if hashlib.sha256(auth_p.read_bytes()).hexdigest() != receipt.master_sha256:
+                if _sha256_file(auth_p) != receipt.master_sha256:
                     raise TamperDetectedError(f"SHA-256 tamper detected on authentic master: {auth_p}")
-                if hashlib.sha256(edit_p.read_bytes()).hexdigest() != receipt.edited_sha256:
+                if _sha256_file(edit_p) != receipt.edited_sha256:
                     raise TamperDetectedError(f"SHA-256 tamper detected on edited master: {edit_p}")
-                if hashlib.sha256(mask_p.read_bytes()).hexdigest() != receipt.mask_sha256:
+                if _sha256_file(mask_p) != receipt.mask_sha256:
                     raise TamperDetectedError(f"SHA-256 tamper detected on mask: {mask_p}")
 
-                receipts.append(receipt)
-                completed_sources.add(receipt.source_id)
-                stratum_valid_counts[receipt.stratum_id] += 1
-                mod_counts[receipt.modification_type] += 1
-                mask_counts[receipt.mask_area_class] += 1
-                stratum_mod_counts[receipt.stratum_id][receipt.modification_type] += 1
-                stratum_mask_counts[receipt.stratum_id][receipt.mask_area_class] += 1
-
-                manifest_rows.append(
-                    {
-                        "source_id": receipt.source_id,
-                        "label": "authentic",
-                        "label_id": 0,
-                        "image_relpath": receipt.authentic_relpath,
-                        "image_sha256": receipt.master_sha256,
-                        "tool": None,
-                        "mask_relpath": None,
-                        "width": TARGET_CANVAS_SIZE[0],
-                        "height": TARGET_CANVAS_SIZE[1],
-                        "stratum": receipt.stratum_id,
-                        "origin_id": receipt.origin_id,
-                        "license": receipt.license_name,
-                    }
-                )
-                manifest_rows.append(
-                    {
-                        "source_id": receipt.source_id,
-                        "label": "ai_edited",
-                        "label_id": 1,
-                        "image_relpath": receipt.edited_relpath,
-                        "image_sha256": receipt.edited_sha256,
-                        "tool": receipt.tool_key,
-                        "mask_relpath": receipt.mask_relpath,
-                        "width": TARGET_CANVAS_SIZE[0],
-                        "height": TARGET_CANVAS_SIZE[1],
-                        "stratum": receipt.stratum_id,
-                        "origin_id": receipt.origin_id,
-                        "license": receipt.license_name,
-                    }
-                )
+                count_accepted(receipt)
 
     prov_writer_handle = provenance_jsonl.open("a", encoding="utf-8")
     attempt_writer_handle = attempt_jsonl.open("a", encoding="utf-8")
@@ -878,25 +1105,17 @@ def execute_cohort_acquisition(
         prov_writer_handle.write(json.dumps(asdict(receipt)) + "\n")
         prov_writer_handle.flush()
 
-    try:
-        # Target quota breakdown per stratum (for 100 pairs target)
-        target_mod_stratum = {
-            "object_replacement": 40,
-            "object_removal_and_infill": 30,
-            "object_insertion": 30,
-        }
-        target_mask_stratum = {
-            "small_under_10pct": 30,
-            "medium_10_to_30pct": 40,
-            "large_over_30pct": 30,
-        }
+    strata_runtime: dict[str, dict[str, Any]] = {}
+    enforce_quota = target_per_stratum == STRATUM_TARGET_PAIRS
 
+    try:
         # 6. Execute by stratum sequentially (unload GPU models between tool strata)
         for stratum_id in STRATA_KEYS:
             stratum_candidates = candidates_by_stratum[stratum_id]
             if not stratum_candidates:
                 continue
 
+            stratum_t0 = time.perf_counter()
             tool_key = stratum_candidates[0].tool_key
             if engine_provider is not None:
                 engine = engine_provider(tool_key)
@@ -906,6 +1125,7 @@ def execute_cohort_acquisition(
                 engine = DiffusersInpaintingEngine(tool_key=tool_key)
             else:
                 engine = MockInpaintingEngine()
+            engine_config = engine.describe() if hasattr(engine, "describe") else {"engine": type(engine).__name__}
 
             for spec in stratum_candidates:
                 if stratum_valid_counts[stratum_id] >= target_per_stratum:
@@ -914,14 +1134,16 @@ def execute_cohort_acquisition(
                 if spec.candidate_id in completed_sources:
                     continue
 
-                if target_per_stratum == STRATUM_TARGET_PAIRS:
+                if enforce_quota:
                     # Enforce multi-dimensional quota preservation during replacement
-                    if stratum_mod_counts[stratum_id][spec.modification_type] >= target_mod_stratum[spec.modification_type]:
+                    if stratum_mod_counts[stratum_id][spec.modification_type] >= TARGET_MOD_PER_STRATUM[spec.modification_type]:
                         continue
-                    if stratum_mask_counts[stratum_id][spec.mask_area_class] >= target_mask_stratum[spec.mask_area_class]:
+                    if stratum_mask_counts[stratum_id][spec.mask_area_class] >= TARGET_MASK_PER_STRATUM[spec.mask_area_class]:
                         continue
 
+                attempt_t0 = time.perf_counter()
                 attempt_meta: dict[str, Any] = {
+                    "run_id": run_id,
                     "timestamp_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
                     "candidate_id": spec.candidate_id,
                     "stratum_id": stratum_id,
@@ -930,10 +1152,13 @@ def execute_cohort_acquisition(
                     "mask_area_class": spec.mask_area_class,
                     "origin_id": spec.origin_id,
                     "pool_index": spec.pool_index,
+                    "prompt": spec.prompt,
+                    "generation_seed": spec.generation_seed,
                 }
 
                 try:
                     # Step A: Download authentic image (fail-closed)
+                    downloaded_at = datetime.now(timezone.utc).isoformat()
                     auth_res = authentic_image_provider(spec)
                     if isinstance(auth_res, tuple) and len(auth_res) == 3:
                         raw_auth_img, raw_bytes, raw_sha256 = auth_res
@@ -945,11 +1170,12 @@ def execute_cohort_acquisition(
                         raw_sha256 = hashlib.sha256(raw_bytes).hexdigest()
                     else:
                         raise ValueError(f"Unexpected return type from authentic provider: {type(auth_res)}")
+                    attempt_meta["raw_sha256"] = raw_sha256
 
                     auth_canvas = normalize_image_to_canvas(raw_auth_img)
 
                     # Step B: Synthesize request mask
-                    mask_canvas, target_ratio = synthesize_canonical_mask(
+                    mask_canvas, _target_ratio = synthesize_canonical_mask(
                         spec.mask_area_class,
                         seed=spec.generation_seed,
                     )
@@ -969,20 +1195,17 @@ def execute_cohort_acquisition(
                         mask_img=mask_canvas,
                         mask_area_class=spec.mask_area_class,
                         raw_bytes=raw_bytes,
-                        historical_sources=hist_sources,
                         historical_hashes=hist_hashes,
-                        historical_origins=hist_origins,
-                        source_id=spec.candidate_id,
-                        origin_id=spec.origin_id,
                     )
 
                     if not is_pass:
                         attempt_meta["status"] = "QC_FAILED"
                         attempt_meta["reason"] = fail_reason
+                        attempt_meta["elapsed_seconds"] = round(time.perf_counter() - attempt_t0, 3)
                         log_attempt(attempt_meta)
                         continue  # Stratum-preserving replacement: move to next candidate
 
-                    # Step E: Save verified master files atomically
+                    # Step E: Save verified master files
                     source_id = spec.candidate_id
                     auth_filename = f"{source_id}_auth.png"
                     edit_filename = f"{source_id}_edit.png"
@@ -995,10 +1218,6 @@ def execute_cohort_acquisition(
                     auth_canvas.save(auth_path, format="PNG", optimize=True)
                     edited_canvas.save(edit_path, format="PNG", optimize=True)
                     mask_canvas.save(mask_path, format="PNG", optimize=True)
-
-                    master_sha = hashlib.sha256(auth_path.read_bytes()).hexdigest()
-                    edit_sha = hashlib.sha256(edit_path.read_bytes()).hexdigest()
-                    mask_sha = hashlib.sha256(mask_path.read_bytes()).hexdigest()
 
                     receipt = AcquisitionReceipt(
                         source_id=source_id,
@@ -1017,9 +1236,9 @@ def execute_cohort_acquisition(
                         prompt=spec.prompt,
                         generation_seed=spec.generation_seed,
                         raw_sha256=raw_sha256,
-                        master_sha256=master_sha,
-                        mask_sha256=mask_sha,
-                        edited_sha256=edit_sha,
+                        master_sha256=_sha256_file(auth_path),
+                        mask_sha256=_sha256_file(mask_path),
+                        edited_sha256=_sha256_file(edit_path),
                         authentic_relpath=f"images/{auth_filename}",
                         edited_relpath=f"images/{edit_filename}",
                         mask_relpath=f"masks/{mask_filename}",
@@ -1027,58 +1246,38 @@ def execute_cohort_acquisition(
                         technical_qc_status="PASS",
                         content_qc_status="PENDING_CONTENT_QC",
                         is_synthetic=spec.is_synthetic,
+                        run_id=run_id,
+                        source_keys=list(spec.source_keys),
+                        creator_url=spec.creator_url,
+                        license_url=spec.license_url,
+                        usage_policy=spec.usage_policy,
+                        date_captured=spec.date_captured,
+                        download_rendition=spec.download_rendition,
+                        downloaded_at_utc=downloaded_at,
+                        raw_width=raw_auth_img.size[0],
+                        raw_height=raw_auth_img.size[1],
+                        engine_config=engine_config,
                     )
 
                     log_receipt(receipt)
-                    receipts.append(receipt)
-                    completed_sources.add(source_id)
-
-                    manifest_rows.append(
-                        {
-                            "source_id": source_id,
-                            "label": "authentic",
-                            "label_id": 0,
-                            "image_relpath": f"images/{auth_filename}",
-                            "image_sha256": master_sha,
-                            "tool": None,
-                            "mask_relpath": None,
-                            "width": TARGET_CANVAS_SIZE[0],
-                            "height": TARGET_CANVAS_SIZE[1],
-                            "stratum": stratum_id,
-                            "origin_id": spec.origin_id,
-                            "license": spec.license_name,
-                        }
-                    )
-                    manifest_rows.append(
-                        {
-                            "source_id": source_id,
-                            "label": "ai_edited",
-                            "label_id": 1,
-                            "image_relpath": f"images/{edit_filename}",
-                            "image_sha256": edit_sha,
-                            "tool": spec.tool_key,
-                            "mask_relpath": f"masks/{mask_filename}",
-                            "width": TARGET_CANVAS_SIZE[0],
-                            "height": TARGET_CANVAS_SIZE[1],
-                            "stratum": stratum_id,
-                            "origin_id": spec.origin_id,
-                            "license": spec.license_name,
-                        }
-                    )
-
-                    stratum_valid_counts[stratum_id] += 1
-                    mod_counts[spec.modification_type] += 1
-                    mask_counts[spec.mask_area_class] += 1
+                    count_accepted(receipt)
 
                     attempt_meta["status"] = "ACCEPTED"
+                    attempt_meta["elapsed_seconds"] = round(time.perf_counter() - attempt_t0, 3)
                     log_attempt(attempt_meta)
 
                 except Exception as e:
                     attempt_meta["status"] = "ERROR"
                     attempt_meta["error"] = str(e)
+                    attempt_meta["elapsed_seconds"] = round(time.perf_counter() - attempt_t0, 3)
                     log_attempt(attempt_meta)
                     continue
 
+            strata_runtime[stratum_id] = {
+                "elapsed_seconds": round(time.perf_counter() - stratum_t0, 3),
+                "peak_vram_bytes": engine.peak_vram_bytes() if hasattr(engine, "peak_vram_bytes") else "NOT_MEASURED",
+                "engine": engine_config,
+            }
             # Unload engine after stratum
             if hasattr(engine, "unload"):
                 engine.unload()
@@ -1093,69 +1292,38 @@ def execute_cohort_acquisition(
         prov_writer_handle.close()
         attempt_writer_handle.close()
 
-    # 7. Write manifest and atomic checksum
+    # 7. Quota checks before anything claims completion
+    total_valid = sum(stratum_valid_counts.values())
+    if enforce_quota:
+        if total_valid != TOTAL_TARGET_PAIRS or len(completed_sources) != TOTAL_TARGET_PAIRS:
+            raise QuotaDeficitError(
+                f"Cohort acquisition failed to meet target quota: {total_valid}/{TOTAL_TARGET_PAIRS} valid pairs."
+            )
+        expected_mod = {k: v * len(STRATA_KEYS) for k, v in TARGET_MOD_PER_STRATUM.items()}
+        expected_mask = {k: v * len(STRATA_KEYS) for k, v in TARGET_MASK_PER_STRATUM.items()}
+        if mod_counts != expected_mod:
+            raise QuotaDeficitError(f"Modification type quotas skewed: {mod_counts}")
+        if mask_counts != expected_mask:
+            raise QuotaDeficitError(f"Mask area quotas skewed: {mask_counts}")
+
+    # 8. Write manifest, checksum and (last) the run receipt
     manifest_csv = out_path / "manifest_independent_cohort.csv"
     with manifest_csv.open("w", encoding="utf-8", newline="") as f:
-        writer = csv.DictWriter(
-            f,
-            fieldnames=[
-                "source_id",
-                "label",
-                "label_id",
-                "image_relpath",
-                "image_sha256",
-                "tool",
-                "mask_relpath",
-                "width",
-                "height",
-                "stratum",
-                "origin_id",
-                "license",
-            ],
-        )
+        writer = csv.DictWriter(f, fieldnames=MANIFEST_FIELDS)
         writer.writeheader()
         writer.writerows(manifest_rows)
 
-    manifest_sha = hashlib.sha256(manifest_csv.read_bytes()).hexdigest()
+    manifest_sha = _sha256_file(manifest_csv)
     (out_path / "manifest_checksum.sha256").write_text(
         f"{manifest_sha}  manifest_independent_cohort.csv\n", encoding="utf-8"
     )
 
-    total_valid = sum(stratum_valid_counts.values())
-    is_full_target_met = (total_valid == TOTAL_TARGET_PAIRS) and (target_per_stratum == STRATUM_TARGET_PAIRS)
-
-    if target_per_stratum == STRATUM_TARGET_PAIRS:
-        if total_valid != TOTAL_TARGET_PAIRS:
-            raise QuotaDeficitError(
-                f"Cohort acquisition failed to meet target quota: {total_valid}/{TOTAL_TARGET_PAIRS} valid pairs."
-            )
-        for s in STRATA_KEYS:
-            if stratum_valid_counts[s] != STRATUM_TARGET_PAIRS:
-                raise QuotaDeficitError(
-                    f"Stratum '{s}' quota not met: {stratum_valid_counts[s]}/{STRATUM_TARGET_PAIRS}."
-                )
-        if (
-            mod_counts["object_replacement"] != 160
-            or mod_counts["object_removal_and_infill"] != 120
-            or mod_counts["object_insertion"] != 120
-        ):
-            raise QuotaDeficitError(f"Modification type quotas skewed: {mod_counts}")
-        if (
-            mask_counts["small_under_10pct"] != 120
-            or mask_counts["medium_10_to_30pct"] != 160
-            or mask_counts["large_over_30pct"] != 120
-        ):
-            raise QuotaDeficitError(f"Mask area quotas skewed: {mask_counts}")
-        if len(completed_sources) != TOTAL_TARGET_PAIRS:
-            raise QuotaDeficitError(f"Unique source count mismatch: {len(completed_sources)} vs {TOTAL_TARGET_PAIRS}")
-
     status = (
         "PROVISIONAL_TECHNICAL_QC_PASS_PENDING_CONTENT_QC"
-        if is_full_target_met
+        if enforce_quota
         else "PARTIAL_PILOT_TECHNICAL_PASS"
     )
-
-    return {
+    result = {
         "status": status,
         "is_full_cohort_final": False,  # Strict: requires content QC
         "total_valid_pairs": total_valid,
@@ -1168,3 +1336,71 @@ def execute_cohort_acquisition(
         "provenance_ledger_path": str(provenance_jsonl),
         "attempt_ledger_path": str(attempt_jsonl),
     }
+    run_receipt = {
+        "binding": run_binding,
+        "status": status,
+        "mode": mode,
+        "target_per_stratum": target_per_stratum,
+        "total_valid_pairs": total_valid,
+        "stratum_counts": stratum_valid_counts,
+        "modification_type_counts": mod_counts,
+        "mask_area_counts": mask_counts,
+        "manifest_sha256": manifest_sha,
+        "started_at_utc": started_at,
+        "finished_at_utc": datetime.now(timezone.utc).isoformat(),
+        "strata": strata_runtime,
+        "historical_guard": {
+            "source_keys": len(hist_keys),
+            "source_key_namespaces_checked": ["coco"],
+            "flickr_photo_id_disjointness": "NOT_CHECKED (historical Flickr IDs not available)",
+            "byte_hashes": len(hist_hashes),
+        },
+        "environment": {"python": platform.python_version(), "platform": platform.platform()},
+        "detector_calls": 0,
+        "content_qc_status": "PENDING_CONTENT_QC",
+    }
+    (out_path / "run_receipt.json").write_text(json.dumps(run_receipt, indent=2), encoding="utf-8")
+    return result
+
+
+def audit_acquisition_run(run_dir: Path | str, expected_binding: dict[str, Any]) -> dict[str, Any]:
+    """Prove that run_dir holds a complete acquisition bound to expected_binding.
+
+    Fails closed on: missing/foreign run receipt, any binding field mismatch, manifest
+    checksum mismatch, ledger rows from another run, file hash mismatch, or a pair count
+    different from the bound quota.
+    """
+    out = Path(run_dir)
+    receipt_path = out / "run_receipt.json"
+    if not receipt_path.is_file():
+        raise RunAuditError(f"{receipt_path} missing: run did not complete (or predates run binding).")
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    bound = receipt.get("binding", {})
+    mismatched = sorted(k for k in set(bound) | set(expected_binding) if bound.get(k) != expected_binding.get(k))
+    if mismatched:
+        raise RunAuditError(f"Run receipt binding differs from this session in: {mismatched}")
+    binding_file = out / "run_binding.json"
+    if not binding_file.is_file() or json.loads(binding_file.read_text(encoding="utf-8")) != expected_binding:
+        raise RunAuditError("run_binding.json missing or differs from the run receipt binding.")
+
+    manifest = out / "manifest_independent_cohort.csv"
+    checksum = (out / "manifest_checksum.sha256").read_text(encoding="utf-8").split()[0]
+    actual = _sha256_file(manifest)
+    if not (actual == checksum == receipt["manifest_sha256"]):
+        raise RunAuditError(f"Manifest sha256 mismatch: file={actual} checksum={checksum} receipt={receipt['manifest_sha256']}")
+
+    rows = [json.loads(x) for x in (out / "provenance_ledger.jsonl").read_text(encoding="utf-8").splitlines() if x.strip()]
+    for r in rows:
+        if r.get("run_id") != expected_binding.get("run_id"):
+            raise RunAuditError(f"Ledger receipt {r.get('source_id')} has run_id {r.get('run_id')!r}.")
+        for rel, key in (("authentic_relpath", "master_sha256"), ("edited_relpath", "edited_sha256"), ("mask_relpath", "mask_sha256")):
+            p = out / r[rel]
+            if not p.is_file() or _sha256_file(p) != r[key]:
+                raise RunAuditError(f"sha256 mismatch or missing file: {p}")
+
+    expected_pairs = int(expected_binding.get("target_per_stratum", 0)) * len(STRATA_KEYS)
+    if not (len(rows) == receipt["total_valid_pairs"] == expected_pairs):
+        raise RunAuditError(f"Pair count mismatch: ledger={len(rows)} receipt={receipt['total_valid_pairs']} expected={expected_pairs}")
+
+    return {"status": "PASS", "run_id": expected_binding.get("run_id"), "pairs": len(rows),
+            "manifest_sha256": actual, "run_status": receipt["status"]}

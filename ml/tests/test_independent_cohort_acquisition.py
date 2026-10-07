@@ -34,11 +34,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from ml.evaluation.independent_cohort import (
-    DEFAULT_HISTORICAL_MANIFEST,
     SourceOverlapError,
-    load_historical_image_hashes,
-    load_historical_origin_ids,
-    load_historical_source_ids,
     validate_cohort_manifest,
 )
 from ml.evaluation.independent_cohort_acquisition import (
@@ -63,35 +59,23 @@ from ml.evaluation.independent_cohort_acquisition import (
     execute_cohort_acquisition,
     generate_canonical_candidate_plan,
     generate_synthetic_fixture_plan,
+    load_historical_source_keys,
     normalize_image_to_canvas,
     synthesize_canonical_mask,
 )
 
-FORBIDDEN_DETECTOR_MODULES = [
-    "ml.evaluation.phase_4c2g_model",
-    "ml.evaluation.locked_test_evaluator",
-    "ml.evaluation.independent_evaluator",
-    "ml.evaluation.independent_model_bindings",
-]
+from ml.tests.fixtures.cohort_catalog_fixture import clean_detector_modules_isolation, write_synthetic_catalog  # noqa: F401
 
 
-@pytest.fixture(autouse=True)
-def clean_detector_modules_isolation():
-    """Ensure acquisition tests run in isolation with zero detector modules in sys.modules."""
-    saved: dict[str, Any] = {}
-    for mod in FORBIDDEN_DETECTOR_MODULES:
-        if mod in sys.modules:
-            saved[mod] = sys.modules.pop(mod)
-    try:
-        yield
-    finally:
-        for mod, val in saved.items():
-            sys.modules[mod] = val
+def _synthetic_plan(seed: int = 20261007) -> list[CandidateSpec]:
+    """Plan from the SYNTHETIC all-eligible catalog fixture (not real provenance)."""
+    with tempfile.TemporaryDirectory() as td:
+        return generate_canonical_candidate_plan(catalog_path=write_synthetic_catalog(Path(td) / "c.json"), seed=seed)
 
 
 def test_candidate_plan_quotas_and_orthogonal_balance():
     """Verify 440 candidates are generated with exact stratum quotas and orthogonal layout."""
-    plan = generate_canonical_candidate_plan(seed=20261007)
+    plan = _synthetic_plan(seed=20261007)
     assert len(plan) == TOTAL_BUFFER_PAIRS
 
     stratum_counts: dict[str, int] = {k: 0 for k in STRATA_KEYS}
@@ -131,8 +115,8 @@ def test_candidate_plan_quotas_and_orthogonal_balance():
 
 def test_deterministic_seed_assignment():
     """Verify that multiple plan generation calls with the same seed yield identical plans."""
-    plan1 = generate_canonical_candidate_plan(seed=20261007)
-    plan2 = generate_canonical_candidate_plan(seed=20261007)
+    plan1 = _synthetic_plan(seed=20261007)
+    plan2 = _synthetic_plan(seed=20261007)
     assert len(plan1) == len(plan2)
 
     for c1, c2 in zip(plan1, plan2):
@@ -144,33 +128,25 @@ def test_deterministic_seed_assignment():
 
 
 def test_historical_option_p_disjointness():
-    """Verify plan candidates have zero overlap with historical Option P sources, origins, or hashes."""
-    plan = generate_canonical_candidate_plan(seed=20261007)
-    hist_sources = load_historical_source_ids(DEFAULT_HISTORICAL_MANIFEST)
-    hist_origins = load_historical_origin_ids(DEFAULT_HISTORICAL_MANIFEST)
+    """Plan candidates share no namespaced source key (coco:<id>) with the 684 historical sources."""
+    plan = _synthetic_plan(seed=20261007)
+    hist_keys = load_historical_source_keys()
 
     for c in plan:
-        assert c.candidate_id not in hist_sources, f"Candidate {c.candidate_id} collides with historical source"
-        assert c.origin_id not in hist_origins, f"Origin {c.origin_id} collides with historical origin"
+        assert c.source_keys, f"Candidate {c.candidate_id} has no namespaced source keys"
+        assert not set(c.source_keys) & hist_keys
 
 
 def test_license_and_provenance_audit():
-    """Verify license tracking: COCO records individual Flickr licenses; Unsplash records pre-2022."""
-    plan = generate_canonical_candidate_plan(seed=20261007)
+    """Every planned candidate carries verified creator, versioned license, usage policy and rendition."""
+    plan = _synthetic_plan(seed=20261007)
 
-    coco_licenses = set()
     for c in plan:
-        if c.source_origin == "coco_2017":
-            assert c.author.startswith("flickr_")
-            assert c.origin_url.startswith("http://images.cocodataset.org/") or c.origin_url.startswith("https://www.flickr.com/")
-            coco_licenses.add(c.license_name)
-        elif c.source_origin == "unsplash_verified":
-            assert c.license_name == "Unsplash License"
-            assert int(c.published_date[:4]) <= 2021  # Pre-2022 verification
-
-    # COCO licenses must contain variety of Flickr licenses, not just default CC-BY 4.0
-    assert len(coco_licenses) > 1
-    assert any("Attribution" in lic for lic in coco_licenses)
+        assert c.author and not c.author.startswith(("flickr_contributor_", "photographer_"))
+        assert c.license_url.startswith("https://creativecommons.org/licenses/")
+        assert "-nd" not in c.license_url
+        assert "Attribution" in c.usage_policy
+        assert c.provenance_checked_at_utc and c.download_rendition and c.source_keys
 
 
 def test_canvas_normalization_and_mask_synthesis():
@@ -227,7 +203,7 @@ def test_technical_qc_rejection_rules():
 
 def test_stratum_preserving_error_replacement():
     """Verify that candidate failures in stratum S are replaced ONLY by candidates in stratum S."""
-    plan = generate_canonical_candidate_plan(seed=20261007)
+    plan = _synthetic_plan(seed=20261007)
 
     with tempfile.TemporaryDirectory() as td:
         out_dir = Path(td) / "stratum_test"
@@ -248,7 +224,6 @@ def test_stratum_preserving_error_replacement():
             target_per_stratum=2,
             mode="fixture_test",
             allow_synthetic=True,
-            historical_manifest_path=DEFAULT_HISTORICAL_MANIFEST,
         )
 
         assert result["total_valid_pairs"] == 8
@@ -275,7 +250,7 @@ def test_stratum_preserving_error_replacement():
 
 def test_stratum_quota_deficit_error_on_exhausted_buffer():
     """Verify StratumQuotaDeficitError is raised when buffer cannot satisfy target quota."""
-    plan = generate_canonical_candidate_plan(seed=20261007)
+    plan = _synthetic_plan(seed=20261007)
 
     with tempfile.TemporaryDirectory() as td:
         out_dir = Path(td) / "deficit_test"
@@ -293,8 +268,7 @@ def test_stratum_quota_deficit_error_on_exhausted_buffer():
                 target_per_stratum=2,
                 mode="fixture_test",
                 allow_synthetic=True,
-                historical_manifest_path=DEFAULT_HISTORICAL_MANIFEST,
-            )
+                )
 
 
 def test_detector_isolation_guard():
@@ -315,7 +289,7 @@ def test_detector_isolation_guard():
 
 def test_manifest_validation_and_checksum_tamper_detection():
     """Verify acquired cohort manifest validates cleanly with validate_cohort_manifest and detects tampering."""
-    plan = generate_canonical_candidate_plan(seed=20261007)
+    plan = _synthetic_plan(seed=20261007)
 
     with tempfile.TemporaryDirectory() as td:
         out_dir = Path(td) / "manifest_test"
@@ -326,7 +300,6 @@ def test_manifest_validation_and_checksum_tamper_detection():
             target_per_stratum=2,
             mode="fixture_test",
             allow_synthetic=True,
-            historical_manifest_path=DEFAULT_HISTORICAL_MANIFEST,
         )
 
         manifest_file = Path(result["manifest_path"])
@@ -336,12 +309,7 @@ def test_manifest_validation_and_checksum_tamper_detection():
             rows = list(reader)
 
         # Validate with official independent cohort manifest validator
-        pairs = validate_cohort_manifest(
-            rows,
-            historical_sources=load_historical_source_ids(DEFAULT_HISTORICAL_MANIFEST),
-            historical_hashes=load_historical_image_hashes(DEFAULT_HISTORICAL_MANIFEST),
-            historical_origins=load_historical_origin_ids(DEFAULT_HISTORICAL_MANIFEST),
-        )
+        pairs = validate_cohort_manifest(rows)
         assert len(pairs) == 8
 
         # Verify checksum matches
@@ -429,11 +397,11 @@ def test_missing_provenance_fails_closed():
 
 def test_historical_option_p_disjoint_guard():
     """Verify SourceOverlapError is raised if candidate collides with historical Option P."""
-    hist_sources = load_historical_source_ids(DEFAULT_HISTORICAL_MANIFEST)
-    some_historical_sid = next(iter(hist_sources))
+    hist_keys = load_historical_source_keys()
+    some_historical_key = sorted(hist_keys)[0]
 
     spec = CandidateSpec(
-        candidate_id=some_historical_sid,  # Deliberate collision
+        candidate_id="IND_TEST_COLLISION",
         stratum_id="coco_sd2",
         source_origin="coco_2017",
         tool_key="stable_diffusion_2_inpainting",
@@ -449,15 +417,16 @@ def test_historical_option_p_disjoint_guard():
         prompt="test",
         generation_seed=42,
         pool_index=0,
+        source_keys=(some_historical_key,),  # Deliberate collision
     )
 
-    with pytest.raises(SourceOverlapError, match="collides with historical Option P source"):
-        download_authentic_image(spec, hist_sources=hist_sources)
+    with pytest.raises(SourceOverlapError, match="overlap historical Option P"):
+        download_authentic_image(spec, hist_keys=hist_keys)
 
 
 def test_durable_resume_and_tamper_detection():
     """Verify durable resume skips valid completed sources and halts on SHA-256 tampering."""
-    plan = generate_canonical_candidate_plan(seed=20261007)
+    plan = _synthetic_plan(seed=20261007)
 
     with tempfile.TemporaryDirectory() as td:
         out_dir = Path(td) / "resume_test"
@@ -530,10 +499,11 @@ def test_notebook_structure_and_production_cli_invocation():
 
     # 2. Strictly calls production runner CLI
     assert "run_cohort_acquisition.py" in full_code, "Notebook must call production runner CLI"
-    assert "--mode pilot" in full_code, "Notebook must default to technical pilot mode"
+    assert '"--mode", "pilot"' in full_code, "Notebook must launch the technical pilot"
 
     # 3. Google Drive mount present
     assert "drive.mount" in full_code, "Notebook must mount Google Drive for persistent storage"
 
-    # 4. Git clone / pinned branch checkout
-    assert "research/independent-cohort-acquisition" in full_code, "Notebook must checkout pinned branch"
+    # 4. Detached checkout at the pinned full SHA, never a mutable branch head
+    assert "checkout_pinned(REPO_DIR, REPO_URL, EXPECTED_COMMIT)" in full_code
+    assert "--branch" not in full_code
