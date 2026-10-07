@@ -1,3 +1,19 @@
+## Phase 4C.7B — Revision 5: Generation Contract Enforcement & Systematic Failure Gate Hotfix
+
+- **Mục tiêu**: Điều tra và sửa sự cố pilot run `pilot-20261007T093824Z` (commit `cdacb41a5501568c1a11435dfcb00d327bc69a6d`); bảo vệ ứng viên khỏi việc cháy pool do lỗi cấu hình generation; chuẩn hóa logging bền vững và cập nhật Colab notebook.
+- **Sự cố & Nguyên nhân**: Diffusers `StableDiffusionXLInpaintPipeline` mặc định resolution 1024x1024 nếu thiếu `height`/`width` tường minh (SD2 mặc định 512x512). Output 1024x1024 bị đánh trượt QC kích thước nhưng runner xử lý như content QC reject của ứng viên đơn lẻ, tiếp tục thử và làm cạn kiệt 110 ứng viên trong pool `coco_sdxl` dẫn tới `StratumQuotaDeficitError`. Run cũ được bảo toàn nguyên vẹn tại Drive.
+- **Biện pháp khắc phục**:
+  - Khóa kích thước generation contract tường minh: `target_height=512, target_width=512` trong `INPAINTING_MODEL_REGISTRY`; truyền trực tiếp `height=512, width=512` vào Diffusers inpainting pipeline.
+  - Kiểm tra kích thước/mode của authentic, mask và output canvas (`GenerationContractError`).
+  - Tách biệt rõ ràng: Lỗi contract/cấu hình dừng ngay lập tức, ghi attempt `GENERATION_CONTRACT_ERROR`, xuất `failure_receipt.json`, không thử ứng viên tiếp theo. Content QC rejection hợp lệ vẫn tiếp tục quota replacement.
+  - Lưu log bền vững: Ghi toàn bộ trace và log vào `run_dir/acquisition.log` và stream trực tiếp ra stdout Colab.
+  - Cập nhật Colab notebook: Đường dẫn mặc định `MyDrive/Colab Notebooks/forensics-web-lab/phase_4c7b/runs/<RUN_ID>`; stream live qua `Popen`; xóa cờ hoàn tất cũ trước mỗi lần chạy; chỉ audit/ZIP khi run hiện tại thành công.
+- **Kiểm thử**: 4 regression tests mới bổ sung; toàn bộ 75 tests PASS (bindings 58/58, acquisition 17/17); smoke test 6/6 PASS; plan verification PASS (440 candidates); check models PASS.
+- **Trạng thái**: `READY_FOR_COLAB_REAL_ACQUISITION_PILOT` (Colab pilot 8 cặp sẵn sàng; real pilot: NOT_RUN; full 400 cặp và evaluator chưa chạy; độc lập metrics giữ `NOT_MEASURED`).
+- **Evidence**: `research/evidence/phase-4c.7b/PHASE_REPORT.md`, `acquisition_smoke_receipt_v2.json`.
+
+---
+
 ## Phase 4C.7B — Revision 4: Model Access Hotfix, Community Mirror Qualification & Preflight Gate
 
 - **Mục tiêu**: Khắc phục sự cố pilot `pilot-20261007T082516Z` (HTTP 401 trên SD2 inpainting repo); thẩm định community mirror `sd2-community/stable-diffusion-2-inpainting`; bổ sung preflight fail-closed trước khi tạo run directory; thêm regression test và chuẩn bị pilot mới.

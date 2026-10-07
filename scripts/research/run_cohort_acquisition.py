@@ -54,6 +54,7 @@ from ml.evaluation.independent_cohort_acquisition import (
     TOTAL_BUFFER_PAIRS,
     CandidateEligibilityError,
     CandidateSpec,
+    GenerationContractError,
     MockInpaintingEngine,
     RunAuditError,
     SyntheticSourceProhibitedError,

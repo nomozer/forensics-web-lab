@@ -1,11 +1,65 @@
 # Phase 4C.7B — Independent Cohort Acquisition: Protocol Amendment, Automated Pipeline, and Feasibility Alignment
 
-> **Phase**: Phase 4C.7B — Independent Cohort Acquisition & Feasibility Alignment (revision 4: Protocol Amendment v1.3.1 Model Source Hotfix, community mirror qualification, fail-closed preflight, pilot NOT_RUN)<br>
-> **Status**: `READY_FOR_COLAB_REAL_ACQUISITION_PILOT` (revision 4, supersedes revision 3). Incident in pilot run `pilot-20261007T082516Z` (HTTP 401 on deprecated SD2 repo) resolved via qualified community mirror `sd2-community/stable-diffusion-2-inpainting` (OpenRAIL++, revision `5f74973cbb64c8568780732c17f43eb269d63a0d`) and fail-closed preflight check (`--check-models`); Colab launcher notebook ready for fresh 8-pair pilot.<br>
+> **Phase**: Phase 4C.7B — Independent Cohort Acquisition & Feasibility Alignment (revision 5: Generation Contract Enforcement, Systematic Failure Gate Hotfix, durable logging, pilot NOT_RUN)<br>
+> **Status**: `READY_FOR_COLAB_REAL_ACQUISITION_PILOT` (revision 5, supersedes revision 4). Incident in pilot run `pilot-20261007T093824Z` (commit `cdacb41a5501568c1a11435dfcb00d327bc69a6d`) investigated and root cause proven: `StableDiffusionXLInpaintPipeline` defaults resolution to 1024x1024 without explicit `height`/`width` arguments, causing QC dimension failures misclassified as content QC rejections that burned the 110-candidate pool in `coco_sdxl`. Resolved via explicit `height=512, width=512` in Diffusers pipeline call, canvas contract assertions, immediate halt on `GenerationContractError`, persistent `acquisition.log`, and updated Colab notebook runs path.<br>
 > **Findings status**: `NOT_MEASURED` (0 detector calls, 0 cohort evaluation)<br>
 > **Functional commit**: will be pinned to functional commit SHA before notebook push<br>
 > **Real pilot**: `NOT_RUN` (Colab T4 GPU execution required; 8-pair pilot ready with fresh RUN_ID)<br>
 > **Training runs**: 0 fits, 0 refits; frozen models untouched; retired locked-test not accessed (only its 343 source IDs are read for the disjoint guard)<br>
+
+---
+
+## U. Revision 5 — Generation Contract Enforcement & Systematic Failure Gate Hotfix (2026-10-07)
+
+### U1. Incident Report & Root Cause Analysis (`pilot-20261007T093824Z`)
+- **Sự cố thực địa**: Pilot run `pilot-20261007T093824Z` (commit `cdacb41a5501568c1a11435dfcb00d327bc69a6d`) trên Google Colab T4 GPU dừng với lỗi:
+  `StratumQuotaDeficitError: Stratum 'coco_sdxl' exhausted all candidates without reaching quota: 0/2 valid pairs acquired.`
+- **Phân tích Ledgers**:
+  * `provenance_ledger.jsonl`: Có đúng 2 records thuộc stratum `coco_sd2` (đều pass technical QC, resolution 512x512, status `ACCEPTED`).
+  * `attempt_ledger.jsonl`: Có 222 records tổng cộng.
+  * Phân tích theo stratum và tool:
+    - Stratum `coco_sd2` (`stable_diffusion_2_inpainting`): 2 attempts đều `ACCEPTED` (đạt quota 2/2).
+    - Stratum `coco_sdxl` (`sdxl_inpainting`): 110 attempts liên tiếp đều thất bại với cùng lý do:
+      `QC_FAILED — Edited image size/mode invalid: (1024, 1024), RGB`.
+- **Root Cause Kỹ thuật**:
+  * Trong `DiffusersInpaintingEngine.inpaint()`, `self.pipeline(...)` được gọi mà không truyền tham số `height` và `width`.
+  * Trong thư viện `diffusers`, `StableDiffusionXLInpaintPipeline.__call__` tính toán:
+    `height = height or self.default_sample_size * self.vae_scale_factor`
+    Với SDXL: `default_sample_size = 128`, `vae_scale_factor = 8` $\to 128 \times 8 = 1024$. Do đó pipeline sinh ảnh $1024 \times 1024$ mặc dù ảnh đầu vào và mask là $512 \times 512$.
+    Với SD2: `default_sample_size = 64`, `vae_scale_factor = 8` $\to 64 \times 8 = 512$. Do đó SD2 tình cờ sinh đúng $512 \times 512$.
+  * Lỗi generation contract hệ thống này bị hàm `evaluate_technical_qc` trả về `False, "Edited image size/mode invalid: (1024, 1024), RGB"`, khiến runner ghi nhận `status: QC_FAILED` và tiếp tục thử các ứng viên tiếp theo trong pool (`continue`), làm cạn kiệt toàn bộ 110 ứng viên của `coco_sdxl` trước khi dừng với `StratumQuotaDeficitError`.
+
+### U2. Giải pháp Generation Contract & Systematic Failure Gate
+1. **Khóa Kích thước Tường minh**:
+   - Thêm `"target_height": 512, "target_width": 512` vào `INPAINTING_MODEL_REGISTRY` cho cả hai model SD2 và SDXL.
+   - `DiffusersInpaintingEngine.inpaint()` nhận tường minh `height=512, width=512` và truyền trực tiếp vào `self.pipeline(..., height=height, width=width, ...)`.
+   - Tuyệt đối không resize ảnh 1024 xuống 512 để vượt QC; pipeline phải tạo sinh trực tiếp ở kích thước 512x512.
+2. **Kiểm tra Contract Canvas Trước và Sau Inpainting**:
+   - Trước inpainting: kiểm tra `auth_canvas` (512x512 RGB) và `mask_canvas` (512x512 L). Vi phạm ném `GenerationContractError`.
+   - Sau inpainting: kiểm tra `edited_canvas` (512x512 RGB). Vi phạm ném `GenerationContractError`.
+3. **Systematic Failure Gate (Ngăn Cháy Pool Ứng Viên)**:
+   - Phân biệt triệt để lỗi contract/cấu hình hệ thống với lỗi content QC của từng ứng viên:
+     * Vi phạm generation contract (`GenerationContractError`): Ghi attempt `status: GENERATION_CONTRACT_ERROR`, xuất `out_path / "failure_receipt.json"`, ghi log lỗi với full traceback và **dừng ngay lập tức** mà không thử tiếp ứng viên khác.
+     * Content QC rejection hợp lệ (ảnh đen, biến thiên thấp, mask ratio ngoài ngưỡng): Ghi `status: QC_FAILED`, tiếp tục cơ chế thay thế ứng viên trong stratum để đảm bảo quota.
+   - `audit_acquisition_run` fail-closed: Từ chối ngay lập tức nếu phát hiện `failure_receipt.json`.
+4. **Logging Bền vững & Colab Notebook**:
+   - Tạo file log bền vững `run_dir / "acquisition.log"` ghi nhận timestamp, candidate id, stratum id, trạng thái và full exception traceback.
+   - Hàm `run()` trong Colab notebook dùng `subprocess.Popen(..., stderr=subprocess.STDOUT)` stream trực tiếp cả stdout và stderr lên giao diện Colab.
+   - Cập nhật đường dẫn mặc định: `/content/drive/MyDrive/Colab Notebooks/forensics-web-lab/phase_4c7b/runs/<RUN_ID>`.
+   - Xóa cờ hoàn tất cũ `globals().pop("PILOT_RUN_COMPLETED", None)` tại đầu Cell 3 trước mỗi lần chạy; chỉ audit và đóng gói ZIP khi lần chạy hiện tại thành công.
+   - Bảo toàn nguyên vẹn thư mục run cũ `pilot-20261007T093824Z` tại `MyDrive/forensics-web-lab/phase_4c7b_runs/`.
+
+### U3. Kết quả Kiểm thử & Xác minh
+- **Regression test suite**: Bổ sung 4 targeted tests trong `ml/tests/test_independent_cohort_bindings.py`:
+  * `test_diffusers_engine_passes_explicit_height_width_and_validates_dimensions`: kiểm tra pipeline nhận đúng `height=512, width=512`, từ chối input/output sai kích thước.
+  * `test_output_1024_halts_immediately_and_does_not_try_next_candidate`: kiểm tra output 1024 dừng ngay sau ứng viên đầu tiên (call count = 1), ghi failure receipt và attempt ledger `GENERATION_CONTRACT_ERROR`.
+  * `test_output_correct_size_proceeds_through_qc_and_handles_content_qc_rejection`: kiểm tra output 512x512 đi tiếp qua QC, lỗi content QC tiếp tục thay thế ứng viên hợp lệ.
+  * `test_generation_contract_failure_prevents_completion_receipt_and_blocks_audit`: kiểm tra run thất bại không tạo completion receipt, bị `audit_acquisition_run` từ chối và chặn đóng gói ZIP.
+- **Toàn bộ test suites**: 75/75 tests PASS trong `ml/tests/test_independent_cohort_bindings.py` (58/58) và `ml/tests/test_independent_cohort_acquisition.py` (17/17).
+- **Hermetic smoke test**: PASS trong 1.37s (`acquisition_smoke_receipt_v2.json`).
+- **Plan verification**: PASS (440 candidates, 110 per stratum, 0 historical overlap).
+- **Model preflight**: PASS cho cả hai model.
+- **Tính trung thực khoa học**: Real generation pilot `NOT_RUN` ở local (do không có GPU); các chỉ số detector `NOT_MEASURED`.
 
 ---
 

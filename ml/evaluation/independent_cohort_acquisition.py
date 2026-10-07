@@ -30,6 +30,7 @@ import platform
 import re
 import sys
 import time
+import traceback
 from typing import Any, Callable, Sequence
 import urllib.error
 import urllib.request
@@ -108,6 +109,10 @@ class DetectorIsolationViolationError(RuntimeError):
 
 class AcquisitionQCFailureError(ValueError):
     """Raised when an acquired sample fails technical quality control."""
+
+
+class GenerationContractError(RuntimeError):
+    """Raised when an inpainting engine or generation step violates the protocol contract (e.g. invalid dimensions or mode)."""
 
 
 class StratumQuotaDeficitError(RuntimeError):
@@ -741,13 +746,19 @@ def evaluate_technical_qc(
 ) -> tuple[bool, str | None, float]:
     """Execute rigorous Technical QC on an authentic/edited/mask candidate tuple."""
     if authentic_img.size != TARGET_CANVAS_SIZE or authentic_img.mode != "RGB":
-        return False, f"Authentic image size/mode invalid: {authentic_img.size}, {authentic_img.mode}", 0.0
+        raise GenerationContractError(
+            f"Authentic image size/mode invalid: {authentic_img.size}, {authentic_img.mode}; expected {TARGET_CANVAS_SIZE}, RGB"
+        )
 
     if edited_img.size != TARGET_CANVAS_SIZE or edited_img.mode != "RGB":
-        return False, f"Edited image size/mode invalid: {edited_img.size}, {edited_img.mode}", 0.0
+        raise GenerationContractError(
+            f"Edited image size/mode invalid: {edited_img.size}, {edited_img.mode}; expected {TARGET_CANVAS_SIZE}, RGB"
+        )
 
     if mask_img.size != TARGET_CANVAS_SIZE or mask_img.mode != "L":
-        return False, f"Mask size/mode invalid: {mask_img.size}, {mask_img.mode}", 0.0
+        raise GenerationContractError(
+            f"Mask size/mode invalid: {mask_img.size}, {mask_img.mode}; expected {TARGET_CANVAS_SIZE}, L"
+        )
 
     if authentic_img.size[0] * authentic_img.size[1] > MAX_PIXEL_DECOMPRESSION_BOMB:
         return False, "Decompression bomb limit exceeded", 0.0
@@ -865,6 +876,8 @@ INPAINTING_MODEL_REGISTRY: dict[str, dict[str, Any]] = {
             "text_encoder/model.fp16.safetensors": "681c555376658c81dc273f2d737a2aeb23ddb6d1d8e5b3a7064636d359a22668",
         },
         "extra_pipeline_kwargs": {"safety_checker": None},
+        "target_height": 512,
+        "target_width": 512,
         "license": "CreativeML OpenRAIL++",
     },
     "sdxl_inpainting": {
@@ -890,6 +903,8 @@ INPAINTING_MODEL_REGISTRY: dict[str, dict[str, Any]] = {
             "unet/diffusion_pytorch_model.fp16.safetensors": "6470840731e98cc16713ddf3ac7ee458c9fdbcb881a98c6727cd4a938f227d3f",
         },
         "extra_pipeline_kwargs": {"variant": "fp16"},
+        "target_height": 512,
+        "target_width": 512,
         "license": "CreativeML OpenRAIL++",
     },
 }
@@ -1135,6 +1150,8 @@ class DiffusersInpaintingEngine:
             "guidance_scale": self.guidance_scale,
             "dtype": str(self.dtype),
             "variant": extra.get("variant"),
+            "target_height": TARGET_CANVAS_SIZE[1],
+            "target_width": TARGET_CANVAS_SIZE[0],
             "device": torch.cuda.get_device_name(0) if torch.cuda.is_available() else device,
             "diffusers_version": diffusers.__version__,
             "torch_version": torch.__version__,
@@ -1148,16 +1165,37 @@ class DiffusersInpaintingEngine:
         mask_img: Image.Image,
         prompt: str,
         seed: int,
+        height: int = TARGET_CANVAS_SIZE[1],
+        width: int = TARGET_CANVAS_SIZE[0],
     ) -> Image.Image:
+        if authentic_img.size != TARGET_CANVAS_SIZE or authentic_img.mode != "RGB":
+            raise GenerationContractError(
+                f"Input authentic image size/mode invalid: {authentic_img.size}, {authentic_img.mode}; "
+                f"expected {TARGET_CANVAS_SIZE}, RGB"
+            )
+        if mask_img.size != TARGET_CANVAS_SIZE or mask_img.mode not in ("L", "1"):
+            raise GenerationContractError(
+                f"Input mask image size/mode invalid: {mask_img.size}, {mask_img.mode}; "
+                f"expected {TARGET_CANVAS_SIZE}, L"
+            )
+
         generator = self.torch.Generator(device=self.device).manual_seed(seed)
         result = self.pipeline(
             prompt=prompt,
             image=authentic_img,
             mask_image=mask_img,
+            height=height,
+            width=width,
             num_inference_steps=self.num_steps,
             guidance_scale=self.guidance_scale,
             generator=generator,
         ).images[0]
+
+        if result.size != (width, height) or result.mode != "RGB":
+            raise GenerationContractError(
+                f"Diffusers inpainting pipeline for tool '{self.tool_key}' produced invalid output "
+                f"size/mode {result.size}, {result.mode}; expected ({width}, {height}), RGB"
+            )
         return result
 
     def describe(self) -> dict[str, Any]:
@@ -1359,6 +1397,19 @@ def execute_cohort_acquisition(
 
     prov_writer_handle = provenance_jsonl.open("a", encoding="utf-8")
     attempt_writer_handle = attempt_jsonl.open("a", encoding="utf-8")
+    log_writer_handle = (out_path / "acquisition.log").open("a", encoding="utf-8")
+
+    def log_msg(msg: str) -> None:
+        t_str = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        line = f"[{t_str}] {msg}"
+        print(line, flush=True)
+        try:
+            log_writer_handle.write(line + "\n")
+            log_writer_handle.flush()
+        except Exception:
+            pass
+
+    log_msg(f"Starting acquisition run '{run_id}' (mode={mode}, target_per_stratum={target_per_stratum})")
 
     def log_attempt(record: dict[str, Any]) -> None:
         attempt_writer_handle.write(json.dumps(record) + "\n")
@@ -1440,12 +1491,22 @@ def execute_cohort_acquisition(
                     attempt_meta["raw_sha256"] = raw_sha256
 
                     auth_canvas = normalize_image_to_canvas(raw_auth_img)
+                    if auth_canvas.size != TARGET_CANVAS_SIZE or auth_canvas.mode != "RGB":
+                        raise GenerationContractError(
+                            f"Input authentic canvas size/mode invalid: {auth_canvas.size}, {auth_canvas.mode}; "
+                            f"expected {TARGET_CANVAS_SIZE}, RGB"
+                        )
 
                     # Step B: Synthesize request mask
                     mask_canvas, _target_ratio = synthesize_canonical_mask(
                         spec.mask_area_class,
                         seed=spec.generation_seed,
                     )
+                    if mask_canvas.size != TARGET_CANVAS_SIZE or mask_canvas.mode not in ("L", "1"):
+                        raise GenerationContractError(
+                            f"Input mask canvas size/mode invalid: {mask_canvas.size}, {mask_canvas.mode}; "
+                            f"expected {TARGET_CANVAS_SIZE}, L"
+                        )
 
                     # Step C: Generate inpainting
                     edited_canvas = engine.inpaint(
@@ -1454,6 +1515,11 @@ def execute_cohort_acquisition(
                         prompt=spec.prompt,
                         seed=spec.generation_seed,
                     )
+                    if edited_canvas.size != TARGET_CANVAS_SIZE or edited_canvas.mode != "RGB":
+                        raise GenerationContractError(
+                            f"Inpainting engine output size/mode invalid: {edited_canvas.size}, {edited_canvas.mode}; "
+                            f"expected {TARGET_CANVAS_SIZE}, RGB"
+                        )
 
                     # Step D: Technical Quality Control
                     is_pass, fail_reason, actual_ratio = evaluate_technical_qc(
@@ -1470,6 +1536,7 @@ def execute_cohort_acquisition(
                         attempt_meta["reason"] = fail_reason
                         attempt_meta["elapsed_seconds"] = round(time.perf_counter() - attempt_t0, 3)
                         log_attempt(attempt_meta)
+                        log_msg(f"  [QC REJECT] Candidate {spec.candidate_id} rejected by content QC: {fail_reason}")
                         continue  # Stratum-preserving replacement: move to next candidate
 
                     # Step E: Save verified master files
@@ -1532,12 +1599,34 @@ def execute_cohort_acquisition(
                     attempt_meta["status"] = "ACCEPTED"
                     attempt_meta["elapsed_seconds"] = round(time.perf_counter() - attempt_t0, 3)
                     log_attempt(attempt_meta)
+                    log_msg(f"  [ACCEPTED] Candidate {spec.candidate_id} ({stratum_valid_counts[stratum_id]}/{target_per_stratum} in {stratum_id})")
 
+                except GenerationContractError as e:
+                    attempt_meta["status"] = "GENERATION_CONTRACT_ERROR"
+                    attempt_meta["error"] = str(e)
+                    attempt_meta["elapsed_seconds"] = round(time.perf_counter() - attempt_t0, 3)
+                    log_attempt(attempt_meta)
+                    fail_receipt = {
+                        "run_id": run_id,
+                        "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+                        "status": "FAILED",
+                        "failure_type": "GENERATION_CONTRACT_ERROR",
+                        "error_message": str(e),
+                        "stratum_id": stratum_id,
+                        "candidate_id": spec.candidate_id,
+                        "tool_key": spec.tool_key,
+                        "binding": run_binding,
+                    }
+                    (out_path / "failure_receipt.json").write_text(json.dumps(fail_receipt, indent=2), encoding="utf-8")
+                    tb_str = traceback.format_exc()
+                    log_msg(f"FATAL: Generation contract error on candidate {spec.candidate_id}: {e}\n{tb_str}")
+                    raise
                 except Exception as e:
                     attempt_meta["status"] = "ERROR"
                     attempt_meta["error"] = str(e)
                     attempt_meta["elapsed_seconds"] = round(time.perf_counter() - attempt_t0, 3)
                     log_attempt(attempt_meta)
+                    log_msg(f"  [ERROR] Candidate {spec.candidate_id} error: {e}")
                     continue
 
             strata_runtime[stratum_id] = {
@@ -1558,6 +1647,10 @@ def execute_cohort_acquisition(
     finally:
         prov_writer_handle.close()
         attempt_writer_handle.close()
+        try:
+            log_writer_handle.close()
+        except Exception:
+            pass
 
     # 7. Quota checks before anything claims completion
     total_valid = sum(stratum_valid_counts.values())
@@ -1639,6 +1732,10 @@ def audit_acquisition_run(run_dir: Path | str, expected_binding: dict[str, Any])
     different from the bound quota.
     """
     out = Path(run_dir)
+    failure_path = out / "failure_receipt.json"
+    if failure_path.is_file():
+        fail_content = failure_path.read_text(encoding="utf-8")
+        raise RunAuditError(f"Run terminated with failure receipt: {fail_content}")
     receipt_path = out / "run_receipt.json"
     if not receipt_path.is_file():
         raise RunAuditError(f"{receipt_path} missing: run did not complete (or predates run binding).")
