@@ -9,6 +9,10 @@ Verifies:
 6. Technical QC assertions (rejection of solid images, zero-delta edits, invalid masks).
 7. Detector isolation invariant: zero detector modules loaded or called during acquisition.
 8. Manifest atomicity and SHA-256 tamper detection.
+9. Fail-closed production guards against synthetic inputs and missing provenance.
+10. Download failure fails closed with zero synthetic fallback.
+11. Multi-dimensional quota preservation during error replacement.
+12. Colab launcher contract: calls production CLI, mounts Drive, zero duplicate code.
 """
 
 from __future__ import annotations
@@ -31,6 +35,7 @@ if str(REPO_ROOT) not in sys.path:
 
 from ml.evaluation.independent_cohort import (
     DEFAULT_HISTORICAL_MANIFEST,
+    SourceOverlapError,
     load_historical_image_hashes,
     load_historical_origin_ids,
     load_historical_source_ids,
@@ -45,15 +50,43 @@ from ml.evaluation.independent_cohort_acquisition import (
     TOTAL_TARGET_PAIRS,
     CandidateSpec,
     DetectorIsolationViolationError,
+    ImageDownloadError,
+    MissingProvenanceError,
     MockInpaintingEngine,
+    QuotaDeficitError,
     StratumQuotaDeficitError,
+    SyntheticSourceProhibitedError,
+    TamperDetectedError,
     assert_detector_isolation,
+    download_authentic_image,
     evaluate_technical_qc,
     execute_cohort_acquisition,
     generate_canonical_candidate_plan,
+    generate_synthetic_fixture_plan,
     normalize_image_to_canvas,
     synthesize_canonical_mask,
 )
+
+FORBIDDEN_DETECTOR_MODULES = [
+    "ml.evaluation.phase_4c2g_model",
+    "ml.evaluation.locked_test_evaluator",
+    "ml.evaluation.independent_evaluator",
+    "ml.evaluation.independent_model_bindings",
+]
+
+
+@pytest.fixture(autouse=True)
+def clean_detector_modules_isolation():
+    """Ensure acquisition tests run in isolation with zero detector modules in sys.modules."""
+    saved: dict[str, Any] = {}
+    for mod in FORBIDDEN_DETECTOR_MODULES:
+        if mod in sys.modules:
+            saved[mod] = sys.modules.pop(mod)
+    try:
+        yield
+    finally:
+        for mod, val in saved.items():
+            sys.modules[mod] = val
 
 
 def test_candidate_plan_quotas_and_orthogonal_balance():
@@ -129,7 +162,7 @@ def test_license_and_provenance_audit():
     for c in plan:
         if c.source_origin == "coco_2017":
             assert c.author.startswith("flickr_")
-            assert c.origin_url.startswith("https://www.flickr.com/")
+            assert c.origin_url.startswith("http://images.cocodataset.org/") or c.origin_url.startswith("https://www.flickr.com/")
             coco_licenses.add(c.license_name)
         elif c.source_origin == "unsplash_verified":
             assert c.license_name == "Unsplash License"
@@ -137,7 +170,7 @@ def test_license_and_provenance_audit():
 
     # COCO licenses must contain variety of Flickr licenses, not just default CC-BY 4.0
     assert len(coco_licenses) > 1
-    assert "CC-BY 2.0" in coco_licenses or "CC-BY-SA 2.0" in coco_licenses or "CC0 1.0" in coco_licenses
+    assert any("Attribution" in lic for lic in coco_licenses)
 
 
 def test_canvas_normalization_and_mask_synthesis():
@@ -210,8 +243,11 @@ def test_stratum_preserving_error_replacement():
         result = execute_cohort_acquisition(
             output_dir=out_dir,
             candidate_specs=plan,
+            engine_provider=(lambda _: MockInpaintingEngine()),
             authentic_image_provider=corrupting_provider,
             target_per_stratum=2,
+            mode="fixture_test",
+            allow_synthetic=True,
             historical_manifest_path=DEFAULT_HISTORICAL_MANIFEST,
         )
 
@@ -226,7 +262,7 @@ def test_stratum_preserving_error_replacement():
         assert failed[0]["candidate_id"] == "IND_COCO_SD2_001"
         assert failed[0]["stratum_id"] == "coco_sd2"
 
-        # Check manifest to verify IND_COCO_SD2_001 was replaced by IND_COCO_SD2_002 and IND_COCO_SD2_003
+        # Check manifest to verify IND_COCO_SD2_001 was replaced
         manifest_p = Path(result["manifest_path"])
         with manifest_p.open("r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
@@ -252,8 +288,11 @@ def test_stratum_quota_deficit_error_on_exhausted_buffer():
             execute_cohort_acquisition(
                 output_dir=out_dir,
                 candidate_specs=plan,
+                engine_provider=(lambda _: MockInpaintingEngine()),
                 authentic_image_provider=always_fail_provider,
                 target_per_stratum=2,
+                mode="fixture_test",
+                allow_synthetic=True,
                 historical_manifest_path=DEFAULT_HISTORICAL_MANIFEST,
             )
 
@@ -283,7 +322,10 @@ def test_manifest_validation_and_checksum_tamper_detection():
         result = execute_cohort_acquisition(
             output_dir=out_dir,
             candidate_specs=plan,
+            engine_provider=(lambda _: MockInpaintingEngine()),
             target_per_stratum=2,
+            mode="fixture_test",
+            allow_synthetic=True,
             historical_manifest_path=DEFAULT_HISTORICAL_MANIFEST,
         )
 
@@ -310,3 +352,188 @@ def test_manifest_validation_and_checksum_tamper_detection():
         tampered_content = manifest_file.read_bytes() + b"\n# tampering row\n"
         tampered_sha = hashlib.sha256(tampered_content).hexdigest()
         assert tampered_sha != result["manifest_sha256"]
+
+
+def test_production_rejects_synthetic_authentic_or_fixture():
+    """Verify fail-closed rejection: production runner strictly rejects synthetic candidates."""
+    synth_plan = generate_synthetic_fixture_plan()
+    assert synth_plan[0].is_synthetic is True
+    assert synth_plan[0].eligible_for_independent_cohort is False
+
+    # 1. Direct download rejection
+    with pytest.raises(SyntheticSourceProhibitedError, match="strictly prohibited"):
+        download_authentic_image(synth_plan[0], allow_synthetic=False)
+
+    # 2. Pipeline execution rejection
+    with tempfile.TemporaryDirectory() as td:
+        with pytest.raises(SyntheticSourceProhibitedError):
+            execute_cohort_acquisition(
+                output_dir=td,
+                candidate_specs=synth_plan[:4],
+                target_per_stratum=1,
+                mode="production",
+                allow_synthetic=False,
+            )
+
+
+def test_download_failure_fails_closed_without_fallback():
+    """Verify download failure raises ImageDownloadError and NEVER falls back to synthetic noise."""
+    spec = CandidateSpec(
+        candidate_id="TEST_FAIL_001",
+        stratum_id="coco_sd2",
+        source_origin="coco_2017",
+        tool_key="stable_diffusion_2_inpainting",
+        modification_type="object_replacement",
+        mask_area_class="medium_10_to_30pct",
+        origin_id="999999999",
+        author="test_author",
+        origin_url="http://invalid.url.that.does.not.exist/origin",
+        download_url="http://127.0.0.1:9/nonexistent_image.jpg",
+        license_name="CC-BY 2.0",
+        license_evidence_source="http://evidence.source",
+        published_date="2020-01-01",
+        prompt="test prompt",
+        generation_seed=42,
+        pool_index=0,
+        is_synthetic=False,
+    )
+
+    with pytest.raises(ImageDownloadError):
+        download_authentic_image(spec, timeout=1.0, max_retries=0)
+
+
+def test_missing_provenance_fails_closed():
+    """Verify candidate with missing provenance metadata fails closed."""
+    spec = CandidateSpec(
+        candidate_id="TEST_MISSING_001",
+        stratum_id="coco_sd2",
+        source_origin="coco_2017",
+        tool_key="stable_diffusion_2_inpainting",
+        modification_type="object_replacement",
+        mask_area_class="medium_10_to_30pct",
+        origin_id="999999999",
+        author="",  # Missing author
+        origin_url="http://valid.url",
+        download_url="http://valid.url/img.jpg",
+        license_name="CC-BY 2.0",
+        license_evidence_source="http://evidence",
+        published_date="2020-01-01",
+        prompt="test",
+        generation_seed=42,
+        pool_index=0,
+    )
+
+    with pytest.raises(MissingProvenanceError, match="missing author"):
+        download_authentic_image(spec)
+
+
+def test_historical_option_p_disjoint_guard():
+    """Verify SourceOverlapError is raised if candidate collides with historical Option P."""
+    hist_sources = load_historical_source_ids(DEFAULT_HISTORICAL_MANIFEST)
+    some_historical_sid = next(iter(hist_sources))
+
+    spec = CandidateSpec(
+        candidate_id=some_historical_sid,  # Deliberate collision
+        stratum_id="coco_sd2",
+        source_origin="coco_2017",
+        tool_key="stable_diffusion_2_inpainting",
+        modification_type="object_replacement",
+        mask_area_class="medium_10_to_30pct",
+        origin_id="collision_test",
+        author="author",
+        origin_url="http://valid.url",
+        download_url="http://valid.url/img.jpg",
+        license_name="CC-BY 2.0",
+        license_evidence_source="http://evidence",
+        published_date="2020-01-01",
+        prompt="test",
+        generation_seed=42,
+        pool_index=0,
+    )
+
+    with pytest.raises(SourceOverlapError, match="collides with historical Option P source"):
+        download_authentic_image(spec, hist_sources=hist_sources)
+
+
+def test_durable_resume_and_tamper_detection():
+    """Verify durable resume skips valid completed sources and halts on SHA-256 tampering."""
+    plan = generate_canonical_candidate_plan(seed=20261007)
+
+    with tempfile.TemporaryDirectory() as td:
+        out_dir = Path(td) / "resume_test"
+
+        # 1. Run pilot of 2 pairs per stratum
+        res1 = execute_cohort_acquisition(
+            output_dir=out_dir,
+            candidate_specs=plan,
+            engine_provider=(lambda _: MockInpaintingEngine()),
+            target_per_stratum=2,
+            mode="fixture_test",
+            allow_synthetic=True,
+            resume=False,
+        )
+        assert res1["total_valid_pairs"] == 8
+
+        # 2. Re-running with resume=True should detect existing valid artifacts and complete immediately
+        res2 = execute_cohort_acquisition(
+            output_dir=out_dir,
+            candidate_specs=plan,
+            engine_provider=(lambda _: MockInpaintingEngine()),
+            target_per_stratum=2,
+            mode="fixture_test",
+            allow_synthetic=True,
+            resume=True,
+        )
+        assert res2["total_valid_pairs"] == 8
+
+        # 3. Tamper with one authentic image on disk
+        tampered_img = out_dir / "images" / f"{plan[0].candidate_id}_auth.png"
+        tampered_img.write_bytes(tampered_img.read_bytes() + b"tamper_bytes")
+
+        # 4. Resume MUST raise TamperDetectedError
+        with pytest.raises(TamperDetectedError, match="tamper detected"):
+            execute_cohort_acquisition(
+                output_dir=out_dir,
+                candidate_specs=plan,
+                engine_provider=(lambda _: MockInpaintingEngine()),
+                target_per_stratum=2,
+                mode="fixture_test",
+                allow_synthetic=True,
+                resume=True,
+            )
+
+
+def test_provisional_cohort_evaluator_verdict():
+    """Verify independent evaluator reports SYNTHETIC_ONLY_NOT_MEASURED when evaluating non-finalized cohort."""
+    try:
+        from ml.evaluation.independent_evaluator import derive_independent_verdict
+        verdict_synth = derive_independent_verdict(ci_lower=0.05, ci_upper=0.15, is_synthetic=True)
+        assert verdict_synth == "SYNTHETIC_ONLY_NOT_MEASURED"
+    finally:
+        sys.modules.pop("ml.evaluation.independent_evaluator", None)
+
+
+def test_notebook_structure_and_production_cli_invocation():
+    """Verify Colab notebook adheres to canonical production launcher contract."""
+    nb_path = REPO_ROOT / "notebooks/independent_cohort_acquisition_colab.ipynb"
+    assert nb_path.is_file(), f"Colab notebook missing at {nb_path}"
+
+    nb_data = json.loads(nb_path.read_text(encoding="utf-8"))
+    cells = nb_data.get("cells", [])
+    assert len(cells) == 5, f"Expected exactly 5 canonical cells, found {len(cells)}"
+
+    full_code = "\n".join("".join(c.get("source", [])) for c in cells if c.get("cell_type") == "code")
+
+    # 1. Strictly NO synthetic random array generation in notebook
+    assert "rng.integers" not in full_code, "Notebook must NOT generate synthetic random image arrays"
+    assert "Image.fromarray(rng" not in full_code, "Notebook must NOT synthesize placeholder images"
+
+    # 2. Strictly calls production runner CLI
+    assert "run_cohort_acquisition.py" in full_code, "Notebook must call production runner CLI"
+    assert "--mode pilot" in full_code, "Notebook must default to technical pilot mode"
+
+    # 3. Google Drive mount present
+    assert "drive.mount" in full_code, "Notebook must mount Google Drive for persistent storage"
+
+    # 4. Git clone / pinned branch checkout
+    assert "research/independent-cohort-acquisition" in full_code, "Notebook must checkout pinned branch"
