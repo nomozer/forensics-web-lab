@@ -22,7 +22,10 @@ if str(REPO_ROOT) not in sys.path:
 from ml.evaluation.independent_cohort import SourceOverlapError
 from ml.evaluation.independent_cohort_acquisition import (
     CandidateEligibilityError,
+    DiffusersInpaintingEngine,
+    INPAINTING_MODEL_REGISTRY,
     MockInpaintingEngine,
+    ModelPreflightError,
     RunAuditError,
     RunBindingMismatchError,
     STRATA_KEYS,
@@ -33,6 +36,7 @@ from ml.evaluation.independent_cohort_acquisition import (
     execute_cohort_acquisition,
     generate_canonical_candidate_plan,
     load_historical_source_keys,
+    verify_model_access_preflight,
 )
 from ml.tests.fixtures.cohort_catalog_fixture import (  # noqa: F401 (autouse fixture)
     build_synthetic_catalog,
@@ -501,3 +505,171 @@ def test_flickr_short_url_is_base58_of_photo_id():
     for ch in code:
         n = n * 58 + b.BASE58.index(ch)
     assert n == 12345678901
+
+
+# ---------------------------------------------------------------- model preflight & mirror tests
+
+
+class _MockHTTPResponse:
+    def __init__(self, status: int, data: bytes, headers: dict | None = None) -> None:
+        self.status = status
+        self._data = data
+        self.headers = headers or {}
+
+    def read(self) -> bytes:
+        return self._data
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        pass
+
+
+class _MockOpener:
+    def __init__(self, handler) -> None:
+        self.handler = handler
+
+    def open(self, req, timeout=15.0):
+        return self.handler(req)
+
+
+def test_model_preflight_fails_on_401_deprecated_repo():
+    import io
+    import urllib.error
+
+    def mock_401(req):
+        fp = io.BytesIO(b'{"error":"Invalid username or password."}')
+        raise urllib.error.HTTPError(req.full_url, 401, "Unauthorized", {}, fp)
+
+    with pytest.raises(ModelPreflightError) as exc_info:
+        verify_model_access_preflight(
+            ["stable_diffusion_2_inpainting"],
+            http_opener=_MockOpener(mock_401),
+        )
+    err = exc_info.value
+    assert err.status_code == 401
+    assert err.step == "metadata_api"
+    assert err.error_category == "repository_unavailable"
+    assert "sd2-community/stable-diffusion-2-inpainting" in str(err)
+    assert "deprecated" in str(err).lower() or "unavailable" in str(err).lower()
+
+
+def test_model_preflight_fails_on_404_not_found():
+    import io
+    import urllib.error
+
+    def mock_404(req):
+        fp = io.BytesIO(b'{"error":"Repository not found"}')
+        raise urllib.error.HTTPError(req.full_url, 404, "Not Found", {}, fp)
+
+    with pytest.raises(ModelPreflightError) as exc_info:
+        verify_model_access_preflight(
+            ["stable_diffusion_2_inpainting"],
+            http_opener=_MockOpener(mock_404),
+        )
+    err = exc_info.value
+    assert err.status_code == 404
+    assert err.step == "metadata_api"
+    assert err.error_category == "repository_not_found"
+
+
+def test_model_preflight_fails_on_network_error():
+    import urllib.error
+
+    def mock_net_err(req):
+        raise urllib.error.URLError("Connection refused")
+
+    with pytest.raises(ModelPreflightError) as exc_info:
+        verify_model_access_preflight(
+            ["stable_diffusion_2_inpainting"],
+            http_opener=_MockOpener(mock_net_err),
+        )
+    err = exc_info.value
+    assert err.step == "metadata_api"
+    assert err.error_category == "network_error"
+
+
+def test_model_preflight_fails_on_gated_or_private_repo():
+    def mock_gated(req):
+        return _MockHTTPResponse(200, json.dumps({"gated": True, "sha": "a" * 40}).encode("utf-8"))
+
+    with pytest.raises(ModelPreflightError) as exc_info:
+        verify_model_access_preflight(
+            ["stable_diffusion_2_inpainting"],
+            http_opener=_MockOpener(mock_gated),
+        )
+    assert exc_info.value.error_category == "gated_repository"
+
+
+def test_model_preflight_live_succeeds_for_mirror_and_sdxl():
+    results = verify_model_access_preflight()
+    assert "stable_diffusion_2_inpainting" in results
+    assert "sdxl_inpainting" in results
+
+    sd2 = results["stable_diffusion_2_inpainting"]
+    assert sd2["checkpoint"] == "sd2-community/stable-diffusion-2-inpainting"
+    assert sd2["checkpoint_source_type"] == "community_mirror"
+    assert sd2["upstream_original_checkpoint"] == "stabilityai/stable-diffusion-2-inpainting"
+    assert len(sd2["resolved_revision"]) == 40
+    assert sd2["resolved_revision"] == "5f74973cbb64c8568780732c17f43eb269d63a0d"
+    assert sd2["num_inference_steps"] == 50
+    assert sd2["guidance_scale"] == 7.5
+    assert "unet/config.json" in sd2["verified_configs"]
+
+    sdxl = results["sdxl_inpainting"]
+    assert sdxl["checkpoint"] == "diffusers/stable-diffusion-xl-1.0-inpainting-0.1"
+    assert sdxl["checkpoint_source_type"] == "official_diffusers"
+    assert len(sdxl["resolved_revision"]) == 40
+    assert sdxl["resolved_revision"] == "115134f363124c53c7d878647567d04daf26e41e"
+    assert sdxl["num_inference_steps"] == 30
+    assert sdxl["guidance_scale"] == 7.5
+
+
+def test_diffusers_engine_binds_resolved_revision_and_metadata():
+    reg = INPAINTING_MODEL_REGISTRY["stable_diffusion_2_inpainting"]
+    assert reg["checkpoint"] == "sd2-community/stable-diffusion-2-inpainting"
+    assert reg["checkpoint_source_type"] == "community_mirror"
+    assert reg["upstream_original_checkpoint"] == "stabilityai/stable-diffusion-2-inpainting"
+    assert reg["pinned_revision"] == "5f74973cbb64c8568780732c17f43eb269d63a0d"
+
+
+def test_preflight_failure_does_not_create_run_directory(tmp_path, monkeypatch):
+    from scripts.research.run_cohort_acquisition import main
+    import subprocess
+
+    def failing_preflight(*args, **kwargs):
+        raise ModelPreflightError("Simulated preflight failure", repo_id="broken-model", step="metadata_api")
+
+    monkeypatch.setattr(
+        "scripts.research.run_cohort_acquisition.verify_model_access_preflight",
+        failing_preflight,
+    )
+    monkeypatch.setattr(
+        "scripts.research.run_cohort_acquisition.verify_checkout",
+        lambda repo_root, expected: expected,
+    )
+
+    out_root = tmp_path / "runs"
+    run_id = "test-fail-preflight-run"
+    head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=REPO_ROOT, check=True, capture_output=True, text=True).stdout.strip()
+
+    with pytest.raises(SystemExit) as exc:
+        main([
+            "--mode", "pilot",
+            "--engine", "diffusers",
+            "--run-id", run_id,
+            "--expected-commit", head,
+            "--output-root", str(out_root),
+        ])
+
+    assert exc.value.code == 1
+    # Fail-closed verification: output directory must NOT be created!
+    assert not (out_root / run_id).exists()
+
+
+def test_cli_check_models_flag_executes_successfully():
+    from scripts.research.run_cohort_acquisition import main
+
+    # Must complete cleanly without exception
+    main(["--check-models"])

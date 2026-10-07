@@ -31,6 +31,7 @@ import re
 import sys
 import time
 from typing import Any, Callable, Sequence
+import urllib.error
 import urllib.request
 
 import numpy as np
@@ -143,6 +144,24 @@ class RunBindingMismatchError(RuntimeError):
 
 class RunAuditError(RuntimeError):
     """Raised when a run directory does not prove a complete, correctly bound acquisition."""
+
+
+class ModelPreflightError(RuntimeError):
+    """Raised when inpainting model metadata, configuration, or weight access check fails."""
+
+    def __init__(
+        self,
+        message: str,
+        repo_id: str = "",
+        step: str = "",
+        error_category: str = "",
+        status_code: int | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.repo_id = repo_id
+        self.step = step
+        self.error_category = error_category
+        self.status_code = status_code
 
 
 def load_historical_source_keys(source_map_path: Path | str = HISTORICAL_SOURCE_MAP) -> set[str]:
@@ -819,6 +838,240 @@ class MockInpaintingEngine:
         return "NOT_MEASURED"
 
 
+INPAINTING_MODEL_REGISTRY: dict[str, dict[str, Any]] = {
+    "stable_diffusion_2_inpainting": {
+        "tool_key": "stable_diffusion_2_inpainting",
+        "name": "Stable Diffusion 2 Inpainting",
+        "checkpoint": "sd2-community/stable-diffusion-2-inpainting",
+        "pinned_revision": "5f74973cbb64c8568780732c17f43eb269d63a0d",
+        "checkpoint_source_type": "community_mirror",
+        "upstream_original_checkpoint": "stabilityai/stable-diffusion-2-inpainting",
+        "pipeline_class_name": "StableDiffusionInpaintPipeline",
+        "scheduler_class_name": "DDIMScheduler",
+        "num_inference_steps": 50,
+        "guidance_scale": 7.5,
+        "required_configs": [
+            "model_index.json",
+            "unet/config.json",
+            "scheduler/scheduler_config.json",
+        ],
+        "weight_head_file": "unet/diffusion_pytorch_model.fp16.safetensors",
+        "weight_head_lfs_oid": "29a698f37775d5904a958c9cebed98184483dfb441729a8e5f98dd5b65df70c8",
+        "weight_head_size": 1731933536,
+        "component_lfs_hashes": {
+            "unet/diffusion_pytorch_model.fp16.safetensors": "29a698f37775d5904a958c9cebed98184483dfb441729a8e5f98dd5b65df70c8",
+            "512-inpainting-ema.safetensors": "b29e2ed9a8fe58e76f7e801bda091d23738bd74c1da3f339bcbe2d40922fcb60",
+            "vae/diffusion_pytorch_model.fp16.safetensors": "3e4c08995484ee61270175e9e7a072b66a6e4eeb5f0c266667fe1f45b90daf9a",
+            "text_encoder/model.fp16.safetensors": "681c555376658c81dc273f2d737a2aeb23ddb6d1d8e5b3a7064636d359a22668",
+        },
+        "extra_pipeline_kwargs": {"safety_checker": None},
+        "license": "CreativeML OpenRAIL++",
+    },
+    "sdxl_inpainting": {
+        "tool_key": "sdxl_inpainting",
+        "name": "SDXL Inpainting 1.0",
+        "checkpoint": "diffusers/stable-diffusion-xl-1.0-inpainting-0.1",
+        "pinned_revision": "115134f363124c53c7d878647567d04daf26e41e",
+        "checkpoint_source_type": "official_diffusers",
+        "upstream_original_checkpoint": "diffusers/stable-diffusion-xl-1.0-inpainting-0.1",
+        "pipeline_class_name": "StableDiffusionXLInpaintPipeline",
+        "scheduler_class_name": "EulerDiscreteScheduler",
+        "num_inference_steps": 30,
+        "guidance_scale": 7.5,
+        "required_configs": [
+            "model_index.json",
+            "unet/config.json",
+            "scheduler/scheduler_config.json",
+        ],
+        "weight_head_file": "unet/diffusion_pytorch_model.fp16.safetensors",
+        "weight_head_lfs_oid": "6470840731e98cc16713ddf3ac7ee458c9fdbcb881a98c6727cd4a938f227d3f",
+        "weight_head_size": 5135178560,
+        "component_lfs_hashes": {
+            "unet/diffusion_pytorch_model.fp16.safetensors": "6470840731e98cc16713ddf3ac7ee458c9fdbcb881a98c6727cd4a938f227d3f",
+        },
+        "extra_pipeline_kwargs": {"variant": "fp16"},
+        "license": "CreativeML OpenRAIL++",
+    },
+}
+
+
+class _HeadRequest(urllib.request.Request):
+    def get_method(self) -> str:
+        return "HEAD"
+
+
+def verify_model_access_preflight(
+    tool_keys: Sequence[str] | None = None,
+    timeout: float = 15.0,
+    http_opener: Any = None,
+) -> dict[str, dict[str, Any]]:
+    """Preflight check verifying model repository metadata, configurations, and file access.
+
+    Fails closed before any acquisition run directory is created.
+    Distinguishes repository unavailable (deleted/gated/private/deprecated), 404 not found,
+    forbidden (403), invalid token, and network errors.
+
+    Resolves full revision SHA and returns mapping for bound model execution.
+    """
+    keys = list(tool_keys or INPAINTING_MODEL_REGISTRY.keys())
+    for k in keys:
+        if k not in INPAINTING_MODEL_REGISTRY:
+            raise ModelPreflightError(
+                f"Unknown inpainting model tool key: '{k}'",
+                repo_id=k,
+                step="registry_lookup",
+                error_category="unknown_tool_key",
+            )
+
+    results: dict[str, dict[str, Any]] = {}
+    opener = http_opener or urllib.request.build_opener()
+
+    for tool_key in keys:
+        reg = INPAINTING_MODEL_REGISTRY[tool_key]
+        checkpoint = reg["checkpoint"]
+
+        # Step 1: Query Hugging Face Model API Metadata
+        meta_url = f"https://huggingface.co/api/models/{checkpoint}"
+        req_meta = urllib.request.Request(meta_url, headers={"User-Agent": "forensics-web-lab/1.0"})
+        try:
+            with opener.open(req_meta, timeout=timeout) as resp:
+                raw_meta = resp.read()
+                meta_json = json.loads(raw_meta.decode("utf-8"))
+        except urllib.error.HTTPError as e:
+            status_code = e.code
+            try:
+                body_str = e.read().decode("utf-8", errors="replace")
+            except Exception:
+                body_str = ""
+            if status_code == 401:
+                # Unauthenticated 401 on HF means repo is unavailable, gated, private, or deprecated
+                raise ModelPreflightError(
+                    f"Model repository '{checkpoint}' is unavailable (HTTP 401 Unauthorized, unauthenticated request). "
+                    f"Repository may be gated, private, or deprecated upstream by owner. Raw response: {body_str[:120]}",
+                    repo_id=checkpoint,
+                    step="metadata_api",
+                    error_category="repository_unavailable",
+                    status_code=401,
+                ) from e
+            elif status_code == 404:
+                raise ModelPreflightError(
+                    f"Model repository '{checkpoint}' was not found (HTTP 404 Not Found). Raw response: {body_str[:120]}",
+                    repo_id=checkpoint,
+                    step="metadata_api",
+                    error_category="repository_not_found",
+                    status_code=404,
+                ) from e
+            elif status_code == 403:
+                raise ModelPreflightError(
+                    f"Access to model repository '{checkpoint}' is forbidden (HTTP 403 Forbidden). Raw response: {body_str[:120]}",
+                    repo_id=checkpoint,
+                    step="metadata_api",
+                    error_category="forbidden",
+                    status_code=403,
+                ) from e
+            else:
+                raise ModelPreflightError(
+                    f"HTTP error {status_code} while querying metadata for model '{checkpoint}': {e}. Raw response: {body_str[:120]}",
+                    repo_id=checkpoint,
+                    step="metadata_api",
+                    error_category=f"http_{status_code}",
+                    status_code=status_code,
+                ) from e
+        except (urllib.error.URLError, TimeoutError, OSError) as e:
+            raise ModelPreflightError(
+                f"Network or socket error querying metadata for model '{checkpoint}': {e}",
+                repo_id=checkpoint,
+                step="metadata_api",
+                error_category="network_error",
+            ) from e
+        except json.JSONDecodeError as e:
+            raise ModelPreflightError(
+                f"Failed to parse JSON metadata for model '{checkpoint}': {e}",
+                repo_id=checkpoint,
+                step="metadata_api",
+                error_category="malformed_json",
+            ) from e
+
+        # Validate metadata payload
+        if meta_json.get("gated"):
+            raise ModelPreflightError(
+                f"Model repository '{checkpoint}' is gated and requires authenticated license agreement.",
+                repo_id=checkpoint,
+                step="metadata_api",
+                error_category="gated_repository",
+            )
+        if meta_json.get("private"):
+            raise ModelPreflightError(
+                f"Model repository '{checkpoint}' is private.",
+                repo_id=checkpoint,
+                step="metadata_api",
+                error_category="private_repository",
+            )
+
+        resolved_revision = meta_json.get("sha")
+        if not resolved_revision or not isinstance(resolved_revision, str) or len(resolved_revision) < 20:
+            raise ModelPreflightError(
+                f"Model repository '{checkpoint}' returned invalid revision SHA: {resolved_revision}",
+                repo_id=checkpoint,
+                step="metadata_api",
+                error_category="invalid_revision",
+            )
+
+        # Step 2: Verify essential configuration files via raw endpoint
+        verified_configs: list[str] = []
+        for cfg in reg.get("required_configs", []):
+            cfg_url = f"https://huggingface.co/{checkpoint}/raw/{resolved_revision}/{cfg}"
+            req_cfg = urllib.request.Request(cfg_url, headers={"User-Agent": "forensics-web-lab/1.0"})
+            try:
+                with opener.open(req_cfg, timeout=timeout) as resp:
+                    cfg_data = json.loads(resp.read().decode("utf-8"))
+                    if not isinstance(cfg_data, dict):
+                        raise ValueError(f"Config {cfg} is not a JSON object")
+                    verified_configs.append(cfg)
+            except Exception as e:
+                raise ModelPreflightError(
+                    f"Failed to retrieve or validate config file '{cfg}' in '{checkpoint}' at revision '{resolved_revision}': {e}",
+                    repo_id=checkpoint,
+                    step="config_access",
+                    error_category="config_error",
+                ) from e
+
+        # Step 3: Verify weight file accessibility via HEAD request
+        weight_file = reg.get("weight_head_file")
+        if weight_file:
+            weight_url = f"https://huggingface.co/{checkpoint}/resolve/{resolved_revision}/{weight_file}"
+            req_weight = _HeadRequest(weight_url, headers={"User-Agent": "forensics-web-lab/1.0"})
+            try:
+                with opener.open(req_weight, timeout=timeout) as resp:
+                    if resp.status not in (200, 302, 307):
+                        raise RuntimeError(f"Unexpected HTTP status {resp.status}")
+            except Exception as e:
+                raise ModelPreflightError(
+                    f"Failed to verify access to weight file '{weight_file}' in '{checkpoint}' at revision '{resolved_revision}': {e}",
+                    repo_id=checkpoint,
+                    step="weight_file_access",
+                    error_category="weight_access_error",
+                ) from e
+
+        results[tool_key] = {
+            "tool_key": tool_key,
+            "checkpoint": checkpoint,
+            "pinned_revision": reg["pinned_revision"],
+            "resolved_revision": resolved_revision,
+            "checkpoint_source_type": reg["checkpoint_source_type"],
+            "upstream_original_checkpoint": reg["upstream_original_checkpoint"],
+            "pipeline_class": reg["pipeline_class_name"],
+            "scheduler_class": reg["scheduler_class_name"],
+            "num_inference_steps": reg["num_inference_steps"],
+            "guidance_scale": reg["guidance_scale"],
+            "verified_configs": verified_configs,
+            "weight_file_verified": weight_file,
+            "checked_at_utc": datetime.now(timezone.utc).isoformat(),
+        }
+
+    return results
+
+
 class DiffusersInpaintingEngine:
     """Production GPU inpainting engine using HuggingFace Diffusers for SD2 and SDXL."""
 
@@ -827,14 +1080,19 @@ class DiffusersInpaintingEngine:
         tool_key: str,
         device: str = "cuda",
         torch_dtype: Any = None,
+        resolved_revision: str | None = None,
     ) -> None:
         self.tool_key = tool_key
         self.device = device
         self.pipeline: Any = None
 
+        if tool_key not in INPAINTING_MODEL_REGISTRY:
+            raise ValueError(f"Unknown inpainting tool key: {tool_key}")
+        reg = INPAINTING_MODEL_REGISTRY[tool_key]
+        checkpoint = reg["checkpoint"]
+
         try:
             import diffusers
-            from huggingface_hub import HfApi
             import torch
             from diffusers import (
                 DDIMScheduler,
@@ -851,25 +1109,13 @@ class DiffusersInpaintingEngine:
         self.torch = torch
         self.dtype = torch_dtype or (torch.float16 if torch.cuda.is_available() else torch.float32)
 
-        if tool_key == "stable_diffusion_2_inpainting":
-            checkpoint, pipeline_cls, scheduler_cls, extra = (
-                "stabilityai/stable-diffusion-2-inpainting", StableDiffusionInpaintPipeline, DDIMScheduler,
-                {"safety_checker": None},
-            )
-            self.num_steps = 50
-        elif tool_key == "sdxl_inpainting":
-            checkpoint, pipeline_cls, scheduler_cls, extra = (
-                "diffusers/stable-diffusion-xl-1.0-inpainting-0.1", StableDiffusionXLInpaintPipeline,
-                EulerDiscreteScheduler, {"variant": "fp16"},
-            )
-            self.num_steps = 30
-        else:
-            raise ValueError(f"Unknown inpainting tool key: {tool_key}")
-        self.guidance_scale = 7.5
+        pipeline_cls = getattr(diffusers, reg["pipeline_class_name"])
+        scheduler_cls = getattr(diffusers, reg["scheduler_class_name"])
+        extra = dict(reg.get("extra_pipeline_kwargs", {}))
+        self.num_steps = reg["num_inference_steps"]
+        self.guidance_scale = reg["guidance_scale"]
 
-        # Protocol pins revision "main" (mutable): resolve it once and load exactly that commit,
-        # so the receipt names the weights actually used.
-        self.revision = HfApi().model_info(checkpoint).sha
+        self.revision = resolved_revision or reg["pinned_revision"]
         self.pipeline = pipeline_cls.from_pretrained(
             checkpoint, revision=self.revision, torch_dtype=self.dtype, **extra
         )
@@ -879,6 +1125,9 @@ class DiffusersInpaintingEngine:
             "engine": "DiffusersInpaintingEngine",
             "tool_key": tool_key,
             "checkpoint": checkpoint,
+            "checkpoint_source_type": reg["checkpoint_source_type"],
+            "upstream_original_checkpoint": reg["upstream_original_checkpoint"],
+            "pinned_revision": reg["pinned_revision"],
             "resolved_revision": self.revision,
             "pipeline": pipeline_cls.__name__,
             "scheduler": scheduler_cls.__name__,
@@ -975,6 +1224,7 @@ def execute_cohort_acquisition(
     allow_synthetic: bool = False,
     resume: bool = True,
     run_binding: dict[str, Any] | None = None,
+    resolved_revisions: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Execute independent cohort acquisition pipeline with fail-closed integrity.
 
@@ -1135,7 +1385,11 @@ def execute_cohort_acquisition(
             elif mode == "fixture_test" or allow_synthetic:
                 engine = MockInpaintingEngine()
             elif mode == "production":
-                engine = DiffusersInpaintingEngine(tool_key=tool_key)
+                resolved_rev = (
+                    resolved_revisions.get(tool_key, {}).get("resolved_revision")
+                    if resolved_revisions else None
+                )
+                engine = DiffusersInpaintingEngine(tool_key=tool_key, resolved_revision=resolved_rev)
             else:
                 engine = MockInpaintingEngine()
             engine_config = engine.describe() if hasattr(engine, "describe") else {"engine": type(engine).__name__}
@@ -1362,6 +1616,7 @@ def execute_cohort_acquisition(
         "started_at_utc": started_at,
         "finished_at_utc": datetime.now(timezone.utc).isoformat(),
         "strata": strata_runtime,
+        "model_preflight": resolved_revisions or {},
         "historical_guard": {
             "source_keys": len(hist_keys),
             "source_key_namespaces_checked": ["coco"],

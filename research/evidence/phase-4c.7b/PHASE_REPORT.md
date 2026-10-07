@@ -1,11 +1,61 @@
 # Phase 4C.7B — Independent Cohort Acquisition: Protocol Amendment, Automated Pipeline, and Feasibility Alignment
 
-> **Phase**: Phase 4C.7B — Independent Cohort Acquisition & Feasibility Alignment (revision 3: Protocol Amendment v1.3 Wikimedia Commons, local verified catalog v2 build)<br>
-> **Status**: `READY_FOR_COLAB_REAL_ACQUISITION_PILOT` (revision 3, supersedes revision 2 blocked status). 440 eligible candidates verified and frozen; plan verification PASS; Colab launcher notebook ready for 8-pair pilot.<br>
+> **Phase**: Phase 4C.7B — Independent Cohort Acquisition & Feasibility Alignment (revision 4: Protocol Amendment v1.3.1 Model Source Hotfix, community mirror qualification, fail-closed preflight, pilot NOT_RUN)<br>
+> **Status**: `READY_FOR_COLAB_REAL_ACQUISITION_PILOT` (revision 4, supersedes revision 3). Incident in pilot run `pilot-20261007T082516Z` (HTTP 401 on deprecated SD2 repo) resolved via qualified community mirror `sd2-community/stable-diffusion-2-inpainting` (OpenRAIL++, revision `5f74973cbb64c8568780732c17f43eb269d63a0d`) and fail-closed preflight check (`--check-models`); Colab launcher notebook ready for fresh 8-pair pilot.<br>
 > **Findings status**: `NOT_MEASURED` (0 detector calls, 0 cohort evaluation)<br>
 > **Functional commit**: will be pinned to functional commit SHA before notebook push<br>
-> **Real pilot**: `NOT_RUN` (Colab T4 GPU execution required; 8-pair pilot ready)<br>
+> **Real pilot**: `NOT_RUN` (Colab T4 GPU execution required; 8-pair pilot ready with fresh RUN_ID)<br>
 > **Training runs**: 0 fits, 0 refits; frozen models untouched; retired locked-test not accessed (only its 343 source IDs are read for the disjoint guard)<br>
+
+---
+
+## T. Revision 4 — Protocol Amendment v1.3.1 Model Source Hotfix, Community Mirror Qualification & Fail-Closed Preflight (2026-10-07)
+
+### T1. Incident Report & Empirical Reproduction
+- **Sự cố thực địa**: Pilot run `pilot-20261007T082516Z` (commit `3710762868a007af4fe79798bad79d086abcd5c8`) trên Google Colab T4 GPU vượt qua GPU policy check nhưng dừng tại:
+  `HfApi().model_info("stabilityai/stable-diffusion-2-inpainting")`
+  với ngoại lệ `RepositoryNotFoundError` / HTTP 401 Unauthorized (`{"error":"Invalid username or password."}`).
+- **Nguyên nhân kỹ thuật**: Stability AI đã chuyển repo `stabilityai/stable-diffusion-2-inpainting` sang chế độ gated/restricted/deprecated. Hugging Face API trả về HTTP 401 đối với các truy vấn ẩn danh không token để tránh rò rỉ sự tồn tại của private/gated repo.
+- **Trạng thái thực tế**: Attempt ledger trên đĩa được xác nhận là trống; 0 receipts được ghi nhận. Thư mục run cũ và log lỗi được bảo toàn nguyên vẹn, không chỉnh sửa binding cũ để gượng ép `--resume`.
+- **Tái hiện thực nghiệm**: Tái hiện thành công qua API metadata mà không sinh ảnh cục bộ; xác nhận phân biệt giữa lỗi mạng, repo 404, repo gated/private 401 và token không hợp lệ. Không yêu cầu người dùng nhập token hoặc in token vào log/chat.
+
+### T2. Thẩm định Community Mirror & Protocol Amendment v1.3.1
+- **Thẩm định nguồn thay thế `sd2-community/stable-diffusion-2-inpainting`**:
+  * Đọc model card, license, model configs và Git LFS hashes.
+  * Giấy phép: `openrail++` (CreativeML OpenRAIL++).
+  * Pipeline class: `StableDiffusionInpaintPipeline`.
+  * Configs: `model_index.json`, `unet/config.json` (sample_size 64, in_channels 9, out_channels 4), `scheduler/scheduler_config.json` (DDIM).
+  * Revision đầy đủ: `5f74973cbb64c8568780732c17f43eb269d63a0d`.
+  * LFS OIDs & file sizes đã thẩm định:
+    - `unet/diffusion_pytorch_model.fp16.safetensors`: `29a698f37775d5904a958c9cebed98184483dfb441729a8e5f98dd5b65df70c8` (1,731,933,536 bytes).
+    - `512-inpainting-ema.safetensors`: `b29e2ed9a8fe58e76f7e801bda091d23738bd74c1da3f339bcbe2d40922fcb60` (5,214,662,094 bytes).
+    - `vae/diffusion_pytorch_model.fp16.safetensors`: `3e4c08995484ee61270175e9e7a072b66a6e4eeb5f0c266667fe1f45b90daf9a` (167,335,342 bytes).
+    - `text_encoder/model.fp16.safetensors`: `681c555376658c81dc273f2d737a2aeb23ddb6d1d8e5b3a7064636d359a22668` (680,821,096 bytes).
+  * **Định danh minh bạch**: Được ghi nhận là `community_mirror` trong tài liệu và specification. Tuyệt đối không gọi là nguồn chính thức và không tuyên bố trọng số bit-exact mà không có bằng chứng đối sánh trực tiếp.
+  * **Bảo toàn giao thức**: Giữ nguyên kiến trúc UNet 9-channel inpainting, DDIM scheduler, 50 inference steps, guidance scale 7.5, fixed seeds, exact prompts và quota ma trận $2 \times 2$ (100 cặp mục tiêu / 110 pool cho mỗi stratum).
+  * **SDXL Inpainting**: Thẩm định nguồn chính thức `diffusers/stable-diffusion-xl-1.0-inpainting-0.1` (full revision `115134f363124c53c7d878647567d04daf26e41e`, UNet fp16 LFS `6470840731e98cc16713ddf3ac7ee458c9fdbcb881a98c6727cd4a938f227d3f`).
+  * **Bất biến**: Không thay thế bằng SD1.5 hoặc model khác; không cho phép fallback tự động giữa các model.
+
+### T3. Cơ chế Preflight Gate & Load Binding
+- **Hàm preflight**: `verify_model_access_preflight(tool_keys, timeout, http_opener)` kiểm tra metadata API, 3 config files chính và gửi HTTP HEAD request tới safetensors weight files.
+- **Fail-closed boundary**: Chạy strictly TRƯỚC KHI tạo thư mục run trên đĩa (`run_dir = Path(args.output_root) / args.run_id`). Nếu preflight thất bại, tiến trình dừng ngay lập tức và 0 thư mục rác/mồ côi được tạo ra.
+- **CLI flag**: Bổ sung `--check-models` cho phép kiểm tra độc lập nhanh chóng (< 3 giây, 0 byte weights tải về máy).
+- **Revision binding**: Revision được resolve trong preflight và chuyển trực tiếp vào `DiffusersInpaintingEngine`, đảm bảo nạp đúng chính xác revision đã kiểm tra.
+
+### T4. Kết quả Kiểm thử & Xác minh
+- **Regression test suite**: Bổ sung 8 tests trong `ml/tests/test_independent_cohort_bindings.py`:
+  * HTTP 401 handling (`ModelPreflightError` phân loại `AUTHENTICATION_OR_GATED_REPO`).
+  * HTTP 404 handling (`REPOSITORY_NOT_FOUND`).
+  * Lỗi mạng (`NETWORK_OR_TIMEOUT_ERROR`).
+  * Gated repo detection.
+  * Live mirror và SDXL resolution.
+  * Diffusers engine binding kiểm tra revision.
+  * Fail-closed preflight ngăn chặn tạo thư mục run khi thất bại.
+  * CLI `--check-models` thực thi thành công.
+- **Tổng kết test**: 71/71 tests PASS (`test_independent_cohort_bindings.py`: 54/54, `test_independent_cohort_acquisition.py`: 17/17).
+- **Smoke test**: `python scripts/research/run_cohort_acquisition.py --smoke-test` PASS trong 2.58s (`acquisition_smoke_receipt_v2.json`).
+- **Plan verification**: `python scripts/research/run_cohort_acquisition.py --verify-plan` PASS (440 candidates, 110/stratum).
+- **Colab Launcher**: Cập nhật Cell 2 bổ sung `--check-models` và ghim notebook vào commit functional mới.
 
 ---
 

@@ -46,8 +46,10 @@
     {
       "tool_key": "stable_diffusion_2_inpainting",
       "name": "Stable Diffusion 2 Inpainting",
-      "checkpoint": "stabilityai/stable-diffusion-2-inpainting",
-      "revision": "main",
+      "checkpoint": "sd2-community/stable-diffusion-2-inpainting",
+      "revision": "5f74973cbb64c8568780732c17f43eb269d63a0d",
+      "checkpoint_source_type": "community_mirror",
+      "upstream_original_checkpoint": "stabilityai/stable-diffusion-2-inpainting",
       "model_type": "open_weights_diffusion",
       "quota_percentage": 50,
       "target_pairs": 200,
@@ -58,15 +60,17 @@
         "resolution": [512, 512],
         "seed_policy": "fixed_prng_sequence"
       },
-      "license": "CreativeML OpenRAIL-M",
-      "execution_environment": "Local GPU (if VRAM >= 8GB) or Google Colab T4 / A100 GPU",
-      "feasibility_status": "AVAILABLE_OPEN_WEIGHTS"
+      "license": "CreativeML OpenRAIL++",
+      "execution_environment": "Google Colab T4 / A100 GPU",
+      "feasibility_status": "AVAILABLE_COMMUNITY_MIRROR"
     },
     {
       "tool_key": "sdxl_inpainting",
       "name": "SDXL Inpainting 1.0",
       "checkpoint": "diffusers/stable-diffusion-xl-1.0-inpainting-0.1",
-      "revision": "main",
+      "revision": "115134f363124c53c7d878647567d04daf26e41e",
+      "checkpoint_source_type": "official_diffusers",
+      "upstream_original_checkpoint": "diffusers/stable-diffusion-xl-1.0-inpainting-0.1",
       "model_type": "open_weights_diffusion",
       "quota_percentage": 50,
       "target_pairs": 200,
@@ -79,7 +83,7 @@
       },
       "license": "CreativeML OpenRAIL++",
       "execution_environment": "Google Colab T4 / A100 GPU (fp16 requires ~6.6GB VRAM; exceeds local 4GB GTX 1650)",
-      "feasibility_status": "AVAILABLE_OPEN_WEIGHTS_VIA_COLAB"
+      "feasibility_status": "AVAILABLE_OFFICIAL_DIFFUSERS"
     }
   ],
   "orthogonal_allocation_matrix": {

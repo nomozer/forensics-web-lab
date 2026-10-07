@@ -46,6 +46,8 @@ if str(REPO_ROOT) not in sys.path:
 
 from ml.evaluation.independent_cohort_acquisition import (
     DEFAULT_CATALOG_PATH,
+    INPAINTING_MODEL_REGISTRY,
+    ModelPreflightError,
     STRATA_KEYS,
     STRATUM_BUFFER_PAIRS,
     STRATUM_TARGET_PAIRS,
@@ -63,11 +65,16 @@ from ml.evaluation.independent_cohort_acquisition import (
     generate_canonical_candidate_plan,
     generate_synthetic_fixture_plan,
     load_historical_source_keys,
+    verify_model_access_preflight,
 )
 
 EVIDENCE_DIR = REPO_ROOT / "research/evidence/phase-4c.7b"
 LEGACY_CATALOG_PATH = EVIDENCE_DIR / "verified_candidate_catalog.json"
-PROTOCOL_FILES = (EVIDENCE_DIR / "PROTOCOL_AMENDMENT_V1.2.md", EVIDENCE_DIR / "cohort_specification.json")
+PROTOCOL_FILES = (
+    EVIDENCE_DIR / "PROTOCOL_AMENDMENT_V1.3.md",
+    EVIDENCE_DIR / "PROTOCOL_AMENDMENT_V1.3_MODEL_SOURCE.md",
+    EVIDENCE_DIR / "cohort_specification.json",
+)
 
 
 def verify_checkout(repo_root: Path, expected_commit: str) -> str:
@@ -347,7 +354,15 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--catalog-path", type=str, default=str(DEFAULT_CATALOG_PATH), help="Path to candidate catalog")
     parser.add_argument("--contact-sheet", action="store_true", help="Generate Content QC HTML contact sheet")
     parser.add_argument("--receipt-path", type=str, default=str(EVIDENCE_DIR / "acquisition_smoke_receipt_v2.json"), help="Smoke receipt path")
+    parser.add_argument("--check-models", action="store_true", help="Run inpainting model preflight check (metadata, configs, and weights access)")
     args = parser.parse_args(argv)
+
+    if args.check_models:
+        print("[Phase 4C.7B] Checking inpainting model access (metadata, configs, weight HEAD)...")
+        results = verify_model_access_preflight()
+        print(json.dumps(results, indent=2))
+        print(">>> Model access preflight: ALL MODELS PASSED")
+        return
 
     if args.smoke_test:
         run_technical_smoke_test(receipt_path=Path(args.receipt_path))
@@ -374,7 +389,7 @@ def main(argv: list[str] | None = None) -> None:
         return
 
     if not args.mode:
-        parser.error("one of --mode, --verify-plan, --export-plan, --smoke-test or --audit-run is required")
+        parser.error("one of --mode, --check-models, --verify-plan, --export-plan, --smoke-test or --audit-run is required")
     if args.engine == "mock" and not args.allow_synthetic:
         raise SystemExit("--engine mock produces SYNTHETIC edits; it is refused for real acquisition.")
     if not (args.run_id and args.expected_commit):
@@ -387,6 +402,17 @@ def main(argv: list[str] | None = None) -> None:
     if args.audit_run:
         print(json.dumps(audit_acquisition_run(Path(args.audit_run), binding), indent=2))
         return
+
+    # Fail-closed model access preflight check BEFORE creating any run directory
+    resolved_revisions: dict[str, dict[str, Any]] = {}
+    if args.engine == "diffusers" and not args.allow_synthetic:
+        print(">>> Executing model access preflight before run creation...")
+        try:
+            resolved_revisions = verify_model_access_preflight()
+            print(">>> Model access preflight: PASS")
+        except ModelPreflightError as e:
+            print(f"ERROR: Model access preflight FAILED for repo '{e.repo_id}' at step '{e.step}': {e}", file=sys.stderr)
+            raise SystemExit(1)
 
     if not args.output_root:
         raise SystemExit("--output-root is required.")
@@ -410,6 +436,7 @@ def main(argv: list[str] | None = None) -> None:
         allow_synthetic=args.allow_synthetic,
         resume=args.resume,
         run_binding=binding,
+        resolved_revisions=resolved_revisions,
     )
     print(json.dumps(res, indent=2))
 

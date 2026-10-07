@@ -1,3 +1,19 @@
+## Phase 4C.7B — Revision 4: Model Access Hotfix, Community Mirror Qualification & Preflight Gate
+
+- **Mục tiêu**: Khắc phục sự cố pilot `pilot-20261007T082516Z` (HTTP 401 trên SD2 inpainting repo); thẩm định community mirror `sd2-community/stable-diffusion-2-inpainting`; bổ sung preflight fail-closed trước khi tạo run directory; thêm regression test và chuẩn bị pilot mới.
+- **Sự cố & Nguyên nhân**: Runner dừng tại `HfApi().model_info("stabilityai/stable-diffusion-2-inpainting")` với lỗi 401 Unauthorized do Stability AI chuyển repo sang gated/deprecated. Attempt ledger trống, 0 receipts, run cũ được bảo toàn nguyên vẹn.
+- **Thẩm định Community Mirror & Amendment v1.3.1**:
+  - Thẩm tra mirror `sd2-community/stable-diffusion-2-inpainting` (revision `5f74973cbb64c8568780732c17f43eb269d63a0d`, OpenRAIL++, UNet 9-channel, config & safetensors LFS hashes audited). Định danh minh bạch `community_mirror` (không tự nhận bit-exact khi chưa đối sánh).
+  - Giữ nguyên cấu hình SD2: DDIM, 50 steps, guidance 7.5, fixed seeds, prompts, ma trận 4 strata 100 cặp/110 pool. SDXL chính thức `diffusers/stable-diffusion-xl-1.0-inpainting-0.1` PASS. Không fallback giữa các model.
+- **Cơ chế Fail-Closed Model Preflight**:
+  - Thêm `verify_model_access_preflight` và CLI `--check-models`: kiểm tra metadata, 3 configs và HEAD safetensors của cả hai model (< 3s, 0 byte weights tải).
+  - Phân biệt rõ lỗi mạng, repo 404, gated/private 401/403; chạy strictly trước khi tạo `run_dir` trên đĩa (0 orphan/dirty run dir).
+- **Kiểm thử**: Hermetic smoke test PASS trong 2.58s; plan verification PASS (440 candidates); 8 regression tests mới; toàn bộ 71 cohort tests PASS (54/54 + 17/17).
+- **Trạng thái**: `READY_FOR_COLAB_REAL_ACQUISITION_PILOT` (Colab pilot 8 cặp đã sẵn sàng với run ID mới; real pilot: NOT_RUN; generation time, peak VRAM, QC rates: NOT_MEASURED; independent performance: NOT_MEASURED).
+- **Evidence**: `research/evidence/phase-4c.7b/PROTOCOL_AMENDMENT_V1.3_MODEL_SOURCE.md`, `cohort_specification.json`, `acquisition_smoke_receipt_v2.json`.
+
+---
+
 ## Phase 4C.7B — Revision 3: Protocol Amendment v1.3, Live Local Catalog Build & Verified Real Pipeline
 
 - **Mục tiêu**: Thay thế nguồn Unsplash Lite bằng Wikimedia Commons theo Protocol Amendment v1.3; xây dựng catalog 440 ứng viên thực tế tại local có checkpoint và bounded retry; xác minh download/decode ảnh thật ngoài Git; kiểm chứng pipeline và chuẩn bị Colab pilot 8 cặp.

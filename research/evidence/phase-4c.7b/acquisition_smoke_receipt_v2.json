@@ -1,8 +1,8 @@
 {
-  "timestamp_utc": "2026-10-07T06:11:18.797168+00:00",
+  "timestamp_utc": "2026-10-07T08:58:45.747793+00:00",
   "phase": "4C.7B",
   "smoke_test_status": "PASS",
-  "elapsed_seconds": 1.219,
+  "elapsed_seconds": 2.576,
   "evidence_class": "synthetic_smoke",
   "eligible_for_independent_cohort": false,
   "note": "SYNTHETIC fixture only; not a real-image or GPU pilot.",
