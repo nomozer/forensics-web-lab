@@ -1,5 +1,6 @@
 ## Phase 4C.7B trace — Real Pilot Diagnosis & Content-Grounded Corrective Preparation
 
+- **Functional binding**: Corrective source commit `dee3efb7728c6f14ded4c1367119acf5f4bd9d02`; canonical notebook pins this full SHA. Historical pilot binding remains unchanged.
 - **Scope**: Diagnosed the exact 8 pairs from `pilot-20261007T132003Z`; no regeneration, full acquisition, training, detector, or evaluator run.
 - **Proven findings**: Generic prompt assignment and seeded random masks had no content target; all 8 outputs exceed the locked outside-mask L1 maximum (3.808–9.311 observed vs 0.5); Technical QC omitted that check and used std threshold 2.0 instead of 5.0. Model revisions/schedulers/steps/guidance match protocol; crop/resize drift is not demonstrated.
 - **Implementation correction**: Production now requires a bound content-grounded prompt/target/rationale/target bbox/mask bbox; generated pixels are retained only inside the binary mask; locked Technical QC thresholds are enforced; logs use Technical QC terminology.

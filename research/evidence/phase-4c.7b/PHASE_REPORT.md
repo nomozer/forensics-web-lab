@@ -3,7 +3,7 @@
 > **Phase**: Phase 4C.7B — Independent Cohort Acquisition & Feasibility Alignment (revision 5 implementation plus audited real-pilot intake)<br>
 > **Status**: `PILOT_DIAGNOSED_CORRECTIVE_PLAN_PENDING_HUMAN_REVIEW`. The historical run remains audit-valid as produced, but post-audit diagnosis proves its Technical QC omitted locked checks and its prompts/masks were not content-grounded. Human Content QC remains pending and full acquisition remains locked.<br>
 > **Findings status**: `NOT_MEASURED` (0 detector calls, 0 cohort evaluation)<br>
-> **Functional commit**: `7d2eea4027e2a17b51e6665ff81d481e4e333d48` (notebook pin commit `99b334c0261ee425c006ba9337999043b7f7a049`)<br>
+> **Current corrective functional commit**: `dee3efb7728c6f14ded4c1367119acf5f4bd9d02`; historical audited pilot remains bound to `7d2eea4027e2a17b51e6665ff81d481e4e333d48`.<br>
 > **Real pilot**: `TECHNICAL_PASS_PENDING_HUMAN_CONTENT_QC` (8 pairs acquired; full 400-pair run remains `NOT_RUN`)<br>
 > **Training runs**: 0 fits, 0 refits; frozen models untouched; retired locked-test not accessed (only its 343 source IDs are read for the disjoint guard)<br>
 
