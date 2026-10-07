@@ -21,7 +21,7 @@ from ml.datasets.pair_aware_loader import (
     SourcePairInstance,
     ImageVariant,
 )
-from ml.training.run_phase_4c1 import (
+from ml.training.run_learning_curve import (
     build_instances_for_training,
     create_data_loaders,
     run_smoke_training,

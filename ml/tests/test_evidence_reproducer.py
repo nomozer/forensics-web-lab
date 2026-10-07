@@ -1,7 +1,7 @@
 """
 Tests for evidence reproduction runner and invariant failure detection (Phase 4B.4).
 
-Verifies that scripts/reproduce-phase-4b3-evidence.py correctly catches:
+Verifies that scripts/reproduce_dataset_evidence.py correctly catches:
 - Wrong Git HEAD
 - 1-byte alteration in an archive
 - Missing rows in manifest
@@ -23,7 +23,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 # Load reproduce-phase-4b3-evidence dynamically from scripts/
-script_path = Path(__file__).resolve().parents[2] / "scripts" / "reproduce-phase-4b3-evidence.py"
+script_path = Path(__file__).resolve().parents[2] / "scripts" / "reproduce_dataset_evidence.py"
 spec = importlib.util.spec_from_file_location("reproduce_evidence", script_path)
 assert spec is not None and spec.loader is not None
 reproduce_mod = importlib.util.module_from_spec(spec)

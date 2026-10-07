@@ -233,7 +233,7 @@ class ReferenceFeatureExtractor:
     def __init__(self, weights_path: Path, device: str = "cpu", expected_weights_sha256: str | None = None):
         import torch
         from ml.training.mobilenetv3_forensics import MobileNetV3Forensics
-        from ml.training.phase_4c2h_development import (
+        from ml.training.nested_cv_development import (
             apply_frozen_backbone_policy,
             build_canonical_transform,
             set_deterministic_seed,
@@ -467,7 +467,7 @@ def verify_fold_binding(
     *, folds: Sequence[Any], bindings: dict[str, Any], reference: dict[tuple[str, str], dict[str, Any]]
 ) -> dict[int, int]:
     """Check folds equal the 4C.3B fold lock and reference rows; return source -> outer fold."""
-    from ml.training.phase_4c2h_development import public_fold_lock
+    from ml.training.nested_cv_development import public_fold_lock
 
     if public_fold_lock(folds) != bindings["fold_lock"]:
         raise ValueError("Rebuilt outer folds differ from the 4C.3B fold lock")

@@ -74,7 +74,7 @@ image_pipeline:
     decode_back: "Image.open(BytesIO(bytes)).convert('RGB')"
   lossless_intermediate: "resize-only output is kept as an in-memory RGB array; saved copies use PNG"
   model_preprocessing:
-    visual: "phase_4c2h_development.build_canonical_transform (bicubic 224x224, ImageNet normalisation)"
+    visual: "nested_cv_development.build_canonical_transform (bicubic 224x224, ImageNet normalisation)"
     dsp: "dsp_features.extract_dsp_features on the same transformed image"
   label_policy: "authentic and ai_edited images receive the identical condition"
 

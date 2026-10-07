@@ -20,7 +20,7 @@ SOURCE_MEMBERS = (
     "ml/training/__init__.py",
     "ml/training/dsp_features.py",
     "ml/training/mobilenetv3_forensics.py",
-    "ml/training/phase_4c2h_development.py",
+    "ml/training/nested_cv_development.py",
     "ml/training/visual_dsp_ablation.py",
     "ml/training/run_visual_dsp_ablation.py",
     "scripts/research/analyze_visual_dsp_ablation.py",

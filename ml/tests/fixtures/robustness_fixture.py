@@ -106,7 +106,7 @@ def _write_images(data_root: Path) -> list[dict[str, str]]:
 
 
 def _write_cache(shared: Path, name: str, features: np.ndarray, source_ids: list[str], extra: dict | None = None) -> None:
-    from ml.training.phase_4c2h_development import source_membership_commitment
+    from ml.training.nested_cv_development import source_membership_commitment
 
     cache = shared / f"{name}_features.pt"
     torch.save({"features": torch.from_numpy(features), "source_ids": list(source_ids)}, cache)
