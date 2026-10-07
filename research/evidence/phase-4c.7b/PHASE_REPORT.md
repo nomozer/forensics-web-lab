@@ -3,6 +3,7 @@
 > **Phase**: Phase 4C.7B — Independent Cohort Acquisition & Feasibility Alignment (revision 2: provenance, notebook binding, fail-closed correction)<br>
 > **Status**: `BLOCKED_PENDING_ELIGIBLE_CANDIDATE_CATALOG` — code, tests and pinned notebook are ready; the real pilot cannot start until an eligible catalog v2 exists (see §R3). Not `READY_FOR_COLAB_REAL_PILOT`.<br>
 > **Findings status**: `NOT_MEASURED` (0 detector calls, 0 cohort evaluation)<br>
+> **Functional commit**: `d487d1e79fcc626333c9f1b23e7854ef60f6a820` (notebook `EXPECTED_COMMIT`)<br>
 > **Real pilot**: `NOT_RUN` (no Colab GPU / user Drive in this environment; no real images generated)<br>
 > **Training runs**: 0 fits, 0 refits; frozen models untouched; retired locked-test not accessed (only its 343 source IDs are read for the disjoint guard)<br>
 
