@@ -1,7 +1,7 @@
 # Phase 4C.7B — Independent Cohort Acquisition: Protocol Amendment, Automated Pipeline, and Feasibility Alignment
 
 > **Phase**: Phase 4C.7B — Independent Cohort Acquisition & Feasibility Alignment (diagnostic run intake, audit, and empirical A/B evaluation)<br>
-> **Status**: `DIAGNOSTIC_EVALUATED_TECHNICAL_PASS_PENDING_HUMAN_CONTENT_QC`. Run `diag-20261008T154628Z` (bound to functional commit `0f99897c8ee003dc8ecbb55b09c4aaeb2994c2bc` and approved plan `e352504016960a24c3c539b5d33a2876c222d1975426a7911de0ec35fe9df157`; package ZIP SHA-256 `f13d7baf458e9db86809bced5a20c27f37adb6f698353a5678b200262a481d20`) passed safe intake and production CLI audit (6 attempts, 6 accepted pairs, 0 errors, 3 candidates x 2 arms; outside-mask L1 = 0.000000 enforced by compositing). Empirical A/B comparison demonstrates: Arm B local crop at native resolution rescued 2/2 SDXL omissions (tomato on bread with calyx, bird in sky with flight feathers), but produced semantic hallucination on SD2 (vintage toy car instead of suitcase, with severed ground shadow). Inside L1 increased (43.39 vs 30.74) despite total semantic failure, demonstrating that L1 increase does not correlate with content success. Human Content QC remains strictly PENDING for diagnostic and 8 historical pilot pairs. Diagnostic results remain isolated; full cohort remains locked.<br>
+> **Status**: `DIAGNOSTIC_EVALUATED_TECHNICAL_PASS_PENDING_HUMAN_CONTENT_QC`. Run `diag-20261008T154628Z` (bound to functional commit `0f99897c8ee003dc8ecbb55b09c4aaeb2994c2bc` and approved plan `e352504016960a24c3c539b5d33a2876c222d1975426a7911de0ec35fe9df157`; package ZIP SHA-256 `f13d7baf458e9db86809bced5a20c27f37adb6f698353a5678b200262a481d20`) passed safe intake and production CLI audit (6 attempts, 6 accepted pairs, 0 errors, 3 candidates x 2 arms; outside-mask L1 = 0.000000 enforced by compositing). Empirical A/B comparison demonstrates: Arm B local crop at native resolution (linear scale 4.0x, geometric area factor 16.0x) synthesized target objects for 2/2 SDXL omissions (tomato on bread with calyx, bird in sky with flight feathers), but produced semantic hallucination on SD2 under linear scale 1.6x / area factor 2.56x (vintage toy car instead of suitcase). Inside L1 increased (43.39 vs 30.74) despite total semantic failure, demonstrating that L1 increase does not correlate with content success. Causal mechanisms (latent tokens, context bias) remain unverified hypotheses. Human Content QC remains strictly PENDING for diagnostic (6 attempts) and 8 historical pilot pairs. Diagnostic results remain isolated; full cohort remains locked; no new generation budget registered.<br>
 > **Findings status**: `NOT_MEASURED` (0 detector calls, 0 cohort evaluation)<br>
 > **Current corrective functional commit**: `0f99897c8ee003dc8ecbb55b09c4aaeb2994c2bc`; canonical notebook pins this exact full SHA.<br>
 > **Real pilot / diagnostic**: `DIAGNOSTIC_TECHNICAL_PASS_PENDING_HUMAN_CONTENT_QC` (6 diagnostic attempts in `diag-20261008T154628Z`; 8 pilot pairs in `pilot-20261008T113700Z`; full 400-pair run remains `NOT_RUN`)<br>
@@ -17,30 +17,33 @@
   - Verified run ID `diag-20261008T154628Z`, source commit `0f99897c8ee003dc8ecbb55b09c4aaeb2994c2bc`, approved plan SHA-256 `e352504016960a24c3c539b5d33a2876c222d1975426a7911de0ec35fe9df157`.
   - Attempt accounting: exactly 6 attempts across 3 candidates $\times$ 2 arms (`STARTED` and `ACCEPTED` in `attempt_ledger.jsonl` represent two lifecycle events within each attempt, not 12 attempts).
   - Input bit-parity: all authentic and mask PNG hashes match approved plan JSON and match bit-identically to sealed normalized inputs from `pilot-20261008T113700Z` (`max_auth_diff == 0`, `max_mask_diff == 0`).
-- **Recalculated Pixel-Level Metrics**:
+- **Recalculated Pixel-Level Metrics (Linear Scale vs Geometric Area Factor)**:
   - `IND_COCO_SDXL_002` (bread tomato, SDXL):
-    * Arm A (512×512 full canvas): inside mean L1 = `16.7861` (std 13.73, max delta 81.0), outside mean L1 = `0.000000` (max delta 0.0).
-    * Arm B (1024×1024 local crop): inside mean L1 = `28.2929` (std 32.96, max delta 176.0), outside mean L1 = `0.000000` (max delta 0.0).
+    * Arm A (512x512 full canvas): Linear scale 1.0x, Geometric area factor 1.0x; inside mean L1 = `16.7861` (std 13.73, max delta 81.0), outside mean L1 = `0.000000` (max delta 0.0).
+    * Arm B (1024x1024 local crop): Linear scale 4.0x, Geometric area factor 16.0x; inside mean L1 = `28.2929` (std 32.96, max delta 176.0), outside mean L1 = `0.000000` (max delta 0.0).
   - `IND_COMMONS_SD2_002` (suitcase, SD2):
-    * Arm A (512×512 full canvas): inside mean L1 = `30.7358` (std 24.12, max delta 146.0), outside mean L1 = `0.000000` (max delta 0.0).
-    * Arm B (512×512 local crop 1.6×): inside mean L1 = `43.3932` (std 40.49, max delta 226.0), outside mean L1 = `0.000000` (max delta 0.0).
+    * Arm A (512x512 full canvas): Linear scale 1.0x, Geometric area factor 1.0x; inside mean L1 = `30.7358` (std 24.12, max delta 146.0), outside mean L1 = `0.000000` (max delta 0.0).
+    * Arm B (512x512 local crop): Linear scale 1.6x, Geometric area factor 2.56x; inside mean L1 = `43.3932` (std 40.49, max delta 226.0), outside mean L1 = `0.000000` (max delta 0.0).
   - `IND_COMMONS_SDXL_001` (sky bird, SDXL):
-    * Arm A (512×512 full canvas): inside mean L1 = `11.0767` (std 9.00, max delta 43.0), outside mean L1 = `0.000000` (max delta 0.0).
-    * Arm B (1024×1024 local crop): inside mean L1 = `13.0674` (std 32.45, max delta 214.0), outside mean L1 = `0.000000` (max delta 0.0).
+    * Arm A (512x512 full canvas): Linear scale 1.0x, Geometric area factor 1.0x; inside mean L1 = `11.0767` (std 9.00, max delta 43.0), outside mean L1 = `0.000000` (max delta 0.0).
+    * Arm B (1024x1024 local crop): Linear scale 4.0x, Geometric area factor 16.0x; inside mean L1 = `13.0674` (std 32.45, max delta 214.0), outside mean L1 = `0.000000` (max delta 0.0).
   - Background invariance: strictly verified across all 6 attempts (`outside_mean_l1 == 0.000000`, `outside_max_delta == 0.0`).
 - **Visual Analysis & Empirical Metric Dissociation**:
-  - *Tomato (`IND_COCO_SDXL_002`)*: Arm A completely omitted object (infilled bread crumb texture). Arm B successfully synthesized a plausible red cherry tomato with spherical highlight and green stem; minor rectangular step visible along crop bbox `[345, 245, 455, 335]` in crumb texture due to unpadding composite.
-  - *Suitcase (`IND_COMMONS_SD2_002`)*: Arm A completely omitted object (infilled cobblestones). Arm B produced **semantic hallucination**: synthesized a miniature vintage automobile with roof and wheels instead of a suitcase! Severed ground shadow at mask border $x=0, y=512$. Inside L1 increased from 30.74 to 43.39 (max delta 226). **Demonstrates that higher L1 does NOT indicate content generation success.**
+  - *Tomato (`IND_COCO_SDXL_002`)*: Arm A completely omitted object (infilled bread crumb texture). Arm B successfully synthesized a plausible red cherry tomato with spherical highlight and green stem. Bbox reconciliation: Crop bbox is `[256, 162, 512, 418]`; registered mask bbox is `[345, 245, 455, 335]`. Overlay zoom confirms a subtle rectangular transition step in crumb texture along the **registered mask boundary `[345, 245, 455, 335]`** due to hard binary compositing with authentic bread (not at the crop bbox boundary).
+  - *Suitcase (`IND_COMMONS_SD2_002`)*: Arm A completely omitted object (infilled cobblestones). Arm B produced **semantic hallucination**: synthesized a miniature vintage automobile with roof and wheels instead of a suitcase. Shadow observation: the car shadow is an oval pool directly beneath the vehicle and does not reach the canvas frame ($x=0, y=512$). Internal mask edges ($y=340, x=225$) blend naturally. Defect is strictly semantic hallucination, not a boundary compositing flaw. Inside L1 increased from 30.74 to 43.39 (max delta 226), demonstrating that **higher L1 does NOT indicate content generation success**.
   - *Bird (`IND_COMMONS_SDXL_001`)*: Arm A completely omitted object (grey sky patch). Arm B successfully synthesized a dark silhouette bird in flight with spread wings, flight feathers, and seamless integration into cloudy sky (zero visible boundary steps).
-- **Execution Evidence, Runtime Profiling & Limitations**:
-  - Crop and native resolution scaling verified: SDXL raw crops are $1024 \times 1024$; SD2 raw crop is $512 \times 512$ with 1.6× padding. Coordinate rounding rules matched exactly.
-  - Timing confounds: Arm A elapsed times (114.3s, 71.5s, 37.6s) included initial model loading from cache into VRAM and CUDA compilation. Arm B runs (24.7s, 7.5s, 26.9s) benefited from memory residency. Arm B is NOT faster; SDXL Arm B processed $4\times$ latent resolution ($128 \times 128$), resulting in higher peak VRAM (8.96 GiB vs 7.17 GiB).
-  - Runtime environment recorded: Linux `6.6.122+-x86_64-with-glibc2.39`, Python `3.13.15`, NumPy `2.1.3`, Pillow `11.3.0`. Unrecorded in receipts: PyTorch, Diffusers, CUDA version, specific GPU model (stated factually without speculation).
-  - Methodological bounds: 3 candidates, $n=1$ seed per candidate. Cropping alters context window (field of view) simultaneously with token resolution, and PRNG sampling sequence differs across grid dimensions. Does not constitute proof of latent downsampling as sole causal mechanism.
-- **Contact Sheet & Governance Determinations**:
-  - Self-contained HTML contact sheet enriched with base64 embedded images, comparative summary, agent qualitative evaluations, and governance blocks at `data/research/local-artifacts/phase-4c.7b/diag-20261008T154628Z/diagnostic_contact_sheet.html`.
-  - Human Content QC status remains strictly `PENDING` across all 6 diagnostic attempts and 8 historical pilot pairs.
-  - Diagnostic run remains isolated; full cohort remains locked.
+- **Execution Evidence, Timing Scope & Runtime Profiling**:
+  - Crop and native resolution scaling verified: SDXL raw crops are $1024 \times 1024$ (linear 4.0x, area 16.0x); SD2 raw crop is $512 \times 512$ with 1.6x padding (linear 1.6x, area 2.56x).
+  - Timing measurement scope: `diagnostic_receipt.json` and `attempt_ledger.jsonl` record identical elapsed times for all 6 attempts (`114.319s`, `24.684s`, `71.542s`, `7.461s`, `37.614s`, `26.883s`). Code scope in `ml/evaluation/independent_cohort_diagnostic.py` starts `time.perf_counter()` before `get_engine(tool_key)`. For Arm A attempts (1, 3, 5), elapsed time includes pipeline instantiation from disk/cache into CUDA memory and initial graph warmup. For Arm B attempts (2, 4, 6), the engine is already memory-resident. Therefore, recorded times represent total attempt wall time, not isolated UNet denoising speed. Arm B is not faster; for SDXL, Arm B processed $4\times$ latent resolution ($128 \times 128$), resulting in higher peak VRAM (8.96 GiB vs 7.17 GiB).
+  - Primary source bindings:
+    * SDXL Inpainting: `diffusers/stable-diffusion-xl-1.0-inpainting-0.1` (pinned revision `115134f363124c53c7d878647567d04daf26e41e`)
+    * SD2 Inpainting: `sd2-community/stable-diffusion-2-inpainting` (pinned revision `5f74973cbb64c8568780732c17f43eb269d63a0d`)
+  - Runtime environment recorded: Linux `6.6.122+-x86_64-with-glibc2.39`, Python `3.13.15`, NumPy `2.1.3`, Pillow `11.3.0`. Unrecorded in receipts: PyTorch, Diffusers, CUDA runtime version, GPU model (stated factually without speculation).
+- **Methodological Bounds & Governance**:
+  - Exactly 3 candidates, $n=1$ seed per candidate: observational A/B comparison. Causal mechanisms (latent tokens, context bias) remain unverified hypotheses.
+  - Do NOT declare mask <3% filter or hybrid architecture as proven rules from this 3-case run.
+  - Full cohort generation remains strictly **LOCKED**; zero new generation budget registered.
+  - Contact sheet `diagnostic_contact_sheet.html` updated and self-contained; Human Content QC status remains strictly `PENDING` across all 6 diagnostic attempts and 8 historical pilot pairs.
 
 ## CC. Independent cohort 6-attempt diagnostic plan human approval registered (2026-10-08)
 

@@ -222,67 +222,70 @@ To directly evaluate full-canvas inference vs local-crop padded inference across
 
 #### 2.8.2. Exact Recalculated Pixel-Level Metrics
 
-Recalculated directly from on-disk RGB arrays (`auth.png`, `edit.png`, and `mask.png`):
+Recalculated directly from on-disk RGB arrays (`auth.png`, `edit.png`, and `mask.png` in `data/research/local-artifacts/phase-4c.7b/diag-20261008T154628Z/`):
 
-| Candidate ID | Target Object | Model | Arm | Area Scale | Raw Gen Shape | Inside Mean L1 (std) | Inside Max Delta | Outside Mean L1 | Outside Max Delta |
-| :--- | :--- | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| `IND_COCO_SDXL_002` | Cherry tomato on bread | SDXL | **Arm A** | 1.0× | (512, 512, 3) | 16.7861 (13.73) | 81.0 | 0.000000 | 0.0 |
-| `IND_COCO_SDXL_002` | Cherry tomato on bread | SDXL | **Arm B** | 4.0× | (1024, 1024, 3) | 28.2929 (32.96) | 176.0 | 0.000000 | 0.0 |
-| `IND_COMMONS_SD2_002` | Wheeled travel suitcase | SD2 | **Arm A** | 1.0× | (512, 512, 3) | 30.7358 (24.12) | 146.0 | 0.000000 | 0.0 |
-| `IND_COMMONS_SD2_002` | Wheeled travel suitcase | SD2 | **Arm B** | 1.6× | (512, 512, 3) | 43.3932 (40.49) | 226.0 | 0.000000 | 0.0 |
-| `IND_COMMONS_SDXL_001` | Flying bird in cloudy sky | SDXL | **Arm A** | 1.0× | (512, 512, 3) | 11.0767 (9.00) | 43.0 | 0.000000 | 0.0 |
-| `IND_COMMONS_SDXL_001` | Flying bird in cloudy sky | SDXL | **Arm B** | 4.0× | (1024, 1024, 3) | 13.0674 (32.45) | 214.0 | 0.000000 | 0.0 |
+| Candidate ID | Target Object | Model | Arm | Linear Scale | Geometric Area Factor | Raw Gen Shape | Inside Mean L1 (std) | Inside Max Delta | Outside Mean L1 | Outside Max Delta |
+| :--- | :--- | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| `IND_COCO_SDXL_002` | Cherry tomato on bread | SDXL | **Arm A** | 1.0× | 1.0× | (512, 512, 3) | 16.7861 (13.73) | 81.0 | 0.000000 | 0.0 |
+| `IND_COCO_SDXL_002` | Cherry tomato on bread | SDXL | **Arm B** | 4.0× | 16.0× | (1024, 1024, 3) | 28.2929 (32.96) | 176.0 | 0.000000 | 0.0 |
+| `IND_COMMONS_SD2_002` | Wheeled travel suitcase | SD2 | **Arm A** | 1.0× | 1.0× | (512, 512, 3) | 30.7358 (24.12) | 146.0 | 0.000000 | 0.0 |
+| `IND_COMMONS_SD2_002` | Wheeled travel suitcase | SD2 | **Arm B** | 1.6× | 2.56× | (512, 512, 3) | 43.3932 (40.49) | 226.0 | 0.000000 | 0.0 |
+| `IND_COMMONS_SDXL_001` | Flying bird in cloudy sky | SDXL | **Arm A** | 1.0× | 1.0× | (512, 512, 3) | 11.0767 (9.00) | 43.0 | 0.000000 | 0.0 |
+| `IND_COMMONS_SDXL_001` | Flying bird in cloudy sky | SDXL | **Arm B** | 4.0× | 16.0× | (1024, 1024, 3) | 13.0674 (32.45) | 214.0 | 0.000000 | 0.0 |
 
 *Strict Invariance*: Across all 6 attempts, `outside_mean_l1 == 0.000000` and `outside_max_delta == 0.0` hold bit-identically by virtue of registered canvas mask compositing.
 
 #### 2.8.3. Visual Evaluation and Metric Dissociation
 
-Comprehensive visual inspection reveals critical qualitative distinctions that metrics alone fail to capture:
+Visual inspection on image artifacts in `data/research/local-artifacts/phase-4c.7b/diag-20261008T154628Z/images/` reveals critical qualitative distinctions that metrics alone fail to capture:
 
 1. **`IND_COCO_SDXL_002` (Cherry Tomato)**:
-   - *Arm A (Full Canvas)*: **Complete Omission**. Zero tomatoes generated. Inpainted area consists entirely of bread crumb texture smoothly blending into background bread slice.
-   - *Arm B (Local Crop)*: **Semantic Success**. A realistic red cherry tomato materialized with spherical 3D volume, directional specular highlight matching scene lighting, and a distinct 5-point green calyx/stem.
-   - *Boundary Observation*: Minor rectangular contrast step visible in crumb texture along the crop bounding box unpadding boundary `[345, 245, 455, 335]`.
+   - *Arm A (Full Canvas)*: Complete semantic omission. Zero tomatoes generated; inpainted area consists of bread crumb texture smoothly blending into background bread slice.
+   - *Arm B (Local Crop)*: Semantic object materialized. A red cherry tomato appears within target bbox `[375, 265, 430, 320]` with spherical 3D volume, directional specular highlight matching scene lighting, and a distinct 5-point green calyx/stem.
+   - *Boundary Observation & Naming Reconciliation*: The crop bounding box is `[256, 162, 512, 418]`, whereas the registered mask bounding box is `[345, 245, 455, 335]`. Because compositing is applied strictly inside the registered mask, pixels outside `[345, 245, 455, 335]` are invariant (`outside_L1 = 0.0`). Zoom inspection with overlay confirms a subtle rectangular transition step in bread crumb texture along the **registered mask boundary `[345, 245, 455, 335]`** due to hard binary compositing with authentic bread, not at the crop bbox boundary.
 2. **`IND_COMMONS_SD2_002` (Suitcase)**:
-   - *Arm A (Full Canvas)*: **Complete Omission**. Zero luggage generated. Masked area filled with plain cobblestone pavement texture.
-   - *Arm B (Local Crop)*: **Semantic Hallucination**. Prompt requested "a sturdy wheeled travel suitcase... standing on the street". Instead, the model generated a miniature bronze/brown vintage automobile with roof and wheels!
-   - *Crucial Finding (Metric Dissociation)*: Inside mean L1 rose from 30.74 (Arm A) to 43.39 (Arm B, max delta 226). **This empirically proves that higher inside L1 does NOT indicate content generation success.** The hallucinated car produced the largest pixel change while completely failing the semantic prompt.
-   - *Boundary Observation*: The car's ground shadow extends toward the lower-left and is abruptly truncated at the registered mask boundary `x=0, y=512`, producing a severed shadow seam.
+   - *Arm A (Full Canvas)*: Complete semantic omission. Zero luggage generated; masked area filled with plain cobblestone pavement texture.
+   - *Arm B (Local Crop)*: Semantic hallucination. Prompt requested "a brown leather travel suitcase... standing on the cobblestones beside the vintage car". Instead, the model generated a miniature bronze/brown vintage automobile with roof and wheels!
+   - *Crucial Finding (Metric Dissociation)*: Inside mean L1 rose from 30.74 (Arm A) to 43.39 (Arm B, max delta 226). **This empirically demonstrates that higher inside L1 does NOT indicate content generation success.** The hallucinated car produced the largest pixel delta among all candidates while completely failing the semantic prompt.
+   - *Boundary Observation*: The mask bbox on canvas is `[0, 340, 225, 512]`. Its left ($x=0$) and bottom ($y=512$) borders coincide with the outer image frame of the 512×512 canvas. Zoom inspection confirms the toy car's shadow is an oval pool directly beneath the vehicle and does not reach the canvas frame. At internal mask edges ($y=340$ and $x=225$), cobblestones blend naturally without abrupt edge steps (max diff across border $y=340$ is 17.0, at $x=224$ is 43.0). The defect is strictly a semantic hallucination, not a boundary compositing flaw.
 3. **`IND_COMMONS_SDXL_001` (Sky Bird)**:
-   - *Arm A (Full Canvas)*: **Complete Omission**. Zero birds generated. Masked area filled with flat purplish-grey sky patch.
-   - *Arm B (Local Crop)*: **Semantic Success**. High-fidelity silhouetted bird in flight with spread wings, distinct flight feathers, and matching perspective.
-   - *Boundary Observation*: Seamlessly integrated into surrounding cloudy sky with zero visible boundary steps or seam artifacts.
+   - *Arm A (Full Canvas)*: Complete semantic omission. Zero birds generated; masked area filled with flat purplish-grey sky patch.
+   - *Arm B (Local Crop)*: Semantic object materialized. Silhouetted bird in flight with spread wings, distinct flight feathers, and matching perspective.
+   - *Boundary Observation*: Seamlessly integrated into surrounding cloudy sky with zero visible boundary steps or seam artifacts across mask edges.
 
-#### 2.8.4. Execution Evidence and Runtime Profiling
+#### 2.8.4. Execution Evidence, Timing Scope, and Runtime Profiling
 
-- **Crop and Resolution Evidence**: SDXL Arm B raw generated images (`images/<id>_raw_gen.png`) verified at native $1024 \times 1024$; SD2 Arm B raw image verified at native $512 \times 512$ under 1.6× padding. Resized mask raster bboxes and pixel counts match the registered rounding rules exactly.
-- **Timing and Warmup Confounds**: Elapsed times recorded in receipts:
-  - `IND_COCO_SDXL_002`: Arm A 114.331s, Arm B 24.717s
-  - `IND_COMMONS_SD2_002`: Arm A 71.547s, Arm B 7.487s
-  - `IND_COMMONS_SDXL_001`: Arm A 37.614s, Arm B 26.883s
-  - *Confound Disclosure*: Arm A runtimes include initial model pipeline loading from Hugging Face cache/disk into VRAM and initial CUDA kernel compilation. Arm B runs executed immediately afterward with the pipeline already resident in memory. Therefore, **Arm B cannot be claimed to be faster than Arm A**. In fact, for SDXL, Arm B processed $4\times$ the latent resolution ($128 \times 128$ vs $64 \times 64$), reflected in higher peak VRAM usage (8.96 GiB vs 7.17 GiB).
-- **Recorded Runtime Environment**:
-  - OS: Linux `6.6.122+-x86_64-with-glibc2.39`
-  - Python: `3.13.15`
-  - NumPy: `2.1.3`
-  - Pillow: `11.3.0`
-  - *Unrecorded Fields*: PyTorch version, Diffusers version, Transformers version, CUDA version, and specific GPU hardware model (e.g., T4/A100) were not captured in `run_binding.json` or `diagnostic_receipt.json`. Stated factually without speculation.
+- **Crop and Resolution Verification**: Verified from raw generated images (`images/<id>_raw_gen.png`): SDXL Arm B generated at native $1024 	imes 1024$ (linear 4.0×, area 16.0×); SD2 Arm B generated at native $512 	imes 512$ with 1.6× padding (linear 1.6×, area 2.56×). Resized mask raster bboxes match rounding rules.
+- **Timing Measurement Scope & Evidence**:
+  - Measurement source: `diagnostic_receipt.json` and `attempt_ledger.jsonl` record identical elapsed times for all 6 attempts:
+    * `IND_COCO_SDXL_002`: Arm A `114.319s`, Arm B `24.684s`
+    * `IND_COMMONS_SD2_002`: Arm A `71.542s`, Arm B `7.461s`
+    * `IND_COMMONS_SDXL_001`: Arm A `37.614s`, Arm B `26.883s`
+  - Scope in code (`ml/evaluation/independent_cohort_diagnostic.py`): `start_time = time.perf_counter()` is measured prior to `get_engine(tool_key)`.
+  - For Arm A attempts (1, 3, 5), `get_engine` instantiates `DiagnosticDiffusersEngine`, loading model weights from disk/cache into CUDA memory (`pipeline_cls.from_pretrained`) and moving to GPU (`pipeline.to("cuda")`).
+  - For Arm B attempts (2, 4, 6), the engine is already memory-resident for that tool key (`active_engine is not None and current_tool_key == tool_key`).
+  - Therefore, recorded `elapsed_seconds` represents total attempt wall time (including pipeline loading/switching when applicable), not isolated UNet denoising speed. Arm B is not faster; for SDXL, Arm B processed $4	imes$ latent resolution ($128 	imes 128$ vs $64 	imes 64$), reflected in higher peak VRAM usage (8.96 GiB vs 7.17 GiB).
+- **Runtime Environment & Primary Sources**:
+  - Inpainting models pinned in `ml/evaluation/independent_cohort_diagnostic.py`:
+    * SDXL: `diffusers/stable-diffusion-xl-1.0-inpainting-0.1` (pinned revision `115134f363124c53c7d878647567d04daf26e41e`)
+    * SD2: `sd2-community/stable-diffusion-2-inpainting` (pinned revision `5f74973cbb64c8568780732c17f43eb269d63a0d`)
+  - Runtime environment recorded in `diagnostic_receipt.json`: OS `Linux 6.6.122+-x86_64-with-glibc2.39`, Python `3.13.15`, NumPy `2.1.3`, Pillow `11.3.0`.
+  - Unrecorded fields: PyTorch version, Diffusers version, CUDA runtime version, and specific GPU model are not captured in receipts (stated factually without speculation).
 
-#### 2.8.5. Methodological Limitations
+#### 2.8.5. Methodological Scope & Unverified Hypotheses
 
-1. **Sample Size & Seed Confound**: Results represent exactly 3 candidates with $n=1$ seed per candidate. These findings are methodological case studies, not statistical generalizations.
-2. **Context Window vs Latent Resolution**: Cropping simultaneously alters the visual context window (field of view) and increases latent spatial capacity. In SDXL, increasing latent tokens enabled object formation; in SD2, restricting context to the car street biased generation toward automotive tokens. Thus, latent downsampling cannot be claimed as the sole causal mechanism.
-3. **PRNG Sampling Sequence**: PyTorch generator noise sampling order depends on tensor dimension; identical integer seeds across $512 \times 512$ ($64 \times 64$ latent) and $1024 \times 1024$ ($128 \times 128$ latent) do not produce identical noise patterns.
+1. **A/B Observational Finding**: Local crop at native resolution produced target objects for both SDXL insertion candidates (tomato, bird), whereas full canvas infilled background textures. For SD2, local crop produced a toy car hallucination.
+2. **Causal Hypotheses Remain Unverified**:
+   - The hypothesis that latent downsampling alone caused Arm A omissions cannot be isolated, because local cropping simultaneously alters the visual context window (narrowed field of view) and changes relative token scale.
+   - The hypothesis that surrounding context attention bias caused the toy car hallucination is plausible given the nearby automobile, but remains an unisolated hypothesis.
+   - Across different tensor grid sizes ($64 	imes 64$ vs $128 	imes 128$), PyTorch PRNG noise sampling sequence differs even with identical integer seeds.
+3. **No Generalization Claims**: With exactly 3 candidates and $n=1$ seed per candidate, these results are methodological observations, not a basis for declaring definitive pipeline rules. Filtering rules (e.g. mask size thresholds) or hybrid pipeline commitments must not be declared proven from this 3-case run.
 
 #### 2.8.6. Contact Sheet & Governance Determinations
 
-- **Contact Sheet**: Fully self-contained HTML contact sheet enriched with base64 embedded images, summary comparative table, agent qualitative evaluations, and governance blocks at `data/research/local-artifacts/phase-4c.7b/diag-20261008T154628Z/diagnostic_contact_sheet.html`.
-- **Agent Recommendations**:
-  - Never use inside L1 as an automated acceptance proxy.
-  - Do not adopt local crop uniformly across architectures; context bias must be mitigated.
-  - Calibrate unpadding boundary blending if crops are ever evaluated for production.
-  - Keep diagnostic run isolated from official cohort.
-- **Specific Decisions Requiring User Approval**:
-  - *Decision 1 (Diagnostic Human Content QC)*: Formal determination on 6 attempts (Agent disposition: REJECT Arm A omissions 3/3; REJECT `IND_COMMONS_SD2_002_ARM_B` car hallucination; ACCEPT semantic object for `IND_COCO_SDXL_002_ARM_B` and `IND_COMMONS_SDXL_001_ARM_B`). Canonical status remains strictly `PENDING_CONTENT_QC` awaiting user review.
+- **Contact Sheet**: Fully self-contained HTML contact sheet at `data/research/local-artifacts/phase-4c.7b/diag-20261008T154628Z/diagnostic_contact_sheet.html`, enriched with base64 embedded images, A/B comparative summary distinguishing linear scale vs area factor, agent qualitative observations, and governance sections.
+- **Cohort & Budget Lock**: Full cohort generation remains strictly **LOCKED**. No new generation budget has been registered or approved. Diagnostic results remain isolated in `diag-20261008T154628Z` and will not enter the official cohort.
+- **Decisions Requiring User Approval**:
+  - *Decision 1 (Diagnostic Human Content QC)*: User determination on the 6 attempts. Canonical status remains strictly `PENDING_CONTENT_QC` until human sign-off.
   - *Decision 2 (Historical Pilot 8 Pairs)*: Retain `PENDING_CONTENT_QC` across all 8 historical pilot pairs; zero pilot pairs promoted.
-  - *Decision 3 (Full Cohort Acquisition Strategy)*: Full cohort generation remains **LOCKED**. User review required to determine future pipeline architecture.
+  - *Decision 3 (Next Phase Direction)*: Maintain full cohort lock pending architectural review.
