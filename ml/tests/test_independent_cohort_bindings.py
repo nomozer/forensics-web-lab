@@ -209,6 +209,47 @@ def test_notebook_cell4_audits_from_run_context(tmp_path):
     assert (tmp_path / "runs" / "diag-20261008_package.zip").is_file()
 
 
+def test_notebook_cell3_and_cell4_calibration_mode(tmp_path):
+    cells = _cells()
+    ns = _helpers()
+    calls = []
+
+    def mock_run(cmd, cwd=None):
+        calls.append(list(cmd))
+
+    run_dir = tmp_path / "runs" / "calib-20261009T010000Z"
+    run_dir.mkdir(parents=True)
+    (run_dir / "test.txt").write_text("hello", encoding="utf-8")
+
+    calib_plan = tmp_path / "calib_plan.json"
+    calib_inputs = tmp_path / "inputs"
+
+    ns.update(
+        run=mock_run,
+        REPO_DIR=tmp_path,
+        EXPECTED_COMMIT="a" * 40,
+        RUN_ID="calib-20261009T010000Z",
+        RUNS_ROOT=tmp_path / "runs",
+        RESUME_RUN_ID=None,
+        EXECUTION_MODE="calibration",
+        CALIBRATION_PLAN_PATH=calib_plan,
+        CALIBRATION_INPUTS_DIR=calib_inputs,
+    )
+
+    # Execute Cell 3
+    exec(cells[3], ns)
+    assert any("--mode" in c and "calibration" in c and "--calibration-plan-path" in c for c in calls)
+    assert "RUN_CONTEXT" in ns
+    assert ns["RUN_CONTEXT"]["mode"] == "calibration"
+    assert ns["RUN_CONTEXT"]["plan_path"] == calib_plan
+
+    # Execute Cell 4
+    calls.clear()
+    exec(cells[4], ns)
+    assert any("--mode" in c and "calibration" in c and "--audit-run" in c for c in calls)
+    assert (tmp_path / "runs" / "calib-20261009T010000Z_package.zip").is_file()
+
+
 def test_drive_mount_failure_stops_and_creates_no_scratch_run(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
 

@@ -1,0 +1,159 @@
+{
+  "schema_version": "1.0.0",
+  "workstream": "independent_cohort_acquisition_diagnostic_content_qc",
+  "phase_trace": "4C.7B",
+  "run_id": "diag-20261008T154628Z",
+  "bound_git_commit": "0f99897c8ee003dc8ecbb55b09c4aaeb2994c2bc",
+  "diagnostic_plan_sha256": "e352504016960a24c3c539b5d33a2876c222d1975426a7911de0ec35fe9df157",
+  "bound_diagnostic_package_sha256": "f13d7baf458e9db86809bced5a20c27f37adb6f698353a5678b200262a481d20",
+  "reviewer": "Dũng Phạm <valdung04@gmail.com>",
+  "reviewed_at_utc": "2026-10-08T19:34:30Z",
+  "review_source": "Interactive review and formal human review determinations recorded in session 506da9f1-a921-4dcf-b2ca-b4dd61088c16",
+  "overall_determination": "ALL_6_REJECTED",
+  "total_attempts": 6,
+  "rejected_attempts": 6,
+  "accepted_attempts": 0,
+  "historical_pilot_run_id": "pilot-20261008T113700Z",
+  "historical_pilot_status": "PENDING_CONTENT_QC",
+  "full_cohort_status": "LOCKED",
+  "attempts": [
+    {
+      "attempt_index": 1,
+      "attempt_id": "ATTEMPT_01_IND_COCO_SDXL_002_ARM_A",
+      "arm_id": "IND_COCO_SDXL_002_ARM_A",
+      "candidate_id": "IND_COCO_SDXL_002",
+      "common_name": "bread_tomato_full_canvas",
+      "method": "full_canvas_inference",
+      "scale_linear": 1.0,
+      "scale_area": 1.0,
+      "technical_qc_status": "PASS",
+      "inside_mean_l1": 16.7861,
+      "outside_mean_l1": 0.0,
+      "human_content_qc_status": "REJECT",
+      "rejection_category": "OBJECT_OMISSION",
+      "rejection_reason": "Complete semantic omission: model infilled flat bread crumb texture instead of synthesizing the requested red cherry tomato.",
+      "evaluated_criteria": {
+        "object_semantic_presence": "FAIL",
+        "position_and_placement": "N/A",
+        "semantic_realism_and_form": "FAIL",
+        "boundary_quality_and_seam": "N/A"
+      }
+    },
+    {
+      "attempt_index": 2,
+      "attempt_id": "ATTEMPT_02_IND_COCO_SDXL_002_ARM_B",
+      "arm_id": "IND_COCO_SDXL_002_ARM_B",
+      "candidate_id": "IND_COCO_SDXL_002",
+      "common_name": "bread_tomato_local_crop_padded",
+      "method": "local_crop_padded_inference",
+      "scale_linear": 4.0,
+      "scale_area": 16.0,
+      "technical_qc_status": "PASS",
+      "inside_mean_l1": 28.2929,
+      "outside_mean_l1": 0.0,
+      "human_content_qc_status": "REJECT",
+      "rejection_category": "BOUNDARY_STEP_AND_TEXTURE_DEFICIT",
+      "rejection_reason": "While target cherry tomato object was synthesized, it failed human content quality criteria due to subtle rectangular boundary step at mask [345, 245, 455, 335] and bread crumb texture disparity.",
+      "evaluated_criteria": {
+        "object_semantic_presence": "PASS",
+        "position_and_placement": "PASS",
+        "semantic_realism_and_form": "SUBOPTIMAL",
+        "boundary_quality_and_seam": "FAIL"
+      }
+    },
+    {
+      "attempt_index": 3,
+      "attempt_id": "ATTEMPT_03_IND_COMMONS_SD2_002_ARM_A",
+      "arm_id": "IND_COMMONS_SD2_002_ARM_A",
+      "candidate_id": "IND_COMMONS_SD2_002",
+      "common_name": "suitcase_street_full_canvas",
+      "method": "full_canvas_inference",
+      "scale_linear": 1.0,
+      "scale_area": 1.0,
+      "technical_qc_status": "PASS",
+      "inside_mean_l1": 30.7358,
+      "outside_mean_l1": 0.0,
+      "human_content_qc_status": "REJECT",
+      "rejection_category": "OBJECT_OMISSION",
+      "rejection_reason": "Complete semantic omission: model infilled cobblestones instead of synthesizing the requested travel suitcase.",
+      "evaluated_criteria": {
+        "object_semantic_presence": "FAIL",
+        "position_and_placement": "N/A",
+        "semantic_realism_and_form": "FAIL",
+        "boundary_quality_and_seam": "N/A"
+      }
+    },
+    {
+      "attempt_index": 4,
+      "attempt_id": "ATTEMPT_04_IND_COMMONS_SD2_002_ARM_B",
+      "arm_id": "IND_COMMONS_SD2_002_ARM_B",
+      "candidate_id": "IND_COMMONS_SD2_002",
+      "common_name": "suitcase_street_local_crop_padded",
+      "method": "local_crop_padded_inference",
+      "scale_linear": 1.6,
+      "scale_area": 2.56,
+      "technical_qc_status": "PASS",
+      "inside_mean_l1": 43.3932,
+      "outside_mean_l1": 0.0,
+      "human_content_qc_status": "REJECT",
+      "rejection_category": "SEMANTIC_HALLUCINATION",
+      "rejection_reason": "Severe semantic hallucination: model synthesized a vintage toy car with wheels and roof instead of the requested travel suitcase.",
+      "evaluated_criteria": {
+        "object_semantic_presence": "FAIL",
+        "position_and_placement": "N/A",
+        "semantic_realism_and_form": "FAIL",
+        "boundary_quality_and_seam": "N/A"
+      }
+    },
+    {
+      "attempt_index": 5,
+      "attempt_id": "ATTEMPT_05_IND_COMMONS_SDXL_001_ARM_A",
+      "arm_id": "IND_COMMONS_SDXL_001_ARM_A",
+      "candidate_id": "IND_COMMONS_SDXL_001",
+      "common_name": "sky_bird_full_canvas",
+      "method": "full_canvas_inference",
+      "scale_linear": 1.0,
+      "scale_area": 1.0,
+      "technical_qc_status": "PASS",
+      "inside_mean_l1": 11.0767,
+      "outside_mean_l1": 0.0,
+      "human_content_qc_status": "REJECT",
+      "rejection_category": "OBJECT_OMISSION",
+      "rejection_reason": "Complete semantic omission: model infilled flat grey cloudy sky instead of synthesizing the requested flying bird.",
+      "evaluated_criteria": {
+        "object_semantic_presence": "FAIL",
+        "position_and_placement": "N/A",
+        "semantic_realism_and_form": "FAIL",
+        "boundary_quality_and_seam": "N/A"
+      }
+    },
+    {
+      "attempt_index": 6,
+      "attempt_id": "ATTEMPT_06_IND_COMMONS_SDXL_001_ARM_B",
+      "arm_id": "IND_COMMONS_SDXL_001_ARM_B",
+      "candidate_id": "IND_COMMONS_SDXL_001",
+      "common_name": "sky_bird_local_crop_padded",
+      "method": "local_crop_padded_inference",
+      "scale_linear": 4.0,
+      "scale_area": 16.0,
+      "technical_qc_status": "PASS",
+      "inside_mean_l1": 13.0674,
+      "outside_mean_l1": 0.0,
+      "human_content_qc_status": "REJECT",
+      "rejection_category": "PLACEMENT_DEFICIT_AND_TONAL_STEP",
+      "rejection_reason": "Placement deficit (registered target [395, 75, 455, 125] vs observed silhouette [375, 126, 414, 156], 0 px vertical overlap) and rectangular sky tone mismatch along mask boundary.",
+      "evaluated_criteria": {
+        "object_semantic_presence": "PASS",
+        "position_and_placement": "FAIL",
+        "semantic_realism_and_form": "SUBOPTIMAL",
+        "boundary_quality_and_seam": "FAIL"
+      }
+    }
+  ],
+  "governance_statements": [
+    "Technical QC status for all 6 attempts remains strictly PASS; original ledgers and receipts in data/research/local-artifacts/phase-4c.7b/diag-20261008T154628Z/ remain unedited.",
+    "Rejection of diagnostic outputs does NOT delete or invalidate raw generated images; all artifacts are preserved for auditability.",
+    "All eight historical pilot pairs in pilot-20261008T113700Z remain strictly PENDING_CONTENT_QC.",
+    "Full cohort acquisition remains strictly LOCKED."
+  ]
+}

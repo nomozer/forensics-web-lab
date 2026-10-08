@@ -78,11 +78,21 @@ from ml.evaluation.independent_cohort_diagnostic import (
     load_and_validate_diagnostic_plan,
     verify_diagnostic_inputs,
 )
+from ml.evaluation.independent_cohort_calibration import (
+    CalibrationMockEngine,
+    CalibrationPlanNotApprovedError,
+    audit_calibration_run,
+    execute_calibration_run,
+    load_and_validate_calibration_plan,
+    verify_calibration_inputs,
+)
 
 EVIDENCE_DIR = REPO_ROOT / "research/evidence/phase-4c.7b"
 DEFAULT_EDIT_PLAN_PATH = EVIDENCE_DIR / "content_grounded_pilot_plan.json"
 DEFAULT_DIAGNOSTIC_PLAN_PATH = EVIDENCE_DIR / "content_grounded_diagnostic_plan.json"
+DEFAULT_CALIBRATION_PLAN_PATH = EVIDENCE_DIR / "content_grounded_calibration_proposal.json"
 DEFAULT_DIAGNOSTIC_INPUTS_DIR = REPO_ROOT / "data/research/local-artifacts/phase-4c.7b/pilot-20261008T113700Z"
+DEFAULT_CALIBRATION_INPUTS_DIR = REPO_ROOT / "data/research/local-artifacts/phase-4c.7b/pilot-20261008T113700Z"
 LEGACY_CATALOG_PATH = EVIDENCE_DIR / "verified_candidate_catalog.json"
 PROTOCOL_FILES = (
     EVIDENCE_DIR / "PROTOCOL_AMENDMENT_V1.3.md",
@@ -370,7 +380,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--verify-plan", action="store_true", help="Verify plan eligibility, quotas and disjointness (non-zero on FAIL)")
     parser.add_argument("--smoke-test", action="store_true", help="Run hermetic SYNTHETIC smoke test and write receipt")
     parser.add_argument("--audit-run", type=str, help="Audit a finished run directory against this checkout")
-    parser.add_argument("--mode", choices=["pilot", "full", "diagnostic"], help="Acquisition mode (pilot=2/stratum, full=100/stratum, diagnostic=6 attempts)")
+    parser.add_argument("--mode", choices=["pilot", "full", "diagnostic", "calibration"], help="Acquisition mode (pilot=2/stratum, full=100/stratum, diagnostic=6 attempts, calibration=2 attempts)")
     parser.add_argument("--engine", choices=["diffusers", "mock"], default="diffusers", help="Inpainting engine")
     parser.add_argument("--allow-synthetic", action="store_true", help="SYNTHETIC fixture_test mode (mock engine allowed)")
     parser.add_argument("--run-id", type=str, help="Unique run id; the run directory is <output-root>/<run-id>")
@@ -387,6 +397,9 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--diagnostic-plan-path", type=str, default=str(DEFAULT_DIAGNOSTIC_PLAN_PATH), help="Diagnostic plan path")
     parser.add_argument("--diagnostic-inputs-dir", type=str, default=str(DEFAULT_DIAGNOSTIC_INPUTS_DIR), help="Directory with authentic/mask inputs for diagnostic")
     parser.add_argument("--check-diagnostic-plan", action="store_true", help="Preflight check diagnostic plan and input hashes")
+    parser.add_argument("--calibration-plan-path", type=str, default=str(DEFAULT_CALIBRATION_PLAN_PATH), help="Calibration proposal plan path")
+    parser.add_argument("--calibration-inputs-dir", type=str, default=str(DEFAULT_CALIBRATION_INPUTS_DIR), help="Directory with authentic/mask inputs for calibration")
+    parser.add_argument("--check-calibration-plan", action="store_true", help="Preflight check calibration proposal and input hashes")
     parser.add_argument("--contact-sheet", action="store_true", help="Generate Content QC HTML contact sheet")
     parser.add_argument("--receipt-path", type=str, default=str(EVIDENCE_DIR / "acquisition_smoke_receipt_v2.json"), help="Smoke receipt path")
     parser.add_argument("--check-models", action="store_true", help="Run inpainting model preflight check (metadata, configs, and weights access)")
@@ -417,6 +430,24 @@ def main(argv: list[str] | None = None) -> None:
         print(json.dumps(res, indent=2))
         return
 
+    if args.check_calibration_plan:
+        print("[Phase 4C.7B Calibration Preflight] Checking calibration proposal and inputs...")
+        plan_p = Path(args.calibration_plan_path)
+        plan_data = load_and_validate_calibration_plan(plan_p, require_approval=False)
+        inputs = verify_calibration_inputs(plan_data, Path(args.calibration_inputs_dir))
+        sha = _sha256_bytes(plan_p.read_bytes())
+        res = {
+            "status": "PASS",
+            "plan_path": str(plan_p),
+            "plan_sha256": sha,
+            "human_review_status": plan_data.get("human_review_status"),
+            "attempt_budget": plan_data.get("attempt_budget"),
+            "total_attempts": len(plan_data.get("calibration_attempts", [])),
+            "verified_inputs": {aid: {k: str(v) for k, v in paths.items()} for aid, paths in inputs.items()},
+        }
+        print(json.dumps(res, indent=2))
+        return
+
     if args.smoke_test:
         run_technical_smoke_test(receipt_path=Path(args.receipt_path))
         return
@@ -442,7 +473,7 @@ def main(argv: list[str] | None = None) -> None:
         return
 
     if not args.mode:
-        parser.error("one of --mode, --check-models, --check-diagnostic-plan, --verify-plan, --export-plan, --smoke-test or --audit-run is required")
+        parser.error("one of --mode, --check-models, --check-diagnostic-plan, --check-calibration-plan, --verify-plan, --export-plan, --smoke-test or --audit-run is required")
     if args.mode == "full":
         raise SystemExit(
             "Full acquisition is blocked: approve and complete the bounded eight-attempt pilot "
@@ -497,6 +528,57 @@ def main(argv: list[str] | None = None) -> None:
             print(json.dumps(diag_receipt, indent=2))
         except DiagnosticPlanNotApprovedError as e:
             print(f"ERROR: Diagnostic plan execution blocked: {e}", file=sys.stderr)
+            raise SystemExit(1)
+        return
+
+    if args.mode == "calibration":
+        if not (args.run_id and args.expected_commit):
+            raise SystemExit("--run-id and --expected-commit are required for calibration mode.")
+        commit = verify_checkout(REPO_ROOT, args.expected_commit)
+        calib_plan_p = Path(args.calibration_plan_path)
+        plan_sha = _sha256_bytes(calib_plan_p.read_bytes())
+
+        if args.audit_run:
+            expected_binding = {
+                "run_id": args.run_id,
+                "mode": "calibration",
+                "git_commit": commit,
+                "calibration_plan_sha256": plan_sha,
+            }
+            audit_res = audit_calibration_run(Path(args.audit_run), expected_binding)
+            print(json.dumps(audit_res, indent=2))
+            return
+
+        if not args.output_root:
+            raise SystemExit("--output-root is required.")
+        run_dir = Path(args.output_root) / args.run_id
+        if run_dir.exists() and not args.resume:
+            raise SystemExit(f"{run_dir} already exists; use a new --run-id or --resume.")
+
+        if args.engine == "mock" and not args.allow_synthetic:
+            raise SystemExit("--engine mock produces SYNTHETIC edits; it is refused for real calibration.")
+
+        if args.engine == "diffusers":
+            binding_gpu = check_runtime_gpu()
+            print(f"GPU policy: PASS ({binding_gpu['device']}, {binding_gpu['total_vram_bytes'] / 1024**3:.2f} GiB)")
+
+        engine_provider = (lambda tool_key: CalibrationMockEngine(tool_key)) if (args.engine == "mock" or args.allow_synthetic) else None
+
+        print(f">>> Calibration run {args.run_id} -> {run_dir}")
+        try:
+            calib_receipt = execute_calibration_run(
+                output_dir=run_dir,
+                plan_path=calib_plan_p,
+                inputs_dir=Path(args.calibration_inputs_dir),
+                expected_commit=commit,
+                engine_provider=engine_provider,
+                resume=args.resume,
+                require_approval=not args.allow_synthetic,
+                allow_mock=args.allow_synthetic or (args.engine == "mock"),
+            )
+            print(json.dumps(calib_receipt, indent=2))
+        except CalibrationPlanNotApprovedError as e:
+            print(f"ERROR: Calibration plan execution blocked: {e}", file=sys.stderr)
             raise SystemExit(1)
         return
     if args.engine == "mock" and not args.allow_synthetic:

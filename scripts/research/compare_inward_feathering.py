@@ -392,7 +392,7 @@ def get_case_evaluation(cid: str) -> dict:
         "IND_COMMONS_SDXL_001": {
             "seam_softening": "Softens cloudy sky boundary at x=350, y=45.",
             "ghosting_risk": "Negligible.",
-            "detail_reemergence": "Cloud gradient blends seamlessly.",
+            "detail_reemergence": "Cloud gradient softens at edge, but retains subtle tonal boundary step; not seamless integration.",
             "geometric_severance": "Irrelevant: 0 birds generated.",
             "resolution_verdict": "No impact on object omission failure.",
         },
