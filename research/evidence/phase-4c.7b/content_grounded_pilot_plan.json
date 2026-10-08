@@ -74,17 +74,17 @@
       "tool_key": "sdxl_inpainting",
       "modification_type": "object_insertion",
       "mask_area_class": "large_over_30pct",
-      "target_description": "the ceiling area above the living room for a crystal chandelier",
-      "placement_rationale": "The flat living room ceiling is visually clear and unobstructed; the 31.25% mask covers the ceiling plane without occluding the walls, armchair, painting, or curtain valance.",
-      "target_bbox_xyxy": [180, 15, 332, 145],
-      "mask_bbox_xyxy": [0, 0, 512, 160],
+      "target_description": "the open ceiling area above the living room for a crystal chandelier",
+      "placement_rationale": "The living room ceiling is flat and visually clear; the revised 30.27% mask covers the ceiling plane up to y=155, clearing the top edge of the left curtain valance (y≈157) and the ceiling-wall junction (y≈173), avoiding walls, armchair, and paintings.",
+      "target_bbox_xyxy": [180, 15, 332, 140],
+      "mask_bbox_xyxy": [0, 0, 512, 155],
       "prompt": "an elegant crystal chandelier hanging from the living room ceiling, warm interior illumination matching the residential lighting",
       "instruction_review": {
         "target_or_placement": "VERIFIED_SCENE_COMPATIBLE_PLACEMENT",
         "bbox_prompt_alignment": "ALIGNED",
-        "mask_scope": "LIMITED_TO_CEILING",
+        "mask_scope": "LIMITED_TO_CEILING_CLEARS_CURTAIN",
         "agent_status": "READY_FOR_HUMAN_DECISION",
-        "note": "The ceiling is completely flat and unobstructed with zero human or furniture occlusion. The 31.25% mask respects the 30%-50% bracket and leaves all living room fixtures outside the mask.",
+        "note": "The ceiling provides an open upper support plane. The mask bbox is tightened to [0, 0, 512, 155] (30.273438%, preserving large_over_30pct) to strictly clear the top boundary of the left curtain valance (y≈157) and wall junction (y≈173). Living room furniture and lower fixtures remain completely outside the mask.",
         "human_decision_required": "Approve proposed candidate substitution of IND_COCO_SDXL_041 (living room ceiling chandelier) replacing blocked candidate IND_COCO_SDXL_001."
       }
     },
@@ -114,18 +114,18 @@
       "tool_key": "stable_diffusion_2_inpainting",
       "modification_type": "object_removal_and_infill",
       "mask_area_class": "medium_10_to_30pct",
-      "target_description": "the foreground forested rocky headland, cliff base, offshore rocks, and pine canopy occupying the lower-right quadrant",
-      "placement_rationale": "The foreground headland, cliff, and offshore rocks are identified before removal; the mask completely envelops 100% of the landform, submerged rock base, and pine tree canopy while leaving the sunset sky, horizon, beach, and town outside the mask.",
-      "target_bbox_xyxy": [205, 308, 512, 512],
+      "target_description": "the foreground forested rocky headland, cliff base, offshore sea stack rocks, and pine canopy occupying the lower-right quadrant",
+      "placement_rationale": "The foreground headland, cliff base, offshore rocks, and pine trees are identified for removal. The axis-aligned rectangular mask [190, 305, 512, 512] (25.43%) envelops the headland landform, offshore rocks, and pine canopy. Because the bay is concave, this rectangular mask unavoidably encompasses bay water (x=190..340, y=305..340) and the base of the white hotel and hillside houses on the right shoreline (x=440..512, y=305..335), which will be infilled along with the headland. Sky, distant horizon, and main beach remain outside the mask.",
+      "target_bbox_xyxy": [190, 308, 512, 512],
       "mask_bbox_xyxy": [190, 305, 512, 512],
       "prompt": "open sea and distant coastline continuing naturally through the removed foreground headland, photorealistic sunset landscape",
       "instruction_review": {
         "target_or_placement": "VERIFIED_EXISTING_TARGET",
         "bbox_prompt_alignment": "ALIGNED_AFTER_REVISION",
-        "mask_scope": "ENVELOPES_FULL_FOREGROUND_LANDFORM",
+        "mask_scope": "ENVELOPES_FOREGROUND_LANDFORM_WITH_SHORELINE_CONTEXT",
         "agent_status": "READY_FOR_HUMAN_DECISION",
-        "note": "The mask extends left to x=190 (enveloping the cliff base at x=205 and offshore rocks) and upward to y=305 (enveloping all pine tree crowns at y>=308). The distant town, hotel, beach, and main horizon remain outside the mask.",
-        "human_decision_required": "Approve or revise the full foreground headland removal region."
+        "note": "Mask [190, 305, 512, 512] (25.426483%, medium_10_to_30pct) envelops all registered headland landforms, pine canopy (y>=308), and offshore rocks (x>=190). Geometrically, a single rectangular bbox cannot envelop 100% of this diagonal landform while excluding 100% of the adjacent town/hotel: the mask unavoidably captures cove water and right-shoreline hotel/houses (x in [440, 512], y in [305, 335]). Retaining this mask accepts infilling those shoreline structures; tightening to exclude the town slices the headland. Option presented for human review.",
+        "human_decision_required": "Approve foreground headland removal with registered mask [190, 305, 512, 512] (accepting inclusion of lower hotel/town edge), or select tightened landform crop Option B."
       }
     },
     {
@@ -174,18 +174,18 @@
       "tool_key": "sdxl_inpainting",
       "modification_type": "object_replacement",
       "mask_area_class": "large_over_30pct",
-      "target_description": "the vertical abstract aluminium sculpture column 'Tower Song' by Ted Bieler",
-      "placement_rationale": "The abstract column is a single isolated vertical structure on open park lawn; the large mask envelopes it completely from top to bottom while leaving the lawn, background trees, river, and railing outside the mask.",
+      "target_description": "the visible vertical shaft of the abstract aluminium sculpture column 'Tower Song' by Ted Bieler, cropped at upper and lower canvas boundaries",
+      "placement_rationale": "The abstract aluminium sculpture column is an isolated vertical structure. The full-height mask [170, 0, 380, 512] (41.02%) encloses the visible shaft from top to bottom (y=0..512). Because the column width is ~110 px, the 210 px mask width unavoidably encompasses background lawn, river, riverside railing, and background trees within x in [170, 380], which carries the risk of background alteration by inpainting. Outside x in [170, 380], the scene is preserved by compositing.",
       "target_bbox_xyxy": [190, 0, 360, 512],
       "mask_bbox_xyxy": [170, 0, 380, 512],
-      "prompt": "a classical fluted Greco-Roman marble column standing naturally in the public park, realistic outdoor daylight and weathered stone texture",
+      "prompt": "the visible shaft of a classical fluted Greco-Roman marble column standing naturally in the public park, realistic outdoor daylight and weathered stone texture",
       "instruction_review": {
         "target_or_placement": "VERIFIED_EXISTING_TARGET",
         "bbox_prompt_alignment": "ALIGNED",
-        "mask_scope": "ENVELOPES_ISOLATED_COLUMN",
+        "mask_scope": "ENVELOPES_VISIBLE_COLUMN_SHAFT_WITH_BACKGROUND_STRIP",
         "agent_status": "READY_FOR_HUMAN_DECISION",
-        "note": "The sculpture is a single isolated column with zero human figures or intertwined limbs. The 41.02% mask encloses the entire aluminium structure from top to bottom while preserving the surrounding landscape.",
-        "human_decision_required": "Approve proposed candidate substitution of IND_COMMONS_SDXL_003 replacing IND_COMMONS_SDXL_002, or retain candidate 002 with explicit confound risk acceptance."
+        "note": "The candidate completely eliminates the intertwining child-adult limbs confound of IND_COMMONS_SDXL_002. The sculpture is vertically cropped by both upper and lower image boundaries, so the instruction targets the visible shaft. The mask (41.015625%, large_over_30pct) encloses the visible column but spans x=170..380, so adjacent background trees, river, and railing inside that strip carry inpainting alteration risk. Areas outside x=170..380 are preserved.",
+        "human_decision_required": "Approve candidate substitution of IND_COMMONS_SDXL_003 replacing IND_COMMONS_SDXL_002, or retain candidate 002 with explicit confound risk acceptance."
       }
     }
   ]
