@@ -8,6 +8,25 @@
   "human_reviewed_at_utc": null,
   "coordinate_space": "normalized_512x512_canvas_xyxy_half_open",
   "attempt_budget": 8,
+  "automatic_replacement": false,
+  "locked_quota_summary": {
+    "stratum_counts": {
+      "coco_sd2": 2,
+      "coco_sdxl": 2,
+      "commons_sd2": 2,
+      "commons_sdxl": 2
+    },
+    "modification_type_counts": {
+      "object_replacement": 3,
+      "object_removal_and_infill": 1,
+      "object_insertion": 4
+    },
+    "mask_area_class_counts": {
+      "small_under_10pct": 3,
+      "medium_10_to_30pct": 2,
+      "large_over_30pct": 3
+    }
+  },
   "candidates": [
     {
       "candidate_id": "IND_COCO_SD2_001",
@@ -16,10 +35,18 @@
       "modification_type": "object_replacement",
       "mask_area_class": "small_under_10pct",
       "target_description": "the round copper pan hanging above the center-left cooking range",
-      "placement_rationale": "The target is visible before generation and the mask stays around one hanging object without covering the cook.",
-      "target_bbox_xyxy": [194, 108, 267, 190],
-      "mask_bbox_xyxy": [165, 80, 295, 215],
-      "prompt": "a round brass wall clock mounted naturally on the kitchen wall, matching the warm indoor lighting"
+      "placement_rationale": "The target is visible before generation and the tightened mask stays around the selected hanging pan without covering the cook.",
+      "target_bbox_xyxy": [207, 117, 270, 182],
+      "mask_bbox_xyxy": [195, 95, 280, 205],
+      "prompt": "a round brass wall clock mounted naturally on the kitchen wall, matching the warm indoor lighting",
+      "instruction_review": {
+        "target_or_placement": "VERIFIED_EXISTING_TARGET",
+        "bbox_prompt_alignment": "ALIGNED_AFTER_REVISION",
+        "mask_scope": "TIGHTENED_TO_TARGET",
+        "agent_status": "READY_FOR_HUMAN_DECISION",
+        "note": "The copper pan is visible. The prior rectangle included more adjacent cookware; the revised rectangle is narrower and excludes the cook.",
+        "human_decision_required": "Approve or revise the pan-to-clock replacement instruction."
+      }
     },
     {
       "candidate_id": "IND_COCO_SD2_002",
@@ -27,11 +54,19 @@
       "tool_key": "stable_diffusion_2_inpainting",
       "modification_type": "object_replacement",
       "mask_area_class": "large_over_30pct",
-      "target_description": "the white stove and surrounding central wooden cabinet unit",
-      "placement_rationale": "A large replacement class requires a scene-scale target; the registered region contains the stove/cabinet unit and excludes the foreground fruit bowl.",
-      "target_bbox_xyxy": [165, 125, 410, 360],
-      "mask_bbox_xyxy": [95, 75, 465, 395],
-      "prompt": "a stainless-steel kitchen range integrated with matching dark-wood cabinets, realistic residential interior photograph"
+      "target_description": "the white range hood and honey-colored upper cabinets above the stove and counter",
+      "placement_rationale": "The upper fixture group is visible before generation; the large region remains above the foreground table and fruit bowl and avoids the lower stove body.",
+      "target_bbox_xyxy": [145, 125, 410, 260],
+      "mask_bbox_xyxy": [95, 75, 415, 315],
+      "prompt": "matte navy-blue upper kitchen cabinets with a stainless-steel range hood, realistic residential interior photograph",
+      "instruction_review": {
+        "target_or_placement": "VERIFIED_EXISTING_TARGET",
+        "bbox_prompt_alignment": "ALIGNED_AFTER_REVISION",
+        "mask_scope": "SCENE_SCALE_TARGET_WITH_CONTEXT",
+        "agent_status": "READY_FOR_HUMAN_DECISION",
+        "note": "The prior bbox cut through the stove/cabinet unit and its mask approached the fruit bowl. The revision targets only the visible upper fixture group while retaining the required large class.",
+        "human_decision_required": "Approve or revise the upper-cabinet/range-hood replacement."
+      }
     },
     {
       "candidate_id": "IND_COCO_SDXL_001",
@@ -40,10 +75,18 @@
       "modification_type": "object_insertion",
       "mask_area_class": "large_over_30pct",
       "target_description": "a framed botanical print to insert on the empty upper-left wall",
-      "placement_rationale": "The upper-left wall is a scene-compatible support surface; the intended object is defined before generation and does not replace the cat.",
+      "placement_rationale": "The upper-left wall was proposed as the support surface, but the required large-class rectangle overlaps the cat and sink; no safe placement is established and generation must remain blocked pending a reviewed revision.",
       "target_bbox_xyxy": [65, 55, 220, 245],
       "mask_bbox_xyxy": [0, 0, 300, 300],
-      "prompt": "a framed botanical print hanging flat on the bathroom wall, realistic perspective and indoor lighting"
+      "prompt": "a framed botanical print hanging flat on the bathroom wall, realistic perspective and indoor lighting",
+      "instruction_review": {
+        "target_or_placement": "PLACEMENT_CONFLICT",
+        "bbox_prompt_alignment": "PROMPT_MATCHES_INTENT_BUT_NOT_SAFE_REGION",
+        "mask_scope": "OVERLAPS_CAT_AND_SINK",
+        "agent_status": "NEEDS_USER_DECISION",
+        "note": "The registered 300x300 large-class rectangle covers substantial portions of the existing cat and sink. The rationale claiming it does not replace the cat is not supported by the image.",
+        "human_decision_required": "Do not approve as written. Decide whether to revise the locked candidate/class through a reviewed plan amendment; no safe large insertion region was established on this image."
+      }
     },
     {
       "candidate_id": "IND_COCO_SDXL_002",
@@ -55,7 +98,15 @@
       "placement_rationale": "The bread provides a visible horizontal support surface and the small mask avoids the surrounding lunch compartments.",
       "target_bbox_xyxy": [375, 265, 430, 320],
       "mask_bbox_xyxy": [345, 245, 455, 335],
-      "prompt": "a small red cherry tomato resting on the slice of bread, matching the lunchbox lighting and camera angle"
+      "prompt": "a small red cherry tomato resting on the slice of bread, matching the lunchbox lighting and camera angle",
+      "instruction_review": {
+        "target_or_placement": "VERIFIED_SCENE_COMPATIBLE_PLACEMENT",
+        "bbox_prompt_alignment": "ALIGNED",
+        "mask_scope": "LIMITED_TO_BREAD",
+        "agent_status": "READY_FOR_HUMAN_DECISION",
+        "note": "The target bbox lies on the bread and the small mask avoids adjacent lunch compartments.",
+        "human_decision_required": "Approve or revise the tomato insertion instruction."
+      }
     },
     {
       "candidate_id": "IND_COMMONS_SD2_001",
@@ -63,11 +114,19 @@
       "tool_key": "stable_diffusion_2_inpainting",
       "modification_type": "object_removal_and_infill",
       "mask_area_class": "medium_10_to_30pct",
-      "target_description": "the forested rocky headland projecting into the sea at center-right",
-      "placement_rationale": "The existing landform is fully identified before removal; adjacent sea and horizon provide the intended infill context.",
-      "target_bbox_xyxy": [320, 285, 505, 455],
-      "mask_bbox_xyxy": [275, 260, 510, 480],
-      "prompt": "open sea and distant coastline continuing naturally through the removed headland, photorealistic sunset landscape"
+      "target_description": "the foreground forested rocky headland occupying the lower-right quadrant",
+      "placement_rationale": "The existing landform is identified before removal; the revised region contains its visible cliff and vegetation while leaving the sky and main horizon outside the mask.",
+      "target_bbox_xyxy": [245, 310, 512, 512],
+      "mask_bbox_xyxy": [220, 285, 512, 512],
+      "prompt": "open sea and distant coastline continuing naturally through the removed foreground headland, photorealistic sunset landscape",
+      "instruction_review": {
+        "target_or_placement": "VERIFIED_EXISTING_TARGET",
+        "bbox_prompt_alignment": "ALIGNED_AFTER_REVISION",
+        "mask_scope": "REVISED_TO_FULL_LANDFORM",
+        "agent_status": "READY_FOR_HUMAN_DECISION",
+        "note": "The prior bbox mixed distant and foreground landforms and cut off the lower target. The revision identifies the foreground headland and keeps the sky outside the mask.",
+        "human_decision_required": "Approve or revise removal of the full foreground headland."
+      }
     },
     {
       "candidate_id": "IND_COMMONS_SD2_002",
@@ -76,10 +135,18 @@
       "modification_type": "object_insertion",
       "mask_area_class": "medium_10_to_30pct",
       "target_description": "a brown leather travel suitcase to insert on the cobblestones beside the car",
-      "placement_rationale": "The lower-left cobblestone area is a visible ground plane beside the vehicle and does not cover the front wheel assembly.",
-      "target_bbox_xyxy": [55, 345, 205, 475],
-      "mask_bbox_xyxy": [0, 320, 250, 500],
-      "prompt": "a brown leather travel suitcase standing on the cobblestones beside the vintage car, realistic scale and daylight shadows"
+      "placement_rationale": "The lower-left cobblestone area is a visible ground plane beside the vehicle; the tightened region stops before the front wheel assembly.",
+      "target_bbox_xyxy": [45, 355, 190, 495],
+      "mask_bbox_xyxy": [0, 340, 225, 512],
+      "prompt": "a brown leather travel suitcase standing on the cobblestones beside the vintage car, realistic scale and daylight shadows",
+      "instruction_review": {
+        "target_or_placement": "VERIFIED_SCENE_COMPATIBLE_PLACEMENT",
+        "bbox_prompt_alignment": "ALIGNED_AFTER_REVISION",
+        "mask_scope": "TIGHTENED_AWAY_FROM_WHEEL",
+        "agent_status": "READY_FOR_HUMAN_DECISION",
+        "note": "The prior mask clipped the front-wheel boundary despite its rationale. The revised mask remains on cobblestones and ends before the wheel.",
+        "human_decision_required": "Approve or revise the suitcase size and placement."
+      }
     },
     {
       "candidate_id": "IND_COMMONS_SDXL_001",
@@ -91,7 +158,15 @@
       "placement_rationale": "The sky region is visually unobstructed and supports a small airborne object without altering the monument text or sculpture.",
       "target_bbox_xyxy": [395, 75, 455, 125],
       "mask_bbox_xyxy": [350, 45, 500, 160],
-      "prompt": "a small dark bird flying in the cloudy sky, distant scale and natural daylight"
+      "prompt": "a small dark bird flying in the cloudy sky, distant scale and natural daylight",
+      "instruction_review": {
+        "target_or_placement": "VERIFIED_SCENE_COMPATIBLE_PLACEMENT",
+        "bbox_prompt_alignment": "ALIGNED",
+        "mask_scope": "LIMITED_TO_OPEN_SKY",
+        "agent_status": "READY_FOR_HUMAN_DECISION",
+        "note": "The registered region is open sky and does not cover the monument, inscription, or sculpture.",
+        "human_decision_required": "Approve or revise the small-bird insertion instruction."
+      }
     },
     {
       "candidate_id": "IND_COMMONS_SDXL_002",
@@ -101,9 +176,17 @@
       "mask_area_class": "large_over_30pct",
       "target_description": "the bronze child figure held across the adult figure's arms",
       "placement_rationale": "The child figure is visibly bounded before generation; the large registered region covers it and its contact with the adult's arms.",
-      "target_bbox_xyxy": [150, 220, 410, 430],
-      "mask_bbox_xyxy": [60, 185, 460, 455],
-      "prompt": "a bronze bouquet of flowers held naturally in the figure's arms, matching the sculpture material, patina, and daylight"
+      "target_bbox_xyxy": [150, 185, 405, 400],
+      "mask_bbox_xyxy": [110, 170, 440, 410],
+      "prompt": "a bronze bouquet of flowers held naturally in the figure's arms, matching the sculpture material, patina, and daylight",
+      "instruction_review": {
+        "target_or_placement": "VERIFIED_EXISTING_TARGET",
+        "bbox_prompt_alignment": "ALIGNED_AFTER_REVISION",
+        "mask_scope": "TIGHTENED_BUT_INCLUDES_CONTACT_ARMS",
+        "agent_status": "READY_WITH_EXPLICIT_RISK_DECISION",
+        "note": "The child figure is visible and the mask is tighter than before. Because the child contacts the adult's arms and hands, some contact-region alteration is unavoidable for this large replacement.",
+        "human_decision_required": "Approve only if alteration risk to the adult arms/hands is acceptable; otherwise revise the instruction."
+      }
     }
   ]
 }

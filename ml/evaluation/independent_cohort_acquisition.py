@@ -654,6 +654,24 @@ def load_content_grounded_edit_plan(
     entries = data.get("candidates")
     if not isinstance(entries, list):
         raise ContentGroundingError("edit plan must contain a candidates list")
+    if require_human_approval:
+        unresolved = [
+            str(entry.get("candidate_id", ""))
+            for entry in entries
+            if entry.get("instruction_review", {}).get("agent_status") == "NEEDS_USER_DECISION"
+        ]
+        if unresolved:
+            raise ContentGroundingError(
+                f"content-grounded edit plan has unresolved instruction decisions: {unresolved}"
+            )
+    expected_attempts = target_per_stratum * len(STRATA_KEYS)
+    if data.get("attempt_budget") != expected_attempts or len(entries) != expected_attempts:
+        raise ContentGroundingError(
+            f"edit plan must bind exactly {expected_attempts} candidates/attempts; "
+            f"attempt_budget={data.get('attempt_budget')!r}, candidates={len(entries)}"
+        )
+    if data.get("automatic_replacement") is not False:
+        raise ContentGroundingError("edit plan must explicitly set automatic_replacement=false")
     by_id = {candidate.candidate_id: candidate for candidate in candidates}
     selected: list[CandidateSpec] = []
     seen: set[str] = set()
@@ -685,6 +703,19 @@ def load_content_grounded_edit_plan(
     expected = {key: target_per_stratum for key in STRATA_KEYS}
     if counts != expected:
         raise ContentGroundingError(f"edit plan stratum counts {counts} do not match required {expected}")
+    actual_quota_summary = {
+        "stratum_counts": counts,
+        "modification_type_counts": {
+            key: sum(spec.modification_type == key for spec in selected) for key in MODIFICATION_TYPES
+        },
+        "mask_area_class_counts": {
+            key: sum(spec.mask_area_class == key for spec in selected) for key in MASK_AREA_CLASSES
+        },
+    }
+    if data.get("locked_quota_summary") != actual_quota_summary:
+        raise ContentGroundingError(
+            f"edit plan locked_quota_summary does not match selected candidates: {actual_quota_summary}"
+        )
     return selected
 
 
@@ -1515,6 +1546,30 @@ def execute_cohort_acquisition(
 
                 count_accepted(receipt)
 
+    # Attempts are one-shot authorizations. Resume may continue with candidates
+    # that have no attempt record, but it must never retry a Technical QC failure,
+    # generation error, or other previously recorded attempt.
+    attempted_sources: set[str] = set()
+    if resume and attempt_jsonl.is_file():
+        with attempt_jsonl.open("r", encoding="utf-8") as f:
+            for line in f:
+                if not line.strip():
+                    continue
+                attempt = json.loads(line)
+                if attempt.get("run_id") != run_id:
+                    raise RunBindingMismatchError(
+                        f"Attempt record {attempt.get('candidate_id')} belongs to run "
+                        f"{attempt.get('run_id')!r}, not {run_id!r}."
+                    )
+                candidate_id = str(attempt.get("candidate_id", ""))
+                if not candidate_id:
+                    raise RunBindingMismatchError("Attempt ledger contains an empty candidate_id.")
+                if candidate_id in attempted_sources:
+                    raise RunBindingMismatchError(
+                        f"Attempt ledger contains more than one attempt for {candidate_id}."
+                    )
+                attempted_sources.add(candidate_id)
+
     prov_writer_handle = provenance_jsonl.open("a", encoding="utf-8")
     attempt_writer_handle = attempt_jsonl.open("a", encoding="utf-8")
     log_writer_handle = (out_path / "acquisition.log").open("a", encoding="utf-8")
@@ -1569,7 +1624,7 @@ def execute_cohort_acquisition(
                 if stratum_valid_counts[stratum_id] >= target_per_stratum:
                     break
 
-                if spec.candidate_id in completed_sources:
+                if spec.candidate_id in attempted_sources:
                     continue
 
                 if enforce_quota:

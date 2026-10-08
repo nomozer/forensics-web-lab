@@ -1,3 +1,11 @@
+## Follow-up pilot approval dossier hardened (Phase trace 4C.7B preserved)
+
+- **Instruction audit**: Rechecked all eight authentic images at 512x512 against operation, prompt, target bbox, mask bbox, and mask scope. Five instructions were tightened/reframed, three remained aligned, and `IND_COCO_SDXL_001` is explicitly blocked for user decision because the proposed large insertion mask overlaps the cat and sink.
+- **Review artifact**: Updated the existing outside-Git `next_pilot_edit_plan_contact_sheet.html` in place. It contains 8 embedded authentic PNGs, target/mask overlays, and an 8-row decision table; it has no relative image dependency and remains `human_review_status=PENDING`.
+- **Execution guards**: Plan loading now requires the exact 8-attempt budget, declared quotas matching the eight bound candidates, and `automatic_replacement=false`. Resume never retries a candidate already present in the attempt ledger. Full acquisition is explicitly blocked before run setup.
+- **Scientific boundary**: Outside-mask L1 = 0 after compositing is documented as a construction property, not proof that raw diffusion preserved outside-mask pixels. No pilot generation, training, detector/evaluator run, or Human Content QC approval occurred.
+- **Verification**: Focused acquisition/binding tests 80 PASS / 2 artifact-network-gated skips; canonical plan resolves to 8 candidates, 2/stratum, 3/1/4 modification quotas, and 3/2/3 mask quotas.
+
 ## Repository functional naming normalization (Phase trace 4C.7B preserved)
 
 - **Scope**: Repository-wide tracked source, scripts, configs, tests, notebooks, and current documentation; naming-only change.

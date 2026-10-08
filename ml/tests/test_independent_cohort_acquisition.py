@@ -69,6 +69,7 @@ from ml.evaluation.independent_cohort_acquisition import (
 )
 
 from ml.tests.fixtures.cohort_catalog_fixture import clean_detector_modules_isolation, write_synthetic_catalog  # noqa: F401
+from scripts.research.generate_edit_plan_contact_sheet import generate_contact_sheet
 
 
 def _synthetic_plan(seed: int = 20261007) -> list[CandidateSpec]:
@@ -269,7 +270,24 @@ def test_content_grounded_edit_plan_requires_targets_and_preserves_pilot_quotas(
             "mask_bbox_xyxy": mask_bbox,
         })
     path = tmp_path / "edit-plan.json"
-    path.write_text(json.dumps({"schema_version": "1.0.0", "candidates": entries}), encoding="utf-8")
+    plan_doc = {
+        "schema_version": "1.0.0",
+        "attempt_budget": 8,
+        "automatic_replacement": False,
+        "locked_quota_summary": {
+            "stratum_counts": {key: 2 for key in STRATA_KEYS},
+            "modification_type_counts": {
+                key: sum(entry["modification_type"] == key for entry in entries)
+                for key in ("object_replacement", "object_removal_and_infill", "object_insertion")
+            },
+            "mask_area_class_counts": {
+                key: sum(entry["mask_area_class"] == key for entry in entries)
+                for key in ("small_under_10pct", "medium_10_to_30pct", "large_over_30pct")
+            },
+        },
+        "candidates": entries,
+    }
+    path.write_text(json.dumps(plan_doc), encoding="utf-8")
 
     grounded = load_content_grounded_edit_plan(plan, path, target_per_stratum=2)
     assert len(grounded) == 8
@@ -280,8 +298,30 @@ def test_content_grounded_edit_plan_requires_targets_and_preserves_pilot_quotas(
             plan, path, target_per_stratum=2, require_human_approval=True
         )
 
+    plan_doc["human_review_status"] = "APPROVED"
+    entries[0]["instruction_review"] = {"agent_status": "NEEDS_USER_DECISION"}
+    path.write_text(json.dumps(plan_doc), encoding="utf-8")
+    with pytest.raises(ContentGroundingError, match="unresolved instruction decisions"):
+        load_content_grounded_edit_plan(
+            plan, path, target_per_stratum=2, require_human_approval=True
+        )
+    plan_doc.pop("human_review_status")
+    entries[0].pop("instruction_review")
+
+    plan_doc["attempt_budget"] = 9
+    path.write_text(json.dumps(plan_doc), encoding="utf-8")
+    with pytest.raises(ContentGroundingError, match="exactly 8 candidates/attempts"):
+        load_content_grounded_edit_plan(plan, path, target_per_stratum=2)
+
+    plan_doc["attempt_budget"] = 8
+    plan_doc["automatic_replacement"] = True
+    path.write_text(json.dumps(plan_doc), encoding="utf-8")
+    with pytest.raises(ContentGroundingError, match="automatic_replacement=false"):
+        load_content_grounded_edit_plan(plan, path, target_per_stratum=2)
+
     entries[0]["target_description"] = ""
-    path.write_text(json.dumps({"schema_version": "1.0.0", "candidates": entries}), encoding="utf-8")
+    plan_doc["automatic_replacement"] = False
+    path.write_text(json.dumps(plan_doc), encoding="utf-8")
     with pytest.raises(ContentGroundingError, match="target_description"):
         load_content_grounded_edit_plan(plan, path, target_per_stratum=2)
 
@@ -569,6 +609,89 @@ def test_durable_resume_and_tamper_detection():
                 allow_synthetic=True,
                 resume=True,
             )
+
+
+def test_resume_never_retries_a_recorded_failed_candidate(tmp_path):
+    """A bounded pilot candidate has exactly one authorized attempt across resume."""
+    plan = [c for c in _synthetic_plan(seed=20261007) if c.pool_index == 0]
+    out_dir = tmp_path / "one_shot_resume"
+    provider_calls = 0
+
+    def failing_provider(spec):
+        nonlocal provider_calls
+        provider_calls += 1
+        raise RuntimeError(f"simulated failure for {spec.candidate_id}")
+
+    with pytest.raises(StratumQuotaDeficitError):
+        execute_cohort_acquisition(
+            output_dir=out_dir,
+            candidate_specs=plan,
+            engine_provider=(lambda _: MockInpaintingEngine()),
+            authentic_image_provider=failing_provider,
+            target_per_stratum=1,
+            mode="fixture_test",
+            allow_synthetic=True,
+            resume=False,
+        )
+    assert provider_calls == 1
+
+    provider_calls = 0
+    with pytest.raises(StratumQuotaDeficitError):
+        execute_cohort_acquisition(
+            output_dir=out_dir,
+            candidate_specs=plan,
+            engine_provider=(lambda _: MockInpaintingEngine()),
+            authentic_image_provider=failing_provider,
+            target_per_stratum=1,
+            mode="fixture_test",
+            allow_synthetic=True,
+            resume=True,
+        )
+    assert provider_calls == 0
+    attempts = [line for line in (out_dir / "attempt_ledger.jsonl").read_text(encoding="utf-8").splitlines() if line]
+    assert len(attempts) == 1
+
+
+def test_edit_plan_contact_sheet_is_self_contained_and_labels_agent_review(tmp_path):
+    run_dir = tmp_path / "run"
+    images_dir = run_dir / "images"
+    images_dir.mkdir(parents=True)
+    candidate_id = "IND_TEST_001"
+    Image.new("RGB", (512, 512), color=(10, 20, 30)).save(images_dir / f"{candidate_id}_auth.png")
+    plan_path = tmp_path / "plan.json"
+    plan_path.write_text(json.dumps({
+        "human_review_status": "PENDING",
+        "candidates": [{
+            "candidate_id": candidate_id,
+            "stratum_id": "coco_sd2",
+            "tool_key": "stable_diffusion_2_inpainting",
+            "modification_type": "object_insertion",
+            "mask_area_class": "small_under_10pct",
+            "target_description": "test placement",
+            "placement_rationale": "test rationale",
+            "target_bbox_xyxy": [20, 20, 40, 40],
+            "mask_bbox_xyxy": [10, 10, 50, 50],
+            "prompt": "test prompt",
+            "instruction_review": {
+                "target_or_placement": "VERIFIED_SCENE_COMPATIBLE_PLACEMENT",
+                "bbox_prompt_alignment": "ALIGNED",
+                "mask_scope": "LIMITED_TO_TARGET",
+                "agent_status": "READY_FOR_HUMAN_DECISION",
+                "note": "Agent note only.",
+                "human_decision_required": "Approve or revise.",
+            },
+        }],
+    }), encoding="utf-8")
+    output = tmp_path / "contact_sheet.html"
+
+    generate_contact_sheet(run_dir, plan_path, output)
+
+    rendered = output.read_text(encoding="utf-8")
+    assert "data:image/png;base64," in rendered
+    assert f"images/{candidate_id}_auth.png" not in rendered
+    assert "Agent pre-screen only" in rendered
+    assert "READY_FOR_HUMAN_DECISION" in rendered
+    assert "Review status:</b> PENDING" in rendered
 
 
 def test_provisional_cohort_evaluator_verdict():

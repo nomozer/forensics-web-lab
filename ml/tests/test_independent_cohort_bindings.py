@@ -697,6 +697,13 @@ def test_cli_check_models_flag_executes_successfully():
         raise
 
 
+def test_cli_blocks_full_acquisition_before_run_setup():
+    from scripts.research.run_cohort_acquisition import main
+
+    with pytest.raises(SystemExit, match="Full acquisition is blocked"):
+        main(["--mode", "full"])
+
+
 def test_diffusers_engine_passes_explicit_height_width_and_validates_dimensions():
     """Verify Diffusers inpainting engine passes explicit 512x512 height/width and fails on mismatch."""
     engine = object.__new__(DiffusersInpaintingEngine)

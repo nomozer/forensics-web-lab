@@ -26,6 +26,8 @@ Removal and replacement require a visible existing target identified before gene
 
 Generated output is composited with the authentic image using the binary request mask before Technical QC. This makes pixels outside the requested region invariant. Technical QC enforces the registered `5.0`, `3.0`, and `0.5` thresholds for non-blank standard deviation, masked L1 change, and unmasked L1 change respectively.
 
+An outside-mask mean L1 value of exactly `0` after this compositing step is true **by construction**: those pixels are copied from the authentic image. It does not demonstrate that the raw diffusion output independently preserved pixels outside the mask.
+
 ## Human Content QC criteria
 
 A reviewer may accept a future pair only when the intended operation is visibly achieved in the registered target region, the prompt is semantically compatible with the authentic scene, target geometry is coherent, and there are no severe seams or unrelated scene rewrites. For removal, the registered existing target must be absent and the infill plausible; for replacement, the registered existing target must be replaced by the prompted object; for insertion, the prompted object must appear at the registered scene-compatible placement. Technical invariance outside the mask remains a machine gate, not a substitute for this review. The edit need not be aesthetically perfect when these criteria are satisfied.

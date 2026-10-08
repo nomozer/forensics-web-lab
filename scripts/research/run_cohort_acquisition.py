@@ -412,6 +412,11 @@ def main(argv: list[str] | None = None) -> None:
 
     if not args.mode:
         parser.error("one of --mode, --check-models, --verify-plan, --export-plan, --smoke-test or --audit-run is required")
+    if args.mode == "full":
+        raise SystemExit(
+            "Full acquisition is blocked: approve and complete the bounded eight-attempt pilot "
+            "with explicit Human Content QC before a reviewed full-run plan may be used."
+        )
     if args.engine == "mock" and not args.allow_synthetic:
         raise SystemExit("--engine mock produces SYNTHETIC edits; it is refused for real acquisition.")
     if not (args.run_id and args.expected_commit):
