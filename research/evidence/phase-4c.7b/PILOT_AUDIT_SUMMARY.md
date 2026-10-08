@@ -10,7 +10,7 @@
 
 - **Intake & Package Verification**: ZIP SHA-256 `3bdb1890d2aa6d34bb2829e159408ef44ab30d630c6f85792fce5fb7ade9e2b4` (6,129,778 bytes). All 34 archive members passed safe anti-path-traversal verification and were extracted into `pilot-20261008T113700Z/`. Original ZIP preserved untouched.
 - **Production CLI Audit**: Returned `PASS` (`python scripts/research/run_cohort_acquisition.py --audit-run ...`), manifest SHA-256 `cf0e4300d1e6f760e82ab76fdd29ffd534b35577003ae8ccf4ef9a9c25799704` matching receipt and binding.
-- **Ledger Semantics Clarification**: In `attempt_ledger.jsonl`, status `ACCEPTED` represents strictly **Technical QC Acceptance** (Step D/E in pipeline: 512x512 RGB canvas, binary L mask, non-blank, outside L1=0, inside L1 >= 5.0, disjointness verified). Canonical **Human Content QC** is tracked separately in `provenance_ledger.jsonl` and `run_receipt.json` as `PENDING_CONTENT_QC`.
+- **Ledger Semantics Clarification**: In `attempt_ledger.jsonl`, status `ACCEPTED` represents strictly **Technical QC Acceptance** (Step D/E in pipeline: 512x512 RGB canvas, binary L mask, non-blank, outside L1=0, inside L1 >= 3.0, non-blank image std >= 5.0, disjointness verified). Canonical **Human Content QC** is tracked separately in `provenance_ledger.jsonl` and `run_receipt.json` as `PENDING_CONTENT_QC`.
 - **Exact Pixel Metrics (Canonical Pipeline Formula)**:
   - Outside-mask mean L1: exactly `0.000000` across all 8 pairs (enforced by construction via binary mask compositing `Image.composite(gen, auth, mask)`; not evidence of raw diffusion preserving outside regions).
   - Inside-mask mean L1: verified across ZIP, extracted files, and HTML Base64 embeds down to 1e-6:

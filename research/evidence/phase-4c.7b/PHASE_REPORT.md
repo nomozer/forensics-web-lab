@@ -7,6 +7,44 @@
 > **Real pilot**: `TECHNICAL_PASS_PENDING_HUMAN_CONTENT_QC` (8 pairs acquired in run `pilot-20261008T113700Z` plus 8 historical pairs in `pilot-20261007T132003Z`; full 400-pair run remains `NOT_RUN`)<br>
 > **Training runs**: 0 fits, 0 refits; frozen models untouched; retired locked-test not accessed (only its 343 source IDs are read for the disjoint guard)<br>
 
+## BB. Follow-up pilot technical diagnosis, threshold audit, and remediation plan (2026-10-08)
+
+- **Technical QC Threshold Reconciliation**:
+  - Code at commit `d9d99b678053972436032a828056a76a6392fbb5` (`ml/evaluation/independent_cohort_acquisition.py`) and protocol (`CONTENT_GROUNDED_EDITING_AMENDMENT.md`) lock three explicit numerical gates:
+    1. `NON_BLANK_STD_THRESHOLD = 5.0`: Image standard deviation of both authentic and edited arrays must be $\ge 5.0$.
+    2. `MIN_MASKED_PIXEL_DELTA_L1 = 3.0`: Mean absolute pixel difference inside the mask (`mask == 255`) must be $\ge 3.0$.
+    3. `MAX_UNMASKED_PIXEL_DELTA_L1 = 0.5`: Mean absolute pixel difference outside the mask (`mask == 0`) must be $\le 0.5$.
+  - `diff_std` ($\text{std}(I_{\text{edit}} - I_{\text{auth}})$) is an exploratory descriptive statistic; no threshold exists in code or protocol.
+  - Conflation resolved: earlier informal notes referencing "inside L1 >= 5.0" mistakenly merged the non-blank image std threshold (5.0) with the inside-mask L1 threshold (3.0). All 8 acquired pairs comfortably cleared `inside L1 >= 3.0` (range: 11.08 to 76.14).
+- **Pipeline Transmission Audit**:
+  - `prompt`: Passed directly from `spec.prompt` without automated templates or trigger tokens.
+  - `negative_prompt`: Unset (`None`), relying on unconditioned null-string embedding `""`.
+  - `mask polarity`: Mode `L`, `{0, 255}` (`255` = inpaint, `0` = preserve), aligned with Diffusers conventions.
+  - `preprocessing`: Aspect-preserving scale + center-crop to 512×512 via Lanczos (`normalize_image_to_canvas`).
+  - `strength`: Unspecified (default 1.0 full denoising from $t=T$).
+  - `guidance_scale`: Fixed at `7.5` for both tools.
+  - `scheduler`: SD2 uses `DDIMScheduler` (50 steps); SDXL uses `EulerDiscreteScheduler` (30 steps).
+  - `canvas`: 512×512 for both tools. SD2 operates at native resolution; SDXL operates below native 1024×1024.
+- **Cause Classification: Proven vs Unverified Hypotheses**:
+  - *Proven Software Fixes*: Fixed contact sheet reading non-existent `att['qc_details']` (now computed from RGB arrays); corrected threshold reporting.
+  - *Proven Geometric / Physical Causes*: Zero-feathering 1-bit binary compositing (`Image.composite`) cutting continuous structures (railings, ceiling plaster, walls) inevitably creates 1-pixel edge discontinuities.
+  - *Unverified Technical Hypotheses*:
+    - Latent resolution bottleneck: SDXL/SD2 8x downsampling maps small masks (tomato 3.78%, bird 6.58%) to tiny latent grids ($13 \times 11$, $18 \times 14$ latent px), hypothesized to restrict structural object formation.
+    - Context infill conditioning: Prompts with prominent background descriptions ("on bread", "on cobblestones", "in cloudy sky") surrounded by unmasked context may bias UNet attention toward continuing background textures rather than generating salient objects. *(Clarification: reverse sampling does NOT perform test-time gradient descent or loss optimization)*.
+- **Remediation Proposals**:
+  - *Object Insertion*:
+    - Method A.1: Prompt token isolation (focusing on salient object features) + negative prompting (`"empty, blurry, missing object"`) + guidance tuning (9.0–11.0).
+    - Method A.2: Local crop inference with padding margin $P$ at model-native resolution (1024×1024 for SDXL), downscaling with Lanczos and compositing strictly inside registered mask bbox. Evaluated risks: loss of global perspective/vanishing points, illumination misalignment, scale distortion, and resampling blur.
+  - *Boundary Seam Handling*:
+    - Inward-only edge feathering: Ramping $\alpha$ over $k = 2-3$ px strictly inside the registered mask ($mask == 255$), with $\alpha = 0$ outside, preserving exact `outside_mask_mean_l1 = 0.000000`. Solves 1-pixel high-frequency edge steps; cannot resolve macroscopic structural severance.
+    - Natural-boundary mask alignment: Registering masks along natural architectural trim/moldings or replacing candidates with uncuttable linear foregrounds.
+- **Controlled Next-Pilot Experimental Design**:
+  - Structured into 4 distinct experimental arms (Arm 1: Prompt & Negative Prompt; Arm 2: Inward Feathering; Arm 3: Local Crop & Guidance; Arm 4: Natural Boundary / Candidate Substitution) to avoid confounding simultaneous variables.
+  - Run `pilot-20261008T113700Z` consumed its 8 registered attempts; next pilot will be registered under a new dedicated run ID with transparent candidate tracking (new buffer candidates vs diagnostic re-attempts).
+  - Scientific governance: Zero GPU generation executed; plan remains UNAPPROVED pending human review; Human Content QC for `pilot-20261008T113700Z` remains PENDING.
+
+---
+
 ## AA. Follow-up pilot intake, technical audit, and coordinate-grounded content review (pilot-20261008T113700Z) (2026-10-08)
 
 - **Intake & Verification**:
@@ -15,7 +53,7 @@
   - Manifest SHA-256: `cf0e4300d1e6f760e82ab76fdd29ffd534b35577003ae8ccf4ef9a9c25799704`.
   - Production CLI `--audit-run` PASS: 8 attempts, 8 accepted pairs, 0 errors, 2 per stratum, 1 attempt/candidate, `automatic_replacement=false`.
 - **Ledger Semantics Clarification**:
-  - In `attempt_ledger.jsonl`, status `ACCEPTED` represents strictly **Technical QC Acceptance** (Step D/E in pipeline: 512x512 RGB canvas, binary L mask, non-blank, outside L1=0, inside L1 >= 5.0, disjointness verified).
+  - In `attempt_ledger.jsonl`, status `ACCEPTED` represents strictly **Technical QC Acceptance** (Step D/E in pipeline: 512x512 RGB canvas, binary L mask, non-blank, outside L1=0, inside L1 >= 3.0, non-blank image std >= 5.0, disjointness verified).
   - Canonical **Human Content QC** is tracked separately in `provenance_ledger.jsonl` and `run_receipt.json` as `PENDING_CONTENT_QC`.
 - **Exact Pixel Metrics (Canonical Pipeline Formula)**:
   - Outside-mask mean L1: `0.000000` across all 8 pairs (achieved by construction via binary mask compositing `Image.composite(gen, auth, mask)`; not evidence of raw diffusion preserving outside pixels).
