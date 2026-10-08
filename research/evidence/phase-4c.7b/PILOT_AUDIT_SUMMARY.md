@@ -8,19 +8,33 @@
 > Audit status: `TECHNICAL_PASS_PENDING_HUMAN_CONTENT_QC`<br>
 > This summary is not a human Content QC approval.
 
-- Intake ZIP SHA-256: `3bdb1890d2aa6d34bb2829e159408ef44ab30d630c6f85792fce5fb7ade9e2b4` (6,129,778 bytes). All 34 archive members passed safe anti-path-traversal verification and were extracted into `pilot-20261008T113700Z/`.
-- The production `--audit-run` CLI returned `PASS`: 8 pairs, manifest SHA-256 `cf0e4300d1e6f760e82ab76fdd29ffd534b35577003ae8ccf4ef9a9c25799704`, matching receipt and binding.
-- Direct ledger count: 8 attempts, 8 accepted, 0 rejected/failed; exactly 2 per stratum, 1 attempt/candidate, `automatic_replacement=false`.
-- All 16 images are 512x512 RGB. All 8 masks are 512x512 `L`, binary `{0,255}`, with pixel counts matching coordinate rectangles down to the exact pixel.
-- Outside-mask mean L1: `0.000000` across all 8 pairs (enforced by construction via mask compositing; not evidence of raw diffusion preserving outside regions). Inside-mask mean L1: 11.08–76.14; difference std dev: 3.62–59.68.
-- Agent content observations (advisory only; not replacing human decision):
-  - `IND_COCO_SD2_002` (cabinets remodel): plausible navy cabinetry with stainless hood; recommendation `NEEDS_REVIEW`.
-  - `IND_COMMONS_SD2_001` (Option A headland removal): 100% headland/cliff removed, smooth sea/horizon; coastline town infilled as natural cliff consistent with accepted risk; recommendation `NEEDS_REVIEW`.
-  - `IND_COCO_SDXL_041` (chandelier): high-detail chandelier rendered, valance contact subtle; horizontal crystal/vault cut-off across ceiling at y=155; recommendation `NEEDS_REVIEW`.
-  - `IND_COCO_SDXL_002` (bread tomato), `IND_COMMONS_SD2_002` (suitcase), `IND_COMMONS_SDXL_001` (bird): complete object omission (0 requested items generated); recommendation `REJECT`.
-  - `IND_COCO_SD2_001` (pan to clock): murky metallic blob with square seam; `IND_COMMONS_SDXL_003` (column): psychedelic soda-bottle pillar with neon reflections and severed railing; recommendation `REJECT`.
-- Review dossier: self-contained HTML contact sheet with embedded images, SVGs, difference maps, and per-pair review cards at `data/research/local-artifacts/phase-4c.7b/pilot-20261008T113700Z/content_qc_contact_sheet.html`.
-- Gate: Human Content QC remains strictly `PENDING_CONTENT_QC` until user decides per-pair.
+- **Intake & Package Verification**: ZIP SHA-256 `3bdb1890d2aa6d34bb2829e159408ef44ab30d630c6f85792fce5fb7ade9e2b4` (6,129,778 bytes). All 34 archive members passed safe anti-path-traversal verification and were extracted into `pilot-20261008T113700Z/`. Original ZIP preserved untouched.
+- **Production CLI Audit**: Returned `PASS` (`python scripts/research/run_cohort_acquisition.py --audit-run ...`), manifest SHA-256 `cf0e4300d1e6f760e82ab76fdd29ffd534b35577003ae8ccf4ef9a9c25799704` matching receipt and binding.
+- **Ledger Semantics Clarification**: In `attempt_ledger.jsonl`, status `ACCEPTED` represents strictly **Technical QC Acceptance** (Step D/E in pipeline: 512x512 RGB canvas, binary L mask, non-blank, outside L1=0, inside L1 >= 5.0, disjointness verified). Canonical **Human Content QC** is tracked separately in `provenance_ledger.jsonl` and `run_receipt.json` as `PENDING_CONTENT_QC`.
+- **Exact Pixel Metrics (Canonical Pipeline Formula)**:
+  - Outside-mask mean L1: exactly `0.000000` across all 8 pairs (enforced by construction via binary mask compositing `Image.composite(gen, auth, mask)`; not evidence of raw diffusion preserving outside regions).
+  - Inside-mask mean L1: verified across ZIP, extracted files, and HTML Base64 embeds down to 1e-6:
+    - `IND_COCO_SD2_001`: `37.228664`
+    - `IND_COCO_SD2_002`: `44.094597`
+    - `IND_COCO_SDXL_041`: `30.664345`
+    - `IND_COCO_SDXL_002`: `16.786127`
+    - `IND_COMMONS_SD2_001`: `54.337215`
+    - `IND_COMMONS_SD2_002`: `30.735847`
+    - `IND_COMMONS_SDXL_001`: `11.076676`
+    - `IND_COMMONS_SDXL_003`: `76.143341`
+- **Coordinate-Verified Visual Observations (Advisory Agent Screening)**:
+  - `IND_COCO_SD2_001` (clock replaces pan): Murky metallic/glass blob without formed clock face; harsh square boundary seam at $y=95, x=280$ with cooler wall tone; recommendation `REJECT`.
+  - `IND_COCO_SD2_002` (cabinet remodel): **Only upper cabinets and range hood** ($y \in [75, 323], x \in [95, 415]$) remodeled to matte navy blue; **lower cabinets and counter** ($y > 323$) remain 100% authentic honey-oak wood; minor synthetic gloss on right cabinet; recommendation `NEEDS_REVIEW`.
+  - `IND_COCO_SDXL_041` (chandelier): Crystal pendants terminate neatly above $y=140$ ($y \in [138, 140], x \in [180, 420]$) and are **not cut off**; seam at $y=155$ is the newly painted smooth white ceiling plaster/soffit cutting horizontally into darker authentic textured drywall; valance contact at $y=155, x \in [12, 25]$ is subtle; recommendation `NEEDS_REVIEW`.
+  - `IND_COMMONS_SD2_001` (headland removal): Original pine headland removed, but **not converted 100% to sea**; SD2 generated a newly synthesized coastal landscape: steep green grassy hillside ($x \in [380, 512], y \in [305, 480]$), sea stacks ($x \in [380, 430], y \in [340, 440]$), low reefs ($x \in [340, 390], y \in [450, 480]$), and foreground rocky mound ($x \in [200, 310], y \in [470, 512]$); distant town buildings in mask replaced by dark rock; recommendation `NEEDS_REVIEW`.
+  - `IND_COCO_SDXL_002` (bread tomato), `IND_COMMONS_SD2_002` (suitcase), `IND_COMMONS_SDXL_001` (bird): Complete object omission (0 requested items generated; infilled with bread crumbs, cobblestones, and cloudy sky); recommendation `REJECT`.
+  - `IND_COMMONS_SDXL_003` (column): Psychedelic soda-bottle pillar with neon reflections and severed park railing at $x=170, 380$; recommendation `REJECT`.
+- **Technical Diagnosis (Code & Model Behavior)**:
+  - *Proven Cause (Boundary Seams)*: Zero-feathering 1-bit compositing (`Image.composite`) with axis-aligned boxes cutting continuous scene geometry causes immediate 1-pixel color/texture steps.
+  - *Proven Cause (Contact Sheet Bug)*: Fixed previous script trying to read non-existent `att['qc_details']`. Contact sheet now displays exact computed inside L1 values.
+  - *High-Probability Hypotheses (Small Insertion Deficits)*: Latent space downsampling (8x) gives tiny spatial capacity (e.g., $13 \times 11$ latent px for tomato, $18 \times 14$ for bird); combined with strong background prompt conditioning ("bread", "cobblestones", "cloudy sky"), UNet inpainting strongly prioritizes context infilling over object synthesis.
+- **Review Dossier**: Self-contained HTML contact sheet at `data/research/local-artifacts/phase-4c.7b/pilot-20261008T113700Z/content_qc_contact_sheet.html`.
+- **Gate**: Human Content QC remains strictly `PENDING_CONTENT_QC` until user decides per-pair.
 
 ---
 

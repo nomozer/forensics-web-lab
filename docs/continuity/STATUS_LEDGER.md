@@ -1,15 +1,17 @@
-## Follow-up pilot intake and content review (Phase trace 4C.7B preserved)
+## Follow-up pilot intake, technical audit, and coordinate-grounded content review (Phase trace 4C.7B preserved)
 
 - **Pilot intake and binding verification**: Run `pilot-20261008T113700Z` (ZIP SHA-256 `3bdb1890d2aa6d34bb2829e159408ef44ab30d630c6f85792fce5fb7ade9e2b4`, 6,129,778 bytes) extracted safely into `pilot-20261008T113700Z/`. Production CLI audit `PASS`: 8 attempts, 8 accepted pairs, 0 errors, 2/stratum, bound to commit `d9d99b678053972436032a828056a76a6392fbb5`, plan `eeace0e57a34f9f3824a3ce1a52bfa374670dca3cc19c668554d62257141632d`, manifest `cf0e4300d1e6f760e82ab76fdd29ffd534b35577003ae8ccf4ef9a9c25799704`.
-- **Technical QC**: Outside-mask mean L1 = 0.000000 across all 8 pairs (enforced by construction via mask compositing; not evidence of raw diffusion preserving outside pixels). Inside-mask mean L1: 11.08–76.14; difference std dev: 3.62–59.68. Technical QC status: 8/8 PASS.
-- **Agent visual content review**:
-  - `IND_COCO_SD2_002` (cabinets remodel): plausible navy cabinetry with stainless hood; recommendation `NEEDS_REVIEW`.
-  - `IND_COMMONS_SD2_001` (Option A headland removal): 100% headland/cliff removed, smooth sea/horizon; coastline town infilled as natural cliff consistent with accepted risk; recommendation `NEEDS_REVIEW`.
-  - `IND_COCO_SDXL_041` (chandelier): high-detail chandelier rendered, valance contact subtle; horizontal crystal/vault cut-off across ceiling at y=155; recommendation `NEEDS_REVIEW`.
+- **Technical QC & exact pixel metrics**: Outside-mask mean L1 = 0.000000 across all 8 pairs (enforced by construction via mask compositing; not evidence of raw diffusion preserving outside pixels). Inside-mask mean L1 verified across ZIP, disk, and HTML Base64: 11.08–76.14 ([37.23, 44.09, 30.66, 16.79, 54.34, 30.74, 11.08, 76.14]); diff std: 3.62–59.68. Technical QC status: 8/8 PASS. Ledger status 'ACCEPTED' reflects Technical QC pass only; Human Content QC remains PENDING.
+- **Coordinate-verified visual screening**:
+  - `IND_COCO_SD2_002` (cabinet remodel): upper cabinets/hood remodeled to matte navy blue; lower cabinets/counter remain 100% authentic honey-oak wood; recommendation `NEEDS_REVIEW`.
+  - `IND_COMMONS_SD2_001` (Option A headland removal): pine headland removed, replaced by newly synthesized coastal landscape (grassy slope, sea stacks, reefs, rocky mound); recommendation `NEEDS_REVIEW`.
+  - `IND_COCO_SDXL_041` (chandelier): crystal pendants terminate above y=140 and are not cut off; seam at y=155 is smooth white ceiling plaster/soffit cutting into darker textured authentic ceiling; recommendation `NEEDS_REVIEW`.
   - `IND_COCO_SDXL_002` (bread tomato), `IND_COMMONS_SD2_002` (suitcase), `IND_COMMONS_SDXL_001` (bird): complete object omission (0 requested items generated); recommendation `REJECT`.
-  - `IND_COCO_SD2_001` (pan to clock): murky metallic blob with square seam; `IND_COMMONS_SDXL_003` (column): psychedelic soda-bottle pillar with neon reflections and severed railing; recommendation `REJECT`.
-- **Review dossier**: Self-contained contact sheet at `data/research/local-artifacts/phase-4c.7b/pilot-20261008T113700Z/content_qc_contact_sheet.html`.
+  - `IND_COCO_SD2_001` (pan to clock): murky metallic blob with square seam; `IND_COMMONS_SDXL_003` (column): psychedelic soda-bottle pillar with severed railing; recommendation `REJECT`.
+- **Technical diagnosis**: Proven causes: zero-feathering 1-bit compositing (`Image.composite`) cutting continuous scene geometry creates 1-pixel seams; contact sheet metric display bug fixed. High-probability hypotheses: latent space downsampling (8x) severely limits spatial capacity for small insertions (tomato, bird); surrounding unmasked context biases UNet cross-attention toward background texture infilling over object generation.
+- **Review dossier**: Self-contained contact sheet with corrected exact L1 metrics at `data/research/local-artifacts/phase-4c.7b/pilot-20261008T113700Z/content_qc_contact_sheet.html`.
 - **Status & boundary**: Human Content QC remains strictly `PENDING_CONTENT_QC` awaiting user decision. Zero detector calls, independent performance `NOT_MEASURED`, full cohort `NOT_RUN`.
+
 
 ## Follow-up pilot edit plan human approval recorded (Phase trace 4C.7B preserved)
 

@@ -7,25 +7,41 @@
 > **Real pilot**: `TECHNICAL_PASS_PENDING_HUMAN_CONTENT_QC` (8 pairs acquired in run `pilot-20261008T113700Z` plus 8 historical pairs in `pilot-20261007T132003Z`; full 400-pair run remains `NOT_RUN`)<br>
 > **Training runs**: 0 fits, 0 refits; frozen models untouched; retired locked-test not accessed (only its 343 source IDs are read for the disjoint guard)<br>
 
-## AA. Follow-up pilot intake and content review (pilot-20261008T113700Z) (2026-10-08)
+## AA. Follow-up pilot intake, technical audit, and coordinate-grounded content review (pilot-20261008T113700Z) (2026-10-08)
 
 - **Intake & Verification**:
-  - Package ZIP SHA-256: `3bdb1890d2aa6d34bb2829e159408ef44ab30d630c6f85792fce5fb7ade9e2b4` (6,129,778 bytes; 34 archive members verified safe against path traversal).
+  - Package ZIP SHA-256: `3bdb1890d2aa6d34bb2829e159408ef44ab30d630c6f85792fce5fb7ade9e2b4` (6,129,778 bytes; 34 archive members verified safe against path traversal). Original ZIP preserved untouched.
   - Binding commit: `d9d99b678053972436032a828056a76a6392fbb5`; approved plan SHA-256: `eeace0e57a34f9f3824a3ce1a52bfa374670dca3cc19c668554d62257141632d`.
   - Manifest SHA-256: `cf0e4300d1e6f760e82ab76fdd29ffd534b35577003ae8ccf4ef9a9c25799704`.
   - Production CLI `--audit-run` PASS: 8 attempts, 8 accepted pairs, 0 errors, 2 per stratum, 1 attempt/candidate, `automatic_replacement=false`.
-- **Technical QC**:
-  - Outside-mask mean L1: `0.000000` across all 8 pairs (achieved by construction via mask compositing; not evidence of raw diffusion preserving outside pixels).
-  - Inside-mask mean L1: 11.08–76.14; difference image std: 3.62–59.68; all 8 pairs PASS technical thresholds.
-- **Agent Visual Content Findings & Recommendations**:
-  1. `IND_COCO_SD2_001` (pan to clock): Murky metallic/glass blob with harsh square boundary seam at $y=95, x=280$; recommendation **`REJECT`**.
-  2. `IND_COCO_SD2_002` (cabinets remodel): Structurally coherent navy cabinets and stainless range hood remodel, minor synthetic glossiness; recommendation **`NEEDS_REVIEW`** (plausible).
-  3. `IND_COCO_SDXL_041` (chandelier): Intricate chandelier rendered; valance contact at $y=155$ is subtle and below-mask curtain is 100% intact; flat horizontal cut-off across crystals and ceiling at $y=155$; recommendation **`NEEDS_REVIEW`**.
-  4. `IND_COCO_SDXL_002` (bread tomato): 0 tomatoes generated; infilled with blurry bread crumb; recommendation **`REJECT`**.
-  5. `IND_COMMONS_SD2_001` (Option A headland removal): 100% headland/cliff removed, smooth sea/horizon; coastline town infilled as natural cliff consistent with accepted risk; recommendation **`NEEDS_REVIEW`** (or **`ACCEPT`** if town cliff is accepted).
+- **Ledger Semantics Clarification**:
+  - In `attempt_ledger.jsonl`, status `ACCEPTED` represents strictly **Technical QC Acceptance** (Step D/E in pipeline: 512x512 RGB canvas, binary L mask, non-blank, outside L1=0, inside L1 >= 5.0, disjointness verified).
+  - Canonical **Human Content QC** is tracked separately in `provenance_ledger.jsonl` and `run_receipt.json` as `PENDING_CONTENT_QC`.
+- **Exact Pixel Metrics (Canonical Pipeline Formula)**:
+  - Outside-mask mean L1: `0.000000` across all 8 pairs (achieved by construction via binary mask compositing `Image.composite(gen, auth, mask)`; not evidence of raw diffusion preserving outside pixels).
+  - Inside-mask mean L1 verified across ZIP, extracted files, and HTML Base64 embeds:
+    - `IND_COCO_SD2_001`: `37.228664` (diff std: 9.74)
+    - `IND_COCO_SD2_002`: `44.094597` (diff std: 34.91)
+    - `IND_COCO_SDXL_041`: `30.664345` (diff std: 24.06)
+    - `IND_COCO_SDXL_002`: `16.786127` (diff std: 4.21)
+    - `IND_COMMONS_SD2_001`: `54.337215` (diff std: 34.84)
+    - `IND_COMMONS_SD2_002`: `30.735847` (diff std: 14.92)
+    - `IND_COMMONS_SDXL_001`: `11.076676` (diff std: 3.62)
+    - `IND_COMMONS_SDXL_003`: `76.143341` (diff std: 59.68)
+  - All 8 pairs PASS technical quality thresholds.
+- **Agent Visual Content Findings (Coordinate-Verified Advisory Screening)**:
+  1. `IND_COCO_SD2_001` (clock replaces pan): Murky metallic/glass blob with harsh square boundary seam at $y=95, x=280$; inside wall color is cooler/lighter than outside; recommendation **`REJECT`**.
+  2. `IND_COCO_SD2_002` (cabinet remodel): **Only upper cabinets and range hood** ($y \in [75, 323], x \in [95, 415]$) remodeled to matte navy blue; **lower cabinets and counter** ($y > 323$) remain 100% authentic honey-oak wood; minor synthetic gloss on right cabinet; recommendation **`NEEDS_REVIEW`**.
+  3. `IND_COCO_SDXL_041` (chandelier): Crystal pendants terminate neatly above $y=140$ ($y \in [138, 140], x \in [180, 420]$) and are **not cut off**; horizontal seam at $y=155$ is the newly painted smooth white ceiling plaster/soffit cutting abruptly into darker authentic textured drywall; valance contact at $y=155, x \in [12, 25]$ is subtle; recommendation **`NEEDS_REVIEW`**.
+  4. `IND_COCO_SDXL_002` (bread tomato): 0 tomatoes generated; infilled with blurry bread crumb texture; recommendation **`REJECT`**.
+  5. `IND_COMMONS_SD2_001` (Option A headland removal): Original pine headland removed, but **not converted 100% to sea**; SD2 generated a newly synthesized coastal landscape: steep green grassy hillside ($x \in [380, 512], y \in [305, 480]$), sea stacks ($x \in [380, 430], y \in [340, 440]$), low reefs ($x \in [340, 390], y \in [450, 480]$), and foreground rocky mound ($x \in [200, 310], y \in [470, 512]$); distant town buildings in mask replaced by dark rock; recommendation **`NEEDS_REVIEW`**.
   6. `IND_COMMONS_SD2_002` (suitcase): 0 suitcases generated; infilled with cobblestones; recommendation **`REJECT`**.
   7. `IND_COMMONS_SDXL_001` (bird): 0 birds generated; infilled with purplish-gray sky patch; recommendation **`REJECT`**.
-  8. `IND_COMMONS_SDXL_003` (column replacement): Severe semantic drift; generated psychedelic bottle-shaped pillar with neon reflections and severed railing; recommendation **`REJECT`**.
+  8. `IND_COMMONS_SDXL_003` (column replacement): Severe semantic drift; generated psychedelic bottle-shaped pillar with neon reflections and severed railing at $x=170, 380$; recommendation **`REJECT`**.
+- **Technical Diagnosis (Code & Model Behavior)**:
+  - *Proven Cause (Boundary Seams)*: Zero-feathering 1-bit compositing (`Image.composite`) with axis-aligned boxes cutting continuous scene geometry causes immediate 1-pixel color/texture steps.
+  - *Proven Cause (Contact Sheet Display Bug)*: Previous script referenced non-existent `att['qc_details']` key in `attempt_ledger.jsonl`, defaulting to `0.0`. Fixed by computing L1 directly from RGB arrays.
+  - *High-Probability Hypotheses (Small Insertion Deficits)*: Latent space downsampling (8x) gives tiny spatial capacity (e.g., $13 \times 11$ latent px for tomato, $18 \times 14$ for bird); combined with strong background prompt conditioning ("bread", "cobblestones", "cloudy sky"), UNet inpainting strongly prioritizes context infilling over object synthesis.
 - **Human Content QC Status**: Strictly **`PENDING_CONTENT_QC`** awaiting user per-pair determination.
 - **Review Artifact**: Self-contained contact sheet at `data/research/local-artifacts/phase-4c.7b/pilot-20261008T113700Z/content_qc_contact_sheet.html`.
 - **Scientific boundary**: Detector calls remain 0; independent performance `NOT_MEASURED`; full cohort `NOT_RUN`.
