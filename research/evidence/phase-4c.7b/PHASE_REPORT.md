@@ -3,7 +3,7 @@
 > **Phase**: Phase 4C.7B — Independent Cohort Acquisition & Feasibility Alignment (revision 5 implementation plus audited real-pilot intake)<br>
 > **Status**: `PILOT_DIAGNOSED_CORRECTIVE_PLAN_PENDING_HUMAN_REVIEW`. The historical run remains audit-valid as produced, but post-audit diagnosis proves its Technical QC omitted locked checks and its prompts/masks were not content-grounded. Human Content QC remains pending and full acquisition remains locked.<br>
 > **Findings status**: `NOT_MEASURED` (0 detector calls, 0 cohort evaluation)<br>
-> **Current corrective functional commit**: `6550a4675ec7ad7518d16e6da2c5d5e243fe9f26`; canonical notebook pins this exact full SHA; historical audited pilot remains bound to `7d2eea4027e2a17b51e6665ff81d481e4e333d48`.<br>
+> **Current corrective functional commit**: `32a959463cb0106d8af9c62087585270d1579ff7`; canonical notebook pins this exact full SHA; historical audited pilot remains bound to `7d2eea4027e2a17b51e6665ff81d481e4e333d48`.<br>
 > **Real pilot**: `TECHNICAL_PASS_PENDING_HUMAN_CONTENT_QC` (8 pairs acquired; full 400-pair run remains `NOT_RUN`)<br>
 > **Training runs**: 0 fits, 0 refits; frozen models untouched; retired locked-test not accessed (only its 343 source IDs are read for the disjoint guard)<br>
 
@@ -20,7 +20,7 @@
 - Traced six stale direct-child pytest basetemp roots to explicit workspace `--basetemp` commands and synthetic test fixtures. They contained 9,916 files, 873 directories, and 2,375,435,081 bytes. No tracked fault-injection test was found to modify ACL. Only those six exact verified roots had inheritance restored recursively before deletion; parent ACL and all real artifacts remained untouched.
 - Added marker-, prefix-, and direct-parent-locked pytest session cleanup in `finally`. Regression tests refuse unmarked and real-run-like names and demonstrate cleanup after a deliberately failing session as well as normal success.
 - Reverified sealed real artifacts after cleanup: ZIP SHA-256 `1fcd1de57373c7250583d87a4a4050a91d918b8bd62ec105d4aab737d340053d`; manifest SHA-256 `caa0766addff4d87d9d11206f1e398a29ca04c58f0013866fac749fac09bc416`; attempt and provenance ledgers remain present.
-- Verification: 83 related tests PASS / 2 artifact-network-gated skips; the marked workspace basetemp was absent after the suite. Python compile, continuity checker, and `git diff --check` pass.
+- Verification: 83 related tests PASS / 2 artifact-network-gated skips; post-pin binding/notebook suite 57 PASS / 2 artifact-network-gated skips. Both marked workspace basetemp roots were absent afterward. Python compile, continuity checker, and `git diff --check` pass.
 - No generation, training, detector, evaluator, full acquisition, or Human Content QC approval occurred.
 
 ---
