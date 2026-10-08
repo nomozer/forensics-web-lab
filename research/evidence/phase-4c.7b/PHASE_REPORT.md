@@ -42,6 +42,15 @@
   - Structured into 4 distinct experimental arms (Arm 1: Prompt & Negative Prompt; Arm 2: Inward Feathering; Arm 3: Local Crop & Guidance; Arm 4: Natural Boundary / Candidate Substitution) to avoid confounding simultaneous variables.
   - Run `pilot-20261008T113700Z` consumed its 8 registered attempts; next pilot will be registered under a new dedicated run ID with transparent candidate tracking (new buffer candidates vs diagnostic re-attempts).
   - Scientific governance: Zero GPU generation executed; plan remains UNAPPROVED pending human review; Human Content QC for `pilot-20261008T113700Z` remains PENDING.
+- **Empirical Inward Feathering (k=2 px) Evaluation**:
+  - Generated derived feathered images for all 8 pairs in `data/research/local-artifacts/phase-4c.7b/pilot-20261008T113700Z/derived_feathered_k2/` preserving 100% of outside pixels (`outside_mask_mean_l1 = 0.000000` verified 8/8).
+  - Produced comprehensive self-contained HTML contact sheet: `feathering_comparison_contact_sheet.html`.
+  - Visual inspection confirmed: 2-pixel cosine ramp successfully softens 1-pixel high-frequency edge steps (reducing tile seam sharpness in `IND_COCO_SD2_001` and plaster edge in `IND_COCO_SDXL_041`), with minimal ghosting. However, feathering **cannot fix macroscopic structural severance** (the 210-pixel severed railing gap in `IND_COMMONS_SDXL_003` remains severed with a blurred 2px stub; the 30% ceiling plane tonal mismatch in `IND_COCO_SDXL_041` remains obvious; internal generation blob/omission defects in `IND_COCO_SD2_001` are unaffected).
+- **Registered 6-Attempt Diagnostic Plan (`content_grounded_diagnostic_plan.json`)**:
+  - Registered dedicated calibration specification for the 3 omission candidates (`IND_COCO_SDXL_002` tomato, `IND_COMMONS_SD2_002` suitcase, `IND_COMMONS_SDXL_001` bird) under SHA-256 `cba87a66793351bcb2e7c21f88aeea03eab1c1f6fb7e1cc4a4483faf28b73498`.
+  - Exactly 6 one-shot attempts (Arm A: Full Canvas 512x512 vs Arm B: Local Crop with Padding at native resolution).
+  - Keeps identical authentic images, prompts, seeds from ledger, model revisions, guidance scales (7.5), schedulers, and steps; negative prompt and feathering are intentionally excluded to isolate latent spatial capacity.
+  - Status: strictly `PENDING_USER_APPROVAL`; zero GPU execution; diagnostic results are exploratory and will not enter official cohort or overwrite pilot history.
 
 ---
 

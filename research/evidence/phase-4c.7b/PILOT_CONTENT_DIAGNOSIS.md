@@ -140,3 +140,41 @@ To isolate causal factors without confounding multiple simultaneous changes, the
   - *Option 1 (Progressive Buffer Pool)*: Select 8 fresh candidates from the 440-pool buffer (pool index order) applying refined instructions.
   - *Option 2 (Transparent Diagnostic Calibration)*: Register a dedicated non-production diagnostic run ID (`pilot-202610...-diag`) with explicit one-shot re-attempts on failed candidates (e.g., bread tomato, suitcase, sky bird) to directly test Arm 1 and Arm 3 under identical authentic images.
 - **Protocol Gate**: No parameter or method changes will be merged into production code without an approved amendment. The next pilot plan remains **UNAPPROVED** until human review. Zero GPU generation executed in this session. Human Content QC for `pilot-20261008T113700Z` remains **`PENDING`**.
+
+---
+
+### 2.6. Empirical Inward Feathering (k=2 px) Assessment Results
+
+Using the authentic, edited, and mask files from `pilot-20261008T113700Z`, derived images with inward feathering ($k=2$ px, cosine transition) were computed across all 8 candidates and saved to `data/research/local-artifacts/phase-4c.7b/pilot-20261008T113700Z/derived_feathered_k2/`. All 8 derived images satisfy the strict invariant `outside_mask_mean_l1 = 0.000000` (max outside delta = 0).
+
+A self-contained comparison contact sheet was generated at `data/research/local-artifacts/phase-4c.7b/pilot-20261008T113700Z/feathering_comparison_contact_sheet.html`.
+
+#### Detailed Visual Case Findings
+1. **Wall Clock (`IND_COCO_SD2_001`)**:
+   - *Seam Softening*: The 1-pixel hard step at $y=95$ and $x \in \{195, 280\}$ is smoothed over a 2-pixel cosine gradient. Tile color transitions are less abruptly stepped.
+   - *Ghosting & Detail Re-emergence*: Low ghosting. A 1-2 pixel sliver of authentic grout line slightly bleeds inward.
+   - *Geometric Severance*: Does NOT fix the primary defect: the inpaint content inside remains a murky metallic blob rather than a recognizable clock.
+2. **Ceiling Chandelier (`IND_COCO_SDXL_041`)**:
+   - *Seam Softening*: The sharp line at $y=155$ is visually softened from $y=153$ to $155$.
+   - *Ghosting & Detail Re-emergence*: At $x \in [12, 25]$ (where mask contacts curtain valance apex), blending dark fabric with white plaster yields a minor faint blur band. Authentic curtain texture re-appears in the 2px strip at $y=153..154$.
+   - *Geometric Severance*: The macroscopic mismatch between the bright white modern ceiling plane (generated) and the textured off-white ceiling (authentic) remains starkly apparent. Feathering smooths the step but leaves the planar tonal discontinuity intact.
+3. **Park Column (`IND_COMMONS_SDXL_003`)**:
+   - *Seam Softening*: Converts the vertical 1-pixel edges at $x=170$ and $x=380$ into a 2-pixel transition.
+   - *Ghosting & Detail Re-emergence*: At the railing intersection ($y \approx 340..375$), blending the severed railing end with park foliage creates a semi-transparent, blurred railing stub.
+   - *Geometric Severance*: The continuous metal railing remains physically severed across a 210-pixel gap ($x=170..380$). A 2-pixel blend cannot bridge or reconnect missing geometry.
+- **Empirical Conclusion**: Inward feathering effectively eliminates high-frequency 1-pixel edge steps without touching outside pixels, but **cannot resolve macroscopic structural severance, planar tonal mismatches, or internal semantic generation omissions**.
+
+---
+
+### 2.7. Proposed 6-Attempt Diagnostic Plan Specification (`content_grounded_diagnostic_plan.json`)
+
+To directly evaluate the latent spatial capacity hypothesis vs full canvas without confounding variables, a dedicated diagnostic plan has been registered at `research/evidence/phase-4c.7b/content_grounded_diagnostic_plan.json` (SHA-256: `cba87a66793351bcb2e7c21f88aeea03eab1c1f6fb7e1cc4a4483faf28b73498`).
+
+- **Status**: `PENDING_USER_REVIEW` (Zero GPU runs executed).
+- **Candidate Scope**: Exactly 3 candidates with insertion omissions (`IND_COCO_SDXL_002`, `IND_COMMONS_SD2_002`, `IND_COMMONS_SDXL_001`).
+- **Controlled Arms**:
+  - **Arm A (Full Canvas)**: Standard $512 \times 512$ inference under locked parameters (identical authentic, prompt, seed, guidance 7.5, scheduler, steps).
+  - **Arm B (Local Crop with Padding)**: Local square crop ($256 \times 256$ or $320 \times 320$) upscaled via Lanczos to model native resolution ($1024 \times 1024$ for SDXL, $512 \times 512$ for SD2) $\to$ inpainting $\to$ downscaled via Lanczos $\to$ remapped to canvas and composited strictly within registered mask bbox. Outside pixels invariant ($0.000000$).
+- **Experimental Invariant**: Negative prompt and feathering are strictly excluded from this comparison to isolate the single causal factor of latent spatial resolution.
+- **Attempt Budget**: Exactly 6 attempts (3 candidates $\times$ 2 arms). One attempt per branch, no retries, no automatic replacement.
+- **Accounting Boundary**: This is a proposed diagnostic budget, completely independent of the 8 production pilot attempts already consumed. Diagnostic results will not automatically enter the official independent cohort or overwrite previous pilot records. With $n=3$ cases and 1 seed per case, observations cannot be generalized without broader evaluation.

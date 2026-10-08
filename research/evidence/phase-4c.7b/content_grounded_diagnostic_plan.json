@@ -1,0 +1,352 @@
+{
+  "schema_version": "1.0.0",
+  "workstream": "independent_cohort_acquisition_diagnostic",
+  "phase_trace": "4C.7B",
+  "purpose": "Proposed 6-attempt diagnostic calibration plan comparing full-canvas inference (Arm A) vs local-crop inference with padding (Arm B) across 3 object insertion omission candidates.",
+  "human_review_status": "PENDING",
+  "human_reviewer": null,
+  "human_reviewed_at_utc": null,
+  "coordinate_space": "normalized_512x512_canvas_xyxy_half_open",
+  "attempt_budget": 6,
+  "automatic_replacement": false,
+  "governance_notes": [
+    "Diagnostic calibration experiment: 3 candidates x 2 arms (Arm A: Full Canvas vs Arm B: Local Crop with Padding) = exactly 6 attempts.",
+    "This diagnostic budget is distinct from and does not alter the 8 production pilot attempts already consumed in pilot-20261008T113700Z.",
+    "Results of this diagnostic will NOT automatically enter the official independent cohort or overwrite previous pilot records.",
+    "With n=3 cases and 1 seed per case, observations are exploratory and cannot be generalized without broader evaluation.",
+    "Negative prompt and feathering are intentionally excluded from this comparison to strictly isolate the latent spatial capacity factor.",
+    "Production cohort specification, approved plans, and full cohort lock remain strictly UNMODIFIED and LOCKED."
+  ],
+  "diagnostic_candidates": [
+    {
+      "candidate_id": "IND_COCO_SDXL_002",
+      "common_name": "bread_tomato",
+      "stratum_id": "coco_sdxl",
+      "tool_key": "sdxl_inpainting",
+      "model_checkpoint": "diffusers/stable-diffusion-xl-1.0-inpainting-0.1",
+      "model_revision": "115134f363124c53c7d878647567d04daf26e41e",
+      "origin_id": "coco:293044",
+      "generation_seed": 20272319,
+      "guidance_scale": 7.5,
+      "num_inference_steps": 30,
+      "scheduler": "EulerDiscreteScheduler",
+      "strength": 1.0,
+      "negative_prompt": null,
+      "prompt": "a small red cherry tomato resting on the slice of bread, matching the lunchbox lighting and camera angle",
+      "target_description": "a small red cherry tomato to insert on the bread slice",
+      "target_bbox_xyxy": [
+        375,
+        265,
+        430,
+        320
+      ],
+      "mask_bbox_xyxy": [
+        345,
+        245,
+        455,
+        335
+      ],
+      "mask_area_class": "small_under_10pct",
+      "mask_area_pct": 3.77655,
+      "arms": {
+        "arm_a_full_canvas": {
+          "arm_id": "IND_COCO_SDXL_002_ARM_A",
+          "method": "full_canvas_inference",
+          "crop_bbox_xyxy": [
+            0,
+            0,
+            512,
+            512
+          ],
+          "padding_margins": {
+            "left": 0,
+            "right": 0,
+            "top": 0,
+            "bottom": 0
+          },
+          "inference_resolution": [
+            512,
+            512
+          ],
+          "upscale_factor": 1.0,
+          "local_mask_xyxy": [
+            345,
+            245,
+            455,
+            335
+          ],
+          "latent_mask_dimensions_approx": [
+            13,
+            11
+          ],
+          "latent_mask_pixels_approx": 143,
+          "mapping_pipeline": "Direct inference at 512x512; composite output with authentic image strictly within mask [345, 245, 455, 335]."
+        },
+        "arm_b_local_crop": {
+          "arm_id": "IND_COCO_SDXL_002_ARM_B",
+          "method": "local_crop_padded_inference",
+          "crop_bbox_xyxy": [
+            256,
+            162,
+            512,
+            418
+          ],
+          "crop_dimensions": [
+            256,
+            256
+          ],
+          "padding_margins": {
+            "left": 89,
+            "right": 57,
+            "top": 83,
+            "bottom": 83
+          },
+          "local_mask_xyxy": [
+            89,
+            83,
+            199,
+            173
+          ],
+          "inference_resolution": [
+            1024,
+            1024
+          ],
+          "upscale_factor": 4.0,
+          "scaled_mask_in_inference": [
+            356,
+            332,
+            796,
+            692
+          ],
+          "latent_mask_dimensions_approx": [
+            55,
+            45
+          ],
+          "latent_mask_pixels_approx": 2475,
+          "latent_capacity_gain_factor": 17.3,
+          "mapping_pipeline": "Crop 256x256 from canvas -> Upscale crop and local mask to 1024x1024 via Lanczos -> SDXL inpainting at 1024x1024 -> Downscale generated crop to 256x256 via Lanczos -> Remap crop to canvas [256, 162, 512, 418] -> Composite into 512x512 canvas strictly inside [345, 245, 455, 335]. Outside pixels remain exactly 0.000000."
+        }
+      }
+    },
+    {
+      "candidate_id": "IND_COMMONS_SD2_002",
+      "common_name": "travel_suitcase",
+      "stratum_id": "commons_sd2",
+      "tool_key": "stable_diffusion_2_inpainting",
+      "model_checkpoint": "sd2-community/stable-diffusion-2-inpainting",
+      "model_revision": "5f74973cbb64c8568780732c17f43eb269d63a0d",
+      "origin_id": "commons:81567907",
+      "generation_seed": 20283429,
+      "guidance_scale": 7.5,
+      "num_inference_steps": 50,
+      "scheduler": "DDIMScheduler",
+      "strength": 1.0,
+      "negative_prompt": null,
+      "prompt": "a brown leather travel suitcase standing on the cobblestones beside the vintage car, realistic scale and daylight shadows",
+      "target_description": "a brown leather travel suitcase to insert on the cobblestones beside the car",
+      "target_bbox_xyxy": [
+        45,
+        355,
+        190,
+        495
+      ],
+      "mask_bbox_xyxy": [
+        0,
+        340,
+        225,
+        512
+      ],
+      "mask_area_class": "medium_10_to_30pct",
+      "mask_area_pct": 14.762878,
+      "arms": {
+        "arm_a_full_canvas": {
+          "arm_id": "IND_COMMONS_SD2_002_ARM_A",
+          "method": "full_canvas_inference",
+          "crop_bbox_xyxy": [
+            0,
+            0,
+            512,
+            512
+          ],
+          "padding_margins": {
+            "left": 0,
+            "right": 0,
+            "top": 0,
+            "bottom": 0
+          },
+          "inference_resolution": [
+            512,
+            512
+          ],
+          "upscale_factor": 1.0,
+          "local_mask_xyxy": [
+            0,
+            340,
+            225,
+            512
+          ],
+          "latent_mask_dimensions_approx": [
+            28,
+            21
+          ],
+          "latent_mask_pixels_approx": 588,
+          "mapping_pipeline": "Direct inference at 512x512; composite output with authentic image strictly within mask [0, 340, 225, 512]."
+        },
+        "arm_b_local_crop": {
+          "arm_id": "IND_COMMONS_SD2_002_ARM_B",
+          "method": "local_crop_padded_inference",
+          "crop_bbox_xyxy": [
+            0,
+            192,
+            320,
+            512
+          ],
+          "crop_dimensions": [
+            320,
+            320
+          ],
+          "padding_margins": {
+            "left": 0,
+            "right": 95,
+            "top": 148,
+            "bottom": 0
+          },
+          "local_mask_xyxy": [
+            0,
+            148,
+            225,
+            320
+          ],
+          "inference_resolution": [
+            512,
+            512
+          ],
+          "upscale_factor": 1.6,
+          "scaled_mask_in_inference": [
+            0,
+            237,
+            360,
+            512
+          ],
+          "latent_mask_dimensions_approx": [
+            45,
+            34
+          ],
+          "latent_mask_pixels_approx": 1530,
+          "latent_capacity_gain_factor": 2.6,
+          "mapping_pipeline": "Crop 320x320 from canvas -> Upscale crop and local mask to 512x512 via Lanczos -> SD2 inpainting at 512x512 -> Downscale generated crop to 320x320 via Lanczos -> Remap crop to canvas [0, 192, 320, 512] -> Composite into 512x512 canvas strictly inside [0, 340, 225, 512]. Outside pixels remain exactly 0.000000."
+        }
+      }
+    },
+    {
+      "candidate_id": "IND_COMMONS_SDXL_001",
+      "common_name": "sky_bird",
+      "stratum_id": "commons_sdxl",
+      "tool_key": "sdxl_inpainting",
+      "model_checkpoint": "diffusers/stable-diffusion-xl-1.0-inpainting-0.1",
+      "model_revision": "115134f363124c53c7d878647567d04daf26e41e",
+      "origin_id": "commons:166503140",
+      "generation_seed": 20294438,
+      "guidance_scale": 7.5,
+      "num_inference_steps": 30,
+      "scheduler": "EulerDiscreteScheduler",
+      "strength": 1.0,
+      "negative_prompt": null,
+      "prompt": "a small dark bird flying in the cloudy sky, distant scale and natural daylight",
+      "target_description": "a small dark bird to insert in the open cloudy sky at upper-right",
+      "target_bbox_xyxy": [
+        395,
+        75,
+        455,
+        125
+      ],
+      "mask_bbox_xyxy": [
+        350,
+        45,
+        500,
+        160
+      ],
+      "mask_area_class": "small_under_10pct",
+      "mask_area_pct": 6.580353,
+      "arms": {
+        "arm_a_full_canvas": {
+          "arm_id": "IND_COMMONS_SDXL_001_ARM_A",
+          "method": "full_canvas_inference",
+          "crop_bbox_xyxy": [
+            0,
+            0,
+            512,
+            512
+          ],
+          "padding_margins": {
+            "left": 0,
+            "right": 0,
+            "top": 0,
+            "bottom": 0
+          },
+          "inference_resolution": [
+            512,
+            512
+          ],
+          "upscale_factor": 1.0,
+          "local_mask_xyxy": [
+            350,
+            45,
+            500,
+            160
+          ],
+          "latent_mask_dimensions_approx": [
+            18,
+            14
+          ],
+          "latent_mask_pixels_approx": 252,
+          "mapping_pipeline": "Direct inference at 512x512; composite output with authentic image strictly within mask [350, 45, 500, 160]."
+        },
+        "arm_b_local_crop": {
+          "arm_id": "IND_COMMONS_SDXL_001_ARM_B",
+          "method": "local_crop_padded_inference",
+          "crop_bbox_xyxy": [
+            256,
+            0,
+            512,
+            256
+          ],
+          "crop_dimensions": [
+            256,
+            256
+          ],
+          "padding_margins": {
+            "left": 94,
+            "right": 12,
+            "top": 45,
+            "bottom": 96
+          },
+          "local_mask_xyxy": [
+            94,
+            45,
+            244,
+            160
+          ],
+          "inference_resolution": [
+            1024,
+            1024
+          ],
+          "upscale_factor": 4.0,
+          "scaled_mask_in_inference": [
+            376,
+            180,
+            976,
+            640
+          ],
+          "latent_mask_dimensions_approx": [
+            75,
+            57
+          ],
+          "latent_mask_pixels_approx": 4275,
+          "latent_capacity_gain_factor": 17.0,
+          "mapping_pipeline": "Crop 256x256 from canvas -> Upscale crop and local mask to 1024x1024 via Lanczos -> SDXL inpainting at 1024x1024 -> Downscale generated crop to 256x256 via Lanczos -> Remap crop to canvas [256, 0, 512, 256] -> Composite into 512x512 canvas strictly inside [350, 45, 500, 160]. Outside pixels remain exactly 0.000000."
+        }
+      }
+    }
+  ]
+}
