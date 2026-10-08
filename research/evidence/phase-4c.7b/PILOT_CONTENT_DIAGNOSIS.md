@@ -277,7 +277,7 @@ Visual inspection on image artifacts in `data/research/local-artifacts/phase-4c.
   - Scope in code (`ml/evaluation/independent_cohort_diagnostic.py`): `start_time = time.perf_counter()` được đo **trước** lệnh `get_engine(tool_key)`.
   - Đối với các attempt Arm A (1, 3, 5), `get_engine` khởi tạo `DiagnosticDiffusersEngine`, tải trọng số mô hình từ ổ đĩa/cache vào CUDA memory (`pipeline_cls.from_pretrained`) và nạp sang GPU (`pipeline.to("cuda")`).
   - Đối với các attempt Arm B (2, 4, 6), pipeline đã thường trú sẵn trong bộ nhớ GPU (`active_engine is not None and current_tool_key == tool_key`).
-  - **Không kết luận tốc độ suy luận A/B từ thời gian toàn attempt**: Thời gian ghi nhận phản ánh tổng thời gian của attempt (gồm nạp mô hình khi khởi tạo tool key), không phản ánh tốc độ khử nhiễu UNet thuần túy. Arm B không nhanh hơn Arm A; thực tế với SDXL, Arm B phải xử lý tensor lớn gấp 4 lần ($128 \times 128$ vs $64 \times 64$), thể hiện qua lượng VRAM đỉnh cao hơn (8.96 GiB vs 7.17 GiB).
+  - **Không kết luận tốc độ suy luận A/B từ thời gian toàn attempt**: Thời gian ghi nhận phản ánh tổng thời gian của attempt (gồm nạp mô hình khi khởi tạo tool key), không phản ánh tốc độ khử nhiễu UNet thuần túy. Chưa xác định tốc độ suy luận riêng của A/B từ thời gian toàn attempt; thực tế với SDXL, Arm B phải xử lý tensor lớn gấp 4 lần ($128 \times 128$ vs $64 \times 64$), thể hiện qua lượng VRAM đỉnh cao hơn (8.96 GiB vs 7.17 GiB).
 - **Runtime Environment & Primary Sources**:
   - Inpainting models pinned in `ml/evaluation/independent_cohort_diagnostic.py`:
     * SDXL: `diffusers/stable-diffusion-xl-1.0-inpainting-0.1` (official Diffusers model card, pinned revision `115134f363124c53c7d878647567d04daf26e41e`) `[@sdxlInpaintingModelCard]`
@@ -311,3 +311,71 @@ Visual inspection on image artifacts in `data/research/local-artifacts/phase-4c.
 | `IND_COMMONS_SDXL_001_ARM_B` | Chim bay trên bầu trời | Arm B (4.0×) | PASS | 13.07 | Bóng chim dang cánh với lông vũ sắc nét; hòa nhập bầu trời mây không tì vết | Trình Người dùng xem ảnh và quyết định | `PENDING` |
 
 *Ghi chú*: Toàn bộ 6 attempts giữ nguyên trạng thái `Human Content QC = PENDING` chờ quyết định chính thức của người dùng. Tám cặp ảnh pilot lịch sử (`pilot-20261008T113700Z`) tiếp tục giữ trạng thái `PENDING_CONTENT_QC`. Zero detector calls, independent performance `NOT_MEASURED`, full cohort `NOT_RUN`.
+
+---
+
+### 2.9. Đề xuất Hiệu chuẩn Tiếp theo: Thử nghiệm Đơn biến Điều kiện hóa (Prompt Focus & Negative Prompting) trên Ca Omission SDXL (PENDING User Review)
+
+> **Kế hoạch máy đọc đề xuất**: `research/evidence/phase-4c.7b/content_grounded_calibration_proposal.json`<br>
+> **Mã băm SHA-256**: `f272102d973de98a5fd1bdb5946c5b35484572c4b798466daf6512dc4a8ce9a0`<br>
+> **Trạng thái Quản trị**: `PENDING` (Đề xuất chờ người dùng xem xét; **tuyệt đối KHÔNG tự động thực thi**).<br>
+> **Ngân sách đề xuất**: Đúng **2 attempts** một lần (zero retries, zero automatic replacement).
+
+#### 2.9.1. Lỗi đã Quan sát Thực nghiệm vs Giả thuyết Còn Cần Kiểm chứng
+1. **Lỗi Đã Quan Sát Thực Nghiệm (Empirically Observed Defects)**:
+   - *Omission (Bỏ sót vật thể)*: Xuất hiện khi inpaint toàn canvas 512×512 trên các vùng mask nhỏ/vừa (`IND_COCO_SDXL_002`, `IND_COMMONS_SD2_002`, `IND_COMMONS_SDXL_001` ở cả pilot và diagnostic Arm A). Mô hình sinh texture lấp đầy phẳng (infill smoothing) thay vì tạo vật thể được yêu cầu trong prompt.
+   - *Semantic Hallucination (Ảo giác ngữ nghĩa)*: Xuất hiện ở `IND_COMMONS_SD2_002_ARM_B` (SD2 sinh xe ô tô đồ chơi thay vì vali du lịch), và `IND_COMMONS_SDXL_003` (SDXL sinh cột chai thủy tinh kỳ dị phản quang neon thay vì cột đá cẩm thạch La Mã).
+   - *Macroscopic Structural Severance (Đứt gãy hình học vĩ mô)*: Bounding box chữ nhật cắt ngang qua các cấu trúc vật lý liên tục (lan can kim loại ở `IND_COMMONS_SDXL_003` bị cắt đứt 210 px; trần thạch cao ở `IND_COCO_SDXL_041` bị lệch tông màu và độ nhám tại $y=155$; tường bếp ở `IND_COCO_SD2_001` tại $y=95$).
+   - *Microscopic Seams (Bậc tương phản vi mô tại biên mask)*: Tạo ra bởi phép ghép nhị phân 1-bit (`Image.composite`) cắt ngang cấu trúc hạt/vân (như ruột bánh mì ở `IND_COCO_SDXL_002_ARM_B`).
+2. **Nhận Định Cơ Chế Tiếp Tục Là Giả Thuyết (Unverified Hypotheses)**:
+   - *Giả thuyết VAE downsampling / Latent Token Capacity*: Chưa được đo lường trực tiếp trên tensor latent (chỉ suy luận lý thuyết từ kiến trúc $8\times$ downsampling).
+   - *Giả thuyết Cross-Attention Infill Bias*: Giả định rằng embedding của bối cảnh không masked lấn át token vật thể trong cross-attention; chưa được kiểm chứng qua attention map trích xuất từ UNet.
+   - *Giả thuyết Ngữ cảnh ô tô gây ảo giác xe đồ chơi*: Có thể do bối cảnh ô tô gần đó, nhưng cũng có thể do biến đổi PRNG noise field trên kích thước crop hoặc bias của SD2 checkpoint.
+
+#### 2.9.2. Phân biệt Thành công Tạo đúng Đối tượng vs Chất lượng Biên
+- **Tạo đúng Đối tượng (Semantic Object Fidelity)**: Là yêu cầu tiên quyết về mặt nội dung (có hay không có quả cà chua, hình thái có chân thực, cuống đài xanh có đúng cấu trúc hay không).
+- **Chất lượng Biên (Boundary Compositing Quality)**: Là vấn đề kỹ thuật ghép ảnh cục bộ (đường biên nhị phân có tạo bậc tương phản vi mô, lệch tông màu, hay cắt đứt cấu trúc vật lý xung quanh hay không).
+- **Tính Phân ly (Dissociation)**: Hai phương diện này hoàn toàn độc lập: một ảnh có thể ghép biên hoàn hảo nhưng rỗng vật thể (như Arm A infilled phẳng), hoặc tạo đúng đối tượng với độ chi tiết cao nhưng lại có bậc tương phản nhẹ tại biên mask do ghép nhị phân (như cà chua Arm B).
+
+#### 2.9.3. Nguy cơ Phương pháp Ghép / Mask Trở thành Dấu hiệu Shortcut cho Detector
+- Trong nghiên cứu phát hiện ảnh giả mạo (image forensics), mục tiêu là huấn luyện và đánh giá các detector phân biệt ảnh do AI tạo sinh (`ai_edited`) dựa trên các đặc trưng nội tại của quá trình sinh ảnh (diffusion artifacts, tần số bất thường, thống kê residual nhiễu).
+- **Nguy cơ Shortcut (Spurious Feature Shortcut)**:
+  - Nếu ảnh trong cohort độc lập mang các dấu vết biên nhân tạo quá rõ nét (như viền cắt 1-pixel sắc nhọn từ phép ghép nhị phân, hoặc vùng làm mịn nhân tạo do feathering cố định $k=2$ px, hoặc ranh giới chữ nhật hoàn hảo cắt qua kết cấu ảnh), các mô hình detector (đặc biệt là các nhánh DSP FFT/DCT và noise residual) có thể học được **shortcut phân biệt dựa vào viền ghép hình học** thay vì học các đặc trưng sinh ảnh của mô hình diffusion.
+  - Hậu quả: Detector có thể đạt điểm đánh giá cao giả tạo trên benchmark nội bộ nhưng hoàn toàn thất bại trong môi trường thực tế khi đối mặt với các kỹ thuật inpainting tiên tiến (như Poisson blending, seamless blending, hoặc inpainting toàn phần không composite).
+- **Nguyên tắc Quản trị**: Cần giữ nguyên tắc thận trọng tối đa, không tùy tiện áp dụng feathering cố định vào production khi chưa có thẩm định thực nghiệm đối chứng trên detector.
+
+#### 2.9.4. Không Chốt Giải pháp Hybrid hay Ngưỡng Loại Mask từ Ba Ca Diagnostic
+- Ba ca chẩn đoán ($n=3$ candidates, 1 seed/candidate) chỉ là khảo sát phương pháp luận. Không đủ độ khái quát thống kê để thiết lập quy tắc loại mask < 3% hoặc cam kết kiến trúc pipeline hybrid.
+- Mọi quyết định thay đổi pipeline cohort chính thức tiếp tục bị đóng băng cho đến khi hoàn tất thẩm định con người.
+
+#### 2.9.5. Đề xuất Một Thử nghiệm Hiệu chuẩn Đơn biến Cụ thể (PENDING Review)
+Nhằm kiểm chứng xem liệu sự cố bỏ sót vật thể (omission) ở chế độ Full Canvas 512×512 có thể được khắc phục bằng kỹ thuật điều kiện hóa văn bản (prompt focus + negative prompt + guidance tuning) mà **không cần thay đổi trường nhìn (crop) hay độ phân giải canvas**, đề xuất một thử nghiệm đơn biến nhỏ:
+
+1. **Mục tiêu Cụ thể**: Kiểm chứng giả thuyết *Cross-Attention Infill Bias* trên ca cà chua `IND_COCO_SDXL_002` bằng cách cách ly prompt mô tả vật thể, bổ sung negative prompt triệt tiêu texture nền, và tinh chỉnh `guidance_scale`.
+2. **Biến Thay đổi (Independent Variables)**:
+   - *Attempt 1 (`CALIB_COCO_SDXL_002_PROMPT_G75`)*:
+     * Prompt tập trung vật thể: `"a ripe red cherry tomato with shiny skin, distinct green calyx stem, sharp focus, natural daylight photography"`
+     * Negative prompt: `"empty, blurry, smooth texture, missing object, bread crumb only, background infill"`
+     * Guidance scale: `7.5`
+   - *Attempt 2 (`CALIB_COCO_SDXL_002_PROMPT_G95`)*:
+     * Cùng prompt và negative prompt như trên.
+     * Guidance scale: `9.5` (tăng trọng số bám sát văn bản).
+3. **Biến Kiểm soát Cố định (Controlled Invariants)**:
+   - Ứng viên cố định: `IND_COCO_SDXL_002` (ảnh authentic hash `7aefc1d1...` và mask hash `2ff6b165...` niêm phong từ `pilot-20261008T113700Z`).
+   - Seed cố định: `20272319` (cùng seed với pilot và diagnostic).
+   - Canvas cố định: Full canvas $512 \times 512$ (không crop, không rescale).
+   - Mô hình cố định: SDXL Inpainting (`diffusers/stable-diffusion-xl-1.0-inpainting-0.1`, pinned revision `115134f363124c53c7d878647567d04daf26e41e`) `[@sdxlInpaintingModelCard]`.
+   - Scheduler & Steps: EulerDiscrete, 30 steps, strength 1.0.
+   - Ghép ảnh: Phép ghép nhị phân bảo toàn bit-exact ngoài mask (`outside_mean_l1 = 0.000000`).
+4. **Tiêu chí Đánh giá (Evaluation Criteria)**:
+   - *Hiện diện vật thể (Object presence)*: Có xuất hiện quả cà chua hay không (0 / 1).
+   - *Chân thực ngữ nghĩa (Semantic realism)*: Hình thái quả, cuống đài, độ nổi khối.
+   - *Chất lượng biên (Boundary quality)*: Mức độ tương thích với ruột bánh mì xung quanh.
+   - *Inside Mean L1 Delta*: Đo lường mức độ biến đổi pixel trong mask.
+5. **Ngân sách Tối thiểu có Giải thích**:
+   - Ngân sách đề xuất: **Đúng 2 attempts** ($N=2$).
+   - Giải thích: Đây là số lượt tối thiểu để kiểm tra xem prompt conditioning có giải quyết được omission ở Full Canvas hay không trước khi xem xét các can thiệp phức tạp hơn (như crop hay thay đổi kích thước). Không tự đặt nhiều nhánh thử nghiệm cùng lúc.
+6. **Ràng buộc Quản trị**:
+   - Trạng thái kế hoạch: **`PENDING`** chờ người dùng phê duyệt chính thức.
+   - Tuyệt đối **KHÔNG thực thi generation** trong phiên làm việc này.
+   - Không đưa ảnh thử nghiệm vào cohort chính thức. Full cohort tiếp tục **BỊ KHÓA HOÀN TOÀN**.
