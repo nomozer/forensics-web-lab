@@ -1,11 +1,36 @@
 # Phase 4C.7B — Independent Cohort Acquisition: Protocol Amendment, Automated Pipeline, and Feasibility Alignment
 
 > **Phase**: Phase 4C.7B — Independent Cohort Acquisition & Feasibility Alignment (revision 5 implementation plus audited real-pilot intake)<br>
-> **Status**: `FOLLOWUP_PILOT_PLAN_APPROVED_READY_FOR_EXECUTION`. The follow-up pilot edit plan (SHA-256 `eeace0e57a34f9f3824a3ce1a52bfa374670dca3cc19c668554d62257141632d`) was approved by human reviewer Dũng Phạm <valdung04@gmail.com> at 2026-10-08T07:34:38Z for Google Colab GPU execution (budget: 8 one-shot attempts). Generated outputs remain subject to Technical QC and Human Content QC upon acquisition.<br>
+> **Status**: `FOLLOWUP_PILOT_INTAKE_TECHNICAL_PASS_PENDING_HUMAN_CONTENT_QC`. Run `pilot-20261008T113700Z` (bound to functional commit `d9d99b678053972436032a828056a76a6392fbb5` and approved plan `eeace0e57a34f9f3824a3ce1a52bfa374670dca3cc19c668554d62257141632d`) passed safe intake and production CLI audit (8 attempts, 8 accepted pairs, 0 errors, 2/stratum; outside-mask L1 = 0 by construction via compositing). Agent visual content review identified 3 complete insertion omissions, 2 severe distortion/seam flaws, and 3 candidates for human review (including 1 plausible remodel, 1 headland removal with town cliff, and 1 chandelier with horizontal ceiling truncation). Human Content QC remains strictly PENDING.<br>
 > **Findings status**: `NOT_MEASURED` (0 detector calls, 0 cohort evaluation)<br>
 > **Current corrective functional commit**: `d9d99b678053972436032a828056a76a6392fbb5`; canonical notebook pins this exact full SHA; historical audited pilot remains bound to `7d2eea4027e2a17b51e6665ff81d481e4e333d48`.<br>
-> **Real pilot**: `TECHNICAL_PASS_PENDING_HUMAN_CONTENT_QC` (8 pairs acquired; full 400-pair run remains `NOT_RUN`)<br>
+> **Real pilot**: `TECHNICAL_PASS_PENDING_HUMAN_CONTENT_QC` (8 pairs acquired in run `pilot-20261008T113700Z` plus 8 historical pairs in `pilot-20261007T132003Z`; full 400-pair run remains `NOT_RUN`)<br>
 > **Training runs**: 0 fits, 0 refits; frozen models untouched; retired locked-test not accessed (only its 343 source IDs are read for the disjoint guard)<br>
+
+## AA. Follow-up pilot intake and content review (pilot-20261008T113700Z) (2026-10-08)
+
+- **Intake & Verification**:
+  - Package ZIP SHA-256: `3bdb1890d2aa6d34bb2829e159408ef44ab30d630c6f85792fce5fb7ade9e2b4` (6,129,778 bytes; 34 archive members verified safe against path traversal).
+  - Binding commit: `d9d99b678053972436032a828056a76a6392fbb5`; approved plan SHA-256: `eeace0e57a34f9f3824a3ce1a52bfa374670dca3cc19c668554d62257141632d`.
+  - Manifest SHA-256: `cf0e4300d1e6f760e82ab76fdd29ffd534b35577003ae8ccf4ef9a9c25799704`.
+  - Production CLI `--audit-run` PASS: 8 attempts, 8 accepted pairs, 0 errors, 2 per stratum, 1 attempt/candidate, `automatic_replacement=false`.
+- **Technical QC**:
+  - Outside-mask mean L1: `0.000000` across all 8 pairs (achieved by construction via mask compositing; not evidence of raw diffusion preserving outside pixels).
+  - Inside-mask mean L1: 11.08–76.14; difference image std: 3.62–59.68; all 8 pairs PASS technical thresholds.
+- **Agent Visual Content Findings & Recommendations**:
+  1. `IND_COCO_SD2_001` (pan to clock): Murky metallic/glass blob with harsh square boundary seam at $y=95, x=280$; recommendation **`REJECT`**.
+  2. `IND_COCO_SD2_002` (cabinets remodel): Structurally coherent navy cabinets and stainless range hood remodel, minor synthetic glossiness; recommendation **`NEEDS_REVIEW`** (plausible).
+  3. `IND_COCO_SDXL_041` (chandelier): Intricate chandelier rendered; valance contact at $y=155$ is subtle and below-mask curtain is 100% intact; flat horizontal cut-off across crystals and ceiling at $y=155$; recommendation **`NEEDS_REVIEW`**.
+  4. `IND_COCO_SDXL_002` (bread tomato): 0 tomatoes generated; infilled with blurry bread crumb; recommendation **`REJECT`**.
+  5. `IND_COMMONS_SD2_001` (Option A headland removal): 100% headland/cliff removed, smooth sea/horizon; coastline town infilled as natural cliff consistent with accepted risk; recommendation **`NEEDS_REVIEW`** (or **`ACCEPT`** if town cliff is accepted).
+  6. `IND_COMMONS_SD2_002` (suitcase): 0 suitcases generated; infilled with cobblestones; recommendation **`REJECT`**.
+  7. `IND_COMMONS_SDXL_001` (bird): 0 birds generated; infilled with purplish-gray sky patch; recommendation **`REJECT`**.
+  8. `IND_COMMONS_SDXL_003` (column replacement): Severe semantic drift; generated psychedelic bottle-shaped pillar with neon reflections and severed railing; recommendation **`REJECT`**.
+- **Human Content QC Status**: Strictly **`PENDING_CONTENT_QC`** awaiting user per-pair determination.
+- **Review Artifact**: Self-contained contact sheet at `data/research/local-artifacts/phase-4c.7b/pilot-20261008T113700Z/content_qc_contact_sheet.html`.
+- **Scientific boundary**: Detector calls remain 0; independent performance `NOT_MEASURED`; full cohort `NOT_RUN`.
+
+---
 
 ## Z. Follow-up pilot plan approval by human reviewer (2026-10-08)
 

@@ -1,3 +1,16 @@
+## Follow-up pilot intake and content review (Phase trace 4C.7B preserved)
+
+- **Pilot intake and binding verification**: Run `pilot-20261008T113700Z` (ZIP SHA-256 `3bdb1890d2aa6d34bb2829e159408ef44ab30d630c6f85792fce5fb7ade9e2b4`, 6,129,778 bytes) extracted safely into `pilot-20261008T113700Z/`. Production CLI audit `PASS`: 8 attempts, 8 accepted pairs, 0 errors, 2/stratum, bound to commit `d9d99b678053972436032a828056a76a6392fbb5`, plan `eeace0e57a34f9f3824a3ce1a52bfa374670dca3cc19c668554d62257141632d`, manifest `cf0e4300d1e6f760e82ab76fdd29ffd534b35577003ae8ccf4ef9a9c25799704`.
+- **Technical QC**: Outside-mask mean L1 = 0.000000 across all 8 pairs (enforced by construction via mask compositing; not evidence of raw diffusion preserving outside pixels). Inside-mask mean L1: 11.08–76.14; difference std dev: 3.62–59.68. Technical QC status: 8/8 PASS.
+- **Agent visual content review**:
+  - `IND_COCO_SD2_002` (cabinets remodel): plausible navy cabinetry with stainless hood; recommendation `NEEDS_REVIEW`.
+  - `IND_COMMONS_SD2_001` (Option A headland removal): 100% headland/cliff removed, smooth sea/horizon; coastline town infilled as natural cliff consistent with accepted risk; recommendation `NEEDS_REVIEW`.
+  - `IND_COCO_SDXL_041` (chandelier): high-detail chandelier rendered, valance contact subtle; horizontal crystal/vault cut-off across ceiling at y=155; recommendation `NEEDS_REVIEW`.
+  - `IND_COCO_SDXL_002` (bread tomato), `IND_COMMONS_SD2_002` (suitcase), `IND_COMMONS_SDXL_001` (bird): complete object omission (0 requested items generated); recommendation `REJECT`.
+  - `IND_COCO_SD2_001` (pan to clock): murky metallic blob with square seam; `IND_COMMONS_SDXL_003` (column): psychedelic soda-bottle pillar with neon reflections and severed railing; recommendation `REJECT`.
+- **Review dossier**: Self-contained contact sheet at `data/research/local-artifacts/phase-4c.7b/pilot-20261008T113700Z/content_qc_contact_sheet.html`.
+- **Status & boundary**: Human Content QC remains strictly `PENDING_CONTENT_QC` awaiting user decision. Zero detector calls, independent performance `NOT_MEASURED`, full cohort `NOT_RUN`.
+
 ## Follow-up pilot edit plan human approval recorded (Phase trace 4C.7B preserved)
 
 - **Human approval recorded**: Plan `content_grounded_pilot_plan.json` (SHA-256 `eeace0e57a34f9f3824a3ce1a52bfa374670dca3cc19c668554d62257141632d`) approved by human reviewer Dũng Phạm `<valdung04@gmail.com>` at `2026-10-08T07:34:38Z`.
