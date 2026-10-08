@@ -1,3 +1,11 @@
+## Independent cohort 6-attempt diagnostic plan human approval registered (Phase trace 4C.7B preserved)
+
+- **Diagnostic plan human approval recorded**: Plan `content_grounded_diagnostic_plan.json` (pre-approval hash `8f2d980965a56cf8939d774e36321e583a99ba89faba4a502d59c0a25a9630e3` verified) approved by human reviewer Dũng Phạm `<valdung04@gmail.com>` at `2026-10-08T15:17:27Z`.
+- **Approved diagnostic plan SHA-256**: `e352504016960a24c3c539b5d33a2876c222d1975426a7911de0ec35fe9df157`.
+- **Approved scope & bounds**: Maximum 6 one-shot attempts across 3 omission candidates (`IND_COCO_SDXL_002` tomato, `IND_COMMONS_SD2_002` suitcase, `IND_COMMONS_SDXL_001` bird), 1 attempt per arm (Arm A: Full Canvas 512×512, Arm B: Local Crop with Padding at native resolution). Failed attempts consume budget; no retries, no automatic replacement.
+- **Scientific boundary & governance**: Approval authorizes the exploratory diagnostic calibration run only. Does NOT accept the 8 historical pilot images (Human Content QC for `pilot-20261008T113700Z` remains independently PENDING), does NOT approve feathering for production, and does NOT unlock the full 400-pair cohort.
+- **Verification & Colab handover**: Unit tests updated to verify approved real plan and reject unapproved synthetic copies (12/12 PASS in `test_independent_cohort_diagnostic.py`). Acquisition notebook pinned to approved functional commit for Google Colab GPU execution. Zero local generation executed.
+
 ## Independent cohort 6-attempt diagnostic harness & plan refinement (Phase trace 4C.7B preserved)
 
 - **Diagnostic plan refinement & binding**: Refined `content_grounded_diagnostic_plan.json` (SHA-256 `8f2d980965a56cf8939d774e36321e583a99ba89faba4a502d59c0a25a9630e3`): bound to run `pilot-20261008T113700Z`, sealed authentic and mask PNG hashes for 3 candidates (tomato seed 20272319, suitcase seed 20283429, bird seed 20294438; steps 30 for SDXL, 50 for SD2). Reframed comparison between full-canvas vs local-crop padded methodology; geometric area scale factors locked (16.0 for SDXL, 2.56 for SD2 suitcase); nearest-neighbor raster scaling verified {0, 255} binary; coordinate mapping and rounding rules explicitly documented (suitcase raster bbox [0, 237, 360, 512], count 99,000 px). Review criteria registered across 5 dimensions; status remains strictly PENDING.

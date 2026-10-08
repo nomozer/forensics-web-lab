@@ -168,9 +168,9 @@ A self-contained comparison contact sheet was generated at `data/research/local-
 
 ### 2.7. Proposed 6-Attempt Diagnostic Plan Specification & Implementation (`content_grounded_diagnostic_plan.json`)
 
-To directly evaluate full-canvas inference vs local-crop padded inference across insertion omissions, a dedicated diagnostic plan has been registered at `research/evidence/phase-4c.7b/content_grounded_diagnostic_plan.json` (SHA-256: `8f2d980965a56cf8939d774e36321e583a99ba89faba4a502d59c0a25a9630e3`).
+To directly evaluate full-canvas inference vs local-crop padded inference across insertion omissions, a dedicated diagnostic plan has been registered at `research/evidence/phase-4c.7b/content_grounded_diagnostic_plan.json`. Prior to approval, the plan file was verified to match pre-approval hash SHA-256 `8f2d980965a56cf8939d774e36321e583a99ba89faba4a502d59c0a25a9630e3`. Upon human approval, the plan is registered under approved SHA-256 `e352504016960a24c3c539b5d33a2876c222d1975426a7911de0ec35fe9df157`.
 
-- **Status**: Strictly `PENDING` (human_reviewer=null, human_reviewed_at_utc=null). Zero GPU runs executed.
+- **Status**: `APPROVED` by human reviewer Dũng Phạm `<valdung04@gmail.com>` at `2026-10-08T15:17:27Z`. Zero GPU runs executed locally.
 - **Objective Refinement**: Evaluates methodological differences between full-canvas and local-crop execution (including context window alteration, token scale shift, and geometric area scaling) and does NOT claim to isolate latent downsampling alone. Identical PRNG seeds across different tensor resolutions do not guarantee identical noise fields due to dimension-dependent sampling order.
 - **Candidate Scope & Input Bindings**: Exactly 3 candidates with insertion omissions bound to sealed authentic and mask PNG files from `pilot-20261008T113700Z`:
   - `IND_COCO_SDXL_002` (bread tomato): auth SHA-256 `7aefc1d1...` (`images/IND_COCO_SDXL_002_auth.png`), mask SHA-256 `2ff6b165...` (`masks/IND_COCO_SDXL_002_mask.png`), seed 20272319, steps 30, EulerDiscreteScheduler.
@@ -186,15 +186,14 @@ To directly evaluate full-canvas inference vs local-crop padded inference across
     - Latent pixel counts: methodologically estimated assuming 8x VAE downsampling ($13 \times 11 = 143$ vs $55 \times 45 = 2475$ for tomato; $28 \times 21 = 588$ vs $45 \times 34 = 1530$ for suitcase; $18 \times 14 = 252$ vs $75 \times 57 = 4275$ for bird), not directly measured tensor tokens.
 - **Experimental Invariant**: Negative prompt and feathering are strictly excluded from this comparison.
 - **Attempt Budget**: Exactly 6 attempts (3 candidates $\times$ 2 arms). One attempt per branch, no retries, no automatic replacement. Started attempts are recorded in durable ledger even if failed and count toward budget.
-- **Diagnostic Runner Implementation**: Implemented `ml/evaluation/independent_cohort_diagnostic.py` and CLI `--mode diagnostic` in `scripts/research/run_cohort_acquisition.py`. Enforces fail-closed approval gate, verifies input hashes, re-seeds RNG independently per arm with candidate registered seed, bars mock engines (`DiagnosticEngineError` when allow_mock=False), preserves raw pre-composited images, enforces outside L1 = 0, supports resume without re-running attempts, and generates self-contained HTML contact sheet with PENDING review status. Tested via `ml/tests/test_independent_cohort_diagnostic.py` (11/11 PASS).
+- **Diagnostic Runner Implementation**: Implemented `ml/evaluation/independent_cohort_diagnostic.py` and CLI `--mode diagnostic` in `scripts/research/run_cohort_acquisition.py`. Enforces fail-closed approval gate, verifies input hashes, re-seeds RNG independently per arm with candidate registered seed, bars mock engines (`DiagnosticEngineError` when allow_mock=False), preserves raw pre-composited images, enforces outside L1 = 0, supports resume without re-running attempts, and generates self-contained HTML contact sheet with PENDING review status. Tested via `ml/tests/test_independent_cohort_diagnostic.py` (12/12 PASS).
 - **Colab Handover Architecture**:
   - `notebooks/independent_cohort_acquisition_colab.ipynb` supports explicit selection `EXECUTION_MODE = "diagnostic"`.
   - Removed all fallback/guessing on `EXECUTION_MODE`; stops immediately before CLI if mode is missing or invalid.
   - Records successful execution context (`RUN_CONTEXT`) in Cell 3 for Cell 4 audit and packaging.
   - Preflight `--check-diagnostic-plan` validates plan hash and Drive inputs (`RUNS_ROOT / "pilot-20261008T113700Z"`).
-  - PENDING plan status causes execution to fail-closed before consuming GPU attempts.
   - Diagnostic results are isolated in dedicated run directory and do not enter the official independent cohort or alter historical pilot records.
 - **Governance & Approval Protocol**:
   1. Human Content QC determinations per candidate for `pilot-20261008T113700Z` remains PENDING. This is a separate review decision and is NOT a prerequisite for diagnostic execution.
-  2. Human decision to approve or revise the proposed 6-attempt diagnostic plan (`content_grounded_diagnostic_plan.json`) remains PENDING.
-  3. Approval workflow: When the user approves the diagnostic plan, commit the plan with `human_review_status = "APPROVED"` and reviewer metadata in a functional commit, then pin `EXPECTED_COMMIT` in the notebook to that new commit and commit/push together.
+  2. Diagnostic plan (`content_grounded_diagnostic_plan.json`) is APPROVED by human reviewer Dũng Phạm `<valdung04@gmail.com>` at `2026-10-08T15:17:27Z`. Approved plan SHA-256 is `e352504016960a24c3c539b5d33a2876c222d1975426a7911de0ec35fe9df157`.
+  3. Notebook pin workflow: Approved functional commit is registered and pushed, with `EXPECTED_COMMIT` in `notebooks/independent_cohort_acquisition_colab.ipynb` pinned directly to the functional commit.

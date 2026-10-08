@@ -43,17 +43,29 @@ REAL_PLAN_PATH = REPO_ROOT / "research/evidence/phase-4c.7b/content_grounded_dia
 REAL_INPUTS_DIR = REPO_ROOT / "data/research/local-artifacts/phase-4c.7b/pilot-20261008T113700Z"
 
 
-def test_real_plan_is_pending_and_refuses_execution():
-    """Real diagnostic plan must have status PENDING and fail-closed when require_approval=True."""
+def test_real_plan_is_approved_and_allows_execution():
+    """Real diagnostic plan must have status APPROVED and allow execution when require_approval=True."""
     assert REAL_PLAN_PATH.is_file()
-    plan_data = load_and_validate_diagnostic_plan(REAL_PLAN_PATH, require_approval=False)
-    assert plan_data["human_review_status"] == "PENDING"
+    plan_data = load_and_validate_diagnostic_plan(REAL_PLAN_PATH, require_approval=True)
+    assert plan_data["human_review_status"] == "APPROVED"
+    assert plan_data["human_reviewer"] == "Dũng Phạm <valdung04@gmail.com>"
+    assert plan_data["human_reviewed_at_utc"] == "2026-10-08T15:17:27Z"
     assert plan_data["attempt_budget"] == 6
     assert plan_data["automatic_replacement"] is False
     assert len(plan_data["diagnostic_candidates"]) == 3
 
+
+def test_unapproved_plan_refuses_execution(tmp_path):
+    """Plans without APPROVED status must fail-closed when require_approval=True."""
+    plan_data = json.loads(REAL_PLAN_PATH.read_text(encoding="utf-8"))
+    plan_data["human_review_status"] = "PENDING"
+    plan_data["human_reviewer"] = None
+    plan_data["human_reviewed_at_utc"] = None
+    pending_p = tmp_path / "pending_plan.json"
+    pending_p.write_text(json.dumps(plan_data), encoding="utf-8")
+
     with pytest.raises(DiagnosticPlanNotApprovedError, match="PENDING"):
-        load_and_validate_diagnostic_plan(REAL_PLAN_PATH, require_approval=True)
+        load_and_validate_diagnostic_plan(pending_p, require_approval=True)
 
 
 def test_plan_hash_mismatch_detected(tmp_path):

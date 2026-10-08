@@ -7,10 +7,15 @@
 > **Real pilot**: `TECHNICAL_PASS_PENDING_HUMAN_CONTENT_QC` (8 pairs acquired in run `pilot-20261008T113700Z` plus 8 historical pairs in `pilot-20261007T132003Z`; full 400-pair run remains `NOT_RUN`)<br>
 > **Training runs**: 0 fits, 0 refits; frozen models untouched; retired locked-test not accessed (only its 343 source IDs are read for the disjoint guard)<br>
 
-## CC. Independent cohort 6-attempt diagnostic harness & plan refinement (2026-10-08)
+## CC. Independent cohort 6-attempt diagnostic plan human approval registered (2026-10-08)
 
-- **Diagnostic Plan Refinement & Sealed Input Bindings**:
-  - Registered `content_grounded_diagnostic_plan.json` under SHA-256 `8f2d980965a56cf8939d774e36321e583a99ba89faba4a502d59c0a25a9630e3` with status strictly `PENDING` (human reviewer=null, timestamp=null).
+- **Diagnostic Plan Approval & Hash Binding**:
+  - Pre-approval hash verified: SHA-256 `8f2d980965a56cf8939d774e36321e583a99ba89faba4a502d59c0a25a9630e3`.
+  - Human review status updated to `APPROVED` by human reviewer Dũng Phạm `<valdung04@gmail.com>` at `2026-10-08T15:17:27Z`.
+  - Approved diagnostic plan SHA-256: `e352504016960a24c3c539b5d33a2876c222d1975426a7911de0ec35fe9df157` (`research/evidence/phase-4c.7b/content_grounded_diagnostic_plan.json`).
+  - Scope: Bounded 6 attempts across 3 candidates (tomato, suitcase, bird), 1 attempt per arm (Arm A: Full Canvas, Arm B: Local Crop with Padding), automatic_replacement=false.
+  - Historical pilot-20261008T113700Z Human Content QC remains strictly PENDING; feathering remains unapproved for production; full cohort remains locked.
+- **Sealed Input Bindings**:
   - Explicit bindings to sealed normalized PNGs from run `pilot-20261008T113700Z` (ZIP SHA-256 `3bdb1890...`, manifest `cf0e4300...`):
     * `IND_COCO_SDXL_002` (bread tomato): auth `7aefc1d1...` (`images/IND_COCO_SDXL_002_auth.png`), mask `2ff6b165...` (`masks/IND_COCO_SDXL_002_mask.png`), seed 20272319, steps 30, EulerDiscreteScheduler.
     * `IND_COMMONS_SD2_002` (suitcase): auth `98004bf7...` (`images/IND_COMMONS_SD2_002_auth.png`), mask `fee9ac7e...` (`masks/IND_COMMONS_SD2_002_mask.png`), seed 20283429, steps 50, DDIMScheduler.
