@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "workstream": "independent_cohort_acquisition_calibration",
   "phase_trace": "4C.7B",
-  "purpose": "Proposed 2-attempt single-variable calibration plan testing prompt token isolation and negative prompting on SDXL full-canvas 512x512 insertion omission without cropping or resolution changes. Aims to test the unverified hypothesis that infill conditioning bias caused the omission, isolating text conditioning from visual context scaling.",
+  "purpose": "Proposed 2-attempt exploratory calibration proposal: So sánh ảnh hưởng của guidance scale 7.5 và 9.5 trong một cấu hình prompt/negative prompt cố định mới, trên một candidate (IND_COCO_SDXL_002) và một seed (20272319). Phép thử không tuyên bố tách riêng ảnh hưởng của prompt hoặc negative prompt, không tuyên bố chứng minh infill bias, và không phải là ngân sách tối thiểu để xác định nguyên nhân omission. So sánh với kết quả lịch sử chỉ là tham khảo vì nhiều thành phần cấu hình văn bản đã thay đổi đồng thời.",
   "human_review_status": "PENDING",
   "human_reviewer": null,
   "human_reviewed_at_utc": null,
@@ -15,17 +15,21 @@
   "input_source_policy": "Must use sealed normalized PNGs from pilot-20261008T113700Z as inputs; remote redownload from web is strictly prohibited.",
   "review_criteria": [
     "object_semantic_presence: Was the requested cherry tomato synthesized inside the masked region without cropping?",
-    "semantic_realism_and_form: Does the generated tomato exhibit spherical volume, specular highlight, and plausible green calyx?",
-    "boundary_quality_and_seam: Is the crumb texture transition at mask boundary [345, 245, 455, 335] visually seamless or stepped?",
+    "position_and_placement: Is the generated tomato placed within the target bounding box with plausible relative scale?",
+    "semantic_realism_and_form: Does the generated tomato exhibit spherical volume, specular highlight, gloss, sharpness, and plausible green calyx compared with authentic bread crumb texture?",
+    "boundary_quality_and_seam: Is the bread crumb texture transition along mask boundary [345, 245, 455, 335] visually seamless or stepped?",
     "outside_mask_invariance: Every pixel outside the registered mask must remain bit-exact identical to the authentic input (outside_mean_L1 == 0.000000)."
   ],
   "governance_notes": [
-    "Single-variable exploratory calibration proposal: 1 candidate (IND_COCO_SDXL_002) x 2 guidance conditions = exactly 2 attempts.",
-    "Status is strictly PENDING human review; zero generation authorized until explicit user sign-off.",
+    "Exploratory calibration proposal: 1 candidate (IND_COCO_SDXL_002) x 2 guidance conditions (7.5 vs 9.5) in a new fixed prompt/negative prompt configuration = exactly 2 attempts.",
+    "Objective: So sánh ảnh hưởng của guidance scale 7.5 và 9.5 trong một cấu hình prompt/negative prompt cố định mới, trên một candidate và một seed.",
+    "Methodological limits: Does NOT claim to isolate prompt vs negative prompt effects, does NOT claim to prove infill bias, and is NOT a minimum budget to determine omission causality.",
+    "Comparison with historical results (pilot-20261008T113700Z or diag-20261008T154628Z) is strictly for reference because multiple text conditioning components (prompt and negative prompt) changed simultaneously.",
+    "Status is strictly PENDING human review; human_reviewer=null, human_reviewed_at_utc=null; zero generation authorized until explicit user sign-off.",
     "This calibration proposal does not alter the 8 pilot attempts consumed in pilot-20261008T113700Z or the 6 attempts in diag-20261008T154628Z.",
     "Results of this calibration will NOT automatically enter the official independent cohort or overwrite previous pilot records.",
     "Full cohort acquisition remains strictly LOCKED; zero new production generation budget registered.",
-    "Acknowledges shortcut risk: unnatural boundary artifacts or fixed feathering may become detection shortcuts for forensic models."
+    "Shortcut detector risk: Unnatural boundary seams or fixed feathering are recognized as an unverified hypothesis/risk of shortcut features for forensic models; no claim that detector performance has been inflated without empirical evidence."
   ],
   "controlled_invariants": {
     "canvas_dimensions": [512, 512],

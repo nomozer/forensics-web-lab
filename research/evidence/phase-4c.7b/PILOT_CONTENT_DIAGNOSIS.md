@@ -250,21 +250,30 @@ Recalculated directly from on-disk RGB arrays (`auth.png`, `edit.png`, and `mask
 
 #### 2.8.3. Visual Evaluation and Metric Dissociation
 
-Visual inspection on image artifacts in `data/research/local-artifacts/phase-4c.7b/diag-20261008T154628Z/images/` reveals critical qualitative distinctions that metrics alone fail to capture:
+Visual inspection on image artifacts in `data/research/local-artifacts/phase-4c.7b/diag-20261008T154628Z/images/` reveals critical qualitative distinctions across four explicit criteria: (1) hiện diện đúng đối tượng, (2) vị trí và tỷ lệ, (3) độ chân thực, (4) chất lượng biên:
 
 1. **`IND_COCO_SDXL_002` (Cherry Tomato)**:
-   - *Arm A (Full Canvas)*: Complete semantic omission. Zero tomatoes generated; inpainted area consists of bread crumb texture smoothly blending into background bread slice.
-   - *Arm B (Local Crop)*: Semantic object materialized. A red cherry tomato appears within target bbox `[375, 265, 430, 320]` with spherical 3D volume, directional specular highlight matching scene lighting, and a distinct 5-point green calyx/stem.
-   - *Boundary Observation & Naming Reconciliation*: The crop bounding box is `[256, 162, 512, 418]`, whereas the registered mask bounding box is `[345, 245, 455, 335]`. Because compositing is applied strictly inside the registered mask, pixels outside `[345, 245, 455, 335]` are invariant (`outside_L1 = 0.0`). Zoom inspection with overlay confirms a subtle rectangular transition step in bread crumb texture along the **registered mask boundary `[345, 245, 455, 335]`** due to hard binary compositing with authentic bread, not at the crop bbox boundary.
+   - *Arm A (Full Canvas)*: Complete semantic omission. Cả ba ca Arm A đều không tạo đối tượng yêu cầu; vùng inpaint chỉ gồm texture ruột bánh mì lấp đầy phẳng.
+   - *Arm B (Local Crop)*: Tạo được đối tượng yêu cầu. Xuất hiện quả cà chua cherry đỏ trong phạm vi target bbox `[375, 265, 430, 320]` với thể tích tròn 3D, cuống đài xanh 5 cánh.
+   - *Đánh giá Độ sắc, Độ bóng và Kết cấu Nền*: Quả cà chua có độ sắc nét tốt và có đốm bóng sáng (specular highlight tại ~`[394, 276, 403, 286]`); tuy nhiên, kết cấu lát bánh mì bên trong mask `[345, 245, 455, 335]` do SDXL sinh lại có độ mịn cao hơn, thiếu các lỗ rỗ tự nhiên so với crumb bánh mì authentic xung quanh.
+   - *Chất lượng Biên*: Crop bbox là `[256, 162, 512, 418]`, registered mask bbox là `[345, 245, 455, 335]`. Hard binary compositing bảo toàn bit-exact ngoài mask (`outside_L1 = 0.0`), nhưng tạo ra một bước chuyển tiếp vi mô (subtle rectangular step) trong kết cấu ruột bánh mì dọc theo **biên mask đã đăng ký `[345, 245, 455, 335]`** do ghép nhị phân với bánh mì authentic.
 2. **`IND_COMMONS_SD2_002` (Suitcase)**:
-   - *Arm A (Full Canvas)*: Complete semantic omission. Zero luggage generated; masked area filled with plain cobblestone pavement texture.
-   - *Arm B (Local Crop)*: Semantic hallucination. Prompt requested "a brown leather travel suitcase... standing on the cobblestones beside the vintage car". Instead, the model generated a miniature bronze/brown vintage automobile with roof and wheels!
-   - *Crucial Finding (Metric Dissociation)*: Inside mean L1 rose from 30.74 (Arm A) to 43.39 (Arm B, max delta 226). **"L1 tăng không bảo đảm thành công ngữ nghĩa."** Không rút ra kết luận khái quát hóa về mối tương quan tổng quát từ chỉ ba ca thực nghiệm. Chiếc xe đồ chơi ảo giác tạo ra độ lệch pixel lớn nhất trong khi hoàn toàn thất bại về mặt ngữ nghĩa.
-   - *Boundary Observation*: The mask bbox on canvas is `[0, 340, 225, 512]`. Its left ($x=0$) and bottom ($y=512$) borders coincide with the outer image frame of the 512×512 canvas. Zoom inspection confirms the toy car's shadow is an oval pool directly beneath the vehicle and does not reach the canvas frame. At internal mask edges ($y=340$ and $x=225$), cobblestones blend naturally without abrupt edge steps (max diff across border $y=340$ is 17.0, at $x=224$ is 43.0). The defect is strictly a semantic hallucination, not a boundary compositing flaw.
+   - *Arm A (Full Canvas)*: Complete semantic omission. Không tạo vật thể; chỉ phủ vân đá cuội phẳng.
+   - *Arm B (Local Crop)*: Semantic hallucination. Mô hình sinh ra một chiếc xe ô tô đồ chơi cổ điển có mui và bánh xe thay vì vali du lịch!
+   - *Crucial Finding (Metric Dissociation)*: Inside mean L1 tăng mạnh từ 30.74 lên 43.39 (max delta 226). **"L1 tăng không bảo đảm thành công ngữ nghĩa."** Không rút ra kết luận khái quát hóa về mối tương quan tổng quát từ chỉ ba ca thực nghiệm. Chiếc xe đồ chơi ảo giác tạo ra độ lệch pixel lớn nhất trong khi hoàn toàn thất bại về mặt ngữ nghĩa.
+   - *Boundary Observation*: Mask bbox trên canvas là `[0, 340, 225, 512]`. Phân tích biên xác nhận bóng xe đồ chơi là một quầng oval tập trung dưới gầm xe, không chạm tới mép canvas ($x=0, y=512$). Tại các mép mask bên trong ($y=340$ và $x=225$), đá cuội hòa nhập tự nhiên không có gờ bậc. Khuyết tật là ảo giác ngữ nghĩa hoàn toàn, không phải lỗi ghép biên.
 3. **`IND_COMMONS_SDXL_001` (Sky Bird)**:
-   - *Arm A (Full Canvas)*: Complete semantic omission. Zero birds generated; masked area filled with flat purplish-grey sky patch.
-   - *Arm B (Local Crop)*: Semantic object materialized. Silhouetted bird in flight with spread wings, distinct flight feathers, and matching perspective.
-   - *Boundary Observation*: Seamlessly integrated into surrounding cloudy sky with zero visible boundary steps or seam artifacts across mask edges.
+   - *Arm A (Full Canvas)*: Complete semantic omission. Không tạo đối tượng; chỉ phủ mảng mây xám phẳng.
+   - *Arm B (Local Crop)*: Tạo được đối tượng chim (hình bóng chim dang cánh bay ngược sáng).
+   - *Đặc Biệt Kiểm Tra Vị Trí Chim (Placement Deficit)*:
+     * Target đăng ký: `[395, 75, 455, 125]` (tọa độ canvas `[xmin, ymin, xmax, ymax]`).
+     * Silhouette tối quan sát được: khoảng `[375, 126, 414, 156]` (hoặc $y \in [125, 156]$ ở các pixel viền khử răng cưa).
+     * Độ lệch tâm hình học: $dx = -30.5\text{ px}$ (lệch sang trái), $dy = +41.0\text{ px}$ (lệch xuống dưới).
+     * **Độ trùng lặp theo trục đứng: 0 px** (Target kết thúc ở $y=125$, silhouette bắt đầu ở $y=126$; chim hoàn toàn nằm dưới target box).
+     * *Phương pháp và giới hạn phép đo*: Đo lại trên ảnh PNG bằng phân tích ngưỡng cường độ sáng trung bình RGB trên ảnh xám kết hợp kiểm chứng trực quan trên từng pixel. Giới hạn: ngưỡng màu không phải là segmentation ground truth tuyệt đối do hiệu ứng khử răng cưa (anti-aliasing) và tán xạ quang học tại viền lông; tuy nhiên trên toàn bộ dải ngưỡng từ 40 đến 160, silhouette tối luôn nằm trọn trong khoảng `[375, 126, 414, 156]`, hoàn toàn lệch khỏi target box `[395, 75, 455, 125]`.
+     * *Phân biệt rõ ràng*: Chim **nằm hoàn toàn trong mask** `[350, 45, 500, 160]` (do đó compositing bảo toàn `outside_mean_l1 = 0.000000`), nhưng **KHÔNG đúng target placement**.
+     * *Nguyên tắc nghiên cứu bất biến*: **Không dịch chuyển target hoặc mask sau khi xem kết quả để hợp thức hóa ảnh đầu ra.**
+   - *Chất Lượng Biên & Vùng Trời Lệch Tông*: **Không mô tả là hòa nhập hoàn hảo.** Vùng trời chữ nhật bên trong mask `[350, 45, 500, 160]` bị lệch tông màu trung bình ($\Delta \text{RGB} \approx [-3.07, -3.79, -3.66]$) so với bầu trời authentic xung quanh, tạo ra một ranh giới chữ nhật mờ nhìn thấy được trên nền mây (bước nhảy tại mép phải đạt $-4.82$ R, $-4.57$ G, $-3.09$ B).
 
 #### 2.8.4. Execution Evidence, Timing Scope, and Runtime Profiling
 
@@ -287,44 +296,45 @@ Visual inspection on image artifacts in `data/research/local-artifacts/phase-4c.
 
 #### 2.8.5. Methodological Scope & Unverified Hypotheses
 
-1. **A/B Observational Finding**: Local crop at native resolution produced target objects for both SDXL insertion candidates (tomato, bird), whereas full canvas infilled background textures. For SD2, local crop produced a toy car hallucination.
+1. **A/B Observational Finding**: Local crop at native resolution produced target objects for two SDXL insertion candidates (tomato, bird), whereas full canvas infilled background textures across all three Arm A attempts. For SD2, local crop produced a toy car hallucination. Báo cáo chính xác rằng **"hai ca Arm B tạo được đối tượng (cà chua, chim)"**, không suy diễn thành **"hai ca đạt đầy đủ Content QC"**.
 2. **Causal Hypotheses Remain Unverified**:
    - Giả thuyết về việc suy giảm dung lượng latent token (8× downsampling) không thể được cô lập là nguyên nhân duy nhất, vì thao tác crop đồng thời thay đổi cửa sổ bối cảnh thị giác (thu hẹp trường nhìn) và tỷ lệ tương đối của token.
    - Giả thuyết về sự thiên lệch chú ý vào bối cảnh ô tô xung quanh gây ra ảo giác xe đồ chơi là một phỏng đoán hợp lý nhưng chưa được cô lập thực nghiệm.
    - Trên các lưới tensor có kích thước khác nhau ($64 \times 64$ vs $128 \times 128$), chuỗi số ngẫu nhiên PRNG của PyTorch khác biệt ngay cả khi dùng cùng seed nguyên.
-3. **Phân biệt Quan sát Hình ảnh và Nhận định Nguyên nhân**: Cần phân biệt rạch ròi giữa quan sát trực quan (có/không có vật thể, bậc tương phản tại biên mask, hình thái bóng đổ) với nhận định nguyên nhân cơ chế (vốn vẫn là giả thuyết).
+3. **Phân biệt Quan sát Hình ảnh và Nhận định Nguyên nhân**: Cần phân biệt rạch ròi giữa quan sát trực quan (có/không có vật thể, vị trí silhouette, bậc tương phản tại biên mask, hình thái bóng đổ) với nhận định nguyên nhân cơ chế (vốn vẫn là giả thuyết).
 4. **No Generalization Claims**: Với đúng 3 candidates và $n=1$ seed/candidate, đây là các quan sát phương pháp luận chẩn đoán. Không đề xuất loại mask < 3% như một quy tắc đã được chứng minh, không chốt giải pháp hybrid pipeline từ 3 ca chẩn đoán.
 
 #### 2.8.6. Contact Sheet & Bảng Quyết định Thẩm định Con người (6 Attempts)
 
-- **Contact Sheet Hoàn thiện**: Tệp HTML tự chứa hoàn toàn tại [`diagnostic_contact_sheet.html`](../../../data/research/local-artifacts/phase-4c.7b/diag-20261008T154628Z/diagnostic_contact_sheet.html) (11,181,200 bytes). Chứa ảnh authentic, overlay ground-truth, Arm A, Arm B, và các khung phóng đại (zoom) chi tiết tại biên mask cà chua và vùng đối tượng vali/chim. Phân biệt rạch ròi giữa "Khuyến nghị của Agent" và "Quyết định của Người dùng".
+- **Contact Sheet Hoàn thiện**: Tệp HTML tự chứa hoàn toàn tại [`diagnostic_contact_sheet.html`](../../../data/research/local-artifacts/phase-4c.7b/diag-20261008T154628Z/diagnostic_contact_sheet.html) (11,222,571 bytes). Chứa ảnh authentic, overlay ground-truth, Arm A, Arm B, và các khung phóng đại (zoom) chi tiết với các hộp bounding box hiển thị target, mask và silhouette quan sát được, phân tích 4 tiêu chí rõ ràng.
 - **Khóa Quản trị**: Full cohort generation tiếp tục **BỊ KHÓA HOÀN TOÀN**. Chưa đăng ký hoặc phê duyệt ngân sách generation mới. Kết quả chẩn đoán được cách ly trong `diag-20261008T154628Z` và không được đưa vào cohort chính thức.
 - **Bảng Quyết định Duyệt Thẩm định Con người (6 Attempts)**:
 
-| Attempt ID | Candidate / Prompt | Arm / Scale | Technical QC | Inside L1 | Quan sát Thực nghiệm A/B | Khuyến nghị của Agent | Quyết định Thẩm định Con người |
+| Attempt ID | Candidate / Prompt | Arm / Scale | Technical QC | Inside L1 | Quan sát Thực nghiệm A/B (4 Tiêu chí) | Khuyến nghị của Agent | Quyết định Thẩm định Con người |
 | :--- | :--- | :---: | :---: | :---: | :--- | :--- | :---: |
-| `IND_COCO_SDXL_002_ARM_A` | Cà chua trên bánh mì | Arm A (1.0×) | PASS | 16.79 | Omission (phủ vân ruột bánh mì) | Đề xuất **REJECT** (Bỏ sót vật thể) | `PENDING` |
-| `IND_COCO_SDXL_002_ARM_B` | Cà chua trên bánh mì | Arm B (4.0×) | PASS | 28.29 | Quả cà chua, cuống đài 5 cánh; bậc tương phản vi mô tại biên mask `[345, 245, 455, 335]` | Trình Người dùng xem ảnh và quyết định | `PENDING` |
-| `IND_COMMONS_SD2_002_ARM_A` | Vali du lịch trên phố | Arm A (1.0×) | PASS | 30.74 | Omission (phủ vân đá cuội) | Đề xuất **REJECT** (Bỏ sót vật thể) | `PENDING` |
-| `IND_COMMONS_SD2_002_ARM_B` | Vali du lịch trên phố | Arm B (1.6×) | PASS | 43.39 | Hallucination (xe ô tô cổ thay vì vali; bóng oval dưới gầm xe) | Đề xuất **REJECT** (Sai lệch đối tượng) | `PENDING` |
-| `IND_COMMONS_SDXL_001_ARM_A` | Chim bay trên bầu trời | Arm A (1.0×) | PASS | 11.08 | Omission (phủ mảng mây xám phẳng) | Đề xuất **REJECT** (Bỏ sót vật thể) | `PENDING` |
-| `IND_COMMONS_SDXL_001_ARM_B` | Chim bay trên bầu trời | Arm B (4.0×) | PASS | 13.07 | Bóng chim dang cánh với lông vũ sắc nét; hòa nhập bầu trời mây không tì vết | Trình Người dùng xem ảnh và quyết định | `PENDING` |
+| `IND_COCO_SDXL_002_ARM_A` | Cà chua trên bánh mì | Arm A (1.0×) | PASS | 16.79 | Omission (phủ vân ruột bánh mì; không tạo vật thể) | Khuyến nghị **REJECT** (Bỏ sót vật thể) | `PENDING` |
+| `IND_COCO_SDXL_002_ARM_B` | Cà chua trên bánh mì | Arm B (4.0×) | PASS | 28.29 | Tạo đúng quả cà chua, có cuống đài xanh, độ bóng specular highlight; bậc tương phản vi mô tại biên mask `[345, 245, 455, 335]` | Trình Người dùng xem ảnh và đánh giá chất lượng | `PENDING` |
+| `IND_COMMONS_SD2_002_ARM_A` | Vali du lịch trên phố | Arm A (1.0×) | PASS | 30.74 | Omission (phủ vân đá cuội; không tạo vật thể) | Khuyến nghị **REJECT** (Bỏ sót vật thể) | `PENDING` |
+| `IND_COMMONS_SD2_002_ARM_B` | Vali du lịch trên phố | Arm B (1.6×) | PASS | 43.39 | Hallucination (xe ô tô đồ chơi thay vì vali du lịch; bóng oval dưới gầm xe) | Khuyến nghị **REJECT** (Ảo giác ngữ nghĩa) | `PENDING` |
+| `IND_COMMONS_SDXL_001_ARM_A` | Chim bay trên bầu trời | Arm A (1.0×) | PASS | 11.08 | Omission (phủ mảng mây xám phẳng; không tạo vật thể) | Khuyến nghị **REJECT** (Bỏ sót vật thể) | `PENDING` |
+| `IND_COMMONS_SDXL_001_ARM_B` | Chim bay trên bầu trời | Arm B (4.0×) | PASS | 13.07 | Tạo được đối tượng chim nhưng lệch vị trí target (`[395, 75, 455, 125]` vs `[375, 126, 414, 156]`) và vùng trời chữ nhật mask lệch tông | Khuyến nghị **REJECT** (Theo yêu cầu placement hiện tại) | `PENDING` |
 
-*Ghi chú*: Toàn bộ 6 attempts giữ nguyên trạng thái `Human Content QC = PENDING` chờ quyết định chính thức của người dùng. Tám cặp ảnh pilot lịch sử (`pilot-20261008T113700Z`) tiếp tục giữ trạng thái `PENDING_CONTENT_QC`. Zero detector calls, independent performance `NOT_MEASURED`, full cohort `NOT_RUN`.
+*Ghi chú*: Khuyến nghị trên chỉ là nhận xét/khuyến nghị của Agent. Toàn bộ 6 attempts giữ nguyên trạng thái `Human Content QC = PENDING` chờ quyết định chính thức của người dùng. Tám cặp ảnh pilot lịch sử (`pilot-20261008T113700Z`) tiếp tục giữ trạng thái `PENDING_CONTENT_QC`; tuyệt đối không tự ghi quyết định của người dùng. Zero detector calls, independent performance `NOT_MEASURED`, full cohort `NOT_RUN`.
 
 ---
 
-### 2.9. Đề xuất Hiệu chuẩn Tiếp theo: Thử nghiệm Đơn biến Điều kiện hóa (Prompt Focus & Negative Prompting) trên Ca Omission SDXL (PENDING User Review)
+### 2.9. Đề xuất Hiệu chuẩn Tiếp theo: Thử nghiệm So sánh Ảnh hưởng Guidance Scale 7.5 và 9.5 trong Cấu hình Prompt/Negative Prompt Cố định Mới (PENDING User Review)
 
 > **Kế hoạch máy đọc đề xuất**: `research/evidence/phase-4c.7b/content_grounded_calibration_proposal.json`<br>
-> **Mã băm SHA-256**: `f272102d973de98a5fd1bdb5946c5b35484572c4b798466daf6512dc4a8ce9a0`<br>
-> **Trạng thái Quản trị**: `PENDING` (Đề xuất chờ người dùng xem xét; **tuyệt đối KHÔNG tự động thực thi**).<br>
+> **Mã băm SHA-256**: `03a811efa3c503c270d8827af20e25bc5720bfa8caa78b228013988315b5cadd`<br>
+> **Trạng thái Quản trị**: `PENDING` (Đề xuất chờ người dùng xem xét; **tuyệt đối KHÔNG tự động thực thi**, `human_reviewer=null`, `human_reviewed_at_utc=null`).<br>
 > **Ngân sách đề xuất**: Đúng **2 attempts** một lần (zero retries, zero automatic replacement).
 
 #### 2.9.1. Lỗi đã Quan sát Thực nghiệm vs Giả thuyết Còn Cần Kiểm chứng
 1. **Lỗi Đã Quan Sát Thực Nghiệm (Empirically Observed Defects)**:
-   - *Omission (Bỏ sót vật thể)*: Xuất hiện khi inpaint toàn canvas 512×512 trên các vùng mask nhỏ/vừa (`IND_COCO_SDXL_002`, `IND_COMMONS_SD2_002`, `IND_COMMONS_SDXL_001` ở cả pilot và diagnostic Arm A). Mô hình sinh texture lấp đầy phẳng (infill smoothing) thay vì tạo vật thể được yêu cầu trong prompt.
+   - *Omission (Bỏ sót vật thể)*: Cả ba ca Arm A đều không tạo đối tượng yêu cầu trên canvas 512×512 (`IND_COCO_SDXL_002`, `IND_COMMONS_SD2_002`, `IND_COMMONS_SDXL_001` ở cả pilot và diagnostic Arm A). Mô hình sinh texture lấp đầy phẳng (infill smoothing) thay vì tạo vật thể được yêu cầu trong prompt.
    - *Semantic Hallucination (Ảo giác ngữ nghĩa)*: Xuất hiện ở `IND_COMMONS_SD2_002_ARM_B` (SD2 sinh xe ô tô đồ chơi thay vì vali du lịch), và `IND_COMMONS_SDXL_003` (SDXL sinh cột chai thủy tinh kỳ dị phản quang neon thay vì cột đá cẩm thạch La Mã).
+   - *Placement Deficit & Tonal Boundary Step*: Xuất hiện ở `IND_COMMONS_SDXL_001_ARM_B` (chim tạo ra dạt xuống dưới-trái [375, 126, 414, 156], hoàn toàn lệch khỏi target bbox [395, 75, 455, 125]; vùng trời chữ nhật mask lệch tông so với nền).
    - *Macroscopic Structural Severance (Đứt gãy hình học vĩ mô)*: Bounding box chữ nhật cắt ngang qua các cấu trúc vật lý liên tục (lan can kim loại ở `IND_COMMONS_SDXL_003` bị cắt đứt 210 px; trần thạch cao ở `IND_COCO_SDXL_041` bị lệch tông màu và độ nhám tại $y=155$; tường bếp ở `IND_COCO_SD2_001` tại $y=95$).
    - *Microscopic Seams (Bậc tương phản vi mô tại biên mask)*: Tạo ra bởi phép ghép nhị phân 1-bit (`Image.composite`) cắt ngang cấu trúc hạt/vân (như ruột bánh mì ở `IND_COCO_SDXL_002_ARM_B`).
 2. **Nhận Định Cơ Chế Tiếp Tục Là Giả Thuyết (Unverified Hypotheses)**:
@@ -332,16 +342,18 @@ Visual inspection on image artifacts in `data/research/local-artifacts/phase-4c.
    - *Giả thuyết Cross-Attention Infill Bias*: Giả định rằng embedding của bối cảnh không masked lấn át token vật thể trong cross-attention; chưa được kiểm chứng qua attention map trích xuất từ UNet.
    - *Giả thuyết Ngữ cảnh ô tô gây ảo giác xe đồ chơi*: Có thể do bối cảnh ô tô gần đó, nhưng cũng có thể do biến đổi PRNG noise field trên kích thước crop hoặc bias của SD2 checkpoint.
 
-#### 2.9.2. Phân biệt Thành công Tạo đúng Đối tượng vs Chất lượng Biên
-- **Tạo đúng Đối tượng (Semantic Object Fidelity)**: Là yêu cầu tiên quyết về mặt nội dung (có hay không có quả cà chua, hình thái có chân thực, cuống đài xanh có đúng cấu trúc hay không).
-- **Chất lượng Biên (Boundary Compositing Quality)**: Là vấn đề kỹ thuật ghép ảnh cục bộ (đường biên nhị phân có tạo bậc tương phản vi mô, lệch tông màu, hay cắt đứt cấu trúc vật lý xung quanh hay không).
-- **Tính Phân ly (Dissociation)**: Hai phương diện này hoàn toàn độc lập: một ảnh có thể ghép biên hoàn hảo nhưng rỗng vật thể (như Arm A infilled phẳng), hoặc tạo đúng đối tượng với độ chi tiết cao nhưng lại có bậc tương phản nhẹ tại biên mask do ghép nhị phân (như cà chua Arm B).
+#### 2.9.2. Phân biệt Thành công Tạo đúng Đối tượng vs Các Tiêu chí Content QC
+- **Hiện diện đúng Đối tượng (Semantic Object Presence)**: Yêu cầu tiên quyết về mặt nội dung (có hay không có quả cà chua, con chim).
+- **Vị trí và Tỷ lệ (Placement & Scale)**: Đối tượng tạo ra phải nằm trong vùng target bounding box đã đăng ký, với tỷ lệ hợp lý.
+- **Độ Chân thực (Realism & Lighting)**: Hình thái, độ sắc nét, độ bóng specular highlight và kết cấu nền so với ảnh authentic.
+- **Chất lượng Biên (Boundary Integrity)**: Ranh giới ghép nhị phân không tạo bậc tương phản vi mô, lệch tông màu hay đường viền chữ nhật lộ liễu.
+- **Báo Cáo Chính Xác**: "Hai ca Arm B tạo được đối tượng (cà chua, chim)" không có nghĩa là "hai ca đạt đầy đủ Content QC". Chim vi phạm vị trí placement và lệch tông trời; cà chua cần người dùng đánh giá độ sắc, độ bóng và kết cấu nền.
 
-#### 2.9.3. Nguy cơ Phương pháp Ghép / Mask Trở thành Dấu hiệu Shortcut cho Detector
+#### 2.9.3. Nhận Định Về Shortcut Detector (Spurious Feature Shortcut)
 - Trong nghiên cứu phát hiện ảnh giả mạo (image forensics), mục tiêu là huấn luyện và đánh giá các detector phân biệt ảnh do AI tạo sinh (`ai_edited`) dựa trên các đặc trưng nội tại của quá trình sinh ảnh (diffusion artifacts, tần số bất thường, thống kê residual nhiễu).
-- **Nguy cơ Shortcut (Spurious Feature Shortcut)**:
-  - Nếu ảnh trong cohort độc lập mang các dấu vết biên nhân tạo quá rõ nét (như viền cắt 1-pixel sắc nhọn từ phép ghép nhị phân, hoặc vùng làm mịn nhân tạo do feathering cố định $k=2$ px, hoặc ranh giới chữ nhật hoàn hảo cắt qua kết cấu ảnh), các mô hình detector (đặc biệt là các nhánh DSP FFT/DCT và noise residual) có thể học được **shortcut phân biệt dựa vào viền ghép hình học** thay vì học các đặc trưng sinh ảnh của mô hình diffusion.
-  - Hậu quả: Detector có thể đạt điểm đánh giá cao giả tạo trên benchmark nội bộ nhưng hoàn toàn thất bại trong môi trường thực tế khi đối mặt với các kỹ thuật inpainting tiên tiến (như Poisson blending, seamless blending, hoặc inpainting toàn phần không composite).
+- **Nguy Cơ / Giả Thuyết Shortcut (Spurious Feature Risk)**:
+  - Nếu ảnh trong cohort độc lập mang các dấu vết biên nhân tạo quá rõ nét (như viền cắt 1-pixel sắc nhọn từ phép ghép nhị phân, hoặc vùng làm mịn nhân tạo do feathering cố định $k=2$ px, hoặc ranh giới chữ nhật hoàn hảo cắt qua kết cấu ảnh), các mô hình detector (đặc biệt là các nhánh DSP FFT/DCT và noise residual) có nguy cơ học được **shortcut phân biệt dựa vào viền ghép hình học** thay vì học các đặc trưng sinh ảnh của mô hình diffusion.
+  - **Giữ là Nguy cơ / Giả thuyết**: Nhận định về shortcut detector tiếp tục được giữ là **nguy cơ / giả thuyết** cần kiểm soát khi chưa có bằng chứng thực nghiệm đối chứng; **tuyệt đối không tuyên bố hiệu năng của detector đã bị thổi phồng**.
 - **Nguyên tắc Quản trị**: Cần giữ nguyên tắc thận trọng tối đa, không tùy tiện áp dụng feathering cố định vào production khi chưa có thẩm định thực nghiệm đối chứng trên detector.
 
 #### 2.9.4. Không Chốt Giải pháp Hybrid hay Ngưỡng Loại Mask từ Ba Ca Diagnostic
@@ -349,17 +361,19 @@ Visual inspection on image artifacts in `data/research/local-artifacts/phase-4c.
 - Mọi quyết định thay đổi pipeline cohort chính thức tiếp tục bị đóng băng cho đến khi hoàn tất thẩm định con người.
 
 #### 2.9.5. Đề xuất Một Thử nghiệm Hiệu chuẩn Đơn biến Cụ thể (PENDING Review)
-Nhằm kiểm chứng xem liệu sự cố bỏ sót vật thể (omission) ở chế độ Full Canvas 512×512 có thể được khắc phục bằng kỹ thuật điều kiện hóa văn bản (prompt focus + negative prompt + guidance tuning) mà **không cần thay đổi trường nhìn (crop) hay độ phân giải canvas**, đề xuất một thử nghiệm đơn biến nhỏ:
+Nhằm so sánh ảnh hưởng của guidance scale 7.5 và 9.5 trong một cấu hình prompt/negative prompt cố định mới, trên một candidate (`IND_COCO_SDXL_002`) và một seed (`20272319`) mà **không cần thay đổi trường nhìn (crop) hay độ phân giải canvas**, đề xuất một thử nghiệm nhỏ:
 
-1. **Mục tiêu Cụ thể**: Kiểm chứng giả thuyết *Cross-Attention Infill Bias* trên ca cà chua `IND_COCO_SDXL_002` bằng cách cách ly prompt mô tả vật thể, bổ sung negative prompt triệt tiêu texture nền, và tinh chỉnh `guidance_scale`.
+1. **Mục tiêu Đã Điều chỉnh**: So sánh ảnh hưởng của guidance scale 7.5 và 9.5 trong một cấu hình prompt/negative prompt cố định mới, trên một candidate và một seed.
+   - *Giới hạn phương pháp luận*: Phép thử **không tuyên bố tách riêng ảnh hưởng của prompt hoặc negative prompt**, **không tuyên bố chứng minh infill bias**, và **không phải là ngân sách tối thiểu để xác định nguyên nhân omission**.
+   - *Tính chất đối chiếu*: Việc so sánh với kết quả lịch sử (pilot hoặc diagnostic) chỉ mang tính **tham khảo** vì nhiều thành phần cấu hình văn bản (cả prompt và negative prompt) đã thay đổi đồng thời.
 2. **Biến Thay đổi (Independent Variables)**:
    - *Attempt 1 (`CALIB_COCO_SDXL_002_PROMPT_G75`)*:
-     * Prompt tập trung vật thể: `"a ripe red cherry tomato with shiny skin, distinct green calyx stem, sharp focus, natural daylight photography"`
-     * Negative prompt: `"empty, blurry, smooth texture, missing object, bread crumb only, background infill"`
+     * Prompt mới: `"a ripe red cherry tomato with shiny skin, distinct green calyx stem, sharp focus, natural daylight photography"`
+     * Negative prompt mới: `"empty, blurry, smooth texture, missing object, bread crumb only, background infill"`
      * Guidance scale: `7.5`
    - *Attempt 2 (`CALIB_COCO_SDXL_002_PROMPT_G95`)*:
-     * Cùng prompt và negative prompt như trên.
-     * Guidance scale: `9.5` (tăng trọng số bám sát văn bản).
+     * Cùng prompt mới và negative prompt mới như Attempt 1.
+     * Guidance scale: `9.5`
 3. **Biến Kiểm soát Cố định (Controlled Invariants)**:
    - Ứng viên cố định: `IND_COCO_SDXL_002` (ảnh authentic hash `7aefc1d1...` và mask hash `2ff6b165...` niêm phong từ `pilot-20261008T113700Z`).
    - Seed cố định: `20272319` (cùng seed với pilot và diagnostic).
@@ -368,14 +382,15 @@ Nhằm kiểm chứng xem liệu sự cố bỏ sót vật thể (omission) ở 
    - Scheduler & Steps: EulerDiscrete, 30 steps, strength 1.0.
    - Ghép ảnh: Phép ghép nhị phân bảo toàn bit-exact ngoài mask (`outside_mean_l1 = 0.000000`).
 4. **Tiêu chí Đánh giá (Evaluation Criteria)**:
-   - *Hiện diện vật thể (Object presence)*: Có xuất hiện quả cà chua hay không (0 / 1).
-   - *Chân thực ngữ nghĩa (Semantic realism)*: Hình thái quả, cuống đài, độ nổi khối.
-   - *Chất lượng biên (Boundary quality)*: Mức độ tương thích với ruột bánh mì xung quanh.
+   - *Hiện diện đúng đối tượng (Object presence)*: Có xuất hiện quả cà chua cherry hay không.
+   - *Vị trí và tỷ lệ (Position & scale)*: Có nằm trong target bounding box [375, 265, 430, 320] hay không.
+   - *Độ chân thực (Realism)*: Hình thái quả, cuống đài, độ sắc nét, độ bóng specular highlight so với lát bánh mì.
+   - *Chất lượng biên (Boundary quality)*: Bước chuyển tiếp vi mô dọc theo biên mask [345, 245, 455, 335].
    - *Inside Mean L1 Delta*: Đo lường mức độ biến đổi pixel trong mask.
-5. **Ngân sách Tối thiểu có Giải thích**:
+5. **Ngân sách Đề xuất**:
    - Ngân sách đề xuất: **Đúng 2 attempts** ($N=2$).
-   - Giải thích: Đây là số lượt tối thiểu để kiểm tra xem prompt conditioning có giải quyết được omission ở Full Canvas hay không trước khi xem xét các can thiệp phức tạp hơn (như crop hay thay đổi kích thước). Không tự đặt nhiều nhánh thử nghiệm cùng lúc.
 6. **Ràng buộc Quản trị**:
-   - Trạng thái kế hoạch: **`PENDING`** chờ người dùng phê duyệt chính thức.
+   - Trạng thái kế hoạch: **`PENDING`** (`human_reviewer=null`, `human_reviewed_at_utc=null`), chờ người dùng phê duyệt chính thức.
    - Tuyệt đối **KHÔNG thực thi generation** trong phiên làm việc này.
+   - Không sửa JSON diagnostic đã APPROVED (`content_grounded_diagnostic_plan.json`) hoặc notebook để chạy calibration trước khi người dùng duyệt.
    - Không đưa ảnh thử nghiệm vào cohort chính thức. Full cohort tiếp tục **BỊ KHÓA HOÀN TOÀN**.
