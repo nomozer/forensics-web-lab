@@ -7,6 +7,41 @@
 > **Real pilot**: `TECHNICAL_PASS_PENDING_HUMAN_CONTENT_QC` (8 pairs acquired in run `pilot-20261008T113700Z` plus 8 historical pairs in `pilot-20261007T132003Z`; full 400-pair run remains `NOT_RUN`)<br>
 > **Training runs**: 0 fits, 0 refits; frozen models untouched; retired locked-test not accessed (only its 343 source IDs are read for the disjoint guard)<br>
 
+## CC. Independent cohort 6-attempt diagnostic harness & plan refinement (2026-10-08)
+
+- **Diagnostic Plan Refinement & Sealed Input Bindings**:
+  - Registered `content_grounded_diagnostic_plan.json` under SHA-256 `8f2d980965a56cf8939d774e36321e583a99ba89faba4a502d59c0a25a9630e3` with status strictly `PENDING` (human reviewer=null, timestamp=null).
+  - Explicit bindings to sealed normalized PNGs from run `pilot-20261008T113700Z` (ZIP SHA-256 `3bdb1890...`, manifest `cf0e4300...`):
+    * `IND_COCO_SDXL_002` (bread tomato): auth `7aefc1d1...`, mask `2ff6b165...`.
+    * `IND_COMMONS_SD2_002` (suitcase): auth `98004bf7...`, mask `fee9ac7e...`.
+    * `IND_COMMONS_SDXL_001` (sky bird): auth `7680e4ce...`, mask `4981cedc...`.
+  - Remote redownload from web is strictly prohibited.
+- **Reframed Objective & Theoretical Grounding**:
+  - Compares full-canvas inference (Arm A) vs local-crop padded inference (Arm B) across insertion omissions.
+  - Does NOT claim to isolate latent downsampling alone, because cropping simultaneously modifies visual context (field of view) and token relative scale.
+  - Identical PRNG seeds across different tensor resolutions ($64 \times 64$ vs $128 \times 128$) do not yield identical noise fields due to dimension-dependent sampling order in PyTorch generators.
+- **Geometric Area Ratios & Coordinate Rounding Rules**:
+  - SDXL candidates (tomato, bird): $(1024/256)^2 = 16.0\times$ geometric area ratio. Integer scale factor 4.0. Nearest-neighbor mask resize verified strictly binary $\{0, 255\}$.
+  - SD2 suitcase candidate: $(512/320)^2 = 2.56\times$ geometric area ratio. Linear scale factor 1.6. Continuous mapping: $x \in [0.0, 360.0], y \in [236.8, 512.0]$. Nearest-neighbor sampling maps destination row $y_{dst}=236 \to$ source row 147 (0), $y_{dst}=237 \to$ source row 148 (255). Resized mask raster bbox: `[0, 237, 360, 512]`, pixel count: 99,000 px, values strictly in $\{0, 255\}$.
+  - Latent pixel counts: methodologically estimated assuming 8x VAE downsampling ($13 \times 11 = 143$ vs $55 \times 45 = 2475$ for tomato; $28 \times 21 = 588$ vs $45 \times 34 = 1530$ for suitcase; $18 \times 14 = 252$ vs $75 \times 57 = 4275$ for bird), not directly measured tensor tokens.
+- **Fail-Closed Diagnostic Runner**:
+  - Implemented `ml/evaluation/independent_cohort_diagnostic.py` and CLI `--mode diagnostic` in `scripts/research/run_cohort_acquisition.py`.
+  - Fail-closed approval guard (`DiagnosticPlanNotApprovedError`) blocks execution before any attempt is started if status != APPROVED.
+  - Preflight `--check-diagnostic-plan` validates plan hash, input hashes, and budget before run directory creation.
+  - Generator is re-seeded independently per arm with candidate registered seed (no RNG state carry-over).
+  - Preserves raw pre-composited generated images (`images/<arm_id>_raw_gen.png`) alongside final 512x512 composites.
+  - Final compositing uses original registered canvas mask, guaranteeing bit-exact outside pixel invariance (`outside_mean_l1 == 0.000000`).
+  - Hard limit of 6 attempts total; failed attempts are ledgered and count toward budget; no auto-retries or extra attempts.
+  - Resume skips already consumed arms without repeating attempts.
+  - Generates self-contained HTML contact sheet (`diagnostic_contact_sheet.html`) with Base64 embedded images and PENDING Content QC status.
+- **Colab Handover Architecture**:
+  - `notebooks/independent_cohort_acquisition_colab.ipynb` supports explicit selection `EXECUTION_MODE = "diagnostic"`.
+  - Preflight `--check-diagnostic-plan` verifies plan and Drive inputs (`RUNS_ROOT / "pilot-20261008T113700Z"`).
+  - Diagnostic results are isolated in dedicated run directory and do not enter the official independent cohort or alter historical pilot records.
+- **Verification**:
+  - `ml/tests/test_independent_cohort_diagnostic.py`: 9/9 PASS (100%).
+  - Zero GPU runs executed in this session. Human Content QC for `pilot-20261008T113700Z` remains PENDING. Zero detector calls, independent performance NOT_MEASURED, full cohort NOT_RUN.
+
 ## BB. Follow-up pilot technical diagnosis, threshold audit, and remediation plan (2026-10-08)
 
 - **Technical QC Threshold Reconciliation**:

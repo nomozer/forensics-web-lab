@@ -166,15 +166,32 @@ A self-contained comparison contact sheet was generated at `data/research/local-
 
 ---
 
-### 2.7. Proposed 6-Attempt Diagnostic Plan Specification (`content_grounded_diagnostic_plan.json`)
+### 2.7. Proposed 6-Attempt Diagnostic Plan Specification & Implementation (`content_grounded_diagnostic_plan.json`)
 
-To directly evaluate the latent spatial capacity hypothesis vs full canvas without confounding variables, a dedicated diagnostic plan has been registered at `research/evidence/phase-4c.7b/content_grounded_diagnostic_plan.json` (SHA-256: `cba87a66793351bcb2e7c21f88aeea03eab1c1f6fb7e1cc4a4483faf28b73498`).
+To directly evaluate full-canvas inference vs local-crop padded inference across insertion omissions, a dedicated diagnostic plan has been registered at `research/evidence/phase-4c.7b/content_grounded_diagnostic_plan.json` (SHA-256: `8f2d980965a56cf8939d774e36321e583a99ba89faba4a502d59c0a25a9630e3`).
 
-- **Status**: `PENDING_USER_REVIEW` (Zero GPU runs executed).
-- **Candidate Scope**: Exactly 3 candidates with insertion omissions (`IND_COCO_SDXL_002`, `IND_COMMONS_SD2_002`, `IND_COMMONS_SDXL_001`).
+- **Status**: Strictly `PENDING` (human_reviewer=null, human_reviewed_at_utc=null). Zero GPU runs executed.
+- **Objective Refinement**: Evaluates methodological differences between full-canvas and local-crop execution (including context window alteration, token scale shift, and geometric area scaling) and does NOT claim to isolate latent downsampling alone. Identical PRNG seeds across different tensor resolutions do not guarantee identical noise fields due to dimension-dependent sampling order.
+- **Candidate Scope & Input Bindings**: Exactly 3 candidates with insertion omissions bound to sealed authentic and mask PNG files from `pilot-20261008T113700Z`:
+  - `IND_COCO_SDXL_002` (bread tomato): auth SHA-256 `7aefc1d1...`, mask SHA-256 `2ff6b165...`.
+  - `IND_COMMONS_SD2_002` (suitcase): auth SHA-256 `98004bf7...`, mask SHA-256 `fee9ac7e...`.
+  - `IND_COMMONS_SDXL_001` (sky bird): auth SHA-256 `7680e4ce...`, mask SHA-256 `4981cedc...`.
+  - Input policy: Must use sealed normalized PNGs from `pilot-20261008T113700Z`; remote redownloading from the web is strictly prohibited.
 - **Controlled Arms**:
-  - **Arm A (Full Canvas)**: Standard $512 \times 512$ inference under locked parameters (identical authentic, prompt, seed, guidance 7.5, scheduler, steps).
-  - **Arm B (Local Crop with Padding)**: Local square crop ($256 \times 256$ or $320 \times 320$) upscaled via Lanczos to model native resolution ($1024 \times 1024$ for SDXL, $512 \times 512$ for SD2) $\to$ inpainting $\to$ downscaled via Lanczos $\to$ remapped to canvas and composited strictly within registered mask bbox. Outside pixels invariant ($0.000000$).
-- **Experimental Invariant**: Negative prompt and feathering are strictly excluded from this comparison to isolate the single causal factor of latent spatial resolution.
-- **Attempt Budget**: Exactly 6 attempts (3 candidates $\times$ 2 arms). One attempt per branch, no retries, no automatic replacement.
-- **Accounting Boundary**: This is a proposed diagnostic budget, completely independent of the 8 production pilot attempts already consumed. Diagnostic results will not automatically enter the official independent cohort or overwrite previous pilot records. With $n=3$ cases and 1 seed per case, observations cannot be generalized without broader evaluation.
+  - **Arm A (Full Canvas)**: Standard $512 \times 512$ inference under locked parameters (identical authentic, mask, prompt, seed from ledger, guidance 7.5, strength 1.0, scheduler, steps). Geometric area factor = $1.0\times$. Direct composite onto canvas; outside L1 = 0.000000.
+  - **Arm B (Local Crop with Padding)**: Local square crop ($256 \times 256$ for SDXL, $320 \times 320$ for SD2) upscaled via Lanczos (RGB) and Nearest (mask) to model native resolution ($1024 \times 1024$ for SDXL, $512 \times 512$ for SD2) $\to$ inpainting $\to$ downscaled via Lanczos $\to$ remapped to canvas and composited strictly within registered binary mask. Outside pixels invariant ($0.000000$).
+  - **Geometric Area Factors & Coordinate Rounding Rules**:
+    - SDXL candidates (tomato, bird): $(1024/256)^2 = 16.0\times$ geometric area ratio. Integer scaling factor = 4. Resized masks verified {0, 255} binary; tomato bbox [356, 332, 796, 692] (158,400 px); bird bbox [376, 180, 976, 640] (276,000 px).
+    - SD2 suitcase candidate: $(512/320)^2 = 2.56\times$ geometric area ratio. Linear scale factor = 1.6. Continuous mapping: $x \in [0.0, 360.0], y \in [236.8, 512.0]$. Nearest-neighbor sampling maps destination row $y_{dst}=236 \to$ source row 147 (value 0), $y_{dst}=237 \to$ source row 148 (value 255). Resized mask raster bbox is exactly `[0, 237, 360, 512]`, containing exactly 99,000 pixels, values strictly $\{0, 255\}$.
+    - Latent pixel counts: methodologically estimated assuming 8x VAE downsampling ($13 \times 11 = 143$ vs $55 \times 45 = 2475$ for tomato; $28 \times 21 = 588$ vs $45 \times 34 = 1530$ for suitcase; $18 \times 14 = 252$ vs $75 \times 57 = 4275$ for bird), not directly measured tensor tokens.
+- **Experimental Invariant**: Negative prompt and feathering are strictly excluded from this comparison.
+- **Attempt Budget**: Exactly 6 attempts (3 candidates $\times$ 2 arms). One attempt per branch, no retries, no automatic replacement. Started attempts are recorded in durable ledger even if failed and count toward budget.
+- **Diagnostic Runner Implementation**: Implemented `ml/evaluation/independent_cohort_diagnostic.py` and CLI `--mode diagnostic` in `scripts/research/run_cohort_acquisition.py`. Enforces fail-closed approval gate, verifies input hashes, re-seeds RNG independently per arm with candidate registered seed, preserves raw pre-composited images, enforces outside L1 = 0, supports resume without re-running attempts, and generates self-contained HTML contact sheet with PENDING review status. Tested via `ml/tests/test_independent_cohort_diagnostic.py` (9/9 PASS).
+- **Colab Handover Architecture**:
+  - `notebooks/independent_cohort_acquisition_colab.ipynb` supports explicit selection `EXECUTION_MODE = "diagnostic"`.
+  - Preflight `--check-diagnostic-plan` validates plan hash and Drive inputs (`RUNS_ROOT / "pilot-20261008T113700Z"`).
+  - PENDING plan status causes execution to fail-closed before consuming GPU attempts.
+  - Diagnostic results are isolated in dedicated run directory and do not enter the official independent cohort or alter historical pilot records.
+- **Pending Human Decisions**:
+  1. Human Content QC determinations per candidate for `pilot-20261008T113700Z` (ACCEPT, REJECT, or instructions).
+  2. Human decision to approve or revise the proposed 6-attempt diagnostic plan (`content_grounded_diagnostic_plan.json`).

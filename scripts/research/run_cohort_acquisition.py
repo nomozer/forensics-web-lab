@@ -70,9 +70,19 @@ from ml.evaluation.independent_cohort_acquisition import (
     load_historical_source_keys,
     verify_model_access_preflight,
 )
+from ml.evaluation.independent_cohort_diagnostic import (
+    DiagnosticMockEngine,
+    DiagnosticPlanNotApprovedError,
+    audit_diagnostic_run,
+    execute_diagnostic_run,
+    load_and_validate_diagnostic_plan,
+    verify_diagnostic_inputs,
+)
 
 EVIDENCE_DIR = REPO_ROOT / "research/evidence/phase-4c.7b"
 DEFAULT_EDIT_PLAN_PATH = EVIDENCE_DIR / "content_grounded_pilot_plan.json"
+DEFAULT_DIAGNOSTIC_PLAN_PATH = EVIDENCE_DIR / "content_grounded_diagnostic_plan.json"
+DEFAULT_DIAGNOSTIC_INPUTS_DIR = REPO_ROOT / "data/research/local-artifacts/phase-4c.7b/pilot-20261008T113700Z"
 LEGACY_CATALOG_PATH = EVIDENCE_DIR / "verified_candidate_catalog.json"
 PROTOCOL_FILES = (
     EVIDENCE_DIR / "PROTOCOL_AMENDMENT_V1.3.md",
@@ -360,7 +370,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--verify-plan", action="store_true", help="Verify plan eligibility, quotas and disjointness (non-zero on FAIL)")
     parser.add_argument("--smoke-test", action="store_true", help="Run hermetic SYNTHETIC smoke test and write receipt")
     parser.add_argument("--audit-run", type=str, help="Audit a finished run directory against this checkout")
-    parser.add_argument("--mode", choices=["pilot", "full"], help="Acquisition mode (pilot=2/stratum, full=100/stratum)")
+    parser.add_argument("--mode", choices=["pilot", "full", "diagnostic"], help="Acquisition mode (pilot=2/stratum, full=100/stratum, diagnostic=6 attempts)")
     parser.add_argument("--engine", choices=["diffusers", "mock"], default="diffusers", help="Inpainting engine")
     parser.add_argument("--allow-synthetic", action="store_true", help="SYNTHETIC fixture_test mode (mock engine allowed)")
     parser.add_argument("--run-id", type=str, help="Unique run id; the run directory is <output-root>/<run-id>")
@@ -374,6 +384,9 @@ def main(argv: list[str] | None = None) -> None:
         default=str(DEFAULT_EDIT_PLAN_PATH),
         help="Reviewed content-grounded prompts and normalized-canvas regions for the requested run",
     )
+    parser.add_argument("--diagnostic-plan-path", type=str, default=str(DEFAULT_DIAGNOSTIC_PLAN_PATH), help="Diagnostic plan path")
+    parser.add_argument("--diagnostic-inputs-dir", type=str, default=str(DEFAULT_DIAGNOSTIC_INPUTS_DIR), help="Directory with authentic/mask inputs for diagnostic")
+    parser.add_argument("--check-diagnostic-plan", action="store_true", help="Preflight check diagnostic plan and input hashes")
     parser.add_argument("--contact-sheet", action="store_true", help="Generate Content QC HTML contact sheet")
     parser.add_argument("--receipt-path", type=str, default=str(EVIDENCE_DIR / "acquisition_smoke_receipt_v2.json"), help="Smoke receipt path")
     parser.add_argument("--check-models", action="store_true", help="Run inpainting model preflight check (metadata, configs, and weights access)")
@@ -384,6 +397,24 @@ def main(argv: list[str] | None = None) -> None:
         results = verify_model_access_preflight()
         print(json.dumps(results, indent=2))
         print(">>> Model access preflight: ALL MODELS PASSED")
+        return
+
+    if args.check_diagnostic_plan:
+        print("[Phase 4C.7B Diagnostic Preflight] Checking diagnostic plan and inputs...")
+        plan_p = Path(args.diagnostic_plan_path)
+        plan_data = load_and_validate_diagnostic_plan(plan_p, require_approval=False)
+        inputs = verify_diagnostic_inputs(plan_data, Path(args.diagnostic_inputs_dir))
+        sha = _sha256_bytes(plan_p.read_bytes())
+        res = {
+            "status": "PASS",
+            "plan_path": str(plan_p),
+            "plan_sha256": sha,
+            "human_review_status": plan_data.get("human_review_status"),
+            "attempt_budget": plan_data.get("attempt_budget"),
+            "total_candidates": len(plan_data.get("diagnostic_candidates", [])),
+            "verified_inputs": {cid: {k: str(v) for k, v in paths.items()} for cid, paths in inputs.items()},
+        }
+        print(json.dumps(res, indent=2))
         return
 
     if args.smoke_test:
@@ -411,12 +442,60 @@ def main(argv: list[str] | None = None) -> None:
         return
 
     if not args.mode:
-        parser.error("one of --mode, --check-models, --verify-plan, --export-plan, --smoke-test or --audit-run is required")
+        parser.error("one of --mode, --check-models, --check-diagnostic-plan, --verify-plan, --export-plan, --smoke-test or --audit-run is required")
     if args.mode == "full":
         raise SystemExit(
             "Full acquisition is blocked: approve and complete the bounded eight-attempt pilot "
             "with explicit Human Content QC before a reviewed full-run plan may be used."
         )
+
+    if args.mode == "diagnostic":
+        if not (args.run_id and args.expected_commit):
+            raise SystemExit("--run-id and --expected-commit are required for diagnostic mode.")
+        commit = verify_checkout(REPO_ROOT, args.expected_commit)
+        diag_plan_p = Path(args.diagnostic_plan_path)
+        plan_sha = _sha256_bytes(diag_plan_p.read_bytes())
+
+        if args.audit_run:
+            expected_binding = {
+                "run_id": args.run_id,
+                "mode": "diagnostic",
+                "git_commit": commit,
+                "diagnostic_plan_sha256": plan_sha,
+            }
+            audit_res = audit_diagnostic_run(Path(args.audit_run), expected_binding)
+            print(json.dumps(audit_res, indent=2))
+            return
+
+        if not args.output_root:
+            raise SystemExit("--output-root is required.")
+        run_dir = Path(args.output_root) / args.run_id
+        if run_dir.exists() and not args.resume:
+            raise SystemExit(f"{run_dir} already exists; use a new --run-id or --resume.")
+
+        if args.engine == "diffusers":
+            binding_gpu = check_runtime_gpu()
+            print(f"GPU policy: PASS ({binding_gpu['device']}, {binding_gpu['total_vram_bytes'] / 1024**3:.2f} GiB)")
+
+        engine_provider = (lambda tool_key: DiagnosticMockEngine(tool_key)) if (args.engine == "mock" or args.allow_synthetic) else None
+
+        print(f">>> Diagnostic run {args.run_id} -> {run_dir}")
+        try:
+            diag_receipt = execute_diagnostic_run(
+                output_dir=run_dir,
+                plan_path=diag_plan_p,
+                inputs_dir=Path(args.diagnostic_inputs_dir),
+                expected_commit=commit,
+                engine_provider=engine_provider,
+                resume=args.resume,
+                require_approval=not args.allow_synthetic,
+                allow_mock=args.allow_synthetic or (args.engine == "mock"),
+            )
+            print(json.dumps(diag_receipt, indent=2))
+        except DiagnosticPlanNotApprovedError as e:
+            print(f"ERROR: Diagnostic plan execution blocked: {e}", file=sys.stderr)
+            raise SystemExit(1)
+        return
     if args.engine == "mock" and not args.allow_synthetic:
         raise SystemExit("--engine mock produces SYNTHETIC edits; it is refused for real acquisition.")
     if not (args.run_id and args.expected_commit):
