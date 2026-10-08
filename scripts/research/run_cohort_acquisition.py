@@ -473,6 +473,9 @@ def main(argv: list[str] | None = None) -> None:
         if run_dir.exists() and not args.resume:
             raise SystemExit(f"{run_dir} already exists; use a new --run-id or --resume.")
 
+        if args.engine == "mock" and not args.allow_synthetic:
+            raise SystemExit("--engine mock produces SYNTHETIC edits; it is refused for real diagnostic.")
+
         if args.engine == "diffusers":
             binding_gpu = check_runtime_gpu()
             print(f"GPU policy: PASS ({binding_gpu['device']}, {binding_gpu['total_vram_bytes'] / 1024**3:.2f} GiB)")

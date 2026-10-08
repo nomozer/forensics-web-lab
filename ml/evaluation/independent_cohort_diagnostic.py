@@ -76,6 +76,10 @@ class DiagnosticRunAuditError(RuntimeError):
     """Raised when an existing diagnostic run fails audit."""
 
 
+class DiagnosticEngineError(RuntimeError):
+    """Raised when an engine configuration or mock usage is invalid."""
+
+
 def _sha256_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -205,7 +209,12 @@ def verify_diagnostic_inputs(
 
 
 class DiagnosticMockEngine:
-    """Fast deterministic mock engine for CPU unit tests. Completely isolated from detector models."""
+    """Fast deterministic mock engine for CPU unit tests. Completely isolated from detector models.
+
+    CRITICAL: Strictly marked as synthetic. Prohibited for real production diagnostic execution.
+    """
+    is_mock: bool = True
+    is_synthetic: bool = True
 
     def __init__(self, tool_key: str = "mock"):
         self.tool_key = tool_key
@@ -456,6 +465,12 @@ def execute_diagnostic_run(
             active_engine = DiagnosticMockEngine(tool_key)
         else:
             active_engine = DiagnosticDiffusersEngine(tool_key)
+
+        if not allow_mock and getattr(active_engine, "is_mock", False):
+            raise DiagnosticEngineError(
+                "DiagnosticMockEngine is strictly synthetic and cannot be used when allow_mock=False."
+            )
+
         current_tool_key = tool_key
         return active_engine
 

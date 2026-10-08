@@ -151,14 +151,62 @@ def test_failed_pilot_cli_blocks_audit_and_packaging(tmp_path):
         raise subprocess.CalledProcessError(2, cmd)
 
     ns.update(run=failing_run, REPO_DIR=tmp_path, EXPECTED_COMMIT="a" * 40, RUN_ID="r1",
-              RUNS_ROOT=tmp_path / "runs", RESUME_RUN_ID=None, EDIT_PLAN_PATH=tmp_path / "plan.json")
+              RUNS_ROOT=tmp_path / "runs", RESUME_RUN_ID=None, EDIT_PLAN_PATH=tmp_path / "plan.json",
+              EXECUTION_MODE="pilot")
     with pytest.raises(subprocess.CalledProcessError):
         exec(cells[3], ns)
     assert "PILOT_RUN_COMPLETED" not in ns
+    assert "RUN_CONTEXT" not in ns
 
     with pytest.raises(RuntimeError, match="did not complete"):
         exec(cells[4], ns)
     assert not list(tmp_path.rglob("*.zip"))
+
+
+def test_notebook_cell3_stops_on_missing_or_invalid_execution_mode(tmp_path):
+    cells = _cells()
+    ns = _helpers()
+    ns.update(run=lambda cmd, cwd=None: None, REPO_DIR=tmp_path, EXPECTED_COMMIT="a" * 40, RUN_ID="r1",
+              RUNS_ROOT=tmp_path / "runs", RESUME_RUN_ID=None, EDIT_PLAN_PATH=tmp_path / "plan.json")
+
+    # Missing EXECUTION_MODE
+    with pytest.raises(RuntimeError, match="Missing or invalid EXECUTION_MODE"):
+        exec(cells[3], ns)
+
+    # Invalid EXECUTION_MODE
+    ns["EXECUTION_MODE"] = "invalid_mode"
+    with pytest.raises(RuntimeError, match="Missing or invalid EXECUTION_MODE"):
+        exec(cells[3], ns)
+
+
+def test_notebook_cell4_audits_from_run_context(tmp_path):
+    cells = _cells()
+    ns = _helpers()
+    calls = []
+
+    def mock_run(cmd, cwd=None):
+        calls.append(list(cmd))
+
+    run_dir = tmp_path / "runs" / "diag-20261008"
+    run_dir.mkdir(parents=True)
+    (run_dir / "test.txt").write_text("hello", encoding="utf-8")
+
+    # If RUN_CONTEXT missing, cell 4 must stop
+    ns.update(run=mock_run, REPO_DIR=tmp_path, RUNS_ROOT=tmp_path / "runs")
+    with pytest.raises(RuntimeError, match="missing RUN_CONTEXT"):
+        exec(cells[4], ns)
+
+    # With diagnostic RUN_CONTEXT
+    ns["RUN_CONTEXT"] = {
+        "run_dir": run_dir,
+        "run_id": "diag-20261008",
+        "mode": "diagnostic",
+        "expected_commit": "b" * 40,
+        "plan_path": tmp_path / "diag_plan.json",
+    }
+    exec(cells[4], ns)
+    assert any("--mode" in c and "diagnostic" in c and "--diagnostic-plan-path" in c for c in calls)
+    assert (tmp_path / "runs" / "diag-20261008_package.zip").is_file()
 
 
 def test_drive_mount_failure_stops_and_creates_no_scratch_run(tmp_path, monkeypatch):

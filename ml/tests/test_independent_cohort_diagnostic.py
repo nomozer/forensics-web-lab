@@ -23,6 +23,7 @@ import pytest
 from ml.evaluation.independent_cohort_diagnostic import (
     DIAGNOSTIC_BUDGET_LIMIT,
     DiagnosticBudgetExceededError,
+    DiagnosticEngineError,
     DiagnosticGeometryError,
     DiagnosticInputHashMismatchError,
     DiagnosticInputMissingError,
@@ -247,3 +248,67 @@ def test_audit_run_verifies_bindings(tmp_path):
     # Foreign commit audit must fail
     with pytest.raises(DiagnosticRunAuditError, match="git_commit"):
         audit_diagnostic_run(out_dir, valid_binding | {"git_commit": "other_commit"})
+
+
+def test_diagnostic_input_path_resolution(tmp_path):
+    """verify_diagnostic_inputs resolves files both at root and under images/masks, and rejects missing/tampered files."""
+    plan_data = load_and_validate_diagnostic_plan(REAL_PLAN_PATH, require_approval=False)
+
+    # 1. Test nested images/ and masks/ resolution (standard package layout)
+    nested_res = verify_diagnostic_inputs(plan_data, REAL_INPUTS_DIR)
+    assert len(nested_res) == 3
+    for cid, paths in nested_res.items():
+        assert paths["authentic"].is_file()
+        assert paths["mask"].is_file()
+
+    # 2. Test flat root directory layout
+    flat_dir = tmp_path / "flat_inputs"
+    flat_dir.mkdir()
+    for cid, paths in nested_res.items():
+        (flat_dir / paths["authentic"].name).write_bytes(paths["authentic"].read_bytes())
+        (flat_dir / paths["mask"].name).write_bytes(paths["mask"].read_bytes())
+
+    flat_res = verify_diagnostic_inputs(plan_data, flat_dir)
+    assert len(flat_res) == 3
+
+    # 3. Test missing file
+    missing_dir = tmp_path / "missing_inputs"
+    missing_dir.mkdir()
+    with pytest.raises(DiagnosticInputMissingError):
+        verify_diagnostic_inputs(plan_data, missing_dir)
+
+    # 4. Test hash mismatch (tampered file)
+    tampered_dir = tmp_path / "tampered_inputs"
+    tampered_dir.mkdir()
+    for cid, paths in flat_res.items():
+        (tampered_dir / paths["authentic"].name).write_bytes(paths["authentic"].read_bytes())
+        (tampered_dir / paths["mask"].name).write_bytes(paths["mask"].read_bytes())
+    # Corrupt one mask
+    first_cid = plan_data["diagnostic_candidates"][0]["candidate_id"]
+    corrupt_mask_name = plan_data["diagnostic_candidates"][0]["mask_input_filename"]
+    (tampered_dir / corrupt_mask_name).write_bytes(b"corrupted_bytes")
+    with pytest.raises(DiagnosticInputHashMismatchError):
+        verify_diagnostic_inputs(plan_data, tampered_dir)
+
+
+def test_mock_engine_and_fixture_safeguard(tmp_path):
+    """Mock engine is explicitly marked synthetic and refused when allow_mock=False."""
+    # Attribute check
+    assert DiagnosticMockEngine.is_mock is True
+    assert DiagnosticMockEngine.is_synthetic is True
+
+    plan_p = tmp_path / "plan.json"
+    plan_p.write_text(REAL_PLAN_PATH.read_text(encoding="utf-8"), encoding="utf-8")
+    out_dir = tmp_path / "diag_refuse_mock"
+
+    # Execution with allow_mock=False and mock engine provider must fail
+    with pytest.raises(DiagnosticEngineError, match="DiagnosticMockEngine is strictly synthetic"):
+        execute_diagnostic_run(
+            output_dir=out_dir,
+            plan_path=plan_p,
+            inputs_dir=REAL_INPUTS_DIR,
+            expected_commit="commit_abc123",
+            engine_provider=lambda tool_key: DiagnosticMockEngine(tool_key),
+            require_approval=False,
+            allow_mock=False,
+        )

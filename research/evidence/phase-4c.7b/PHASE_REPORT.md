@@ -12,10 +12,10 @@
 - **Diagnostic Plan Refinement & Sealed Input Bindings**:
   - Registered `content_grounded_diagnostic_plan.json` under SHA-256 `8f2d980965a56cf8939d774e36321e583a99ba89faba4a502d59c0a25a9630e3` with status strictly `PENDING` (human reviewer=null, timestamp=null).
   - Explicit bindings to sealed normalized PNGs from run `pilot-20261008T113700Z` (ZIP SHA-256 `3bdb1890...`, manifest `cf0e4300...`):
-    * `IND_COCO_SDXL_002` (bread tomato): auth `7aefc1d1...`, mask `2ff6b165...`.
-    * `IND_COMMONS_SD2_002` (suitcase): auth `98004bf7...`, mask `fee9ac7e...`.
-    * `IND_COMMONS_SDXL_001` (sky bird): auth `7680e4ce...`, mask `4981cedc...`.
-  - Remote redownload from web is strictly prohibited.
+    * `IND_COCO_SDXL_002` (bread tomato): auth `7aefc1d1...` (`images/IND_COCO_SDXL_002_auth.png`), mask `2ff6b165...` (`masks/IND_COCO_SDXL_002_mask.png`), seed 20272319, steps 30, EulerDiscreteScheduler.
+    * `IND_COMMONS_SD2_002` (suitcase): auth `98004bf7...` (`images/IND_COMMONS_SD2_002_auth.png`), mask `fee9ac7e...` (`masks/IND_COMMONS_SD2_002_mask.png`), seed 20283429, steps 50, DDIMScheduler.
+    * `IND_COMMONS_SDXL_001` (sky bird): auth `7680e4ce...` (`images/IND_COMMONS_SDXL_001_auth.png`), mask `4981cedc...` (`masks/IND_COMMONS_SDXL_001_mask.png`), seed 20294438, steps 30, EulerDiscreteScheduler.
+  - Remote redownload from web is strictly prohibited; runner checks both flat root (`base_dir / filename`) and standard package paths (`base_dir / images/` and `base_dir / masks/`).
 - **Reframed Objective & Theoretical Grounding**:
   - Compares full-canvas inference (Arm A) vs local-crop padded inference (Arm B) across insertion omissions.
   - Does NOT claim to isolate latent downsampling alone, because cropping simultaneously modifies visual context (field of view) and token relative scale.
@@ -24,10 +24,11 @@
   - SDXL candidates (tomato, bird): $(1024/256)^2 = 16.0\times$ geometric area ratio. Integer scale factor 4.0. Nearest-neighbor mask resize verified strictly binary $\{0, 255\}$.
   - SD2 suitcase candidate: $(512/320)^2 = 2.56\times$ geometric area ratio. Linear scale factor 1.6. Continuous mapping: $x \in [0.0, 360.0], y \in [236.8, 512.0]$. Nearest-neighbor sampling maps destination row $y_{dst}=236 \to$ source row 147 (0), $y_{dst}=237 \to$ source row 148 (255). Resized mask raster bbox: `[0, 237, 360, 512]`, pixel count: 99,000 px, values strictly in $\{0, 255\}$.
   - Latent pixel counts: methodologically estimated assuming 8x VAE downsampling ($13 \times 11 = 143$ vs $55 \times 45 = 2475$ for tomato; $28 \times 21 = 588$ vs $45 \times 34 = 1530$ for suitcase; $18 \times 14 = 252$ vs $75 \times 57 = 4275$ for bird), not directly measured tensor tokens.
-- **Fail-Closed Diagnostic Runner**:
+- **Fail-Closed Diagnostic Runner & Mock Safeguards**:
   - Implemented `ml/evaluation/independent_cohort_diagnostic.py` and CLI `--mode diagnostic` in `scripts/research/run_cohort_acquisition.py`.
   - Fail-closed approval guard (`DiagnosticPlanNotApprovedError`) blocks execution before any attempt is started if status != APPROVED.
   - Preflight `--check-diagnostic-plan` validates plan hash, input hashes, and budget before run directory creation.
+  - Mock engine is explicitly marked synthetic (`is_mock=True`, `is_synthetic=True`) and barred from production diagnostic (`DiagnosticEngineError` when allow_mock=False).
   - Generator is re-seeded independently per arm with candidate registered seed (no RNG state carry-over).
   - Preserves raw pre-composited generated images (`images/<arm_id>_raw_gen.png`) alongside final 512x512 composites.
   - Final compositing uses original registered canvas mask, guaranteeing bit-exact outside pixel invariance (`outside_mean_l1 == 0.000000`).
@@ -36,11 +37,15 @@
   - Generates self-contained HTML contact sheet (`diagnostic_contact_sheet.html`) with Base64 embedded images and PENDING Content QC status.
 - **Colab Handover Architecture**:
   - `notebooks/independent_cohort_acquisition_colab.ipynb` supports explicit selection `EXECUTION_MODE = "diagnostic"`.
-  - Preflight `--check-diagnostic-plan` verifies plan and Drive inputs (`RUNS_ROOT / "pilot-20261008T113700Z"`).
+  - Removed all guessing/fallback on `EXECUTION_MODE`; stops immediately before CLI if mode is missing or invalid.
+  - Records successful execution context (`RUN_CONTEXT`) in Cell 3 for Cell 4 audit and packaging.
+  - Preflight `--check-diagnostic-plan` verifies plan and Drive inputs (`RUNS_ROOT / "pilot-20261008T113700Z"`). Prioritizes reusing existing run directory on Drive if present.
   - Diagnostic results are isolated in dedicated run directory and do not enter the official independent cohort or alter historical pilot records.
-- **Verification**:
-  - `ml/tests/test_independent_cohort_diagnostic.py`: 9/9 PASS (100%).
-  - Zero GPU runs executed in this session. Human Content QC for `pilot-20261008T113700Z` remains PENDING. Zero detector calls, independent performance NOT_MEASURED, full cohort NOT_RUN.
+- **Verification & Governance**:
+  - `ml/tests/test_independent_cohort_diagnostic.py`: 11/11 PASS (100%).
+  - Zero GPU runs executed in this session.
+  - Human Content QC for `pilot-20261008T113700Z` remains PENDING (clarified as a distinct review decision, not a precondition for diagnostic execution).
+  - Approval procedure registered: upon human review approval, commit the plan with `human_review_status = "APPROVED"` and reviewer metadata in a functional commit, then pin notebook to the resulting commit. Zero detector calls, independent performance NOT_MEASURED, full cohort NOT_RUN.
 
 ## BB. Follow-up pilot technical diagnosis, threshold audit, and remediation plan (2026-10-08)
 

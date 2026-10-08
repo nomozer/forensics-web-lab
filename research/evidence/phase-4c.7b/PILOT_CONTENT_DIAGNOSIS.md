@@ -173,10 +173,10 @@ To directly evaluate full-canvas inference vs local-crop padded inference across
 - **Status**: Strictly `PENDING` (human_reviewer=null, human_reviewed_at_utc=null). Zero GPU runs executed.
 - **Objective Refinement**: Evaluates methodological differences between full-canvas and local-crop execution (including context window alteration, token scale shift, and geometric area scaling) and does NOT claim to isolate latent downsampling alone. Identical PRNG seeds across different tensor resolutions do not guarantee identical noise fields due to dimension-dependent sampling order.
 - **Candidate Scope & Input Bindings**: Exactly 3 candidates with insertion omissions bound to sealed authentic and mask PNG files from `pilot-20261008T113700Z`:
-  - `IND_COCO_SDXL_002` (bread tomato): auth SHA-256 `7aefc1d1...`, mask SHA-256 `2ff6b165...`.
-  - `IND_COMMONS_SD2_002` (suitcase): auth SHA-256 `98004bf7...`, mask SHA-256 `fee9ac7e...`.
-  - `IND_COMMONS_SDXL_001` (sky bird): auth SHA-256 `7680e4ce...`, mask SHA-256 `4981cedc...`.
-  - Input policy: Must use sealed normalized PNGs from `pilot-20261008T113700Z`; remote redownloading from the web is strictly prohibited.
+  - `IND_COCO_SDXL_002` (bread tomato): auth SHA-256 `7aefc1d1...` (`images/IND_COCO_SDXL_002_auth.png`), mask SHA-256 `2ff6b165...` (`masks/IND_COCO_SDXL_002_mask.png`), seed 20272319, steps 30, EulerDiscreteScheduler.
+  - `IND_COMMONS_SD2_002` (suitcase): auth SHA-256 `98004bf7...` (`images/IND_COMMONS_SD2_002_auth.png`), mask SHA-256 `fee9ac7e...` (`masks/IND_COMMONS_SD2_002_mask.png`), seed 20283429, steps 50, DDIMScheduler.
+  - `IND_COMMONS_SDXL_001` (sky bird): auth SHA-256 `7680e4ce...` (`images/IND_COMMONS_SDXL_001_auth.png`), mask SHA-256 `4981cedc...` (`masks/IND_COMMONS_SDXL_001_mask.png`), seed 20294438, steps 30, EulerDiscreteScheduler.
+  - Input policy: Must use sealed normalized PNGs from `pilot-20261008T113700Z`; remote redownloading from the web is strictly prohibited. Runner resolves inputs from both flat root (`base_dir / filename`) and standard package paths (`base_dir / images/` and `base_dir / masks/`). Prioritize reusing the existing run directory on Google Drive (`RUNS_ROOT / "pilot-20261008T113700Z"`).
 - **Controlled Arms**:
   - **Arm A (Full Canvas)**: Standard $512 \times 512$ inference under locked parameters (identical authentic, mask, prompt, seed from ledger, guidance 7.5, strength 1.0, scheduler, steps). Geometric area factor = $1.0\times$. Direct composite onto canvas; outside L1 = 0.000000.
   - **Arm B (Local Crop with Padding)**: Local square crop ($256 \times 256$ for SDXL, $320 \times 320$ for SD2) upscaled via Lanczos (RGB) and Nearest (mask) to model native resolution ($1024 \times 1024$ for SDXL, $512 \times 512$ for SD2) $\to$ inpainting $\to$ downscaled via Lanczos $\to$ remapped to canvas and composited strictly within registered binary mask. Outside pixels invariant ($0.000000$).
@@ -186,12 +186,15 @@ To directly evaluate full-canvas inference vs local-crop padded inference across
     - Latent pixel counts: methodologically estimated assuming 8x VAE downsampling ($13 \times 11 = 143$ vs $55 \times 45 = 2475$ for tomato; $28 \times 21 = 588$ vs $45 \times 34 = 1530$ for suitcase; $18 \times 14 = 252$ vs $75 \times 57 = 4275$ for bird), not directly measured tensor tokens.
 - **Experimental Invariant**: Negative prompt and feathering are strictly excluded from this comparison.
 - **Attempt Budget**: Exactly 6 attempts (3 candidates $\times$ 2 arms). One attempt per branch, no retries, no automatic replacement. Started attempts are recorded in durable ledger even if failed and count toward budget.
-- **Diagnostic Runner Implementation**: Implemented `ml/evaluation/independent_cohort_diagnostic.py` and CLI `--mode diagnostic` in `scripts/research/run_cohort_acquisition.py`. Enforces fail-closed approval gate, verifies input hashes, re-seeds RNG independently per arm with candidate registered seed, preserves raw pre-composited images, enforces outside L1 = 0, supports resume without re-running attempts, and generates self-contained HTML contact sheet with PENDING review status. Tested via `ml/tests/test_independent_cohort_diagnostic.py` (9/9 PASS).
+- **Diagnostic Runner Implementation**: Implemented `ml/evaluation/independent_cohort_diagnostic.py` and CLI `--mode diagnostic` in `scripts/research/run_cohort_acquisition.py`. Enforces fail-closed approval gate, verifies input hashes, re-seeds RNG independently per arm with candidate registered seed, bars mock engines (`DiagnosticEngineError` when allow_mock=False), preserves raw pre-composited images, enforces outside L1 = 0, supports resume without re-running attempts, and generates self-contained HTML contact sheet with PENDING review status. Tested via `ml/tests/test_independent_cohort_diagnostic.py` (11/11 PASS).
 - **Colab Handover Architecture**:
   - `notebooks/independent_cohort_acquisition_colab.ipynb` supports explicit selection `EXECUTION_MODE = "diagnostic"`.
+  - Removed all fallback/guessing on `EXECUTION_MODE`; stops immediately before CLI if mode is missing or invalid.
+  - Records successful execution context (`RUN_CONTEXT`) in Cell 3 for Cell 4 audit and packaging.
   - Preflight `--check-diagnostic-plan` validates plan hash and Drive inputs (`RUNS_ROOT / "pilot-20261008T113700Z"`).
   - PENDING plan status causes execution to fail-closed before consuming GPU attempts.
   - Diagnostic results are isolated in dedicated run directory and do not enter the official independent cohort or alter historical pilot records.
-- **Pending Human Decisions**:
-  1. Human Content QC determinations per candidate for `pilot-20261008T113700Z` (ACCEPT, REJECT, or instructions).
-  2. Human decision to approve or revise the proposed 6-attempt diagnostic plan (`content_grounded_diagnostic_plan.json`).
+- **Governance & Approval Protocol**:
+  1. Human Content QC determinations per candidate for `pilot-20261008T113700Z` remains PENDING. This is a separate review decision and is NOT a prerequisite for diagnostic execution.
+  2. Human decision to approve or revise the proposed 6-attempt diagnostic plan (`content_grounded_diagnostic_plan.json`) remains PENDING.
+  3. Approval workflow: When the user approves the diagnostic plan, commit the plan with `human_review_status = "APPROVED"` and reviewer metadata in a functional commit, then pin `EXPECTED_COMMIT` in the notebook to that new commit and commit/push together.
