@@ -69,23 +69,23 @@
       }
     },
     {
-      "candidate_id": "IND_COCO_SDXL_001",
+      "candidate_id": "IND_COCO_SDXL_041",
       "stratum_id": "coco_sdxl",
       "tool_key": "sdxl_inpainting",
       "modification_type": "object_insertion",
       "mask_area_class": "large_over_30pct",
-      "target_description": "a framed botanical print to insert on the empty upper-left wall",
-      "placement_rationale": "The upper-left wall was proposed as the support surface, but the required large-class rectangle overlaps the cat and sink; no safe placement is established and generation must remain blocked pending a reviewed revision.",
-      "target_bbox_xyxy": [65, 55, 220, 245],
-      "mask_bbox_xyxy": [0, 0, 300, 300],
-      "prompt": "a framed botanical print hanging flat on the bathroom wall, realistic perspective and indoor lighting",
+      "target_description": "the ceiling area above the living room for a crystal chandelier",
+      "placement_rationale": "The flat living room ceiling is visually clear and unobstructed; the 31.25% mask covers the ceiling plane without occluding the walls, armchair, painting, or curtain valance.",
+      "target_bbox_xyxy": [180, 15, 332, 145],
+      "mask_bbox_xyxy": [0, 0, 512, 160],
+      "prompt": "an elegant crystal chandelier hanging from the living room ceiling, warm interior illumination matching the residential lighting",
       "instruction_review": {
-        "target_or_placement": "PLACEMENT_CONFLICT",
-        "bbox_prompt_alignment": "PROMPT_MATCHES_INTENT_BUT_NOT_SAFE_REGION",
-        "mask_scope": "OVERLAPS_CAT_AND_SINK",
-        "agent_status": "NEEDS_USER_DECISION",
-        "note": "The registered 300x300 large-class rectangle covers substantial portions of the existing cat and sink. No safe large insertion region is established on this image. Recommended handling is a reviewed amendment that substitutes a source candidate within coco_sdxl while preserving tool, object_insertion, large_over_30pct, stratum quota, and the one-attempt rule; the runner must not choose a replacement automatically.",
-        "human_decision_required": "Do not approve as written. Decide whether to authorize the recommended reviewed candidate substitution while preserving the locked allocation, or reject the proposed follow-up pilot."
+        "target_or_placement": "VERIFIED_SCENE_COMPATIBLE_PLACEMENT",
+        "bbox_prompt_alignment": "ALIGNED",
+        "mask_scope": "LIMITED_TO_CEILING",
+        "agent_status": "READY_FOR_HUMAN_DECISION",
+        "note": "The ceiling is completely flat and unobstructed with zero human or furniture occlusion. The 31.25% mask respects the 30%-50% bracket and leaves all living room fixtures outside the mask.",
+        "human_decision_required": "Approve proposed candidate substitution of IND_COCO_SDXL_041 (living room ceiling chandelier) replacing blocked candidate IND_COCO_SDXL_001."
       }
     },
     {
@@ -114,18 +114,18 @@
       "tool_key": "stable_diffusion_2_inpainting",
       "modification_type": "object_removal_and_infill",
       "mask_area_class": "medium_10_to_30pct",
-      "target_description": "the foreground forested rocky headland occupying the lower-right quadrant",
-      "placement_rationale": "The existing landform is identified before removal; the revised region contains its visible cliff and vegetation while leaving the sky and main horizon outside the mask.",
-      "target_bbox_xyxy": [245, 310, 512, 512],
-      "mask_bbox_xyxy": [220, 285, 512, 512],
+      "target_description": "the foreground forested rocky headland, cliff base, offshore rocks, and pine canopy occupying the lower-right quadrant",
+      "placement_rationale": "The foreground headland, cliff, and offshore rocks are identified before removal; the mask completely envelops 100% of the landform, submerged rock base, and pine tree canopy while leaving the sunset sky, horizon, beach, and town outside the mask.",
+      "target_bbox_xyxy": [205, 308, 512, 512],
+      "mask_bbox_xyxy": [190, 305, 512, 512],
       "prompt": "open sea and distant coastline continuing naturally through the removed foreground headland, photorealistic sunset landscape",
       "instruction_review": {
         "target_or_placement": "VERIFIED_EXISTING_TARGET",
         "bbox_prompt_alignment": "ALIGNED_AFTER_REVISION",
-        "mask_scope": "REVISED_TO_FULL_LANDFORM",
+        "mask_scope": "ENVELOPES_FULL_FOREGROUND_LANDFORM",
         "agent_status": "READY_FOR_HUMAN_DECISION",
-        "note": "The prior bbox mixed distant and foreground landforms and cut off the lower target. The revision identifies the foreground headland and keeps the sky outside the mask.",
-        "human_decision_required": "Approve or revise removal of the full foreground headland."
+        "note": "The mask extends left to x=190 (enveloping the cliff base at x=205 and offshore rocks) and upward to y=305 (enveloping all pine tree crowns at y>=308). The distant town, hotel, beach, and main horizon remain outside the mask.",
+        "human_decision_required": "Approve or revise the full foreground headland removal region."
       }
     },
     {
@@ -169,23 +169,23 @@
       }
     },
     {
-      "candidate_id": "IND_COMMONS_SDXL_002",
+      "candidate_id": "IND_COMMONS_SDXL_003",
       "stratum_id": "commons_sdxl",
       "tool_key": "sdxl_inpainting",
       "modification_type": "object_replacement",
       "mask_area_class": "large_over_30pct",
-      "target_description": "the bronze child figure held across the adult figure's arms",
-      "placement_rationale": "The child figure is visibly bounded before generation; the large registered region covers it and its contact with the adult's arms.",
-      "target_bbox_xyxy": [150, 185, 405, 400],
-      "mask_bbox_xyxy": [110, 170, 440, 410],
-      "prompt": "a bronze bouquet of flowers held naturally in the figure's arms, matching the sculpture material, patina, and daylight",
+      "target_description": "the vertical abstract aluminium sculpture column 'Tower Song' by Ted Bieler",
+      "placement_rationale": "The abstract column is a single isolated vertical structure on open park lawn; the large mask envelopes it completely from top to bottom while leaving the lawn, background trees, river, and railing outside the mask.",
+      "target_bbox_xyxy": [190, 0, 360, 512],
+      "mask_bbox_xyxy": [170, 0, 380, 512],
+      "prompt": "a classical fluted Greco-Roman marble column standing naturally in the public park, realistic outdoor daylight and weathered stone texture",
       "instruction_review": {
         "target_or_placement": "VERIFIED_EXISTING_TARGET",
-        "bbox_prompt_alignment": "ALIGNED_AFTER_REVISION",
-        "mask_scope": "TIGHTENED_BUT_INCLUDES_CONTACT_ARMS",
-        "agent_status": "READY_WITH_EXPLICIT_RISK_DECISION",
-        "note": "The child figure is visible and the mask is tighter than before. Because the child contacts the adult's arms and hands, the registered region includes those contact surfaces. Compositing preserves pixels outside the mask only; inside it, diffusion may alter the adult statue's hands, arms, anatomy, pose, or perceived identity as well as the child.",
-        "human_decision_required": "Approve only if that contact/identity confound inside the mask is acceptable for the study; otherwise require a reviewed target or candidate revision."
+        "bbox_prompt_alignment": "ALIGNED",
+        "mask_scope": "ENVELOPES_ISOLATED_COLUMN",
+        "agent_status": "READY_FOR_HUMAN_DECISION",
+        "note": "The sculpture is a single isolated column with zero human figures or intertwined limbs. The 41.02% mask encloses the entire aluminium structure from top to bottom while preserving the surrounding landscape.",
+        "human_decision_required": "Approve proposed candidate substitution of IND_COMMONS_SDXL_003 replacing IND_COMMONS_SDXL_002, or retain candidate 002 with explicit confound risk acceptance."
       }
     }
   ]
