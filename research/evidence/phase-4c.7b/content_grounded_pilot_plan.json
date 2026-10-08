@@ -57,14 +57,14 @@
       "target_description": "the white range hood and honey-colored upper cabinets above the stove and counter",
       "placement_rationale": "The upper fixture group is visible before generation; the large region remains above the foreground table and fruit bowl and avoids the lower stove body.",
       "target_bbox_xyxy": [145, 125, 410, 260],
-      "mask_bbox_xyxy": [95, 75, 415, 315],
+      "mask_bbox_xyxy": [95, 75, 415, 323],
       "prompt": "matte navy-blue upper kitchen cabinets with a stainless-steel range hood, realistic residential interior photograph",
       "instruction_review": {
         "target_or_placement": "VERIFIED_EXISTING_TARGET",
         "bbox_prompt_alignment": "ALIGNED_AFTER_REVISION",
         "mask_scope": "SCENE_SCALE_TARGET_WITH_CONTEXT",
         "agent_status": "READY_FOR_HUMAN_DECISION",
-        "note": "The prior bbox cut through the stove/cabinet unit and its mask approached the fruit bowl. The revision targets only the visible upper fixture group while retaining the required large class.",
+        "note": "The prior [95,75,415,315] bbox covered 29.296875% and did not satisfy large_over_30pct. Extending its lower edge by 8 px within the same backsplash/upper-fixture context yields 30.273438%, stays above the foreground bowl, and preserves the intended target and quota.",
         "human_decision_required": "Approve or revise the upper-cabinet/range-hood replacement."
       }
     },
@@ -84,8 +84,8 @@
         "bbox_prompt_alignment": "PROMPT_MATCHES_INTENT_BUT_NOT_SAFE_REGION",
         "mask_scope": "OVERLAPS_CAT_AND_SINK",
         "agent_status": "NEEDS_USER_DECISION",
-        "note": "The registered 300x300 large-class rectangle covers substantial portions of the existing cat and sink. The rationale claiming it does not replace the cat is not supported by the image.",
-        "human_decision_required": "Do not approve as written. Decide whether to revise the locked candidate/class through a reviewed plan amendment; no safe large insertion region was established on this image."
+        "note": "The registered 300x300 large-class rectangle covers substantial portions of the existing cat and sink. No safe large insertion region is established on this image. Recommended handling is a reviewed amendment that substitutes a source candidate within coco_sdxl while preserving tool, object_insertion, large_over_30pct, stratum quota, and the one-attempt rule; the runner must not choose a replacement automatically.",
+        "human_decision_required": "Do not approve as written. Decide whether to authorize the recommended reviewed candidate substitution while preserving the locked allocation, or reject the proposed follow-up pilot."
       }
     },
     {
@@ -184,8 +184,8 @@
         "bbox_prompt_alignment": "ALIGNED_AFTER_REVISION",
         "mask_scope": "TIGHTENED_BUT_INCLUDES_CONTACT_ARMS",
         "agent_status": "READY_WITH_EXPLICIT_RISK_DECISION",
-        "note": "The child figure is visible and the mask is tighter than before. Because the child contacts the adult's arms and hands, some contact-region alteration is unavoidable for this large replacement.",
-        "human_decision_required": "Approve only if alteration risk to the adult arms/hands is acceptable; otherwise revise the instruction."
+        "note": "The child figure is visible and the mask is tighter than before. Because the child contacts the adult's arms and hands, the registered region includes those contact surfaces. Compositing preserves pixels outside the mask only; inside it, diffusion may alter the adult statue's hands, arms, anatomy, pose, or perceived identity as well as the child.",
+        "human_decision_required": "Approve only if that contact/identity confound inside the mask is acceptable for the study; otherwise require a reviewed target or candidate revision."
       }
     }
   ]

@@ -60,6 +60,15 @@ MASK_AREA_BOUNDS = {
     "large_over_30pct": (0.28, 0.52),
 }
 
+# Reviewed rectangular edit plans must satisfy the named protocol classes
+# themselves. MASK_AREA_BOUNDS includes a +/-2 percentage-point raster
+# tolerance for Technical QC and is therefore intentionally not used here.
+REGISTERED_MASK_AREA_BOUNDS = {
+    "small_under_10pct": (0.01, 0.10),
+    "medium_10_to_30pct": (0.10, 0.30),
+    "large_over_30pct": (0.30, 0.50),
+}
+
 # Stratum keys
 STRATA_KEYS = ("coco_sd2", "coco_sdxl", "commons_sd2", "commons_sdxl")
 STRATUM_TARGET_PAIRS = 100
@@ -626,10 +635,11 @@ def _validate_content_grounded_candidate(spec: CandidateSpec) -> None:
     if not (mx0 <= tx0 < tx1 <= mx1 and my0 <= ty0 < ty1 <= my1):
         raise ContentGroundingError(f"{spec.candidate_id}: target_bbox_xyxy must be contained by mask_bbox_xyxy")
     ratio = ((mx1 - mx0) * (my1 - my0)) / (TARGET_CANVAS_SIZE[0] * TARGET_CANVAS_SIZE[1])
-    low, high = MASK_AREA_BOUNDS[spec.mask_area_class]
+    low, high = REGISTERED_MASK_AREA_BOUNDS[spec.mask_area_class]
     if not low <= ratio <= high:
         raise ContentGroundingError(
-            f"{spec.candidate_id}: planned mask ratio {ratio:.4f} outside [{low}, {high}] "
+            f"{spec.candidate_id}: registered mask ratio {ratio:.6f} outside protocol class "
+            f"[{low}, {high}] "
             f"for {spec.mask_area_class}"
         )
 

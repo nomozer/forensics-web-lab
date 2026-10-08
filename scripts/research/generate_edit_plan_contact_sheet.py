@@ -22,6 +22,7 @@ def generate_contact_sheet(run_dir: Path, edit_plan_path: Path, output_path: Pat
         embedded_image = "data:image/png;base64," + base64.b64encode(auth_path.read_bytes()).decode("ascii")
         mx0, my0, mx1, my1 = entry["mask_bbox_xyxy"]
         tx0, ty0, tx1, ty1 = entry["target_bbox_xyxy"]
+        mask_ratio = ((mx1 - mx0) * (my1 - my0)) / (512 * 512)
         review = entry.get("instruction_review", {})
         review_rows.append(
             "<tr>"
@@ -29,6 +30,7 @@ def generate_contact_sheet(run_dir: Path, edit_plan_path: Path, output_path: Pat
             f"<td>{html.escape(str(review.get('target_or_placement', 'NOT_REVIEWED')))}</td>"
             f"<td>{html.escape(str(review.get('bbox_prompt_alignment', 'NOT_REVIEWED')))}</td>"
             f"<td>{html.escape(str(review.get('mask_scope', 'NOT_REVIEWED')))}</td>"
+            f"<td>{mask_ratio:.6%}</td>"
             f"<td>{html.escape(str(review.get('agent_status', 'NOT_REVIEWED')))}</td>"
             f"<td>{html.escape(str(review.get('human_decision_required', 'Review the instruction.')))}</td>"
             "</tr>"
@@ -52,6 +54,7 @@ def generate_contact_sheet(run_dir: Path, edit_plan_path: Path, output_path: Pat
       <dt>Rationale</dt><dd>{html.escape(entry['placement_rationale'])}</dd>
       <dt>Prompt</dt><dd>{html.escape(entry['prompt'])}</dd>
       <dt>Coordinates</dt><dd>target {entry['target_bbox_xyxy']}; mask {entry['mask_bbox_xyxy']}</dd>
+      <dt>Mask area</dt><dd><b>Mask area:</b> {mask_ratio:.6%} of the normalized 512x512 canvas</dd>
       <dt>Agent instruction review</dt><dd>{html.escape(str(review.get('note', 'Not reviewed.')))}</dd>
       <dt>Human decision required</dt><dd>{html.escape(str(review.get('human_decision_required', 'Review the instruction.')))}</dd>
     </dl>
@@ -82,7 +85,7 @@ dl {{ max-width: 650px; margin: 0; }} dt {{ color: #7dd3fc; font-weight: 700; ma
 <p class="warning"><b>Agent pre-screen only:</b> instruction checks below do not approve Human Content QC. A row marked NEEDS_USER_DECISION blocks generation approval.</p>
 <h2>Eight-instruction review table</h2>
 <table>
-  <thead><tr><th>Candidate</th><th>Target / placement</th><th>Bbox + prompt</th><th>Mask scope</th><th>Agent status</th><th>Human decision</th></tr></thead>
+  <thead><tr><th>Candidate</th><th>Target / placement</th><th>Bbox + prompt</th><th>Mask scope</th><th>Mask area</th><th>Agent status</th><th>Human decision</th></tr></thead>
   <tbody>{''.join(review_rows)}</tbody>
 </table>
 {''.join(cards)}

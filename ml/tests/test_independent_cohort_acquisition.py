@@ -326,6 +326,52 @@ def test_content_grounded_edit_plan_requires_targets_and_preserves_pilot_quotas(
         load_content_grounded_edit_plan(plan, path, target_per_stratum=2)
 
 
+def test_content_grounded_large_bbox_must_exceed_protocol_boundary(tmp_path):
+    plan = _synthetic_plan(seed=20261007)
+    selected = [c for c in plan if c.pool_index < 2]
+    entries = []
+    for candidate in selected:
+        mask_bbox = {
+            "small_under_10pct": [100, 100, 220, 220],
+            "medium_10_to_30pct": [100, 100, 350, 350],
+            "large_over_30pct": [50, 50, 450, 350],
+        }[candidate.mask_area_class]
+        entries.append({
+            "candidate_id": candidate.candidate_id,
+            "stratum_id": candidate.stratum_id,
+            "tool_key": candidate.tool_key,
+            "modification_type": candidate.modification_type,
+            "mask_area_class": candidate.mask_area_class,
+            "prompt": "content-grounded prompt",
+            "target_description": "registered target",
+            "placement_rationale": "registered placement",
+            "target_bbox_xyxy": [140, 140, 200, 200],
+            "mask_bbox_xyxy": mask_bbox,
+        })
+    invalid = next(entry for entry in entries if entry["mask_area_class"] == "large_over_30pct")
+    invalid["mask_bbox_xyxy"] = [95, 75, 415, 315]
+    path = tmp_path / "invalid-large-plan.json"
+    path.write_text(json.dumps({
+        "attempt_budget": 8,
+        "automatic_replacement": False,
+        "locked_quota_summary": {
+            "stratum_counts": {key: 2 for key in STRATA_KEYS},
+            "modification_type_counts": {
+                key: sum(entry["modification_type"] == key for entry in entries)
+                for key in ("object_replacement", "object_removal_and_infill", "object_insertion")
+            },
+            "mask_area_class_counts": {
+                key: sum(entry["mask_area_class"] == key for entry in entries)
+                for key in ("small_under_10pct", "medium_10_to_30pct", "large_over_30pct")
+            },
+        },
+        "candidates": entries,
+    }), encoding="utf-8")
+
+    with pytest.raises(ContentGroundingError, match=r"0\.292969.*large_over_30pct"):
+        load_content_grounded_edit_plan(plan, path, target_per_stratum=2)
+
+
 def test_production_fails_before_writes_without_content_grounding(tmp_path):
     ungrounded = [replace(c, is_synthetic=False) for c in _synthetic_plan() if c.pool_index == 0]
     output = tmp_path / "must-not-exist"
@@ -692,6 +738,7 @@ def test_edit_plan_contact_sheet_is_self_contained_and_labels_agent_review(tmp_p
     assert "Agent pre-screen only" in rendered
     assert "READY_FOR_HUMAN_DECISION" in rendered
     assert "Review status:</b> PENDING" in rendered
+    assert "Mask area:</b> 0.610352%" in rendered
 
 
 def test_provisional_cohort_evaluator_verdict():

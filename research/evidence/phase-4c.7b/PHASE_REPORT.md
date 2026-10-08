@@ -9,6 +9,22 @@
 
 ---
 
+## X. Pilot dossier geometry correction and test-temp cleanup (2026-10-08)
+
+- Recomputed the exact normalized-canvas rectangular mask for every proposed instruction: `IND_COCO_SD2_001` 3.566742%, `IND_COCO_SD2_002` 30.273438% after correction, `IND_COCO_SDXL_001` 34.332275%, `IND_COCO_SDXL_002` 3.776550%, `IND_COMMONS_SD2_001` 25.285339%, `IND_COMMONS_SD2_002` 14.762878%, `IND_COMMONS_SDXL_001` 6.580353%, and `IND_COMMONS_SDXL_002` 30.212402%.
+- The former `IND_COCO_SD2_002` bbox `[95,75,415,315]` occupied only 29.296875% and contradicted `large_over_30pct`. The corrected `[95,75,415,323]` bbox occupies 30.273438%; the added 8-pixel strip stays in the same backsplash/upper-fixture context and above the foreground bowl. No quota label or QC threshold was relaxed.
+- Registered rectangular plans now fail closed against protocol ranges (1–10%, 10–30%, 30–50%) rather than borrowing the broader Technical QC raster tolerance. A regression reproduces and rejects the former 29.296875% large bbox.
+- `IND_COCO_SDXL_001` remains unresolved: the current image has no safe region that is both a plausible insertion support and large-class mask. Recommended handling is a separately reviewed source-candidate substitution inside `coco_sdxl` that preserves tool, modification, mask class, stratum quota, budget, and one-attempt policy; no replacement candidate was selected automatically.
+- `IND_COMMONS_SDXL_002` remains a human risk decision: its child-statue target touches the adult statue's hands and arms, so diffusion can alter adult anatomy, pose, or perceived identity inside the registered mask. Compositing only guarantees the outside-mask pixels by construction.
+- Regenerated the existing `next_pilot_edit_plan_contact_sheet.html` in place with eight embedded authentic PNGs, eight overlays, an eight-row decision table, and exact mask percentages. It has zero relative image references and remains `human_review_status=PENDING`.
+- Traced six stale direct-child pytest basetemp roots to explicit workspace `--basetemp` commands and synthetic test fixtures. They contained 9,916 files, 873 directories, and 2,375,435,081 bytes. No tracked fault-injection test was found to modify ACL. Only those six exact verified roots had inheritance restored recursively before deletion; parent ACL and all real artifacts remained untouched.
+- Added marker-, prefix-, and direct-parent-locked pytest session cleanup in `finally`. Regression tests refuse unmarked and real-run-like names and demonstrate cleanup after a deliberately failing session as well as normal success.
+- Reverified sealed real artifacts after cleanup: ZIP SHA-256 `1fcd1de57373c7250583d87a4a4050a91d918b8bd62ec105d4aab737d340053d`; manifest SHA-256 `caa0766addff4d87d9d11206f1e398a29ca04c58f0013866fac749fac09bc416`; attempt and provenance ledgers remain present.
+- Verification: 83 related tests PASS / 2 artifact-network-gated skips; the marked workspace basetemp was absent after the suite. Python compile, continuity checker, and `git diff --check` pass.
+- No generation, training, detector, evaluator, full acquisition, or Human Content QC approval occurred.
+
+---
+
 ## W. Content diagnosis and controlled corrective preparation (2026-10-07)
 
 - Follow-up review on 2026-10-08 rechecked all eight planned instructions against the normalized authentic images. Five target/mask/prompt records were tightened or reframed, three remained aligned, and `IND_COCO_SDXL_001` is explicitly `NEEDS_USER_DECISION` because its large insertion rectangle overlaps the cat and sink; generation remains blocked.

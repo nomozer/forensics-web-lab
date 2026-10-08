@@ -1,6 +1,6 @@
 # Content-grounded editing amendment
 
-Metadata: workstream `independent_cohort_acquisition`; historical phase trace `4C.7B`; amendment version `1.4.0`; status `PROPOSED_FOR_HUMAN_REVIEW`.
+Metadata: workstream `independent_cohort_acquisition`; historical phase trace `4C.7B`; amendment version `1.5.0`; status `PROPOSED_FOR_HUMAN_REVIEW`.
 
 This amendment changes only future runs. It does not rename, move, modify, or reinterpret any sealed artifact or checksum from earlier runs.
 
@@ -24,6 +24,8 @@ Before any production generation attempt, each candidate must have a reviewed ed
 
 Removal and replacement require a visible existing target identified before generation. Insertion requires a scene-compatible support/placement region identified before generation. The runner must fail closed when any field is missing, the target lies outside the mask, or the mask violates its registered area class.
 
+Registered rectangular plans are checked against the protocol classes themselves: small is 1–10%, medium is 10–30%, and large is 30–50% of the normalized canvas. The broader Technical QC raster tolerance is not permission to register a bbox in the wrong named class. This distinction corrects `IND_COCO_SD2_002`: `[95,75,415,315]` was only 29.296875%; the proposed `[95,75,415,323]` region is 30.273438% and extends only within the same upper-fixture/backsplash context.
+
 Generated output is composited with the authentic image using the binary request mask before Technical QC. This makes pixels outside the requested region invariant. Technical QC enforces the registered `5.0`, `3.0`, and `0.5` thresholds for non-blank standard deviation, masked L1 change, and unmasked L1 change respectively.
 
 An outside-mask mean L1 value of exactly `0` after this compositing step is true **by construction**: those pixels are copied from the authentic image. It does not demonstrate that the raw diffusion output independently preserved pixels outside the mask.
@@ -34,7 +36,9 @@ A reviewer may accept a future pair only when the intended operation is visibly 
 
 ## Bounded follow-up pilot
 
-The next proposed pilot has a maximum budget of eight attempts: two registered candidates per stratum, with the same eight source IDs, tools, modification-type distribution (3 replacement, 1 removal, 4 insertion), and mask-class distribution (3 small, 2 medium, 3 large) as the audited pilot. The registered instructions are in `content_grounded_pilot_plan.json`.
+The next proposed pilot has a maximum budget of eight attempts: two registered candidates per stratum, with the same tools, modification-type distribution (3 replacement, 1 removal, 4 insertion), and mask-class distribution (3 small, 2 medium, 3 large) as the audited pilot. The registered instructions are in `content_grounded_pilot_plan.json`.
+
+One instruction is intentionally unresolved. `IND_COCO_SDXL_001` has no safe large insertion region on its current cat/sink image. The recommended remedy is a separately reviewed amendment substituting one source candidate within `coco_sdxl` while preserving `sdxl_inpainting`, `object_insertion`, `large_over_30pct`, the two-per-stratum quota, and the one-attempt rule. This proposal supersedes the earlier same-eight-source constraint only if a human explicitly approves it; no replacement candidate is selected or authorized here. `IND_COMMONS_SDXL_002` also requires an explicit risk decision because its child-statue target contacts the adult statue's arms and hands: pixels outside the mask remain identical by construction, but diffusion may alter adult anatomy, pose, or perceived identity inside the mask.
 
 No automatic replacement candidate is authorized. Each registered candidate may be generated once. Any generation error or Technical QC rejection is recorded and leaves a quota deficit; a new reviewed plan is required before another attempt. The committed plan remains `human_review_status: PENDING`, and the production CLI refuses generation until a human records approval. Human Content QC may later accept or reject generated pairs; this document does not pre-approve any result.
 
