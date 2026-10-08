@@ -1,8 +1,8 @@
 # Real pilot content diagnosis
 
-> Run: `pilot-20261007T132003Z`  
-> Scope: the eight accepted authentic–mask–edited tuples only  
-> Status: `AGENT_DIAGNOSIS_COMPLETE_HUMAN_CONTENT_QC_PENDING`  
+> Run: `pilot-20261007T132003Z`
+> Scope: the eight accepted authentic–mask–edited tuples only
+> Status: `AGENT_DIAGNOSIS_COMPLETE_HUMAN_CONTENT_QC_PENDING`
 > This document is not Human Content QC approval.
 
 ## Reproducible facts
@@ -197,3 +197,92 @@ To directly evaluate full-canvas inference vs local-crop padded inference across
   1. Human Content QC determinations per candidate for `pilot-20261008T113700Z` remains PENDING. This is a separate review decision and is NOT a prerequisite for diagnostic execution.
   2. Diagnostic plan (`content_grounded_diagnostic_plan.json`) is APPROVED by human reviewer Dũng Phạm `<valdung04@gmail.com>` at `2026-10-08T15:17:27Z`. Approved plan SHA-256 is `e352504016960a24c3c539b5d33a2876c222d1975426a7911de0ec35fe9df157`.
   3. Notebook pin workflow: Approved functional commit is registered and pushed, with `EXPECTED_COMMIT` in `notebooks/independent_cohort_acquisition_colab.ipynb` pinned directly to the functional commit.
+
+---
+
+### 2.8. Diagnostic Run Execution, Audit & Empirical A/B Evaluation (`diag-20261008T154628Z`)
+
+> Run: `diag-20261008T154628Z`<br>
+> Source commit: `0f99897c8ee003dc8ecbb55b09c4aaeb2994c2bc`<br>
+> Approved plan SHA-256: `e352504016960a24c3c539b5d33a2876c222d1975426a7911de0ec35fe9df157`<br>
+> Status: `DIAGNOSTIC_INTAKE_AND_AUDIT_PASS_PENDING_HUMAN_CONTENT_QC`<br>
+> Package ZIP SHA-256: `f13d7baf458e9db86809bced5a20c27f37adb6f698353a5678b200262a481d20` (15,988,679 bytes)<br>
+> Isolation notice: Exploratory diagnostic run; strictly excluded from official cohort. Zero detector models evaluated. Full cohort remains locked.
+
+#### 2.8.1. Archive Intake and Production Audit
+
+- **Archive Safety Verification**: ZIP archive `data/research/local-artifacts/phase-4c.7b/diag-20261008T154628Z_package.zip` inspected prior to extraction. Contains exactly 30 entries (zero directory traversal `..`, zero absolute paths, zero leading slashes). Extracted safely into dedicated run folder `data/research/local-artifacts/phase-4c.7b/diag-20261008T154628Z/`. All original ZIP, image, mask, receipt, and ledger files preserved intact without overwriting historical pilot runs.
+- **Binding & Production CLI Audit**:
+  - Production CLI audit executed at bound commit `0f99897c8ee003dc8ecbb55b09c4aaeb2994c2bc`: `python scripts/research/run_cohort_acquisition.py --audit-run diag-20261008T154628Z` $\to$ **`PASS`**.
+  - Run ID verified: `diag-20261008T154628Z`.
+  - Source commit verified: `0f99897c8ee003dc8ecbb55b09c4aaeb2994c2bc`.
+  - Approved plan hash verified: `e352504016960a24c3c539b5d33a2876c222d1975426a7911de0ec35fe9df157`.
+  - Attempt count verified: exactly 6 attempts across 3 candidates $\times$ 2 arms (`IND_COCO_SDXL_002`, `IND_COMMONS_SD2_002`, `IND_COMMONS_SDXL_001`). Note: `STARTED` and `ACCEPTED` in `attempt_ledger.jsonl` represent two lifecycle events within each attempt, not 12 attempts.
+  - Input integrity verified: all authentic and mask PNG hashes match the approved plan JSON and match bit-identically to sealed normalized inputs from `pilot-20261008T113700Z` (`max_auth_diff == 0`, `max_mask_diff == 0`).
+
+#### 2.8.2. Exact Recalculated Pixel-Level Metrics
+
+Recalculated directly from on-disk RGB arrays (`auth.png`, `edit.png`, and `mask.png`):
+
+| Candidate ID | Target Object | Model | Arm | Area Scale | Raw Gen Shape | Inside Mean L1 (std) | Inside Max Delta | Outside Mean L1 | Outside Max Delta |
+| :--- | :--- | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| `IND_COCO_SDXL_002` | Cherry tomato on bread | SDXL | **Arm A** | 1.0× | (512, 512, 3) | 16.7861 (13.73) | 81.0 | 0.000000 | 0.0 |
+| `IND_COCO_SDXL_002` | Cherry tomato on bread | SDXL | **Arm B** | 4.0× | (1024, 1024, 3) | 28.2929 (32.96) | 176.0 | 0.000000 | 0.0 |
+| `IND_COMMONS_SD2_002` | Wheeled travel suitcase | SD2 | **Arm A** | 1.0× | (512, 512, 3) | 30.7358 (24.12) | 146.0 | 0.000000 | 0.0 |
+| `IND_COMMONS_SD2_002` | Wheeled travel suitcase | SD2 | **Arm B** | 1.6× | (512, 512, 3) | 43.3932 (40.49) | 226.0 | 0.000000 | 0.0 |
+| `IND_COMMONS_SDXL_001` | Flying bird in cloudy sky | SDXL | **Arm A** | 1.0× | (512, 512, 3) | 11.0767 (9.00) | 43.0 | 0.000000 | 0.0 |
+| `IND_COMMONS_SDXL_001` | Flying bird in cloudy sky | SDXL | **Arm B** | 4.0× | (1024, 1024, 3) | 13.0674 (32.45) | 214.0 | 0.000000 | 0.0 |
+
+*Strict Invariance*: Across all 6 attempts, `outside_mean_l1 == 0.000000` and `outside_max_delta == 0.0` hold bit-identically by virtue of registered canvas mask compositing.
+
+#### 2.8.3. Visual Evaluation and Metric Dissociation
+
+Comprehensive visual inspection reveals critical qualitative distinctions that metrics alone fail to capture:
+
+1. **`IND_COCO_SDXL_002` (Cherry Tomato)**:
+   - *Arm A (Full Canvas)*: **Complete Omission**. Zero tomatoes generated. Inpainted area consists entirely of bread crumb texture smoothly blending into background bread slice.
+   - *Arm B (Local Crop)*: **Semantic Success**. A realistic red cherry tomato materialized with spherical 3D volume, directional specular highlight matching scene lighting, and a distinct 5-point green calyx/stem.
+   - *Boundary Observation*: Minor rectangular contrast step visible in crumb texture along the crop bounding box unpadding boundary `[345, 245, 455, 335]`.
+2. **`IND_COMMONS_SD2_002` (Suitcase)**:
+   - *Arm A (Full Canvas)*: **Complete Omission**. Zero luggage generated. Masked area filled with plain cobblestone pavement texture.
+   - *Arm B (Local Crop)*: **Semantic Hallucination**. Prompt requested "a sturdy wheeled travel suitcase... standing on the street". Instead, the model generated a miniature bronze/brown vintage automobile with roof and wheels!
+   - *Crucial Finding (Metric Dissociation)*: Inside mean L1 rose from 30.74 (Arm A) to 43.39 (Arm B, max delta 226). **This empirically proves that higher inside L1 does NOT indicate content generation success.** The hallucinated car produced the largest pixel change while completely failing the semantic prompt.
+   - *Boundary Observation*: The car's ground shadow extends toward the lower-left and is abruptly truncated at the registered mask boundary `x=0, y=512`, producing a severed shadow seam.
+3. **`IND_COMMONS_SDXL_001` (Sky Bird)**:
+   - *Arm A (Full Canvas)*: **Complete Omission**. Zero birds generated. Masked area filled with flat purplish-grey sky patch.
+   - *Arm B (Local Crop)*: **Semantic Success**. High-fidelity silhouetted bird in flight with spread wings, distinct flight feathers, and matching perspective.
+   - *Boundary Observation*: Seamlessly integrated into surrounding cloudy sky with zero visible boundary steps or seam artifacts.
+
+#### 2.8.4. Execution Evidence and Runtime Profiling
+
+- **Crop and Resolution Evidence**: SDXL Arm B raw generated images (`images/<id>_raw_gen.png`) verified at native $1024 \times 1024$; SD2 Arm B raw image verified at native $512 \times 512$ under 1.6× padding. Resized mask raster bboxes and pixel counts match the registered rounding rules exactly.
+- **Timing and Warmup Confounds**: Elapsed times recorded in receipts:
+  - `IND_COCO_SDXL_002`: Arm A 114.331s, Arm B 24.717s
+  - `IND_COMMONS_SD2_002`: Arm A 71.547s, Arm B 7.487s
+  - `IND_COMMONS_SDXL_001`: Arm A 37.614s, Arm B 26.883s
+  - *Confound Disclosure*: Arm A runtimes include initial model pipeline loading from Hugging Face cache/disk into VRAM and initial CUDA kernel compilation. Arm B runs executed immediately afterward with the pipeline already resident in memory. Therefore, **Arm B cannot be claimed to be faster than Arm A**. In fact, for SDXL, Arm B processed $4\times$ the latent resolution ($128 \times 128$ vs $64 \times 64$), reflected in higher peak VRAM usage (8.96 GiB vs 7.17 GiB).
+- **Recorded Runtime Environment**:
+  - OS: Linux `6.6.122+-x86_64-with-glibc2.39`
+  - Python: `3.13.15`
+  - NumPy: `2.1.3`
+  - Pillow: `11.3.0`
+  - *Unrecorded Fields*: PyTorch version, Diffusers version, Transformers version, CUDA version, and specific GPU hardware model (e.g., T4/A100) were not captured in `run_binding.json` or `diagnostic_receipt.json`. Stated factually without speculation.
+
+#### 2.8.5. Methodological Limitations
+
+1. **Sample Size & Seed Confound**: Results represent exactly 3 candidates with $n=1$ seed per candidate. These findings are methodological case studies, not statistical generalizations.
+2. **Context Window vs Latent Resolution**: Cropping simultaneously alters the visual context window (field of view) and increases latent spatial capacity. In SDXL, increasing latent tokens enabled object formation; in SD2, restricting context to the car street biased generation toward automotive tokens. Thus, latent downsampling cannot be claimed as the sole causal mechanism.
+3. **PRNG Sampling Sequence**: PyTorch generator noise sampling order depends on tensor dimension; identical integer seeds across $512 \times 512$ ($64 \times 64$ latent) and $1024 \times 1024$ ($128 \times 128$ latent) do not produce identical noise patterns.
+
+#### 2.8.6. Contact Sheet & Governance Determinations
+
+- **Contact Sheet**: Fully self-contained HTML contact sheet enriched with base64 embedded images, summary comparative table, agent qualitative evaluations, and governance blocks at `data/research/local-artifacts/phase-4c.7b/diag-20261008T154628Z/diagnostic_contact_sheet.html`.
+- **Agent Recommendations**:
+  - Never use inside L1 as an automated acceptance proxy.
+  - Do not adopt local crop uniformly across architectures; context bias must be mitigated.
+  - Calibrate unpadding boundary blending if crops are ever evaluated for production.
+  - Keep diagnostic run isolated from official cohort.
+- **Specific Decisions Requiring User Approval**:
+  - *Decision 1 (Diagnostic Human Content QC)*: Formal determination on 6 attempts (Agent disposition: REJECT Arm A omissions 3/3; REJECT `IND_COMMONS_SD2_002_ARM_B` car hallucination; ACCEPT semantic object for `IND_COCO_SDXL_002_ARM_B` and `IND_COMMONS_SDXL_001_ARM_B`). Canonical status remains strictly `PENDING_CONTENT_QC` awaiting user review.
+  - *Decision 2 (Historical Pilot 8 Pairs)*: Retain `PENDING_CONTENT_QC` across all 8 historical pilot pairs; zero pilot pairs promoted.
+  - *Decision 3 (Full Cohort Acquisition Strategy)*: Full cohort generation remains **LOCKED**. User review required to determine future pipeline architecture.
