@@ -8,6 +8,7 @@
   4. Five remaining instructions approved according to plan: pan insertion `IND_COCO_SD2_001`, kitchen upper-cabinets/hood replacement `IND_COCO_SD2_002`, bread tomato insertion `IND_COCO_SDXL_002`, suitcase replacement `IND_COMMONS_SD2_002`, monument sky bird insertion `IND_COMMONS_SDXL_001`.
 - **Execution bounds**: Retains strictly 8 one-shot attempts (2 per stratum), 1 attempt/candidate, `automatic_replacement=false`.
 - **Colab handover**: Approved plan committed and notebook pinned for Colab GPU execution. Zero generation in local session; zero training, detector scoring, evaluator execution, PR, or merge to main.
+- **Notebook Pin & Functional Commit**: Canonical notebook pins approved functional commit `d9d99b678053972436032a828056a76a6392fbb5` with plan SHA-256 `eeace0e57a34f9f3824a3ce1a52bfa374670dca3cc19c668554d62257141632d`.
 - **Scientific boundary**: Approval authorizes the execution plan only; generated image pairs remain subject to Technical QC and Human Content QC upon acquisition.
 
 ## Follow-up pilot instruction resolution and amendment v1.6.0 (Phase trace 4C.7B preserved)

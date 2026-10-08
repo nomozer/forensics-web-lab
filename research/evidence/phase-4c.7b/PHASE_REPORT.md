@@ -3,7 +3,7 @@
 > **Phase**: Phase 4C.7B — Independent Cohort Acquisition & Feasibility Alignment (revision 5 implementation plus audited real-pilot intake)<br>
 > **Status**: `FOLLOWUP_PILOT_PLAN_APPROVED_READY_FOR_EXECUTION`. The follow-up pilot edit plan (SHA-256 `eeace0e57a34f9f3824a3ce1a52bfa374670dca3cc19c668554d62257141632d`) was approved by human reviewer Dũng Phạm <valdung04@gmail.com> at 2026-10-08T07:34:38Z for Google Colab GPU execution (budget: 8 one-shot attempts). Generated outputs remain subject to Technical QC and Human Content QC upon acquisition.<br>
 > **Findings status**: `NOT_MEASURED` (0 detector calls, 0 cohort evaluation)<br>
-> **Current corrective functional commit**: `06fe6a1e897288cf48c4d3c0dec00d0f6b39c2e2`; canonical notebook pins this exact full SHA; historical audited pilot remains bound to `7d2eea4027e2a17b51e6665ff81d481e4e333d48`.<br>
+> **Current corrective functional commit**: `d9d99b678053972436032a828056a76a6392fbb5`; canonical notebook pins this exact full SHA; historical audited pilot remains bound to `7d2eea4027e2a17b51e6665ff81d481e4e333d48`.<br>
 > **Real pilot**: `TECHNICAL_PASS_PENDING_HUMAN_CONTENT_QC` (8 pairs acquired; full 400-pair run remains `NOT_RUN`)<br>
 > **Training runs**: 0 fits, 0 refits; frozen models untouched; retired locked-test not accessed (only its 343 source IDs are read for the disjoint guard)<br>
 
