@@ -75,7 +75,7 @@
       "modification_type": "object_insertion",
       "mask_area_class": "large_over_30pct",
       "target_description": "the open ceiling area above the living room for a crystal chandelier",
-      "placement_rationale": "The living room ceiling is flat and visually clear; the revised 30.27% mask covers the ceiling plane up to y=155, clearing the top edge of the left curtain valance (y≈157) and the ceiling-wall junction (y≈173), avoiding walls, armchair, and paintings.",
+      "placement_rationale": "The living room ceiling is flat and visually clear; the revised 30.27% mask covers the ceiling plane up to y=155, clearing the ceiling-wall junction (y>=173) and furniture, but has minor localized boundary contact of ~3-4 px depth with the left curtain valance apex at x in [12, 25].",
       "target_bbox_xyxy": [180, 15, 332, 140],
       "mask_bbox_xyxy": [0, 0, 512, 155],
       "prompt": "an elegant crystal chandelier hanging from the living room ceiling, warm interior illumination matching the residential lighting",

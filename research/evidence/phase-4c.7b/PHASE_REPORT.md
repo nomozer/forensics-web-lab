@@ -15,12 +15,12 @@
   3. `IND_COMMONS_SDXL_003`: Substituted intertwined adult/child limbs candidate `IND_COMMONS_SDXL_002` with candidate `IND_COMMONS_SDXL_003` ("Tower Song" Ted Bieler isolated vertical sculpture column, CC BY-SA 4.0; pool index 2) within `commons_sdxl`, preserving `sdxl_inpainting`, `object_replacement`, and `large_over_30pct`. Registers visible vertical shaft cropped by canvas boundaries (`target_bbox: [190, 0, 360, 512]`); mask `[170, 0, 380, 512]` ($210 \times 512 = 107,520$ px = **41.015625%**) completely eliminates limb confounds, while documenting explicit inpainting alteration risk for background trees/river/railing within $x \in [170, 380]$ (outside preserved by compositing). Option 2B retaining candidate 002 corrected to 30.212402% (not 30.8716%).
 - **Exact coordinate-derived area synchronization**: Synchronized exact areas across plan, amendment, report, and contact sheet:
   - Pan `IND_COCO_SD2_001` `[195, 95, 280, 205]`: $85 \times 110 = 9,350$ px = **3.566742%** (`small_under_10pct`).
-  - Dishwasher `IND_COCO_SD2_002` `[95, 75, 415, 323]`: $320 \times 248 = 79,360$ px = **30.273438%** (`large_over_30pct`).
+  - Kitchen upper-cabinets/range-hood `IND_COCO_SD2_002` `[95, 75, 415, 323]`: $320 \times 248 = 79,360$ px = **30.273438%** (`large_over_30pct`).
   - Chandelier `IND_COCO_SDXL_041` `[0, 0, 512, 155]`: $512 \times 155 = 79,360$ px = **30.273438%** (`large_over_30pct`).
-  - Bread tomato `IND_COCO_SDXL_002` `[190, 240, 300, 330]`: $110 \times 90 = 9,900$ px = **3.776550%** (`small_under_10pct`).
+  - Bread tomato `IND_COCO_SDXL_002` `[345, 245, 455, 335]`: $110 \times 90 = 9,900$ px = **3.776550%** (`small_under_10pct`).
   - Headland `IND_COMMONS_SD2_001` (Option A) `[190, 305, 512, 512]`: $322 \times 207 = 66,654$ px = **25.426483%** (`medium_10_to_30pct`).
   - Suitcase `IND_COMMONS_SD2_002` `[0, 340, 225, 512]`: $225 \times 172 = 38,700$ px = **14.762878%** (`medium_10_to_30pct`).
-  - Train bird `IND_COMMONS_SDXL_001` `[350, 45, 500, 160]`: $150 \times 115 = 17,250$ px = **6.580353%** (`small_under_10pct`).
+  - Monument sky bird `IND_COMMONS_SDXL_001` `[350, 45, 500, 160]`: $150 \times 115 = 17,250$ px = **6.580353%** (`small_under_10pct`).
   - Column `IND_COMMONS_SDXL_003` `[170, 0, 380, 512]`: $210 \times 512 = 107,520$ px = **41.015625%** (`large_over_30pct`).
 - **Self-contained HTML dossier**: Regenerated `next_pilot_edit_plan_contact_sheet.html` with all 8 authentic base64 PNGs, SVG overlays, summary table, and three zoomed-in boundary inspection crops (curtain valance apex at $y=155$, shoreline structures at $y=305$, and offshore rocks at $x=190$ vs $x=220$). `human_review_status` remains `PENDING`.
 - **Scientific boundary**: No image generation, training, detector execution, evaluator scoring, or automatic candidate replacement occurred.
