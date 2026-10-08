@@ -1,5 +1,6 @@
 ## Follow-up pilot approval dossier hardened (Phase trace 4C.7B preserved)
 
+- **Functional binding**: Dossier/runtime source commit `6550a4675ec7ad7518d16e6da2c5d5e243fe9f26`; canonical acquisition notebook pins this exact full SHA.
 - **Instruction audit**: Rechecked all eight authentic images at 512x512 against operation, prompt, target bbox, mask bbox, and mask scope. Five instructions were tightened/reframed, three remained aligned, and `IND_COCO_SDXL_001` is explicitly blocked for user decision because the proposed large insertion mask overlaps the cat and sink.
 - **Review artifact**: Updated the existing outside-Git `next_pilot_edit_plan_contact_sheet.html` in place. It contains 8 embedded authentic PNGs, target/mask overlays, and an 8-row decision table; it has no relative image dependency and remains `human_review_status=PENDING`.
 - **Execution guards**: Plan loading now requires the exact 8-attempt budget, declared quotas matching the eight bound candidates, and `automatic_replacement=false`. Resume never retries a candidate already present in the attempt ledger. Full acquisition is explicitly blocked before run setup.
