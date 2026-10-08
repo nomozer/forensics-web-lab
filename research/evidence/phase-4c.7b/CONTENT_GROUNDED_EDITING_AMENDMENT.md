@@ -1,6 +1,6 @@
 # Content-grounded editing amendment
 
-Metadata: workstream `independent_cohort_acquisition`; historical phase trace `4C.7B`; amendment version `1.6.0`; status `PROPOSED_FOR_HUMAN_REVIEW`.
+Metadata: workstream `independent_cohort_acquisition`; historical phase trace `4C.7B`; amendment version `1.6.0`; status `APPROVED_BY_HUMAN_REVIEWER`.
 
 This amendment changes only future runs. It does not rename, move, modify, or reinterpret any sealed artifact or checksum from earlier runs.
 
@@ -48,6 +48,6 @@ Version 1.6.0 resolves the three open follow-up instructions for human review:
 
 4. **Coordinate-derived area verification across all instructions**: Exact mask areas computed mathematically from bounding-box coordinates on the normalized $512 \times 512$ ($262,144$ px) canvas are synchronized across all documents: pan `IND_COCO_SD2_001` mask `[195, 95, 280, 205]` is $85 \times 110 = 9,350$ px = **3.566742%** (`small_under_10pct`); suitcase `IND_COMMONS_SD2_002` mask `[0, 340, 225, 512]` is $225 \times 172 = 38,700$ px = **14.762878%** (`medium_10_to_30pct`); kitchen upper-cabinets/range-hood `IND_COCO_SD2_002` mask `[95, 75, 415, 323]` is $320 \times 248 = 79,360$ px = **30.273438%** (`large_over_30pct`); bread tomato `IND_COCO_SDXL_002` mask `[345, 245, 455, 335]` is $110 \times 90 = 9,900$ px = **3.776550%** (`small_under_10pct`); and monument sky bird `IND_COMMONS_SDXL_001` mask `[350, 45, 500, 160]` is $150 \times 115 = 17,250$ px = **6.580353%** (`small_under_10pct`). Together with the three resolved instructions above (Option A headland removal at 25.426483%, chandelier insertion at 30.273438%, and column replacement at 41.015625%), all 8 instructions strictly satisfy the 3 small, 2 medium, 3 large quota bracket distribution.
 
-No automatic replacement candidate is authorized. Each registered candidate may be generated once. Any generation error or Technical QC rejection is recorded and leaves a quota deficit; a new reviewed plan is required before another attempt. The committed plan remains `human_review_status: PENDING`, and the production CLI refuses generation until a human records approval. Human Content QC may later accept or reject generated pairs; this document does not pre-approve any result.
+No automatic replacement candidate is authorized. Each registered candidate may be generated once. Any generation error or Technical QC rejection is recorded and leaves a quota deficit; a new reviewed plan is required before another attempt. The committed plan has been approved by human reviewer Dũng Phạm <valdung04@gmail.com> at 2026-10-08T07:34:38Z (plan SHA-256 `eeace0e57a34f9f3824a3ce1a52bfa374670dca3cc19c668554d62257141632d`). Human Content QC may later accept or reject generated pairs upon acquisition; this approval authorizes execution of the plan only and does not pre-approve generated image pairs.
 
-Full acquisition remains blocked until the user reviews the plan/overlays, a future eight-pair pilot completes, and Human Content QC records an explicit decision.
+Full acquisition remains blocked until the eight-pair pilot completes, and Human Content QC records an explicit decision.

@@ -1,11 +1,27 @@
 # Phase 4C.7B — Independent Cohort Acquisition: Protocol Amendment, Automated Pipeline, and Feasibility Alignment
 
 > **Phase**: Phase 4C.7B — Independent Cohort Acquisition & Feasibility Alignment (revision 5 implementation plus audited real-pilot intake)<br>
-> **Status**: `PILOT_DIAGNOSED_CORRECTIVE_PLAN_PENDING_HUMAN_REVIEW`. The historical run remains audit-valid as produced, but post-audit diagnosis proves its Technical QC omitted locked checks and its prompts/masks were not content-grounded. Human Content QC remains pending and full acquisition remains locked.<br>
+> **Status**: `FOLLOWUP_PILOT_PLAN_APPROVED_READY_FOR_EXECUTION`. The follow-up pilot edit plan (SHA-256 `eeace0e57a34f9f3824a3ce1a52bfa374670dca3cc19c668554d62257141632d`) was approved by human reviewer Dũng Phạm <valdung04@gmail.com> at 2026-10-08T07:34:38Z for Google Colab GPU execution (budget: 8 one-shot attempts). Generated outputs remain subject to Technical QC and Human Content QC upon acquisition.<br>
 > **Findings status**: `NOT_MEASURED` (0 detector calls, 0 cohort evaluation)<br>
 > **Current corrective functional commit**: `06fe6a1e897288cf48c4d3c0dec00d0f6b39c2e2`; canonical notebook pins this exact full SHA; historical audited pilot remains bound to `7d2eea4027e2a17b51e6665ff81d481e4e333d48`.<br>
 > **Real pilot**: `TECHNICAL_PASS_PENDING_HUMAN_CONTENT_QC` (8 pairs acquired; full 400-pair run remains `NOT_RUN`)<br>
 > **Training runs**: 0 fits, 0 refits; frozen models untouched; retired locked-test not accessed (only its 343 source IDs are read for the disjoint guard)<br>
+
+## Z. Follow-up pilot plan approval by human reviewer (2026-10-08)
+
+- **Formal human approval recorded**: User reviewed the complete 8-instruction follow-up pilot plan (pre-approval hash `0614fd5fd316e91df545fe940a853fea3bfb9de34142a1f2b8c6c3ae2d0f6fa3`) and formally approved execution:
+  - Reviewer identity: `Dũng Phạm <valdung04@gmail.com>`.
+  - Approval timestamp: `2026-10-08T07:34:38Z`.
+  - Approved plan SHA-256: `eeace0e57a34f9f3824a3ce1a52bfa374670dca3cc19c668554d62257141632d` (`content_grounded_pilot_plan.json`).
+- **Explicit authorizations**:
+  1. `IND_COCO_SDXL_041` substituting candidate 001 (chandelier insertion), with accepted minor localized boundary contact with curtain valance apex at $x \in [12, 25], y=155$.
+  2. Option A `[190, 305, 512, 512]` (25.426483%) for `IND_COMMONS_SD2_001`, with accepted inpainting infill/regeneration of shoreline structures within mask.
+  3. `IND_COMMONS_SDXL_003` substituting candidate 002 ("Tower Song" Ted Bieler isolated column replacement), with accepted inpainting alteration risk for background trees/river/railing within $x \in [170, 380]$.
+  4. Remaining five instructions approved according to plan: `IND_COCO_SD2_001` (pan), `IND_COCO_SD2_002` (cabinets/hood), `IND_COCO_SDXL_002` (tomato), `IND_COMMONS_SD2_002` (suitcase), `IND_COMMONS_SDXL_001` (bird).
+- **Execution bounds**: Maximum 8 one-shot attempts (2 per stratum), 1 attempt/candidate, `automatic_replacement=false`.
+- **Scientific boundary**: Approval applies strictly to the plan; generated images remain subject to Technical QC and Human Content QC upon acquisition. Zero generation in local session; zero training, detector calls, evaluator execution, PR, or merge to main.
+
+---
 
 ## Y. Follow-up pilot instruction resolution, optical boundary review, and exact area synchronization (2026-10-08)
 

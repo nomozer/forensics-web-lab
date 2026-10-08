@@ -1,3 +1,15 @@
+## Follow-up pilot edit plan human approval recorded (Phase trace 4C.7B preserved)
+
+- **Human approval recorded**: Plan `content_grounded_pilot_plan.json` (SHA-256 `eeace0e57a34f9f3824a3ce1a52bfa374670dca3cc19c668554d62257141632d`) approved by human reviewer Dũng Phạm `<valdung04@gmail.com>` at `2026-10-08T07:34:38Z`.
+- **Approved instruction determinations**:
+  1. `IND_COCO_SDXL_041`: Substituted candidate 001 (chandelier insertion), with accepted minor localized boundary contact with curtain valance apex at $x \in [12, 25], y=155$.
+  2. `IND_COMMONS_SD2_001`: Approved Option A `[190, 305, 512, 512]` (25.426483%), with accepted inpainting infill/regeneration of shoreline structures within mask.
+  3. `IND_COMMONS_SDXL_003`: Substituted candidate 002 (Ted Bieler "Tower Song" column replacement), with accepted inpainting alteration risk for background trees/river/railing within $x \in [170, 380]$.
+  4. Five remaining instructions approved according to plan: pan insertion `IND_COCO_SD2_001`, kitchen upper-cabinets/hood replacement `IND_COCO_SD2_002`, bread tomato insertion `IND_COCO_SDXL_002`, suitcase replacement `IND_COMMONS_SD2_002`, monument sky bird insertion `IND_COMMONS_SDXL_001`.
+- **Execution bounds**: Retains strictly 8 one-shot attempts (2 per stratum), 1 attempt/candidate, `automatic_replacement=false`.
+- **Colab handover**: Approved plan committed and notebook pinned for Colab GPU execution. Zero generation in local session; zero training, detector scoring, evaluator execution, PR, or merge to main.
+- **Scientific boundary**: Approval authorizes the execution plan only; generated image pairs remain subject to Technical QC and Human Content QC upon acquisition.
+
 ## Follow-up pilot instruction resolution and amendment v1.6.0 (Phase trace 4C.7B preserved)
 
 - **Instruction resolution on authentic images**: Re-audited and resolved the three open follow-up pilot instructions against normalized 512×512 images, with verified areas and honest risk disclosures:
