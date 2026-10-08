@@ -15,15 +15,15 @@
 
 ### Ứng viên A1: LAID MobileNetV3-Small / ShuffleNetV2
 - **Candidate ID**: `CAND-A1-LAID`
-- **Official repository**: `https://github.com/nchivar/LAID`
-- **Paper**: "LAID: Lightweight AI-Generated Image Detection in Spatial and Spectral Domains", Nicholas Chivaran & Jianbing Ni, PST 2025 ([arXiv:2507.05162](https://arxiv.org/abs/2507.05162))
+- **Official repository**: `https://github.com/nchivar/LAID` `[@laidRepository]`
+- **Paper**: "LAID: Lightweight AI-Generated Image Detection in Spatial and Spectral Domains", Nicholas Chivaran & Jianbing Ni, arXiv:2507.05162; repository tác giả ghi accepted at PST 2025 `[@chivaran2025laid; @laidRepository]`.
 - **Exact source URL**: `https://github.com/nchivar/LAID` (Release / Google Drive folder liên kết trong README)
-- **Repository commit or release**: Commit `main` (tháng 12/2025)
+- **Repository commit or release**: Revision `9bd6f07db6c220e53d4f2e07ea00bbda761874e3` (đọc 2026-10-09).
 - **Code license**: `unspecified` (Kho lưu trữ GitHub không có file `LICENSE`, đường dẫn `LICENSE` trả về HTTP 404)
 - **Weights license**: `unverified` (Weights được chia sẻ qua Google Drive công khai, không đính kèm tệp văn bản cấp phép cụ thể)
 - **Commercial/research restrictions**: Giấy phép bài báo trên arXiv là `CC BY 4.0`, nhưng mã nguồn và weights chưa có giấy phép phần mềm chính thức rõ ràng.
 - **Architecture**: MobileNetV3-Small / ShuffleNetV2
-- **Parameter count**: ~2.54M (MobileNetV3-Small) hoặc ~1.4M (ShuffleNetV2 0.5x)
+- **Parameter count**: 2,542,856 cho torchvision MobileNetV3-Small `IMAGENET1K_V1` `[@torchvisionMobilenetV3Small]`; con số ~1.4M cho ShuffleNetV2 0.5x chưa được primary LAID page xác minh trong lần rà soát này.
 - **Checkpoint format**: PyTorch (`.pth`)
 - **Estimated checkpoint size**: ~10 MB (MobileNetV3) hoặc ~5.5 MB (ShuffleNet) (`estimated`)
 - **Input size**: $224 \times 224 \times 3$
@@ -45,13 +45,13 @@
 
 ### Ứng viên B1: SAGI-D Inpainting Forensics (mever-team/SAGI)
 - **Candidate ID**: `CAND-B1-SAGI-D`
-- **Official repository**: `https://github.com/mever-team/SAGI`
-- **Paper**: "SAGI: Semantically Aligned and Uncertainty Guided AI Image Inpainting", CVPR 2025 ([arXiv:2502.06593](https://arxiv.org/abs/2502.06593))
+- **Official repository**: `https://github.com/mever-team/SAGI` `[@sagiRepository]`
+- **Paper**: "SAGI: Semantically Aligned and Uncertainty Guided AI Image Inpainting", ICCV 2025 `[@giakoumoglou2025sagi]`.
 - **Exact source URL**: `https://github.com/mever-team/SAGI`
-- **Repository commit or release**: Commit `main` (tháng 02/2025)
-- **Code license**: `unverified`
+- **Repository commit or release**: Revision `4ddc5cf1204e56690df97ed06b1e879df082402e` (đọc 2026-10-09).
+- **Code license**: `Apache-2.0` tại repository revision đã ghi; quyền phân phối dataset/source images vẫn `unverified`.
 - **Weights license**: `unverified`
-- **Commercial/research restrictions**: Nghiên cứu học thuật CVPR 2025
+- **Commercial/research restrictions**: Paper ICCV 2025; license code không tự động mở rộng sang dataset/source images.
 - **Architecture**: N/A (SAGI là công trình tạo sinh inpainting và dataset benchmark, không phát hành checkpoint phát hiện)
 - **Parameter count**: `unverified`
 - **Checkpoint format**: `none`
@@ -73,15 +73,15 @@
 
 ### Ứng viên B2: TruFor (grip-unina/TruFor)
 - **Candidate ID**: `CAND-B2-TRUFOR`
-- **Official repository**: `https://github.com/grip-unina/TruFor`
-- **Paper**: "TruFor: Leveraging RGB and Noise Analysis for Forensic Image Manipulation Detection and Localization", Guillaro et al., CVPR 2023
+- **Official repository**: `https://github.com/grip-unina/TruFor` `[@truforRepository]`
+- **Paper**: "TruFor: Leveraging All-Round Clues for Trustworthy Image Forgery Detection and Localization", Guillaro et al., CVPR 2023 `[@guillaro2023trufor]`.
 - **Exact source URL**: `https://github.com/grip-unina/TruFor`
-- **Repository commit or release**: Tag v1.0
+- **Repository commit or release**: Revision `ae54475df6f41a491d7615100feb19263dec13f7` (không tìm thấy tag `v1.0` qua remote refs tại ngày đọc).
 - **Code license**: Custom GRIP-UNINA Non-Commercial / Research License
 - **Weights license**: Strictly non-commercial research use only
 - **Commercial/research restrictions**: Giới hạn nghiêm ngặt phi thương mại (Non-commercial research only)
 - **Architecture**: Cross-modal Transformer kết hợp RGB và Noiseprint residual
-- **Parameter count**: ~68.4M tham số
+- **Parameter count**: ~68.4M tham số (`unverified` trong lần rà soát này; paper/repository pages đã đọc không cung cấp con số này).
 - **Checkpoint format**: PyTorch (`.pth.tar`)
 - **Estimated checkpoint size**: ~260 MB (`estimated`)
 - **Input size**: Kích thước động (tối thiểu $512 \times 512$)
@@ -92,7 +92,7 @@
 - **Known generator coverage**: Một số mô hình inpainting cổ điển và GAN
 - **ONNX export feasibility**: Trung bình (có custom transformer attention và multi-scale fusion)
 - **WASM operator compatibility**: Khó khăn trên browser thuần WASM CPU do chi phí tính toán lớn và bộ nhớ vượt ngưỡng
-- **Expected browser memory**: > 400 MB RAM (vượt ngưỡng cho phép < 35 MB)
+- **Expected browser memory**: > 400 MB RAM (`estimated`, chưa có browser measurement artifact).
 - **Known limitations**: Kích thước checkpoint quá lớn (~260 MB), kiến trúc nặng nề không phù hợp chạy thuần CPU trong Web Worker trình duyệt; giấy phép phi thương mại hạn chế khả năng triển khai sản phẩm thực tế.
 - **Download status**: `not-downloaded`
 - **Admission status**: `rejected` (vượt quá giới hạn kích thước và tài nguyên trình duyệt client-side, giấy phép phi thương mại khắt khe).
@@ -103,15 +103,15 @@
 
 ### Ứng viên C1: CNNDetection (Wang et al. CVPR 2020)
 - **Candidate ID**: `CAND-C1-CNNDET`
-- **Official repository**: `https://github.com/PeterWang512/CNNDetection`
-- **Paper**: "CNN-generated images are surprisingly easy to spot... for now", Sheng-Yu Wang et al., CVPR 2020
+- **Official repository**: `https://github.com/PeterWang512/CNNDetection` `[@cnnDetectionRepository]`
+- **Paper**: "CNN-generated images are surprisingly easy to spot... for now", Sheng-Yu Wang et al., CVPR 2020 `[@wang2020cnndetection]`.
 - **Exact source URL**: `https://github.com/PeterWang512/CNNDetection`
-- **Repository commit or release**: Release v1.0 (`blur_jpg_prob0.1.pth`)
+- **Repository commit or release**: Revision `ea0b5622365e3a9cd31d1b54b6b5971131a839ab` (không tìm thấy tag `v1.0` qua remote refs tại ngày đọc); repository links checkpoint `blur_jpg_prob0.1.pth`.
 - **Code license**: Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)
 - **Weights license**: CC BY-NC-SA 4.0
 - **Commercial/research restrictions**: Giới hạn phi thương mại (Non-Commercial) và chia sẻ tương tự (ShareAlike)
 - **Architecture**: ResNet-50 (hoặc MobileNet baseline thử nghiệm)
-- **Parameter count**: 25.6M (ResNet-50)
+- **Parameter count**: 25.6M (ResNet-50; architecture-level value, chưa đối chiếu một artifact checkpoint cục bộ).
 - **Checkpoint format**: PyTorch (`.pth`)
 - **Estimated checkpoint size**: ~98 MB (FP32) (`estimated`)
 - **Input size**: $224 \times 224 \times 3$
@@ -139,7 +139,7 @@
 - **Weights license**: `not-applicable` *(Chưa có trọng số. Quyền phân phối trọng số sau này phụ thuộc vào pretrained backbone khởi tạo, mã nguồn và giấy phép của các dataset được dùng để huấn luyện)*
 - **Commercial/research restrictions**: Phụ thuộc vào dữ liệu huấn luyện thực tế trong tương lai
 - **Architecture**: MobileNetV3-Small tinh gọn, sửa đổi classifier head cho 3 lớp bài toán
-- **Parameter count**: ~2.54M tham số (`architecture-only`)
+- **Parameter count**: 2,542,856 cho backbone torchvision chuẩn `[@torchvisionMobilenetV3Small]`; tổng custom-head configuration phải lấy từ artifact/run tương ứng (`architecture-only`, không suy thành checkpoint forensic).
 - **Checkpoint format**: `none` *(Chưa huấn luyện, chưa xuất file checkpoint thật)*
 - **Estimated checkpoint size**: ~10.2 MB (FP32), ~2.6 MB (INT8 Quantized) (`estimated`, chưa đo trên artifact thật)
 - **Input size**: $224 \times 224 \times 3$
@@ -149,7 +149,7 @@
 - **Training datasets**: Chưa tải dataset nào (`none`)
 - **Known generator coverage**: `unverified` (chưa có mô hình để đánh giá độ phủ)
 - **ONNX export feasibility**: `pipeline-only` (đã kiểm chứng mã xuất ONNX trên mô hình khởi tạo ngẫu nhiên/chưa huấn luyện trong unit test, chưa kiểm thử trên checkpoint thật)
-- **WASM operator compatibility**: `pipeline-only` (các operator cơ bản Conv2d, Linear, BatchNorm đã được hỗ trợ trong ONNX Runtime Web WASM, nhưng độ tương thích đa trình duyệt thực tế trên Chrome/Edge/Firefox/Safari là `unverified`)
+- **WASM operator compatibility**: `pipeline-only` (ONNX Runtime Web documentation liệt kê WebAssembly browser support `[@onnxRuntimeWebDocs]`, nhưng độ tương thích của model thật trên Chrome/Edge/Firefox/Safari vẫn `unverified` trong dự án).
 - **Expected browser memory**: ~25–35 MB RAM (`estimated`)
 - **Known limitations**: Chưa có dữ liệu huấn luyện; chưa có trọng số; chưa từng đo đạc chỉ số khoa học thực tế; bộ dữ liệu nhỏ (< 50 MB) chỉ đủ cho pipeline smoke test, không đủ để tạo ra mô hình phát hiện đáng tin cậy hay đưa ra tuyên bố khoa học.
 - **Download status**: `not-downloaded`

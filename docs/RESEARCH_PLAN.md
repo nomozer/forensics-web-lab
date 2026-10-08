@@ -14,7 +14,7 @@
   * Phát triển mô hình mạng nơ-ron tích chập nhẹ phân loại ảnh 3 lớp (`authentic`, `fully_generated`, `ai_edited`).
   * Xây dựng cơ chế hiệu chuẩn xác suất và từ chối dự đoán khi thiếu độ tin cậy (trạng thái `uncertain`).
   * Đánh giá độ bền vững (robustness) trước các suy giảm phổ biến trên môi trường mạng.
-  * Hiện thực hóa pipeline suy luận trực tiếp trên trình duyệt web người dùng (In-Browser Inference qua ONNX Runtime Web WASM/WebGPU, Zero Server Egress).
+  * Hiện thực hóa pipeline suy luận trực tiếp trên trình duyệt web người dùng (In-Browser Inference qua ONNX Runtime Web WASM/WebGPU, Zero Server Egress) `[@onnxRuntimeWebDocs]`. Documentation chỉ xác nhận khả năng nền tảng; runtime với model thật của dự án vẫn phải benchmark nội bộ.
   * Khảo sát năng lực định vị vùng chỉnh sửa (localization) như một mục tiêu phụ khi có ground-truth mask.
 
 ---
@@ -40,7 +40,7 @@ Hệ thống học máy được huấn luyện trên không gian nhãn 3 lớp 
 
 ### 3.1. Mục tiêu Khoa học Chính (Primary Scientific Objectives)
 1. **Phân loại 3 lớp bằng mô hình nhẹ**: Đánh giá năng lực của kiến trúc gọn nhẹ ($< 15\text{M}$ tham số) trong việc phân biệt `authentic`, `fully_generated`, `ai_edited` trên tập kiểm thử độc lập, không rò rỉ nhóm ảnh gốc (`source_id`).
-2. **Hiệu chuẩn độ tin cậy (Confidence Calibration)**: Ứng dụng Temperature Scaling để đảm bảo xác suất dự báo phản ánh sát xác suất đúng thực tế (tối thiểu hóa Expected Calibration Error - ECE).
+2. **Hiệu chuẩn độ tin cậy (Confidence Calibration)**: Đánh giá Temperature Scaling như một phương pháp post-hoc calibration `[@guo2017calibration]`; không giả định phương pháp chắc chắn làm giảm ECE trong dự án nếu chưa đo trên split hiệu chuẩn độc lập.
 3. **Đánh giá Robustness thực tế**: Kiểm tra độ bền vững của mô hình trước nén JPEG, thay đổi kích thước (resizing), làm mờ (blur), ảnh chụp màn hình (screenshot) và ảnh định dạng WebP.
 4. **Triển khai In-Browser Runtime CPU/WASM**: Thực hiện chuyển đổi sang ONNX, lượng tử hóa INT8 và kiểm chứng hiệu năng suy luận client-side an toàn, không gửi ảnh về máy chủ.
 
@@ -88,8 +88,8 @@ Các giả thuyết được thiết lập theo nguyên tắc có thể bác b�
 | Dataset | Vai trò nghiên cứu | Nhãn đóng góp | Rủi ro chính | Biện pháp kiểm soát | Trạng thái |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Synthetic Smoke** | Fixture kiểm thử kỹ thuật pipeline | authentic, fully_generated, ai_edited (hình học giả lập) | Dữ liệu vẽ bằng code, không có giá trị học máy | Đặt track `fixture-only`, cấm huấn luyện model sản phẩm | `verified` |
-| **GenImage** | Huấn luyện & benchmark ảnh tạo hoàn toàn | `fully_generated` (8 generator), `authentic` (ImageNet val) | Chỉ có ảnh fully generated, không có mask inpainting; archive lớn | Phân luồng Research Track; First fully inventoried archive (BigGAN ~24 GB) | `verified` |
-| **TGIF / TGIF2** | Huấn luyện & benchmark ảnh chỉnh sửa | `ai_edited` (spliced `sp`), `authentic` (MS-COCO pairs), masks (`fr` quarantined) | Dung lượng lớn (65.4 GB - 110 GB); điều khoản CC BY-SA 4.0; `fr` cấm gán `fully_generated` | Nextcloud cho phép tải độc lập thư mục nhỏ; cách ly trong Research Track; `sp` dùng cho Pilot A | `verified` |
+| **GenImage** `[@zhu2023genimage; @genimageDatasetRepository]` | Huấn luyện & benchmark ảnh tạo hoàn toàn | `fully_generated` (8 generator), `authentic` (ImageNet val) | Chỉ có ảnh fully generated, không có mask inpainting; archive lớn | Phân luồng Research Track; first fully inventoried archive (BigGAN ~24 GB) | `verified` |
+| **TGIF / TGIF2** `[@mareen2024tgif; @mareen2026tgif2; @tgifDatasetRepository]` | Huấn luyện & benchmark ảnh chỉnh sửa | `ai_edited` (spliced `sp`), `authentic` (MS-COCO pairs), masks (`fr` quarantined) | Dung lượng lớn (65.4 GB - 110 GB); điều khoản dataset CC BY-SA 4.0; `fr` cấm gán `fully_generated` | Nextcloud cho phép tải độc lập thư mục nhỏ; cách ly trong Research Track; `sp` dùng cho Pilot A | `verified` |
 | **RAID** | Đánh giá độ bền vững đối kháng (Adversarial Robustness) | Đa dạng generator và độ suy giảm nặng | Bản quyền dataset card chưa chứng minh quyền phân phối ảnh | Trạng thái `blocked`, chỉ xem xét làm candidate kiểm định sau | `blocked` |
 | **RealHD** | Ứng viên tương lai cho inpainting đa dạng | AI-edited đa dạng | Tác giả chưa phát hành archive và license công khai | Trạng thái `blocked` | `blocked` |
 
@@ -100,7 +100,7 @@ Các giả thuyết được thiết lập theo nguyên tắc có thể bác b�
 > **Cảnh báo khoa học**: Nếu mỗi lớp nhãn được lấy từ một dataset hoàn toàn tách biệt (ví dụ: `authentic` lấy từ ImageNet, `ai_edited` lấy từ MS-COCO, `fully_generated` lấy từ GenImage), mô hình nơ-ron có xu hướng ghi nhớ các đặc trưng riêng của từng nguồn dữ liệu (độ phân giải gốc, camera color gamut, profile nén JPEG, bộ lọc tiền xử lý) thay vì học bản chất dấu vết thuật toán AI.
 
 ### Giao thức Thí nghiệm Pilot Hai Nhánh Độc lập (Two-Branch Architecture):
-Chi tiết xem [PILOT_PROTOCOL.md](docs/PILOT_PROTOCOL.md):
+Chi tiết xem [PILOT_PROTOCOL.md](PILOT_PROTOCOL.md):
 1. **Pilot A (Authentic vs AI-Edited + Localization)**: Sử dụng các cặp matched pairs của TGIF (`orig` authentic MS-COCO + `sd2-sp` inpainting + `masks`). Thiết kế matched-pair làm giảm đáng kể nguy cơ mô hình học đặc trưng nguồn dữ liệu vì ảnh gốc và ảnh chỉnh sửa chia sẻ cùng source image. Các nguy cơ shortcut từ codec, quy trình sinh ảnh, preprocessing, số lượng biến thể và artifacts của mô hình tạo sinh vẫn phải được đo bằng baseline và source-held-out evaluation.
 2. **Pilot B (Authentic vs Fully-Generated)**: Sử dụng cặp đối chứng trong cùng phân phối ImageNet của GenImage (val nature vs BigGAN ai).
 3. **Pilot C (Three-Class Exploratory)**: Chỉ được mở khi Pilot A và Pilot B vượt qua bài kiểm toán shortcut; bắt buộc kèm **Metadata-Only Baseline Guard**.
@@ -118,38 +118,37 @@ Chi tiết xem [PILOT_PROTOCOL.md](docs/PILOT_PROTOCOL.md):
 Các công trình nền tảng được khảo sát từ nguồn xuất bản chính thức, phân định rõ giữa bài báo phản biện đồng cấp (*peer-reviewed*) và bản thảo tiền ấn phẩm (*preprint*). Tuyệt đối không sao chép số liệu công bố thành kết quả của đề tài.
 
 ### 8.1. Universal Fake Image Detectors (CVPR 2023 — Peer-Reviewed)
-* **Trích dẫn**: Utkarsh Ojha, Yuheng Li, Yong Jae Lee. *"Towards Universal Fake Image Detectors That Generalize Across Generative Models"*, IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 2023.
+* **Trích dẫn**: Utkarsh Ojha, Yuheng Li, Yong Jae Lee. *"Towards Universal Fake Image Detectors That Generalize Across Generative Models"*, IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 2023 `[@ojha2023universal]`.
 * **Method**: Khai thác không gian đặc trưng biểu diễn thị giác đóng băng của mô hình nền tảng đa phương thức (CLIP ViT-L/14) kết hợp với đầu dò tuyến tính (linear probe) hoặc phân loại láng giềng gần nhất (k-NN).
 * **Training data regime**: Chỉ huấn luyện trên đúng 1 mô hình tạo sinh (ProGAN) với 20 lớp đối tượng.
 * **Generalization setting**: Đánh giá zero-shot cross-generator trên các họ mô hình GAN chưa thấy (StyleGAN, BigGAN, StarGAN) và họ Diffusion (LDM, GLIDE, DALL-E, Guided Diffusion).
-* **Model / Runtime cost**: Trọng số rất nặng (~300M tham số, dung lượng >600 MB FP32), yêu cầu GPU hoặc WASM bộ nhớ lớn, không khả thi cho runtime trình duyệt di động / zero-egress tức thì.
+* **Model / Runtime cost**: Phương pháp dựa trên backbone foundation-model lớn; các con số `~300M` tham số và `>600 MB FP32` từng xuất hiện trong hồ sơ chưa được trang xuất bản sơ cấp xác minh trong lần rà soát này và được giữ ở trạng thái `unverified`, không phải số đo của dự án.
 * **Relevance to this thesis**: Minh chứng khoa học cho thấy biểu diễn visual đóng băng (frozen pretrained representations) có khả năng khái quát hóa vượt trội với dữ liệu huấn luyện ít; làm cơ sở trực tiếp cho Stage 1 (Frozen Transfer Learning) trong giao thức ít dữ liệu của khóa luận.
 * **Limitation**: Chỉ đánh giá bài toán nhị phân tạo hoàn toàn (`authentic` vs `fully_generated`), không hỗ trợ phát hiện hay định vị vùng chỉnh sửa cục bộ (`ai_edited`), và chi phí tính toán vượt xa ngưỡng nhẹ cho web client.
 
 ### 8.2. DIRE for Diffusion Detection (ICCV 2023 — Peer-Reviewed)
-* **Trích dẫn**: Zhendong Wang, Jianmin Bao, Wengang Zhou, Weilun Wang, Hezhen Hu, Hong Chen, Houqiang Li. *"DIRE for Diffusion-Generated Image Detection"*, IEEE/CVF International Conference on Computer Vision (ICCV), 2023.
+* **Trích dẫn**: Zhendong Wang, Jianmin Bao, Wengang Zhou, Weilun Wang, Hezhen Hu, Hong Chen, Houqiang Li. *"DIRE for Diffusion-Generated Image Detection"*, IEEE/CVF International Conference on Computer Vision (ICCV), 2023 `[@wang2023dire]`.
 * **Method**: Sai số tái tạo khuếch tán (Diffusion Reconstruction Error - DIRE) — chiếu ảnh qua quy trình nghịch đảo DDIM (inversion) của mô hình diffusion xác định sẵn, sau đó đo khoảng cách sai lệch pixel/feature giữa ảnh đầu vào và ảnh tái tạo.
 * **Training data regime**: Huấn luyện bộ phân loại nhị phân trên sai số DIRE từ các tập ảnh sinh bởi ADM, LDM và Stable Diffusion.
 * **Generalization setting**: Đạt khả năng phát hiện cross-diffusion vượt trội nhờ bóc tách đặc trưng sai số bước nhảy khuếch tán đặc thù của kiến trúc diffusion.
-* **Model / Runtime cost**: Chi phí tính toán cực kỳ tốn kém — yêu cầu chạy từ 20 đến 50 bước khuếch tán ngược cho mỗi ảnh đơn lẻ (>10 giây/ảnh trên GPU máy chủ cao cấp), hoàn toàn bất khả thi trên CPU/WASM client-side.
+* **Model / Runtime cost**: DIRE cần thực hiện reconstruction/inversion qua diffusion model. Các con số cụ thể “20–50 bước” và “>10 giây/ảnh” chưa được primary publication page xác minh trong lần rà soát này; browser feasibility chưa được đo và giữ `unverified`.
 * **Relevance to this thesis**: Khẳng định sự tồn tại của các dấu vết thuật toán đặc thù trong quy trình khuếch tán; định hướng cho khóa luận tìm kiếm các tín hiệu xấp xỉ nhẹ hơn (như phổ tần số 2D FFT/DCT và noise residual của DSP) thay thế việc chạy toàn bộ mô hình diffusion ngược.
 * **Limitation**: Thời gian suy luận quá chậm; không thể nhúng vào web browser; chủ yếu tập trung vào full generation hơn là inpainting nhẹ.
 
-### 8.3. TGIF / TGIF2 Benchmark (arXiv:2407.11566 & arXiv:2603.28613 — Preprint / Under Review)
-* **Trích dẫn**: Andrea Cornia, Lorenzo Baraldi, Rita Cucchiara, et al. *"TGIF: A Dataset for Image Forensic Analysis on Social Media and Inpainting Localization"*, arXiv:2407.11566, 2024 / IDLabMedia.
-* **Method**: Thiết lập benchmark chuẩn tắc cho bài toán phát hiện và định vị inpainting trên mạng xã hội, sử dụng các kiến trúc phân đoạn và phân loại mạng sâu (ResNet-50, EfficientNet, Mask R-CNN).
+### 8.3. TGIF / TGIF2 Benchmark (WIFS 2024 / Journal on Information Security 2026)
+* **Trích dẫn**: Hannes Mareen, Dimitrios Karageorgiou, Glenn Van Wallendael, Peter Lambert, Symeon Papadopoulos. *"TGIF: Text-Guided Inpainting Forgery Dataset"*, IEEE WIFS 2024 `[@mareen2024tgif]`; bản mở rộng TGIF2 của Mareen et al., Journal on Information Security 2026 `[@mareen2026tgif2]`.
+* **Method**: Thiết lập dataset và benchmark cho phát hiện/định vị text-guided inpainting, phân biệt spliced (`sp`) với fully regenerated (`fr`) và đánh giá IFL/SID theo phạm vi paper.
 * **Training data regime**: 3,124 ảnh gốc MS-COCO val2017 đi kèm 74,976 ảnh chỉnh sửa (SD2, SDXL, Photoshop Firefly) và 31,238 file mặt nạ ground-truth (bbox và segm).
 * **Generalization setting**: Đánh giá theo cặp matched pairs trên các split chuẩn Train (2,440)/Val (341)/Test (343); kiểm tra năng lực chuyển dịch sang ảnh bị nén mạng xã hội (Twitter, Reddit, WhatsApp).
 * **Model / Runtime cost**: Sử dụng mô hình chuẩn máy chủ, chưa tối ưu hóa cho môi trường biên (edge) hoặc trình duyệt.
 * **Relevance to this thesis**: Nguồn dữ liệu cốt lõi cho Pilot A (`authentic` vs `ai_edited` + localization mask); cung cấp cấu trúc cặp đối ứng hoàn hảo giúp loại bỏ shortcut nguồn nền ảnh.
-* **Limitation**: Chưa xuất bản trên tạp chí/hội nghị peer-reviewed chính thức (đang là preprint); thống kê ban đầu gộp chung 3,124 category instances chưa làm rõ 2,242 unique MS-COCO image sources; không nghiên cứu giải pháp client-side in-browser.
+* **Limitation**: Các kết quả benchmark là `reported` từ nguồn tác giả, không phải kết quả đã tái lập bởi dự án; 2,242 unique `source_id` là kết quả audit nội bộ trên artifacts Option P, không phải claim của paper; paper không chứng minh giải pháp client-side in-browser của dự án.
 
 ### 8.4. GenImage Benchmark (NeurIPS 2023 — Peer-Reviewed)
-* **Trích dẫn**: Mingkun Yang, Chuanbin Liu, et al. *"GenImage: A Large-Scale Dataset for Image Forensics"*, Advances in Neural Information Processing Systems (NeurIPS), 2023.
+* **Trích dẫn**: Mingjian Zhu, Hanting Chen, Qiangyu Yan, Xudong Huang, Guanyu Lin, Wei Li, Zhijun Tu, Hailin Hu, Jie Hu, Yunhe Wang. *"GenImage: A Million-Scale Benchmark for Detecting AI-Generated Image"*, Advances in Neural Information Processing Systems (NeurIPS), 2023 `[@zhu2023genimage]`.
 * **Method**: Xây dựng benchmark quy mô lớn gồm 1.3 triệu ảnh trên 8 họ mô hình tạo sinh khác nhau (BigGAN, GLIDE, VQDM, SD v1.4, SD v1.5, Midjourney, ADM, Wukong) ghép cặp với ảnh đối ứng trong ImageNet.
 * **Training data regime**: 1.3 triệu ảnh, chia đều cho 8 generator và 1,000 lớp ImageNet; thử nghiệm với các kiến trúc ResNet-50, Swin-T, DeiT-S.
 * **Generalization setting**: Ma trận đánh giá chéo cross-generator chuẩn tắc (huấn luyện trên Gen A, kiểm thử trên 7 Gen còn lại).
 * **Model / Runtime cost**: Trọng số và tài nguyên tính toán lớn; dung lượng toàn bộ dataset hàng trăm gigabytes.
 * **Relevance to this thesis**: Nguồn ứng viên cho Pilot B (`fully_generated` vs `authentic`), giúp khóa luận thiết lập kiểm thử ảnh tạo hoàn toàn có kiểm soát phân bố đối chứng ImageNet.
 * **Limitation**: Dung lượng quá tải so với tài nguyên sinh viên khóa luận; không có ảnh inpainting hay mask định vị (100% là full generation).
-

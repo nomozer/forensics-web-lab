@@ -4,12 +4,13 @@
 > Scope: the eight accepted authentic–mask–edited tuples only
 > Status: `AGENT_DIAGNOSIS_COMPLETE_HUMAN_CONTENT_QC_PENDING`
 > This document is not Human Content QC approval.
+> Evidence classification: run observations are `internal-empirical`; causal explanations under “Unverified Hypotheses” are `unverified-hypothesis`. External citation keys resolve through `docs/references.bib`.
 
 ## Reproducible facts
 
 - The original attempt ledger has 8 records: 8 `ACCEPTED`, 0 `QC_FAILED`, 0 errors, exactly 2 per stratum. This is not inferred from the number of images.
 - Every mask was synthesized directly on the normalized 512×512 canvas. The source images were center-cover resized and cropped before generation. Because the run contains no source-content target coordinates, no source-to-canvas mapping was attempted; there is no evidence of a shifted coordinate transform. The demonstrated defect is that no content target was registered at all.
-- All model bindings match the run protocol. SD2 used revision `5f74973cbb64c8568780732c17f43eb269d63a0d`, `DDIMScheduler`, 50 steps, guidance 7.5, fp16, 512×512. SDXL used revision `115134f363124c53c7d878647567d04daf26e41e`, `EulerDiscreteScheduler`, 30 steps, guidance 7.5, fp16, 512×512. No parameter mismatch was found.
+- All model bindings match the run protocol. SD2 used the explicitly classified **community mirror** revision `5f74973cbb64c8568780732c17f43eb269d63a0d` `[@sd2CommunityInpaintingModelCard]`, `DDIMScheduler`, 50 steps, guidance 7.5, fp16, 512×512. SDXL used the official Diffusers model-card revision `115134f363124c53c7d878647567d04daf26e41e` `[@sdxlInpaintingModelCard]`, `EulerDiscreteScheduler`, 30 steps, guidance 7.5, fp16, 512×512. No parameter mismatch was found in the internal run binding; source verification does not assert semantic success.
 - All eight outputs violate the locked outside-mask limit (`max_unmasked_pixel_delta_l1 = 0.5`). The production code at the bound commit did not run this check.
 
 | Pair | Mask bbox on normalized canvas | Raw → resized; center crop offset | Mean L1 inside / outside mask | Content observation and agent disposition |
@@ -91,8 +92,8 @@ Inspection of code, configuration, and Colab logs reveals the exact runtime conf
 3. **Ledger Semantics**: `attempt_ledger.jsonl` status `ACCEPTED` represents Technical QC passage at Step D/E, whereas Human Content QC is tracked separately in `provenance_ledger.jsonl` and `run_receipt.json` as `PENDING_CONTENT_QC`.
 
 #### B. Unverified Hypotheses (Requiring Controlled Empirical Testing)
-1. **Latent Space Resolution Bottleneck**: In SDXL and SD2 ($8\times$ downsampling VAE), a 3.78% mask ($110 \times 90$ px) maps to only $\approx 13 \times 11$ latent pixels; a 6.58% mask ($150 \times 115$ px) maps to $\approx 18 \times 14$ latent pixels. It is hypothesized that at 512×512 canvas resolution, tiny latent patches lack sufficient spatial capacity to synthesize distinct multi-part foreground objects. *(Unverified hypothesis)*.
-2. **Infill Conditioning Bias from Surrounding Textures**: Text prompts describe both the target object and strong background context (e.g., "resting on slice of bread", "cobblestones beside car", "cloudy sky"). Surrounded by unmasked bread, pavement, or sky latents, UNet cross-attention may favor continuing background texture over synthesizing an isolated object. *(Unverified hypothesis; note: inference reverse sampling does NOT perform gradient optimization or loss minimization at test time)*.
+1. **Latent Space Resolution Bottleneck**: In SDXL and SD2 (assuming $8\times$ VAE downsampling), a 3.78% mask ($110 \times 90$ px) maps to only $\approx 13 \times 11$ latent pixels; a 6.58% mask ($150 \times 115$ px) maps to $\approx 18 \times 14$ latent pixels. It is hypothesized that at 512×512 canvas resolution, tiny latent patches lack sufficient spatial capacity to synthesize distinct multi-part foreground objects. *(Source classification: `unverified-hypothesis`; latent tensor counts were estimated, not directly instrumented.)*.
+2. **Infill Conditioning Bias from Surrounding Textures**: Text prompts describe both the target object and strong background context (e.g., "resting on slice of bread", "cobblestones beside car", "cloudy sky"). Surrounded by unmasked bread, pavement, or sky latents, UNet cross-attention may favor continuing background texture over synthesizing an isolated object. *(Source classification: `unverified-hypothesis`; inference reverse sampling does NOT perform gradient optimization or loss minimization at test time.)*.
 
 ### 2.4. Concrete Remediation Proposals
 
@@ -235,6 +236,18 @@ Recalculated directly from on-disk RGB arrays (`auth.png`, `edit.png`, and `mask
 
 *Strict Invariance*: Across all 6 attempts, `outside_mean_l1 == 0.000000` and `outside_max_delta == 0.0` hold bit-identically by virtue of registered canvas mask compositing.
 
+##### Tọa độ đối chiếu Kế hoạch (Plan) vs Thực thi (Execution)
+
+| Candidate ID | Target Object | Target Bbox | Registered Mask Bbox (px & %) | Local Crop Bbox ($W \times H$) | Resized-Mask in Inference | Linear Scale | Area Factor | Plan vs Execution Parity |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| `IND_COCO_SDXL_002` | Cherry tomato on bread | `[375, 265, 430, 320]` | `[345, 245, 455, 335]` (9,900 px, 3.776550%) | `[256, 162, 512, 418]` ($256 \times 256$) | `[356, 332, 796, 692]` ($1024 \times 1024$) | 4.0× | 16.0× | **MATCH** (Bit-exact) |
+| `IND_COMMONS_SD2_002` | Travel suitcase on street | `[45, 355, 190, 495]` | `[0, 340, 225, 512]` (38,700 px, 14.762878%) | `[0, 192, 320, 512]` ($320 \times 320$) | `[0, 237, 360, 512]` ($512 \times 512$) | 1.6× | 2.56× | **MATCH** (Bit-exact) |
+| `IND_COMMONS_SDXL_001` | Bird flying in sky | `[395, 75, 455, 125]` | `[350, 45, 500, 160]` (17,250 px, 6.580353%) | `[256, 0, 512, 256]` ($256 \times 256$) | `[376, 180, 976, 640]` ($1024 \times 1024$) | 4.0× | 16.0× | **MATCH** (Bit-exact) |
+
+*Lưu ý phân biệt tọa độ*:
+- Với vali (`IND_COMMONS_SD2_002`): Crop bbox là `[0, 192, 320, 512]`. Tọa độ `[0, 237, 360, 512]` là bbox của mask sau khi scale 1.6× bên trong không gian suy luận $512 \times 512$, không phải crop bbox.
+- Với chim (`IND_COMMONS_SDXL_001`): Crop bbox trong kế hoạch và thực thi là `[256, 0, 512, 256]`. Không dùng `[187, 0, 443, 256]` (vốn là một ghi chú tính toán sơ thảo không có trong plan).
+
 #### 2.8.3. Visual Evaluation and Metric Dissociation
 
 Visual inspection on image artifacts in `data/research/local-artifacts/phase-4c.7b/diag-20261008T154628Z/images/` reveals critical qualitative distinctions that metrics alone fail to capture:
@@ -246,7 +259,7 @@ Visual inspection on image artifacts in `data/research/local-artifacts/phase-4c.
 2. **`IND_COMMONS_SD2_002` (Suitcase)**:
    - *Arm A (Full Canvas)*: Complete semantic omission. Zero luggage generated; masked area filled with plain cobblestone pavement texture.
    - *Arm B (Local Crop)*: Semantic hallucination. Prompt requested "a brown leather travel suitcase... standing on the cobblestones beside the vintage car". Instead, the model generated a miniature bronze/brown vintage automobile with roof and wheels!
-   - *Crucial Finding (Metric Dissociation)*: Inside mean L1 rose from 30.74 (Arm A) to 43.39 (Arm B, max delta 226). **This empirically demonstrates that higher inside L1 does NOT indicate content generation success.** The hallucinated car produced the largest pixel delta among all candidates while completely failing the semantic prompt.
+   - *Crucial Finding (Metric Dissociation)*: Inside mean L1 rose from 30.74 (Arm A) to 43.39 (Arm B, max delta 226). **"L1 tăng không bảo đảm thành công ngữ nghĩa."** Không rút ra kết luận khái quát hóa về mối tương quan tổng quát từ chỉ ba ca thực nghiệm. Chiếc xe đồ chơi ảo giác tạo ra độ lệch pixel lớn nhất trong khi hoàn toàn thất bại về mặt ngữ nghĩa.
    - *Boundary Observation*: The mask bbox on canvas is `[0, 340, 225, 512]`. Its left ($x=0$) and bottom ($y=512$) borders coincide with the outer image frame of the 512×512 canvas. Zoom inspection confirms the toy car's shadow is an oval pool directly beneath the vehicle and does not reach the canvas frame. At internal mask edges ($y=340$ and $x=225$), cobblestones blend naturally without abrupt edge steps (max diff across border $y=340$ is 17.0, at $x=224$ is 43.0). The defect is strictly a semantic hallucination, not a boundary compositing flaw.
 3. **`IND_COMMONS_SDXL_001` (Sky Bird)**:
    - *Arm A (Full Canvas)*: Complete semantic omission. Zero birds generated; masked area filled with flat purplish-grey sky patch.
@@ -255,37 +268,46 @@ Visual inspection on image artifacts in `data/research/local-artifacts/phase-4c.
 
 #### 2.8.4. Execution Evidence, Timing Scope, and Runtime Profiling
 
-- **Crop and Resolution Verification**: Verified from raw generated images (`images/<id>_raw_gen.png`): SDXL Arm B generated at native $1024 	imes 1024$ (linear 4.0×, area 16.0×); SD2 Arm B generated at native $512 	imes 512$ with 1.6× padding (linear 1.6×, area 2.56×). Resized mask raster bboxes match rounding rules.
+- **Crop and Resolution Verification**: Verified from raw generated images (`images/<id>_raw_gen.png`): SDXL Arm B generated at native $1024 \times 1024$ (linear 4.0×, area 16.0×); SD2 Arm B generated at native $512 \times 512$ with 1.6× padding (linear 1.6×, area 2.56×). Resized mask raster bboxes match rounding rules.
 - **Timing Measurement Scope & Evidence**:
-  - Measurement source: `diagnostic_receipt.json` and `attempt_ledger.jsonl` record identical elapsed times for all 6 attempts:
+  - Measurement source: `diagnostic_receipt.json` và `attempt_ledger.jsonl` ghi nhận thời gian hoàn toàn khớp nhau cho cả 6 attempts:
     * `IND_COCO_SDXL_002`: Arm A `114.319s`, Arm B `24.684s`
     * `IND_COMMONS_SD2_002`: Arm A `71.542s`, Arm B `7.461s`
     * `IND_COMMONS_SDXL_001`: Arm A `37.614s`, Arm B `26.883s`
-  - Scope in code (`ml/evaluation/independent_cohort_diagnostic.py`): `start_time = time.perf_counter()` is measured prior to `get_engine(tool_key)`.
-  - For Arm A attempts (1, 3, 5), `get_engine` instantiates `DiagnosticDiffusersEngine`, loading model weights from disk/cache into CUDA memory (`pipeline_cls.from_pretrained`) and moving to GPU (`pipeline.to("cuda")`).
-  - For Arm B attempts (2, 4, 6), the engine is already memory-resident for that tool key (`active_engine is not None and current_tool_key == tool_key`).
-  - Therefore, recorded `elapsed_seconds` represents total attempt wall time (including pipeline loading/switching when applicable), not isolated UNet denoising speed. Arm B is not faster; for SDXL, Arm B processed $4	imes$ latent resolution ($128 	imes 128$ vs $64 	imes 64$), reflected in higher peak VRAM usage (8.96 GiB vs 7.17 GiB).
+  - Scope in code (`ml/evaluation/independent_cohort_diagnostic.py`): `start_time = time.perf_counter()` được đo **trước** lệnh `get_engine(tool_key)`.
+  - Đối với các attempt Arm A (1, 3, 5), `get_engine` khởi tạo `DiagnosticDiffusersEngine`, tải trọng số mô hình từ ổ đĩa/cache vào CUDA memory (`pipeline_cls.from_pretrained`) và nạp sang GPU (`pipeline.to("cuda")`).
+  - Đối với các attempt Arm B (2, 4, 6), pipeline đã thường trú sẵn trong bộ nhớ GPU (`active_engine is not None and current_tool_key == tool_key`).
+  - **Không kết luận tốc độ suy luận A/B từ thời gian toàn attempt**: Thời gian ghi nhận phản ánh tổng thời gian của attempt (gồm nạp mô hình khi khởi tạo tool key), không phản ánh tốc độ khử nhiễu UNet thuần túy. Arm B không nhanh hơn Arm A; thực tế với SDXL, Arm B phải xử lý tensor lớn gấp 4 lần ($128 \times 128$ vs $64 \times 64$), thể hiện qua lượng VRAM đỉnh cao hơn (8.96 GiB vs 7.17 GiB).
 - **Runtime Environment & Primary Sources**:
   - Inpainting models pinned in `ml/evaluation/independent_cohort_diagnostic.py`:
-    * SDXL: `diffusers/stable-diffusion-xl-1.0-inpainting-0.1` (pinned revision `115134f363124c53c7d878647567d04daf26e41e`)
-    * SD2: `sd2-community/stable-diffusion-2-inpainting` (pinned revision `5f74973cbb64c8568780732c17f43eb269d63a0d`)
+    * SDXL: `diffusers/stable-diffusion-xl-1.0-inpainting-0.1` (official Diffusers model card, pinned revision `115134f363124c53c7d878647567d04daf26e41e`) `[@sdxlInpaintingModelCard]`
+    * SD2: `sd2-community/stable-diffusion-2-inpainting` (community mirror, pinned revision `5f74973cbb64c8568780732c17f43eb269d63a0d`; not an official Stability AI source) `[@sd2CommunityInpaintingModelCard]`
   - Runtime environment recorded in `diagnostic_receipt.json`: OS `Linux 6.6.122+-x86_64-with-glibc2.39`, Python `3.13.15`, NumPy `2.1.3`, Pillow `11.3.0`.
-  - Unrecorded fields: PyTorch version, Diffusers version, CUDA runtime version, and specific GPU model are not captured in receipts (stated factually without speculation).
+  - Unrecorded fields: PyTorch version, Diffusers version, CUDA runtime version, và model GPU cụ thể không có trong receipt (được ghi nhận trung thực là chưa ghi nhận, không suy đoán).
 
 #### 2.8.5. Methodological Scope & Unverified Hypotheses
 
 1. **A/B Observational Finding**: Local crop at native resolution produced target objects for both SDXL insertion candidates (tomato, bird), whereas full canvas infilled background textures. For SD2, local crop produced a toy car hallucination.
 2. **Causal Hypotheses Remain Unverified**:
-   - The hypothesis that latent downsampling alone caused Arm A omissions cannot be isolated, because local cropping simultaneously alters the visual context window (narrowed field of view) and changes relative token scale.
-   - The hypothesis that surrounding context attention bias caused the toy car hallucination is plausible given the nearby automobile, but remains an unisolated hypothesis.
-   - Across different tensor grid sizes ($64 	imes 64$ vs $128 	imes 128$), PyTorch PRNG noise sampling sequence differs even with identical integer seeds.
-3. **No Generalization Claims**: With exactly 3 candidates and $n=1$ seed per candidate, these results are methodological observations, not a basis for declaring definitive pipeline rules. Filtering rules (e.g. mask size thresholds) or hybrid pipeline commitments must not be declared proven from this 3-case run.
+   - Giả thuyết về việc suy giảm dung lượng latent token (8× downsampling) không thể được cô lập là nguyên nhân duy nhất, vì thao tác crop đồng thời thay đổi cửa sổ bối cảnh thị giác (thu hẹp trường nhìn) và tỷ lệ tương đối của token.
+   - Giả thuyết về sự thiên lệch chú ý vào bối cảnh ô tô xung quanh gây ra ảo giác xe đồ chơi là một phỏng đoán hợp lý nhưng chưa được cô lập thực nghiệm.
+   - Trên các lưới tensor có kích thước khác nhau ($64 \times 64$ vs $128 \times 128$), chuỗi số ngẫu nhiên PRNG của PyTorch khác biệt ngay cả khi dùng cùng seed nguyên.
+3. **Phân biệt Quan sát Hình ảnh và Nhận định Nguyên nhân**: Cần phân biệt rạch ròi giữa quan sát trực quan (có/không có vật thể, bậc tương phản tại biên mask, hình thái bóng đổ) với nhận định nguyên nhân cơ chế (vốn vẫn là giả thuyết).
+4. **No Generalization Claims**: Với đúng 3 candidates và $n=1$ seed/candidate, đây là các quan sát phương pháp luận chẩn đoán. Không đề xuất loại mask < 3% như một quy tắc đã được chứng minh, không chốt giải pháp hybrid pipeline từ 3 ca chẩn đoán.
 
-#### 2.8.6. Contact Sheet & Governance Determinations
+#### 2.8.6. Contact Sheet & Bảng Quyết định Thẩm định Con người (6 Attempts)
 
-- **Contact Sheet**: Fully self-contained HTML contact sheet at `data/research/local-artifacts/phase-4c.7b/diag-20261008T154628Z/diagnostic_contact_sheet.html`, enriched with base64 embedded images, A/B comparative summary distinguishing linear scale vs area factor, agent qualitative observations, and governance sections.
-- **Cohort & Budget Lock**: Full cohort generation remains strictly **LOCKED**. No new generation budget has been registered or approved. Diagnostic results remain isolated in `diag-20261008T154628Z` and will not enter the official cohort.
-- **Decisions Requiring User Approval**:
-  - *Decision 1 (Diagnostic Human Content QC)*: User determination on the 6 attempts. Canonical status remains strictly `PENDING_CONTENT_QC` until human sign-off.
-  - *Decision 2 (Historical Pilot 8 Pairs)*: Retain `PENDING_CONTENT_QC` across all 8 historical pilot pairs; zero pilot pairs promoted.
-  - *Decision 3 (Next Phase Direction)*: Maintain full cohort lock pending architectural review.
+- **Contact Sheet Hoàn thiện**: Tệp HTML tự chứa hoàn toàn tại [`diagnostic_contact_sheet.html`](../../../data/research/local-artifacts/phase-4c.7b/diag-20261008T154628Z/diagnostic_contact_sheet.html) (11,181,200 bytes). Chứa ảnh authentic, overlay ground-truth, Arm A, Arm B, và các khung phóng đại (zoom) chi tiết tại biên mask cà chua và vùng đối tượng vali/chim. Phân biệt rạch ròi giữa "Khuyến nghị của Agent" và "Quyết định của Người dùng".
+- **Khóa Quản trị**: Full cohort generation tiếp tục **BỊ KHÓA HOÀN TOÀN**. Chưa đăng ký hoặc phê duyệt ngân sách generation mới. Kết quả chẩn đoán được cách ly trong `diag-20261008T154628Z` và không được đưa vào cohort chính thức.
+- **Bảng Quyết định Duyệt Thẩm định Con người (6 Attempts)**:
+
+| Attempt ID | Candidate / Prompt | Arm / Scale | Technical QC | Inside L1 | Quan sát Thực nghiệm A/B | Khuyến nghị của Agent | Quyết định Thẩm định Con người |
+| :--- | :--- | :---: | :---: | :---: | :--- | :--- | :---: |
+| `IND_COCO_SDXL_002_ARM_A` | Cà chua trên bánh mì | Arm A (1.0×) | PASS | 16.79 | Omission (phủ vân ruột bánh mì) | Đề xuất **REJECT** (Bỏ sót vật thể) | `PENDING` |
+| `IND_COCO_SDXL_002_ARM_B` | Cà chua trên bánh mì | Arm B (4.0×) | PASS | 28.29 | Quả cà chua, cuống đài 5 cánh; bậc tương phản vi mô tại biên mask `[345, 245, 455, 335]` | Trình Người dùng xem ảnh và quyết định | `PENDING` |
+| `IND_COMMONS_SD2_002_ARM_A` | Vali du lịch trên phố | Arm A (1.0×) | PASS | 30.74 | Omission (phủ vân đá cuội) | Đề xuất **REJECT** (Bỏ sót vật thể) | `PENDING` |
+| `IND_COMMONS_SD2_002_ARM_B` | Vali du lịch trên phố | Arm B (1.6×) | PASS | 43.39 | Hallucination (xe ô tô cổ thay vì vali; bóng oval dưới gầm xe) | Đề xuất **REJECT** (Sai lệch đối tượng) | `PENDING` |
+| `IND_COMMONS_SDXL_001_ARM_A` | Chim bay trên bầu trời | Arm A (1.0×) | PASS | 11.08 | Omission (phủ mảng mây xám phẳng) | Đề xuất **REJECT** (Bỏ sót vật thể) | `PENDING` |
+| `IND_COMMONS_SDXL_001_ARM_B` | Chim bay trên bầu trời | Arm B (4.0×) | PASS | 13.07 | Bóng chim dang cánh với lông vũ sắc nét; hòa nhập bầu trời mây không tì vết | Trình Người dùng xem ảnh và quyết định | `PENDING` |
+
+*Ghi chú*: Toàn bộ 6 attempts giữ nguyên trạng thái `Human Content QC = PENDING` chờ quyết định chính thức của người dùng. Tám cặp ảnh pilot lịch sử (`pilot-20261008T113700Z`) tiếp tục giữ trạng thái `PENDING_CONTENT_QC`. Zero detector calls, independent performance `NOT_MEASURED`, full cohort `NOT_RUN`.

@@ -92,6 +92,7 @@ graph TD
 | **Acquisition Plan & Schema** | `docs/schemas/acquisition-plan.v1.schema.json`, `datasets/acquisition-plans/pilot-a-tgif.v1.json` | `implemented-and-tested` |
 | **Paired Bootstrap Guard** | `ml/evaluation/bootstrap_guard.py` (stratified paired bootstrap 95% CI) | `implemented-and-tested` |
 | **TGIF Cardinality Audit** | `research/evidence/phase-4a.4/tgif-cardinality-audit.json` | `audited-and-verified` |
+| **Claim–Evidence Registry & Canonical Bibliography** | `docs/EVIDENCE_REGISTER.md` (eight evidence statuses plus separate source classification), `docs/references.bib` (stable keys and verified paper/model/dataset/software metadata) | `documentation-registry-verified` |
 | **Pilot Protocols & Configs** | `ml/configs/validator.py`, `pilot_tgif_edit.yaml`, `pilot_genimage_generated.yaml` | `implemented-and-tested` |
 | **Source ID Auditor & Collision Engine** | `ml/datasets/audit_source_ids.py` (COCO source vs category-task disambiguation) | `implemented-and-tested` |
 | **Remote Metadata Inventory** | `research/evidence/phase-4b.1/tgif-orig-remote-inventory.json`, `tgif-sd2-sp-remote-inventory.json` | `audited-and-verified` |
