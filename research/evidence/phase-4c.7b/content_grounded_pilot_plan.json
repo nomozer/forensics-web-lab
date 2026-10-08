@@ -44,7 +44,7 @@
         "bbox_prompt_alignment": "ALIGNED_AFTER_REVISION",
         "mask_scope": "TIGHTENED_TO_TARGET",
         "agent_status": "READY_FOR_HUMAN_DECISION",
-        "note": "The copper pan is visible. The prior rectangle included more adjacent cookware; the revised rectangle is narrower and excludes the cook.",
+        "note": "The copper pan is visible. The prior rectangle included more adjacent cookware; the revised rectangle is narrower and excludes the cook. Mask area: 3.566742% (9,350 px).",
         "human_decision_required": "Approve or revise the pan-to-clock replacement instruction."
       }
     },
@@ -82,10 +82,10 @@
       "instruction_review": {
         "target_or_placement": "VERIFIED_SCENE_COMPATIBLE_PLACEMENT",
         "bbox_prompt_alignment": "ALIGNED",
-        "mask_scope": "LIMITED_TO_CEILING_CLEARS_CURTAIN",
+        "mask_scope": "LIMITED_TO_CEILING_WITH_LOCALIZED_VALANCE_EDGE_CONTACT",
         "agent_status": "READY_FOR_HUMAN_DECISION",
-        "note": "The ceiling provides an open upper support plane. The mask bbox is tightened to [0, 0, 512, 155] (30.273438%, preserving large_over_30pct) to strictly clear the top boundary of the left curtain valance (y≈157) and wall junction (y≈173). Living room furniture and lower fixtures remain completely outside the mask.",
-        "human_decision_required": "Approve proposed candidate substitution of IND_COCO_SDXL_041 (living room ceiling chandelier) replacing blocked candidate IND_COCO_SDXL_001."
+        "note": "The ceiling provides an open upper support plane. The mask bbox is tightened to [0, 0, 512, 155] (30.273438%, strictly preserving large_over_30pct) and clears the ceiling-wall line (y>=173) and living room furniture. Optical pixel inspection confirms localized boundary contact at y=155 with the highest ornamental curve of the left curtain valance across x in [12, 25] (contact depth ~3-4 px from fold apex y~151). This minor boundary contact is registered explicitly for human review; walls, paintings, and furniture remain completely outside the mask.",
+        "human_decision_required": "Approve proposed candidate substitution of IND_COCO_SDXL_041 (living room ceiling chandelier) replacing blocked candidate IND_COCO_SDXL_001, accepting the minor localized boundary contact with curtain valance apex at x in [12, 25], y=155."
       }
     },
     {
@@ -104,7 +104,7 @@
         "bbox_prompt_alignment": "ALIGNED",
         "mask_scope": "LIMITED_TO_BREAD",
         "agent_status": "READY_FOR_HUMAN_DECISION",
-        "note": "The target bbox lies on the bread and the small mask avoids adjacent lunch compartments.",
+        "note": "The target bbox lies on the bread and the small mask avoids adjacent lunch compartments. Mask area: 3.776550% (9,900 px).",
         "human_decision_required": "Approve or revise the tomato insertion instruction."
       }
     },
@@ -124,8 +124,8 @@
         "bbox_prompt_alignment": "ALIGNED_AFTER_REVISION",
         "mask_scope": "ENVELOPES_FOREGROUND_LANDFORM_WITH_SHORELINE_CONTEXT",
         "agent_status": "READY_FOR_HUMAN_DECISION",
-        "note": "Mask [190, 305, 512, 512] (25.426483%, medium_10_to_30pct) envelops all registered headland landforms, pine canopy (y>=308), and offshore rocks (x>=190). Geometrically, a single rectangular bbox cannot envelop 100% of this diagonal landform while excluding 100% of the adjacent town/hotel: the mask unavoidably captures cove water and right-shoreline hotel/houses (x in [440, 512], y in [305, 335]). Retaining this mask accepts infilling those shoreline structures; tightening to exclude the town slices the headland. Option presented for human review.",
-        "human_decision_required": "Approve foreground headland removal with registered mask [190, 305, 512, 512] (accepting inclusion of lower hotel/town edge), or select tightened landform crop Option B."
+        "note": "Option A [190, 305, 512, 512] (25.426483%, medium_10_to_30pct) is the proposed plan: it envelops 100% of the registered headland, pine canopy (y>=308), and offshore rocks (x>=190). Due to the concave diagonal shoreline, an axis-aligned bbox unavoidably captures cove water and right-shoreline hotel/houses (x in [440, 512], y in [305, 335]), which will be infilled/regenerated along with the headland. Option B ([220, 340, 512, 512], 19.158936%) is documented for reference only and DOES NOT satisfy the registered full headland removal: it severs pine crowns (y in [308, 340]) and leaves offshore rocks (x in [190, 220]) stranded in the sea, which would fail Content QC for full removal. If the user selects Option B, the target definition and QC criteria must be re-registered.",
+        "human_decision_required": "Approve proposed Option A mask [190, 305, 512, 512] for full headland removal (accepting infill of right-shoreline hotel/town edge); or reject Option A and re-register target/criteria under Option B."
       }
     },
     {
@@ -144,7 +144,7 @@
         "bbox_prompt_alignment": "ALIGNED_AFTER_REVISION",
         "mask_scope": "TIGHTENED_AWAY_FROM_WHEEL",
         "agent_status": "READY_FOR_HUMAN_DECISION",
-        "note": "The prior mask clipped the front-wheel boundary despite its rationale. The revised mask remains on cobblestones and ends before the wheel.",
+        "note": "The prior mask clipped the front-wheel boundary despite its rationale. The revised mask remains on cobblestones and ends before the wheel. Mask area: 14.762878% (38,700 px).",
         "human_decision_required": "Approve or revise the suitcase size and placement."
       }
     },
