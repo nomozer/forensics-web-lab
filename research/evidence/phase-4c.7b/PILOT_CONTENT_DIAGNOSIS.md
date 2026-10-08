@@ -312,23 +312,24 @@ Visual inspection on image artifacts in `data/research/local-artifacts/phase-4c.
 
 | Attempt ID | Candidate / Prompt | Arm / Scale | Technical QC | Inside L1 | Quan sát Thực nghiệm A/B (4 Tiêu chí) | Khuyến nghị của Agent | Quyết định Thẩm định Con người |
 | :--- | :--- | :---: | :---: | :---: | :--- | :--- | :---: |
-| `IND_COCO_SDXL_002_ARM_A` | Cà chua trên bánh mì | Arm A (1.0×) | PASS | 16.79 | Omission (phủ vân ruột bánh mì; không tạo vật thể) | Khuyến nghị **REJECT** (Bỏ sót vật thể) | `PENDING` |
-| `IND_COCO_SDXL_002_ARM_B` | Cà chua trên bánh mì | Arm B (4.0×) | PASS | 28.29 | Tạo đúng quả cà chua, có cuống đài xanh, độ bóng specular highlight; bậc tương phản vi mô tại biên mask `[345, 245, 455, 335]` | Trình Người dùng xem ảnh và đánh giá chất lượng | `PENDING` |
-| `IND_COMMONS_SD2_002_ARM_A` | Vali du lịch trên phố | Arm A (1.0×) | PASS | 30.74 | Omission (phủ vân đá cuội; không tạo vật thể) | Khuyến nghị **REJECT** (Bỏ sót vật thể) | `PENDING` |
-| `IND_COMMONS_SD2_002_ARM_B` | Vali du lịch trên phố | Arm B (1.6×) | PASS | 43.39 | Hallucination (xe ô tô đồ chơi thay vì vali du lịch; bóng oval dưới gầm xe) | Khuyến nghị **REJECT** (Ảo giác ngữ nghĩa) | `PENDING` |
-| `IND_COMMONS_SDXL_001_ARM_A` | Chim bay trên bầu trời | Arm A (1.0×) | PASS | 11.08 | Omission (phủ mảng mây xám phẳng; không tạo vật thể) | Khuyến nghị **REJECT** (Bỏ sót vật thể) | `PENDING` |
-| `IND_COMMONS_SDXL_001_ARM_B` | Chim bay trên bầu trời | Arm B (4.0×) | PASS | 13.07 | Tạo được đối tượng chim nhưng lệch vị trí target (`[395, 75, 455, 125]` vs `[375, 126, 414, 156]`) và vùng trời chữ nhật mask lệch tông | Khuyến nghị **REJECT** (Theo yêu cầu placement hiện tại) | `PENDING` |
+| `IND_COCO_SDXL_002_ARM_A` | Cà chua trên bánh mì | Arm A (1.0×) | PASS | 16.79 | Omission (phủ vân ruột bánh mì; không tạo vật thể) | Khuyến nghị **REJECT** (Bỏ sót vật thể) | **REJECT** (Omission) |
+| `IND_COCO_SDXL_002_ARM_B` | Cà chua trên bánh mì | Arm B (4.0×) | PASS | 28.29 | Tạo đúng quả cà chua, có cuống đài xanh, độ bóng specular highlight; bậc tương phản vi mô tại biên mask `[345, 245, 455, 335]` | Trình Người dùng xem ảnh và đánh giá chất lượng | **REJECT** (Chưa đạt tiêu chí chất lượng biên vi mô & kết cấu ruột bánh mì) |
+| `IND_COMMONS_SD2_002_ARM_A` | Vali du lịch trên phố | Arm A (1.0×) | PASS | 30.74 | Omission (phủ vân đá cuội; không tạo vật thể) | Khuyến nghị **REJECT** (Bỏ sót vật thể) | **REJECT** (Omission) |
+| `IND_COMMONS_SD2_002_ARM_B` | Vali du lịch trên phố | Arm B (1.6×) | PASS | 43.39 | Hallucination (xe ô tô đồ chơi thay vì vali du lịch; bóng oval dưới gầm xe) | Khuyến nghị **REJECT** (Ảo giác ngữ nghĩa) | **REJECT** (Ảo giác xe đồ chơi) |
+| `IND_COMMONS_SDXL_001_ARM_A` | Chim bay trên bầu trời | Arm A (1.0×) | PASS | 11.08 | Omission (phủ mảng mây xám phẳng; không tạo vật thể) | Khuyến nghị **REJECT** (Bỏ sót vật thể) | **REJECT** (Omission) |
+| `IND_COMMONS_SDXL_001_ARM_B` | Chim bay trên bầu trời | Arm B (4.0×) | PASS | 13.07 | Tạo được đối tượng chim nhưng lệch vị trí target (`[395, 75, 455, 125]` vs `[375, 126, 414, 156]`) và vùng trời chữ nhật mask lệch tông | Khuyến nghị **REJECT** (Theo yêu cầu placement hiện tại) | **REJECT** (Lệch vị trí placement & lệch tông trời) |
 
-*Ghi chú*: Khuyến nghị trên chỉ là nhận xét/khuyến nghị của Agent. Toàn bộ 6 attempts giữ nguyên trạng thái `Human Content QC = PENDING` chờ quyết định chính thức của người dùng. Tám cặp ảnh pilot lịch sử (`pilot-20261008T113700Z`) tiếp tục giữ trạng thái `PENDING_CONTENT_QC`; tuyệt đối không tự ghi quyết định của người dùng. Zero detector calls, independent performance `NOT_MEASURED`, full cohort `NOT_RUN`.
+*Ghi chú*: Người dùng đã thẩm định và chính thức quyết định **REJECT toàn bộ 6 diagnostic attempts (6/6 REJECT)**. Tám cặp ảnh pilot lịch sử (`pilot-20261008T113700Z`) tiếp tục giữ trạng thái **`PENDING_CONTENT_QC`**; full cohort tiếp tục **BỊ KHÓA HOÀN TOÀN**. Zero detector calls, independent performance `NOT_MEASURED`, full cohort `NOT_RUN`.
 
 ---
 
-### 2.9. Đề xuất Hiệu chuẩn Tiếp theo: Thử nghiệm So sánh Ảnh hưởng Guidance Scale 7.5 và 9.5 trong Cấu hình Prompt/Negative Prompt Cố định Mới (PENDING User Review)
+### 2.9. Kế hoạch Hiệu chuẩn Tiếp theo: Thử nghiệm So sánh Ảnh hưởng Guidance Scale 7.5 và 9.5 trong Cấu hình Prompt/Negative Prompt Cố định Mới (APPROVED by Human Reviewer)
 
-> **Kế hoạch máy đọc đề xuất**: `research/evidence/phase-4c.7b/content_grounded_calibration_proposal.json`<br>
-> **Mã băm SHA-256**: `03a811efa3c503c270d8827af20e25bc5720bfa8caa78b228013988315b5cadd`<br>
-> **Trạng thái Quản trị**: `PENDING` (Đề xuất chờ người dùng xem xét; **tuyệt đối KHÔNG tự động thực thi**, `human_reviewer=null`, `human_reviewed_at_utc=null`).<br>
-> **Ngân sách đề xuất**: Đúng **2 attempts** một lần (zero retries, zero automatic replacement).
+> **Kế hoạch máy đọc**: `research/evidence/phase-4c.7b/content_grounded_calibration_proposal.json`<br>
+> **Mã băm SHA-256 trước phê duyệt**: `03a811efa3c503c270d8827af20e25bc5720bfa8caa78b228013988315b5cadd`<br>
+> **Mã băm SHA-256 sau phê duyệt**: `2611af81c2e104fb04235c4f3c15371b2c95e8ae57a72190e5a82623f91dbf2c`<br>
+> **Trạng thái Quản trị**: `APPROVED` bởi người dùng Dũng Phạm `<valdung04@gmail.com>` tại `2026-10-08T19:34:30Z` (Phê duyệt đúng 2 attempts trên `IND_COCO_SDXL_002`, canvas 512×512, seed 20272319, zero retries, zero automatic replacement; chỉ chạy trên GPU Colab khi người dùng kích hoạt, chưa thực thi trong phiên làm việc local này).<br>
+> **Ngân sách đã duyệt**: Đúng **2 attempts** một lần (zero retries, zero automatic replacement).
 
 #### 2.9.1. Lỗi đã Quan sát Thực nghiệm vs Giả thuyết Còn Cần Kiểm chứng
 1. **Lỗi Đã Quan Sát Thực Nghiệm (Empirically Observed Defects)**:
@@ -390,7 +391,6 @@ Nhằm so sánh ảnh hưởng của guidance scale 7.5 và 9.5 trong một cấ
 5. **Ngân sách Đề xuất**:
    - Ngân sách đề xuất: **Đúng 2 attempts** ($N=2$).
 6. **Ràng buộc Quản trị**:
-   - Trạng thái kế hoạch: **`PENDING`** (`human_reviewer=null`, `human_reviewed_at_utc=null`), chờ người dùng phê duyệt chính thức.
-   - Tuyệt đối **KHÔNG thực thi generation** trong phiên làm việc này.
-   - Không sửa JSON diagnostic đã APPROVED (`content_grounded_diagnostic_plan.json`) hoặc notebook để chạy calibration trước khi người dùng duyệt.
+   - Trạng thái kế hoạch: **`APPROVED`** bởi người dùng Dũng Phạm `<valdung04@gmail.com>` tại `2026-10-08T19:34:30Z` (đúng 2 attempts trên `IND_COCO_SDXL_002`, canvas 512×512, seed 20272319).
+   - Tuyệt đối **KHÔNG tự động thực thi generation** trong phiên làm việc local này.
    - Không đưa ảnh thử nghiệm vào cohort chính thức. Full cohort tiếp tục **BỊ KHÓA HOÀN TOÀN**.
