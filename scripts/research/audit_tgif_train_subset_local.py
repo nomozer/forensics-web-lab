@@ -21,7 +21,9 @@ import io
 import json
 import os
 from pathlib import Path
+import re
 import shutil
+import stat
 import time
 from typing import Any
 import zipfile
@@ -33,6 +35,8 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 EXPECTED_LOCKED_MANIFEST_SHA256 = "53a6ee472fe840a42abd97ccb7475932e0720f5788f745f57f7a2bcfbc32cc8c"
 EXPECTED_POOL_MANIFEST_SHA256 = "9e4ef2c9f89ad7dc1316d764c0acfff3b55dbc60dcc666d8928ff49a04dcd7b6"
 TARGET_CANVAS_SIZE = (512, 512)
+EXPECTED_OPTION_P_SOURCE_COUNT = 684
+EXPECTED_PHASE_4C7B_DEVELOPMENT_SOURCE_COUNT = 336
 
 class LocalAuditError(Exception):
     """Raised when an archive security violation, integrity error, or audit gate fails."""
@@ -43,6 +47,9 @@ def sha256_file(path: Path) -> str:
         while chunk := f.read(1024 * 1024):
             h.update(chunk)
     return h.hexdigest()
+
+def sha256_bytes(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
 
 def normalize_mask(mask: Image.Image, target_size: tuple[int, int] = TARGET_CANVAS_SIZE) -> Image.Image:
     """Canonical 512x512 Nearest-neighbor center-crop and binary threshold."""
@@ -61,6 +68,146 @@ def normalize_mask(mask: Image.Image, target_size: tuple[int, int] = TARGET_CANV
     else:
         bin_arr = (arr > 128).astype(np.uint8) * 255
     return Image.fromarray(bin_arr, mode="L")
+
+def load_forbidden_source_ids() -> tuple[set[str], set[str], set[str]]:
+    """Load the exact Option P and Phase 4C.7B development exclusions."""
+    option_p_csv = REPO_ROOT / "data/research/tgif/manifests/manifest_pilot_a_option_p.csv"
+    if not option_p_csv.is_file():
+        raise LocalAuditError(f"Historical Option P manifest missing: {option_p_csv}")
+
+    option_p_ids: set[str] = set()
+    historical_hashes: set[str] = set()
+    with open(option_p_csv, "r", encoding="utf-8") as f:
+        for row in csv.DictReader(f):
+            sid = row.get("source_id", "").strip()
+            if sid:
+                option_p_ids.add(str(int(sid)))
+            for field in ("authentic_sha256", "canonical_edit_sha256"):
+                value = row.get(field, "").strip().lower()
+                if value:
+                    historical_hashes.add(value)
+
+    evidence_dir = REPO_ROOT / "research/evidence/phase-4c.7b"
+    catalog_path = evidence_dir / "verified_candidate_catalog_v2.json"
+    extension_path = evidence_dir / "candidate_catalog_extension_v1.0.0.json"
+    if not catalog_path.is_file() or not extension_path.is_file():
+        raise LocalAuditError("Phase 4C.7B development source registries are missing")
+
+    phase_4c7b_ids: set[str] = set()
+    with open(catalog_path, "r", encoding="utf-8") as f:
+        catalog = json.load(f)
+    for candidate in catalog.get("coco_candidates", []):
+        source_id = str(candidate.get("coco_image_id", "")).strip()
+        if source_id:
+            phase_4c7b_ids.add(str(int(source_id)))
+
+    with open(extension_path, "r", encoding="utf-8") as f:
+        extension = json.load(f)
+    for candidate in extension.get("candidates", []):
+        match = re.fullmatch(r"coco:(\d+)", str(candidate.get("origin_id", "")).strip())
+        if match:
+            phase_4c7b_ids.add(str(int(match.group(1))))
+
+    for json_path in sorted(evidence_dir.glob("*.json")):
+        text = json_path.read_text(encoding="utf-8")
+        for match in re.finditer(r"coco:(\d+)", text):
+            phase_4c7b_ids.add(str(int(match.group(1))))
+
+    if len(option_p_ids) != EXPECTED_OPTION_P_SOURCE_COUNT:
+        raise LocalAuditError(
+            f"Option P source registry count mismatch: {len(option_p_ids)} != {EXPECTED_OPTION_P_SOURCE_COUNT}"
+        )
+    if len(phase_4c7b_ids) != EXPECTED_PHASE_4C7B_DEVELOPMENT_SOURCE_COUNT:
+        raise LocalAuditError(
+            "Phase 4C.7B development source registry count mismatch: "
+            f"{len(phase_4c7b_ids)} != {EXPECTED_PHASE_4C7B_DEVELOPMENT_SOURCE_COUNT}"
+        )
+    return option_p_ids, phase_4c7b_ids, historical_hashes
+
+def validate_inside_mean_l1(task_id: str, inside_mean_l1: float) -> None:
+    """Enforce the locked Technical QC threshold without changing benchmark pixels."""
+    if inside_mean_l1 < 1.0:
+        raise LocalAuditError(
+            f"Technical QC failure for {task_id}: inside_mean_l1={inside_mean_l1:.4f} < 1.0"
+        )
+
+def validate_package_binding(
+    zf: zipfile.ZipFile,
+    candidates: list[dict[str, Any]],
+    manifest_sha: str,
+) -> tuple[dict[str, dict[str, Any]], dict[str, dict[str, Any]]]:
+    """Bind every packaged image to the locked manifest and Colab receipt."""
+    zip_names = zf.namelist()
+    if len(zip_names) != len(set(zip_names)):
+        raise LocalAuditError("Duplicate ZIP entry names detected")
+    for required in ("manifest_copy.json", "colab_intake_receipt.json"):
+        if required not in zip_names:
+            raise LocalAuditError(f"Required package binding file missing: {required}")
+
+    packaged_manifest_sha = sha256_bytes(zf.read("manifest_copy.json"))
+    if packaged_manifest_sha != manifest_sha:
+        raise LocalAuditError(
+            f"Packaged manifest SHA-256 mismatch: {packaged_manifest_sha} != {manifest_sha}"
+        )
+    try:
+        receipt = json.loads(zf.read("colab_intake_receipt.json"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise LocalAuditError(f"Invalid Colab intake receipt JSON: {exc}") from exc
+
+    if receipt.get("manifest_sha256") != manifest_sha:
+        raise LocalAuditError(
+            f"Receipt manifest SHA-256 mismatch: {receipt.get('manifest_sha256')} != {manifest_sha}"
+        )
+    if receipt.get("status") != "COLAB_CPU_INTAKE_SUCCESS":
+        raise LocalAuditError(f"Unexpected Colab intake status: {receipt.get('status')}")
+    if receipt.get("execution_device") != "CPU" or receipt.get("cohort_pairs") != 400:
+        raise LocalAuditError("Colab receipt execution device or cohort size mismatch")
+    if receipt.get("replacement_policy") != "FAIL_CLOSED_NO_AUTOMATIC_REPLACEMENT":
+        raise LocalAuditError("Colab receipt replacement policy mismatch")
+
+    candidate_by_task = {candidate["task_id"]: candidate for candidate in candidates}
+    if len(candidate_by_task) != 400:
+        raise LocalAuditError("Locked manifest contains duplicate task IDs")
+
+    record_maps: list[dict[str, dict[str, Any]]] = []
+    expected_image_paths: set[str] = set()
+    for records_key, package_root, suffix in (
+        ("authentic_records", "authentic", "orig"),
+        ("edited_records", "edited", "sd2"),
+    ):
+        records = receipt.get(records_key)
+        if not isinstance(records, list) or len(records) != 400:
+            raise LocalAuditError(f"Receipt {records_key} must contain exactly 400 records")
+        by_task: dict[str, dict[str, Any]] = {}
+        for record in records:
+            task_id = record.get("task_id")
+            if task_id in by_task or task_id not in candidate_by_task:
+                raise LocalAuditError(f"Invalid or duplicate task binding in {records_key}: {task_id}")
+            candidate = candidate_by_task[task_id]
+            expected_path = f"{package_root}/{candidate['category']}/{candidate['raw_id']}_{suffix}.png"
+            if record.get("normalized_path") != expected_path:
+                raise LocalAuditError(
+                    f"Receipt path binding mismatch for {task_id}: "
+                    f"{record.get('normalized_path')} != {expected_path}"
+                )
+            for field in ("source_id", "raw_id", "category"):
+                if str(record.get(field)) != str(candidate[field]):
+                    raise LocalAuditError(f"Receipt {field} binding mismatch for {task_id}")
+            if not re.fullmatch(r"[0-9a-f]{64}", str(record.get("normalized_sha256", ""))):
+                raise LocalAuditError(f"Invalid normalized SHA-256 for {task_id}")
+            by_task[task_id] = record
+            expected_image_paths.add(expected_path)
+        if set(by_task) != set(candidate_by_task):
+            raise LocalAuditError(f"Receipt {records_key} task set differs from locked manifest")
+        record_maps.append(by_task)
+
+    expected_files = expected_image_paths | {"manifest_copy.json", "colab_intake_receipt.json"}
+    actual_files = {info.filename for info in zf.infolist() if not info.is_dir()}
+    if actual_files != expected_files:
+        missing = sorted(expected_files - actual_files)
+        extra = sorted(actual_files - expected_files)
+        raise LocalAuditError(f"Package inventory mismatch: missing={missing[:3]}, extra={extra[:3]}")
+    return record_maps[0], record_maps[1]
 
 def create_diff_map_image(orig_arr: np.ndarray, edit_arr: np.ndarray) -> Image.Image:
     """Generates an amplified difference visualization map."""
@@ -96,6 +243,9 @@ def audit_subset_package(
     print("\n--- Step 1: Archive Security Audit ---")
     with zipfile.ZipFile(package_zip_path, "r") as zf:
         infolist = zf.infolist()
+        entry_names = [info.filename for info in infolist]
+        if len(entry_names) != len(set(entry_names)):
+            raise LocalAuditError("Duplicate ZIP entry names detected")
         total_uncompressed = sum(info.file_size for info in infolist)
         if total_uncompressed > 1024 * 1024 * 1024:  # 1 GB limit
             raise LocalAuditError(f"Zipbomb guard tripped: uncompressed size {total_uncompressed} bytes > 1 GB")
@@ -106,6 +256,9 @@ def audit_subset_package(
                 raise LocalAuditError(f"Directory traversal detected in zip entry: {fn}")
             if ":" in fn:
                 raise LocalAuditError(f"Unsafe drive colon detected in zip entry: {fn}")
+            unix_mode = info.external_attr >> 16
+            if info.create_system == 3 and stat.S_ISLNK(unix_mode):
+                raise LocalAuditError(f"Unsafe ZIP symlink detected: {fn}")
 
     package_sha = sha256_file(package_zip_path)
     package_bytes = package_zip_path.stat().st_size
@@ -118,43 +271,35 @@ def audit_subset_package(
     with open(manifest_path, "r", encoding="utf-8") as f:
         manifest_data = json.load(f)
 
-    if manifest_sha == EXPECTED_LOCKED_MANIFEST_SHA256:
-        print(f"Verified LOCKED 400 manifest SHA-256: {manifest_sha}")
-        candidates = manifest_data.get("selected_candidates", [])
-    elif manifest_sha == EXPECTED_POOL_MANIFEST_SHA256:
-        print(f"Verified POOL manifest SHA-256: {manifest_sha}, filtering selected_in_n400...")
-        candidates = [c for c in manifest_data.get("candidates", []) if c.get("selected_in_n400")]
-    else:
+    if manifest_sha != EXPECTED_LOCKED_MANIFEST_SHA256:
         raise LocalAuditError(
             f"Manifest SHA mismatch: {manifest_sha} != {EXPECTED_LOCKED_MANIFEST_SHA256}"
         )
+    print(f"Verified LOCKED 400 manifest SHA-256: {manifest_sha}")
+    candidates = manifest_data.get("selected_candidates", [])
 
     if len(candidates) != 400:
         raise LocalAuditError(f"Expected exactly 400 candidates, got {len(candidates)}")
 
-    # 3. Disjoint Guard check against 684 historical Option P sources
-    print("\n--- Step 3: Multi-Level Disjoint Guard Audit ---")
-    option_p_csv = REPO_ROOT / "data/research/tgif/manifests/manifest_pilot_a_option_p.csv"
-    historical_ids: set[str] = set()
-    historical_hashes: set[str] = set()
-    if option_p_csv.is_file():
-        with open(option_p_csv, "r", encoding="utf-8") as f:
-            for row in csv.DictReader(f):
-                sid = row.get("source_id", "").strip()
-                if sid:
-                    historical_ids.add(str(int(sid)))
-                auth_sha = row.get("authentic_sha256", "").strip().lower()
-                edit_sha = row.get("canonical_edit_sha256", "").strip().lower()
-                if auth_sha:
-                    historical_hashes.add(auth_sha)
-                if edit_sha:
-                    historical_hashes.add(edit_sha)
+    print("\n--- Step 3: Package Binding & Multi-Level Disjoint Guard Audit ---")
+    with zipfile.ZipFile(package_zip_path, "r") as zf:
+        authentic_records, edited_records = validate_package_binding(zf, candidates, manifest_sha)
+
+    option_p_ids, phase_4c7b_ids, historical_hashes = load_forbidden_source_ids()
 
     incoming_sources = {str(int(c["source_id"])) for c in candidates}
-    overlap = incoming_sources & historical_ids
-    if overlap:
-        raise LocalAuditError(f"CRITICAL CONTAMINATION: {len(overlap)} sources overlap with historical Option P: {overlap}")
-    print(f"Disjoint Guard PASS: 0 / 400 overlap with {len(historical_ids)} historical Option P sources.")
+    option_p_overlap = incoming_sources & option_p_ids
+    phase_4c7b_overlap = incoming_sources & phase_4c7b_ids
+    if option_p_overlap or phase_4c7b_overlap:
+        raise LocalAuditError(
+            "CRITICAL CONTAMINATION: "
+            f"Option P overlap={sorted(option_p_overlap)}, "
+            f"Phase 4C.7B development overlap={sorted(phase_4c7b_overlap)}"
+        )
+    print(
+        "Disjoint Guard PASS: 0 / 400 overlap with "
+        f"{len(option_p_ids)} Option P and {len(phase_4c7b_ids)} Phase 4C.7B development sources."
+    )
 
     # 4. Tripartite alignment audit
     print("\n--- Step 4: Tripartite Alignment & Mask Verification ---")
@@ -175,25 +320,28 @@ def audit_subset_package(
             edit_entry = f"edited/{category}/{raw_id}_sd2.png"
             
             if auth_entry not in zip_names:
-                # Try finding by filename suffix
-                candidates_auth = [n for n in zip_names if n.endswith(f"{raw_id}_orig.png")]
-                if candidates_auth:
-                    auth_entry = candidates_auth[0]
-                else:
-                    raise LocalAuditError(f"Missing authentic image in zip: {auth_entry}")
-
+                raise LocalAuditError(f"Missing authentic image in zip: {auth_entry}")
             if edit_entry not in zip_names:
-                candidates_edit = [n for n in zip_names if n.endswith(f"{raw_id}_sd2.png")]
-                if candidates_edit:
-                    edit_entry = candidates_edit[0]
-                else:
-                    raise LocalAuditError(f"Missing edited image in zip: {edit_entry}")
+                raise LocalAuditError(f"Missing edited image in zip: {edit_entry}")
 
             # Read and decode authentic & edited
             auth_bytes = zf.read(auth_entry)
             edit_bytes = zf.read(edit_entry)
-            auth_img = Image.open(io.BytesIO(auth_bytes))
-            edit_img = Image.open(io.BytesIO(edit_bytes))
+            auth_sha = sha256_bytes(auth_bytes)
+            edit_sha = sha256_bytes(edit_bytes)
+            if auth_sha != authentic_records[task_id]["normalized_sha256"]:
+                raise LocalAuditError(f"Authentic image receipt hash mismatch for {task_id}")
+            if edit_sha != edited_records[task_id]["normalized_sha256"]:
+                raise LocalAuditError(f"Edited image receipt hash mismatch for {task_id}")
+            if auth_sha in historical_hashes or edit_sha in historical_hashes:
+                raise LocalAuditError(f"Historical Option P byte-hash collision for {task_id}")
+            try:
+                auth_img = Image.open(io.BytesIO(auth_bytes))
+                edit_img = Image.open(io.BytesIO(edit_bytes))
+                auth_img.load()
+                edit_img.load()
+            except Exception as exc:
+                raise LocalAuditError(f"PIL decode failure for {task_id}: {exc}") from exc
 
             if auth_img.size != TARGET_CANVAS_SIZE or edit_img.size != TARGET_CANVAS_SIZE:
                 raise LocalAuditError(f"Image size mismatch for {task_id}: {auth_img.size}, {edit_img.size}")
@@ -217,6 +365,8 @@ def audit_subset_package(
             o_arr = np.array(auth_img, dtype=np.float32)
             e_arr = np.array(edit_img, dtype=np.float32)
             m_arr = np.array(norm_mask, dtype=np.uint8)
+            if float(np.std(o_arr)) < 2.0 or float(np.std(e_arr)) < 2.0:
+                raise LocalAuditError(f"Technical QC failure (blank image, std < 2.0) for {task_id}")
 
             diff = np.abs(e_arr - o_arr)
             changed = np.any(diff > 0, axis=2)
@@ -237,6 +387,7 @@ def audit_subset_package(
 
             inside_diff = diff[inside_mask]
             inside_mean_l1 = float(np.mean(inside_diff)) if inside_diff.size > 0 else 0.0
+            validate_inside_mean_l1(task_id, inside_mean_l1)
             total_changed_px = int(np.sum(changed))
 
             record = {
@@ -311,8 +462,10 @@ def audit_subset_package(
         "cohort_pairs_audited": len(tripartite_results),
         "disjoint_guard": {
             "status": "PASS",
-            "historical_option_p_sources_checked": len(historical_ids),
-            "historical_collisions": 0,
+            "historical_option_p_sources_checked": len(option_p_ids),
+            "phase_4c7b_development_sources_checked": len(phase_4c7b_ids),
+            "source_id_collisions": 0,
+            "historical_byte_hash_collisions": 0,
         },
         "tripartite_fidelity": {
             "mask_hash_parity_rate": 1.0,

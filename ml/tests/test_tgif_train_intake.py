@@ -21,6 +21,8 @@ import hashlib
 import io
 import json
 from pathlib import Path
+import re
+import stat
 import tarfile
 import tempfile
 from typing import Any
@@ -47,8 +49,10 @@ from scripts.research.acquire_tgif_train_subset_colab import (
     normalize_mask,
     safe_tar_member_check,
     execute_cohort_intake,
+    extract_selective_stream,
     sha256_file,
 )
+from scripts.research import audit_tgif_train_subset_local as local_audit
 from scripts.research.audit_tgif_train_subset_local import (
     LocalAuditError,
     audit_subset_package,
@@ -122,9 +126,7 @@ def test_all_400_masks_on_disk_match_hashes_and_area():
     with open(LOCKED_MANIFEST_PATH, "r", encoding="utf-8") as f:
         candidates = json.load(f)["selected_candidates"]
 
-    # Test all 14 large, first 10 medium, first 10 small for quick execution
-    sampled = candidates[:14] + candidates[14:24] + candidates[235:245]
-    for c in sampled:
+    for c in candidates:
         mp = REPO_ROOT / c["mask_rel_path"]
         assert mp.is_file(), f"Mask missing: {mp}"
         disk_sha = sha256_file(mp)
@@ -137,6 +139,25 @@ def test_all_400_masks_on_disk_match_hashes_and_area():
         arr = np.array(norm)
         px = int(np.sum(arr > 0))
         assert px == c["mask_px_512"], f"Pixel area mismatch for {c['task_id']}: {px} != {c['mask_px_512']}"
+
+def test_preprocessing_uses_center_crop_without_letterbox_and_binary_nearest_mask():
+    """Catch any switch from the locked center-crop transforms to letterboxing or soft masks."""
+    rgb = np.zeros((100, 200, 3), dtype=np.uint8)
+    rgb[:, :100] = (255, 0, 0)
+    rgb[:, 100:] = (0, 0, 255)
+    normalized_rgb = normalize_rgb_image(Image.fromarray(rgb, mode="RGB"))
+    assert normalized_rgb.size == (512, 512)
+    assert normalized_rgb.mode == "RGB"
+    normalized_rgb_arr = np.array(normalized_rgb)
+    assert np.all(normalized_rgb_arr[:, 0, 0] > normalized_rgb_arr[:, 0, 2])
+    assert np.all(normalized_rgb_arr[:, -1, 2] > normalized_rgb_arr[:, -1, 0])
+
+    mask = np.zeros((100, 200), dtype=np.uint8)
+    mask[:, 75:125] = 255
+    normalized_mask = normalize_mask(Image.fromarray(mask, mode="L"))
+    assert normalized_mask.size == (512, 512)
+    assert normalized_mask.mode == "L"
+    assert set(np.unique(np.array(normalized_mask)).tolist()) == {0, 255}
 
 def test_disjoint_guard_against_historical_option_p():
     """Verify 0 collision between 400 candidates and 684 historical Option P sources."""
@@ -176,6 +197,54 @@ def test_safe_tar_member_check():
     with pytest.raises(CohortIntakeError, match="Unsafe tar member detected"):
         safe_tar_member_check(ti_sym)
 
+def test_locked_intake_rejects_pool_manifest():
+    """Catch accidental execution from the mutable pool instead of the approved locked selection."""
+    with pytest.raises(CohortIntakeError, match="locked manifest SHA-256"):
+        load_and_verify_manifest(POOL_MANIFEST_PATH)
+
+def test_selective_extraction_rejects_suffix_only_archive_binding(tmp_path: Path):
+    """Catch a wrong archive root being accepted solely because its member ends with a target path."""
+    image = np.zeros((32, 32, 3), dtype=np.uint8)
+    image[:, :16] = (255, 0, 0)
+    image[:, 16:] = (0, 255, 0)
+    image_buf = io.BytesIO()
+    Image.fromarray(image, mode="RGB").save(image_buf, format="PNG")
+
+    target_path = "orig/training/dog/000000000001_orig.png"
+    tar_path = tmp_path / "fixture.tar.gz"
+    with tarfile.open(tar_path, "w:gz") as tf:
+        member = tarfile.TarInfo(name=f"unexpected-root/{target_path}")
+        member.size = len(image_buf.getvalue())
+        tf.addfile(member, io.BytesIO(image_buf.getvalue()))
+
+    candidate = {
+        "task_id": "fixture-task",
+        "source_id": "1",
+        "raw_id": "000000000001",
+        "category": "dog",
+    }
+    with pytest.raises(CohortIntakeError, match="found only 0"):
+        extract_selective_stream(
+            tar_path,
+            {target_path: candidate},
+            tmp_path / "out",
+            "orig",
+        )
+
+    exact_tar_path = tmp_path / "exact.tar.gz"
+    with tarfile.open(exact_tar_path, "w:gz") as tf:
+        member = tarfile.TarInfo(name=target_path)
+        member.size = len(image_buf.getvalue())
+        tf.addfile(member, io.BytesIO(image_buf.getvalue()))
+    result = extract_selective_stream(
+        exact_tar_path,
+        {target_path: candidate},
+        tmp_path / "exact-out",
+        "orig",
+    )
+    assert result["extracted_count"] == 1
+    assert result["records"][0]["normalized_path"] == "authentic/dog/000000000001_orig.png"
+
 def test_colab_worker_dry_run():
     """Verify Colab intake worker dry-run succeeds fail-closed."""
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -209,6 +278,62 @@ def test_canonical_colab_notebook_contract():
     assert "sd2-sp_training.tar.gz" in all_source
     assert "acquire_tgif_train_subset_colab.py" in all_source
     assert "audit_tgif_train_subset_local.py" in all_source
+
+    commit_match = re.search(r'EXPECTED_EXECUTION_COMMIT\s*=\s*"([0-9a-f]{40})"', all_source)
+    assert commit_match, "Notebook must pin one full 40-character execution commit SHA"
+    assert '"checkout", "--detach"' in all_source
+    assert '"rev-parse", "HEAD"' in all_source
+    assert all_source.index('"rev-parse", "HEAD"') < all_source.index("Manifest Path:")
+    assert all_source.index("Manifest Path:") < all_source.index("Download TGIF Archives")
+    code_source = "\n".join("".join(c["source"]) for c in cells if c["cell_type"] == "code")
+    assert "assert " not in code_source, "Notebook gates must remain active under optimized Python"
+
+def test_local_audit_forbidden_registry_covers_both_historical_sets():
+    """Catch omission of either Option P or Phase 4C.7B development sources from local audit."""
+    loader = getattr(local_audit, "load_forbidden_source_ids", None)
+    assert loader is not None, "Local audit must load both forbidden source registries"
+    option_p_ids, phase_4c7b_ids, _ = loader()
+    assert len(option_p_ids) == 684
+    assert len(phase_4c7b_ids) == 336
+    assert len(option_p_ids | phase_4c7b_ids) == 1020
+
+def test_local_audit_rejects_zip_symlink_before_reading_images(tmp_path: Path):
+    """Catch a ZIP symlink that could redirect package reads outside the audit boundary."""
+    zip_path = tmp_path / "symlink.zip"
+    link = zipfile.ZipInfo("authentic/link.png")
+    link.create_system = 3
+    link.external_attr = (stat.S_IFLNK | 0o777) << 16
+    with zipfile.ZipFile(zip_path, "w") as zf:
+        zf.writestr(link, "target.png")
+
+    with pytest.raises(LocalAuditError, match="symlink"):
+        audit_subset_package(zip_path, LOCKED_MANIFEST_PATH)
+
+def test_local_audit_rejects_unbound_receipt_before_reading_images(tmp_path: Path):
+    """Catch a package whose receipt is not cryptographically bound to the locked manifest."""
+    zip_path = tmp_path / "unbound.zip"
+    manifest_bytes = LOCKED_MANIFEST_PATH.read_bytes()
+    receipt = {
+        "status": "COLAB_CPU_INTAKE_SUCCESS",
+        "manifest_sha256": "0" * 64,
+        "cohort_pairs": 400,
+        "authentic_records": [],
+        "edited_records": [],
+    }
+    with zipfile.ZipFile(zip_path, "w") as zf:
+        zf.writestr("manifest_copy.json", manifest_bytes)
+        zf.writestr("colab_intake_receipt.json", json.dumps(receipt))
+
+    with pytest.raises(LocalAuditError, match="Receipt manifest SHA-256 mismatch"):
+        audit_subset_package(zip_path, LOCKED_MANIFEST_PATH)
+
+def test_local_audit_inside_l1_gate_is_fail_closed():
+    """Catch removal or weakening of the locked inside_mean_l1 >= 1.0 Technical QC gate."""
+    validator = getattr(local_audit, "validate_inside_mean_l1", None)
+    assert validator is not None, "Local audit must expose and apply the inside-L1 QC gate"
+    validator("boundary-pass", 1.0)
+    with pytest.raises(LocalAuditError, match="inside_mean_l1"):
+        validator("below-threshold", 0.9999)
 
 def test_local_audit_synthetic_smoke():
     """Verify local audit runner on a synthetic mini package."""

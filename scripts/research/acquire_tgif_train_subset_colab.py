@@ -113,24 +113,28 @@ def download_file_with_progress(url: str, dest_path: Path, expected_bytes: int |
     t0 = time.time()
     req = urllib.request.Request(url, headers={"User-Agent": "ForensicsWebLab-IntakeWorker/1.0"})
     
-    with urllib.request.urlopen(req) as resp, open(part_path, "wb") as out_f:
-        downloaded = 0
-        chunk_size = 8 * 1024 * 1024  # 8 MB chunks
-        last_log = t0
-        while True:
-            chunk = resp.read(chunk_size)
-            if not chunk:
-                break
-            out_f.write(chunk)
-            downloaded += len(chunk)
-            now = time.time()
-            if now - last_log > 10.0:  # Log every 10 seconds
-                rate_mb = (downloaded / (1024 * 1024)) / max(now - t0, 0.001)
-                total_str = f" / {expected_bytes / (1024**3):.2f} GiB" if expected_bytes else ""
-                print(f"  Downloaded: {downloaded / (1024**3):.2f} GiB{total_str} ({rate_mb:.1f} MB/s)")
-                last_log = now
+    try:
+        with urllib.request.urlopen(req) as resp, open(part_path, "wb") as out_f:
+            downloaded = 0
+            chunk_size = 8 * 1024 * 1024  # 8 MB chunks
+            last_log = t0
+            while True:
+                chunk = resp.read(chunk_size)
+                if not chunk:
+                    break
+                out_f.write(chunk)
+                downloaded += len(chunk)
+                now = time.time()
+                if now - last_log > 10.0:  # Log every 10 seconds
+                    rate_mb = (downloaded / (1024 * 1024)) / max(now - t0, 0.001)
+                    total_str = f" / {expected_bytes / (1024**3):.2f} GiB" if expected_bytes else ""
+                    print(f"  Downloaded: {downloaded / (1024**3):.2f} GiB{total_str} ({rate_mb:.1f} MB/s)")
+                    last_log = now
 
-    part_path.rename(dest_path)
+        part_path.replace(dest_path)
+    except Exception:
+        part_path.unlink(missing_ok=True)
+        raise
     total_sec = time.time() - t0
     final_bytes = dest_path.stat().st_size
     print(f"Download complete: {dest_path.name} in {total_sec:.1f}s ({final_bytes / (1024**3):.2f} GiB)")
@@ -166,8 +170,8 @@ def extract_selective_stream(
     targets: dict mapping relative archive paths to candidate dicts.
     """
     output_dir.mkdir(parents=True, exist_ok=True)
-    target_rel_paths = {p.strip().lstrip("./").lstrip("/"): c for p, c in targets.items()}
-    found_count = 0
+    target_rel_paths = {p.replace("\\", "/").removeprefix("./"): c for p, c in targets.items()}
+    found_paths: set[str] = set()
     extracted_records: list[dict[str, Any]] = []
 
     print(f"Stream-scanning {tar_path.name} for {len(target_rel_paths)} target members...")
@@ -180,17 +184,12 @@ def extract_selective_stream(
             normalized_name = safe_tar_member_check(member)
             
             # Check matching against any normalized target path
-            matched_candidate = None
-            if normalized_name in target_rel_paths:
-                matched_candidate = target_rel_paths[normalized_name]
-            else:
-                # Also check suffix matching if archive root folder differs
-                for t_path, c in target_rel_paths.items():
-                    if normalized_name.endswith(t_path) or t_path.endswith(normalized_name):
-                        matched_candidate = c
-                        break
+            matched_candidate = target_rel_paths.get(normalized_name)
 
             if matched_candidate is not None:
+                if normalized_name in found_paths:
+                    raise CohortIntakeError(f"Duplicate target member in archive: {member.name}")
+                found_paths.add(normalized_name)
                 task_id = matched_candidate["task_id"]
                 category = matched_candidate["category"]
                 raw_id = matched_candidate["raw_id"]
@@ -227,6 +226,7 @@ def extract_selective_stream(
                 out_path = cat_dir / out_filename
                 img_512.save(out_path, format="PNG")
                 norm_sha = sha256_file(out_path)
+                package_root = "authentic" if subfolder_name == "orig" else "edited"
 
                 extracted_records.append({
                     "task_id": task_id,
@@ -237,14 +237,15 @@ def extract_selective_stream(
                     "raw_bytes": len(raw_bytes),
                     "raw_sha256": raw_sha,
                     "normalized_sha256": norm_sha,
-                    "normalized_path": f"{subfolder_name}/{category}/{out_filename}",
+                    "normalized_path": f"{package_root}/{category}/{out_filename}",
                     "std_512": round(img_std, 4),
                     "native_size": list(img.size),
                 })
-                found_count += 1
+                found_count = len(found_paths)
                 if found_count % 50 == 0 or found_count == len(target_rel_paths):
                     print(f"  Extracted {found_count}/{len(target_rel_paths)} {subfolder_name} images ({time.time() - t0:.1f}s)")
 
+    found_count = len(found_paths)
     if found_count != len(target_rel_paths):
         missing_count = len(target_rel_paths) - found_count
         raise CohortIntakeError(
@@ -268,18 +269,13 @@ def load_and_verify_manifest(manifest_path: Path) -> tuple[dict[str, Any], list[
     with open(manifest_path, "r", encoding="utf-8") as f:
         data = json.load(f)
 
-    # Allow either locked 400 manifest or pool manifest
-    if actual_sha == EXPECTED_LOCKED_MANIFEST_SHA256:
-        print(f"Verified LOCKED 400 manifest SHA-256: {actual_sha}")
-        candidates = data.get("selected_candidates", [])
-    elif actual_sha == EXPECTED_POOL_MANIFEST_SHA256:
-        print(f"Verified POOL manifest SHA-256: {actual_sha}, filtering selected_in_n400...")
-        candidates = [c for c in data.get("candidates", []) if c.get("selected_in_n400")]
-    else:
+    if actual_sha != EXPECTED_LOCKED_MANIFEST_SHA256:
         raise CohortIntakeError(
-            f"Manifest SHA-256 mismatch: {actual_sha} does not match locked ({EXPECTED_LOCKED_MANIFEST_SHA256}) "
-            f"nor pool ({EXPECTED_POOL_MANIFEST_SHA256})."
+            f"Manifest must match the approved locked manifest SHA-256 "
+            f"{EXPECTED_LOCKED_MANIFEST_SHA256}; got {actual_sha}."
         )
+    print(f"Verified LOCKED 400 manifest SHA-256: {actual_sha}")
+    candidates = data.get("selected_candidates", [])
 
     if len(candidates) != 400:
         raise CohortIntakeError(f"Expected exactly 400 candidates, got {len(candidates)}")
@@ -307,9 +303,15 @@ def execute_cohort_intake(
     strata_counts = Counter(c["stratum_area_class"] for c in candidates)
     print(f"Selected 400 allocation: Large={strata_counts['large_over_30pct']}, "
           f"Medium={strata_counts['medium_10_to_30pct']}, Small={strata_counts['small_under_10pct']}")
-    assert strata_counts["large_over_30pct"] == 14
-    assert strata_counts["medium_10_to_30pct"] == 221
-    assert strata_counts["small_under_10pct"] == 165
+    expected_strata = {
+        "large_over_30pct": 14,
+        "medium_10_to_30pct": 221,
+        "small_under_10pct": 165,
+    }
+    if dict(strata_counts) != expected_strata:
+        raise CohortIntakeError(
+            f"Locked allocation mismatch: {dict(strata_counts)} != {expected_strata}"
+        )
 
     if dry_run:
         print("\n[DRY-RUN] Manifest verified, allocation exact, disk budget verified. Exiting without execution.")

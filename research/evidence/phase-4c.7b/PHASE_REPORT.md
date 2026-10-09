@@ -24,12 +24,13 @@ Hồ sơ đăng ký quyết định phê duyệt chính thức của người d�
 ### 2. Các Cam Kết Khoa Học & Đính Chính Thống Kê Bắt Buộc
 1. **Không coi phân bổ là tỷ lệ tự nhiên**: Nhóm Large chỉ có 14 nguồn khả dụng trong toàn bộ split ($3,5\%$). Đây là đặc thù dữ liệu phân đoạn của MS-COCO/TGIF, không phải tỷ lệ can thiệp tự nhiên. **Tuyệt đối không đưa ra kết luận mạnh riêng cho nhóm Large**.
 2. **Đính chính căn cứ sai số ME < 0,01**: Tuyên bố trước đó cho rằng "N=400 đảm bảo $\text{ME} < 0,01$" xuất phát từ mô phỏng Monte Carlo ở Phase 4C.7A trên giả định phân bổ cân bằng $50/50$. Đối với thiết kế phân tầng mới có độ lệch lớn, **căn cứ này CHƯA XÁC LẬP** và bắt buộc phải kiểm tra lại căn cứ thống kê trước khi tiến hành evaluation.
-3. **Bước kiểm tra bộ ba thực hiện tại LOCAL sau intake**: Colab chỉ trích xuất ảnh authentic và edited. Bước kiểm tra bộ ba (tripartite alignment audit) được thực hiện chính thức trên máy LOCAL sau intake bằng `audit_tgif_train_subset_local.py`, đối chiếu với 100% kho mask đã có sẵn trên đĩa cục bộ (0 MB mạng trên Colab).
-4. **Khóa Preprocessing & QC; Cấm tự chọn mẫu thay thế (FAIL-CLOSED)**:
+3. **Đính chính cách diễn đạt ngưỡng diện tích `0.02/0.15`**: Hai giá trị `0.02` và `0.15` không phải ranh giới phân tầng của cohort đã khóa. Hợp đồng chuẩn tắc vẫn là `0.01 <= P < 0.10` (Small), `0.10 <= P < 0.30` (Medium), và `0.30 <= P <= 0.50` (Large), tương ứng **1–10%, 10–30%, 30–50%** sau preprocessing mask 512×512. Đính chính này chỉ sửa diễn đạt báo cáo; không tính lại, thay thế hoặc chọn lại bất kỳ mẫu nào trong 400 cặp đã khóa.
+4. **Bước kiểm tra bộ ba thực hiện tại LOCAL sau intake**: Colab chỉ trích xuất ảnh authentic và edited. Bước kiểm tra bộ ba (tripartite alignment audit) được thực hiện chính thức trên máy LOCAL sau intake bằng `audit_tgif_train_subset_local.py`, đối chiếu với 100% kho mask đã có sẵn trên đĩa cục bộ (0 MB mạng trên Colab).
+5. **Khóa Preprocessing & QC; Cấm tự chọn mẫu thay thế (FAIL-CLOSED)**:
    - Preprocessing đã khóa: center-crop Lanczos về $512 \times 512$ RGB không nén cho ảnh; center-crop Nearest-neighbor về $512 \times 512$ binarize $\{0, 255\}$ cho mask; diện tích mask tính sau biến đổi; cấm letterboxing.
    - QC đã khóa: PIL decode 100%, $\text{std} \ge 2,0$, $\text{inside\_mean\_l1} \ge 1,0$.
    - **Quy tắc xử lý mẫu thiếu/hỏng**: Nếu bất kỳ mẫu nào bị thiếu hoặc lỗi, worker ghi nhận lỗi vào receipt và dừng quy trình. **CẤM TỰ ĐỘNG CHỌN MẪU THAY THẾ (zero automatic replacement)** từ pool nếu chưa có sự phê duyệt của người dùng.
-5. **An toàn trích xuất & Bảo toàn tính nguyên bản benchmark**:
+6. **An toàn trích xuất & Bảo toàn tính nguyên bản benchmark**:
    - Sử dụng phương pháp đọc luồng tar (`tarfile` stream) để trích xuất trực tiếp 400 tệp mà không giải nén 18,63 GiB ra đĩa. Kiểm tra nghiêm ngặt chống TarSlip/ZipSlip (chặn `..`, absolute paths, symlinks).
    - **Tuyệt đối không sửa hoặc composite lại ảnh benchmark** để ép outside L1 về 0. Giữ nguyên độ biến thiên pixel thực tế của tác giả TGIF.
 
