@@ -22,37 +22,37 @@
   - Candidate configuration: seed `20272319`, canvas 512×512, no crop, no feathering, EulerDiscreteScheduler, 30 steps, strength 1.0, guidance scale 7.5 (attempt 1) and 9.5 (attempt 2).
   - Telemetry: Python 3.13.15, Linux 6.6.122+, PyTorch 2.11.0+cu130, Diffusers 0.40.0, Transformers 5.18.0, CUDA 13.0, Tesla T4 (NumPy 2.1.3, Pillow 11.3.0).
 - **Chuỗi Nguồn gốc Đầu vào (Input Provenance Chain) & Tính toàn vẹn**:
-  - *Tệp niêm phong đầu vào trước chạy*: Kế hoạch `content_grounded_calibration_proposal.json` ràng buộc mã băm từ `pilot-20261008T113700Z`:
-    * Authentic: `IND_COCO_SDXL_002_auth.png` (280,961 bytes, SHA-256 `7aefc1d1dff39ac5527ce47734421e34094af42d9763fe35ab3b94fee62e4571`).
-    * Mask: `IND_COCO_SDXL_002_mask.png` (449 bytes, SHA-256 `2ff6b16571048015060095e9a240b28ed1073e9ea70a9d7870bfaf3b49fb9bee`).
-    * Runner code (`verify_calibration_inputs`) kiểm tra fail-closed hai mã băm này trước khi thực thi. Tuy nhiên, `calibration_receipt.json` không ghi trường mã băm của tệp đầu vào trong JSON receipt (đây là một thiếu hụt ghi nhận receipt).
-  - *Tệp đóng gói sau chạy trong archive*: Quá trình thực thi trên Colab mở ảnh qua Pillow và lưu lại bản sao (`auth_img.save(auth_dest)`). Quá trình re-encode bằng libpng mặc định làm thay đổi kích thước byte và mã băm tệp trên đĩa:
-    * `CALIB_COCO_SDXL_002_PROMPT_G75_auth.png`: 288,206 bytes, SHA-256 `a35bef734b09b832c75aa0335f0de25adba54f37fff7ea4c4741e21517c75f46`.
-    * `CALIB_COCO_SDXL_002_PROMPT_G75_mask.png`: 523 bytes, SHA-256 `e4721316af48fb49ca166a8b02541b4713e92abbafc7a16e84c752750b76f25a`.
-  - *Phân biệt rõ ràng*: Hai tệp có SHA-256 khác nhau tuyệt đối không được gọi là byte-identical. Tuy nhiên, khi giải mã qua PIL thành mảng NumPy, mảng pixel của tệp trong archive khớp chính xác bit-to-bit với ảnh niêm phong (`max_auth_diff == 0`, `max_mask_diff == 0`). Mức độ trùng khớp pixel bảo đảm giá trị số không suy hao, nhưng không thay thế được việc lưu vết mã băm tệp trong receipt trước chạy.
+  - _Tệp niêm phong đầu vào trước chạy_: Kế hoạch `content_grounded_calibration_proposal.json` ràng buộc mã băm từ `pilot-20261008T113700Z`:
+    - Authentic: `IND_COCO_SDXL_002_auth.png` (280,961 bytes, SHA-256 `7aefc1d1dff39ac5527ce47734421e34094af42d9763fe35ab3b94fee62e4571`).
+    - Mask: `IND_COCO_SDXL_002_mask.png` (449 bytes, SHA-256 `2ff6b16571048015060095e9a240b28ed1073e9ea70a9d7870bfaf3b49fb9bee`).
+    - Runner code (`verify_calibration_inputs`) kiểm tra fail-closed hai mã băm này trước khi thực thi. Tuy nhiên, `calibration_receipt.json` không ghi trường mã băm của tệp đầu vào trong JSON receipt (đây là một thiếu hụt ghi nhận receipt).
+  - _Tệp đóng gói sau chạy trong archive_: Quá trình thực thi trên Colab mở ảnh qua Pillow và lưu lại bản sao (`auth_img.save(auth_dest)`). Quá trình re-encode bằng libpng mặc định làm thay đổi kích thước byte và mã băm tệp trên đĩa:
+    - `CALIB_COCO_SDXL_002_PROMPT_G75_auth.png`: 288,206 bytes, SHA-256 `a35bef734b09b832c75aa0335f0de25adba54f37fff7ea4c4741e21517c75f46`.
+    - `CALIB_COCO_SDXL_002_PROMPT_G75_mask.png`: 523 bytes, SHA-256 `e4721316af48fb49ca166a8b02541b4713e92abbafc7a16e84c752750b76f25a`.
+  - _Phân biệt rõ ràng_: Hai tệp có SHA-256 khác nhau tuyệt đối không được gọi là byte-identical. Tuy nhiên, khi giải mã qua PIL thành mảng NumPy, mảng pixel của tệp trong archive khớp chính xác bit-to-bit với ảnh niêm phong (`max_auth_diff == 0`, `max_mask_diff == 0`). Mức độ trùng khớp pixel bảo đảm giá trị số không suy hao, nhưng không thay thế được việc lưu vết mã băm tệp trong receipt trước chạy.
 - **Recalculated Pixel-Level Metrics & Formula Disclosures**:
-  - *Kiểu dữ liệu & ROI*: Mảng ảnh kiểu `float32`, RGB 512×512; mask `uint8` tại `[345, 245, 455, 335]` (9,900 px, 3.776550%).
-  - *Công thức độ lệch tuyệt đối*: `delta_abs = np.abs(edited.astype(np.float32) - authentic.astype(np.float32))`.
-  - *Outside Invariance (Ghép nhị phân 1-bit)*: `outside_mean_l1 == 0.000000`, `outside_max_delta == 0.0` trên cả 2 attempts.
-  - *Raw Diffusion Drift trước compositing*:
-    * G7.5: mean L1 = `4.0973`, std của delta_abs = `3.4032`, max delta = `41.0`.
-    * G9.5: mean L1 = `4.1187`, std của delta_abs = `3.4253`, max delta = `38.0`.
-  - *Inside Mask Metrics (Đính chính định danh std)*:
-    * Attempt 1 (Guidance 7.5): inside mean L1 = **`16.4117`**; std của delta_abs = **`13.6940`** (ddof=0; ddof=1 là `13.6943`); max delta = `89.0`. *(Đính chính: Con số 33.60 trong bản nháp trước là std của giá trị màu edited `np.std(g75[mask == 255]) = 33.6041`, không phải std của delta_abs).*
-    * Attempt 2 (Guidance 9.5): inside mean L1 = **`16.9891`**; std của delta_abs = **`13.9863`** (ddof=0; ddof=1 là `13.9865`); max delta = `87.0`. *(Đính chính: Con số 33.02 trong bản nháp trước là std của giá trị màu edited `np.std(g95[mask == 255]) = 33.0174`).*
-    * Delta nội vùng G9.5 vs G7.5: mean L1 = `5.6830`, std = `4.7690`, max delta = `41.0`.
-  - *Số đo Bậc biên (Boundary Steps) tại `[345, 245, 455, 335]`*:
-    * Cạnh trên (Top edge, $y=245$ vs $244$, $x \in [345, 455)$): Công thức `np.mean(np.abs(img[245, 345:455, :] - img[244, 345:455, :]))`. Authentic: **`1.8121`**; G7.5: **`8.1667`**; G9.5: **`9.2697`**.
-    * Cạnh trái (Left edge, $x=345$ vs $344$, $y \in [245, 335)$): Công thức `np.mean(np.abs(img[245:335, 345, :] - img[245:335, 344, :]))`. Authentic: **`4.1185`**; G7.5: **`9.5593`**; G9.5: **`9.2852`**. *(Đính chính: Con số 3.24 trước đó là do sai lệch ROI đo; giá trị authentic thực tế trên ROI chuẩn tắc là **4.1185**).*
-    * Cạnh phải (Right edge, $x=454$ vs $455$, $y \in [245, 335)$): Authentic: `3.3667`; G7.5: `8.3481`; G9.5: `10.2667`.
-    * Cạnh dưới (Bottom edge, $y=334$ vs $335$, $x \in [345, 455)$): Authentic: `2.8667`; G7.5: `10.2758`; G9.5: `11.8667`.
+  - _Kiểu dữ liệu & ROI_: Mảng ảnh kiểu `float32`, RGB 512×512; mask `uint8` tại `[345, 245, 455, 335]` (9,900 px, 3.776550%).
+  - _Công thức độ lệch tuyệt đối_: `delta_abs = np.abs(edited.astype(np.float32) - authentic.astype(np.float32))`.
+  - _Outside Invariance (Ghép nhị phân 1-bit)_: `outside_mean_l1 == 0.000000`, `outside_max_delta == 0.0` trên cả 2 attempts.
+  - _Raw Diffusion Drift trước compositing_:
+    - G7.5: mean L1 = `4.0973`, std của delta_abs = `3.4032`, max delta = `41.0`.
+    - G9.5: mean L1 = `4.1187`, std của delta_abs = `3.4253`, max delta = `38.0`.
+  - _Inside Mask Metrics (Đính chính định danh std)_:
+    - Attempt 1 (Guidance 7.5): inside mean L1 = **`16.4117`**; std của delta_abs = **`13.6940`** (ddof=0; ddof=1 là `13.6943`); max delta = `89.0`. _(Đính chính: Con số 33.60 trong bản nháp trước là std của giá trị màu edited `np.std(g75[mask == 255]) = 33.6041`, không phải std của delta_abs)._
+    - Attempt 2 (Guidance 9.5): inside mean L1 = **`16.9891`**; std của delta_abs = **`13.9863`** (ddof=0; ddof=1 là `13.9865`); max delta = `87.0`. _(Đính chính: Con số 33.02 trong bản nháp trước là std của giá trị màu edited `np.std(g95[mask == 255]) = 33.0174`)._
+    - Delta nội vùng G9.5 vs G7.5: mean L1 = `5.6830`, std = `4.7690`, max delta = `41.0`.
+  - _Số đo Bậc biên (Boundary Steps) tại `[345, 245, 455, 335]`_:
+    - Cạnh trên (Top edge, $y=245$ vs $244$, $x \in [345, 455)$): Công thức `np.mean(np.abs(img[245, 345:455, :] - img[244, 345:455, :]))`. Authentic: **`1.8121`**; G7.5: **`8.1667`**; G9.5: **`9.2697`**.
+    - Cạnh trái (Left edge, $x=345$ vs $344$, $y \in [245, 335)$): Công thức `np.mean(np.abs(img[245:335, 345, :] - img[245:335, 344, :]))`. Authentic: **`4.1185`**; G7.5: **`9.5593`**; G9.5: **`9.2852`**. _(Đính chính: Con số 3.24 trước đó là do sai lệch ROI đo; giá trị authentic thực tế trên ROI chuẩn tắc là **4.1185**)._
+    - Cạnh phải (Right edge, $x=454$ vs $455$, $y \in [245, 335)$): Authentic: `3.3667`; G7.5: `8.3481`; G9.5: `10.2667`.
+    - Cạnh dưới (Bottom edge, $y=334$ vs $335$, $x \in [345, 455)$): Authentic: `2.8667`; G7.5: `10.2758`; G9.5: `11.8667`.
 - **Visual Analysis across Separated Criteria**:
-  - *Tomato Presence*: Total semantic omission in both attempts. 0 cherry tomato synthesized. Both attempts generated infilled bread crumb texture.
-  - *Position / Scale*: Target bbox `[375, 265, 430, 320]` contains no target object in either attempt.
-  - *Realism / Lighting*: Inpainted region shows rough bread crumb texture, without the target object.
-  - *Crumb Texture*: Guidance scale increase from 7.5 to 9.5 shifted crumb grain pattern slightly (internal L1 delta 5.68), but did not trigger object formation.
-  - *Boundary Quality*: Hard binary compositing creates noticeable textural transition steps along registered mask boundary `[345, 245, 455, 335]`.
-  - *Methodological & Scientific Insight*: "L1 tăng không bảo đảm thành công ngữ nghĩa" — inside L1 increased from 16.41 to 16.99, yet both attempts are complete omissions. Outside L1 = 0.000000 is an artifact of 1-bit compositing, not native diffusion behavior (~4.1 L1 drift).
+  - _Tomato Presence_: Total semantic omission in both attempts. 0 cherry tomato synthesized. Both attempts generated infilled bread crumb texture.
+  - _Position / Scale_: Target bbox `[375, 265, 430, 320]` contains no target object in either attempt.
+  - _Realism / Lighting_: Inpainted region shows rough bread crumb texture, without the target object.
+  - _Crumb Texture_: Guidance scale increase from 7.5 to 9.5 shifted crumb grain pattern slightly (internal L1 delta 5.68), but did not trigger object formation.
+  - _Boundary Quality_: Hard binary compositing creates noticeable textural transition steps along registered mask boundary `[345, 245, 455, 335]`.
+  - _Methodological & Scientific Insight_: "L1 tăng không bảo đảm thành công ngữ nghĩa" — inside L1 increased from 16.41 to 16.99, yet both attempts are complete omissions. Outside L1 = 0.000000 is an artifact of 1-bit compositing, not native diffusion behavior (~4.1 L1 drift).
 - **Contact Sheet & Governance Dossier**:
   - Original Colab contact sheet backed up to `calibration_contact_sheet_raw_colab.html`.
   - Derived coordinate overlays and zoom panels rendered into `derived_overlays/`.
@@ -70,62 +70,64 @@
 Hồ sơ tổng hợp toàn diện các đợt chạy thực nghiệm độc lập trong Phase 4C.7B nhằm phục vụ đánh giá tính khả thi trước khi xem xét mở khóa cohort chính thức. Toàn bộ nhận định được phân tách nghiêm ngặt giữa quan sát thực nghiệm, lỗi phần mềm đã chứng minh, và các giả thuyết chưa kiểm chứng (liên kết với `docs/EVIDENCE_REGISTER.md` và `docs/references.bib`).
 
 ### 1. Bảng Tổng hợp Độc lập 4 Đợt Chạy Thực nghiệm
-*Nguyên tắc kế toán khoa học: Tuyệt đối không gộp các lần chạy khác giao thức thành một tỷ lệ thành công chung; không tính trùng các sự kiện STARTED/terminal trong cùng một attempt; không tính các candidate tái dùng thành mẫu độc lập mới.*
 
-| Đợt chạy Thực nghiệm | Giao thức / Mục tiêu | Quy mô & Ngân sách | Technical QC (std / inside L1 / outside L1) | Human Content QC | Lỗi / Khiếm khuyết Đã Chứng minh |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Pilot lịch sử**<br>`pilot-20261007T132003Z` | Pilot 8 cặp đầu tiên trên 4 strata; kiểm tra vận hành hệ thống thu thập tự động. | 8 cặp kế hoạch<br>(2 cặp / stratum).<br>Ngân sách: 8 attempts. | **8/8 PASS (lịch sử)**<br>Mã tại binding commit `7d2eea4` bỏ qua kiểm tra `outside_l1 <= 0.5`.<br>Kiểm toán lại: outside L1 đo được **3.808–9.311** ở cả 8 cặp do thiếu compositing. | **8 PENDING**<br>*(Agent screening phát hiện 8/8 có vấn đề nội dung; chưa có quyết định người duyệt)*. | 1. Thiếu kiểm tra và bảo tồn pixel ngoài mask (outside L1 vượt ngưỡng 0.5 ở cả 8 cặp).<br>2. Thiếu đăng ký mục tiêu cụ thể (dùng prompt chung theo index và mask ellipse ngẫu nhiên trên canvas 512×512). |
-| **Follow-up pilot**<br>`pilot-20261008T113700Z` | Thử nghiệm 8 cặp sau sửa đổi hướng dẫn nội dung (content-grounded instructions). | 8 cặp kế hoạch<br>(2 cặp / stratum).<br>Ngân sách: 8 attempts. | **8/8 PASS**<br>(inside L1 11.08–76.14; outside L1 = 0.000000 nhờ 1-bit compositing). | **8 PENDING**<br>*(Chưa có quyết định người duyệt)*. | 1. Omission trên các mask: `IND_COCO_SDXL_002` (3.78%), `IND_COMMONS_SDXL_001` (6.58%), `IND_COMMONS_SD2_002` (14.76%).<br>2. Đứt gãy cấu trúc (lan can kim loại bị cắt cụt 210 px ở `IND_COMMONS_SDXL_003`).<br>3. Lệch tone mảng lớn (trần nhà 30% area ở `IND_COCO_SDXL_041`). |
-| **Diagnostic**<br>`diag-20261008T154628Z` | So sánh đối đầu Full Canvas 512×512 (Arm A) vs Local Crop có padding ở độ phân giải gốc (Arm B) trên 3 ca omission. | 3 candidates $\times$ 2 arms = đúng 6 attempts.<br>Ngân sách: 6 attempts. | **6/6 PASS**<br>(outside L1 = 0.000000 qua compositing). | **6/6 REJECT**<br>*(Đã chốt chính thức bởi Dũng Phạm lúc 2026-10-08T19:34:30Z)*. | 1. Arm A: 3/3 ca omission hoàn toàn (`IND_COCO_SDXL_002`, `IND_COMMONS_SD2_002`, `IND_COMMONS_SDXL_001`).<br>2. Arm B cà chua: bậc biên mask & vụn bánh mì.<br>3. Arm B vali: semantic hallucination (xe hơi đồ chơi).<br>4. Arm B chim: lệch placement ngoài target bbox 41 px & lệch tone mảng trời. |
-| **Calibration**<br>`calib-20261009T015749Z` | Can thiệp đơn biến: so sánh Guidance Scale 7.5 vs 9.5 với prompt/negative prompt mới trên `IND_COCO_SDXL_002` (seed 20272319). | 1 candidate $\times$ 2 guidance scales = đúng 2 attempts.<br>Ngân sách: 2 attempts. | **2/2 PASS**<br>(inside L1 16.4117 / 16.9891; outside L1 = 0.000000). | **2 PENDING**<br>*(Agent đề xuất REJECT; chờ người duyệt)*. | 1. Cả 2 attempt đều omission hoàn toàn (0 quả cà chua; tái tạo vân ruột bánh mì).<br>2. Bậc nhảy tương phản vi mô tại biên mask (top edge step 8.17 / 9.27 vs 1.81 authentic; left edge step 9.56 / 9.29 vs 4.12 authentic). |
+_Nguyên tắc kế toán khoa học: Tuyệt đối không gộp các lần chạy khác giao thức thành một tỷ lệ thành công chung; không tính trùng các sự kiện STARTED/terminal trong cùng một attempt; không tính các candidate tái dùng thành mẫu độc lập mới._
+
+| Đợt chạy Thực nghiệm                            | Giao thức / Mục tiêu                                                                                                           | Quy mô & Ngân sách                                                                  | Technical QC (std / inside L1 / outside L1)                                                                                                                                          | Human Content QC                                                                                       | Lỗi / Khiếm khuyết Đã Chứng minh                                                                                                                                                                                                                                                                       |
+| :---------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Pilot lịch sử**<br>`pilot-20261007T132003Z`   | Pilot 8 cặp đầu tiên trên 4 strata; kiểm tra vận hành hệ thống thu thập tự động.                                               | 8 cặp kế hoạch<br>(2 cặp / stratum).<br>Ngân sách: 8 attempts.                      | **8/8 PASS (lịch sử)**<br>Mã tại binding commit `7d2eea4` bỏ qua kiểm tra `outside_l1 <= 0.5`.<br>Kiểm toán lại: outside L1 đo được **3.808–9.311** ở cả 8 cặp do thiếu compositing. | **8 PENDING**<br>_(Agent screening phát hiện 8/8 có vấn đề nội dung; chưa có quyết định người duyệt)_. | 1. Thiếu kiểm tra và bảo tồn pixel ngoài mask (outside L1 vượt ngưỡng 0.5 ở cả 8 cặp).<br>2. Thiếu đăng ký mục tiêu cụ thể (dùng prompt chung theo index và mask ellipse ngẫu nhiên trên canvas 512×512).                                                                                              |
+| **Follow-up pilot**<br>`pilot-20261008T113700Z` | Thử nghiệm 8 cặp sau sửa đổi hướng dẫn nội dung (content-grounded instructions).                                               | 8 cặp kế hoạch<br>(2 cặp / stratum).<br>Ngân sách: 8 attempts.                      | **8/8 PASS**<br>(inside L1 11.08–76.14; outside L1 = 0.000000 nhờ 1-bit compositing).                                                                                                | **8 PENDING**<br>_(Chưa có quyết định người duyệt)_.                                                   | 1. Omission trên các mask: `IND_COCO_SDXL_002` (3.78%), `IND_COMMONS_SDXL_001` (6.58%), `IND_COMMONS_SD2_002` (14.76%).<br>2. Đứt gãy cấu trúc (lan can kim loại bị cắt cụt 210 px ở `IND_COMMONS_SDXL_003`).<br>3. Lệch tone mảng lớn (trần nhà 30% area ở `IND_COCO_SDXL_041`).                      |
+| **Diagnostic**<br>`diag-20261008T154628Z`       | So sánh đối đầu Full Canvas 512×512 (Arm A) vs Local Crop có padding ở độ phân giải gốc (Arm B) trên 3 ca omission.            | 3 candidates $\times$ 2 arms = đúng 6 attempts.<br>Ngân sách: 6 attempts.           | **6/6 PASS**<br>(outside L1 = 0.000000 qua compositing).                                                                                                                             | **6/6 REJECT**<br>_(Đã chốt chính thức bởi Dũng Phạm lúc 2026-10-08T19:34:30Z)_.                       | 1. Arm A: 3/3 ca omission hoàn toàn (`IND_COCO_SDXL_002`, `IND_COMMONS_SD2_002`, `IND_COMMONS_SDXL_001`).<br>2. Arm B cà chua: bậc biên mask & vụn bánh mì.<br>3. Arm B vali: semantic hallucination (xe hơi đồ chơi).<br>4. Arm B chim: lệch placement ngoài target bbox 41 px & lệch tone mảng trời. |
+| **Calibration**<br>`calib-20261009T015749Z`     | Can thiệp đơn biến: so sánh Guidance Scale 7.5 vs 9.5 với prompt/negative prompt mới trên `IND_COCO_SDXL_002` (seed 20272319). | 1 candidate $\times$ 2 guidance scales = đúng 2 attempts.<br>Ngân sách: 2 attempts. | **2/2 PASS**<br>(inside L1 16.4117 / 16.9891; outside L1 = 0.000000).                                                                                                                | **2 PENDING**<br>_(Agent đề xuất REJECT; chờ người duyệt)_.                                            | 1. Cả 2 attempt đều omission hoàn toàn (0 quả cà chua; tái tạo vân ruột bánh mì).<br>2. Bậc nhảy tương phản vi mô tại biên mask (top edge step 8.17 / 9.27 vs 1.81 authentic; left edge step 9.56 / 9.29 vs 4.12 authentic).                                                                           |
 
 ### 2. Phân loại 5 Nhóm Khiếm khuyết Chất lượng Tạo sinh (Defect Taxonomy)
 
 1. **Hiện tượng Thiếu vật thể hoàn toàn (Semantic Omission)**:
-   - *Biểu hiện*: Vùng mask không xuất hiện đối tượng được yêu cầu trong prompt mà bị lấp đầy bởi hoa văn nền xung quanh (infill).
-   - *Bằng chứng thực nghiệm*: Quan sát thấy trên cả SDXL và SD2 full canvas 512×512 qua 3 ca thử nghiệm:
-     * `IND_COCO_SDXL_002` (cà chua): 9.900 px, **3.776550%** canvas.
-     * `IND_COMMONS_SDXL_001` (chim): 17.250 px, **6.580353%** canvas.
-     * `IND_COMMONS_SD2_002` (vali): 38.700 px, **14.762878%** canvas.
-     *Lưu ý khoa học*: Omission xuất hiện ở các mức diện tích từ 3.78% đến 14.76%; không kết luận rằng omission chỉ giới hạn dưới 5% và không tự đặt ngưỡng loại trừ mask < 5%.
+   - _Biểu hiện_: Vùng mask không xuất hiện đối tượng được yêu cầu trong prompt mà bị lấp đầy bởi hoa văn nền xung quanh (infill).
+   - _Bằng chứng thực nghiệm_: Quan sát thấy trên cả SDXL và SD2 full canvas 512×512 qua 3 ca thử nghiệm:
+     - `IND_COCO_SDXL_002` (cà chua): 9.900 px, **3.776550%** canvas.
+     - `IND_COMMONS_SDXL_001` (chim): 17.250 px, **6.580353%** canvas.
+     - `IND_COMMONS_SD2_002` (vali): 38.700 px, **14.762878%** canvas.
+       _Lưu ý khoa học_: Omission xuất hiện ở các mức diện tích từ 3.78% đến 14.76%; không kết luận rằng omission chỉ giới hạn dưới 5% và không tự đặt ngưỡng loại trừ mask < 5%.
    - Đợt calibration trên `IND_COCO_SDXL_002` (seed 20272319) chứng minh rằng việc tăng guidance scale (7.5 $\to$ 9.5) kèm negative prompt cụ thể (`bread crumb only`, `background infill`) không kích hoạt hình thành quả cà chua trong phạm vi cấu hình đã thử.
 2. **Sai lệch Đối tượng Ngữ nghĩa (Semantic Hallucination)**:
-   - *Biểu hiện*: Mô hình tạo ra một vật thể hoàn chỉnh nhưng hoàn toàn sai lệch so với prompt văn bản.
-   - *Bằng chứng thực nghiệm*: Quan sát thấy ở SD2 inpainting khi áp dụng local crop 1.6x (`IND_COMMONS_SD2_002` Arm B trong `diag-20261008T154628Z`): mô hình sinh ra một chiếc xe hơi đồ chơi cổ thay vì chiếc vali hành lý, dù inside L1 tăng cao (43.39 vs 30.74).
+   - _Biểu hiện_: Mô hình tạo ra một vật thể hoàn chỉnh nhưng hoàn toàn sai lệch so với prompt văn bản.
+   - _Bằng chứng thực nghiệm_: Quan sát thấy ở SD2 inpainting khi áp dụng local crop 1.6x (`IND_COMMONS_SD2_002` Arm B trong `diag-20261008T154628Z`): mô hình sinh ra một chiếc xe hơi đồ chơi cổ thay vì chiếc vali hành lý, dù inside L1 tăng cao (43.39 vs 30.74).
 3. **Sai lệch Vị trí và Tỷ lệ (Placement & Scale Deficit)**:
-   - *Biểu hiện*: Mô hình sinh được đối tượng mục tiêu nhưng đặt sai vị trí hình học so với tọa độ kỳ vọng.
-   - *Bằng chứng thực nghiệm*: Quan sát thấy ở SDXL native resolution local crop (`IND_COMMONS_SDXL_001` Arm B trong diagnostic): bóng chim xuất hiện nhưng bị dịch chuyển xuống dưới target bounding box $dy = +41.0$ px ($dx = -30.5$ px, độ trùng khớp theo chiều dọc = 0 px), nằm ngoài target box `[395, 75, 455, 125]` dù vẫn nằm 100% trong mask.
+   - _Biểu hiện_: Mô hình sinh được đối tượng mục tiêu nhưng đặt sai vị trí hình học so với tọa độ kỳ vọng.
+   - _Bằng chứng thực nghiệm_: Quan sát thấy ở SDXL native resolution local crop (`IND_COMMONS_SDXL_001` Arm B trong diagnostic): bóng chim xuất hiện nhưng bị dịch chuyển xuống dưới target bounding box $dy = +41.0$ px ($dx = -30.5$ px, độ trùng khớp theo chiều dọc = 0 px), nằm ngoài target box `[395, 75, 455, 125]` dù vẫn nằm 100% trong mask.
 4. **Lệch Ánh sáng, Tông màu & Kết cấu (Lighting, Texture & Tone Mismatch)**:
-   - *Biểu hiện*: Vùng can thiệp có mức độ phơi sáng, tông màu hoặc kết cấu không đồng nhất với ảnh authentic xung quanh.
-   - *Bằng chứng thực nghiệm*: Mảng trời xung quanh chim Arm B bị lệch tone chữ nhật ($\Delta\text{RGB} \approx [-3.07, -3.79, -3.66]$), tạo thành một mảng chữ nhật xám mờ rõ rệt. Vùng vụn bánh mì infilled trong mask cà chua có độ tương phản và mật độ hạt mịn khác biệt với phần bánh mì authentic bên ngoài.
+   - _Biểu hiện_: Vùng can thiệp có mức độ phơi sáng, tông màu hoặc kết cấu không đồng nhất với ảnh authentic xung quanh.
+   - _Bằng chứng thực nghiệm_: Mảng trời xung quanh chim Arm B bị lệch tone chữ nhật ($\Delta\text{RGB} \approx [-3.07, -3.79, -3.66]$), tạo thành một mảng chữ nhật xám mờ rõ rệt. Vùng vụn bánh mì infilled trong mask cà chua có độ tương phản và mật độ hạt mịn khác biệt với phần bánh mì authentic bên ngoài.
 5. **Biên ghép Vi mô và Đứt gãy Cấu trúc (Boundary Seams & Structural Severance)**:
-   - *Biểu hiện*: Bậc tương phản vi mô tại đường ranh giới mask và sự đứt đoạn vật lý của các thực thể hình học kéo dài.
-   - *Bằng chứng thực nghiệm*:
-     * Hard binary compositing (1-bit) luôn tạo ra bước nhảy tương phản vi mô tại biên (mép trên mask cà chua có step 8.17–9.27 so với authentic 1.81; mép trái có step 9.56–9.29 so với authentic 4.12).
-     * Khi mask cắt ngang các cấu trúc liên tục (lan can kim loại ở `IND_COMMONS_SDXL_003`), phép ghép nhị phân cắt đứt cấu trúc vật lý 210 px.
-     * Thử nghiệm feathering cosine ($k=2$ px) chứng minh chỉ làm mịn bậc chuyển tiếp 1-2 pixel nhưng không thể khắc phục sự đứt gãy hình học vĩ mô hay tonal mismatch diện tích lớn.
+   - _Biểu hiện_: Bậc tương phản vi mô tại đường ranh giới mask và sự đứt đoạn vật lý của các thực thể hình học kéo dài.
+   - _Bằng chứng thực nghiệm_:
+     - Hard binary compositing (1-bit) luôn tạo ra bước nhảy tương phản vi mô tại biên (mép trên mask cà chua có step 8.17–9.27 so với authentic 1.81; mép trái có step 9.56–9.29 so với authentic 4.12).
+     - Khi mask cắt ngang các cấu trúc liên tục (lan can kim loại ở `IND_COMMONS_SDXL_003`), phép ghép nhị phân cắt đứt cấu trúc vật lý 210 px.
+     - Thử nghiệm feathering cosine ($k=2$ px) chứng minh chỉ làm mịn bậc chuyển tiếp 1-2 pixel nhưng không thể khắc phục sự đứt gãy hình học vĩ mô hay tonal mismatch diện tích lớn.
 
 ### 3. Phân tách Nghiêm ngặt: Thực nghiệm, Lỗi phần mềm và Giả thuyết
+
 - **Quan sát Thực nghiệm (Empirical Observations - Đã đo đạc xác minh)**:
-  * Tỷ lệ omission thực tế trên canvas 512×512 đối với 3 ca thử nghiệm (cà chua 3.78%, chim 6.58%, vali 14.76%).
-  * Tọa độ bóng chim bị lệch khỏi target box ($dy = +41.0\text{ px}$).
-  * Xe hơi đồ chơi thay thế vali dưới crop 1.6x.
-  * Bước nhảy L1 tại biên mask và sự trôi lệch raw diffusion $\approx 4.1$ L1.
-  * `outside_mean_l1 == 0.000000` hoàn toàn do lớp ghép 1-bit bảo đảm theo định nghĩa, không chứng minh mô hình diffusion tự bảo tồn nền.
+  - Tỷ lệ omission thực tế trên canvas 512×512 đối với 3 ca thử nghiệm (cà chua 3.78%, chim 6.58%, vali 14.76%).
+  - Tọa độ bóng chim bị lệch khỏi target box ($dy = +41.0\text{ px}$).
+  - Xe hơi đồ chơi thay thế vali dưới crop 1.6x.
+  - Bước nhảy L1 tại biên mask và sự trôi lệch raw diffusion $\approx 4.1$ L1.
+  - `outside_mean_l1 == 0.000000` hoàn toàn do lớp ghép 1-bit bảo đảm theo định nghĩa, không chứng minh mô hình diffusion tự bảo tồn nền.
 - **Lỗi Phần mềm Đã Chứng minh (Proven Software Defects - Đã phân định)**:
-  * Sự cố lịch sử trước pilot: 401 upstream checkpoint `sd2-inpainting` và lỗi thiếu tham số `height/width` trong pipeline SDXL (đã khắc phục bằng mirror cộng đồng và contract cứng 512×512).
-  * Lỗi thiếu kiểm tra `outside_l1` trong runner cũ của `pilot-20261007T132003Z` (đã khắc phục từ `pilot-20261008T113700Z`).
-  * Lỗ hổng quan sát trong receipt: `calibration_receipt.json` chưa lưu SHA-256 của file đầu vào tại thời điểm preflight.
+  - Sự cố lịch sử trước pilot: 401 upstream checkpoint `sd2-inpainting` và lỗi thiếu tham số `height/width` trong pipeline SDXL (đã khắc phục bằng mirror cộng đồng và contract cứng 512×512).
+  - Lỗi thiếu kiểm tra `outside_l1` trong runner cũ của `pilot-20261007T132003Z` (đã khắc phục từ `pilot-20261008T113700Z`).
+  - Lỗ hổng quan sát trong receipt: `calibration_receipt.json` chưa lưu SHA-256 của file đầu vào tại thời điểm preflight.
 - **Hồ sơ Lịch sử vs Catalog Chuẩn tắc Hiện hành**:
-  * Các tệp `candidate_acquisition_plan.json` và `acquisition_smoke_receipt.json` (ngày 06/10) chứa `unsplash_*` và biên nhận `synthetic_smoke` là **hồ sơ lịch sử**, không đủ điều kiện nhập cohort.
-  * Catalog chuẩn tắc hiện hành chứa `commons_*` là:
+  - Các tệp `candidate_acquisition_plan.json` và `acquisition_smoke_receipt.json` (ngày 06/10) chứa `unsplash_*` và biên nhận `synthetic_smoke` là **hồ sơ lịch sử**, không đủ điều kiện nhập cohort.
+  - Catalog chuẩn tắc hiện hành chứa `commons_*` là:
     - Catalog: `research/evidence/phase-4c.7b/verified_candidate_catalog_v2.json` (SHA-256 `d85595c6b43d5acf8d312993a270278b4f17f481dca0f8286efdae07bcd281a5`).
     - Kế hoạch: `research/evidence/phase-4c.7b/candidate_acquisition_plan_v2.json` (SHA-256 `7c4190fbaae9605ad2ff462dd4d128f2707109f88bb9fe4dc272fab1963caa5c`).
     - Kiểm toán: `research/evidence/phase-4c.7b/catalog_eligibility_audit.json` (SHA-256 `1cc6b9b576a99ab21e72125b56424718753819408ba224c5bfff8ec5b2a8c3d4`).
 - **Giả thuyết Chưa Kiểm chứng (Unverified Hypotheses - Giữ đúng trạng thái giả định)**:
-  * *Giả thuyết Latent Downsampling Capacity*: Nhận định cho rằng diện tích latent nhỏ thiếu dung lượng biểu diễn chỉ là suy luận từ kiến trúc $8\times$ downsampling; chưa được cô lập thực nghiệm bằng phân tích tensor nội bộ.
-  * *Giả thuyết Context Infill Attention Bias*: Giả định rằng embedding bối cảnh xung quanh lấn át prompt văn bản; chưa được đo đạc qua cross-attention maps.
-  * *Nguy cơ Forensic Shortcut*: Nhận định cho rằng biên ghép 1-bit hoặc feathering nhân tạo có thể tạo shortcut cho mô hình detector là nguy cơ phương pháp luận cần kiểm soát; không khẳng định hiệu năng detector đã bị thổi phồng khi chưa đo thực tế (`NOT_MEASURED`).
+  - _Giả thuyết Latent Downsampling Capacity_: Nhận định cho rằng diện tích latent nhỏ thiếu dung lượng biểu diễn chỉ là suy luận từ kiến trúc $8\times$ downsampling; chưa được cô lập thực nghiệm bằng phân tích tensor nội bộ.
+  - _Giả thuyết Context Infill Attention Bias_: Giả định rằng embedding bối cảnh xung quanh lấn át prompt văn bản; chưa được đo đạc qua cross-attention maps.
+  - _Nguy cơ Forensic Shortcut_: Nhận định cho rằng biên ghép 1-bit hoặc feathering nhân tạo có thể tạo shortcut cho mô hình detector là nguy cơ phương pháp luận cần kiểm soát; không khẳng định hiệu năng detector đã bị thổi phồng khi chưa đo thực tế (`NOT_MEASURED`).
 
 ---
 
@@ -136,42 +138,47 @@ Dựa trên bằng chứng tích lũy qua 4 đợt chạy (8 pilot attempts, 6 d
 ### 1. Phân tích Bốn Phương án Định hướng Kỹ thuật
 
 #### Phương án 1: Tiếp tục vi điều chỉnh siêu tham số và prompt trên từng candidate (Micro-Tuning)
-- *Vấn đề giải quyết*: Tìm kiếm tổ hợp prompt, negative prompt, seed và guidance scale trên canvas 512×512 cho từng candidate cụ thể.
-- *Bằng chứng hỗ trợ & Phần chưa biết*: Đợt calibration `calib-20261009T015749Z` chứng minh việc tăng guidance scale 7.5 $\to$ 9.5 kèm negative prompt không giải quyết được omission trên `IND_COCO_SDXL_002` (seed 20272319). Trong phạm vi candidate và seed đã thử, việc thay đổi guidance không kích hoạt tạo vật thể.
-- *Thay đổi phương pháp*: Không đổi allocation; giữ nguyên pipeline.
-- *Điều kiện & Kế hoạch*: Yêu cầu một kế hoạch thử nghiệm mới được duyệt.
-- *Đánh giá*: **Không khuyến nghị**. Dễ dẫn đến việc thử mò mẫm từng candidate vô hạn, khó mở rộng cho toàn bộ cohort.
+
+- _Vấn đề giải quyết_: Tìm kiếm tổ hợp prompt, negative prompt, seed và guidance scale trên canvas 512×512 cho từng candidate cụ thể.
+- _Bằng chứng hỗ trợ & Phần chưa biết_: Đợt calibration `calib-20261009T015749Z` chứng minh việc tăng guidance scale 7.5 $\to$ 9.5 kèm negative prompt không giải quyết được omission trên `IND_COCO_SDXL_002` (seed 20272319). Trong phạm vi candidate và seed đã thử, việc thay đổi guidance không kích hoạt tạo vật thể.
+- _Thay đổi phương pháp_: Không đổi allocation; giữ nguyên pipeline.
+- _Điều kiện & Kế hoạch_: Yêu cầu một kế hoạch thử nghiệm mới được duyệt.
+- _Đánh giá_: **Không khuyến nghị**. Dễ dẫn đến việc thử mò mẫm từng candidate vô hạn, khó mở rộng cho toàn bộ cohort.
 
 #### Phương án 2: Chuyển đổi sang Pipeline Local-Crop có điều kiện ở độ phân giải gốc (Native-Resolution Cropped Pipeline)
-- *Vấn đề giải quyết*: Khắc phục hiện tượng omission trên candidate nhỏ (đã chứng minh ở Arm B diagnostic: 2/2 ca SDXL Arm B tạo được quả cà chua và chim).
-- *Bằng chứng hỗ trợ & Phần chưa biết*: Arm B tạo được vật thể nhưng làm phát sinh các lỗi mới: chim lệch vị trí $dy = +41\text{ px}$, mảng trời xám lệch tông, và SD2 hallucination xe đồ chơi. Chưa có cơ chế giải quyết placement và độ khớp tông màu mà không tạo vết biên nhân tạo.
-- *Thay đổi phương pháp*: Yêu cầu thay đổi kiến trúc pipeline (crop, coordinate mapping, upscaling/downscaling, blending) và sửa đổi quy chuẩn thu thập.
-- *Điều kiện & Kế hoạch*: Yêu cầu một Protocol Amendment mới, prototype kiểm thử và phê duyệt từ người dùng.
-- *Đánh giá*: Tiềm năng về việc kích hoạt tạo vật thể, nhưng có độ phức tạp cao và chưa giải quyết được các khiếm khuyết nội dung phát sinh.
+
+- _Vấn đề giải quyết_: Khắc phục hiện tượng omission trên candidate nhỏ (đã chứng minh ở Arm B diagnostic: 2/2 ca SDXL Arm B tạo được quả cà chua và chim).
+- _Bằng chứng hỗ trợ & Phần chưa biết_: Arm B tạo được vật thể nhưng làm phát sinh các lỗi mới: chim lệch vị trí $dy = +41\text{ px}$, mảng trời xám lệch tông, và SD2 hallucination xe đồ chơi. Chưa có cơ chế giải quyết placement và độ khớp tông màu mà không tạo vết biên nhân tạo.
+- _Thay đổi phương pháp_: Yêu cầu thay đổi kiến trúc pipeline (crop, coordinate mapping, upscaling/downscaling, blending) và sửa đổi quy chuẩn thu thập.
+- _Điều kiện & Kế hoạch_: Yêu cầu một Protocol Amendment mới, prototype kiểm thử và phê duyệt từ người dùng.
+- _Đánh giá_: Tiềm năng về việc kích hoạt tạo vật thể, nhưng có độ phức tạp cao và chưa giải quyết được các khiếm khuyết nội dung phát sinh.
 
 #### Phương án 3 (Khuyến nghị Cốt lõi): Rà soát Tiêu chuẩn Chọn mẫu và Đề tài Can thiệp (Content-Grounded Candidate & Mask Curation)
-- *Vấn đề giải quyết*: Nhắm đến việc hạn chế các ca can thiệp có rủi ro nội dung cao ngay từ khâu tiền kiểm: tránh các vùng can thiệp cắt ngang cấu trúc hình học liên tục (như lan can, chân tường) và các vùng bối cảnh có nguy cơ xung đột ngữ nghĩa cao.
-- *Bằng chứng hỗ trợ & Phần chưa biết*:
-  * Bằng chứng thực nghiệm cho thấy việc cắt ngang lan can kim loại liên tục (`IND_COMMONS_SDXL_003`) gây đứt gãy không thể khắc phục bằng inpainting hay feathering.
-  * Chưa biết: Việc thay đổi tiêu chí chọn mẫu có loại bỏ hoàn toàn omission trên canvas 512x512 hay không (cần kiểm chứng trên các candidate mới có nền phẳng/trơn). Không tự cam kết rằng mask lớn hơn sẽ bảo đảm sinh đúng vật thể.
-- *Thay đổi phương pháp & Cohort*:
-  * Giữ nguyên cơ cấu 4 strata (`coco_sd2`, `coco_sdxl`, `commons_sd2`, `commons_sdxl`), 8 allocation slots (3 replacement, 1 removal, 4 insertion | 3 small, 2 medium, 3 large).
-  * Tiền kiểm nội dung từng candidate trước khi đưa vào kế hoạch chạy: ưu tiên vật thể tách biệt, có ranh giới tự nhiên; không nới mask chỉ để đủ quota nếu làm phá vỡ cấu trúc cảnh.
-- *Điều kiện cần đạt trước khi cân nhắc Full Cohort*:
-  * Người dùng phê duyệt định hướng curation và các quyết định trade-off cụ thể.
-  * Soạn thảo Kế hoạch Thử nghiệm Curation mới được phê duyệt chính thức.
-  * Đạt kết quả thẩm định con người khả quan trên gate pilot mới trước khi mở khóa cohort.
-- *Đánh giá*: **Khuyến nghị**. Phương án này tập trung giải quyết các lỗi thiết kế kịch bản can thiệp, tránh lãng phí GPU trên các ca có xung đột hình học cố hữu.
+
+- _Vấn đề giải quyết_: Nhắm đến việc hạn chế các ca can thiệp có rủi ro nội dung cao ngay từ khâu tiền kiểm: tránh các vùng can thiệp cắt ngang cấu trúc hình học liên tục (như lan can, chân tường) và các vùng bối cảnh có nguy cơ xung đột ngữ nghĩa cao.
+- _Bằng chứng hỗ trợ & Phần chưa biết_:
+  - Bằng chứng thực nghiệm cho thấy việc cắt ngang lan can kim loại liên tục (`IND_COMMONS_SDXL_003`) gây đứt gãy không thể khắc phục bằng inpainting hay feathering.
+  - Chưa biết: Việc thay đổi tiêu chí chọn mẫu có loại bỏ hoàn toàn omission trên canvas 512x512 hay không (cần kiểm chứng trên các candidate mới có nền phẳng/trơn). Không tự cam kết rằng mask lớn hơn sẽ bảo đảm sinh đúng vật thể.
+- _Thay đổi phương pháp & Cohort_:
+  - Giữ nguyên cơ cấu 4 strata (`coco_sd2`, `coco_sdxl`, `commons_sd2`, `commons_sdxl`), 8 allocation slots (3 replacement, 1 removal, 4 insertion | 3 small, 2 medium, 3 large).
+  - Tiền kiểm nội dung từng candidate trước khi đưa vào kế hoạch chạy: ưu tiên vật thể tách biệt, có ranh giới tự nhiên; không nới mask chỉ để đủ quota nếu làm phá vỡ cấu trúc cảnh.
+- _Điều kiện cần đạt trước khi cân nhắc Full Cohort_:
+  - Người dùng phê duyệt định hướng curation và các quyết định trade-off cụ thể.
+  - Soạn thảo Kế hoạch Thử nghiệm Curation mới được phê duyệt chính thức.
+  - Đạt kết quả thẩm định con người khả quan trên gate pilot mới trước khi mở khóa cohort.
+- _Đánh giá_: **Khuyến nghị**. Phương án này tập trung giải quyết các lỗi thiết kế kịch bản can thiệp, tránh lãng phí GPU trên các ca có xung đột hình học cố hữu.
 
 #### Phương án 4: Tạm dừng thu thập cohort tạo sinh inpainting, chuyển trọng tâm sang Benchmark Ngoại vi Độc lập (External Benchmark Pivot)
-- *Vấn đề giải quyết*: Tránh rủi ro về chất lượng tạo sinh và thời gian chuẩn bị dữ liệu inpainting nội bộ.
-- *Đánh giá*: Lựa chọn dự phòng nếu người dùng muốn tập trung toàn bộ nguồn lực vào việc đánh giá mô hình trên các bộ dữ liệu công khai sẵn có (GenImage, TGIF, v.v.).
+
+- _Vấn đề giải quyết_: Tránh rủi ro về chất lượng tạo sinh và thời gian chuẩn bị dữ liệu inpainting nội bộ.
+- _Đánh giá_: Lựa chọn dự phòng nếu người dùng muốn tập trung toàn bộ nguồn lực vào việc đánh giá mô hình trên các bộ dữ liệu công khai sẵn có (GenImage, TGIF, v.v.).
 
 ---
 
 ## II. Dossier Rà soát Candidate & Mask Tiền kiểm trước Generation (Pre-Generation Screening Dossier)
 
 Hồ sơ tiền kiểm nội dung toàn diện cho 8 dòng phân bổ (allocation slots) của kế hoạch tạo sinh, tuân thủ nghiêm ngặt các nguyên tắc khoa học và chuẩn tắc dữ liệu:
+
 - Sử dụng catalog chuẩn tắc hiện hành (`verified_candidate_catalog_v2.json`) và ảnh authentic thực tế chuẩn hóa $512 \times 512$ đã được xem xét trực tiếp.
 - Phân định rõ ràng: Bbox target là hộp chữ nhật bao vùng đặt dự kiến, không đại diện cho diện tích phân đoạn (segmentation mask) thực tế của vật thể.
 - Phân biệt rạch ròi giữa việc đạt quota diện tích ($\ge 30\%$) và việc bao trọn target đăng ký (target containment).
@@ -186,37 +193,37 @@ Hồ sơ tiền kiểm nội dung toàn diện cho 8 dòng phân bổ (allocatio
 
 Tuyệt đối không suy diễn bản quyền; toàn bộ thông tin giấy phép được đối chiếu trực tiếp giữa Catalog (`verified_candidate_catalog_v2.json`), Báo cáo nghiên cứu, HTML Contact Sheet và metadata từ nguồn gốc chính thức (Flickr API / Wikimedia Commons ExtMetadata):
 
-| Candidate ID | Nguồn gốc & Origin ID | Tác giả Ghi công | Giấy phép Nguồn Chuẩn xác | Trạng thái Đối chiếu | Bằng chứng Xác minh (Verified Canonical Source) |
-| :--- | :--- | :--- | :--- | :---: | :--- |
-| `IND_COCO_SD2_001` | `coco:397133` | Pot Noodle | `CC BY 2.0` | **KHỚP** | Flickr photo 6255196340; license id 4 (`Attribution License`). |
-| `IND_COCO_SD2_002` | `coco:37777` | larrylawfer | `CC BY-NC-SA 2.0` | **KHỚP** | Flickr photo 7839199426; license id 2 (`Attribution-NonCommercial-ShareAlike`). |
-| `IND_COCO_SDXL_002` | `coco:293044` | john-norris | `CC BY-SA 2.0` | **KHỚP** | Flickr photo 2544265538; license id 5 (`Attribution-ShareAlike License`). |
-| `IND_COCO_SDXL_041` | `coco:189310` | an iconoclast | `CC BY 2.0` | **KHỚP** | Flickr photo 7375894572; license id 4 (`Attribution License`). |
-| `IND_COMMONS_SD2_001` | `commons:92533678` | Moahim | `CC BY-SA 4.0` | **KHỚP** | Wikimedia Commons File:"La Ciotat" - panoramio.jpg. |
-| `IND_COMMONS_SD2_002` | `commons:81567907` | Mr.choppers | `CC BY-SA 3.0` | **KHỚP** | Wikimedia Commons File:"1932" Pur Sang Bugatti Type 55. |
-| `IND_COMMONS_SDXL_001` | `commons:166503140` | Crisco 1492 | `CC BY-SA 4.0` | **KHỚP** | Wikimedia Commons File:"Tower of Freedom" by Ed Dwight. |
-| `IND_COMMONS_SDXL_003` | `commons:166529058` | Crisco 1492 | `CC BY-SA 4.0` | **KHỚP** | Wikimedia Commons File:"Tower Song" by Ted Bieler. |
-| `IND_COCO_SDXL_042` | `coco:448076` | luis.leao | `CC BY 2.0` | **KHỚP** | Flickr photo 2260856815; license id 4 (`Attribution License`). |
-| `IND_COCO_SDXL_040` | `coco:578489` | laura47 | `CC BY-NC 2.0` | **ĐÍNH CHÍNH** | Catalog ghi đúng `Attribution-NonCommercial License` (`CC BY-NC 2.0`), đính chính nhầm lẫn bản nháp ghi `CC BY 2.0`. |
-| `IND_COMMONS_SD2_040` | `commons:172876577` | Chainwit. | `CC BY 4.0` | **ĐÍNH CHÍNH** | Wikimedia Commons API xác nhận `CC BY 4.0` (không có SA), đính chính nhầm lẫn bản nháp ghi `CC BY-SA 4.0`. |
-| `IND_COMMONS_SDXL_020` | `commons:192692840` | Igor123121 | `CC BY 4.0` | **ĐÍNH CHÍNH** | Wikimedia Commons API xác nhận `CC BY 4.0` (không có SA), đính chính nhầm lẫn bản nháp ghi `CC BY-SA 4.0`. |
-| `IND_COMMONS_SDXL_005` | `commons:171463547` | Chris Woodrich | `CC BY-SA 4.0` | **KHỚP** | Wikimedia Commons File:"Triptych" by Gord Smith. |
-| `COCO_EXT_SDXL_001` | `coco:460160` | PratarPersilja | `CC BY-SA 2.0` | **XÁC MINH MỚI** | Flickr photo 9345977086; Flickr oEmbed xác nhận `CC BY-SA 2.0` (`https://flic.kr/p/feSznY`). |
+| Candidate ID           | Nguồn gốc & Origin ID | Tác giả Ghi công | Giấy phép Nguồn Chuẩn xác | Trạng thái Đối chiếu | Bằng chứng Xác minh (Verified Canonical Source)                                                                      |
+| :--------------------- | :-------------------- | :--------------- | :------------------------ | :------------------: | :------------------------------------------------------------------------------------------------------------------- |
+| `IND_COCO_SD2_001`     | `coco:397133`         | Pot Noodle       | `CC BY 2.0`               |       **KHỚP**       | Flickr photo 6255196340; license id 4 (`Attribution License`).                                                       |
+| `IND_COCO_SD2_002`     | `coco:37777`          | larrylawfer      | `CC BY-NC-SA 2.0`         |       **KHỚP**       | Flickr photo 7839199426; license id 2 (`Attribution-NonCommercial-ShareAlike`).                                      |
+| `IND_COCO_SDXL_002`    | `coco:293044`         | john-norris      | `CC BY-SA 2.0`            |       **KHỚP**       | Flickr photo 2544265538; license id 5 (`Attribution-ShareAlike License`).                                            |
+| `IND_COCO_SDXL_041`    | `coco:189310`         | an iconoclast    | `CC BY 2.0`               |       **KHỚP**       | Flickr photo 7375894572; license id 4 (`Attribution License`).                                                       |
+| `IND_COMMONS_SD2_001`  | `commons:92533678`    | Moahim           | `CC BY-SA 4.0`            |       **KHỚP**       | Wikimedia Commons File:"La Ciotat" - panoramio.jpg.                                                                  |
+| `IND_COMMONS_SD2_002`  | `commons:81567907`    | Mr.choppers      | `CC BY-SA 3.0`            |       **KHỚP**       | Wikimedia Commons File:"1932" Pur Sang Bugatti Type 55.                                                              |
+| `IND_COMMONS_SDXL_001` | `commons:166503140`   | Crisco 1492      | `CC BY-SA 4.0`            |       **KHỚP**       | Wikimedia Commons File:"Tower of Freedom" by Ed Dwight.                                                              |
+| `IND_COMMONS_SDXL_003` | `commons:166529058`   | Crisco 1492      | `CC BY-SA 4.0`            |       **KHỚP**       | Wikimedia Commons File:"Tower Song" by Ted Bieler.                                                                   |
+| `IND_COCO_SDXL_042`    | `coco:448076`         | luis.leao        | `CC BY 2.0`               |       **KHỚP**       | Flickr photo 2260856815; license id 4 (`Attribution License`).                                                       |
+| `IND_COCO_SDXL_040`    | `coco:578489`         | laura47          | `CC BY-NC 2.0`            |    **ĐÍNH CHÍNH**    | Catalog ghi đúng `Attribution-NonCommercial License` (`CC BY-NC 2.0`), đính chính nhầm lẫn bản nháp ghi `CC BY 2.0`. |
+| `IND_COMMONS_SD2_040`  | `commons:172876577`   | Chainwit.        | `CC BY 4.0`               |    **ĐÍNH CHÍNH**    | Wikimedia Commons API xác nhận `CC BY 4.0` (không có SA), đính chính nhầm lẫn bản nháp ghi `CC BY-SA 4.0`.           |
+| `IND_COMMONS_SDXL_020` | `commons:192692840`   | Igor123121       | `CC BY 4.0`               |    **ĐÍNH CHÍNH**    | Wikimedia Commons API xác nhận `CC BY 4.0` (không có SA), đính chính nhầm lẫn bản nháp ghi `CC BY-SA 4.0`.           |
+| `IND_COMMONS_SDXL_005` | `commons:171463547`   | Chris Woodrich   | `CC BY-SA 4.0`            |       **KHỚP**       | Wikimedia Commons File:"Triptych" by Gord Smith.                                                                     |
+| `COCO_EXT_SDXL_001`    | `coco:460160`         | PratarPersilja   | `CC BY-SA 2.0`            |   **XÁC MINH MỚI**   | Flickr photo 9345977086; Flickr oEmbed xác nhận `CC BY-SA 2.0` (`https://flic.kr/p/feSznY`).                         |
 
 ---
 
 ### Bảng 2: 8 Dòng Dossier Tiền kiểm Hiện hành (Active Allocation)
 
-| Slot | Candidate ID & Nguồn gốc Chuẩn tắc | Stratum & Phân loại Quota | Target BBox, Mask BBox & Prompt | Raster Mask Area & Tỷ lệ Canvas | Đánh giá Tiền kiểm & Rủi ro Kỹ thuật | Trạng thái Tiền kiểm |
-| :---: | :--- | :--- | :--- | :--- | :--- | :--- |
-| **1** | `IND_COCO_SD2_001`<br>Origin: `coco:397133`<br>Pool index: 0<br>Tác giả: Pot Noodle<br>License: CC BY 2.0 | `coco_sd2`<br>`object_replacement`<br>`small_under_10pct` | **Target:** Chảo đồng tròn treo trên tường bếp.<br>**Prompt:** *"a round brass wall clock mounted naturally on the kitchen wall, matching the warm indoor lighting"*<br>Target bbox: `[207, 117, 270, 182]`<br>Mask bbox: `[195, 95, 280, 205]` | **9.350 px**<br>(**3.566742%**)<br>Thuần nhất nhị phân `{0, 255}`. | Target bbox nằm hoàn toàn trong mask bbox. Ranh giới chảo tròn khép kín nhưng mask chữ nhật cắt ngang mạch ron gạch men ốp tường; inpaint đồng hồ có rủi ro lệch bước mạch gạch nếu phối cảnh không khớp. | **KEPT_WITH_DOCUMENTED_RISKS**<br>Chảo đồng là vật thể hiện hữu tách biệt. Giữ lại kèm cảnh báo rủi ro biên ron gạch men. |
-| **2** | `IND_COCO_SD2_002`<br>Origin: `coco:37777`<br>Pool index: 1<br>Tác giả: larrylawfer<br>License: CC BY-NC-SA 2.0 | `coco_sd2`<br>`object_replacement`<br>`large_over_30pct` | **Target:** Máy hút mùi trắng và hệ tủ bếp trên màu vàng.<br>**Prompt:** *"matte navy-blue upper kitchen cabinets with a stainless-steel range hood, realistic residential interior photograph"*<br>Target bbox: `[145, 125, 410, 260]`<br>Mask bbox: `[95, 75, 415, 323]` | **79.360 px**<br>(**30.273438%**)<br>Thuần nhất nhị phân `{0, 255}`. | Target bbox nằm hoàn toàn trong mask bbox. Mask chiếm 30.27% diện tích, bao trùm cụm tủ trên và máy hút mùi. Rủi ro lệch đường tụ phối cảnh tại chân nóc tủ và tiếp giáp trần bếp. | **KEPT_WITH_DOCUMENTED_RISKS**<br>Thay thế hệ tủ cũ bằng tủ màu navy giữ nguyên cấu trúc không gian bếp. Đạt định mức large (30.27%). |
-| **3** | `IND_COCO_SDXL_002`<br>Origin: `coco:293044`<br>Pool index: 1<br>Tác giả: john-norris<br>License: CC BY-SA 2.0 | `coco_sdxl`<br>`object_insertion`<br>`small_under_10pct` | **Target:** Quả cà chua bi đỏ đặt trên lát bánh mì.<br>**Prompt:** *"a small red cherry tomato resting on the slice of bread, matching the lunchbox lighting and camera angle"*<br>Target bbox: `[375, 265, 430, 320]`<br>Mask bbox: `[345, 245, 455, 335]` | **9.900 px**<br>(**3.776550%**)<br>Thuần nhất nhị phân `{0, 255}`. | **Lịch sử thực nghiệm chính xác:** Omission xảy ra ở 4 attempts (pilot 113700Z, diagnostic Arm A, calibration G7.5 và G9.5) trên cùng candidate và seed. Riêng diagnostic Arm B **đã tạo sinh được quả cà chua**, nhưng đã bị **Human Content QC REJECT** chính thức bởi người duyệt (Dũng Phạm, `2026-10-08T19:34:30Z`) vì khuyết tật bước nhảy biên (boundary step) và kết cấu vụn bánh mì không đạt chuẩn chất lượng thị giác. | **BLOCKED / PENDING_TRADE_OFF**<br>Không có cơ sở kỳ vọng tiếp tục chạy full-canvas trên lát bánh mì này sẽ hết omission hoặc đạt chuẩn biên. Cần người dùng duyệt phương án thay thế. |
-| **4** | `IND_COCO_SDXL_041`<br>Origin: `coco:189310`<br>Pool index: 40<br>Tác giả: an iconoclast<br>License: CC BY 2.0 | `coco_sdxl`<br>`object_insertion`<br>`large_over_30pct` | **Target:** Khoảng trần mở phía trên phòng khách cho đèn chùm.<br>**Prompt:** *"an elegant crystal chandelier hanging from the living room ceiling, warm interior illumination matching the residential lighting"*<br>Target bbox: `[180, 15, 332, 140]`<br>Mask bbox: `[0, 0, 512, 155]` | **79.360 px**<br>(**30.273438%**)<br>Thuần nhất nhị phân `{0, 255}`. | Target bbox nằm hoàn toàn trong mask bbox. Đèn chùm thực tế chỉ chiếm ~7.86% diện tích, nhưng mask bị kéo ngang $512 \times 155$ để ép đủ quota $\ge 30\%$, gây bước nhảy tông độ sáng mặt phẳng trần tại $y=155$ và chạm vi mô mép rèm cửa trái ($x \in [12, 25]$). Rà soát toàn bộ 9 large + 12 medium insertion trong stratum `coco_sdxl` xác nhận không có ca nào trong catalog đạt chuẩn. | **BLOCKED / PENDING_TRADE_OFF**<br>Ép mask trần phẳng 30% phá vỡ sự đồng nhất kết cấu của mảng trần. Cần người dùng duyệt phương án mở rộng catalog COCO. |
-| **5** | `IND_COMMONS_SD2_001`<br>Origin: `commons:92533678`<br>Pool index: 0<br>Tác giả: Moahim<br>License: CC BY-SA 4.0 | `commons_sd2`<br>`object_removal_and_infill`<br>`medium_10_to_30pct` | **Target:** Mũi đất rừng thông, chân vách đá và bãi đá ngầm nhô ra biển.<br>**Prompt:** *"open sea and distant coastline continuing naturally through the removed foreground headland, photorealistic sunset landscape"*<br>Target bbox: `[190, 308, 512, 512]`<br>Mask bbox: `[190, 305, 512, 512]` | **66.654 px**<br>(**25.426483%**)<br>Thuần nhất nhị phân `{0, 255}`. | Target bbox nằm hoàn toàn trong mask bbox. Bờ vịnh lõm chéo khiến mask chữ nhật bắt buộc phải bao trùm một phần mặt nước vịnh ($x=190..340$) và chân dãy nhà/khách sạn sườn đồi ($x=440..512, y=305..335$). Rủi ro lặp vân sóng hoặc nhòe chân công trình. | **KEPT_WITH_DOCUMENTED_RISKS**<br>Candidate duy nhất trong stratum cho removal. Option A bao trùm toàn bộ mũi đất và rặng thông. Chấp nhận rủi ro inpaint chân khách sạn. |
-| **6** | `IND_COMMONS_SD2_002`<br>Origin: `commons:81567907`<br>Pool index: 1<br>Tác giả: Mr.choppers<br>License: CC BY-SA 3.0 | `commons_sd2`<br>`object_insertion`<br>`medium_10_to_30pct` | **Target:** Vali du lịch da nâu đặt trên mặt đường đá cuội.<br>**Prompt:** *"a brown leather travel suitcase standing on the cobblestones beside the vintage car, realistic scale and daylight shadows"*<br>Target bbox: `[45, 355, 190, 495]`<br>Mask bbox: `[0, 340, 225, 512]` | **38.700 px**<br>(**14.762878%**)<br>Thuần nhất nhị phân `{0, 255}`. | Target bbox nằm hoàn toàn trong mask bbox. Quan sát thực nghiệm: SD2 sinh ra xe hơi đồ chơi ở Arm B và omission ở Arm A. Bối cảnh xe đua Bugatti quá mạnh lấn át token vali trong text prompt. Mép mask $x=225$ tiếp xúc sát trục bánh xe. | **BLOCKED / PENDING_TRADE_OFF**<br>Rủi ro ảo giác hoặc không tạo đối tượng cao khi đặt vali cạnh xe đua. Cần người dùng duyệt phương án thay thế. |
-| **7** | `IND_COMMONS_SDXL_001`<br>Origin: `commons:166503140`<br>Pool index: 0<br>Tác giả: Crisco 1492<br>License: CC BY-SA 4.0 | `commons_sdxl`<br>`object_insertion`<br>`small_under_10pct` | **Target:** Con chim nhỏ bay trên nền trời mây mở.<br>**Prompt:** *"a small dark bird flying in the cloudy sky, distant scale and natural daylight"*<br>Target bbox: `[395, 75, 455, 125]`<br>Mask bbox: `[350, 45, 500, 160]` | **17.250 px**<br>(**6.580353%**)<br>Thuần nhất nhị phân `{0, 255}`. | Target bbox nằm hoàn toàn trong mask bbox. Biên mask cắt giữa bầu trời mây có gradient độ sáng liên tục (không phải biên tự nhiên của chủ thể). Rủi ro: SDXL tạo mảng trời chữ nhật lệch tone ($\Delta\text{RGB} \approx -3.5$) và chim có thể bị lệch vị trí ($dy = +41\text{ px}$). | **KEPT_WITH_DOCUMENTED_RISKS**<br>Vùng trời không cắt cấu trúc vật lý. Rủi ro thuần túy là khả năng định vị của SDXL và độ khớp màu trời. Đạt định mức small (6.58%). |
-| **8** | `IND_COMMONS_SDXL_003`<br>Origin: `commons:166529058`<br>Pool index: 2<br>Tác giả: Crisco 1492<br>License: CC BY-SA 4.0 | `commons_sdxl`<br>`object_replacement`<br>`large_over_30pct` | **Target:** Thân cột điêu khắc nhôm thẳng đứng 'Tower Song'.<br>**Prompt:** *"the visible shaft of a classical fluted Greco-Roman marble column standing naturally in the public park, realistic outdoor daylight and weathered stone texture"*<br>Target bbox: `[190, 0, 360, 512]`<br>Mask bbox: `[170, 0, 380, 512]` | **107.520 px**<br>(**41.015625%**)<br>Thuần nhất nhị phân `{0, 255}`. | Target bbox nằm hoàn toàn trong mask bbox. Mask dọc $x \in [170, 380]$ cắt ngang qua thanh lan can kim loại liên tục kéo dài 210 px ở hậu cảnh. Trong ảnh đã sinh, lan can bị đứt; điều này cho thấy inpainting tại vùng này có rủi ro đứt đoạn cấu trúc rất cao. | **BLOCKED / PENDING_TRADE_OFF**<br>Xung đột hình học cắt ngang lan can kim loại là rủi ro thiết kế cố hữu. Bắt buộc người dùng duyệt thay thế candidate hoặc điều chỉnh phương pháp mask. |
+| Slot  | Candidate ID & Nguồn gốc Chuẩn tắc                                                                                      | Stratum & Phân loại Quota                                            | Target BBox, Mask BBox & Prompt                                                                                                                                                                                                                                                                                         | Raster Mask Area & Tỷ lệ Canvas                                       | Đánh giá Tiền kiểm & Rủi ro Kỹ thuật                                                                                                                                                                                                                                                                                                                                                                                              | Trạng thái Tiền kiểm                                                                                                                                                                      |
+| :---: | :---------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1** | `IND_COCO_SD2_001`<br>Origin: `coco:397133`<br>Pool index: 0<br>Tác giả: Pot Noodle<br>License: CC BY 2.0               | `coco_sd2`<br>`object_replacement`<br>`small_under_10pct`            | **Target:** Chảo đồng tròn treo trên tường bếp.<br>**Prompt:** _"a round brass wall clock mounted naturally on the kitchen wall, matching the warm indoor lighting"_<br>Target bbox: `[207, 117, 270, 182]`<br>Mask bbox: `[195, 95, 280, 205]`                                                                         | **9.350 px**<br>(**3.566742%**)<br>Thuần nhất nhị phân `{0, 255}`.    | Target bbox nằm hoàn toàn trong mask bbox. Ranh giới chảo tròn khép kín nhưng mask chữ nhật cắt ngang mạch ron gạch men ốp tường; inpaint đồng hồ có rủi ro lệch bước mạch gạch nếu phối cảnh không khớp.                                                                                                                                                                                                                         | **KEPT_WITH_DOCUMENTED_RISKS**<br>Chảo đồng là vật thể hiện hữu tách biệt. Giữ lại kèm cảnh báo rủi ro biên ron gạch men.                                                                 |
+| **2** | `IND_COCO_SD2_002`<br>Origin: `coco:37777`<br>Pool index: 1<br>Tác giả: larrylawfer<br>License: CC BY-NC-SA 2.0         | `coco_sd2`<br>`object_replacement`<br>`large_over_30pct`             | **Target:** Máy hút mùi trắng và hệ tủ bếp trên màu vàng.<br>**Prompt:** _"matte navy-blue upper kitchen cabinets with a stainless-steel range hood, realistic residential interior photograph"_<br>Target bbox: `[145, 125, 410, 260]`<br>Mask bbox: `[95, 75, 415, 323]`                                              | **79.360 px**<br>(**30.273438%**)<br>Thuần nhất nhị phân `{0, 255}`.  | Target bbox nằm hoàn toàn trong mask bbox. Mask chiếm 30.27% diện tích, bao trùm cụm tủ trên và máy hút mùi. Rủi ro lệch đường tụ phối cảnh tại chân nóc tủ và tiếp giáp trần bếp.                                                                                                                                                                                                                                                | **KEPT_WITH_DOCUMENTED_RISKS**<br>Thay thế hệ tủ cũ bằng tủ màu navy giữ nguyên cấu trúc không gian bếp. Đạt định mức large (30.27%).                                                     |
+| **3** | `IND_COCO_SDXL_002`<br>Origin: `coco:293044`<br>Pool index: 1<br>Tác giả: john-norris<br>License: CC BY-SA 2.0          | `coco_sdxl`<br>`object_insertion`<br>`small_under_10pct`             | **Target:** Quả cà chua bi đỏ đặt trên lát bánh mì.<br>**Prompt:** _"a small red cherry tomato resting on the slice of bread, matching the lunchbox lighting and camera angle"_<br>Target bbox: `[375, 265, 430, 320]`<br>Mask bbox: `[345, 245, 455, 335]`                                                             | **9.900 px**<br>(**3.776550%**)<br>Thuần nhất nhị phân `{0, 255}`.    | **Lịch sử thực nghiệm chính xác:** Omission xảy ra ở 4 attempts (pilot 113700Z, diagnostic Arm A, calibration G7.5 và G9.5) trên cùng candidate và seed. Riêng diagnostic Arm B **đã tạo sinh được quả cà chua**, nhưng đã bị **Human Content QC REJECT** chính thức bởi người duyệt (Dũng Phạm, `2026-10-08T19:34:30Z`) vì khuyết tật bước nhảy biên (boundary step) và kết cấu vụn bánh mì không đạt chuẩn chất lượng thị giác. | **BLOCKED / PENDING_TRADE_OFF**<br>Không có cơ sở kỳ vọng tiếp tục chạy full-canvas trên lát bánh mì này sẽ hết omission hoặc đạt chuẩn biên. Cần người dùng duyệt phương án thay thế.    |
+| **4** | `IND_COCO_SDXL_041`<br>Origin: `coco:189310`<br>Pool index: 40<br>Tác giả: an iconoclast<br>License: CC BY 2.0          | `coco_sdxl`<br>`object_insertion`<br>`large_over_30pct`              | **Target:** Khoảng trần mở phía trên phòng khách cho đèn chùm.<br>**Prompt:** _"an elegant crystal chandelier hanging from the living room ceiling, warm interior illumination matching the residential lighting"_<br>Target bbox: `[180, 15, 332, 140]`<br>Mask bbox: `[0, 0, 512, 155]`                               | **79.360 px**<br>(**30.273438%**)<br>Thuần nhất nhị phân `{0, 255}`.  | Target bbox nằm hoàn toàn trong mask bbox. Đèn chùm thực tế chỉ chiếm ~7.86% diện tích, nhưng mask bị kéo ngang $512 \times 155$ để ép đủ quota $\ge 30\%$, gây bước nhảy tông độ sáng mặt phẳng trần tại $y=155$ và chạm vi mô mép rèm cửa trái ($x \in [12, 25]$). Rà soát toàn bộ 9 large + 12 medium insertion trong stratum `coco_sdxl` xác nhận không có ca nào trong catalog đạt chuẩn.                                    | **BLOCKED / PENDING_TRADE_OFF**<br>Ép mask trần phẳng 30% phá vỡ sự đồng nhất kết cấu của mảng trần. Cần người dùng duyệt phương án mở rộng catalog COCO.                                 |
+| **5** | `IND_COMMONS_SD2_001`<br>Origin: `commons:92533678`<br>Pool index: 0<br>Tác giả: Moahim<br>License: CC BY-SA 4.0        | `commons_sd2`<br>`object_removal_and_infill`<br>`medium_10_to_30pct` | **Target:** Mũi đất rừng thông, chân vách đá và bãi đá ngầm nhô ra biển.<br>**Prompt:** _"open sea and distant coastline continuing naturally through the removed foreground headland, photorealistic sunset landscape"_<br>Target bbox: `[190, 308, 512, 512]`<br>Mask bbox: `[190, 305, 512, 512]`                    | **66.654 px**<br>(**25.426483%**)<br>Thuần nhất nhị phân `{0, 255}`.  | Target bbox nằm hoàn toàn trong mask bbox. Bờ vịnh lõm chéo khiến mask chữ nhật bắt buộc phải bao trùm một phần mặt nước vịnh ($x=190..340$) và chân dãy nhà/khách sạn sườn đồi ($x=440..512, y=305..335$). Rủi ro lặp vân sóng hoặc nhòe chân công trình.                                                                                                                                                                        | **KEPT_WITH_DOCUMENTED_RISKS**<br>Candidate duy nhất trong stratum cho removal. Option A bao trùm toàn bộ mũi đất và rặng thông. Chấp nhận rủi ro inpaint chân khách sạn.                 |
+| **6** | `IND_COMMONS_SD2_002`<br>Origin: `commons:81567907`<br>Pool index: 1<br>Tác giả: Mr.choppers<br>License: CC BY-SA 3.0   | `commons_sd2`<br>`object_insertion`<br>`medium_10_to_30pct`          | **Target:** Vali du lịch da nâu đặt trên mặt đường đá cuội.<br>**Prompt:** _"a brown leather travel suitcase standing on the cobblestones beside the vintage car, realistic scale and daylight shadows"_<br>Target bbox: `[45, 355, 190, 495]`<br>Mask bbox: `[0, 340, 225, 512]`                                       | **38.700 px**<br>(**14.762878%**)<br>Thuần nhất nhị phân `{0, 255}`.  | Target bbox nằm hoàn toàn trong mask bbox. Quan sát thực nghiệm: SD2 sinh ra xe hơi đồ chơi ở Arm B và omission ở Arm A. Bối cảnh xe đua Bugatti quá mạnh lấn át token vali trong text prompt. Mép mask $x=225$ tiếp xúc sát trục bánh xe.                                                                                                                                                                                        | **BLOCKED / PENDING_TRADE_OFF**<br>Rủi ro ảo giác hoặc không tạo đối tượng cao khi đặt vali cạnh xe đua. Cần người dùng duyệt phương án thay thế.                                         |
+| **7** | `IND_COMMONS_SDXL_001`<br>Origin: `commons:166503140`<br>Pool index: 0<br>Tác giả: Crisco 1492<br>License: CC BY-SA 4.0 | `commons_sdxl`<br>`object_insertion`<br>`small_under_10pct`          | **Target:** Con chim nhỏ bay trên nền trời mây mở.<br>**Prompt:** _"a small dark bird flying in the cloudy sky, distant scale and natural daylight"_<br>Target bbox: `[395, 75, 455, 125]`<br>Mask bbox: `[350, 45, 500, 160]`                                                                                          | **17.250 px**<br>(**6.580353%**)<br>Thuần nhất nhị phân `{0, 255}`.   | Target bbox nằm hoàn toàn trong mask bbox. Biên mask cắt giữa bầu trời mây có gradient độ sáng liên tục (không phải biên tự nhiên của chủ thể). Rủi ro: SDXL tạo mảng trời chữ nhật lệch tone ($\Delta\text{RGB} \approx -3.5$) và chim có thể bị lệch vị trí ($dy = +41\text{ px}$).                                                                                                                                             | **KEPT_WITH_DOCUMENTED_RISKS**<br>Vùng trời không cắt cấu trúc vật lý. Rủi ro thuần túy là khả năng định vị của SDXL và độ khớp màu trời. Đạt định mức small (6.58%).                     |
+| **8** | `IND_COMMONS_SDXL_003`<br>Origin: `commons:166529058`<br>Pool index: 2<br>Tác giả: Crisco 1492<br>License: CC BY-SA 4.0 | `commons_sdxl`<br>`object_replacement`<br>`large_over_30pct`         | **Target:** Thân cột điêu khắc nhôm thẳng đứng 'Tower Song'.<br>**Prompt:** _"the visible shaft of a classical fluted Greco-Roman marble column standing naturally in the public park, realistic outdoor daylight and weathered stone texture"_<br>Target bbox: `[190, 0, 360, 512]`<br>Mask bbox: `[170, 0, 380, 512]` | **107.520 px**<br>(**41.015625%**)<br>Thuần nhất nhị phân `{0, 255}`. | Target bbox nằm hoàn toàn trong mask bbox. Mask dọc $x \in [170, 380]$ cắt ngang qua thanh lan can kim loại liên tục kéo dài 210 px ở hậu cảnh. Trong ảnh đã sinh, lan can bị đứt; điều này cho thấy inpainting tại vùng này có rủi ro đứt đoạn cấu trúc rất cao.                                                                                                                                                                 | **BLOCKED / PENDING_TRADE_OFF**<br>Xung đột hình học cắt ngang lan can kim loại là rủi ro thiết kế cố hữu. Bắt buộc người dùng duyệt thay thế candidate hoặc điều chỉnh phương pháp mask. |
 
 ---
 
@@ -225,22 +232,24 @@ Tuyệt đối không suy diễn bản quyền; toàn bộ thông tin giấy ph�
 Các phương án đề xuất được rà soát nghiêm ngặt theo nội dung, xuất xứ bản quyền, disjointness đối với 684 nguồn Option P lịch sử, và hình học mask chuẩn tắc. **Tất cả các đề xuất đều ở trạng thái `PENDING_HUMAN_REVIEW`, không sửa catalog/plan đã niêm phong và không ghi nhận approval:**
 
 #### 1. Slot 3 Đề Xuất PENDING (`coco_sdxl`, `object_insertion`, `small_under_10pct`)
+
 - **Phương án Khuyến nghị (RECOMMENDED PENDING)**: `IND_COCO_SDXL_042` (Pool index: 41).
-  * Origin ID: `coco:448076` | Nguồn ảnh trực tiếp: [Flickr luis.leao](https://www.flickr.com/photos/luisleao/2260856815/) | Tác giả: luis.leao | Giấy phép: `CC BY 2.0`.
-  * Disjoint Guard: **PASS** (Zero overlap với 684 nguồn Option P lịch sử).
-  * Mô tả cảnh authentic: Gian hàng triển lãm hàng không TAM. Khoảng thảm đỏ phía trước ($x \in [200, 360], y \in [360, 500]$) hoàn toàn rộng mở, sạch sẽ, phẳng đồng nhất, không có đồ vật che chắn (người đứng ở vách sau $y < 370$ và mép trái $x < 150$).
-  * Target đề xuất: Cặp táp doanh nhân bằng da đen đứng thẳng trên thảm đỏ.
-  * Prompt đề xuất: *"a professional black leather business briefcase standing upright on the red exhibition carpet, realistic studio floodlights and soft ground shadow"*.
-  * Target bbox: `[235, 395, 335, 485]` | Mask bbox: `[220, 380, 350, 500]`.
-  * Target containment: **100% bao trọn** ($220 \le 235 < 335 \le 350$ và $380 \le 395 < 485 \le 500$).
-  * Diện tích raster mask: **15.600 px** (**5.950928%**), chuẩn `small_under_10pct` ($1\% - 10\%$).
-  * Rủi ro & Cảnh báo: Mặt thảm đỏ phẳng đồng nhất tối ưu hóa điều kiện tiền kiểm, loại trừ va chạm vật thể lân cận; tuy nhiên không khẳng định nền đơn giản bảo đảm loại trừ hoàn toàn omission.
+  - Origin ID: `coco:448076` | Nguồn ảnh trực tiếp: [Flickr luis.leao](https://www.flickr.com/photos/luisleao/2260856815/) | Tác giả: luis.leao | Giấy phép: `CC BY 2.0`.
+  - Disjoint Guard: **PASS** (Zero overlap với 684 nguồn Option P lịch sử).
+  - Mô tả cảnh authentic: Gian hàng triển lãm hàng không TAM. Khoảng thảm đỏ phía trước ($x \in [200, 360], y \in [360, 500]$) hoàn toàn rộng mở, sạch sẽ, phẳng đồng nhất, không có đồ vật che chắn (người đứng ở vách sau $y < 370$ và mép trái $x < 150$).
+  - Target đề xuất: Cặp táp doanh nhân bằng da đen đứng thẳng trên thảm đỏ.
+  - Prompt đề xuất: _"a professional black leather business briefcase standing upright on the red exhibition carpet, realistic studio floodlights and soft ground shadow"_.
+  - Target bbox: `[235, 395, 335, 485]` | Mask bbox: `[220, 380, 350, 500]`.
+  - Target containment: **100% bao trọn** ($220 \le 235 < 335 \le 350$ và $380 \le 395 < 485 \le 500$).
+  - Diện tích raster mask: **15.600 px** (**5.950928%**), chuẩn `small_under_10pct` ($1\% - 10\%$).
+  - Rủi ro & Cảnh báo: Mặt thảm đỏ phẳng đồng nhất tối ưu hóa điều kiện tiền kiểm, loại trừ va chạm vật thể lân cận; tuy nhiên không khẳng định nền đơn giản bảo đảm loại trừ hoàn toàn omission.
 - **Phương án Dự phòng (BACKUP PENDING)**: `IND_COCO_SDXL_040` (Pool index: 39).
-  * Origin ID: `coco:578489` | Nguồn ảnh: [Flickr laura47](https://www.flickr.com/photos/laura47/3181988690/) | Tác giả: laura47 | Giấy phép: `CC BY-NC 2.0` (Attribution-NonCommercial).
-  * Target đề xuất: Đôi dép len xám trên sàn gỗ (`[40, 420, 130, 490]`, Mask `[30, 410, 140, 500]`, 9.900 px = 3.776550%).
-  * Rủi ro: Giày da của người đàn ông trên sofa nằm sát mép mask tại $x=100..120$; sàn gỗ có vân phản xạ chéo.
+  - Origin ID: `coco:578489` | Nguồn ảnh: [Flickr laura47](https://www.flickr.com/photos/laura47/3181988690/) | Tác giả: laura47 | Giấy phép: `CC BY-NC 2.0` (Attribution-NonCommercial).
+  - Target đề xuất: Đôi dép len xám trên sàn gỗ (`[40, 420, 130, 490]`, Mask `[30, 410, 140, 500]`, 9.900 px = 3.776550%).
+  - Rủi ro: Giày da của người đàn ông trên sofa nằm sát mép mask tại $x=100..120$; sàn gỗ có vân phản xạ chéo.
 
 #### 2. Slot 4 Đề Xuất PENDING (`coco_sdxl`, `object_insertion`, `large_over_30pct`) — Đề Xuất Mở Rộng Catalog COCO
+
 - **Nguyên tắc**: Giữ nguyên stratum `coco_sdxl`, SDXL, thao tác `object_insertion`, định mức `large_over_30pct` ($\ge 30\%$) và allocation đã khóa. Không đổi sang replacement.
 - **Phạm vi rà soát catalog hiện hành**: Rà soát chính xác toàn bộ **9 large insertion + 12 medium insertion** trong stratum `coco_sdxl` của catalog `verified_candidate_catalog_v2.json` (không suy rộng thành toàn bộ pool chung):
   1. Pool 0 (`_001`): Mèo trong bồn rửa — không có 30% canvas trống.
@@ -252,86 +261,89 @@ Các phương án đề xuất được rà soát nghiêm ngặt theo nội dung
   7. Pool 66 (`_067`): 4 bát đồ ăn vặt — đĩa bát chiếm 95% diện tích khung hình.
   8. Pool 69 (`_070`): Bánh mì trên tay — tay và bánh mì chéo kín khung hình.
   9. Pool 107 (`_108`): Phố Chicago — người đi bộ, cột đèn tín hiệu giữa ảnh, thùng rác, cây xanh.
-  * Đồng thời kiểm tra 12 candidate medium insertion: 100% đều không có vùng trống $\ge 30\%$ tự nhiên mà không đè lên con người hoặc chủ thể cần bảo toàn.
+  - Đồng thời kiểm tra 12 candidate medium insertion: 100% đều không có vùng trống $\ge 30\%$ tự nhiên mà không đè lên con người hoặc chủ thể cần bảo toàn.
 - **Đề xuất Mở rộng Catalog COCO Riêng biệt (PROPOSED COCO EXTENSION PENDING)**:
-  * Tạo đề xuất độc lập `slot4_coco_extension_proposal.json` mà **không chỉnh sửa catalog hay plan đã niêm phong**.
-  * **Candidate đề xuất**: **`COCO_EXT_SDXL_001`**.
-  * Origin ID: `coco:460160` | Flickr Photo ID: `9345977086` | Nguồn: [Flickr PratarPersilja](https://www.flickr.com/photos/12297627@N03/9345977086/) | Tác giả: PratarPersilja | Giấy phép: `CC BY-SA 2.0` (xác minh chính thức qua Flickr oEmbed URL `https://flic.kr/p/feSznY`).
-  * Disjoint Guard: **PASS** (Zero overlap với 684 nguồn Option P lịch sử).
-  * Đặc điểm cảnh authentic: Bờ biển mở rộng với thảm cỏ và bãi cát tự nhiên ở tiền cảnh ($y \in [260, 510]$), hậu cảnh là mặt nước và bầu trời mây overcast. Cảnh tĩnh mịch, hoàn toàn không có người, xe cộ hay kết cấu kiến trúc phức tạp.
-  * Thao tác: `object_insertion` | Định mức: `large_over_30pct`.
-  * Target đề xuất: Bàn dã ngoại bằng gỗ mộc có ghế băng gắn liền đặt trên bờ cỏ ven biển (`[20, 280, 330, 490]`, diện tích 65.100 px = 24.83%).
-  * Prompt đề xuất: *"a weathered wooden picnic table with attached bench seating on the grassy coastal ground, natural overcast daylight and soft ground contact shadow"*.
-  * Mask AABB đề xuất: `[10, 260, 340, 510]`.
-  * Diện tích raster mask: **82.500 px** (**31.471252%**), đạt chuẩn `large_over_30pct` ($\ge 30\%$, dư +3.857 px).
-  * **Phân biệt BBox Containment với Coverage Đối tượng Thực tế**:
-    * *BBox Containment*: 100% target bbox nằm trong mask bbox ($10 \le 20 < 330 \le 340$ và $260 \le 280 < 490 \le 510$).
-    * *Bản chất thao tác insertion*: Ảnh authentic là nền bờ biển tự nhiên, chưa có đối tượng trước khi sinh. Target bbox là hộp bao không gian cho bàn gỗ và ghế băng. Đối tượng vật lý được tạo sinh (mặt bàn, chân bàn, ghế băng, bóng đổ tiếp xúc) sẽ chiếm một diện mạo 3D thực tế là tập con bên trong target bbox.
-    * *Kiểm tra bệ/chân & bóng đổ tiếp xúc*: Khoảng lề đáy $y \in [490, 510]$ (20 px) và lề ngang $x \in [10, 20]$ & $[330, 340]$ (10 px) nhằm dự phòng không gian cho chân bàn và bóng tiếp xúc trên nền đất. Tuy nhiên, lề biên tiền kiểm không bảo đảm mô hình sẽ tạo bóng đổ trải mềm hoặc triệt tiêu hoàn toàn bước nhảy biên.
-    * *Kiểm tra vật thể lân cận*: Vùng bờ biển quang đãng, không có người, xe cộ hay công trình xây dựng. Bề mặt đất cỏ/cát gồ ghề giảm thiểu độ nhạy cảm so với mặt phẳng trần thạch cao đồng nhất của `_041`, song vẫn tiềm ẩn rủi ro sai lệch cấu trúc hoặc tông màu tại đường biên inpainting.
+  - Tạo đề xuất độc lập `slot4_coco_extension_proposal.json` mà **không chỉnh sửa catalog hay plan đã niêm phong**.
+  - **Candidate đề xuất**: **`COCO_EXT_SDXL_001`**.
+  - Origin ID: `coco:460160` | Flickr Photo ID: `9345977086` | Nguồn: [Flickr PratarPersilja](https://www.flickr.com/photos/12297627@N03/9345977086/) | Tác giả: PratarPersilja | Giấy phép: `CC BY-SA 2.0` (xác minh chính thức qua Flickr oEmbed URL `https://flic.kr/p/feSznY`).
+  - Disjoint Guard: **PASS** (Zero overlap với 684 nguồn Option P lịch sử).
+  - Đặc điểm cảnh authentic: Bờ biển mở rộng với thảm cỏ và bãi cát tự nhiên ở tiền cảnh ($y \in [260, 510]$), hậu cảnh là mặt nước và bầu trời mây overcast. Cảnh tĩnh mịch, hoàn toàn không có người, xe cộ hay kết cấu kiến trúc phức tạp.
+  - Thao tác: `object_insertion` | Định mức: `large_over_30pct`.
+  - Target đề xuất: Bàn dã ngoại bằng gỗ mộc có ghế băng gắn liền đặt trên bờ cỏ ven biển (`[20, 280, 330, 490]`, diện tích 65.100 px = 24.83%).
+  - Prompt đề xuất: _"a weathered wooden picnic table with attached bench seating on the grassy coastal ground, natural overcast daylight and soft ground contact shadow"_.
+  - Mask AABB đề xuất: `[10, 260, 340, 510]`.
+  - Diện tích raster mask: **82.500 px** (**31.471252%**), đạt chuẩn `large_over_30pct` ($\ge 30\%$, dư +3.857 px).
+  - **Phân biệt BBox Containment với Coverage Đối tượng Thực tế**:
+    - _BBox Containment_: 100% target bbox nằm trong mask bbox ($10 \le 20 < 330 \le 340$ và $260 \le 280 < 490 \le 510$).
+    - _Bản chất thao tác insertion_: Ảnh authentic là nền bờ biển tự nhiên, chưa có đối tượng trước khi sinh. Target bbox là hộp bao không gian cho bàn gỗ và ghế băng. Đối tượng vật lý được tạo sinh (mặt bàn, chân bàn, ghế băng, bóng đổ tiếp xúc) sẽ chiếm một diện mạo 3D thực tế là tập con bên trong target bbox.
+    - _Kiểm tra bệ/chân & bóng đổ tiếp xúc_: Khoảng lề đáy $y \in [490, 510]$ (20 px) và lề ngang $x \in [10, 20]$ & $[330, 340]$ (10 px) nhằm dự phòng không gian cho chân bàn và bóng tiếp xúc trên nền đất. Tuy nhiên, lề biên tiền kiểm không bảo đảm mô hình sẽ tạo bóng đổ trải mềm hoặc triệt tiêu hoàn toàn bước nhảy biên.
+    - _Kiểm tra vật thể lân cận_: Vùng bờ biển quang đãng, không có người, xe cộ hay công trình xây dựng. Bề mặt đất cỏ/cát gồ ghề giảm thiểu độ nhạy cảm so với mặt phẳng trần thạch cao đồng nhất của `_041`, song vẫn tiềm ẩn rủi ro sai lệch cấu trúc hoặc tông màu tại đường biên inpainting.
 
 #### 3. Slot 6 Đề Xuất PENDING (`commons_sd2`, `object_insertion`, `medium_10_to_30pct`)
+
 - **Phương án Khuyến nghị (RECOMMENDED PENDING)**: `IND_COMMONS_SD2_040` (Pool index: 39).
-  * Origin ID: `commons:172876577` | Nguồn ảnh trực tiếp: [Wikimedia Commons Chainwit.](https://commons.wikimedia.org/wiki/File:%22Eyes_of_Sibiu%22_at_house_Strada_Ocnei_2,_Sibiu_(2023)_-_img_07.jpg) | Tác giả: Chainwit. | Giấy phép: `CC BY 4.0` (Creative Commons Attribution 4.0 International).
-  * Disjoint Guard: **PASS** (Zero overlap với 684 nguồn Option P lịch sử).
-  * Mô tả cảnh authentic: "Eyes of Sibiu" — Quảng trường nhà cổ Sibiu với mặt đường lát đá cuội rộng thoáng ở tiền cảnh ($y \in [360, 512]$), hoàn toàn tĩnh lặng và không có phương tiện cơ giới.
-  * **Đơn giản hóa hình khối**: Thay vì xe đạp với nan hoa mỏng, xích và khoảng trống xuyên thấu phức tạp (dễ sinh lỗi đứt gãy hình học không cần thiết cho kiểm thử insertion), đề xuất chậu hoa thùng gỗ mộc có hình khối trụ đặc vững chắc, biên ranh giới rõ ràng, diện mạo ăn nhập hoàn hảo với quảng trường cổ Sibiu.
-  * Target đề xuất: Chậu hoa thùng gỗ mộc trên mặt đường lát đá cuội (`[45, 375, 215, 495]`, 20.400 px = 7.78%).
-  * Prompt đề xuất: *"a rustic wooden barrel planter filled with vibrant blooming flowers sitting naturally on the cobblestone pavement, realistic daylight shadows and weathered wood texture matching the historic town square"*.
-  * Mask AABB đề xuất: `[20, 360, 240, 512]`.
-  * Target containment: **100% bao trọn** ($20 \le 45 < 215 \le 240$ và $360 \le 375 < 495 \le 512$).
-  * Diện tích raster mask: **33.440 px** (**12.756348%**), chuẩn `medium_10_to_30pct` ($10\% - 30\%$).
+  - Origin ID: `commons:172876577` | Nguồn ảnh trực tiếp: [Wikimedia Commons Chainwit.](<https://commons.wikimedia.org/wiki/File:%22Eyes_of_Sibiu%22_at_house_Strada_Ocnei_2,_Sibiu_(2023)_-_img_07.jpg>) | Tác giả: Chainwit. | Giấy phép: `CC BY 4.0` (Creative Commons Attribution 4.0 International).
+  - Disjoint Guard: **PASS** (Zero overlap với 684 nguồn Option P lịch sử).
+  - Mô tả cảnh authentic: "Eyes of Sibiu" — Quảng trường nhà cổ Sibiu với mặt đường lát đá cuội rộng thoáng ở tiền cảnh ($y \in [360, 512]$), hoàn toàn tĩnh lặng và không có phương tiện cơ giới.
+  - **Đơn giản hóa hình khối**: Thay vì xe đạp với nan hoa mỏng, xích và khoảng trống xuyên thấu phức tạp (dễ sinh lỗi đứt gãy hình học không cần thiết cho kiểm thử insertion), đề xuất chậu hoa thùng gỗ mộc có hình khối trụ đặc vững chắc, biên ranh giới rõ ràng, diện mạo ăn nhập hoàn hảo với quảng trường cổ Sibiu.
+  - Target đề xuất: Chậu hoa thùng gỗ mộc trên mặt đường lát đá cuội (`[45, 375, 215, 495]`, 20.400 px = 7.78%).
+  - Prompt đề xuất: _"a rustic wooden barrel planter filled with vibrant blooming flowers sitting naturally on the cobblestone pavement, realistic daylight shadows and weathered wood texture matching the historic town square"_.
+  - Mask AABB đề xuất: `[20, 360, 240, 512]`.
+  - Target containment: **100% bao trọn** ($20 \le 45 < 215 \le 240$ và $360 \le 375 < 495 \le 512$).
+  - Diện tích raster mask: **33.440 px** (**12.756348%**), chuẩn `medium_10_to_30pct` ($10\% - 30\%$).
 - **Phương án Tàu kéo `IND_COMMONS_SD2_021` — Chính thức BLOCKED**:
-  * Origin ID: `commons:132687303` | Nguồn: [Wikimedia Commons JoachimKohler-HB](https://commons.wikimedia.org/wiki/File:%22Cap_San_Diego%22_%26_Elbphilharmonie_(Hamburg,_2019).jpg).
-  * Rà soát authentic xác nhận mask `[0, 375, 240, 512]` chứa cầu đi bộ Überseebrücke, cọc trụ bê tông cảng và phao nổi đón khách. Phần nước trống bên dưới cầu chỉ đạt 20.500 px (7.82%), hụt định mức medium ($\ge 10\%$). Không tồn tại hình học mask nào đạt quota mà không phá hoại cầu cảng.
+  - Origin ID: `commons:132687303` | Nguồn: [Wikimedia Commons JoachimKohler-HB](<https://commons.wikimedia.org/wiki/File:%22Cap_San_Diego%22_%26_Elbphilharmonie_(Hamburg,_2019).jpg>).
+  - Rà soát authentic xác nhận mask `[0, 375, 240, 512]` chứa cầu đi bộ Überseebrücke, cọc trụ bê tông cảng và phao nổi đón khách. Phần nước trống bên dưới cầu chỉ đạt 20.500 px (7.82%), hụt định mức medium ($\ge 10\%$). Không tồn tại hình học mask nào đạt quota mà không phá hoại cầu cảng.
 
 #### 4. Slot 8 Thẩm Tra Hình Học Offline & Đề Xuất Thay Thế Trong Cùng Allocation (`commons_sdxl`, `object_replacement`, `large_over_30pct`)
+
 - **Thẩm tra hình học offline trên `IND_COMMONS_SDXL_020` (Żyletkowce)**:
-  * Nguồn: `commons:192692840` | Tác giả: Igor123121 | Giấy phép: `CC BY 4.0`.
-  * Target đăng ký: `[60, 145, 385, 365]` (71.500 px = 27.275391% canvas).
-  * **Sửa sai lệch tọa độ và phân tích chính xác Mask AABB `[50, 130, 395, 360]`**:
-    * Kích thước: $345 \times 230 =$ **79.350 px** (**30.269623%** canvas). Đạt định mức quota large ($\ge 30\%$, dư +707 px).
-    * *Đính chính tọa độ*: Mask kết thúc tại $y=360$, **chỉ thiếu đúng 5 hàng đáy target** ($y \in [360, 365)$ trên chiều rộng 325 px, tương đương 1.625 px hay 2.27% diện tích target). Mask **hoàn toàn không thiếu cạnh phải** (trục X $x \in [50, 395]$ bao trọn target $x \in [60, 385]$ với 10 px padding mỗi bên).
-    * *Tính lại giao với vòm kính từ raster*: Đỉnh khung kim loại vòm kính đạt $y=358$ tại $x \approx 208..212$. Mask $y \in [130, 360)$ cắt lẹm đúng **2 hàng đỉnh khung vòm kính** ($y=358, 359$, khoảng 14 px raster), **không tái sử dụng số đo 13 px của mask cũ** (13 px là độ sâu của mask cũ kéo tới $y=375$).
-  * **Đo đạc Raster Contour Mask Nháp Offline (né đỉnh vòm kính và cấu trúc tiền cảnh)**:
-    * Xuất raster nhị phân và overlay bám theo mép thực của thân tháp: `IND_COMMONS_SDXL_020_contour_mask.png` và `IND_COMMONS_SDXL_020_contour_overlay.png`.
-    * Số pixel mask contour thực tế: **65.792 px** (**25.097656%** canvas).
-    * Kết quả kiểm tra quota: **KHÔNG ĐẠT định mức large** ($\ge 30\%$, thiếu hụt nghiêm trọng -12.851 px hay -4.90%).
-    * Kết quả che phủ target (Target Coverage): Chỉ bao phủ **65.496 px / 71.500 px** (**91.60%** diện tích target; bỏ sót 6.004 px = 8.40% diện tích target tại chân tháp).
-    * Tuân thủ nguyên tắc trung thực khoa học: Tuyệt đối không thu hẹp hoặc tái đăng ký target post-hoc để hợp thức hóa mask.
-  * **Kiểm tra khả năng hỗ trợ trong Schema & Runner hiện có**:
-    * Runner (`ml/evaluation/independent_cohort_acquisition.py`) chỉ hỗ trợ trục tọa độ hộp chữ nhật `mask_bbox_xyxy: tuple[int, int, int, int]`, hoàn toàn không hỗ trợ raster mask polygon nếu không sửa code và ban hành amendment.
+  - Nguồn: `commons:192692840` | Tác giả: Igor123121 | Giấy phép: `CC BY 4.0`.
+  - Target đăng ký: `[60, 145, 385, 365]` (71.500 px = 27.275391% canvas).
+  - **Sửa sai lệch tọa độ và phân tích chính xác Mask AABB `[50, 130, 395, 360]`**:
+    - Kích thước: $345 \times 230 =$ **79.350 px** (**30.269623%** canvas). Đạt định mức quota large ($\ge 30\%$, dư +707 px).
+    - _Đính chính tọa độ_: Mask kết thúc tại $y=360$, **chỉ thiếu đúng 5 hàng đáy target** ($y \in [360, 365)$ trên chiều rộng 325 px, tương đương 1.625 px hay 2.27% diện tích target). Mask **hoàn toàn không thiếu cạnh phải** (trục X $x \in [50, 395]$ bao trọn target $x \in [60, 385]$ với 10 px padding mỗi bên).
+    - _Tính lại giao với vòm kính từ raster_: Đỉnh khung kim loại vòm kính đạt $y=358$ tại $x \approx 208..212$. Mask $y \in [130, 360)$ cắt lẹm đúng **2 hàng đỉnh khung vòm kính** ($y=358, 359$, khoảng 14 px raster), **không tái sử dụng số đo 13 px của mask cũ** (13 px là độ sâu của mask cũ kéo tới $y=375$).
+  - **Đo đạc Raster Contour Mask Nháp Offline (né đỉnh vòm kính và cấu trúc tiền cảnh)**:
+    - Xuất raster nhị phân và overlay bám theo mép thực của thân tháp: `IND_COMMONS_SDXL_020_contour_mask.png` và `IND_COMMONS_SDXL_020_contour_overlay.png`.
+    - Số pixel mask contour thực tế: **65.792 px** (**25.097656%** canvas).
+    - Kết quả kiểm tra quota: **KHÔNG ĐẠT định mức large** ($\ge 30\%$, thiếu hụt nghiêm trọng -12.851 px hay -4.90%).
+    - Kết quả che phủ target (Target Coverage): Chỉ bao phủ **65.496 px / 71.500 px** (**91.60%** diện tích target; bỏ sót 6.004 px = 8.40% diện tích target tại chân tháp).
+    - Tuân thủ nguyên tắc trung thực khoa học: Tuyệt đối không thu hẹp hoặc tái đăng ký target post-hoc để hợp thức hóa mask.
+  - **Kiểm tra khả năng hỗ trợ trong Schema & Runner hiện có**:
+    - Runner (`ml/evaluation/independent_cohort_acquisition.py`) chỉ hỗ trợ trục tọa độ hộp chữ nhật `mask_bbox_xyxy: tuple[int, int, int, int]`, hoàn toàn không hỗ trợ raster mask polygon nếu không sửa code và ban hành amendment.
 - **Rà soát Candidate Khác Trong Cùng Allocation (`commons_sdxl`, `object_replacement`, `large_over_30pct`)**:
-  * **Phương án Khuyến nghị (RECOMMENDED PENDING)**: **`IND_COMMONS_SDXL_005`** (Pool index: 4).
-    * Origin ID: `commons:171463547` | Nguồn: [Wikimedia Commons Chris Woodrich](https://commons.wikimedia.org/wiki/File:%22Triptych%22_by_Gord_Smith_(rear_view),_Windsor,_Ontario,_2025-08-01.jpg) | Tác giả: Chris Woodrich | Giấy phép: `CC BY-SA 4.0`.
-    * Disjoint Guard: **PASS** (Zero overlap với 684 nguồn Option P lịch sử).
-    * Target thay thế: Cột kỷ niệm bằng đá cẩm thạch trắng đứng trên bệ khối vững chắc trong công viên.
-    * Prompt đề xuất: *"a classical white marble commemorative column standing on a solid plinth in the public park, realistic overcast daylight and weathered stone texture"*.
-    * Target bbox: `[145, 45, 355, 465]` (diện tích 88.200 px = 33.647461% canvas).
-    * Mask AABB đề xuất: `[135, 40, 365, 475]`.
-    * Diện tích raster mask: **100.050 px** (**38.166046%** canvas), đạt chuẩn `large_over_30pct` ($\ge 30\%$).
-    * **Phân tích BBox Containment với Coverage Đối tượng Thực tế**:
-      * *BBox Containment*: 100% target bbox nằm trong mask bbox ($135 \le 145 < 355 \le 365$ và $40 \le 45 < 465 \le 475$).
-      * *Che phủ đối tượng thực tế (Physical Object Coverage)*: Khối điêu khắc đồng "Triptych" trải dài từ $x=145$ đến $x=352$ và đỉnh cột bắt đầu tại $y=45$ đến chân bệ bê tông tại $y=465$ (bao gồm cả bệ bê tông chân tượng tại $y=445..465$). Target rectified `[145, 45, 355, 465]` bao trọn 100% cấu trúc vật lý thực tế của tượng và bệ đỡ; toàn bộ thân tượng và bệ đỡ đều nằm trọn 100% trong mask AABB.
-      * *Kiểm tra bệ/chân & bóng đổ tiếp xúc*: Chân bệ bê tông kết thúc ở $y \approx 465$, thảm cỏ bắt đầu từ $y \approx 470$. Khoảng lề đáy $y \in [465, 475]$ (10 px) dự phòng không gian cho bệ móng và bóng đổ tiếp xúc trên mặt cỏ, song không bảo đảm loại trừ hoàn toàn nguy cơ vết sẹo biên hoặc bậc tương phản vi mô.
-      * *Kiểm tra vật thể lân cận*: Hoàn toàn không có lan can kim loại (khắc phục lỗi của Tower Song `_003`), không có vòm kính tròn (khắc phục lỗi của Żyletkowce `_020`), không có người đi bộ. Hậu cảnh là bầu trời mây và rặng cây công viên ở xa.
-      * *Tính tương thích Runner/Schema*: Sử dụng hộp chữ nhật AABB chuẩn, **tương thích 100% với schema và code runner hiện hành mà không cần sửa code!**
-  * **Phương án Dự phòng (BACKUP PENDING)**: `IND_COMMONS_SDXL_002` (Pool index: 1, tượng Ed Dwight ôm trẻ, CC BY-SA 4.0; target `[180, 120, 400, 430]`, mask `[170, 110, 410, 440]`, 79.200 px = 30.21%). Lưu ý rủi ro đồng nhất danh tính và cánh tay tiếp xúc.
+  - **Phương án Khuyến nghị (RECOMMENDED PENDING)**: **`IND_COMMONS_SDXL_005`** (Pool index: 4).
+    - Origin ID: `commons:171463547` | Nguồn: [Wikimedia Commons Chris Woodrich](<https://commons.wikimedia.org/wiki/File:%22Triptych%22_by_Gord_Smith_(rear_view),_Windsor,_Ontario,_2025-08-01.jpg>) | Tác giả: Chris Woodrich | Giấy phép: `CC BY-SA 4.0`.
+    - Disjoint Guard: **PASS** (Zero overlap với 684 nguồn Option P lịch sử).
+    - Target thay thế: Cột kỷ niệm bằng đá cẩm thạch trắng đứng trên bệ khối vững chắc trong công viên.
+    - Prompt đề xuất: _"a classical white marble commemorative column standing on a solid plinth in the public park, realistic overcast daylight and weathered stone texture"_.
+    - Target bbox: `[145, 45, 355, 465]` (diện tích 88.200 px = 33.647461% canvas).
+    - Mask AABB đề xuất: `[135, 40, 365, 475]`.
+    - Diện tích raster mask: **100.050 px** (**38.166046%** canvas), đạt chuẩn `large_over_30pct` ($\ge 30\%$).
+    - **Phân tích BBox Containment với Coverage Đối tượng Thực tế**:
+      - _BBox Containment_: 100% target bbox nằm trong mask bbox ($135 \le 145 < 355 \le 365$ và $40 \le 45 < 465 \le 475$).
+      - _Che phủ đối tượng thực tế (Physical Object Coverage)_: Khối điêu khắc đồng "Triptych" trải dài từ $x=145$ đến $x=352$ và đỉnh cột bắt đầu tại $y=45$ đến chân bệ bê tông tại $y=465$ (bao gồm cả bệ bê tông chân tượng tại $y=445..465$). Target rectified `[145, 45, 355, 465]` bao trọn 100% cấu trúc vật lý thực tế của tượng và bệ đỡ; toàn bộ thân tượng và bệ đỡ đều nằm trọn 100% trong mask AABB.
+      - _Kiểm tra bệ/chân & bóng đổ tiếp xúc_: Chân bệ bê tông kết thúc ở $y \approx 465$, thảm cỏ bắt đầu từ $y \approx 470$. Khoảng lề đáy $y \in [465, 475]$ (10 px) dự phòng không gian cho bệ móng và bóng đổ tiếp xúc trên mặt cỏ, song không bảo đảm loại trừ hoàn toàn nguy cơ vết sẹo biên hoặc bậc tương phản vi mô.
+      - _Kiểm tra vật thể lân cận_: Hoàn toàn không có lan can kim loại (khắc phục lỗi của Tower Song `_003`), không có vòm kính tròn (khắc phục lỗi của Żyletkowce `_020`), không có người đi bộ. Hậu cảnh là bầu trời mây và rặng cây công viên ở xa.
+      - _Tính tương thích Runner/Schema_: Sử dụng hộp chữ nhật AABB chuẩn, **tương thích 100% với schema và code runner hiện hành mà không cần sửa code!**
+  - **Phương án Dự phòng (BACKUP PENDING)**: `IND_COMMONS_SDXL_002` (Pool index: 1, tượng Ed Dwight ôm trẻ, CC BY-SA 4.0; target `[180, 120, 400, 430]`, mask `[170, 110, 410, 440]`, 79.200 px = 30.21%). Lưu ý rủi ro đồng nhất danh tính và cánh tay tiếp xúc.
 
 ---
 
 ### Bảng Tổng Hợp 4 Slot Đề Xuất PENDING Trình Duyệt
 
-| Slot | Stratum & Thao Tác | Candidate Đề Xuất (PENDING) | Geometry (Target & Mask BBox) | Diện Tích Mask & Quota | Provenance & Giấy Phép Xác Minh | Rủi Ro Kỹ Thuật Còn Lại | Nội Dung Chính Xác Cần Người Dùng Duyệt |
-| :---: | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **3** | `coco_sdxl`<br>insertion<br>small | **`IND_COCO_SDXL_042`**<br>(Pool 41, gian hàng TAM) | Target: `[235, 395, 335, 485]`<br>Mask: `[220, 380, 350, 500]` | **15.600 px**<br>(**5.95%**)<br>Đạt `small` (1-10%) | `coco:448076`<br>Tác giả: luis.leao<br>License: `CC BY 2.0` | Thảm phẳng tối ưu tiền kiểm nhưng không bảo đảm 100% loại trừ omission của SDXL. | Duyệt thay thế `IND_COCO_SDXL_002` bằng `IND_COCO_SDXL_042` (cặp táp da trên thảm đỏ). |
-| **4** | `coco_sdxl`<br>insertion<br>large | **`COCO_EXT_SDXL_001`**<br>(Đề xuất mở rộng COCO) | Target: `[20, 280, 330, 490]`<br>Mask: `[10, 260, 340, 510]` | **82.500 px**<br>(**31.47%**)<br>Đạt `large` (&ge;30%) | `coco:460160`<br>Tác giả: PratarPersilja<br>License: `CC BY-SA 2.0`<br>Extension: `candidate_catalog_extension_v1.0.0.json` | Bờ biển tự nhiên; cần theo dõi tiếp xúc chân bàn gỗ với nền cỏ/cát. Nền mặt đất tránh được lỗi bước nhảy tông mặt trần. | Duyệt mở rộng catalog COCO với candidate `COCO_EXT_SDXL_001` (bàn dã ngoại gỗ trên bờ cỏ). |
-| **6** | `commons_sd2`<br>insertion<br>medium | **`IND_COMMONS_SD2_040`**<br>(Pool 39, phố cổ Sibiu) | Target: `[45, 375, 215, 495]`<br>Mask: `[20, 360, 240, 512]` | **33.440 px**<br>(**12.76%**)<br>Đạt `medium` (10-30%) | `commons:172876577`<br>Tác giả: Chainwit.<br>License: `CC BY 4.0` | Nền đá cuội cổ; SD2 cần tạo bóng đổ tiếp xúc tự nhiên với mặt đường. | Duyệt thay thế `IND_COMMONS_SD2_002` bằng `IND_COMMONS_SD2_040` (chậu hoa thùng gỗ mộc). |
-| **8** | `commons_sdxl`<br>replacement<br>large | **`IND_COMMONS_SDXL_005`**<br>(Pool 4, tượng Triptych) | Target: `[145, 45, 355, 465]`<br>Mask: `[135, 40, 365, 475]` | **100.050 px**<br>(**38.17%**)<br>Đạt `large` (&ge;30%) | `commons:171463547`<br>Tác giả: Chris Woodrich<br>License: `CC BY-SA 4.0` | Thay thế tượng đồng bằng cột đá; rủi ro khớp chân bệ với mặt cỏ công viên. Không vướng lan can hay vòm kính. | Duyệt thay thế `IND_COMMONS_SDXL_003` bằng `IND_COMMONS_SDXL_005` (thay tượng Triptych bằng cột đá). |
+| Slot  | Stratum & Thao Tác                     | Candidate Đề Xuất (PENDING)                            | Geometry (Target & Mask BBox)                                  | Diện Tích Mask & Quota                                  | Provenance & Giấy Phép Xác Minh                                                                                             | Rủi Ro Kỹ Thuật Còn Lại                                                                                                 | Nội Dung Chính Xác Cần Người Dùng Duyệt                                                              |
+| :---: | :------------------------------------- | :----------------------------------------------------- | :------------------------------------------------------------- | :------------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------- |
+| **3** | `coco_sdxl`<br>insertion<br>small      | **`IND_COCO_SDXL_042`**<br>(Pool 41, gian hàng TAM)    | Target: `[235, 395, 335, 485]`<br>Mask: `[220, 380, 350, 500]` | **15.600 px**<br>(**5.95%**)<br>Đạt `small` (1-10%)     | `coco:448076`<br>Tác giả: luis.leao<br>License: `CC BY 2.0`                                                                 | Thảm phẳng tối ưu tiền kiểm nhưng không bảo đảm 100% loại trừ omission của SDXL.                                        | Duyệt thay thế `IND_COCO_SDXL_002` bằng `IND_COCO_SDXL_042` (cặp táp da trên thảm đỏ).               |
+| **4** | `coco_sdxl`<br>insertion<br>large      | **`COCO_EXT_SDXL_001`**<br>(Đề xuất mở rộng COCO)      | Target: `[20, 280, 330, 490]`<br>Mask: `[10, 260, 340, 510]`   | **82.500 px**<br>(**31.47%**)<br>Đạt `large` (&ge;30%)  | `coco:460160`<br>Tác giả: PratarPersilja<br>License: `CC BY-SA 2.0`<br>Extension: `candidate_catalog_extension_v1.0.0.json` | Bờ biển tự nhiên; cần theo dõi tiếp xúc chân bàn gỗ với nền cỏ/cát. Nền mặt đất tránh được lỗi bước nhảy tông mặt trần. | Duyệt mở rộng catalog COCO với candidate `COCO_EXT_SDXL_001` (bàn dã ngoại gỗ trên bờ cỏ).           |
+| **6** | `commons_sd2`<br>insertion<br>medium   | **`IND_COMMONS_SD2_040`**<br>(Pool 39, phố cổ Sibiu)   | Target: `[45, 375, 215, 495]`<br>Mask: `[20, 360, 240, 512]`   | **33.440 px**<br>(**12.76%**)<br>Đạt `medium` (10-30%)  | `commons:172876577`<br>Tác giả: Chainwit.<br>License: `CC BY 4.0`                                                           | Nền đá cuội cổ; SD2 cần tạo bóng đổ tiếp xúc tự nhiên với mặt đường.                                                    | Duyệt thay thế `IND_COMMONS_SD2_002` bằng `IND_COMMONS_SD2_040` (chậu hoa thùng gỗ mộc).             |
+| **8** | `commons_sdxl`<br>replacement<br>large | **`IND_COMMONS_SDXL_005`**<br>(Pool 4, tượng Triptych) | Target: `[145, 45, 355, 465]`<br>Mask: `[135, 40, 365, 475]`   | **100.050 px**<br>(**38.17%**)<br>Đạt `large` (&ge;30%) | `commons:171463547`<br>Tác giả: Chris Woodrich<br>License: `CC BY-SA 4.0`                                                   | Thay thế tượng đồng bằng cột đá; rủi ro khớp chân bệ với mặt cỏ công viên. Không vướng lan can hay vòm kính.            | Duyệt thay thế `IND_COMMONS_SDXL_003` bằng `IND_COMMONS_SDXL_005` (thay tượng Triptych bằng cột đá). |
 
 ---
 
 ### Các Bước Kế Tiếp & Điều Kiện Phê Duyệt (Actionable Decisions)
+
 1. **Hồ sơ Amendment & Kế hoạch Đã Chuẩn bị (PENDING)**: Đã soạn thảo đầy đủ:
    - Hồ sơ sửa đổi: [`PROTOCOL_AMENDMENT_V1.7.0.md`](research/evidence/phase-4c.7b/PROTOCOL_AMENDMENT_V1.7.0.md).
    - Kế hoạch Pilot v2 đề xuất: [`content_grounded_pilot_plan_v2_proposal.json`](research/evidence/phase-4c.7b/content_grounded_pilot_plan_v2_proposal.json).
@@ -344,9 +356,6 @@ Các phương án đề xuất được rà soát nghiêm ngặt theo nội dung
    - Full cohort tiếp tục **LOCKED** ($N=400$); số lượt gọi detector = 0; hiệu năng độc lập = `NOT_MEASURED`.
    - Notebook ghim ở commit functional `38df28b4f7fcae0d8788057418410c27d1ca5852` (chứa catalog extension và CLI preflight kiểm tra proposal v2; bảo toàn các run và pin lịch sử).
    - Không đăng ký thêm ngân sách generation trong bước này.
-
-
-
 
 ## EE. Approved calibration runner implementation & diagnostic determinations dossier (2026-10-08)
 
@@ -382,25 +391,25 @@ Các phương án đề xuất được rà soát nghiêm ngặt theo nội dung
   - Input bit-parity: all authentic and mask PNG hashes match approved plan JSON and match bit-identically to sealed normalized inputs from `pilot-20261008T113700Z` (`max_auth_diff == 0`, `max_mask_diff == 0`).
 - **Recalculated Pixel-Level Metrics (Linear Scale vs Geometric Area Factor)**:
   - `IND_COCO_SDXL_002` (bread tomato, SDXL):
-    * Arm A (512x512 full canvas): Linear scale 1.0x, Geometric area factor 1.0x; inside mean L1 = `16.7861` (std 13.73, max delta 81.0), outside mean L1 = `0.000000` (max delta 0.0).
-    * Arm B (1024x1024 local crop): Linear scale 4.0x, Geometric area factor 16.0x; inside mean L1 = `28.2929` (std 32.96, max delta 176.0), outside mean L1 = `0.000000` (max delta 0.0).
+    - Arm A (512x512 full canvas): Linear scale 1.0x, Geometric area factor 1.0x; inside mean L1 = `16.7861` (std 13.73, max delta 81.0), outside mean L1 = `0.000000` (max delta 0.0).
+    - Arm B (1024x1024 local crop): Linear scale 4.0x, Geometric area factor 16.0x; inside mean L1 = `28.2929` (std 32.96, max delta 176.0), outside mean L1 = `0.000000` (max delta 0.0).
   - `IND_COMMONS_SD2_002` (suitcase, SD2):
-    * Arm A (512x512 full canvas): Linear scale 1.0x, Geometric area factor 1.0x; inside mean L1 = `30.7358` (std 24.12, max delta 146.0), outside mean L1 = `0.000000` (max delta 0.0).
-    * Arm B (512x512 local crop): Linear scale 1.6x, Geometric area factor 2.56x; inside mean L1 = `43.3932` (std 40.49, max delta 226.0), outside mean L1 = `0.000000` (max delta 0.0).
+    - Arm A (512x512 full canvas): Linear scale 1.0x, Geometric area factor 1.0x; inside mean L1 = `30.7358` (std 24.12, max delta 146.0), outside mean L1 = `0.000000` (max delta 0.0).
+    - Arm B (512x512 local crop): Linear scale 1.6x, Geometric area factor 2.56x; inside mean L1 = `43.3932` (std 40.49, max delta 226.0), outside mean L1 = `0.000000` (max delta 0.0).
   - `IND_COMMONS_SDXL_001` (sky bird, SDXL):
-    * Arm A (512x512 full canvas): Linear scale 1.0x, Geometric area factor 1.0x; inside mean L1 = `11.0767` (std 9.00, max delta 43.0), outside mean L1 = `0.000000` (max delta 0.0).
-    * Arm B (1024x1024 local crop): Linear scale 4.0x, Geometric area factor 16.0x; inside mean L1 = `13.0674` (std 32.45, max delta 214.0), outside mean L1 = `0.000000` (max delta 0.0).
+    - Arm A (512x512 full canvas): Linear scale 1.0x, Geometric area factor 1.0x; inside mean L1 = `11.0767` (std 9.00, max delta 43.0), outside mean L1 = `0.000000` (max delta 0.0).
+    - Arm B (1024x1024 local crop): Linear scale 4.0x, Geometric area factor 16.0x; inside mean L1 = `13.0674` (std 32.45, max delta 214.0), outside mean L1 = `0.000000` (max delta 0.0).
   - Background invariance: strictly verified across all 6 attempts (`outside_mean_l1 == 0.000000`, `outside_max_delta == 0.0`).
 - **Visual Analysis & Empirical Metric Dissociation (4 Criteria Separation)**:
-  - *Tomato (`IND_COCO_SDXL_002`)*: Arm A completely omitted object (infilled bread crumb texture). Arm B successfully synthesized a plausible red cherry tomato with spherical highlight and green stem. Requires evaluation of sharpness, gloss/specular highlight (~[394, 276, 403, 286]), and background crumb texture inside mask [345, 245, 455, 335] vs authentic bread crumb. Bbox reconciliation: Crop bbox is `[256, 162, 512, 418]`; registered mask bbox is `[345, 245, 455, 335]` (9,900 px, 3.776550%). Overlay zoom confirms a subtle rectangular transition step in crumb texture along the **registered mask boundary `[345, 245, 455, 335]`** due to hard binary compositing with authentic bread (not at the crop bbox boundary). Agent recommends submitting for human quality review.
-  - *Suitcase (`IND_COMMONS_SD2_002`)*: Arm A completely omitted object (infilled cobblestones). Arm B produced **semantic hallucination**: synthesized a miniature vintage automobile with roof and wheels instead of a suitcase. Crop bbox is `[0, 192, 320, 512]`; `[0, 237, 360, 512]` is the resized-mask raster bbox in inference resolution. Shadow observation: the car shadow is an oval pool directly beneath the vehicle and does not reach the canvas frame ($x=0, y=512$). Internal mask edges ($y=340, x=225$) blend naturally. Defect is strictly semantic hallucination, not a boundary compositing flaw. Inside L1 increased from 30.74 to 43.39 (max delta 226): **"L1 tăng không bảo đảm thành công ngữ nghĩa"** (không rút ra kết luận khái quát về tương quan từ 3 ca). Agent recommends REJECT.
-  - *Bird (`IND_COMMONS_SDXL_001`)*: Arm A completely omitted object (grey sky patch). Arm B materialized bird object, but exhibits placement deficit and boundary tone mismatch (không mô tả là hòa nhập hoàn hảo). Target bbox registered: `[395, 75, 455, 125]`. Observed dark silhouette: ~`[375, 126, 414, 156]` ($dx = -30.5\text{ px}$, $dy = +41.0\text{ px}$; vertical overlap = $0\text{ px}$, strictly below target). Measured on PNG with RGB grayscale intensity thresholds and verified visually; color thresholds are not segmentation ground truth due to anti-aliasing/scattering, but silhouette is strictly detached from target box. Clearly distinguish "inside mask" (100% within mask `[350, 45, 500, 160]`) from "proper target placement" (strictly outside target box). Target or mask are strictly not shifted post-hoc to legitimize output. Rectangular sky patch inside mask exhibits tone step ($\sim -3$ to $-4$ RGB delta). Crop bbox is strictly `[256, 0, 512, 256]` ($256 \times 256$ px); `[187, 0, 443, 256]` is not used. Agent recommends REJECT for bird Arm B under current placement requirements.
+  - _Tomato (`IND_COCO_SDXL_002`)_: Arm A completely omitted object (infilled bread crumb texture). Arm B successfully synthesized a plausible red cherry tomato with spherical highlight and green stem. Requires evaluation of sharpness, gloss/specular highlight (~[394, 276, 403, 286]), and background crumb texture inside mask [345, 245, 455, 335] vs authentic bread crumb. Bbox reconciliation: Crop bbox is `[256, 162, 512, 418]`; registered mask bbox is `[345, 245, 455, 335]` (9,900 px, 3.776550%). Overlay zoom confirms a subtle rectangular transition step in crumb texture along the **registered mask boundary `[345, 245, 455, 335]`** due to hard binary compositing with authentic bread (not at the crop bbox boundary). Agent recommends submitting for human quality review.
+  - _Suitcase (`IND_COMMONS_SD2_002`)_: Arm A completely omitted object (infilled cobblestones). Arm B produced **semantic hallucination**: synthesized a miniature vintage automobile with roof and wheels instead of a suitcase. Crop bbox is `[0, 192, 320, 512]`; `[0, 237, 360, 512]` is the resized-mask raster bbox in inference resolution. Shadow observation: the car shadow is an oval pool directly beneath the vehicle and does not reach the canvas frame ($x=0, y=512$). Internal mask edges ($y=340, x=225$) blend naturally. Defect is strictly semantic hallucination, not a boundary compositing flaw. Inside L1 increased from 30.74 to 43.39 (max delta 226): **"L1 tăng không bảo đảm thành công ngữ nghĩa"** (không rút ra kết luận khái quát về tương quan từ 3 ca). Agent recommends REJECT.
+  - _Bird (`IND_COMMONS_SDXL_001`)_: Arm A completely omitted object (grey sky patch). Arm B materialized bird object, but exhibits placement deficit and boundary tone mismatch (không mô tả là hòa nhập hoàn hảo). Target bbox registered: `[395, 75, 455, 125]`. Observed dark silhouette: ~`[375, 126, 414, 156]` ($dx = -30.5\text{ px}$, $dy = +41.0\text{ px}$; vertical overlap = $0\text{ px}$, strictly below target). Measured on PNG with RGB grayscale intensity thresholds and verified visually; color thresholds are not segmentation ground truth due to anti-aliasing/scattering, but silhouette is strictly detached from target box. Clearly distinguish "inside mask" (100% within mask `[350, 45, 500, 160]`) from "proper target placement" (strictly outside target box). Target or mask are strictly not shifted post-hoc to legitimize output. Rectangular sky patch inside mask exhibits tone step ($\sim -3$ to $-4$ RGB delta). Crop bbox is strictly `[256, 0, 512, 256]` ($256 \times 256$ px); `[187, 0, 443, 256]` is not used. Agent recommends REJECT for bird Arm B under current placement requirements.
 - **Execution Evidence, Timing Scope & Runtime Profiling**:
   - Crop and native resolution scaling verified: SDXL raw crops are $1024 \times 1024$ (linear 4.0x, area 16.0x); SD2 raw crop is $512 \times 512$ with 1.6x padding (linear 1.6x, area 2.56x).
   - Timing measurement scope: `diagnostic_receipt.json` and `attempt_ledger.jsonl` record identical elapsed times for all 6 attempts (`114.319s`, `24.684s`, `71.542s`, `7.461s`, `37.614s`, `26.883s`). Code scope in `ml/evaluation/independent_cohort_diagnostic.py` starts `time.perf_counter()` before `get_engine(tool_key)`. For Arm A attempts (1, 3, 5), elapsed time includes pipeline instantiation from disk/cache into CUDA memory and initial graph warmup. For Arm B attempts (2, 4, 6), the engine is already memory-resident. Do NOT conclude inference speed of A/B from full attempt duration; isolated inference speed of A/B is not determined from full attempt time (chưa xác định tốc độ suy luận riêng của A/B từ thời gian toàn attempt).
   - Primary source bindings:
-    * SDXL Inpainting: official Diffusers model card `diffusers/stable-diffusion-xl-1.0-inpainting-0.1` (pinned revision `115134f363124c53c7d878647567d04daf26e41e`) `[@sdxlInpaintingModelCard]`.
-    * SD2 Inpainting: community mirror `sd2-community/stable-diffusion-2-inpainting` (pinned revision `5f74973cbb64c8568780732c17f43eb269d63a0d`; not an official Stability AI source) `[@sd2CommunityInpaintingModelCard]`.
+    - SDXL Inpainting: official Diffusers model card `diffusers/stable-diffusion-xl-1.0-inpainting-0.1` (pinned revision `115134f363124c53c7d878647567d04daf26e41e`) `[@sdxlInpaintingModelCard]`.
+    - SD2 Inpainting: community mirror `sd2-community/stable-diffusion-2-inpainting` (pinned revision `5f74973cbb64c8568780732c17f43eb269d63a0d`; not an official Stability AI source) `[@sd2CommunityInpaintingModelCard]`.
   - Runtime environment recorded: Linux `6.6.122+-x86_64-with-glibc2.39`, Python `3.13.15`, NumPy `2.1.3`, Pillow `11.3.0`. Unrecorded in receipts: PyTorch, Diffusers, CUDA runtime version, GPU model (stated factually without speculation).
 - **Methodological Bounds & Governance**:
   - Exactly 3 candidates, $n=1$ seed per candidate: observational A/B comparison. Causal mechanisms (latent tokens, context bias) remain unverified hypotheses. Distinguish visual observations from causal explanations.
@@ -418,9 +427,9 @@ Các phương án đề xuất được rà soát nghiêm ngặt theo nội dung
   - Historical pilot-20261008T113700Z Human Content QC remains strictly PENDING; feathering remains unapproved for production; full cohort remains locked.
 - **Sealed Input Bindings**:
   - Explicit bindings to sealed normalized PNGs from run `pilot-20261008T113700Z` (ZIP SHA-256 `3bdb1890...`, manifest `cf0e4300...`):
-    * `IND_COCO_SDXL_002` (bread tomato): auth `7aefc1d1...` (`images/IND_COCO_SDXL_002_auth.png`), mask `2ff6b165...` (`masks/IND_COCO_SDXL_002_mask.png`), seed 20272319, steps 30, EulerDiscreteScheduler.
-    * `IND_COMMONS_SD2_002` (suitcase): auth `98004bf7...` (`images/IND_COMMONS_SD2_002_auth.png`), mask `fee9ac7e...` (`masks/IND_COMMONS_SD2_002_mask.png`), seed 20283429, steps 50, DDIMScheduler.
-    * `IND_COMMONS_SDXL_001` (sky bird): auth `7680e4ce...` (`images/IND_COMMONS_SDXL_001_auth.png`), mask `4981cedc...` (`masks/IND_COMMONS_SDXL_001_mask.png`), seed 20294438, steps 30, EulerDiscreteScheduler.
+    - `IND_COCO_SDXL_002` (bread tomato): auth `7aefc1d1...` (`images/IND_COCO_SDXL_002_auth.png`), mask `2ff6b165...` (`masks/IND_COCO_SDXL_002_mask.png`), seed 20272319, steps 30, EulerDiscreteScheduler.
+    - `IND_COMMONS_SD2_002` (suitcase): auth `98004bf7...` (`images/IND_COMMONS_SD2_002_auth.png`), mask `fee9ac7e...` (`masks/IND_COMMONS_SD2_002_mask.png`), seed 20283429, steps 50, DDIMScheduler.
+    - `IND_COMMONS_SDXL_001` (sky bird): auth `7680e4ce...` (`images/IND_COMMONS_SDXL_001_auth.png`), mask `4981cedc...` (`masks/IND_COMMONS_SDXL_001_mask.png`), seed 20294438, steps 30, EulerDiscreteScheduler.
   - Remote redownload from web is strictly prohibited; runner checks both flat root (`base_dir / filename`) and standard package paths (`base_dir / images/` and `base_dir / masks/`).
 - **Reframed Objective & Theoretical Grounding**:
   - Compares full-canvas inference (Arm A) vs local-crop padded inference (Arm B) across insertion omissions.
@@ -472,16 +481,16 @@ Các phương án đề xuất được rà soát nghiêm ngặt theo nội dung
   - `scheduler`: SD2 uses `DDIMScheduler` (50 steps); SDXL uses `EulerDiscreteScheduler` (30 steps).
   - `canvas`: 512×512 for both tools. SD2 operates at native resolution; SDXL operates below native 1024×1024.
 - **Cause Classification: Proven vs Unverified Hypotheses**:
-  - *Proven Software Fixes*: Fixed contact sheet reading non-existent `att['qc_details']` (now computed from RGB arrays); corrected threshold reporting.
-  - *Proven Geometric / Physical Causes*: Zero-feathering 1-bit binary compositing (`Image.composite`) cutting continuous structures (railings, ceiling plaster, walls) inevitably creates 1-pixel edge discontinuities.
-  - *Unverified Technical Hypotheses*:
+  - _Proven Software Fixes_: Fixed contact sheet reading non-existent `att['qc_details']` (now computed from RGB arrays); corrected threshold reporting.
+  - _Proven Geometric / Physical Causes_: Zero-feathering 1-bit binary compositing (`Image.composite`) cutting continuous structures (railings, ceiling plaster, walls) inevitably creates 1-pixel edge discontinuities.
+  - _Unverified Technical Hypotheses_:
     - Latent resolution bottleneck: assuming 8x downsampling maps small masks (tomato 3.78%, bird 6.58%) to estimated tiny grids ($13 \times 11$, $18 \times 14$ latent px), hypothesized to restrict structural object formation. `unverified-hypothesis`; latent tensors were not directly instrumented.
     - Context infill conditioning: prompts with prominent background descriptions ("on bread", "on cobblestones", "in cloudy sky") surrounded by unmasked context may bias UNet attention toward continuing background textures rather than generating salient objects. `unverified-hypothesis`; reverse sampling does not perform test-time gradient descent or loss optimization.
 - **Remediation Proposals**:
-  - *Object Insertion*:
+  - _Object Insertion_:
     - Method A.1: Prompt token isolation (focusing on salient object features) + negative prompting (`"empty, blurry, missing object"`) + guidance tuning (9.0–11.0).
     - Method A.2: Local crop inference with padding margin $P$ at model-native resolution (1024×1024 for SDXL), downscaling with Lanczos and compositing strictly inside registered mask bbox. Evaluated risks: loss of global perspective/vanishing points, illumination misalignment, scale distortion, and resampling blur.
-  - *Boundary Seam Handling*:
+  - _Boundary Seam Handling_:
     - Inward-only edge feathering: Ramping $\alpha$ over $k = 2-3$ px strictly inside the registered mask ($mask == 255$), with $\alpha = 0$ outside, preserving exact `outside_mask_mean_l1 = 0.000000`. Solves 1-pixel high-frequency edge steps; cannot resolve macroscopic structural severance.
     - Natural-boundary mask alignment: Registering masks along natural architectural trim/moldings or replacing candidates with uncuttable linear foregrounds.
 - **Controlled Next-Pilot Experimental Design**:
@@ -532,9 +541,9 @@ Các phương án đề xuất được rà soát nghiêm ngặt theo nội dung
   7. `IND_COMMONS_SDXL_001` (bird): 0 birds generated; infilled with purplish-gray sky patch; recommendation **`REJECT`**.
   8. `IND_COMMONS_SDXL_003` (column replacement): Severe semantic drift; generated psychedelic bottle-shaped pillar with neon reflections and severed railing at $x=170, 380$; recommendation **`REJECT`**.
 - **Technical Diagnosis (Code & Model Behavior)**:
-  - *Proven Cause (Boundary Seams)*: Zero-feathering 1-bit compositing (`Image.composite`) with axis-aligned boxes cutting continuous scene geometry causes immediate 1-pixel color/texture steps.
-  - *Proven Cause (Contact Sheet Display Bug)*: Previous script referenced non-existent `att['qc_details']` key in `attempt_ledger.jsonl`, defaulting to `0.0`. Fixed by computing L1 directly from RGB arrays.
-  - *High-Probability Hypotheses (Small Insertion Deficits)*: Latent space downsampling (8x) gives tiny spatial capacity (e.g., $13 \times 11$ latent px for tomato, $18 \times 14$ for bird); combined with strong background prompt conditioning ("bread", "cobblestones", "cloudy sky"), UNet inpainting strongly prioritizes context infilling over object synthesis.
+  - _Proven Cause (Boundary Seams)_: Zero-feathering 1-bit compositing (`Image.composite`) with axis-aligned boxes cutting continuous scene geometry causes immediate 1-pixel color/texture steps.
+  - _Proven Cause (Contact Sheet Display Bug)_: Previous script referenced non-existent `att['qc_details']` key in `attempt_ledger.jsonl`, defaulting to `0.0`. Fixed by computing L1 directly from RGB arrays.
+  - _High-Probability Hypotheses (Small Insertion Deficits)_: Latent space downsampling (8x) gives tiny spatial capacity (e.g., $13 \times 11$ latent px for tomato, $18 \times 14$ for bird); combined with strong background prompt conditioning ("bread", "cobblestones", "cloudy sky"), UNet inpainting strongly prioritizes context infilling over object synthesis.
 - **Human Content QC Status**: Strictly **`PENDING_CONTENT_QC`** awaiting user per-pair determination.
 - **Review Artifact**: Self-contained contact sheet at `data/research/local-artifacts/phase-4c.7b/pilot-20261008T113700Z/content_qc_contact_sheet.html`.
 - **Scientific boundary**: Detector calls remain 0; independent performance `NOT_MEASURED`; full cohort `NOT_RUN`.
@@ -625,24 +634,26 @@ Evidence: `PILOT_CONTENT_DIAGNOSIS.md`, `CONTENT_GROUNDED_EDITING_AMENDMENT.md`,
 ## U. Revision 5 — Generation Contract Enforcement & Systematic Failure Gate Hotfix (2026-10-07)
 
 ### U1. Incident Report & Root Cause Analysis (`pilot-20261007T093824Z`)
+
 - **Sự cố thực địa**: Pilot run `pilot-20261007T093824Z` (commit `cdacb41a5501568c1a11435dfcb00d327bc69a6d`) trên Google Colab T4 GPU dừng với lỗi:
   `StratumQuotaDeficitError: Stratum 'coco_sdxl' exhausted all candidates without reaching quota: 0/2 valid pairs acquired.`
 - **Phân tích Ledgers**:
-  * `provenance_ledger.jsonl`: Có đúng 2 records thuộc stratum `coco_sd2` (đều pass technical QC, resolution 512x512, status `ACCEPTED`).
-  * `attempt_ledger.jsonl`: Có 222 records tổng cộng.
-  * Phân tích theo stratum và tool:
+  - `provenance_ledger.jsonl`: Có đúng 2 records thuộc stratum `coco_sd2` (đều pass technical QC, resolution 512x512, status `ACCEPTED`).
+  - `attempt_ledger.jsonl`: Có 222 records tổng cộng.
+  - Phân tích theo stratum và tool:
     - Stratum `coco_sd2` (`stable_diffusion_2_inpainting`): 2 attempts đều `ACCEPTED` (đạt quota 2/2).
     - Stratum `coco_sdxl` (`sdxl_inpainting`): 220 attempt records trên 110 unique candidates đều ghi cùng lý do (đối soát từ 222 tổng records trừ 2 `coco_sd2` accepted records; ledger gốc không có trong local artifacts hiện tại để xác định vì sao mỗi candidate có hai records):
       `QC_FAILED — Edited image size/mode invalid: (1024, 1024), RGB`.
 - **Root Cause Kỹ thuật**:
-  * Trong `DiffusersInpaintingEngine.inpaint()`, `self.pipeline(...)` được gọi mà không truyền tham số `height` và `width`.
-  * Trong thư viện `diffusers`, `StableDiffusionXLInpaintPipeline.__call__` tính toán:
+  - Trong `DiffusersInpaintingEngine.inpaint()`, `self.pipeline(...)` được gọi mà không truyền tham số `height` và `width`.
+  - Trong thư viện `diffusers`, `StableDiffusionXLInpaintPipeline.__call__` tính toán:
     `height = height or self.default_sample_size * self.vae_scale_factor`
     Với SDXL: `default_sample_size = 128`, `vae_scale_factor = 8` $\to 128 \times 8 = 1024$. Do đó pipeline sinh ảnh $1024 \times 1024$ mặc dù ảnh đầu vào và mask là $512 \times 512$.
     Với SD2: `default_sample_size = 64`, `vae_scale_factor = 8` $\to 64 \times 8 = 512$. Do đó SD2 tình cờ sinh đúng $512 \times 512$.
-  * Lỗi generation contract hệ thống này bị hàm `evaluate_technical_qc` trả về `False, "Edited image size/mode invalid: (1024, 1024), RGB"`, khiến runner ghi nhận `status: QC_FAILED` và tiếp tục qua toàn bộ 110 unique candidates của `coco_sdxl` trước khi dừng với `StratumQuotaDeficitError`; incident transcription ghi 220 SDXL attempt records.
+  - Lỗi generation contract hệ thống này bị hàm `evaluate_technical_qc` trả về `False, "Edited image size/mode invalid: (1024, 1024), RGB"`, khiến runner ghi nhận `status: QC_FAILED` và tiếp tục qua toàn bộ 110 unique candidates của `coco_sdxl` trước khi dừng với `StratumQuotaDeficitError`; incident transcription ghi 220 SDXL attempt records.
 
 ### U2. Giải pháp Generation Contract & Systematic Failure Gate
+
 1. **Khóa Kích thước Tường minh**:
    - Thêm `"target_height": 512, "target_width": 512` vào `INPAINTING_MODEL_REGISTRY` cho cả hai model SD2 và SDXL.
    - `DiffusersInpaintingEngine.inpaint()` nhận tường minh `height=512, width=512` và truyền trực tiếp vào `self.pipeline(..., height=height, width=width, ...)`.
@@ -652,8 +663,8 @@ Evidence: `PILOT_CONTENT_DIAGNOSIS.md`, `CONTENT_GROUNDED_EDITING_AMENDMENT.md`,
    - Sau inpainting: kiểm tra `edited_canvas` (512x512 RGB). Vi phạm ném `GenerationContractError`.
 3. **Systematic Failure Gate (Ngăn Cháy Pool Ứng Viên)**:
    - Phân biệt triệt để lỗi contract/cấu hình hệ thống với lỗi content QC của từng ứng viên:
-     * Vi phạm generation contract (`GenerationContractError`): Ghi attempt `status: GENERATION_CONTRACT_ERROR`, xuất `out_path / "failure_receipt.json"`, ghi log lỗi với full traceback và **dừng ngay lập tức** mà không thử tiếp ứng viên khác.
-     * Content QC rejection hợp lệ (ảnh đen, biến thiên thấp, mask ratio ngoài ngưỡng): Ghi `status: QC_FAILED`, tiếp tục cơ chế thay thế ứng viên trong stratum để đảm bảo quota.
+     - Vi phạm generation contract (`GenerationContractError`): Ghi attempt `status: GENERATION_CONTRACT_ERROR`, xuất `out_path / "failure_receipt.json"`, ghi log lỗi với full traceback và **dừng ngay lập tức** mà không thử tiếp ứng viên khác.
+     - Content QC rejection hợp lệ (ảnh đen, biến thiên thấp, mask ratio ngoài ngưỡng): Ghi `status: QC_FAILED`, tiếp tục cơ chế thay thế ứng viên trong stratum để đảm bảo quota.
    - `audit_acquisition_run` fail-closed: Từ chối ngay lập tức nếu phát hiện `failure_receipt.json`.
 4. **Logging Bền vững & Colab Notebook**:
    - Tạo file log bền vững `run_dir / "acquisition.log"` ghi nhận timestamp, candidate id, stratum id, trạng thái và full exception traceback.
@@ -663,11 +674,12 @@ Evidence: `PILOT_CONTENT_DIAGNOSIS.md`, `CONTENT_GROUNDED_EDITING_AMENDMENT.md`,
    - Bảo toàn nguyên vẹn thư mục run cũ `pilot-20261007T093824Z` tại `MyDrive/forensics-web-lab/phase_4c7b_runs/`.
 
 ### U3. Kết quả Kiểm thử & Xác minh
+
 - **Regression test suite**: Bổ sung 4 targeted tests trong `ml/tests/test_independent_cohort_bindings.py`:
-  * `test_diffusers_engine_passes_explicit_height_width_and_validates_dimensions`: kiểm tra pipeline nhận đúng `height=512, width=512`, từ chối input/output sai kích thước.
-  * `test_output_1024_halts_immediately_and_does_not_try_next_candidate`: kiểm tra output 1024 dừng ngay sau ứng viên đầu tiên (call count = 1), ghi failure receipt và attempt ledger `GENERATION_CONTRACT_ERROR`.
-  * `test_output_correct_size_proceeds_through_qc_and_handles_content_qc_rejection`: kiểm tra output 512x512 đi tiếp qua QC, lỗi content QC tiếp tục thay thế ứng viên hợp lệ.
-  * `test_generation_contract_failure_prevents_completion_receipt_and_blocks_audit`: kiểm tra run thất bại không tạo completion receipt, bị `audit_acquisition_run` từ chối và chặn đóng gói ZIP.
+  - `test_diffusers_engine_passes_explicit_height_width_and_validates_dimensions`: kiểm tra pipeline nhận đúng `height=512, width=512`, từ chối input/output sai kích thước.
+  - `test_output_1024_halts_immediately_and_does_not_try_next_candidate`: kiểm tra output 1024 dừng ngay sau ứng viên đầu tiên (call count = 1), ghi failure receipt và attempt ledger `GENERATION_CONTRACT_ERROR`.
+  - `test_output_correct_size_proceeds_through_qc_and_handles_content_qc_rejection`: kiểm tra output 512x512 đi tiếp qua QC, lỗi content QC tiếp tục thay thế ứng viên hợp lệ.
+  - `test_generation_contract_failure_prevents_completion_receipt_and_blocks_audit`: kiểm tra run thất bại không tạo completion receipt, bị `audit_acquisition_run` từ chối và chặn đóng gói ZIP.
 - **Toàn bộ test suites**: 75/75 tests PASS trong `ml/tests/test_independent_cohort_bindings.py` (58/58) và `ml/tests/test_independent_cohort_acquisition.py` (17/17).
 - **Hermetic smoke test**: PASS trong 1.37s (`acquisition_smoke_receipt_v2.json`).
 - **Plan verification**: PASS (440 candidates, 110 per stratum, 0 historical overlap).
@@ -679,6 +691,7 @@ Evidence: `PILOT_CONTENT_DIAGNOSIS.md`, `CONTENT_GROUNDED_EDITING_AMENDMENT.md`,
 ## T. Revision 4 — Protocol Amendment v1.3.1 Model Source Hotfix, Community Mirror Qualification & Fail-Closed Preflight (2026-10-07)
 
 ### T1. Incident Report & Empirical Reproduction
+
 - **Sự cố thực địa**: Pilot run `pilot-20261007T082516Z` (commit `3710762868a007af4fe79798bad79d086abcd5c8`) trên Google Colab T4 GPU vượt qua GPU policy check nhưng dừng tại:
   `HfApi().model_info("stabilityai/stable-diffusion-2-inpainting")`
   với ngoại lệ `RepositoryNotFoundError` / HTTP 401 Unauthorized (`{"error":"Invalid username or password."}`).
@@ -687,38 +700,41 @@ Evidence: `PILOT_CONTENT_DIAGNOSIS.md`, `CONTENT_GROUNDED_EDITING_AMENDMENT.md`,
 - **Tái hiện thực nghiệm**: Tái hiện thành công qua API metadata mà không sinh ảnh cục bộ; xác nhận phân biệt giữa lỗi mạng, repo 404, repo gated/private 401 và token không hợp lệ. Không yêu cầu người dùng nhập token hoặc in token vào log/chat.
 
 ### T2. Thẩm định Community Mirror & Protocol Amendment v1.3.1
+
 - **Thẩm định nguồn thay thế `sd2-community/stable-diffusion-2-inpainting`**:
-  * Đọc model card, license, model configs và Git LFS hashes.
-  * Giấy phép: `openrail++` (CreativeML OpenRAIL++).
-  * Pipeline class: `StableDiffusionInpaintPipeline`.
-  * Configs: `model_index.json`, `unet/config.json` (sample_size 64, in_channels 9, out_channels 4), `scheduler/scheduler_config.json` (DDIM).
-  * Revision đầy đủ: `5f74973cbb64c8568780732c17f43eb269d63a0d`.
-  * LFS OIDs & file sizes đã thẩm định:
+  - Đọc model card, license, model configs và Git LFS hashes.
+  - Giấy phép: `openrail++` (CreativeML OpenRAIL++).
+  - Pipeline class: `StableDiffusionInpaintPipeline`.
+  - Configs: `model_index.json`, `unet/config.json` (sample_size 64, in_channels 9, out_channels 4), `scheduler/scheduler_config.json` (DDIM).
+  - Revision đầy đủ: `5f74973cbb64c8568780732c17f43eb269d63a0d`.
+  - LFS OIDs & file sizes đã thẩm định:
     - `unet/diffusion_pytorch_model.fp16.safetensors`: `29a698f37775d5904a958c9cebed98184483dfb441729a8e5f98dd5b65df70c8` (1,731,933,536 bytes).
     - `512-inpainting-ema.safetensors`: `b29e2ed9a8fe58e76f7e801bda091d23738bd74c1da3f339bcbe2d40922fcb60` (5,214,662,094 bytes).
     - `vae/diffusion_pytorch_model.fp16.safetensors`: `3e4c08995484ee61270175e9e7a072b66a6e4eeb5f0c266667fe1f45b90daf9a` (167,335,342 bytes).
     - `text_encoder/model.fp16.safetensors`: `681c555376658c81dc273f2d737a2aeb23ddb6d1d8e5b3a7064636d359a22668` (680,821,096 bytes).
-  * **Định danh minh bạch**: Được ghi nhận là `community_mirror` trong tài liệu và specification `[@sd2CommunityInpaintingModelCard]`. Tuyệt đối không gọi là nguồn chính thức và không tuyên bố trọng số bit-exact mà không có bằng chứng đối sánh trực tiếp.
-  * **Bảo toàn giao thức**: Giữ nguyên kiến trúc UNet 9-channel inpainting, DDIM scheduler, 50 inference steps, guidance scale 7.5, fixed seeds, exact prompts và quota ma trận $2 \times 2$ (100 cặp mục tiêu / 110 pool cho mỗi stratum).
-  * **SDXL Inpainting**: Thẩm định nguồn chính thức `diffusers/stable-diffusion-xl-1.0-inpainting-0.1` (full revision `115134f363124c53c7d878647567d04daf26e41e`, UNet fp16 LFS `6470840731e98cc16713ddf3ac7ee458c9fdbcb881a98c6727cd4a938f227d3f`) `[@sdxlInpaintingModelCard]`.
-  * **Bất biến**: Không thay thế bằng SD1.5 hoặc model khác; không cho phép fallback tự động giữa các model.
+  - **Định danh minh bạch**: Được ghi nhận là `community_mirror` trong tài liệu và specification `[@sd2CommunityInpaintingModelCard]`. Tuyệt đối không gọi là nguồn chính thức và không tuyên bố trọng số bit-exact mà không có bằng chứng đối sánh trực tiếp.
+  - **Bảo toàn giao thức**: Giữ nguyên kiến trúc UNet 9-channel inpainting, DDIM scheduler, 50 inference steps, guidance scale 7.5, fixed seeds, exact prompts và quota ma trận $2 \times 2$ (100 cặp mục tiêu / 110 pool cho mỗi stratum).
+  - **SDXL Inpainting**: Thẩm định nguồn chính thức `diffusers/stable-diffusion-xl-1.0-inpainting-0.1` (full revision `115134f363124c53c7d878647567d04daf26e41e`, UNet fp16 LFS `6470840731e98cc16713ddf3ac7ee458c9fdbcb881a98c6727cd4a938f227d3f`) `[@sdxlInpaintingModelCard]`.
+  - **Bất biến**: Không thay thế bằng SD1.5 hoặc model khác; không cho phép fallback tự động giữa các model.
 
 ### T3. Cơ chế Preflight Gate & Load Binding
+
 - **Hàm preflight**: `verify_model_access_preflight(tool_keys, timeout, http_opener)` kiểm tra metadata API, 3 config files chính và gửi HTTP HEAD request tới safetensors weight files.
 - **Fail-closed boundary**: Chạy strictly TRƯỚC KHI tạo thư mục run trên đĩa (`run_dir = Path(args.output_root) / args.run_id`). Nếu preflight thất bại, tiến trình dừng ngay lập tức và 0 thư mục rác/mồ côi được tạo ra.
 - **CLI flag**: Bổ sung `--check-models` cho phép kiểm tra độc lập nhanh chóng (< 3 giây, 0 byte weights tải về máy).
 - **Revision binding**: Revision được resolve trong preflight và chuyển trực tiếp vào `DiffusersInpaintingEngine`, đảm bảo nạp đúng chính xác revision đã kiểm tra.
 
 ### T4. Kết quả Kiểm thử & Xác minh
+
 - **Regression test suite**: Bổ sung 8 tests trong `ml/tests/test_independent_cohort_bindings.py`:
-  * HTTP 401 handling (`ModelPreflightError` phân loại `AUTHENTICATION_OR_GATED_REPO`).
-  * HTTP 404 handling (`REPOSITORY_NOT_FOUND`).
-  * Lỗi mạng (`NETWORK_OR_TIMEOUT_ERROR`).
-  * Gated repo detection.
-  * Live mirror và SDXL resolution.
-  * Diffusers engine binding kiểm tra revision.
-  * Fail-closed preflight ngăn chặn tạo thư mục run khi thất bại.
-  * CLI `--check-models` thực thi thành công.
+  - HTTP 401 handling (`ModelPreflightError` phân loại `AUTHENTICATION_OR_GATED_REPO`).
+  - HTTP 404 handling (`REPOSITORY_NOT_FOUND`).
+  - Lỗi mạng (`NETWORK_OR_TIMEOUT_ERROR`).
+  - Gated repo detection.
+  - Live mirror và SDXL resolution.
+  - Diffusers engine binding kiểm tra revision.
+  - Fail-closed preflight ngăn chặn tạo thư mục run khi thất bại.
+  - CLI `--check-models` thực thi thành công.
 - **Tổng kết test**: 71/71 tests PASS (`test_independent_cohort_bindings.py`: 54/54, `test_independent_cohort_acquisition.py`: 17/17).
 - **Smoke test**: `python scripts/research/run_cohort_acquisition.py --smoke-test` PASS trong 2.58s (`acquisition_smoke_receipt_v2.json`).
 - **Plan verification**: `python scripts/research/run_cohort_acquisition.py --verify-plan` PASS (440 candidates, 110/stratum).
@@ -729,6 +745,7 @@ Evidence: `PILOT_CONTENT_DIAGNOSIS.md`, `CONTENT_GROUNDED_EDITING_AMENDMENT.md`,
 ## S. Revision 3 — Protocol Amendment v1.3 & Local Verified Catalog Build (2026-10-07)
 
 ### S1. Protocol Amendment v1.3 Resolution
+
 - **Thay thế Unsplash Lite bằng Wikimedia Commons**: Do điều khoản Unsplash Lite Dataset Terms §2.A/§3.A–B chỉ cho phép download/store cho nghiên cứu nội bộ và cấm tái phân phối dữ liệu, việc tạo và công bố tập dữ liệu chỉnh sửa (inpainting) không được bảo hộ. Protocol Amendment v1.3 chính thức thay thế Unsplash Lite bằng ảnh chụp từ **Wikimedia Commons** (`Category:Quality_images`).
 - **Nguồn COCO 2017 Clean val split**: Giữ nguyên nguồn COCO với điều kiện kiểm tra creator và license qua Flickr oEmbed live API. Trích xuất metadata từ `captions_val2017.json` (chứa đầy đủ `flickr_url` và Flickr photo ID; phân vùng `test2017` không chứa trường này). Loại bỏ toàn bộ 684 Option P IDs (còn 4,316 ảnh hoàn toàn disjoint).
 - **Bốn Strata đối xứng**:
@@ -736,28 +753,33 @@ Evidence: `PILOT_CONTENT_DIAGNOSIS.md`, `CONTENT_GROUNDED_EDITING_AMENDMENT.md`,
   2. `coco_sdxl`: 100 cặp mục tiêu (110 pool)
   3. `commons_sd2`: 100 cặp mục tiêu (110 pool)
   4. `commons_sdxl`: 100 cặp mục tiêu (110 pool)
-  Tổng cộng: 400 cặp mục tiêu chính thức, 440 candidates trong buffer pool.
+     Tổng cộng: 400 cặp mục tiêu chính thức, 440 candidates trong buffer pool.
 - **Bảo toàn hạn ngạch (Quota Preservation)**: 40% replacement (160/176), 30% removal (120/132), 30% insertion (120/132); 30% small (120/132), 40% medium (160/176), 30% large (120/132).
 - **Bất biến Zero Detector Scoring**: Tuyệt đối không gọi hay suy luận bất kỳ mô hình detector nào trong quá trình tuyển chọn hoặc tạo dữ liệu.
 
 ### S2. Kết quả Chạy Production Catalog Builder v2 ở Local
+
 Chạy `scripts/research/build_verified_candidate_catalog.py` qua mạng local có checkpointing tại `artifacts/catalog_checkpoints/`:
+
 - **COCO 2017**: Dùng `RemoteZipFile` range-based streaming đọc trực tiếp `captions_val2017.json` (chỉ tải 805 KB thay vì toàn bộ archive annotations). Thẩm tra 220 ứng viên hợp lệ qua Flickr oEmbed live API với bounded retry và rate limiting (loại các ảnh bị xóa/private/lỗi license).
 - **Wikimedia Commons**: Truy vấn MediaWiki API `Category:Quality_images`, đọc `imageinfo` extmetadata, hỗ trợ continuation token (`gcmcontinue`), lọc giấy phép CC BY / CC BY-SA, loại NoDerivs. Thêm header `User-Agent` chuẩn MediaWiki policy giải quyết lỗi HTTP 403 Forbidden.
 - **Tổng kết catalog**:
-  * Đạt chính xác **220 COCO + 220 Wikimedia Commons = 440 eligible candidates** trong `research/evidence/phase-4c.7b/verified_candidate_catalog_v2.json`.
-  * Ghi nhận 221 excluded candidates kèm lý do chi tiết (CREATOR_UNVERIFIED, LICENSE_ND_NO_EDITED_EXPORT, NO_CC_LICENSE_AT_SOURCE, HTTP_ERROR, v.v.).
+  - Đạt chính xác **220 COCO + 220 Wikimedia Commons = 440 eligible candidates** trong `research/evidence/phase-4c.7b/verified_candidate_catalog_v2.json`.
+  - Ghi nhận 221 excluded candidates kèm lý do chi tiết (CREATOR_UNVERIFIED, LICENSE_ND_NO_EDITED_EXPORT, NO_CC_LICENSE_AT_SOURCE, HTTP_ERROR, v.v.).
 - **Xác minh Kế hoạch**: Chạy `python scripts/research/run_cohort_acquisition.py --verify-plan` đạt kết quả **PASS** (440 candidates, đúng 110 per stratum, 0 historical overlap). Xuất file kế hoạch `research/evidence/phase-4c.7b/candidate_acquisition_plan_v2.json`.
 
 ### S3. Thực nghiệm Tải và Decode Mẫu Thật Ngoài Git
+
 Thực hiện tải và chuẩn hóa canvas thật trên 4 mẫu ảnh đại diện cho 4 strata tại `artifacts/pilot_download_test/`:
+
 - `IND_COCO_SD2_001` (COCO): Pot Noodle, Attribution License, 200,576 bytes, tỷ lệ mask 0.0773 (small).
 - `IND_COCO_SDXL_001` (COCO): mike ambs, CC BY-NC-SA, 106,547 bytes, tỷ lệ mask 0.4451 (large).
 - `IND_COMMONS_SD2_001` (Commons): Moahim, CC BY-SA 4.0, 4,205,835 bytes, tỷ lệ mask 0.2397 (medium).
 - `IND_COMMONS_SDXL_001` (Commons): Crisco 1492, CC BY-SA 4.0, 3,355,898 bytes, tỷ lệ mask 0.0700 (small).
-Tất cả 4 mẫu giải mã PIL RGB hoàn hảo, chuẩn hóa canvas $512 \times 512$ PNG thành công.
+  Tất cả 4 mẫu giải mã PIL RGB hoàn hảo, chuẩn hóa canvas $512 \times 512$ PNG thành công.
 
 ### S4. Kết quả Kiểm thử Toàn diện
+
 - Targeted & contract tests: 63/63 tests PASS trong `test_independent_cohort_bindings.py` (46/46) và `test_independent_cohort_acquisition.py` (17/17).
 - Smoke test hermetic: `run_cohort_acquisition.py --smoke-test` PASS trong 1.22s (`acquisition_smoke_receipt_v2.json`).
 - Continuity checker: `pnpm continuity:check` PASS.
@@ -770,18 +792,20 @@ Tất cả 4 mẫu giải mã PIL RGB hoàn hảo, chuẩn hóa canvas $512 \tim
 The revision-1 report below (kept unchanged as history) claimed `READY_FOR_COLAB_REAL_ACQUISITION_PILOT`, 17/17 tests PASS and a verified 440-candidate catalog. Re-checking the actual source showed these claims did not hold.
 
 ### R1. Defects reproduced from source before fixing
-| # | Defect (commit `dc00895`) | Evidence |
-| :--- | :--- | :--- |
-| 1 | Notebook declared `PINNED_COMMIT = 4ea65df…` but never used it; an existing clone was only fetched, so stale code could run | Cell 2 source |
-| 2 | Notebook used `!` shell commands (exit status ignored) and fell back to `/content` scratch when the Drive mount failed | Cells 1–3 source |
-| 3 | Audit cell accepted any existing manifest/ZIP, unbound to the run, commit, protocol, catalog or plan | Cell 4 source |
-| 4 | Disjoint guard required `data/research/tgif/manifests/manifest_pilot_a_option_p.csv`, which is excluded from Git: `--verify-plan`, the pilot and 7 tests crash on any fresh clone (Colab included) | CI run [37564295722](https://github.com/nomozer/forensics-web-lab/actions/runs/37564295722) on `dc00895`: **7 failed**, reproduced locally |
-| 5 | All 220 COCO `author` values are generated labels `flickr_contributor_<coco_id>`; `published_date` holds COCO `date_captured`; no Flickr photo ID or page; 91 entries are BY-ND/BY-NC-ND | `catalog_eligibility_audit.json` |
-| 6 | Unsplash candidates came from the Unsplash Lite dataset (HF mirror). Dataset Terms §2.A grant download/store and *internal ML training*; §3.A–B prohibit disseminating/redistributing the data. Creating and sharing an edited cohort is not covered; the generic Unsplash License was assumed instead. Download URLs request a processed rendition (`auto=format&fit=crop&w=600&q=80`) | `https://raw.githubusercontent.com/unsplash/datasets/master/TERMS.md` (read 2026-10-07) |
-| 7 | Per-stratum quota counters were updated only on resume, and modification/mask labels were permuted jointly over all 110 slots, so a full 400-pair run could not meet the 40/30/30 × 30/40/30 quotas | `test_full_mode_quota_preservation_counts_new_acceptances` (failed with 99/100, then fixed) |
-| 8 | `--engine mock` was accepted in production mode (real photos + mock edits labelled production); `--verify-plan` printed FAIL but exited 0; the smoke test wrote run directories into the system temp root | CLI source |
+
+| #   | Defect (commit `dc00895`)                                                                                                                                                                                                                                                                                                                                                               | Evidence                                                                                                                                   |
+| :-- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Notebook declared `PINNED_COMMIT = 4ea65df…` but never used it; an existing clone was only fetched, so stale code could run                                                                                                                                                                                                                                                             | Cell 2 source                                                                                                                              |
+| 2   | Notebook used `!` shell commands (exit status ignored) and fell back to `/content` scratch when the Drive mount failed                                                                                                                                                                                                                                                                  | Cells 1–3 source                                                                                                                           |
+| 3   | Audit cell accepted any existing manifest/ZIP, unbound to the run, commit, protocol, catalog or plan                                                                                                                                                                                                                                                                                    | Cell 4 source                                                                                                                              |
+| 4   | Disjoint guard required `data/research/tgif/manifests/manifest_pilot_a_option_p.csv`, which is excluded from Git: `--verify-plan`, the pilot and 7 tests crash on any fresh clone (Colab included)                                                                                                                                                                                      | CI run [37564295722](https://github.com/nomozer/forensics-web-lab/actions/runs/37564295722) on `dc00895`: **7 failed**, reproduced locally |
+| 5   | All 220 COCO `author` values are generated labels `flickr_contributor_<coco_id>`; `published_date` holds COCO `date_captured`; no Flickr photo ID or page; 91 entries are BY-ND/BY-NC-ND                                                                                                                                                                                                | `catalog_eligibility_audit.json`                                                                                                           |
+| 6   | Unsplash candidates came from the Unsplash Lite dataset (HF mirror). Dataset Terms §2.A grant download/store and _internal ML training_; §3.A–B prohibit disseminating/redistributing the data. Creating and sharing an edited cohort is not covered; the generic Unsplash License was assumed instead. Download URLs request a processed rendition (`auto=format&fit=crop&w=600&q=80`) | `https://raw.githubusercontent.com/unsplash/datasets/master/TERMS.md` (read 2026-10-07)                                                    |
+| 7   | Per-stratum quota counters were updated only on resume, and modification/mask labels were permuted jointly over all 110 slots, so a full 400-pair run could not meet the 40/30/30 × 30/40/30 quotas                                                                                                                                                                                     | `test_full_mode_quota_preservation_counts_new_acceptances` (failed with 99/100, then fixed)                                                |
+| 8   | `--engine mock` was accepted in production mode (real photos + mock edits labelled production); `--verify-plan` printed FAIL but exited 0; the smoke test wrote run directories into the system temp root                                                                                                                                                                               | CLI source                                                                                                                                 |
 
 ### R2. Changes
+
 - **Notebook** (`notebooks/independent_cohort_acquisition_colab.ipynb`): `checkout_pinned` clones/fetches and checks out **detached** at the full `EXPECTED_COMMIT`, asserts `git rev-parse HEAD`, and stops (without modifying anything) when the clone has local or untracked changes. All Git/CLI calls use `subprocess.run(..., check=True)`. Drive-mount failure stops before any run directory exists. Each session gets a new `RUN_ID`; Cell 4 audits only a run completed in the same session and never overwrites a ZIP. Full mode is not launched from the notebook.
 - **Eligibility (pre-registered, detector-independent)**: `evaluate_candidate_eligibility` requires a creator verified from a source response (marker + evidence URL; placeholder patterns rejected), versioned CC license, labelled date provenance, documented download rendition, namespaced source keys and a check timestamp. ND is excluded for edited-cohort export unless separate permission is recorded (this does not claim all private research use is prohibited). BY-NC / BY-SA / BY-NC-SA are eligible with an explicit usage policy (attribution, indicate changes, NonCommercial and/or ShareAlike). Channels whose terms do not cover editing+sharing (Unsplash Lite dataset) are excluded.
 - **Disjoint guard**: historical keys `coco:<id>` from the committed `research/evidence/phase-4c.0/real-variant-map.json` (684 sources); candidates carry `coco:`/`flickr:`/`unsplash:` keys. Flickr-ID disjointness is reported `NOT_CHECKED` (historical Flickr IDs are not available); byte-hash comparison only runs when the local manifest exists and only detects byte-identical files.
@@ -792,23 +816,26 @@ The revision-1 report below (kept unchanged as history) claimed `READY_FOR_COLAB
 - **Catalog builder v2** (`scripts/research/build_verified_candidate_catalog.py`): Flickr photo ID from COCO `flickr_url`, creator and current license from Flickr oEmbed (request URL, response SHA-256, timestamp stored), license must agree at COCO and Flickr, excluded entries kept with reasons. Unit-tested only against SYNTHETIC responses; **not run against the live services** (egress to flickr.com, huggingface.co, unsplash.com and images.cocodataset.org is denied in this environment).
 
 ### R3. Catalog eligibility (superseded v1 → v2)
-| | COCO | Unsplash | Total |
-| :--- | ---: | ---: | ---: |
-| v1 candidates evaluated | 220 | 220 | 440 |
-| Eligible under pre-registered rules | 0 | 0 | **0** |
-| Excluded: creator placeholder / unverified | 220 | 220 (unverified) | 440 |
-| Excluded: ND licence (also) | 91 | — | 91 |
-| Excluded: channel terms do not cover edited export | — | 220 | 220 |
-| Replaced by verified candidates | 0 | 0 | **0** |
-| Still unverified (v2 not built) | 220 needed | 220 needed | 440 |
+
+|                                                    |       COCO |         Unsplash | Total |
+| :------------------------------------------------- | ---------: | ---------------: | ----: |
+| v1 candidates evaluated                            |        220 |              220 |   440 |
+| Eligible under pre-registered rules                |          0 |                0 | **0** |
+| Excluded: creator placeholder / unverified         |        220 | 220 (unverified) |   440 |
+| Excluded: ND licence (also)                        |         91 |                — |    91 |
+| Excluded: channel terms do not cover edited export |          — |              220 |   220 |
+| Replaced by verified candidates                    |          0 |                0 | **0** |
+| Still unverified (v2 not built)                    | 220 needed |       220 needed |   440 |
 
 `verified_candidate_catalog.json`, `candidate_acquisition_plan.json` and `acquisition_smoke_receipt.json` are kept unchanged as **SUPERSEDED** history; the eligibility gate rejects the v1 catalog. The default binding now points to `verified_candidate_catalog_v2.json`, which does not exist yet, so `--verify-plan` fails closed.
 
 **Blockers (user decisions/actions):**
+
 1. **Unsplash strata (220 candidates)**: the Lite-dataset channel is not usable for an exported edited cohort. Options: (a) protocol amendment v1.3 replacing the source with a channel whose terms cover editing+sharing and that exposes verifiable creator/license metadata (e.g. Flickr/Wikimedia Commons CC BY / BY-SA photos), or (b) obtain written permission from Unsplash, or (c) discover photos via the Unsplash API under the Unsplash License (needs an API key and a review of the API terms). Not decided here.
 2. **COCO strata**: run the v2 builder on a host with network access (Colab, or this environment after allowing `images.cocodataset.org` and `www.flickr.com`), review the output and commit it; then re-pin the notebook.
 
 ### R4. Verification actually run (this environment, CPU, no GPU)
+
 - Targeted: `ml/tests/test_independent_cohort_bindings.py` + `ml/tests/test_independent_cohort_acquisition.py` + `ml/tests/test_independent_validation_preparation.py` — see CURRENT_STATE for counts.
 - Full hermetic suite `pytest ml/tests -m "not requires_research_artifact"` — see CURRENT_STATE.
 - `python scripts/research/run_cohort_acquisition.py --smoke-test` (SYNTHETIC, writes `acquisition_smoke_receipt_v2.json`).
@@ -816,6 +843,7 @@ The revision-1 report below (kept unchanged as history) claimed `READY_FOR_COLAB
 - `pnpm continuity:check`, `git diff --check`.
 
 ### R5. NOT_MEASURED
+
 Real download/provenance of any authentic image, inpainting on real images, generation time, peak VRAM, QC pass rates, contact sheet of real pairs, content QC, Flickr oEmbed behaviour against the live API, independent detector performance.
 
 ---
@@ -837,23 +865,25 @@ Real download/provenance of any authentic image, inpainting on real images, gene
 ## 1. Bối Cảnh và Căn Cứ Điều Chỉnh (Protocol Amendment v1.2)
 
 Tại Phase 4C.7A, quá trình chuẩn bị kiểm định độc lập kết thúc với trạng thái `PREPARATION_COMPLETE_PENDING_INDEPENDENT_COHORT` và blocker thực địa:
+
 1. Thiếu 160 ảnh tự chụp từ người dùng (Field Collection).
 2. Thiếu tài khoản trả phí và API thực thi khả dụng cho Adobe Firefly.
 
 Người dùng đã chính thức đồng ý điều chỉnh kế hoạch thu thập theo nguồn lực thực tế, tuân thủ nguyên tắc trung thực khoa học:
+
 - **Thay thế ảnh tự chụp** bằng ảnh chụp công cộng có giấy phép và provenance rõ ràng:
-  * **COCO 2017 Dataset (Phân vùng sạch ngoài Option P)**: 50% (200 pairs). Thẩm tra giấy phép Flickr theo từng ảnh từ metadata chính thức `image_info_test2017.zip` (`CC-BY 2.0`, `CC-BY-SA 2.0`, `Attribution-NoDerivs`, `Attribution-NonCommercial`, v.v.), không mặc định toàn bộ ảnh cùng license.
-  * **Unsplash Verified Open Collection (Công bố trước 2022)**: 50% (200 pairs). Giấy phép Unsplash License, lưu trữ photo ID, tác giả và ngày công bố ($\le 2021$). Nhận định khoa học rõ ràng: thời điểm trước 2022 và EXIF không phải bằng chứng tuyệt đối của việc chưa từng chỉnh sửa, mà là bộ lọc vận hành hợp lý chống can thiệp text-to-image AI hiện đại; ngày công bố trên Unsplash là submission date, không suy diễn thành capture date.
+  - **COCO 2017 Dataset (Phân vùng sạch ngoài Option P)**: 50% (200 pairs). Thẩm tra giấy phép Flickr theo từng ảnh từ metadata chính thức `image_info_test2017.zip` (`CC-BY 2.0`, `CC-BY-SA 2.0`, `Attribution-NoDerivs`, `Attribution-NonCommercial`, v.v.), không mặc định toàn bộ ảnh cùng license.
+  - **Unsplash Verified Open Collection (Công bố trước 2022)**: 50% (200 pairs). Giấy phép Unsplash License, lưu trữ photo ID, tác giả và ngày công bố ($\le 2021$). Nhận định khoa học rõ ràng: thời điểm trước 2022 và EXIF không phải bằng chứng tuyệt đối của việc chưa từng chỉnh sửa, mà là bộ lọc vận hành hợp lý chống can thiệp text-to-image AI hiện đại; ngày công bố trên Unsplash là submission date, không suy diễn thành capture date.
 - **Thay thế Adobe Firefly** bằng 2 công cụ inpainting mã nguồn mở (open-weights) tiêu biểu:
-  * **Stable Diffusion 2 Inpainting (`stabilityai/stable-diffusion-2-inpainting`)**: 50% (200 pairs), CreativeML OpenRAIL-M.
-  * **SDXL Inpainting 1.0 (`diffusers/stable-diffusion-xl-1.0-inpainting-0.1`)**: 50% (200 pairs), CreativeML OpenRAIL++.
+  - **Stable Diffusion 2 Inpainting (`stabilityai/stable-diffusion-2-inpainting`)**: 50% (200 pairs), CreativeML OpenRAIL-M.
+  - **SDXL Inpainting 1.0 (`diffusers/stable-diffusion-xl-1.0-inpainting-0.1`)**: 50% (200 pairs), CreativeML OpenRAIL++.
 - **Ma trận phân bổ trực giao cân bằng $2 \times 2$ (Orthogonal Balanced Matrix)**:
-  * COCO x SD2: 100 pairs (buffer: 110)
-  * COCO x SDXL: 100 pairs (buffer: 110)
-  * Unsplash x SD2: 100 pairs (buffer: 110)
-  * Unsplash x SDXL: 100 pairs (buffer: 110)
-  * Tổng: 400 pairs chính thức, 440 candidates trong buffer pool.
-  * *Làm rõ về mặt khoa học*: Bỏ cách diễn đạt "triệt tiêu mọi confounding". Phân bổ cân bằng chỉ kiểm soát các yếu tố đã thiết kế giữa 2 nguồn và 2 công cụ; không triệt tiêu các biến số nhiễu tự nhiên tiềm ẩn.
+  - COCO x SD2: 100 pairs (buffer: 110)
+  - COCO x SDXL: 100 pairs (buffer: 110)
+  - Unsplash x SD2: 100 pairs (buffer: 110)
+  - Unsplash x SDXL: 100 pairs (buffer: 110)
+  - Tổng: 400 pairs chính thức, 440 candidates trong buffer pool.
+  - _Làm rõ về mặt khoa học_: Bỏ cách diễn đạt "triệt tiêu mọi confounding". Phân bổ cân bằng chỉ kiểm soát các yếu tố đã thiết kế giữa 2 nguồn và 2 công cụ; không triệt tiêu các biến số nhiễu tự nhiên tiềm ẩn.
 - **Quy tắc thay thế mẫu lỗi bảo toàn đa chiều (Multi-Dimensional Quota-Preserving Replacement)**:
   Nếu một candidate trong ô $(S, T)$ bị loại do lỗi download hoặc QC kỹ thuật, hệ thống chỉ chọn candidate tiếp theo trong buffer cùng ô $(S, T)$ có loại thao tác (`modification_type`) và diện tích mask (`mask_area_class`) còn thiếu quota. Tuyệt đối không làm lệch ma trận quota đã khóa.
 - **Ngữ nghĩa của Mask**: Mask nhị phân $512 \times 512$ PNG xác định **vùng yêu cầu chỉnh sửa (inpainting request area)** cung cấp cho diffusion pipeline, không mặc nhiên đồng nhất tuyệt đối với việc mọi pixel bên ngoài mask đều bất biến 100% do đặc tính nén của VAE/latent space.
@@ -863,12 +893,14 @@ Người dùng đã chính thức đồng ý điều chỉnh kế hoạch thu th
 ## 2. Kết Quả Đo Lường Hạ Tầng Thực Tế & Ước Tính (Resource Assessment)
 
 ### 2.1. Đo lường thực tế trên máy trạm cục bộ (Empirically Measured)
+
 - **GPU**: NVIDIA GeForce GTX 1650 (4.00 GB GDDR6 VRAM, Compute Capability 7.5).
 - **System RAM**: 15.78 GB Total, **2.44 GB Available / Free**.
 - **Storage Free**: Ổ C: 52.1 GB, Ổ D: 79.0 GB.
 - **Kết luận**: Khả năng chạy SDXL fp16 cục bộ là không khả thi do thiếu VRAM ($\ge 6.6$ GB) và thiếu RAM ($\ge 8$ GB cho offload).
 
 ### 2.2. Thông số ước tính cho môi trường thực thi từ xa (Estimated)
+
 - **Môi trường mục tiêu**: Google Colab Free Tier (Tesla T4 GPU 15.0 GB VRAM) hoặc A100 GPU.
 - **Thời gian sinh dự kiến**: **37–45 phút** cho toàn bộ 400 pairs (ESTIMATED, chưa đo thực nghiệm trên Colab).
 - **Dung lượng lưu trữ dự kiến**: ~610 MB cho toàn bộ 400 pairs (800 ảnh + 400 masks).
@@ -878,12 +910,14 @@ Người dùng đã chính thức đồng ý điều chỉnh kế hoạch thu th
 ## 3. Kiến Trúc Pipeline Thu Thập và Quality Control (Acquisition Pipeline)
 
 Mã nguồn thực thi gồm một runner chuẩn tắc duy nhất:
+
 - `ml/evaluation/independent_cohort_acquisition.py`: Core pipeline, downloader thật, QC kỹ thuật, durable resume.
 - `scripts/research/run_cohort_acquisition.py`: Production CLI runner duy nhất (`--export-plan`, `--verify-plan`, `--smoke-test`, `--mode [pilot|full]`, `--contact-sheet`).
 - `scripts/research/build_verified_candidate_catalog.py`: Khám phá và đóng băng danh mục 440 candidates thật từ COCO và Unsplash.
 - `notebooks/independent_cohort_acquisition_colab.ipynb`: Notebook Colab 5 cells ngắn gọn, gọi CLI chuẩn tắc, mount Drive bền vững, không sao chép logic.
 
 ### 3.1. Các Cơ Chế Bảo Vệ Được Cài Đặt (Guards & Controls)
+
 1. **Four-Level Disjoint Guard**:
    - Đối chiếu với toàn bộ 684 historical Option P sources (bao gồm cả 343 retired locked-test sources).
    - Kiểm tra: `source_id`, `origin_id` (Flickr / Unsplash ID), `raw_sha256` (ảnh gốc trước chuẩn hóa), `master_sha256` (ảnh sau chuẩn hóa 512x512).
@@ -913,17 +947,22 @@ Mã nguồn thực thi gồm một runner chuẩn tắc duy nhất:
 ## 4. Bằng Chứng Thực Nghiệm và Kiểm Chứng Kỹ Thuật (Empirical Verification)
 
 ### 4.1. Khám Phá & Đóng Băng 440 Candidates Thật
+
 - File catalog: `research/evidence/phase-4c.7b/verified_candidate_catalog.json` (440 candidates: 220 COCO, 220 Unsplash).
 - File plan chuẩn tắc: `research/evidence/phase-4c.7b/candidate_acquisition_plan.json` (`evidence_class: "verified_real_catalog"`, `eligible_for_independent_cohort: true`).
 - File fixture tổng hợp cách ly: `research/evidence/phase-4c.7b/fixtures/synthetic_candidate_plan_fixture.json` (`evidence_class: "synthetic"`, `eligible_for_independent_cohort: false`).
 - Kiểm chứng download thật trên máy trạm: Tải và decode thành công ảnh COCO (`(640, 480) RGB`) và Unsplash (`(600, 336) RGB`) với 0 lỗi.
 
 ### 4.2. Candidate Acquisition Plan Verification
+
 Lệnh thực thi:
+
 ```bash
 python scripts/research/run_cohort_acquisition.py --verify-plan
 ```
+
 Kết quả kiểm tra:
+
 - `total_candidates`: 440 (110 per stratum: `coco_sd2`: 110, `coco_sdxl`: 110, `unsplash_sd2`: 110, `unsplash_sdxl`: 110).
 - `modification_type_counts`: `object_replacement`: 176 (40%), `object_removal_and_infill`: 132 (30%), `object_insertion`: 132 (30%).
 - `mask_area_counts`: `medium_10_to_30pct`: 176 (40%), `large_over_30pct`: 132 (30%), `small_under_10pct`: 132 (30%).
@@ -933,11 +972,15 @@ Kết quả kiểm tra:
 - `missing_provenance_detected`: `false`.
 
 ### 4.3. Technical Smoke Test
+
 Lệnh thực thi:
+
 ```bash
 python scripts/research/run_cohort_acquisition.py --smoke-test
 ```
+
 Kết quả tại `research/evidence/phase-4c.7b/acquisition_smoke_receipt.json`:
+
 - **Trạng thái**: `PASS` (thời gian chạy: 1.09 giây).
 - **Detector Isolation Invariant**: PASSED (0 detector modules loaded).
 - **Plan Verification**: PASSED (440 real candidates verified).
@@ -947,8 +990,9 @@ Kết quả tại `research/evidence/phase-4c.7b/acquisition_smoke_receipt.json`
 - **Durable Resume & Tamper Detection**: PASSED (phát hiện chính xác disk tampering).
 
 ### 4.4. Test Suites
+
 - **Bộ test mới** `ml/tests/test_independent_cohort_acquisition.py`: **17 / 17 tests PASSED** (11.04s).
-  * Bao gồm 7 regression tests mới: rejection of synthetic candidates, download failure fail-closed, missing provenance fail-closed, historical Option P disjoint guard, durable resume & tamper detection, provisional cohort evaluator verdict, notebook 5-cell production CLI contract.
+  - Bao gồm 7 regression tests mới: rejection of synthetic candidates, download failure fail-closed, missing provenance fail-closed, historical Option P disjoint guard, durable resume & tamper detection, provisional cohort evaluator verdict, notebook 5-cell production CLI contract.
 - **Bộ test hồi quy** `ml/tests/test_independent_validation_preparation.py`: **25 / 25 tests PASSED** (15.96s).
 
 ---
@@ -965,13 +1009,13 @@ Kết quả tại `research/evidence/phase-4c.7b/acquisition_smoke_receipt.json`
 
 ## 6. Trạng Thái Đóng và Đạo Đức Nghiên Cứu
 
-| Hạng Mục | Trạng Thái Ghi Nhận |
-| :--- | :--- |
-| **Giao thức nghiên cứu** | Historical v1.2/v1.3 model/source bindings retained; content-grounded amendment v1.4 proposed and pending human review |
-| **Mô hình candidate** | 5 outer-fold models giữ nguyên 100% trọng số và SHA-256 hash đã kiểm toán |
-| **Candidate sources** | Verified real photographs from COCO 2017 and Wikimedia Commons; historical Option P disjoint guards retained |
-| **Detector isolation** | Tuyệt đối tuân thủ, zero detector calls trong thu thập và QC |
-| **Independent Performance** | Tiếp tục giữ trạng thái **`NOT_MEASURED`** (chưa đánh giá) |
-| **Cohort Acquisition Status** | **`NOT_ACQUIRED`** (in progress, ready for remote GPU pilot execution) |
-| **Quy tắc Git** | Làm việc trên branch `research/independent-cohort-acquisition`, **không tạo Pull Request** |
-| **Trạng thái Phase** | **`READY_FOR_COLAB_REAL_ACQUISITION_PILOT`** |
+| Hạng Mục                      | Trạng Thái Ghi Nhận                                                                                                    |
+| :---------------------------- | :--------------------------------------------------------------------------------------------------------------------- |
+| **Giao thức nghiên cứu**      | Historical v1.2/v1.3 model/source bindings retained; content-grounded amendment v1.4 proposed and pending human review |
+| **Mô hình candidate**         | 5 outer-fold models giữ nguyên 100% trọng số và SHA-256 hash đã kiểm toán                                              |
+| **Candidate sources**         | Verified real photographs from COCO 2017 and Wikimedia Commons; historical Option P disjoint guards retained           |
+| **Detector isolation**        | Tuyệt đối tuân thủ, zero detector calls trong thu thập và QC                                                           |
+| **Independent Performance**   | Tiếp tục giữ trạng thái **`NOT_MEASURED`** (chưa đánh giá)                                                             |
+| **Cohort Acquisition Status** | **`NOT_ACQUIRED`** (in progress, ready for remote GPU pilot execution)                                                 |
+| **Quy tắc Git**               | Làm việc trên branch `research/independent-cohort-acquisition`, **không tạo Pull Request**                             |
+| **Trạng thái Phase**          | **`READY_FOR_COLAB_REAL_ACQUISITION_PILOT`**                                                                           |

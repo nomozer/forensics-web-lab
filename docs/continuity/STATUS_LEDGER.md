@@ -131,7 +131,6 @@
 - **Proposed 6-attempt diagnostic plan registered**: Registered `content_grounded_diagnostic_plan.json` (SHA-256 `cba87a66793351bcb2e7c21f88aeea03eab1c1f6fb7e1cc4a4483faf28b73498`) testing 3 omission candidates (tomato, suitcase, bird) across 2 isolated arms (Arm A: Full Canvas 512×512 vs Arm B: Local Crop with Padding at native resolution). Identical seeds, models, guidance, scheduler, and prompts; negative prompt and feathering excluded. Status: PENDING user review; budget 6 attempts; zero GPU runs executed. Diagnostic results will not enter official cohort or overwrite pilot history.
 - **Status & governance**: Human Content QC for `pilot-20261008T113700Z` remains strictly PENDING. Zero detector calls, independent performance `NOT_MEASURED`, full cohort `NOT_RUN`.
 
-
 ## Follow-up pilot intake, technical audit, and coordinate-grounded content review (Phase trace 4C.7B preserved)
 
 - **Pilot intake and binding verification**: Run `pilot-20261008T113700Z` (ZIP SHA-256 `3bdb1890d2aa6d34bb2829e159408ef44ab30d630c6f85792fce5fb7ade9e2b4`, 6,129,778 bytes) extracted safely into `pilot-20261008T113700Z/`. Production CLI audit `PASS`: 8 attempts, 8 accepted pairs, 0 errors, 2/stratum, bound to commit `d9d99b678053972436032a828056a76a6392fbb5`, plan `eeace0e57a34f9f3824a3ce1a52bfa374670dca3cc19c668554d62257141632d`, manifest `cf0e4300d1e6f760e82ab76fdd29ffd534b35577003ae8ccf4ef9a9c25799704`.
@@ -145,7 +144,6 @@
 - **Technical diagnosis**: Proven causes: zero-feathering 1-bit compositing (`Image.composite`) cutting continuous scene geometry creates 1-pixel seams; contact sheet metric display bug fixed. Unverified hypotheses (chưa kiểm chứng): latent space downsampling (8x) severely limits spatial capacity for small insertions (tomato, bird); surrounding unmasked context biases UNet cross-attention toward background texture infilling over object generation (reverse sampling performs no test-time gradient optimization).
 - **Review dossier**: Self-contained contact sheet with corrected exact L1 metrics at `data/research/local-artifacts/phase-4c.7b/pilot-20261008T113700Z/content_qc_contact_sheet.html`.
 - **Status & boundary**: Human Content QC remains strictly `PENDING_CONTENT_QC` awaiting user decision. Zero detector calls, independent performance `NOT_MEASURED`, full cohort `NOT_RUN`.
-
 
 ## Follow-up pilot edit plan human approval recorded (Phase trace 4C.7B preserved)
 
@@ -166,7 +164,7 @@
   1. `IND_COMMONS_SD2_001`: Target bbox unified to `[190, 308, 512, 512]` matching offshore sea stacks; Option A registered mask `[190, 305, 512, 512]` ($322 \times 207 = 66,654$ px = 25.426483%, strictly within `medium_10_to_30pct` 10%–30%) is the proposed plan enveloping 100% of foreground headland, cliff base, offshore rocks ($x \ge 190$), and pine tree canopy ($y \ge 308$). Ceased claiming town/hotel is completely outside mask: documented that an axis-aligned bbox on this diagonal/concave coastline geometrically forces inclusion of cove water ($x=190..340, y=305..340$) and right-shoreline hotel/houses ($x=440..512, y=305..335$). Option B (`[220, 340, 512, 512]`, 19.158936%) is documented for reference only and does not satisfy full removal because it severs pine crowns and leaves offshore rocks stranded (failing Content QC for full removal unless target definition and criteria are re-registered). Historical mask `[220, 285, 512, 512]` area corrected to 25.285339% (not 27.88%).
   2. `IND_COCO_SDXL_041`: Replaced blocked cat-in-sink insertion candidate with `IND_COCO_SDXL_041` (origin `coco:189310`, author `an iconoclast`, CC BY 2.0; pool index 40) within `coco_sdxl`, preserving `sdxl_inpainting`, `object_insertion`, and `large_over_30pct`. Ceiling mask tightened to `[0, 0, 512, 155]` ($512 \times 155 = 79,360$ px = 30.273438%, strictly `large_over_30pct` 30%–50%) and target bbox `[180, 15, 332, 140]`, clearing the ceiling-wall line ($y \ge 173$) and living room furniture; pixel analysis confirms localized boundary contact at $y=155$ with the highest ornamental curve of the left curtain valance across $x \in [12, 25]$ (depth ~3-4 px from fold apex $y \approx 151$), registered explicitly for human decision.
   3. `IND_COMMONS_SDXL_002`: Replaced intertwined-arms candidate with `IND_COMMONS_SDXL_003` (origin `commons:166529058`, author `Crisco 1492`, CC BY-SA 4.0; pool index 2) within `commons_sdxl`, preserving `sdxl_inpainting`, `object_replacement`, and `large_over_30pct`. Depicts Ted Bieler's "Tower Song" vertical abstract aluminium sculpture column on open lawn, eliminating anatomical confounds. Instruction registers the visible vertical shaft cropped by upper and lower frame edges (`target_bbox: [190, 0, 360, 512]`). Full-height mask `[170, 0, 380, 512]` ($210 \times 512 = 107,520$ px = 41.015625%) documents explicit risk of inpainting background trees/river/railing alteration within $x \in [170, 380]$ (outside preserved by compositing). Option 2B retaining candidate 002 corrected to 30.212402% (not 30.8716%).
-  All other masks synchronized to exact areas: pan `IND_COCO_SD2_001` is 3.566742% ($9,350$ px), suitcase `IND_COMMONS_SD2_002` is 14.762878% ($38,700$ px), kitchen upper-cabinets/range-hood `IND_COCO_SD2_002` is 30.273438% ($79,360$ px), bread tomato `IND_COCO_SDXL_002` mask `[345, 245, 455, 335]` is 3.776550% ($9,900$ px), and monument sky bird `IND_COMMONS_SDXL_001` mask `[350, 45, 500, 160]` is 6.580353% ($17,250$ px).
+     All other masks synchronized to exact areas: pan `IND_COCO_SD2_001` is 3.566742% ($9,350$ px), suitcase `IND_COMMONS_SD2_002` is 14.762878% ($38,700$ px), kitchen upper-cabinets/range-hood `IND_COCO_SD2_002` is 30.273438% ($79,360$ px), bread tomato `IND_COCO_SDXL_002` mask `[345, 245, 455, 335]` is 3.776550% ($9,900$ px), and monument sky bird `IND_COMMONS_SDXL_001` mask `[350, 45, 500, 160]` is 6.580353% ($17,250$ px).
 - **Provenance & Disjointness Verification**: Both replacement candidates verified from source catalogs (`coco:189310` / Flickr 7375894572 and `commons:166529058`). Multi-layer disjointness check vs 684 historical Option P keys executed and PASS.
 - **Protocol & Review Artifacts**: Updated `CONTENT_GROUNDED_EDITING_AMENDMENT.md` to v1.6.0. Regenerated self-contained outside-Git review contact sheet (`next_pilot_edit_plan_contact_sheet.html`) with all 8 authentic base64 PNGs, zoomed-in boundary inspection crops (curtain valance apex at $y=155$, shoreline hotel/town at $y=305$, and offshore rocks at $x=190$), exact coordinates, areas, and documented per-row risks with status `PENDING`. Plan maintains 8 one-shot attempt budget, exact 2/stratum quota, and `automatic_replacement=false`.
 - **Notebook Pin & Functional Commit**: Canonical notebook pins functional commit `06fe6a1e897288cf48c4d3c0dec00d0f6b39c2e2` with plan SHA-256 `0614fd5fd316e91df545fe940a853fea3bfb9de34142a1f2b8c6c3ae2d0f6fa3`.
@@ -990,6 +988,7 @@
 ---
 
 ---
+
 ## Phase 4C.2A — Stage 2 Preregistration & Contract Reconciliation (Phase 4C.2A.1)
 
 - **Muc tieu**: Preregister Stage 2 fine-tuning protocol and reconcile execution contract against codebase. Verify model names (He A: 7 tensors, 204,674 params), initialization contract, frozen BN policy, differential optimizer groups, hyperparameter diff table, and dedicated runner. Zero runs.
@@ -1002,6 +1001,7 @@
 - **Quyết định tiếp theo**: Build Stage 2 Colab training operator and verification scripts before launching remote training wave.
 
 ---
+
 ## Phase 4C.1D — Final Scientific Wording and Consistency Patch (Phase 4C.1D.2)
 
 - **Muc tieu**: Final scientific wording and evidence consistency hotfix before Stage 2 preregistration. Trace validation loss in snapshot 79bb115, correct calibration/metadata/statistical wording, ban inaccurate phrases. No new runs, no locked test.
@@ -1014,6 +1014,7 @@
 - **Quyết định tiếp theo**: Preregister Stage 2 fine-tuning protocol with differential learning rates, retaining reconciled Phase 4C.1D.2 baselines and loss semantics.
 
 ---
+
 ## Phase 4C.1D — Ingest, Verify and Analyze 15 Stage-1 Runs
 
 - **Muc tieu**: Ingest 15 Colab T4 runs from local storage, verify 5 archives + 5 sidecars, verify all 15 runs (9 artifacts, status completed, frozen, locked-test 0, stage 2 0, 91 validation sources), aggregate learning curve (N=50, 100, 250 across 5 seeds), generate figures and report.
@@ -1026,6 +1027,7 @@
 - **Quyết định tiếp theo**: Prepare Phase 4C.2 / Stage 2 backbone unfreezing protocol with differential learning rates, or investigate multimodal fusion on validated N=250 dataset.
 
 ---
+
 ## Phase 4C.1B.6R.3.2a - Dependency Declaration Amendment and Clean Venv Recreation
 
 - **Muc tieu**: requirements-dev.txt, clean venv from scratch, lint debt seal, T4 policy.
@@ -1038,6 +1040,7 @@
 - **Quyết định tiếp theo**: Phase 4C.1C.15 unbound BUNDLE_CONTENT_SHA256 variable hotfix: replaced EXTRACTED_CONTENT_SHA with BUNDLE_CONTENT_SHA256 in Step 3 extraction with single assignment, 64-hex regex check and content hash verification before any reference; static scan verified zero unassigned uppercase variables in operator; behavioral preflight Step 3 to Step 4 verified all 10 runtime observation arguments defined and populated without training; preserved reusable N250 validator mode and GPU parser; canonical notebook 5 cells (12,342 bytes, SHA-256 d3b27ce0...), operator phase_4c1_t4_execute_all_stage1.sh (49,684 bytes, SHA-256 bae476db...), 91 operator tests PASS, 19 notebook tests PASS, 269 python tests PASS; READY_FOR_USER_COLAB_RESUME. Phase 4C.1C.0d.1 pre-execution reconciliation complete: cardinality reconciled (250 dev/91 val sources, 500 dev/182 val samples), operator static checks 18/18 PASS, execution snapshot binding 79bb115 audited intact (0 executable changes), verdict PRE_EXECUTION_GO_NO_GO = GO. Phase 4C.1C.0d.2 consolidated Colab launcher to single canonical `notebooks/phase_4c1_learning_curve_colab.ipynb`, duplicate v2 removed. Phase 4C.1C.1 upgraded launcher to persistent Google Drive architecture. Phase 4C.1C.2 finalized canonical notebook with 6 concise sections (11 cells). Phase 4C.1C.3 reconciled operator and runner receipt contract: operator `phase_4c1_t4_execute_all_stage1.sh` (21,662 bytes, SHA-256 `1a7570d7...`) verified binding `execution_code_sha` (`79bb115...`) via `phase4c1_environment_lock.json`, aligned `stage2_invocations` and checksums dictionary schema, added 7 mandatory fault-injections (21/21 assertions PASS). Phase 4C.1C.4 aligned Colab Drive path to `/content/drive/MyDrive/Colab Notebooks/forensics-web-lab/phase_4c1/` matching actual user directory layout; canonical notebook (12,842 bytes, SHA-256 `22a251b6...`) 16/16 tests PASS; 185 Python tests PASS; `PRE_EXECUTION_GO_NO_GO.json` updated; 0 new training runs. Phase 4C.1C.5 made Colab inputs preflight read-only and fail-closed: removed all mkdir() on DRIVE_ROOT and DRIVE_INPUT_DIR to eliminate duplicate empty inputs folders on Google Drive; added fail-closed is_dir() checks; enhanced missing artifact error reporting with actual directory entries and path; DRIVE_OUTPUT_DIR.mkdir() executed strictly after validation in staging cell; canonical notebook (13,360 bytes, SHA-256 `736f7a77...`) 18/18 notebook tests PASS; 187 Python tests PASS; `PRE_EXECUTION_GO_NO_GO.json` updated; 0 new training runs, 0 locked-test accesses, 0 stage 2 invocations. Phase 4C.1C.6 refactored canonical Colab launcher into a production 5-cell structure (1 markdown + 4 code, 10,395 bytes, SHA-256 `fdd807ee...`): default EXECUTE=True ready for immediate Run all; removed DOWNLOAD_FINAL_ARCHIVE and files.download(); unified sha256_file streaming; preserved all integrity invariants (T4/CUDA, 5 GB free disk, read-only inputs preflight, atomic .part staging, DRIVE_OUTPUT_DIR.mkdir() strictly after input validation, symlink binding, 15-run receipt validation); canonical notebook 17/17 tests PASS; 186 Python tests PASS; PRE_EXECUTION_GO_NO_GO.json updated; 0 new training runs, 0 locked-test accesses, 0 stage 2 invocations. Phase 4C.1C.7 resolved Colab venv ensurepip failure: operator `phase_4c1_t4_execute_all_stage1.sh` (23,344 bytes, SHA-256 `6da81e2b...`) uses `--without-pip` with fail-closed pip/torch/cuda verification, no pip upgrade, safe venv cleanup in `/content/phase4c1-venv`, and archives preflight failure so rerun is not blocked; canonical notebook (10,395 bytes, SHA-256 `7ba525fd...`) 17/17 tests PASS; `test_phase_4c1_operator.py` 12/12 PASS (2 new regression tests + 7 fault injections); 188 Python tests PASS; receipts updated; 0 new training runs, 0 locked-test accesses, 0 stage 2 invocations. Phase 4C.1C.8 eliminated venv completely from operator `phase_4c1_t4_execute_all_stage1.sh` (25,470 bytes, SHA-256 `16cc4655...`), using Colab Python directly with dependency preflight and UTC-timestamped preflight failure archiving; synchronized canonical notebook `notebooks/phase_4c1_learning_curve_colab.ipynb` (10,395 bytes, SHA-256 `3cd2dc4c...`); all quality gates PASS; READY_FOR_USER_COLAB_EXECUTION. Phase 4C.1C.9 reconciled bundle hash contract (BUNDLE_ARCHIVE_SHA256 d49a106f... vs BUNDLE_CONTENT_SHA256 c365c812...); backward-compatible environment lock verification; fail_operator error reporting and persistent console log tee in operator `phase_4c1_t4_execute_all_stage1.sh` (29,794 bytes, SHA-256 `e105441e...`); hardened canonical notebook (11,705 bytes, SHA-256 `e8e17a48...`) with CalledProcessError tail streaming; real run N50 seed42 verified COMPLETED_VALID and skipped on resume; remote completed runs = 1/15, remaining = 14, locked-test = 0, stage 2 = 0; test suite 25 operator tests, 17 notebook tests, 201 Python tests PASS; receipts updated with true UTC; READY_FOR_USER_COLAB_RESUME. Phase 4C.1C.10 finalized operator hardening and notebook reseal: capability-based GPU detection (T4, L4, V100, A100 compatible; warning instead of fail in compatible mode; no arbitrary VRAM threshold); fail-closed scientific invariants; safe failure reporting via CLI arguments without string interpolation; exact 8-file checksums keyset; verified resume skipping N50 seed42 and targeting N50 seed1337; operator `phase_4c1_t4_execute_all_stage1.sh` (43,085 bytes, SHA-256 `75d26863...`); canonical notebook (12,857 bytes, SHA-256 `0f96e227...`, 5 cells, `EXECUTE=True`); 48 operator tests PASS, 17 notebook tests PASS, 224 python tests PASS; READY_FOR_USER_COLAB_RESUME. Phase 4C.1C.11 final static patch before Colab resume: ephemeral code staging from verified archive, runner config_hash (e03c07da...) and requirements_sha256 (850478c0...) locked fail-closed, strict dictionary checksum schema enforced, GPU/runtime policy validated, baseline pip-freeze preserved, exact inner_validation cohort checked against bundle manifest (91 sources, 182 samples), hardware summary fail-closed, canonical notebook 5 cells (12,038 bytes, SHA-256 426a0b8f...), operator phase_4c1_t4_execute_all_stage1.sh (48,539 bytes, SHA-256 cf240f3c...), 67 operator tests PASS, 17 notebook tests PASS, 243 python tests PASS; READY_FOR_USER_COLAB_RESUME. Phase 4C.1C.14 reusable N250 validator mode in Colab operator: updated Step 3 to invoke $SYS_PY3 -m ml.datasets.validate_phase_4c1_bundle --bundle $BUNDLE_ROOT --reusable-n250, verified CLI contract and real execution on local canonical reusable N250 bundle (ALL PASS: 250 dev / 91 val, 0 overlap, 0 locked-test), preserved Phase 4C.1C.13 GPU parser intact, canonical notebook 5 cells (12,342 bytes, SHA-256 4bdce00d...), operator phase_4c1_t4_execute_all_stage1.sh (49,460 bytes, SHA-256 ef8b41f0...), 86 operator tests PASS, 19 notebook tests PASS, 264 python tests PASS; READY_FOR_USER_COLAB_RESUME. Phase 4C.1C.13 hotfix Colab Python quoting in GPU VRAM parser: replaced broken f-string escaped quotes in single-quoted bash command with format(float(...), '.2f'), verified real execution on T4 (14.56 GB) and L4 (22.00 GB) fixtures and invalid VRAM guards, audited all 8 heredocs and 5 python -c helpers (100% AST clean), preflight regression verified logging Validated GPU: Tesla T4 (14.56 GB VRAM), canonical notebook 5 cells (12,342 bytes, SHA-256 1d1e761f...), operator phase_4c1_t4_execute_all_stage1.sh (49,399 bytes, SHA-256 8ec5cf55...), 85 operator tests PASS, 19 notebook tests PASS, 263 python tests PASS; READY_FOR_USER_COLAB_RESUME. Phase 4C.1C.12 correct output persistence, atomic restaging and exact cohort gate: DOWNLOAD_DIR under persistent output ($OUTPUT_ROOT/download), notebook atomic staging via .part and os.replace, canonical manifest fail-closed gate without fallback, set -Eeuo pipefail ERR trap inheritance, baseline pip-freeze fail-closed verification, artifact-based dynamic disk requirement (Option A), evidence receipts normalized (training_runs_in_wave=0, 9 run artifacts, seeds 42/1337/2025/3407/9001), canonical notebook 5 cells (12,342 bytes, SHA-256 f88b1175...), operator phase_4c1_t4_execute_all_stage1.sh (49,370 bytes, SHA-256 104679cd...), 80 operator tests PASS, 19 notebook tests PASS, 258 python tests PASS; READY_FOR_USER_COLAB_RESUME.
 
 ---
+
 ## Phase 4C.1B.6R.3.2 - True Clean Environment and Dependency Seal
 
 - **Muc tieu**: True clean venv from declarations, JSON validity, dependency audit, T4 contract seal.
@@ -1050,6 +1053,7 @@
 - **Quyết định tiếp theo**: Gate A.3.2 complete, Gate B Colab T4 multi-seed (42, 1337, 2025, 3407, 9001).
 
 ---
+
 ## Phase 4C.1B.6R.3.1 - Evidence Metadata, Dependency and T4 Execution Contract Closure
 
 - **Muc tieu**: Manifest correction, notebook hash audit, root cause wording, dependency audit, T4 contract.
@@ -1062,6 +1066,7 @@
 - **Quyết định tiếp theo**: Gate A.3.1 commit, then Gate B Colab T4 multi-seed (42, 1337, 2025, 3407, 9001).
 
 ---
+
 ## Phase 4C.1B.6R.3 - Final Evidence Provenance and Test-Seal Reconciliation
 
 - **Muc tieu**: Measured paired bootstrap provenance, root cause audit, 8 regression tests, evidence seal.
@@ -1074,6 +1079,7 @@
 - **Quyết định tiếp theo**: Gate A.3 commit, then Gate B Colab T4 multi-seed (1337, 2025, 3407, 9001).
 
 ---
+
 ## Phase 4C.1B.6R.2 - Measured Paired Bootstrap Closure
 
 - **Muc tieu**: Measured paired bootstrap, Stage 1/Dummy on 182 samples, metadata contract.
@@ -1086,6 +1092,7 @@
 - **Quyết định tiếp theo**: Gate A.2 commit, then Gate B Colab T4 multi-seed (1337, 2025, 3407, 9001).
 
 ---
+
 ## Phase 4C.1B.6R.1 - Final Evidence Closure
 
 - **Muc tieu**: Test arithmetic, leakage root cause, dummy artifact, paired bootstrap, metadata contract.
