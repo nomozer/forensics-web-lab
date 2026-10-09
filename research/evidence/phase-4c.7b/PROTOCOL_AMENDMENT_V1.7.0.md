@@ -99,6 +99,6 @@ Amendment v1.7.0 bảo toàn 100% định mức ma trận phân bổ của Proto
 ## 4. Ngân Sách & Quy Trình Tạo Sinh Đề Xuất (Proposed Budget & Workflow)
 
 - **Ngân sách thực thi**: Đúng 8 attempts trên 8 candidates trong `content_grounded_pilot_plan_v2_proposal.json`. Mỗi candidate đúng 1 attempt duy nhất, zero retries.
-- **Ràng buộc mã thực thi**: Tiếp tục ghim tại commit functional `045ea70cb9067ede3833f7a01562199869f4ae56`.
+- **Ràng buộc mã thực thi**: Ghim tại commit functional `38df28b4f7fcae0d8788057418410c27d1ca5852` (nạp catalog extension, kiểm chứng proposal v2 preflight, và bảo toàn toàn bộ pin/audit lịch sử).
 - **Ràng buộc Colab**: Chỉ thực thi trên môi trường GPU Colab sau khi người dùng phê duyệt; không chạy generation cục bộ.
 - **Trạng thái hiện tại**: **PENDING_HUMAN_REVIEW**.
