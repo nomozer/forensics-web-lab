@@ -497,10 +497,125 @@ def quota_layout(rng: np.random.Generator) -> tuple[list[str], list[str]]:
     return core_mods + [m for m, _ in buffer], core_masks + [a for _, a in buffer]
 
 
+def load_candidate_catalog_extension(
+    extension_path: Path | str,
+    historical_keys: set[str] | None = None,
+    verify_parent: bool = True,
+) -> list[CandidateSpec]:
+    """Load and validate a versioned candidate catalog extension file.
+
+    Guarantees:
+    - Verifies extension schema version and structure.
+    - If verify_parent is True, checks parent catalog exists and matches parent_catalog_sha256.
+    - Evaluates candidate eligibility and enforces CC license / creator / provenance rules.
+    - Strictly verifies disjointness vs historical Option P source keys (raising CandidateEligibilityError on collision).
+    - Returns list[CandidateSpec] for all valid extension candidates.
+    """
+    ext_p = Path(extension_path)
+    if not ext_p.is_file():
+        raise FileNotFoundError(f"Candidate catalog extension not found at {ext_p}")
+
+    ext_data = json.loads(ext_p.read_text(encoding="utf-8"))
+    schema_ver = ext_data.get("schema_version")
+    if not schema_ver:
+        raise CandidateEligibilityError(f"{ext_p.name}: missing schema_version in catalog extension")
+
+    if verify_parent:
+        parent_rel = ext_data.get("parent_catalog_relpath")
+        parent_sha = ext_data.get("parent_catalog_sha256")
+        if not parent_rel or not parent_sha:
+            raise CandidateEligibilityError(f"{ext_p.name}: catalog extension missing parent catalog binding")
+        parent_candidates = [
+            REPO_ROOT / parent_rel,
+            ext_p.parent / Path(parent_rel).name,
+            Path(parent_rel),
+        ]
+        parent_found = None
+        for cand in parent_candidates:
+            if cand.is_file():
+                parent_found = cand
+                break
+        if parent_found is None:
+            raise FileNotFoundError(f"{ext_p.name}: parent catalog '{parent_rel}' not found on disk")
+        actual_parent_sha = _sha256_file(parent_found)
+        if actual_parent_sha != parent_sha:
+            raise CandidateEligibilityError(
+                f"{ext_p.name}: parent catalog sha256 mismatch (expected {parent_sha}, got {actual_parent_sha})"
+            )
+
+    hist_keys = historical_keys if historical_keys is not None else load_historical_source_keys()
+    raw_entries = ext_data.get("extension_candidates", [])
+    if not isinstance(raw_entries, list) or not raw_entries:
+        raise CandidateEligibilityError(f"{ext_p.name}: catalog extension contains no extension_candidates")
+
+    specs: list[CandidateSpec] = []
+    for item in raw_entries:
+        eligibility = evaluate_candidate_eligibility(item, hist_keys)
+        if eligibility["status"] == "EXCLUDED":
+            raise CandidateEligibilityError(
+                f"{ext_p.name}: candidate {item.get('candidate_id')} fails eligibility: {eligibility.get('reasons')}"
+            )
+        cid = str(item.get("candidate_id", ""))
+        stratum_id = str(item.get("stratum_id", ""))
+        source_origin = str(item.get("source_origin", ""))
+        tool_key = str(item.get("tool_key", ""))
+        mod_type = str(item.get("modification_type", ""))
+        mask_class = str(item.get("mask_area_class", ""))
+        origin_id = str(item.get("origin_id", "") or min(item.get("source_keys", [""])))
+        author = str(item.get("creator_name", "") or item.get("author", ""))
+        origin_url = str(item.get("source_page_url", "") or item.get("origin_url", ""))
+        download_url = str(item.get("download_url", ""))
+        license_name = str(item.get("license_name", ""))
+        license_evidence_source = str(item.get("license_evidence_source", ""))
+        published_date = str(item.get("published_date") or "")
+        gen_seed = int(item.get("generation_seed", 20294843))
+        pool_index = int(item.get("pool_index", 999))
+        source_keys = tuple(sorted(item.get("source_keys", [])))
+        creator_url = str(item.get("creator_url", ""))
+        license_url = str(item.get("license_url", ""))
+        usage_policy = eligibility["usage_policy"]
+        date_captured = str(item.get("date_captured") or "")
+        provenance_checked_at_utc = str(item.get("provenance_checked_at_utc", ""))
+        download_rendition = str(item.get("download_rendition", ""))
+
+        specs.append(
+            CandidateSpec(
+                candidate_id=cid,
+                stratum_id=stratum_id,
+                source_origin=source_origin,
+                tool_key=tool_key,
+                modification_type=mod_type,
+                mask_area_class=mask_class,
+                origin_id=origin_id,
+                author=author,
+                origin_url=origin_url,
+                download_url=download_url,
+                license_name=license_name,
+                license_evidence_source=license_evidence_source,
+                published_date=published_date,
+                prompt="",
+                generation_seed=gen_seed,
+                pool_index=pool_index,
+                is_synthetic=False,
+                evidence_class="verified_real_catalog_extension",
+                eligible_for_independent_cohort=True,
+                source_keys=source_keys,
+                creator_url=creator_url,
+                license_url=license_url,
+                usage_policy=usage_policy,
+                date_captured=date_captured,
+                provenance_checked_at_utc=provenance_checked_at_utc,
+                download_rendition=download_rendition,
+            )
+        )
+    return specs
+
+
 def generate_canonical_candidate_plan(
     catalog_path: Path | str | None = None,
     seed: int = 20261007,
     buffer_per_stratum: int = STRATUM_BUFFER_PAIRS,
+    catalog_extension_path: Path | str | None = None,
 ) -> list[CandidateSpec]:
     """Generate the canonical candidate acquisition plan using verified real sources from catalog.
 
@@ -603,6 +718,10 @@ def generate_canonical_candidate_plan(
                 )
             )
 
+    if catalog_extension_path is not None:
+        ext_specs = load_candidate_catalog_extension(catalog_extension_path)
+        candidates.extend(ext_specs)
+
     return candidates
 
 
@@ -649,6 +768,7 @@ def load_content_grounded_edit_plan(
     edit_plan_path: Path | str,
     target_per_stratum: int,
     require_human_approval: bool = False,
+    catalog_extension_path: Path | str | None = None,
 ) -> list[CandidateSpec]:
     """Bind reviewed prompts and normalized-canvas regions to an allocation plan.
 
@@ -682,7 +802,35 @@ def load_content_grounded_edit_plan(
         )
     if data.get("automatic_replacement") is not False:
         raise ContentGroundingError("edit plan must explicitly set automatic_replacement=false")
-    by_id = {candidate.candidate_id: candidate for candidate in candidates}
+
+    ext_path = catalog_extension_path or data.get("catalog_extension_path")
+    all_candidates = list(candidates)
+    if ext_path:
+        ext_resolved = Path(ext_path)
+        if not ext_resolved.is_absolute():
+            candidate_roots = [
+                REPO_ROOT / ext_path,
+                Path(edit_plan_path).parent / ext_path,
+                Path(ext_path),
+            ]
+            for cr in candidate_roots:
+                if cr.is_file():
+                    ext_resolved = cr
+                    break
+        if ext_resolved.is_file():
+            ext_candidates = load_candidate_catalog_extension(ext_resolved)
+            expected_ext_sha = data.get("catalog_extension_sha256")
+            if expected_ext_sha:
+                actual_ext_sha = _sha256_file(ext_resolved)
+                if actual_ext_sha != expected_ext_sha:
+                    raise ContentGroundingError(
+                        f"catalog extension sha256 mismatch: expected {expected_ext_sha}, got {actual_ext_sha}"
+                    )
+            all_candidates.extend(ext_candidates)
+        else:
+            raise ContentGroundingError(f"catalog extension file not found at {ext_path}")
+
+    by_id = {candidate.candidate_id: candidate for candidate in all_candidates}
     selected: list[CandidateSpec] = []
     seen: set[str] = set()
     for entry in entries:

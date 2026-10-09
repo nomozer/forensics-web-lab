@@ -89,6 +89,7 @@ from ml.evaluation.independent_cohort_calibration import (
 
 EVIDENCE_DIR = REPO_ROOT / "research/evidence/phase-4c.7b"
 DEFAULT_EDIT_PLAN_PATH = EVIDENCE_DIR / "content_grounded_pilot_plan.json"
+DEFAULT_PILOT_V2_PROPOSAL_PATH = EVIDENCE_DIR / "content_grounded_pilot_plan_v2_proposal.json"
 DEFAULT_DIAGNOSTIC_PLAN_PATH = EVIDENCE_DIR / "content_grounded_diagnostic_plan.json"
 DEFAULT_CALIBRATION_PLAN_PATH = EVIDENCE_DIR / "content_grounded_calibration_proposal.json"
 DEFAULT_DIAGNOSTIC_INPUTS_DIR = REPO_ROOT / "data/research/local-artifacts/phase-4c.7b/pilot-20261008T113700Z"
@@ -128,6 +129,7 @@ def build_run_binding(
     mode: str,
     target: int,
     edit_plan_path: Path | None = None,
+    catalog_extension_path: Path | None = None,
 ) -> dict[str, Any]:
     """Everything a run's artifacts must match: run, code, protocol, catalog, plan, quota."""
     binding = {
@@ -141,6 +143,8 @@ def build_run_binding(
     }
     if edit_plan_path is not None:
         binding["edit_plan_sha256"] = _sha256_bytes(edit_plan_path.read_bytes())
+    if catalog_extension_path is not None and Path(catalog_extension_path).is_file():
+        binding["catalog_extension_sha256"] = _sha256_bytes(Path(catalog_extension_path).read_bytes())
     return binding
 
 
@@ -400,6 +404,9 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--calibration-plan-path", type=str, default=str(DEFAULT_CALIBRATION_PLAN_PATH), help="Calibration proposal plan path")
     parser.add_argument("--calibration-inputs-dir", type=str, default=str(DEFAULT_CALIBRATION_INPUTS_DIR), help="Directory with authentic/mask inputs for calibration")
     parser.add_argument("--check-calibration-plan", action="store_true", help="Preflight check calibration proposal and input hashes")
+    parser.add_argument("--pilot-plan-path", type=str, default=str(DEFAULT_PILOT_V2_PROPOSAL_PATH), help="Pilot plan proposal or edit plan path")
+    parser.add_argument("--check-pilot-plan", action="store_true", help="Preflight check pilot plan proposal, catalog bindings, and extension hashes")
+    parser.add_argument("--catalog-extension", type=str, default=None, help="Optional versioned catalog extension path")
     parser.add_argument("--contact-sheet", action="store_true", help="Generate Content QC HTML contact sheet")
     parser.add_argument("--receipt-path", type=str, default=str(EVIDENCE_DIR / "acquisition_smoke_receipt_v2.json"), help="Smoke receipt path")
     parser.add_argument("--check-models", action="store_true", help="Run inpainting model preflight check (metadata, configs, and weights access)")
@@ -448,6 +455,40 @@ def main(argv: list[str] | None = None) -> None:
         print(json.dumps(res, indent=2))
         return
 
+    if args.check_pilot_plan:
+        print("[Phase 4C.7B Pilot Preflight] Checking pilot plan proposal and catalog bindings...")
+        plan_p = Path(args.pilot_plan_path)
+        sha = _sha256_bytes(plan_p.read_bytes())
+        allocation_plan = generate_canonical_candidate_plan(
+            catalog_path=args.catalog_path,
+            catalog_extension_path=args.catalog_extension,
+        )
+        plan_data = json.loads(plan_p.read_text(encoding="utf-8"))
+        human_status = plan_data.get("human_review_status")
+        grounded_candidates = load_content_grounded_edit_plan(
+            allocation_plan,
+            plan_p,
+            target_per_stratum=2,
+            require_human_approval=False,
+            catalog_extension_path=args.catalog_extension,
+        )
+        res = {
+            "status": "PASS",
+            "plan_path": str(plan_p),
+            "plan_sha256": sha,
+            "human_review_status": human_status,
+            "generation_authorized": human_status == "APPROVED",
+            "approval_gate": "PASSED" if human_status == "APPROVED" else "PENDING_HUMAN_REVIEW",
+            "attempt_budget": plan_data.get("attempt_budget"),
+            "total_candidates": len(grounded_candidates),
+            "candidate_ids": [c.candidate_id for c in grounded_candidates],
+            "catalog_extension": plan_data.get("catalog_extension_path"),
+            "catalog_extension_sha256": plan_data.get("catalog_extension_sha256"),
+            "locked_quota_summary": plan_data.get("locked_quota_summary"),
+        }
+        print(json.dumps(res, indent=2))
+        return
+
     if args.smoke_test:
         run_technical_smoke_test(receipt_path=Path(args.receipt_path))
         return
@@ -473,7 +514,7 @@ def main(argv: list[str] | None = None) -> None:
         return
 
     if not args.mode:
-        parser.error("one of --mode, --check-models, --check-diagnostic-plan, --check-calibration-plan, --verify-plan, --export-plan, --smoke-test or --audit-run is required")
+        parser.error("one of --mode, --check-models, --check-diagnostic-plan, --check-calibration-plan, --check-pilot-plan, --verify-plan, --export-plan, --smoke-test or --audit-run is required")
     if args.mode == "full":
         raise SystemExit(
             "Full acquisition is blocked: approve and complete the bounded eight-attempt pilot "
@@ -587,7 +628,10 @@ def main(argv: list[str] | None = None) -> None:
         raise SystemExit("--run-id and --expected-commit are required.")
     target = 2 if args.mode == "pilot" else STRATUM_TARGET_PAIRS
     commit = verify_checkout(REPO_ROOT, args.expected_commit)
-    allocation_plan = generate_canonical_candidate_plan(catalog_path=args.catalog_path)
+    allocation_plan = generate_canonical_candidate_plan(
+        catalog_path=args.catalog_path,
+        catalog_extension_path=args.catalog_extension,
+    )
     edit_plan_path: Path | None = None
     if args.allow_synthetic:
         plan = allocation_plan
@@ -598,6 +642,7 @@ def main(argv: list[str] | None = None) -> None:
             edit_plan_path,
             target_per_stratum=target,
             require_human_approval=True,
+            catalog_extension_path=args.catalog_extension,
         )
     binding = build_run_binding(
         args.run_id,
@@ -607,6 +652,7 @@ def main(argv: list[str] | None = None) -> None:
         args.mode,
         target,
         edit_plan_path=edit_plan_path,
+        catalog_extension_path=Path(args.catalog_extension) if args.catalog_extension else None,
     )
 
     if args.audit_run:

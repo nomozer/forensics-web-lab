@@ -10,6 +10,8 @@
   "coordinate_space": "normalized_512x512_canvas_xyxy_half_open",
   "attempt_budget": 8,
   "automatic_replacement": false,
+  "catalog_extension_path": "research/evidence/phase-4c.7b/candidate_catalog_extension_v1.0.0.json",
+  "catalog_extension_sha256": "0d875b81a8044e3285ecf0331beec6646d94b085915baaaa32247e86ee9023e7",
   "locked_quota_summary": {
     "stratum_counts": {
       "coco_sd2": 2,
@@ -58,6 +60,14 @@
       "mask_area_ratio": 0.03566741943359375,
       "prompt": "a round brass wall clock mounted naturally on the kitchen wall, matching the warm indoor lighting",
       "disjoint_historical_option_p": true,
+      "instruction_review": {
+        "target_or_placement": "VERIFIED_EXISTING_TARGET",
+        "bbox_prompt_alignment": "ALIGNED_AFTER_REVISION",
+        "mask_scope": "TIGHTENED_TO_TARGET",
+        "agent_status": "READY_FOR_HUMAN_DECISION",
+        "note": "Copper pan hanging above range; mask 3.57% (9,350 px) avoids cook. Historical pilot pair pending content QC.",
+        "human_decision_required": "Confirm or reject pan-to-clock replacement instruction."
+      },
       "status": "PENDING_CONFIRMATION"
     },
     {
@@ -89,6 +99,14 @@
       "mask_area_ratio": 0.302734375,
       "prompt": "matte navy-blue upper kitchen cabinets with a stainless-steel range hood, realistic residential interior photograph",
       "disjoint_historical_option_p": true,
+      "instruction_review": {
+        "target_or_placement": "VERIFIED_EXISTING_TARGET",
+        "bbox_prompt_alignment": "ALIGNED_AFTER_REVISION",
+        "mask_scope": "SCENE_SCALE_TARGET_WITH_CONTEXT",
+        "agent_status": "READY_FOR_HUMAN_DECISION",
+        "note": "Upper cabinet group; mask 30.27% (79,360 px) satisfies large quota and avoids lower stove. Historical pilot pair pending content QC.",
+        "human_decision_required": "Confirm or reject upper-cabinet replacement instruction."
+      },
       "status": "PENDING_CONFIRMATION"
     },
     {
@@ -120,6 +138,14 @@
       "mask_area_ratio": 0.05950927734375,
       "prompt": "a professional black leather business briefcase standing upright on the red exhibition carpet, realistic studio floodlights and soft ground shadow",
       "disjoint_historical_option_p": true,
+      "instruction_review": {
+        "target_or_placement": "VERIFIED_INSERTION_AREA",
+        "bbox_prompt_alignment": "ALIGNED_PROPOSED_SUBSTITUTION",
+        "mask_scope": "BOUNDED_AABB_CONTAINMENT",
+        "agent_status": "READY_FOR_HUMAN_DECISION",
+        "note": "Flat red exhibition carpet at TAM booth; clean surface with zero object collisions; mask 5.95% (15,600 px). Flat carpet optimizes pre-generation screening conditions but does not guarantee elimination of omission risk.",
+        "human_decision_required": "Approve substitution of IND_COCO_SDXL_002 with IND_COCO_SDXL_042 (briefcase on red carpet)."
+      },
       "status": "PENDING_HUMAN_REVIEW"
     },
     {
@@ -151,6 +177,14 @@
       "mask_area_ratio": 0.3147125244140625,
       "prompt": "a weathered wooden picnic table with attached bench seating on the grassy coastal ground, natural overcast daylight and soft ground contact shadow",
       "disjoint_historical_option_p": true,
+      "instruction_review": {
+        "target_or_placement": "VERIFIED_INSERTION_AREA",
+        "bbox_prompt_alignment": "ALIGNED_PROPOSED_EXTENSION",
+        "mask_scope": "BOUNDED_AABB_CONTAINMENT",
+        "agent_status": "READY_FOR_HUMAN_DECISION",
+        "note": "Open coastal shoreline with natural turf/sand foreground; mask 31.47% (82,500 px) satisfies large quota. Natural terrain provides expected margins for legs/shadow, but does not guarantee elimination of seam or tonal step risk.",
+        "human_decision_required": "Approve catalog extension substitution of IND_COCO_SDXL_041 with COCO_EXT_SDXL_001 (picnic table on coastal shore)."
+      },
       "status": "PENDING_HUMAN_REVIEW"
     },
     {
@@ -182,6 +216,14 @@
       "mask_area_ratio": 0.25426483154296875,
       "prompt": "open sea and distant coastline continuing naturally through the removed foreground headland, photorealistic sunset landscape",
       "disjoint_historical_option_p": true,
+      "instruction_review": {
+        "target_or_placement": "VERIFIED_REMOVAL_TARGET",
+        "bbox_prompt_alignment": "ALIGNED_AFTER_REVISION",
+        "mask_scope": "FOREGROUND_LANDFORM_ENVELOPE",
+        "agent_status": "READY_FOR_HUMAN_DECISION",
+        "note": "Foreground headland, cliff, and offshore stacks; mask 25.43% (66,654 px). Sole removal candidate in stratum; accepts risk of hotel foot infill. Historical pilot pair pending content QC.",
+        "human_decision_required": "Confirm or reject headland removal instruction."
+      },
       "status": "PENDING_CONFIRMATION"
     },
     {
@@ -213,6 +255,14 @@
       "mask_area_ratio": 0.1275634765625,
       "prompt": "a rustic wooden barrel planter filled with vibrant blooming flowers sitting naturally on the cobblestone pavement, realistic daylight shadows and weathered wood texture matching the historic town square",
       "disjoint_historical_option_p": true,
+      "instruction_review": {
+        "target_or_placement": "VERIFIED_INSERTION_AREA",
+        "bbox_prompt_alignment": "ALIGNED_PROPOSED_SUBSTITUTION",
+        "mask_scope": "BOUNDED_AABB_CONTAINMENT",
+        "agent_status": "READY_FOR_HUMAN_DECISION",
+        "note": "Sibiu cobblestone pavement; solid volumetric wooden barrel planter with flowers; mask 12.76% (33,440 px). Replaces fragile bicycle parts with solid cylinder geometry.",
+        "human_decision_required": "Approve substitution of IND_COMMONS_SD2_002 with IND_COMMONS_SD2_040 (rustic barrel planter on cobblestones)."
+      },
       "status": "PENDING_HUMAN_REVIEW"
     },
     {
@@ -244,6 +294,14 @@
       "mask_area_ratio": 0.06580352783203125,
       "prompt": "a small dark bird flying in the cloudy sky, distant scale and natural daylight",
       "disjoint_historical_option_p": true,
+      "instruction_review": {
+        "target_or_placement": "VERIFIED_INSERTION_AREA",
+        "bbox_prompt_alignment": "ALIGNED_AFTER_REVISION",
+        "mask_scope": "OPEN_SKY_MARGIN",
+        "agent_status": "READY_FOR_HUMAN_DECISION",
+        "note": "Open cloudy sky above Ed Dwight monument; mask 6.58% (17,250 px). Avoids monument structure; accepts sky tone matching risk. Historical pilot pair pending content QC.",
+        "human_decision_required": "Confirm or reject bird insertion instruction."
+      },
       "status": "PENDING_CONFIRMATION"
     },
     {
@@ -258,10 +316,10 @@
       "author": "Chris Woodrich",
       "license": "CC BY-SA 4.0",
       "target_description": "the monumental bronze sculpture Triptych standing on a solid plinth in Windsor Sculpture Park",
-      "placement_rationale": "Freestanding vertical sculpture on public park lawn; clear separation from backdrop; zero railing collisions; zero glass dome collisions; standard AABB mask 100% compatible with existing runner without code changes.",
+      "placement_rationale": "Freestanding vertical sculpture on public park lawn; clear separation from backdrop; zero railing collisions; zero glass dome collisions; unified target [145, 45, 355, 465] encloses sculpture tip at y=45 through plinth base at y=465; standard AABB mask [135, 40, 365, 475] leaves 5px top and 10px bottom margin with unverified risk of lawn base or shadow mismatch.",
       "target_bbox_xyxy": [
         145,
-        50,
+        45,
         355,
         465
       ],
@@ -275,6 +333,14 @@
       "mask_area_ratio": 0.38166046142578125,
       "prompt": "a classical white marble commemorative column standing on a solid plinth in the public park, realistic overcast daylight and weathered stone texture",
       "disjoint_historical_option_p": true,
+      "instruction_review": {
+        "target_or_placement": "VERIFIED_EXISTING_TARGET",
+        "bbox_prompt_alignment": "ALIGNED_PROPOSED_SUBSTITUTION",
+        "mask_scope": "BOUNDED_AABB_CONTAINMENT",
+        "agent_status": "READY_FOR_HUMAN_DECISION",
+        "note": "Monumental bronze sculpture Triptych and concrete plinth; target [145, 45, 355, 465] covers apex at y=45 through plinth at y=465; mask [135, 40, 365, 475] (100,050 px = 38.17%) satisfies large quota. Avoids railing and glass dome collisions; leaves 5px top and 10px bottom margin with unverified risk of lawn base or shadow mismatch.",
+        "human_decision_required": "Approve substitution of IND_COMMONS_SDXL_003 with IND_COMMONS_SDXL_005 (classical marble column replacing Triptych sculpture)."
+      },
       "status": "PENDING_HUMAN_REVIEW"
     }
   ]

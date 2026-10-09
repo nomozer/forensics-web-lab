@@ -267,8 +267,8 @@ Các phương án đề xuất được rà soát nghiêm ngặt theo nội dung
   * **Phân biệt BBox Containment với Coverage Đối tượng Thực tế**:
     * *BBox Containment*: 100% target bbox nằm trong mask bbox ($10 \le 20 < 330 \le 340$ và $260 \le 280 < 490 \le 510$).
     * *Bản chất thao tác insertion*: Ảnh authentic là nền bờ biển tự nhiên, chưa có đối tượng trước khi sinh. Target bbox là hộp bao không gian cho bàn gỗ và ghế băng. Đối tượng vật lý được tạo sinh (mặt bàn, chân bàn, ghế băng, bóng đổ tiếp xúc) sẽ chiếm một diện mạo 3D thực tế là tập con bên trong target bbox.
-    * *Kiểm tra bệ/chân & bóng đổ tiếp xúc*: Khoảng lề đáy $y \in [490, 510]$ (20 px) và lề ngang $x \in [10, 20]$ & $[330, 340]$ (10 px) bảo đảm chân bàn gỗ cắm tự nhiên vào mặt cỏ/cát và bóng đổ tiếp xúc trải mềm trên nền đất mà không bị cắt cụt bởi ranh giới mask.
-    * *Kiểm tra vật thể lân cận*: Vùng bờ biển hoàn toàn sạch, không có người, xe cộ hay công trình xây dựng. Bề mặt đất cỏ/cát tự nhiên triệt tiêu rủi ro bước nhảy tông như trên mặt trần thạch cao phẳng của `_041`.
+    * *Kiểm tra bệ/chân & bóng đổ tiếp xúc*: Khoảng lề đáy $y \in [490, 510]$ (20 px) và lề ngang $x \in [10, 20]$ & $[330, 340]$ (10 px) nhằm dự phòng không gian cho chân bàn và bóng tiếp xúc trên nền đất. Tuy nhiên, lề biên tiền kiểm không bảo đảm mô hình sẽ tạo bóng đổ trải mềm hoặc triệt tiêu hoàn toàn bước nhảy biên.
+    * *Kiểm tra vật thể lân cận*: Vùng bờ biển quang đãng, không có người, xe cộ hay công trình xây dựng. Bề mặt đất cỏ/cát gồ ghề giảm thiểu độ nhạy cảm so với mặt phẳng trần thạch cao đồng nhất của `_041`, song vẫn tiềm ẩn rủi ro sai lệch cấu trúc hoặc tông màu tại đường biên inpainting.
 
 #### 3. Slot 6 Đề Xuất PENDING (`commons_sd2`, `object_insertion`, `medium_10_to_30pct`)
 - **Phương án Khuyến nghị (RECOMMENDED PENDING)**: `IND_COMMONS_SD2_040` (Pool index: 39).
@@ -307,15 +307,15 @@ Các phương án đề xuất được rà soát nghiêm ngặt theo nội dung
     * Disjoint Guard: **PASS** (Zero overlap với 684 nguồn Option P lịch sử).
     * Target thay thế: Cột kỷ niệm bằng đá cẩm thạch trắng đứng trên bệ khối vững chắc trong công viên.
     * Prompt đề xuất: *"a classical white marble commemorative column standing on a solid plinth in the public park, realistic overcast daylight and weathered stone texture"*.
-    * Target bbox: `[145, 50, 355, 465]` (diện tích 87.150 px = 33.245850%).
+    * Target bbox: `[145, 45, 355, 465]` (diện tích 88.200 px = 33.647461% canvas).
     * Mask AABB đề xuất: `[135, 40, 365, 475]`.
     * Diện tích raster mask: **100.050 px** (**38.166046%** canvas), đạt chuẩn `large_over_30pct` ($\ge 30\%$).
     * **Phân tích BBox Containment với Coverage Đối tượng Thực tế**:
-      * *BBox Containment*: 100% target bbox nằm trong mask bbox ($135 \le 145 < 355 \le 365$ và $40 \le 50 < 465 \le 475$).
-      * *Che phủ đối tượng thực tế (Physical Object Coverage)*: Khối điêu khắc đồng "Triptych" trải dài từ $x=145$ đến $x=352$ và từ $y=45$ đến $y=465$ (bao gồm cả bệ bê tông chân tượng tại $y=445..465$). Toàn bộ thân tượng và bệ đỡ đều nằm trọn 100% trong mask AABB.
-      * *Kiểm tra bệ/chân & bóng đổ tiếp xúc*: Chân bệ bê tông kết thúc ở $y \approx 465$, thảm cỏ bắt đầu từ $y \approx 470$. Khoảng lề đáy $y \in [465, 475]$ cho phép cột đá mới sinh một bệ móng vững chắc cắm sâu vào mặt cỏ công viên và trải bóng đổ tự nhiên mà không để lại vết sẹo biên.
+      * *BBox Containment*: 100% target bbox nằm trong mask bbox ($135 \le 145 < 355 \le 365$ và $40 \le 45 < 465 \le 475$).
+      * *Che phủ đối tượng thực tế (Physical Object Coverage)*: Khối điêu khắc đồng "Triptych" trải dài từ $x=145$ đến $x=352$ và đỉnh cột bắt đầu tại $y=45$ đến chân bệ bê tông tại $y=465$ (bao gồm cả bệ bê tông chân tượng tại $y=445..465$). Target rectified `[145, 45, 355, 465]` bao trọn 100% cấu trúc vật lý thực tế của tượng và bệ đỡ; toàn bộ thân tượng và bệ đỡ đều nằm trọn 100% trong mask AABB.
+      * *Kiểm tra bệ/chân & bóng đổ tiếp xúc*: Chân bệ bê tông kết thúc ở $y \approx 465$, thảm cỏ bắt đầu từ $y \approx 470$. Khoảng lề đáy $y \in [465, 475]$ (10 px) dự phòng không gian cho bệ móng và bóng đổ tiếp xúc trên mặt cỏ, song không bảo đảm loại trừ hoàn toàn nguy cơ vết sẹo biên hoặc bậc tương phản vi mô.
       * *Kiểm tra vật thể lân cận*: Hoàn toàn không có lan can kim loại (khắc phục lỗi của Tower Song `_003`), không có vòm kính tròn (khắc phục lỗi của Żyletkowce `_020`), không có người đi bộ. Hậu cảnh là bầu trời mây và rặng cây công viên ở xa.
-      * *Tính tương thích Runner/Schema*: Sử dụng hộp chữ nhật AABB chuẩn, **tương thích 100% với schema và code runner hiện hành mà không cần sửa code hay ban hành amendment!**
+      * *Tính tương thích Runner/Schema*: Sử dụng hộp chữ nhật AABB chuẩn, **tương thích 100% với schema và code runner hiện hành mà không cần sửa code!**
   * **Phương án Dự phòng (BACKUP PENDING)**: `IND_COMMONS_SDXL_002` (Pool index: 1, tượng Ed Dwight ôm trẻ, CC BY-SA 4.0; target `[180, 120, 400, 430]`, mask `[170, 110, 410, 440]`, 79.200 px = 30.21%). Lưu ý rủi ro đồng nhất danh tính và cánh tay tiếp xúc.
 
 ---
@@ -325,9 +325,9 @@ Các phương án đề xuất được rà soát nghiêm ngặt theo nội dung
 | Slot | Stratum & Thao Tác | Candidate Đề Xuất (PENDING) | Geometry (Target & Mask BBox) | Diện Tích Mask & Quota | Provenance & Giấy Phép Xác Minh | Rủi Ro Kỹ Thuật Còn Lại | Nội Dung Chính Xác Cần Người Dùng Duyệt |
 | :---: | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | **3** | `coco_sdxl`<br>insertion<br>small | **`IND_COCO_SDXL_042`**<br>(Pool 41, gian hàng TAM) | Target: `[235, 395, 335, 485]`<br>Mask: `[220, 380, 350, 500]` | **15.600 px**<br>(**5.95%**)<br>Đạt `small` (1-10%) | `coco:448076`<br>Tác giả: luis.leao<br>License: `CC BY 2.0` | Thảm phẳng tối ưu tiền kiểm nhưng không bảo đảm 100% loại trừ omission của SDXL. | Duyệt thay thế `IND_COCO_SDXL_002` bằng `IND_COCO_SDXL_042` (cặp táp da trên thảm đỏ). |
-| **4** | `coco_sdxl`<br>insertion<br>large | **`COCO_EXT_SDXL_001`**<br>(Đề xuất mở rộng COCO) | Target: `[20, 280, 330, 490]`<br>Mask: `[10, 260, 340, 510]` | **82.500 px**<br>(**31.47%**)<br>Đạt `large` (&ge;30%) | `coco:460160`<br>Tác giả: PratarPersilja<br>License: `CC BY-SA 2.0` | Bờ biển tự nhiên; cần theo dõi tiếp xúc chân bàn gỗ với nền cỏ/cát. Nền mặt đất tránh được lỗi bước nhảy tông mặt trần. | Duyệt mở rộng catalog COCO với candidate `COCO_EXT_SDXL_001` (bàn dã ngoại gỗ trên bờ cỏ). |
+| **4** | `coco_sdxl`<br>insertion<br>large | **`COCO_EXT_SDXL_001`**<br>(Đề xuất mở rộng COCO) | Target: `[20, 280, 330, 490]`<br>Mask: `[10, 260, 340, 510]` | **82.500 px**<br>(**31.47%**)<br>Đạt `large` (&ge;30%) | `coco:460160`<br>Tác giả: PratarPersilja<br>License: `CC BY-SA 2.0`<br>Extension: `candidate_catalog_extension_v1.0.0.json` | Bờ biển tự nhiên; cần theo dõi tiếp xúc chân bàn gỗ với nền cỏ/cát. Nền mặt đất tránh được lỗi bước nhảy tông mặt trần. | Duyệt mở rộng catalog COCO với candidate `COCO_EXT_SDXL_001` (bàn dã ngoại gỗ trên bờ cỏ). |
 | **6** | `commons_sd2`<br>insertion<br>medium | **`IND_COMMONS_SD2_040`**<br>(Pool 39, phố cổ Sibiu) | Target: `[45, 375, 215, 495]`<br>Mask: `[20, 360, 240, 512]` | **33.440 px**<br>(**12.76%**)<br>Đạt `medium` (10-30%) | `commons:172876577`<br>Tác giả: Chainwit.<br>License: `CC BY 4.0` | Nền đá cuội cổ; SD2 cần tạo bóng đổ tiếp xúc tự nhiên với mặt đường. | Duyệt thay thế `IND_COMMONS_SD2_002` bằng `IND_COMMONS_SD2_040` (chậu hoa thùng gỗ mộc). |
-| **8** | `commons_sdxl`<br>replacement<br>large | **`IND_COMMONS_SDXL_005`**<br>(Pool 4, tượng Triptych) | Target: `[145, 50, 355, 465]`<br>Mask: `[135, 40, 365, 475]` | **100.050 px**<br>(**38.17%**)<br>Đạt `large` (&ge;30%) | `commons:171463547`<br>Tác giả: Chris Woodrich<br>License: `CC BY-SA 4.0` | Thay thế tượng đồng bằng cột đá; rủi ro khớp chân bệ với mặt cỏ công viên. Không vướng lan can hay vòm kính. | Duyệt thay thế `IND_COMMONS_SDXL_003` bằng `IND_COMMONS_SDXL_005` (thay tượng Triptych bằng cột đá). |
+| **8** | `commons_sdxl`<br>replacement<br>large | **`IND_COMMONS_SDXL_005`**<br>(Pool 4, tượng Triptych) | Target: `[145, 45, 355, 465]`<br>Mask: `[135, 40, 365, 475]` | **100.050 px**<br>(**38.17%**)<br>Đạt `large` (&ge;30%) | `commons:171463547`<br>Tác giả: Chris Woodrich<br>License: `CC BY-SA 4.0` | Thay thế tượng đồng bằng cột đá; rủi ro khớp chân bệ với mặt cỏ công viên. Không vướng lan can hay vòm kính. | Duyệt thay thế `IND_COMMONS_SDXL_003` bằng `IND_COMMONS_SDXL_005` (thay tượng Triptych bằng cột đá). |
 
 ---
 

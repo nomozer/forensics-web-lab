@@ -45,6 +45,7 @@ from ml.evaluation.independent_cohort_acquisition import (
     TARGET_CANVAS_SIZE,
     TOTAL_BUFFER_PAIRS,
     TOTAL_TARGET_PAIRS,
+    CandidateEligibilityError,
     CandidateSpec,
     ContentGroundingError,
     DetectorIsolationViolationError,
@@ -62,6 +63,7 @@ from ml.evaluation.independent_cohort_acquisition import (
     execute_cohort_acquisition,
     generate_canonical_candidate_plan,
     generate_synthetic_fixture_plan,
+    load_candidate_catalog_extension,
     load_content_grounded_edit_plan,
     load_historical_source_keys,
     normalize_image_to_canvas,
@@ -776,3 +778,120 @@ def test_notebook_structure_and_production_cli_invocation():
     # 4. Detached checkout at the pinned full SHA, never a mutable branch head
     assert "checkout_pinned(REPO_DIR, REPO_URL, EXPECTED_COMMIT)" in full_code
     assert "--branch" not in full_code
+
+
+def test_load_candidate_catalog_extension_valid():
+    """Verify loading the versioned candidate catalog extension v1.0.0."""
+    ext_path = REPO_ROOT / "research/evidence/phase-4c.7b/candidate_catalog_extension_v1.0.0.json"
+    assert ext_path.is_file(), f"Catalog extension file missing at {ext_path}"
+
+    specs = load_candidate_catalog_extension(ext_path)
+    assert len(specs) == 1
+    ext = specs[0]
+    assert ext.candidate_id == "COCO_EXT_SDXL_001"
+    assert ext.stratum_id == "coco_sdxl"
+    assert ext.tool_key == "sdxl_inpainting"
+    assert ext.modification_type == "object_insertion"
+    assert ext.mask_area_class == "large_over_30pct"
+    assert ext.origin_id == "coco:460160"
+    assert ext.author == "PratarPersilja"
+    assert ext.license_name == "Attribution-ShareAlike License"
+    assert "coco:460160" in ext.source_keys
+
+
+def test_load_candidate_catalog_extension_disjoint_violation(tmp_path: Path):
+    """Verify that catalog extension rejects candidates overlapping historical Option P."""
+    # Write a temporary extension candidate pointing to a historical key
+    hist_key = next(iter(load_historical_source_keys()))
+    fake_ext = {
+        "schema_version": "1.0.0",
+        "extension_id": "test_ext",
+        "parent_catalog_relpath": "research/evidence/phase-4c.7b/verified_candidate_catalog_v2.json",
+        "parent_catalog_sha256": "d85595c6b43d5acf8d312993a270278b4f17f481dca0f8286efdae07bcd281a5",
+        "extension_candidates": [
+            {
+                "candidate_id": "COCO_EXT_SDXL_FAIL",
+                "stratum_id": "coco_sdxl",
+                "source_origin": "coco_2017",
+                "acquisition_channel": "coco_2017_image_info",
+                "tool_key": "sdxl_inpainting",
+                "modification_type": "object_insertion",
+                "mask_area_class": "large_over_30pct",
+                "origin_id": hist_key,
+                "source_keys": [hist_key],
+                "creator_name": "Test Creator",
+                "creator_verification": "VERIFIED_FROM_SOURCE",
+                "creator_evidence_url": "https://example.com/evidence",
+                "download_url": "http://images.cocodataset.org/val2017/000000000014.jpg",
+                "source_page_url": "https://example.com/page",
+                "license_name": "Attribution License",
+                "license_url": "https://creativecommons.org/licenses/by/2.0/",
+                "license_version": "2.0",
+                "license_evidence_source": "test",
+                "provenance_checked_at_utc": "2026-10-09T00:00:00Z",
+                "download_rendition": "test",
+            }
+        ],
+    }
+    ext_file = tmp_path / "bad_ext.json"
+    ext_file.write_text(json.dumps(fake_ext), encoding="utf-8")
+
+    with pytest.raises(CandidateEligibilityError, match="HISTORICAL_OPTION_P_OVERLAP"):
+        load_candidate_catalog_extension(ext_file)
+
+
+def test_load_candidate_catalog_extension_parent_hash_mismatch(tmp_path: Path):
+    """Verify that catalog extension rejects invalid parent catalog sha256."""
+    fake_ext = {
+        "schema_version": "1.0.0",
+        "extension_id": "test_ext_bad_parent",
+        "parent_catalog_relpath": "research/evidence/phase-4c.7b/verified_candidate_catalog_v2.json",
+        "parent_catalog_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "extension_candidates": [
+            {
+                "candidate_id": "TEST_001",
+                "source_keys": ["coco:9999999"],
+            }
+        ],
+    }
+    ext_file = tmp_path / "mismatch_ext.json"
+    ext_file.write_text(json.dumps(fake_ext), encoding="utf-8")
+
+    with pytest.raises(CandidateEligibilityError, match="parent catalog sha256 mismatch"):
+        load_candidate_catalog_extension(ext_file)
+
+
+def test_load_content_grounded_edit_plan_with_catalog_extension():
+    """Verify loading pilot plan v2 proposal binds all 8 candidates via catalog and extension."""
+    plan_path = REPO_ROOT / "research/evidence/phase-4c.7b/content_grounded_pilot_plan_v2_proposal.json"
+    assert plan_path.is_file()
+
+    alloc = generate_canonical_candidate_plan()
+    grounded = load_content_grounded_edit_plan(alloc, plan_path, target_per_stratum=2, require_human_approval=False)
+
+    assert len(grounded) == 8
+    ids = [c.candidate_id for c in grounded]
+    assert ids == [
+        "IND_COCO_SD2_001",
+        "IND_COCO_SD2_002",
+        "IND_COCO_SDXL_042",
+        "COCO_EXT_SDXL_001",
+        "IND_COMMONS_SD2_001",
+        "IND_COMMONS_SD2_040",
+        "IND_COMMONS_SDXL_001",
+        "IND_COMMONS_SDXL_005",
+    ]
+
+    # Verify Triptych target coordinates [145, 45, 355, 465]
+    triptych = [c for c in grounded if c.candidate_id == "IND_COMMONS_SDXL_005"][0]
+    assert triptych.target_bbox_xyxy == (145, 45, 355, 465)
+    assert triptych.mask_bbox_xyxy == (135, 40, 365, 475)
+
+
+def test_pilot_plan_v2_proposal_approval_guard():
+    """Verify approval gate strictly blocks unapproved proposal when require_human_approval=True."""
+    plan_path = REPO_ROOT / "research/evidence/phase-4c.7b/content_grounded_pilot_plan_v2_proposal.json"
+    alloc = generate_canonical_candidate_plan()
+
+    with pytest.raises(ContentGroundingError, match="content-grounded edit plan is not human-approved"):
+        load_content_grounded_edit_plan(alloc, plan_path, target_per_stratum=2, require_human_approval=True)

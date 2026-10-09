@@ -7,7 +7,9 @@ Metadata:
 - Status: **`PENDING_HUMAN_REVIEW`**
 - Human reviewer: `null`
 - Human reviewed at: `null`
-- Bound plan proposal: [`content_grounded_pilot_plan_v2_proposal.json`](research/evidence/phase-4c.7b/content_grounded_pilot_plan_v2_proposal.json)
+- Bound plan proposal: [`content_grounded_pilot_plan_v2_proposal.json`](research/evidence/phase-4c.7b/content_grounded_pilot_plan_v2_proposal.json) (SHA-256: `cd9086120b6b54a75d73db8482f1364ed7ee2643668c2a6fa44e66282355fb64`)
+- Bound catalog extension: [`candidate_catalog_extension_v1.0.0.json`](research/evidence/phase-4c.7b/candidate_catalog_extension_v1.0.0.json) (SHA-256: `0d875b81a8044e3285ecf0331beec6646d94b085915baaaa32247e86ee9023e7`)
+- Parent catalog: [`verified_candidate_catalog_v2.json`](research/evidence/phase-4c.7b/verified_candidate_catalog_v2.json) (SHA-256: `d85595c6b43d5acf8d312993a270278b4f17f481dca0f8286efdae07bcd281a5`)
 - Proposed attempt budget: exactly 8 attempts (1 attempt per candidate, 0 retries)
 
 > [!IMPORTANT]
@@ -60,8 +62,8 @@ Amendment v1.7.0 bảo toàn 100% định mức ma trận phân bổ của Proto
 - **Phân tích che phủ thực tế vs BBox containment**:
   - *BBox containment*: 100% target bbox nằm trong mask bbox ($10 \le 20 < 330 \le 340$ và $260 \le 280 < 490 \le 510$).
   - *Bản chất thao tác insertion*: Ảnh authentic là bờ biển tự nhiên, không có đối tượng cũ. Target bbox là hộp bao không gian cho bàn gỗ. Đối tượng vật lý được sinh (mặt bàn, chân bàn, ghế băng, bóng đổ) sẽ chiếm một tập con không đều bên trong target bbox.
-  - *Khoảng lề biên*: Lề dưới $y \in [490, 510]$ (20 px) và lề ngang $x \in [10, 20]$ & $[330, 340]$ (10 px) bảo đảm chân bàn gỗ cắm tự nhiên vào mặt cỏ và bóng đổ tiếp xúc trải mềm trên mặt đất mà không bị cắt cụt bởi ranh giới mask.
-  - *Vật thể lân cận*: Vùng bờ biển hoàn toàn sạch, không có người, xe cộ hay công trình xây dựng. Bề mặt đất tự nhiên triệt tiêu rủi ro bước nhảy tông như trên mặt trần thạch cao phẳng của `_041`.
+  - *Khoảng lề biên*: Lề dưới $y \in [490, 510]$ (20 px) và lề ngang $x \in [10, 20]$ & $[330, 340]$ (10 px) nhằm dự phòng không gian cho chân bàn và bóng tiếp xúc trên mặt cỏ. Tuy nhiên, trong tạo sinh inpainting thực tế, lề biên tiền kiểm không bảo đảm mô hình sẽ tạo bóng đổ trải mềm hoặc triệt tiêu hoàn toàn bước nhảy biên.
+  - *Vật thể lân cận*: Vùng bờ biển quang đãng, không có người, xe cộ hay công trình xây dựng. Bề mặt đất bờ cỏ gồ ghề giảm thiểu độ nhạy cảm so với mặt phẳng trần thạch cao đồng nhất của `_041`, song vẫn tiềm ẩn rủi ro sai lệch cấu trúc hoặc tông màu tại đường biên inpainting.
 
 ### 3.3. Slot 6: Thay thế `IND_COMMONS_SD2_002` bằng `IND_COMMONS_SD2_040` (Hình khối trụ đặc)
 - **Candidate thay thế**: `IND_COMMONS_SD2_040` (Pool index: 39).
@@ -78,11 +80,11 @@ Amendment v1.7.0 bảo toàn 100% định mức ma trận phân bổ của Proto
 - **Disjointness**: PASS (0 overlap với 684 nguồn Option P lịch sử).
 - **Target mô tả**: Khối điêu khắc đồng đồ sộ "Triptych" tại Windsor Sculpture Park.
 - **Prompt đề xuất**: *"a classical white marble commemorative column standing on a solid plinth in the public park, realistic overcast daylight and weathered stone texture"*.
-- **Hình học**: Target `[145, 50, 355, 465]` (87.150 px = 33.25%), Mask AABB `[135, 40, 365, 475]` (100.050 px = 38.166046%, chuẩn `large_over_30pct` $\ge 30\%$).
+- **Hình học**: Target `[145, 45, 355, 465]` (88.200 px = 33.647461%), Mask AABB `[135, 40, 365, 475]` (100.050 px = 38.166046%, chuẩn `large_over_30pct` $\ge 30\%$).
 - **Phân tích che phủ thực tế vs BBox containment**:
-  - *BBox containment*: 100% target bbox nằm trong mask bbox ($135 \le 145 < 355 \le 365$ và $40 \le 50 < 465 \le 475$).
-  - *Che phủ đối tượng thực tế (Physical Object Coverage)*: Khối điêu khắc đồng "Triptych" trải dài từ $x=145$ đến $x=352$ và từ $y=45$ đến $y=465$ (bao gồm bệ bê tông chân tượng tại $y=445..465$). Toàn bộ thân tượng và bệ đỡ đều nằm trọn 100% trong mask AABB.
-  - *Tiếp xúc chân bệ & bóng đổ*: Chân bệ bê tông kết thúc ở $y \approx 465$, thảm cỏ bắt đầu từ $y \approx 470$. Khoảng lề $y \in [465, 475]$ cho phép cột đá mới sinh một bệ móng vững chắc cắm sâu vào mặt cỏ công viên và trải bóng đổ tự nhiên mà không để lại vết sẹo biên.
+  - *BBox containment*: 100% target bbox nằm trong mask bbox ($135 \le 145 < 355 \le 365$ và $40 \le 45 < 465 \le 475$).
+  - *Che phủ đối tượng thực tế (Physical Object Coverage)*: Khối điêu khắc đồng "Triptych" trải dài từ $x=145$ đến $x=352$ và đỉnh cột bắt đầu tại $y=45$ đến chân bệ bê tông tại $y=465$ (bao gồm bệ đỡ bê tông chân tượng tại $y=445..465$). Target rectified `[145, 45, 355, 465]` bao trọn 100% cấu trúc vật lý thực tế của tượng và bệ đỡ; toàn bộ thân tượng và bệ đỡ đều nằm trọn 100% trong mask AABB.
+  - *Tiếp xúc chân bệ & bóng đổ*: Chân bệ bê tông kết thúc ở $y \approx 465$, thảm cỏ bắt đầu từ $y \approx 470$. Khoảng lề $y \in [465, 475]$ (10 px) dự phòng không gian cho bệ móng và bóng đổ tiếp xúc trên mặt cỏ, song không bảo đảm loại trừ hoàn toàn nguy cơ vết sẹo biên hoặc bậc tương phản vi mô.
   - *Vật thể lân cận*: Không có lan can kim loại (khắc phục lỗi của Tower Song `_003`), không có vòm kính tròn (khắc phục lỗi của Żyletkowce `_020`), không có người đi bộ. Hậu cảnh là bầu trời mây và rặng cây công viên ở xa.
   - *Tính tương thích Runner/Schema*: Sử dụng hộp chữ nhật AABB chuẩn, tương thích 100% với code runner và schema hiện hành mà không cần sửa code.
 
