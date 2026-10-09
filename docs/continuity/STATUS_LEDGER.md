@@ -1,3 +1,13 @@
+## Complete Research Manuscript Finalized & Scientific Verification Reconciled (Phase 4C.7B trace)
+
+- **Comprehensive research manuscript authored**: Created `docs/MANUSCRIPT.md` covering Abstract, Introduction, Related Work, Methods, Results, Discussion, Limitations, RQ-Evidence Matrix, Conclusion, References, and Reproducibility Guide.
+- **Machine-readable results & figures embedded**: Directly embedded official machine-generated table (`research/evidence/phase-4c.7b/tgif_n400_manuscript_results_table.md`) and vector SVG / raster PNG figures for the primary endpoint at `jpeg_q75` ($\Delta \text{Macro-F1} = -0.0027$, 95% Percentile Bootstrap CI $[-0.0126, +0.0072]$, verdict `INDEPENDENT_JPEG75_INCONCLUSIVE`).
+- **Research Questions vs Evidence matrix**: Established complete audit table mapping RQ1 through Auxiliary RQ5 to methodology, empirical evidence, grounded conclusion, and unmeasured/limitations status.
+- **Scientific honesty phrasing reconciled**: Corrected lingering sentence in `PHASE_REPORT.md` Section 8.4 from "kết quả thực nghiệm bác bỏ kỳ vọng này" to "kết quả kiểm định độc lập chưa xác nhận mức cải thiện quan sát trên tập phát triển".
+- **Strict product disclaimers & author placeholders**: Enforced explicit disclaimers barring commercial product performance guarantees; author and affiliation entries formatted as explicit placeholders for human completion.
+
+---
+
 ## TGIF N=400 Manuscript Results Table & Primary Endpoint Figures Finalized (Phase 4C.7B trace)
 
 - **Machine-readable automated table generation**: Implemented `scripts/research/generate_manuscript_results_and_figures.py` reading directly from `predictions.json`, `receipt.json`, and `audit_receipt.json`. Zero manual entry, zero detector reruns, zero feature extraction/fitting. All metrics (Macro-F1, BAcc, AUROC, Brier, ECE 10 uniform bins) recomputed with sample standard deviation `ddof=1` across 5 outer folds and reconciled within machine numerical tolerance $\le 1.11 \times 10^{-16}$. Published `research/evidence/phase-4c.7b/tgif_n400_manuscript_results_table.md`.

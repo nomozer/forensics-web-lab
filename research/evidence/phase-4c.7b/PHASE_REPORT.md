@@ -1672,7 +1672,7 @@ Dưới đây là bảng số liệu tổng hợp chính thức được sinh t�
 #### 1. DSP Fusion Chưa Chứng Minh Cải Thiện tại `jpeg_q75`
 Trong giai đoạn phát triển mô hình (Phase 4C.6B trên 341 nguồn Option P thuộc inner-validation), việc kết hợp các tín hiệu phân tích số DSP (2D FFT, DCT, noise residual) thông qua bộ phân loại Late Fusion đã mang lại sự cải thiện rõ rệt tại điều kiện nén JPEG Q=75 ($\Delta \text{Macro-F1} = +0.1363$ [95% CI: $+0.1057, +0.1681$]), giải cứu hiệu năng của nhánh thị giác vốn bị suy giảm sâu trên tập dữ liệu đó (từ $0.4401$ lên $0.5764$).
 
-Tuy nhiên, khi tiến hành kiểm định độc lập trên tập mẫu mới $N=400$ ($800$ ảnh từ $400$ nguồn ảnh hoàn toàn chưa từng thấy trong quá trình huấn luyện và lựa chọn mô hình), kết quả thực nghiệm bác bỏ kỳ vọng này:
+Tuy nhiên, khi tiến hành kiểm định độc lập trên tập mẫu mới $N=400$ ($800$ ảnh từ $400$ nguồn ảnh hoàn toàn chưa từng thấy trong quá trình huấn luyện và lựa chọn mô hình), kết quả kiểm định độc lập chưa xác nhận mức cải thiện quan sát trên tập phát triển:
 - Nhánh thị giác Visual Calibrated (MobileNetV3-small \cite{howard2019mobilenetv3} kết hợp Temperature Scaling \cite{guo2017calibration}) duy trì hiệu năng ổn định hơn dự kiến, đạt Macro-F1 là **$0.5624 \pm 0.0060$**.
 - Nhánh kết hợp Late Fusion DSP Augmented đạt Macro-F1 là **$0.5596 \pm 0.0126$**, dẫn đến độ chênh lệch điểm ước lượng là **$\Delta = -0.0027$**.
 - Khoảng tin cậy bootstrap 95% là **$[-0.0126, +0.0072]$**, hoàn toàn bao trùm giá trị 0.0, và tỷ lệ số lượt bootstrap dương chỉ đạt **$30.29\%$**.
