@@ -19,21 +19,33 @@
     `python scripts/research/run_cohort_acquisition.py --mode calibration --run-id calib-20261009T015749Z --expected-commit 045ea70cb9067ede3833f7a01562199869f4ae56 --audit-run data/research/local-artifacts/phase-4c.7b/calib-20261009T015749Z` $\to$ **`PASS`**.
   - Verified run ID `calib-20261009T015749Z`, source commit `045ea70cb9067ede3833f7a01562199869f4ae56`, approved plan SHA-256 `2611af81c2e104fb04235c4f3c15371b2c95e8ae57a72190e5a82623f91dbf2c`.
   - Attempt accounting: exactly 2 attempts on candidate `IND_COCO_SDXL_002` (`STARTED` and `ACCEPTED` in `attempt_ledger.jsonl` represent two lifecycle events within each attempt, not 4 attempts).
-  - Input bit-parity: authentic and mask PNG pixel arrays match bit-identically to sealed inputs from `pilot-20261008T113700Z` (`max_auth_diff == 0`, `max_mask_diff == 0`). Disk PNG file hashes changed due to Pillow re-encoding in Colab, but pixel arrays are bit-exact.
   - Candidate configuration: seed `20272319`, canvas 512×512, no crop, no feathering, EulerDiscreteScheduler, 30 steps, strength 1.0, guidance scale 7.5 (attempt 1) and 9.5 (attempt 2).
   - Telemetry: Python 3.13.15, Linux 6.6.122+, PyTorch 2.11.0+cu130, Diffusers 0.40.0, Transformers 5.18.0, CUDA 13.0, Tesla T4 (NumPy 2.1.3, Pillow 11.3.0).
-- **Recalculated Pixel-Level Metrics & Comparison**:
-  - Background invariance: strictly verified across both attempts (`outside_mean_l1 == 0.000000`, `outside_max_delta == 0.0`), enforced by 1-bit binary compositing.
-  - Raw diffusion output drift before compositing:
-    * Attempt 1 (Guidance 7.5): mean L1 = `4.0973` (std 3.23), max delta `41.0`.
-    * Attempt 2 (Guidance 9.5): mean L1 = `4.1187` (std 3.24), max delta `38.0`.
-  - Inside-mask mean L1:
-    * Attempt 1 (Guidance 7.5): mean L1 = `16.4117` (std 33.60), max delta `89.0`.
-    * Attempt 2 (Guidance 9.5): mean L1 = `16.9891` (std 33.02), max delta `87.0`.
-    * Delta between G9.5 and G7.5 inside mask: mean L1 = `5.6830`, max delta = `41.0`.
-  - Boundary step along mask boundary `[345, 245, 455, 335]`:
-    * Top edge step mean L1: `8.17` (G7.5) and `9.27` (G9.5) vs natural authentic `1.81`.
-    * Left edge step mean L1: `9.56` (G7.5) and `9.29` (G9.5) vs natural authentic `3.24`.
+- **Chuỗi Nguồn gốc Đầu vào (Input Provenance Chain) & Tính toàn vẹn**:
+  - *Tệp niêm phong đầu vào trước chạy*: Kế hoạch `content_grounded_calibration_proposal.json` ràng buộc mã băm từ `pilot-20261008T113700Z`:
+    * Authentic: `IND_COCO_SDXL_002_auth.png` (280,961 bytes, SHA-256 `7aefc1d1dff39ac5527ce47734421e34094af42d9763fe35ab3b94fee62e4571`).
+    * Mask: `IND_COCO_SDXL_002_mask.png` (449 bytes, SHA-256 `2ff6b16571048015060095e9a240b28ed1073e9ea70a9d7870bfaf3b49fb9bee`).
+    * Runner code (`verify_calibration_inputs`) kiểm tra fail-closed hai mã băm này trước khi thực thi. Tuy nhiên, `calibration_receipt.json` không ghi trường mã băm của tệp đầu vào trong JSON receipt (đây là một thiếu hụt ghi nhận receipt).
+  - *Tệp đóng gói sau chạy trong archive*: Quá trình thực thi trên Colab mở ảnh qua Pillow và lưu lại bản sao (`auth_img.save(auth_dest)`). Quá trình re-encode bằng libpng mặc định làm thay đổi kích thước byte và mã băm tệp trên đĩa:
+    * `CALIB_COCO_SDXL_002_PROMPT_G75_auth.png`: 288,206 bytes, SHA-256 `a35bef734b09b832c75aa0335f0de25adba54f37fff7ea4c4741e21517c75f46`.
+    * `CALIB_COCO_SDXL_002_PROMPT_G75_mask.png`: 523 bytes, SHA-256 `e4721316af48fb49ca166a8b02541b4713e92abbafc7a16e84c752750b76f25a`.
+  - *Phân biệt rõ ràng*: Hai tệp có SHA-256 khác nhau tuyệt đối không được gọi là byte-identical. Tuy nhiên, khi giải mã qua PIL thành mảng NumPy, mảng pixel của tệp trong archive khớp chính xác bit-to-bit với ảnh niêm phong (`max_auth_diff == 0`, `max_mask_diff == 0`). Mức độ trùng khớp pixel bảo đảm giá trị số không suy hao, nhưng không thay thế được việc lưu vết mã băm tệp trong receipt trước chạy.
+- **Recalculated Pixel-Level Metrics & Formula Disclosures**:
+  - *Kiểu dữ liệu & ROI*: Mảng ảnh kiểu `float32`, RGB 512×512; mask `uint8` tại `[345, 245, 455, 335]` (9,900 px, 3.776550%).
+  - *Công thức độ lệch tuyệt đối*: `delta_abs = np.abs(edited.astype(np.float32) - authentic.astype(np.float32))`.
+  - *Outside Invariance (Ghép nhị phân 1-bit)*: `outside_mean_l1 == 0.000000`, `outside_max_delta == 0.0` trên cả 2 attempts.
+  - *Raw Diffusion Drift trước compositing*:
+    * G7.5: mean L1 = `4.0973`, std của delta_abs = `3.4032`, max delta = `41.0`.
+    * G9.5: mean L1 = `4.1187`, std của delta_abs = `3.4253`, max delta = `38.0`.
+  - *Inside Mask Metrics (Đính chính định danh std)*:
+    * Attempt 1 (Guidance 7.5): inside mean L1 = **`16.4117`**; std của delta_abs = **`13.6940`** (ddof=0; ddof=1 là `13.6943`); max delta = `89.0`. *(Đính chính: Con số 33.60 trong bản nháp trước là std của giá trị màu edited `np.std(g75[mask == 255]) = 33.6041`, không phải std của delta_abs).*
+    * Attempt 2 (Guidance 9.5): inside mean L1 = **`16.9891`**; std của delta_abs = **`13.9863`** (ddof=0; ddof=1 là `13.9865`); max delta = `87.0`. *(Đính chính: Con số 33.02 trong bản nháp trước là std của giá trị màu edited `np.std(g95[mask == 255]) = 33.0174`).*
+    * Delta nội vùng G9.5 vs G7.5: mean L1 = `5.6830`, std = `4.7690`, max delta = `41.0`.
+  - *Số đo Bậc biên (Boundary Steps) tại `[345, 245, 455, 335]`*:
+    * Cạnh trên (Top edge, $y=245$ vs $244$, $x \in [345, 455)$): Công thức `np.mean(np.abs(img[245, 345:455, :] - img[244, 345:455, :]))`. Authentic: **`1.8121`**; G7.5: **`8.1667`**; G9.5: **`9.2697`**.
+    * Cạnh trái (Left edge, $x=345$ vs $344$, $y \in [245, 335)$): Công thức `np.mean(np.abs(img[245:335, 345, :] - img[245:335, 344, :]))`. Authentic: **`4.1185`**; G7.5: **`9.5593`**; G9.5: **`9.2852`**. *(Đính chính: Con số 3.24 trước đó là do sai lệch ROI đo; giá trị authentic thực tế trên ROI chuẩn tắc là **4.1185**).*
+    * Cạnh phải (Right edge, $x=454$ vs $455$, $y \in [245, 335)$): Authentic: `3.3667`; G7.5: `8.3481`; G9.5: `10.2667`.
+    * Cạnh dưới (Bottom edge, $y=334$ vs $335$, $x \in [345, 455)$): Authentic: `2.8667`; G7.5: `10.2758`; G9.5: `11.8667`.
 - **Visual Analysis across Separated Criteria**:
   - *Tomato Presence*: Total semantic omission in both attempts. 0 cherry tomato synthesized. Both attempts generated infilled bread crumb texture.
   - *Position / Scale*: Target bbox `[375, 265, 430, 320]` contains no target object in either attempt.
@@ -44,7 +56,7 @@
 - **Contact Sheet & Governance Dossier**:
   - Original Colab contact sheet backed up to `calibration_contact_sheet_raw_colab.html`.
   - Derived coordinate overlays and zoom panels rendered into `derived_overlays/`.
-  - Enriched self-contained HTML contact sheet: `data/research/local-artifacts/phase-4c.7b/calib-20261009T015749Z/calibration_contact_sheet.html` (3,441,428 bytes, 15 Base64 embedded PNGs, authentic, raw, composite, overlay, and zoom panels).
+  - Enriched self-contained HTML contact sheet: `data/research/local-artifacts/phase-4c.7b/calib-20261009T015749Z/calibration_contact_sheet.html` (3,445,798 bytes, 15 Base64 embedded PNGs, authentic, raw, composite, overlay, and zoom panels).
   - 15/15 Base64 embeddings verified byte-for-byte against disk PNGs; table metrics match calculated values.
   - Governance separation: Agent recommends REJECT for both calibration attempts; formal Human Content QC status remains strictly **PENDING** (2 decisions awaiting human reviewer).
   - Historical diagnostic determinations (6/6 REJECT) and 8 historical pilot pairs (PENDING) preserved intact. Full cohort remains locked; detector calls = 0; independent performance `NOT_MEASURED`.
@@ -52,6 +64,112 @@
   - Phép thử chỉ so sánh guidance scale 7.5 với 9.5 trong cấu hình văn bản mới cố định, trên một candidate (`IND_COCO_SDXL_002`) và một seed (`20272319`).
   - So sánh lịch sử với pilot cũ chỉ mang tính tham khảo vì prompt và negative prompt đã thay đổi đồng thời.
   - Không kết luận cơ chế omission, hiệu quả tổng quát của guidance scale, hoặc lựa chọn pipeline production từ hai attempts.
+
+## GG. Tổng hợp Tính khả thi Thực nghiệm Phase 4C.7B và Phân loại Khiếm khuyết Tạo sinh (2026-10-09)
+
+Hồ sơ tổng hợp toàn diện các đợt chạy thực nghiệm độc lập trong Phase 4C.7B nhằm phục vụ đánh giá tính khả thi trước khi xem xét mở khóa cohort chính thức. Toàn bộ nhận định được phân tách nghiêm ngặt giữa quan sát thực nghiệm, lỗi phần mềm đã chứng minh, và các giả thuyết chưa kiểm chứng (liên kết với `docs/EVIDENCE_REGISTER.md` và `docs/references.bib`).
+
+### 1. Bảng Tổng hợp Độc lập 4 Đợt Chạy Thực nghiệm
+*Nguyên tắc kế toán khoa học: Tuyệt đối không gộp các lần chạy khác giao thức thành một tỷ lệ thành công chung; không tính trùng các sự kiện STARTED/terminal trong cùng một attempt; không tính các candidate tái dùng thành mẫu độc lập mới.*
+
+| Đợt chạy Thực nghiệm | Giao thức / Mục tiêu | Quy mô & Ngân sách | Technical QC (std / inside L1 / outside L1) | Human Content QC | Lỗi / Khiếm khuyết Đã Chứng minh |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Pilot lịch sử**<br>`pilot-20261007T132003Z`<br>*(kèm các incident trước đó)* | Pilot 8 cặp đầu tiên trên 4 strata; kiểm tra vận hành hệ thống thu thập tự động. | 8 cặp kế hoạch<br>(2 cặp / stratum).<br>Ngân sách: 8 attempts. | **8/8 PASS**<br>(std > 5.0, inside L1 $\ge 3.0$, outside L1 $\le 0.5$). | **8 PENDING**<br>*(Agent screening phát hiện 8/8 có vấn đề nội dung)*. | 1. Upstream 401 Unauthorized (`sd2-inpainting`).<br>2. Lỗi Diffusers pipeline thiếu `height/width` làm SDXL sinh 1024×1024, gây burn through 110 pool candidates.<br>3. Omission diện rộng trên mask nhỏ. |
+| **Follow-up pilot**<br>`pilot-20261008T113700Z` | Thử nghiệm 8 cặp sau sửa đổi hướng dẫn nội dung (content-grounded instructions). | 8 cặp kế hoạch<br>(2 cặp / stratum).<br>Ngân sách: 8 attempts. | **8/8 PASS**<br>(inside L1 11.08–76.14; outside L1 = 0.000000 nhờ 1-bit compositing). | **8 PENDING**<br>*(Chưa có quyết định người duyệt)*. | 1. Omission trên mask nhỏ (cà chua, chim, vali).<br>2. Đứt gãy cấu trúc (lan can kim loại bị cắt cụt 210 px).<br>3. Lệch tone mảng lớn (trần nhà 30% area). |
+| **Diagnostic**<br>`diag-20261008T154628Z` | So sánh đối đầu Full Canvas 512×512 (Arm A) vs Local Crop có padding ở độ phân giải gốc (Arm B) trên 3 ca omission. | 3 candidates $\times$ 2 arms = đúng 6 attempts.<br>Ngân sách: 6 attempts. | **6/6 PASS**<br>(outside L1 = 0.000000 qua compositing). | **6/6 REJECT**<br>*(Đã chốt chính thức bởi Dũng Phạm lúc 2026-10-08T19:34:30Z)*. | 1. Arm A: 3/3 ca omission hoàn toàn.<br>2. Arm B cà chua: bậc biên mask & vụn bánh mì.<br>3. Arm B vali: semantic hallucination (xe hơi đồ chơi).<br>4. Arm B chim: lệch placement ngoài target bbox 41 px & lệch tone mảng trời. |
+| **Calibration**<br>`calib-20261009T015749Z` | Can thiệp đơn biến: so sánh Guidance Scale 7.5 vs 9.5 với prompt/negative prompt mới trên `IND_COCO_SDXL_002` (seed 20272319). | 1 candidate $\times$ 2 guidance scales = đúng 2 attempts.<br>Ngân sách: 2 attempts. | **2/2 PASS**<br>(inside L1 16.41 / 16.99; outside L1 = 0.000000). | **2 PENDING**<br>*(Agent đề xuất REJECT; chờ người duyệt)*. | 1. Cả 2 attempt đều omission hoàn toàn (0 quả cà chua; tái tạo vân ruột bánh mì).<br>2. Bậc nhảy tương phản vi mô tại biên mask (top edge step 8.17 / 9.27 vs 1.81). |
+
+### 2. Phân loại 5 Nhóm Khiếm khuyết Chất lượng Tạo sinh (Defect Taxonomy)
+
+1. **Hiện tượng Thiếu vật thể hoàn toàn (Semantic Omission)**:
+   - *Biểu hiện*: Vùng mask không xuất hiện đối tượng được yêu cầu trong prompt mà bị lấp đầy bởi hoa văn nền xung quanh (infill).
+   - *Bằng chứng thực nghiệm*: Xuất hiện nhất quán trên SDXL full canvas 512×512 khi diện tích mask nhỏ (cà chua 3.78%, chim 1.15%, vali 1.70%). Đợt calibration chứng minh rằng việc tăng guidance scale (7.5 $\to$ 9.5) kèm negative prompt phủ định cụ thể (`bread crumb only`, `background infill`) hoàn toàn không giải quyết được omission trên canvas 512×512.
+2. **Sai lệch Đối tượng Ngữ nghĩa (Semantic Hallucination)**:
+   - *Biểu hiện*: Mô hình tạo ra một vật thể hoàn chỉnh nhưng hoàn toàn sai lệch so với prompt văn bản.
+   - *Bằng chứng thực nghiệm*: Quan sát thấy ở SD2 inpainting khi áp dụng local crop 1.6x (vali Arm B trong `diag-20261008T154628Z`): mô hình sinh ra một chiếc xe hơi đồ chơi cổ thay vì chiếc vali hành lý, dù inside L1 tăng cao (43.39 vs 30.74).
+3. **Sai lệch Vị trí và Tỷ lệ (Placement & Scale Deficit)**:
+   - *Biểu hiện*: Mô hình sinh được đối tượng mục tiêu nhưng đặt sai vị trí hình học so với tọa độ kỳ vọng.
+   - *Bằng chứng thực nghiệm*: Quan sát thấy ở SDXL native resolution local crop (chim Arm B trong diagnostic): chim xuất hiện nhưng bị dịch chuyển xuống dưới target bounding box $dy = +41.0$ px ($dx = -30.5$ px, độ trùng khớp theo chiều dọc = 0 px), nằm ngoài target box dù vẫn nằm 100% trong mask.
+4. **Lệch Ánh sáng, Tông màu & Kết cấu (Lighting, Texture & Tone Mismatch)**:
+   - *Biểu hiện*: Vùng can thiệp có mức độ phơi sáng, tông màu hoặc kết cấu không đồng nhất với ảnh authentic xung quanh.
+   - *Bằng chứng thực nghiệm*: Mảng trời xung quanh chim Arm B bị lệch tone vuông góc ($\Delta\text{RGB} \approx -3.5$ đến $-4.0$), tạo thành một mảng chữ nhật xám mờ rõ rệt. Vùng vụn bánh mì infilled trong mask cà chua có độ tương phản và mật độ hạt mịn khác biệt với phần bánh mì authentic bên ngoài.
+5. **Biên ghép Vi mô và Đứt gãy Cấu trúc (Boundary Seams & Structural Severance)**:
+   - *Biểu hiện*: Bậc tương phản vi mô tại đường ranh giới mask và sự đứt đoạn vật lý của các thực thể hình học kéo dài.
+   - *Bằng chứng thực nghiệm*:
+     * Hard binary compositing (1-bit) luôn tạo ra bước nhảy tương phản vi mô tại biên (ví dụ mép trên mask cà chua có step 8.17–9.27 so với authentic 1.81).
+     * Khi mask cắt ngang các cấu trúc liên tục (lan can kim loại trong pilot), việc ghép nhị phân cắt đứt cấu trúc vật lý, tạo ra forensic artifact lộ liễu.
+     * Thử nghiệm feathering cosine ($k=2$ px) đã chứng minh chỉ làm mịn được bậc chuyển tiếp 1-2 pixel nhưng không thể khắc phục sự đứt gãy hình học vĩ mô hay tonal mismatch diện tích lớn.
+
+### 3. Phân tách Nghiêm ngặt: Thực nghiệm, Lỗi phần mềm và Giả thuyết
+- **Quan sát Thực nghiệm (Empirical Observations - Đã xác minh)**:
+  * Tỷ lệ omission thực tế trên canvas 512×512 đối với mask nhỏ.
+  * Tọa độ chim bị lệch khỏi target box.
+  * Xe hơi thay thế vali dưới crop 1.6x.
+  * Bước nhảy L1 tại biên mask và sự trôi lệch raw diffusion $\approx 4.1$ L1.
+  * `outside_mean_l1 == 0.000000` hoàn toàn do lớp ghép 1-bit bảo đảm, không phải do mô hình diffusion tự bảo tồn nền.
+- **Lỗi Phần mềm Đã Chứng minh (Proven Software Defects - Đã khắc phục)**:
+  * Lỗi 401 deprecation của checkpoint SD2 upstream (khắc phục bằng mirror cộng đồng).
+  * Lỗi thiếu tham số `height`/`width` trong Diffusers SDXL inpainting pipeline gây nhảy vọt 1024×1024 (khắc phục bằng contract cứng 512×512).
+- **Giả thuyết Chưa Kiểm chứng (Unverified Hypotheses - Tuyệt đối không nâng thành nguyên nhân)**:
+  * *Giả thuyết Latent Capacity Deficit*: Cho rằng độ phân giải latent quá nhỏ ($13 \times 11$ hoặc $18 \times 14$ latent pixels) không đủ không gian biểu diễn cho các vật thể phức tạp. Chưa có bằng chứng thực nghiệm phân tách giữa latent token capacity và cross-attention feature map.
+  * *Giả thuyết Context Attention Infill Bias*: Cho rằng cơ chế cross-attention bị chi phối bởi các token ngữ cảnh nền xung quanh dẫn đến ưu tiên infill. Chưa có phân tích attention map định lượng.
+  * *Nguy cơ Forensic Shortcut*: Giả thuyết cho rằng các bậc biên ghép vi mô hoặc làm mờ nhân tạo có thể trở thành "đường tắt" (shortcut features) cho bộ dò pháp chứng. Đây là rủi ro phương pháp luận được ghi nhận, không khẳng định hiệu năng bộ dò bị thổi phồng khi chưa đo thực tế (`NOT_MEASURED`).
+
+---
+
+## HH. Đề xuất Định hướng Tiếp theo & Các Quyết định Phương pháp Cần Thẩm duyệt (2026-10-09)
+
+Dựa trên bằng chứng tích lũy qua 4 đợt chạy (8 pilot attempts, 6 diagnostic attempts, 2 calibration attempts), việc tiếp tục thu thập full cohort $N=400$ theo quy trình hiện tại là **chưa khả thi về mặt chất lượng nội dung**, do các vấn đề cốt lõi về omission, sai placement và biên ghép vẫn chưa được giải quyết triệt để.
+
+### 1. Bốn Phương án Định hướng Kỹ thuật
+
+#### Phương án 1: Tiếp tục vi điều chỉnh siêu tham số và prompt trên từng candidate (Micro-Tuning)
+- *Vấn đề giải quyết*: Tìm kiếm tổ hợp prompt, negative prompt, seed và guidance scale để ép mô hình full canvas 512×512 sinh được vật thể trên từng candidate bị lỗi.
+- *Bằng chứng hỗ trợ & Phần chưa biết*: Đợt calibration `calib-20261009T015749Z` chứng minh việc tăng guidance scale 7.5 $\to$ 9.5 kèm negative prompt phủ định không giải quyết được omission trên SDXL. Chưa biết liệu các seed khác có thành công ngẫu nhiên hay không.
+- *Thay đổi phương pháp*: Không thay đổi allocation matrix; giữ nguyên pipeline.
+- *Điều kiện & Kế hoạch*: Yêu cầu lập kế hoạch thử nghiệm mới được duyệt.
+- *Đánh giá*: **Không khuyến nghị**. Phương pháp này tốn kém ngân sách thử nghiệm mò mẫm, dễ dẫn đến thiên kiến chọn lọc (cherry-picking) và không có tính mở rộng cho toàn bộ 400 cặp của cohort.
+
+#### Phương án 2: Chuyển đổi sang Pipeline Local-Crop có điều kiện với phân giải gốc (Native-Resolution Cropped Pipeline)
+- *Vấn đề giải quyết*: Khắc phục hiện tượng omission trên mask nhỏ (đã chứng minh ở Arm B diagnostic: 2/2 ca SDXL Arm B tạo được quả cà chua và chim).
+- *Bằng chứng hỗ trợ & Phần chưa biết*: Arm B tạo được vật thể nhưng làm phát sinh 3 vấn đề mới: sai placement (chim lệch 41 px), tone mismatch (mảng trời xám), và hallucination ở SD2 (xe hơi). Chưa có cơ chế tự động căn chỉnh placement trong crop hoặc hòa trộn tone nền mà không tạo ra shortcut artifact.
+- *Thay đổi phương pháp*: Yêu cầu thay đổi kiến trúc pipeline (crop, coordinate mapping, upscaling/downscaling, blending) và sửa đổi quy chuẩn thu thập.
+- *Điều kiện & Kế hoạch*: Yêu cầu một Protocol Amendment mới, prototype kiểm thử và phê duyệt từ người dùng.
+- *Đánh giá*: Tiềm năng về mặt kỹ thuật tạo vật thể, nhưng có độ phức tạp cao và tiềm ẩn nguy cơ đưa các dấu vết xử lý biên nhân tạo vào tập dữ liệu kiểm định.
+
+#### Phương án 3 (Khuyến nghị Cốt lõi): Rà soát lại Tiêu chí Chọn mẫu và Đề tài Can thiệp (Content-Grounded Candidate & Mask Curation)
+- *Vấn đề giải quyết*: Giải quyết tận gốc cả hai nguyên nhân chính gây suy giảm chất lượng: (1) mask quá nhỏ (<5% diện tích) trên canvas 512×512 dễ bị omission, và (2) mask cắt ngang các cấu trúc hình học liên tục gây đứt gãy vật lý.
+- *Bằng chứng hỗ trợ & Phần chưa biết*:
+  * Bằng chứng pilot cho thấy các mask có diện tích hợp lý (10% - 30%) với nền đồng nhất tạo ra kết quả tự nhiên hơn nhiều so với các mask vi mô 1% - 3.7%.
+  * Bằng chứng feathering chứng minh rằng xử lý hậu kỳ không thể sửa chữa sự đứt gãy hình học; do đó tiêu chí chọn mẫu ban đầu phải bảo đảm ranh giới mask ôm trọn các thực thể độc lập tự nhiên.
+- *Thay đổi phương pháp & Cohort*:
+  * Giữ nguyên cơ cấu 4 strata (`coco_sd2`, `coco_sdxl`, `commons_sd2`, `commons_sdxl`) và tỷ lệ phân bổ $2 \times 2$.
+  * Điều chỉnh tiêu chuẩn chọn lọc candidate trong `verified_candidate_catalog_v2.json`: loại bỏ các ứng viên có diện tích mask < 5% canvas; cấm các kịch bản chỉnh sửa cắt ngang vật thể kéo dài (lan can, đường ray, chân tường); ưu tiên các kịch bản chèn/thay thế đối tượng rời rạc có biên tự nhiên.
+- *Điều kiện cần đạt*:
+  * Người dùng phê duyệt định hướng curation.
+  * Soạn thảo Protocol Amendment v1.4 chính thức khóa tiêu chuẩn chọn lọc hình học.
+  * Chạy một đợt pilot thử nghiệm chuẩn hóa 8 cặp mới có phê duyệt con người trước khi xem xét mở khóa cohort.
+- *Đánh giá*: **Khuyến nghị cao nhất**. Phương án này tôn trọng giới hạn thực tế của công nghệ diffusion inpainting hiện nay, duy trì tính trung thực khoa học, triệt tiêu nguy cơ shortcut artifact và tiết kiệm tài nguyên tính toán.
+
+#### Phương án 4: Tạm dừng thu thập cohort tạo sinh inpainting, chuyển trọng tâm sang các Benchmark Ngoại vi Độc lập (External Benchmark Cohort Evaluation)
+- *Vấn đề giải quyết*: Tránh toàn bộ rủi ro về chất lượng tạo sinh và thời gian chuẩn bị dữ liệu inpainting.
+- *Đánh giá*: Lựa chọn dự phòng nếu người dùng muốn tập trung toàn bộ nguồn lực vào việc đánh giá mô hình trên các bộ dữ liệu công khai sẵn có (GenImage, TGIF, v.v.) thay vì tự xây dựng cohort inpainting mới.
+
+---
+
+### 2. Các Quyết định Cần Người Dùng Duyệt (Handover & Governance Checklist)
+
+1. **Hai Quyết định Content QC cho Calibration Run `calib-20261009T015749Z`**:
+   - `CALIB_COCO_SDXL_002_PROMPT_G75`: Trạng thái hiện tại: **`PENDING`** *(Khuyến nghị của Agent: REJECT do omission hoàn toàn).*
+   - `CALIB_COCO_SDXL_002_PROMPT_G95`: Trạng thái hiện tại: **`PENDING`** *(Khuyến nghị của Agent: REJECT do omission hoàn toàn).*
+2. **Quyết định Định hướng Phương pháp luận Tiếp theo**:
+   - Xác nhận lựa chọn giữa **Phương án 3 (Khuyến nghị: Rà soát & Tinh lọc Candidate/Mask Curation)**, Phương án 2 (Local Crop), Phương án 1 (Micro-tuning), hoặc Phương án 4 (External Benchmarks).
+3. **Bảo tồn các Bất biến Quản trị**:
+   - Giữ nguyên quyết định chính thức **6/6 REJECT** của diagnostic run `diag-20261008T154628Z`.
+   - Giữ nguyên trạng thái **8 PENDING** của pilot run cũ `pilot-20261008T113700Z`.
+   - Giữ nguyên trạng thái **LOCKED** của full independent cohort ($N=400$).
+   - Số lượt gọi detector = 0; hiệu năng độc lập = `NOT_MEASURED`.
+
 
 ## EE. Approved calibration runner implementation & diagnostic determinations dossier (2026-10-08)
 
