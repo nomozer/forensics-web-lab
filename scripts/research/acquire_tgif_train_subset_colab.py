@@ -38,6 +38,15 @@ EXPECTED_LOCKED_MANIFEST_SHA256 = "53a6ee472fe840a42abd97ccb7475932e0720f5788f74
 EXPECTED_POOL_MANIFEST_SHA256 = "9e4ef2c9f89ad7dc1316d764c0acfff3b55dbc60dcc666d8928ff49a04dcd7b6"
 TARGET_CANVAS_SIZE = (512, 512)
 REPO_ROOT = Path(__file__).resolve().parents[2]
+ARCHIVE_MEMBER_LAYOUTS = {
+    "orig": {
+        "component-stripped": ("orig/", ""),
+    },
+    "sd2-sp": {
+        "component-prefixed": ("sd2-sp/", "sd2-sp/"),
+        "component-stripped": ("sd2-sp/", ""),
+    },
+}
 
 # TGIF Nextcloud Official Download URLs (IDLab IMEC Public Benchmark Share)
 TGIF_NEXTCLOUD_BASE = "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o"
@@ -161,22 +170,63 @@ def safe_tar_member_check(member: tarfile.TarInfo) -> str:
         parts = parts[1:]
     return "/".join(parts)
 
+def build_archive_member_targets(
+    targets: dict[str, dict[str, Any]],
+    archive_kind: str,
+) -> dict[str, dict[str, Any]]:
+    """Map approved logical paths to exact physical members for one archive kind."""
+    layouts = ARCHIVE_MEMBER_LAYOUTS.get(archive_kind)
+    if layouts is None:
+        raise CohortIntakeError(f"Unsupported archive kind: {archive_kind}")
+
+    physical_targets: dict[str, dict[str, Any]] = {}
+    for logical_path, candidate in targets.items():
+        normalized_logical = logical_path.replace("\\", "/").removeprefix("./")
+        parts = normalized_logical.split("/")
+        if (
+            normalized_logical.startswith("/")
+            or ":" in normalized_logical
+            or any(part in ("", ".", "..") for part in parts)
+        ):
+            raise CohortIntakeError(f"Unsafe logical archive path: {logical_path}")
+
+        for layout_name, (logical_prefix, physical_prefix) in layouts.items():
+            if not normalized_logical.startswith(logical_prefix):
+                raise CohortIntakeError(
+                    f"Logical path {logical_path} does not match the {archive_kind} prefix {logical_prefix}"
+                )
+            physical_path = physical_prefix + normalized_logical[len(logical_prefix):]
+            existing = physical_targets.get(physical_path)
+            if existing is not None and existing["logical_path"] != normalized_logical:
+                raise CohortIntakeError(
+                    f"Ambiguous archive mapping: {existing['logical_path']} and {normalized_logical} "
+                    f"both resolve to {physical_path}"
+                )
+            physical_targets[physical_path] = {
+                "candidate": candidate,
+                "logical_path": normalized_logical,
+                "layout": layout_name,
+            }
+    return physical_targets
+
 def extract_selective_stream(
     tar_path: Path,
     targets: dict[str, dict[str, Any]],
     output_dir: Path,
     subfolder_name: str,
+    archive_kind: str,
 ) -> dict[str, Any]:
     """Stream-extracts only the registered target files from a tar.gz archive.
     
     targets: dict mapping relative archive paths to candidate dicts.
     """
     output_dir.mkdir(parents=True, exist_ok=True)
-    target_rel_paths = {p.replace("\\", "/").removeprefix("./"): c for p, c in targets.items()}
-    found_paths: set[str] = set()
+    physical_targets = build_archive_member_targets(targets, archive_kind)
+    found_logical_paths: set[str] = set()
     extracted_records: list[dict[str, Any]] = []
+    detected_layout: str | None = None
 
-    print(f"Stream-scanning {tar_path.name} for {len(target_rel_paths)} target members...")
+    print(f"Stream-scanning {tar_path.name} for {len(targets)} target members...")
     t0 = time.time()
 
     with tarfile.open(tar_path, "r:gz") as tf:
@@ -186,12 +236,21 @@ def extract_selective_stream(
                 continue
             
             # Check matching against any normalized target path
-            matched_candidate = target_rel_paths.get(normalized_name)
+            target_binding = physical_targets.get(normalized_name)
 
-            if matched_candidate is not None:
-                if normalized_name in found_paths:
+            if target_binding is not None:
+                matched_candidate = target_binding["candidate"]
+                logical_path = target_binding["logical_path"]
+                member_layout = target_binding["layout"]
+                if detected_layout is not None and member_layout != detected_layout:
+                    raise CohortIntakeError(
+                        f"Mixed or ambiguous archive layouts in {tar_path.name}: "
+                        f"{detected_layout} and {member_layout}"
+                    )
+                detected_layout = member_layout
+                if logical_path in found_logical_paths:
                     raise CohortIntakeError(f"Duplicate target member in archive: {member.name}")
-                found_paths.add(normalized_name)
+                found_logical_paths.add(logical_path)
                 task_id = matched_candidate["task_id"]
                 category = matched_candidate["category"]
                 raw_id = matched_candidate["raw_id"]
@@ -235,6 +294,7 @@ def extract_selective_stream(
                     "source_id": matched_candidate["source_id"],
                     "raw_id": raw_id,
                     "category": category,
+                    "logical_archive_path": logical_path,
                     "archive_member": normalized_name,
                     "raw_bytes": len(raw_bytes),
                     "raw_sha256": raw_sha,
@@ -243,21 +303,26 @@ def extract_selective_stream(
                     "std_512": round(img_std, 4),
                     "native_size": list(img.size),
                 })
-                found_count = len(found_paths)
-                if found_count % 50 == 0 or found_count == len(target_rel_paths):
-                    print(f"  Extracted {found_count}/{len(target_rel_paths)} {subfolder_name} images ({time.time() - t0:.1f}s)")
+                found_count = len(found_logical_paths)
+                if found_count % 50 == 0 or found_count == len(targets):
+                    print(f"  Extracted {found_count}/{len(targets)} {subfolder_name} images ({time.time() - t0:.1f}s)")
 
-    found_count = len(found_paths)
-    if found_count != len(target_rel_paths):
-        missing_count = len(target_rel_paths) - found_count
+    found_count = len(found_logical_paths)
+    if found_count != len(targets):
+        missing_count = len(targets) - found_count
         raise CohortIntakeError(
-            f"CRITICAL INTAKE ERROR: Expected {len(target_rel_paths)} files, but found only {found_count} "
+            f"CRITICAL INTAKE ERROR: Expected {len(targets)} files, but found only {found_count} "
             f"in {tar_path.name} (missing {missing_count}). Zero automatic replacement permitted."
         )
 
-    print(f"Successfully extracted all {found_count} {subfolder_name} images.")
+    print(
+        f"Successfully extracted all {found_count} {subfolder_name} images "
+        f"using archive layout {detected_layout}."
+    )
     return {
         "subfolder": subfolder_name,
+        "archive_kind": archive_kind,
+        "archive_layout": detected_layout,
         "extracted_count": found_count,
         "records": extracted_records,
     }
@@ -382,15 +447,27 @@ def execute_cohort_intake(
     sd2_targets = {c["sd2_rel_path_in_archive"]: c for c in candidates}
 
     print("\n--- Step 2: Extracting Authentic Images (orig) ---")
-    orig_res = extract_selective_stream(orig_archive_path, orig_targets, authentic_dir, "orig")
+    orig_res = extract_selective_stream(
+        orig_archive_path,
+        orig_targets,
+        authentic_dir,
+        "orig",
+        archive_kind="orig",
+    )
 
     print("\n--- Step 3: Extracting Edited Images (sd2-sp) ---")
-    sd2_res = extract_selective_stream(sd2_archive_path, sd2_targets, edited_dir, "sd2")
+    sd2_res = extract_selective_stream(
+        sd2_archive_path,
+        sd2_targets,
+        edited_dir,
+        "sd2",
+        archive_kind="sd2-sp",
+    )
 
     # 5. Build Colab Intake Receipt
     print("\n--- Step 4: Generating Intake Receipt & Packaging ZIP ---")
     receipt = {
-        "schema_version": "1.1.0",
+        "schema_version": "1.2.0",
         "phase": "4C.7B",
         "run_id": f"intake-tgif-train-{time.strftime('%Y%m%dT%H%M%SZ', time.gmtime())}",
         "status": "COLAB_CPU_INTAKE_SUCCESS",
@@ -405,11 +482,13 @@ def execute_cohort_intake(
             "name": orig_archive_path.name,
             "bytes": orig_archive_path.stat().st_size,
             "extracted_count": orig_res["extracted_count"],
+            "member_layout": orig_res["archive_layout"],
         },
         "sd2_archive": {
             "name": sd2_archive_path.name,
             "bytes": sd2_archive_path.stat().st_size,
             "extracted_count": sd2_res["extracted_count"],
+            "member_layout": sd2_res["archive_layout"],
         },
         "technical_qc": {
             "pil_decode_rate": 1.0,
