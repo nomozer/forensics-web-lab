@@ -1,12 +1,77 @@
 # Phase 4C.7B — Independent Cohort Acquisition: Protocol Amendment, Automated Pipeline, and Feasibility Alignment
 
-> **Phase**: Phase 4C.7B — Independent Cohort Acquisition & Feasibility Alignment (Pilot v2 Feasibility Closure and Existing Dataset Continuation Proposal)<br>
-> **Status**: `TGIF_TRAIN_COHORT_INTAKE_AUDITED_PASS_PRE_EVALUATION` — Package `tgif_train_clean_subset_package.zip` (320,519,898 bytes, SHA-256 `27046ec2c10b92942cd1ef0acd10e3fdac37d55c7f2fa919ede0242d96b5ff66`) đã được tiếp nhận và kiểm toán cục bộ PASS bằng `scripts/research/audit_tgif_train_subset_local.py`. Archive security: 802 entries, 306.38 MB uncompressed (<1 GB), 0 traversal, 0 symlink. Manifest locked N=400 SHA-256 `53a6ee47...` và Colab receipt 1.2.0 (execution commit `9d98a2d5...`, worker SHA-256 `22db265c...`, detected layout `component-stripped` cho cả orig và sd2-sp) được bind tuyệt đối. Đủ 400 cặp / 800 ảnh chuẩn hóa 512×512 RGB. Phân bổ: 14 Large / 221 Medium / 165 Small. Đối chiếu 400 resident masks trên đĩa: 100% hash parity và pixel area parity. Tripartite pixel audit: Inside mean L1 = 52.85 [min 16.42, max 138.33] (mọi sample >= 1.0), Outside mean L1 = 0.01 [min 0.00, max 0.06] phản ánh native benchmark variance, strictly zero compositing. Multi-level Disjoint Guard: 0/400 source ID trùng lặp với 684 Option P và 336 Phase 4C.7B development sources; 0/800 historical byte-hash collisions; pHash ghi nhận NOT_EVALUATED theo contract (chưa chạy trong intake auditor). Receipt ghi nhận tại `research/evidence/phase-4c.7b/tgif_train_intake_audit_receipt.json`; contact sheet tự chứa tại `data/research/local-artifacts/phase-4c.7b/tgif_train_clean_subset_review_contact_sheet.html`. Đã dừng nghiêm ngặt tại ranh giới intake: detector calls = 0, model training = 0, independent performance `NOT_MEASURED`.<br>
+> **Phase**: Phase 4C.7B — Independent Cohort Acquisition & Feasibility Alignment (TGIF N=400 Independent Evaluation Preflight & Statistical Plan Locked)<br>
+> **Status**: `TGIF_TRAIN_COHORT_PRE_EVALUATION_PREPARATION_COMPLETE_PENDING_APPROVAL` — Hoàn tất tiền kiểm và chuẩn bị độc lập cho TGIF N=400: (1) Leakage audit pHash (dHash 64-bit Hamming <= 3) hoàn tất PASS: 0 collisions với 1.368 ảnh Option P (1.094.400 phép so sánh), 0 collisions cross-source nội bộ N=400 (319.200 phép so sánh), 0 collisions với 106 ảnh Phase 4C.7B; biên nhận xuất tại `research/evidence/phase-4c.7b/tgif_train_phash_leakage_audit_receipt.json`. (2) Cấu hình evaluation máy đọc đóng băng tại `research/evidence/phase-4c.7b/tgif_independent_evaluation_execution_config.json`: liên kết locked manifest N=400 SHA-256 `53a6ee47...`, intake receipt, phash receipt, package zip SHA-256 `27046ec2...`, 5 outer-fold checkpoints đã hash đối soát và backbone weights MobileNetV3-small. (3) Kế hoạch thống kê tiền đăng ký: Stratified Paired Source Cluster Bootstrap (resampling unit: source_cluster; bảo toàn chính xác 14 Large / 221 Medium / 165 Small trong mọi replicate; 10.000 replicates; PCG64 seed 20261007; shared indices; estimand: unweighted arithmetic mean của 5 fold Macro-F1; nhóm Large n=14 chỉ báo cáo mô tả; ME < 0.01 không cam kết). (4) Runner độc lập tại `scripts/research/run_tgif_independent_evaluation.py`: tích hợp chốt fail-closed, kiểm thử mock dry-run PASS 100% không gọi detector thật. (5) Bộ test 29/29 PASS. Đã dừng nghiêm ngặt trước detector inference. Detector calls = 0, model training = 0, independent performance `NOT_MEASURED`.<br>
 > **Findings status**: `NOT_MEASURED` (0 detector calls, 0 cohort evaluation)<br>
 > **Current TGIF intake execution commit**: `9d98a2d5c6afea16f9b3a71a03f0c2d6f43204e4` (archive-layout-resolving N=400 Colab worker snapshot; canonical notebook pins this full SHA and local auditor binds worker SHA-256 `22db265ce6f2b4ff9b3784c047290722c7f27341e5d5ba094b0833682176e081`). Historical pilot/diagnostic/calibration binding `79775250ee5393c9f193bdc0485f77998cefaddf` remains unchanged.<br>
 > **Real pilot / diagnostic / calibration**: `PILOT_V2_FEASIBILITY_CONCLUDED_8_PAIRS_PENDING_HUMAN_CONTENT_QC` (8 pairs in `pilot-20261009T111247Z` evaluated, Agent recommends 1 ACCEPT / 7 REJECT, Human Content QC PENDING; 2 calibration attempts in `calib-20261009T015749Z` Agent recommends REJECT, Human Content QC PENDING; 6 diagnostic attempts in `diag-20261008T154628Z` 6/6 REJECT; 8 historical pilot pairs in `pilot-20261008T113700Z` PENDING; full 400-pair run remains `NOT_RUN`)<br>
 > **Training runs**: 0 fits, 0 refits; frozen models untouched; retired locked-test not accessed (only its 343 source IDs are read for the disjoint guard)<br>
 > **Evidence classification**: run/commit/artifact observations are `internal-empirical`; model cards/documentation are `external-source`; latent-capacity/context-bias explanations remain `unverified-hypothesis`. Citation keys resolve through `docs/references.bib`.<br>
+
+## PP. Hoàn Tất Tiền Kiểm Độc Lập, pHash Leakage Audit PASS, Cấu Hình Máy Đọc & Kế Hoạch Thống Kê Khóa (2026-10-10)
+
+Hồ sơ tiền kiểm và chuẩn bị độc lập hoàn tất trước phiên đánh giá mô hình cho tập dữ liệu `TGIF-Train-Clean-Subset` ($N=400$ cặp):
+
+### 1. Kiểm Toán Leakage Còn Bắt Buộc & Perceptual Hash Audit (dHash 64-bit PASS)
+- **Thuật toán & Ngưỡng đã đăng ký**: Difference Hash (`dHash` 64-bit, hash_size=8, ngưỡng khoảng cách Hamming $\le 3$) từ `ml/datasets/dedup.py` và `PILOT_PROTOCOL.md`.
+- **Thực thi kiểm toán**: Runner độc lập `scripts/research/verify_tgif_leakage_phash.py` đọc trực tiếp 800 ảnh từ `data/research/local-artifacts/phase-4c.7b/tgif_train_clean_subset_package.zip`:
+  1. *Đối chiếu với 1.368 ảnh Option P lịch sử* (development + locked-test): **0 / 1.094.400 phép so sánh có khoảng cách Hamming $\le 3$ (100% PASS, min distance = 8)**.
+  2. *Đối chiếu cross-source nội bộ N=400* ($400 \times 399 \times 2 = 319.200$ phép so sánh giữa các ảnh authentic khác nguồn và edited khác nguồn): **0 / 319.200 collisions (100% PASS, min distance = 7)**.
+  3. *Đối chiếu với 106 ảnh Phase 4C.7B pilot/diagnostic/calibration*: **0 / 84.800 collisions (100% PASS, min distance = 9)**.
+- **Biên nhận xuất bản**: [`research/evidence/phase-4c.7b/tgif_train_phash_leakage_audit_receipt.json`](research/evidence/phase-4c.7b/tgif_train_phash_leakage_audit_receipt.json) (status: `PHASH_LEAKAGE_AUDIT_PASS`).
+- **Quy tắc khoa học**: Không phát hiện bất kỳ collision nào; 100% mẫu được giữ nguyên vẹn; tuyệt đối không tự ý thay đổi selection hoặc loại bỏ ảnh dựa trên detector scores.
+
+### 2. Cấu Hình Đánh Giá Máy Đọc Đóng Băng (Machine-Readable Execution Config)
+- **Tệp cấu hình**: [`research/evidence/phase-4c.7b/tgif_independent_evaluation_execution_config.json`](research/evidence/phase-4c.7b/tgif_independent_evaluation_execution_config.json).
+- **Trạng thái cấu hình**: `CONFIG_LOCKED_PENDING_HUMAN_EVALUATION_APPROVAL` (khóa cứng `evaluation_authorized: false`).
+- **Ràng buộc mật mã & cấu trúc**:
+  - Locked cohort manifest SHA-256: `53a6ee472fe840a42abd97ccb7475932e0720f5788f745f57f7a2bcfbc32cc8c` (400 cặp, 800 ảnh).
+  - Package ZIP SHA-256: `27046ec2c10b92942cd1ef0acd10e3fdac37d55c7f2fa919ede0242d96b5ff66`.
+  - Intake audit receipt SHA-256: `a938c362...` (`LOCAL_INTAKE_AUDIT_PASS`).
+  - pHash audit receipt SHA-256: `b0ecaaeb...` (`PHASH_LEAKAGE_AUDIT_PASS`).
+  - Đúng 5 outer-fold checkpoints đã kiểm toán SHA-256 và kích thước trên đĩa:
+    - Fold 0: `models/research/checkpoints/stage1_n250_seed42/best_checkpoint.pt` (`232d0994...`, 58,418 bytes).
+    - Fold 1: `models/research/checkpoints/stage1_n250_seed1337/best_checkpoint.pt` (`c07c5823...`, 58,030 bytes).
+    - Fold 2: `models/research/checkpoints/stage1_n250_seed2025/best_checkpoint.pt` (`8a979e35...`, 58,465 bytes).
+    - Fold 3: `models/research/checkpoints/stage1_n250_seed3407/best_checkpoint.pt` (`60358c2f...`, 58,455 bytes).
+    - Fold 4: `models/research/checkpoints/stage1_n250_seed9001/best_checkpoint.pt` (`efe517db...`, 58,390 bytes).
+  - Pretrained backbone weights: `models/research/pretrained/mobilenet_v3_small-047dcff4.pth` (`047dcff4...`).
+  - 6 điều kiện thực nghiệm chuẩn tắc: `original`, `jpeg_q95`, `jpeg_q75`, `jpeg_q50`, `resize_0.5`, `resize_0.5_jpeg_q75`.
+  - Primary endpoint: $\Delta \text{Macro-F1}$ tại `jpeg_q75` (`late_fusion_dsp_augmented` − `visual_calibrated`).
+  - Cấm: Không tuning, không refit, không calibration refitting, không dùng retired locked-test (chỉ dùng source ID để guard).
+
+### 3. Kế Hoạch Thống Kê Tiền Đăng Ký (Preregistered Statistical Plan)
+- **Cấu trúc dữ liệu**: Phân định rạch ròi 400 cặp nguồn (`source_id`), 800 ảnh (400 authentic, 400 edited) và 5 checkpoints outer-fold độc lập.
+- **Estimand chính**: Trung bình số học không trọng số của 5 fold Macro-F1 scores:
+  $$\overline{\text{Macro-F1}} = \frac{1}{5} \sum_{k=0}^{4} \text{Macro-F1}^{(k)}$$
+  Tuyệt đối không lấy trung bình xác suất (probability averaging) hay ensemble mô hình ở thời điểm suy luận.
+- **Đơn vị Resampling**: `source_cluster` (mỗi cụm chứa 1 ảnh authentic và 1 ảnh edited cùng `source_id`).
+- **Thuật toán Resampling**: **Stratified Paired Cluster Bootstrap**:
+  - Rút mẫu có hoàn lại độc lập theo từng tầng: chính xác 14 cụm từ Large ($N=14$), 221 cụm từ Medium ($N=221$), và 165 cụm từ Small ($N=165$) trong mỗi replicate bootstrap.
+  - Cặp authentic và edited luôn được rút đồng thời (paired preservation).
+  - Toàn bộ 5 checkpoints và cả 2 mô hình (visual vs augmented) chia sẻ cùng chỉ số bootstrap indices cho từng replicate (paired model evaluation).
+  - 10.000 bootstrap replicates với PRNG PCG64 seed `20261007`.
+  - Khoảng tin cậy: Percentile bootstrap 95% CI $[q_{0.025}, q_{0.975}]$.
+- **Giới hạn thống kê bắt buộc**:
+  - Phân bổ 14 / 221 / 165 là kết quả sàng lọc kỹ thuật của benchmark, **không coi là tỷ lệ tự nhiên**.
+  - **Không cam kết $ME < 0.01$**: Biên độ sai số $ME < 0.01$ trong Phase 4C.7A chỉ xác lập cho thiết kế cân bằng trực giao 4 strata $\times 100$ cặp; không áp dụng cho phân bổ lệch này.
+  - **Nhóm Large $n=14$ chỉ báo cáo mô tả**: Do cỡ mẫu $n=14$ quá nhỏ, khoảng tin cậy của nhóm Large sẽ rất rộng; không đưa ra kết luận kiểm định mạnh riêng cho nhóm này.
+
+### 4. Runner Độc Lập & Kiểm Chứng Hermetic Dry-Run
+- **Runner script**: [`scripts/research/run_tgif_independent_evaluation.py`](scripts/research/run_tgif_independent_evaluation.py).
+- **Chốt an toàn Fail-Closed**: Cổng thực thi kiểm tra `evaluation_authorized: false` và dừng ngay với `EvaluationGateError` nếu chạy `--execute` khi chưa có phê duyệt của con người.
+- **Mock Dry-Run**: CLI `--mock-dry-run` kiểm chứng toàn bộ luồng tính F1, bootstrap resampling, CI, và xuất cấu trúc báo cáo bằng mock predictions cách ly với **0 detector calls** (PASS 100%).
+- **Môi trường thực thi khả thi**: LOCAL CPU. Tổng khối lượng tính toán 800 ảnh $\times$ 6 transforms = 4.800 forward passes qua MobileNetV3-small backbone (9.7 MB) và trích xuất 16-d DSP features hoàn toàn khả thi trên CPU máy trạm trong ~1–2 phút. Không cần GPU hay Google Colab.
+- **Lệnh thực thi khi được phê duyệt**:
+  ```bash
+  python scripts/research/run_tgif_independent_evaluation.py --execute
+  ```
+
+### 5. Hiện Trạng Khóa & Ranh Giới Dừng (Current Lock & Stopping Boundary)
+- **Đã dừng nghiêm ngặt trước detector inference**: Detector calls = 0, model training = 0, independent performance `NOT_MEASURED`.
+- **Blocker duy nhất**: Quyết định phê duyệt thực thi của con người (`Human Review Approval for Execution`).
+
+---
 
 ## OO. Tiếp Nhận Dữ Liệu TGIF N=400 và Kiểm Toán Cục Bộ LOCAL Forensic Audit PASS (2026-10-10)
 

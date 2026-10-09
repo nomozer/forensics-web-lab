@@ -1,0 +1,132 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "4C.7B",
+  "experiment_id": "tgif_train_independent_evaluation_n400",
+  "created_at_utc": "2026-10-10T00:38:00Z",
+  "status": "CONFIG_LOCKED_PENDING_HUMAN_EVALUATION_APPROVAL",
+  "purpose": "Prespecified machine-readable configuration for Phase 4C.7B independent evaluation on TGIF-Train-Clean-Subset N=400.",
+  "human_approval_gate": {
+    "evaluation_authorized": false,
+    "status": "PENDING_HUMAN_REVIEW",
+    "authorization_note": "Requires explicit human reviewer authorization before detector execution. Zero detector calls permitted under this configuration."
+  },
+  "cohort_binding": {
+    "cohort_name": "TGIF-Train-Clean-Subset",
+    "manifest_relpath": "research/evidence/phase-4c.7b/tgif_train_clean_subset_manifest_locked_n400.json",
+    "manifest_sha256": "53a6ee472fe840a42abd97ccb7475932e0720f5788f745f57f7a2bcfbc32cc8c",
+    "intake_receipt_relpath": "research/evidence/phase-4c.7b/tgif_train_intake_audit_receipt.json",
+    "phash_receipt_relpath": "research/evidence/phase-4c.7b/tgif_train_phash_leakage_audit_receipt.json",
+    "package_zip_relpath": "data/research/local-artifacts/phase-4c.7b/tgif_train_clean_subset_package.zip",
+    "package_zip_sha256": "27046ec2c10b92942cd1ef0acd10e3fdac37d55c7f2fa919ede0242d96b5ff66",
+    "cohort_pairs": 400,
+    "total_images": 800,
+    "image_format": "PNG",
+    "canvas_size": [512, 512],
+    "strata_breakdown": {
+      "large_over_30pct": 14,
+      "medium_10_to_30pct": 221,
+      "small_under_10pct": 165
+    }
+  },
+  "candidate_model_bindings": {
+    "bindings_manifest_path": "research/evidence/phase-4c.7a/candidate_model_bindings.json",
+    "model_selection_policy": "ALL_FIVE_OUTER_FOLDS_FROZEN",
+    "fold_count": 5,
+    "backbone": {
+      "name": "mobilenet_v3_small_penultimate",
+      "weights_path": "models/research/pretrained/mobilenet_v3_small-047dcff4.pth",
+      "weights_sha256": "047dcff4addef86ea5bc2eff13c9614dc11f47ab1160d0a71a25e7db994f4e1f",
+      "dimension": 576
+    },
+    "dsp": {
+      "extractor": "extract_dsp_features_24_to_16",
+      "dimension": 16
+    },
+    "outer_folds": [
+      {
+        "outer_fold": 0,
+        "model_path": "data/research/local-artifacts/dsp_augmentation/fits/outer_0/fold_model.json",
+        "model_sha256": "232d0994775a6e6cfdfb1bb3fd79f28557439e372e15e4760d0ffbbdba72f609",
+        "size_bytes": 58418
+      },
+      {
+        "outer_fold": 1,
+        "model_path": "data/research/local-artifacts/dsp_augmentation/fits/outer_1/fold_model.json",
+        "model_sha256": "c07c582322f7671f3b9f352f5d5388f5a39cec5fa11c80d8441cbb366a3fc15f",
+        "size_bytes": 58030
+      },
+      {
+        "outer_fold": 2,
+        "model_path": "data/research/local-artifacts/dsp_augmentation/fits/outer_2/fold_model.json",
+        "model_sha256": "8a979e35339f1ab2728f6c96d94ce2ef828ad13aad66e0e3ae8339a1be8fb324",
+        "size_bytes": 58465
+      },
+      {
+        "outer_fold": 3,
+        "model_path": "data/research/local-artifacts/dsp_augmentation/fits/outer_3/fold_model.json",
+        "model_sha256": "60358c2fbdfd54d96dee68a1ce43106560ee4da5792343c0d14d85beb1d5fca3",
+        "size_bytes": 58455
+      },
+      {
+        "outer_fold": 4,
+        "model_path": "data/research/local-artifacts/dsp_augmentation/fits/outer_4/fold_model.json",
+        "model_sha256": "efe517db09c5aecdd219eabc878b6f538e908c03b8b8c0648b2d0f6ec4356a6c",
+        "size_bytes": 58390
+      }
+    ]
+  },
+  "evaluation_protocol": {
+    "recipes": [
+      "visual_calibrated",
+      "late_fusion_dsp_augmented"
+    ],
+    "conditions": [
+      "original",
+      "jpeg_q95",
+      "jpeg_q75",
+      "jpeg_q50",
+      "resize_0.5",
+      "resize_0.5_jpeg_q75"
+    ],
+    "decision_threshold": 0.5,
+    "tau_conf": 0.65,
+    "missing_or_corrupt_handling": "STRICT_FAIL_NO_REPLACEMENT",
+    "primary_endpoint": {
+      "comparison": "late_fusion_dsp_augmented_minus_visual_calibrated",
+      "condition": "jpeg_q75",
+      "metric": "arithmetic_mean_macro_f1_across_5_folds",
+      "aggregation_rule": "ARITHMETIC_MEAN_OF_5_FOLDS (NO probability averaging, NO ensemble)",
+      "success_criterion": "95% bootstrap CI lower bound strictly > 0.0"
+    }
+  },
+  "statistical_plan": {
+    "resampling_method": "stratified_paired_source_cluster_bootstrap",
+    "resampling_unit": "source_cluster",
+    "pairing_structure": "STRICT_WITHIN_SOURCE_PAIR",
+    "stratification": "EXACT_STRATIFIED_ALLOCATION_BY_MASK_AREA_STRATA",
+    "strata_replicates_allocation": {
+      "large_over_30pct": 14,
+      "medium_10_to_30pct": 221,
+      "small_under_10pct": 165
+    },
+    "replicates": 10000,
+    "rng": "PCG64",
+    "seed": 20261007,
+    "confidence_level": 0.95,
+    "confidence_interval_type": "percentile_bootstrap_2.5_to_97.5",
+    "shared_replicates": true,
+    "weighting_policy": "UNWEIGHTED_SAMPLE_ESTIMAND",
+    "scientific_qualification": {
+      "natural_ratio_disclaimer": "The 14/221/165 distribution reflects TGIF segmentation availability, NOT a natural in-the-wild proportion.",
+      "margin_of_error_disclaimer": "Margin of Error (ME) < 0.01 is NOT established or guaranteed for this skewed design; empirical CIs will be reported.",
+      "large_stratum_subgroup_policy": "Exploratory descriptive reporting only; no strong separate generalizable conclusions for Large (n=14)."
+    }
+  },
+  "budget_and_constraints": {
+    "new_training_fits": 0,
+    "refits_or_recalibration": 0,
+    "model_tuning": 0,
+    "retired_locked_test_access": "STRICTLY_FORBIDDEN",
+    "execution_target": "LOCAL_CPU"
+  }
+}
