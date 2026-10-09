@@ -162,7 +162,8 @@ Tất cả mặt nạ ground-truth trên đĩa đã được băm SHA-256 và ki
     * Kiểm tra `mask_sha256` khớp khóa manifest.
     * Chuyển đổi mask (Nearest center-crop $512 \times 512$, binarize $\{0, 255\}$).
     * Đo delta pixel: kiểm tra pixel thay đổi có nằm trong mask hay không, đo `inside_mean_l1`, `outside_mean_l1`, `outside_max_delta`.
-    * Kiểm toán 4 cấp Disjoint Guard với 684 nguồn Option P lịch sử.
+    * Kiểm toán Disjoint Guard với cả 684 nguồn Option P lịch sử và 336 nguồn phát triển Phase 4C.7B; fail-closed nếu registry/count/binding sai.
+    * Ràng buộc bit-exact packaged manifest, Colab receipt, exact 800 image paths và SHA-256 từng ảnh trước khi kiểm toán pixel.
     * Lập self-contained review contact sheet.
 
 ### 7.2. Khóa Quy Tắc Xử Lý Mẫu Thiếu/Hỏng & Cấm Tự Chọn Mẫu Thay Thế
@@ -192,4 +193,3 @@ Tất cả mặt nạ ground-truth trên đĩa đã được băm SHA-256 và ki
   3. Chạy `audit_tgif_train_subset_local.py` tại máy LOCAL để kiểm toán bộ ba, disjoint guard, và tạo contact sheet.
   4. **DỪNG LẠI SAU BƯỚC AUDIT LOCAL** để bàn giao kết quả cho người dùng.
   5. Tuyệt đối **CHƯA ĐƯỢC CHẠY DETECTOR, EVALUATION HOẶC MODEL TRAINING**.
-

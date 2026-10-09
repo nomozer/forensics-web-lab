@@ -1,3 +1,14 @@
+## TGIF N=400 Launcher Hardening and LOCAL Handoff Readiness (Phase 4C.7B trace)
+
+- **Execution binding**: Canonical 6-cell Colab CPU notebook now fetches the existing branch only to make objects reachable, checks out detached full execution commit `bf0f20a08a71246f9c441569aae3ae601486ab7f`, verifies `git rev-parse HEAD` and a clean checkout, then verifies locked-manifest SHA-256 `53a6ee472fe840a42abd97ccb7475932e0720f5788f745f57f7a2bcfbc32cc8c` before any archive download.
+- **Fail-closed intake**: Worker accepts only the locked N=400 manifest, enforces exact tar-member binding (no suffix fallback), preserves allocation 14 Large / 221 Medium / 165 Small and preprocessing Lanczos RGB / Nearest binary mask without letterbox, records exact packaged path/hash bindings, performs zero replacement and zero benchmark recompositing.
+- **LOCAL audit hardening**: Auditor rejects duplicate/symlink/traversal/oversized ZIPs, binds packaged manifest + receipt + all 800 image hashes, checks all 400 local mask hashes/areas, enforces `inside_mean_l1 >= 1.0`, excludes both 684 Option P and 336 Phase 4C.7B development sources plus historical byte hashes, and never loads detector/evaluator/training code.
+- **Scientific wording**: Corrected the report wording `0.02/0.15`; canonical post-preprocessing area brackets remain 1–10%, 10–30%, 30–50%. Locked selection and its SHA-256 are unchanged.
+- **Verification**: `ml/.venv` targeted suite 15/15 PASS; worker dry-run PASS with exact manifest/allocation; Python compile and notebook JSON checks PASS. Real 18.63 GiB download, real 800-image package audit, and all empirical metrics remain pending data execution / `NOT_MEASURED`.
+- **Governance**: Intake-only scope unchanged. Zero detector calls, zero evaluation, zero training, no PR/merge/main changes.
+
+---
+
 ## Formal Human Approval registered for TGIF Train Clean Subset N=400 Intake (Phase 4C.7B trace)
 
 - **Formal Human Approval registered (INTAKE ONLY)**: User Dũng Phạm <valdung04@gmail.com> approved Option $N=400$ pairs (14 Large [3.5%], 221 Medium [55.25%], 165 Small [41.25%]) and authorized Colab CPU data intake: downloading 2 archives ~18.63 GiB on Colab ephemeral disk and returning package ~120-160 MB to local. Detector/evaluation and training strictly NOT AUTHORIZED.
