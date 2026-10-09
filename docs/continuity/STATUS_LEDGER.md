@@ -1,18 +1,19 @@
-## TGIF N=400 Independent Evaluation Completed: Inconclusive on Primary Endpoint at jpeg_q75 (Phase 4C.7B trace)
+## TGIF N=400 Independent Evaluation Audited PASS & Completed: Inconclusive on Primary Endpoint at jpeg_q75 (Phase 4C.7B trace)
 
 - **Formal human approval registered & config locked**: Explicit evaluation authorization granted by human reviewer Dũng Phạm `<valdung04@gmail.com>` at `2026-10-09T18:08:30Z`. Committed configuration `research/evidence/phase-4c.7b/tgif_independent_evaluation_execution_config.json` (SHA-256 `dd1b0cfdf16008420d32b8747a4d27fbd3caaefa8d964744cc439b7c3b67ae73`) at commit `1fe34bf`. Preflight `--check-config` passed (`AUTHORIZED_FOR_EVALUATION`).
-- **Full LOCAL CPU evaluation execution**: Executed `scripts/research/run_tgif_independent_evaluation.py --execute` with `ml/.venv` on LOCAL CPU. Evaluated exactly 400 source pairs (800 images) across 6 canonical conditions, consuming 4,800 detector/backbone forward passes. Total runtime: 420.81s (7.01 min). Reused frozen 5 outer-fold `fold_model.json` checkpoints and MobileNetV3-small backbone (`047dcff4...`). Zero retraining, zero recalibration, zero threshold tuning, zero replacement.
+- **Full LOCAL CPU evaluation execution**: Executed `scripts/research/run_tgif_independent_evaluation.py --execute` with `ml/.venv` on LOCAL CPU. Evaluated exactly 400 source pairs (800 images) across 6 canonical conditions, consuming 4,800 backbone visual feature extraction forward passes and 48,000 classifier scoring operations (800 × 6 × 2 recipes × 5 folds). Total runtime: 420.81s (7.01 min). Execution commit: `528015837d76af286f4290afe0f958b3b896889b`. Reused frozen 5 outer-fold `fold_model.json` checkpoints and MobileNetV3-small backbone (`047dcff4...`). Zero retraining, zero recalibration, zero threshold tuning, zero replacement.
 - **Primary endpoint results (jpeg_q75)**:
   - Visual Calibrated Macro-F1 (arithmetic mean across 5 folds): 0.5624 ± 0.0060 (folds: [0.5726, 0.5595, 0.5573, 0.5600, 0.5623]).
   - Late Fusion DSP Augmented Macro-F1 (arithmetic mean across 5 folds): 0.5596 ± 0.0126 (folds: [0.5702, 0.5588, 0.5416, 0.5547, 0.5728]).
-  - Point estimate $\Delta \text{Macro-F1} = -0.0027$.
+  - Point estimate $\Delta \text{Macro-F1} = -0.0027$ (-0.0027361535022448757).
   - Pre-registered Stratified Paired Source Cluster Bootstrap (10,000 replicates, PCG64 seed `20261007`, exactly 14 Large / 221 Medium / 165 Small resampled per replicate):
     - Mean $\Delta = -0.0027$, Median $\Delta = -0.0027$.
-    - 95% Percentile Bootstrap CI: $[-0.0126, +0.0072]$.
+    - 95% Percentile Bootstrap CI: $[-0.0126, +0.0072]$ ([-0.012585936556473653, +0.007151835157978143]).
     - CI strictly contains 0.0 (`ci_contains_zero: true`).
-    - Proportion $\Delta > 0$: $30.29\%$.
+    - Bootstrap positive fraction $P(\Delta^* > 0)$: $30.29\%$.
   - Final Scientific Verdict: **`INDEPENDENT_JPEG75_INCONCLUSIVE`**.
-  - Scientific Honesty: Unlike exploratory development data (Phase 4C.6B $\Delta = +0.1363$), the late fusion DSP augmented model fails to demonstrate superiority or statistically confirmed improvement over the visual calibrated baseline on unseen independent TGIF data under JPEG compression q75.
+  - Scientific Honesty: Chưa chứng minh được sự cải thiện (unproven improvement) của Late Fusion DSP Augmented so với Visual Calibrated trên tập kiểm định độc lập nguồn mới trong TGIF tại endpoint sơ cấp jpeg_q75. Không tuyên bố là bác bỏ cải thiện.
+- **Forensic audit from stored predictions (AUDIT PASS)**: Executed `scripts/research/audit_tgif_independent_evaluation_results.py` on LOCAL machine with 0 detector calls. Verified SHA-256 hashes of config, manifest, receipts, candidate models; verified 48,000 predictions matching threshold 0.5; verified two bugfix commits (`ca63d56` and `5280158`) changed zero weights/transforms/estimands; recomputed all metrics across all 6 conditions × 2 recipes × 5 folds with maximum discrepancy $1.11 \times 10^{-16}$ (bit-exact); recomputed 10,000-replicate bootstrap bit-identically. Published audit receipt at `research/evidence/phase-4c.7b/tgif_independent_evaluation_results_audit_receipt.json` (`status: AUDIT_PASS`).
 - **Secondary conditions performance**:
   - `original`: Visual 0.5611 vs Augmented 0.5681 ($\Delta = +0.0070$).
   - `jpeg_q95`: Visual 0.5598 vs Augmented 0.5664 ($\Delta = +0.0066$).
@@ -22,6 +23,7 @@
 - **Published artifacts & complete prediction records**:
   - Evaluation receipt: `research/evidence/phase-4c.7b/tgif_train_independent_evaluation_receipt.json` (2,573,414 bytes, SHA-256 `720c9a3a4f7f6ed1d13f7aa3f3e77efc82af5544dbc04cfcbae238a0e4aef54a`).
   - Standalone predictions: `research/evidence/phase-4c.7b/tgif_train_independent_evaluation_predictions.json` (2,520,928 bytes, SHA-256 `703d40a2186710b10c6c8f4c17e9e7d7960fc4733943f10b158967b6a65aa4a6`), storing all 800 samples across 6 conditions, 2 recipes and 5 folds for reproducible metric recomputation without detector rerun.
+  - Audit receipt: `research/evidence/phase-4c.7b/tgif_independent_evaluation_results_audit_receipt.json`.
 - **Test suite**: 8/8 tests PASS in `ml/tests/test_tgif_independent_evaluation.py`.
 
 ---

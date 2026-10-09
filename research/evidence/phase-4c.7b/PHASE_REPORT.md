@@ -1,9 +1,10 @@
 # Phase 4C.7B — Independent Cohort Acquisition: Protocol Amendment, Automated Pipeline, and Feasibility Alignment
 
-> **Phase**: Phase 4C.7B — Independent Cohort Acquisition & Feasibility Alignment (TGIF N=400 Independent Evaluation Preflight & Statistical Plan Locked)<br>
-> **Status**: `TGIF_TRAIN_COHORT_PRE_EVALUATION_PREPARATION_COMPLETE_PENDING_APPROVAL` — Hoàn tất tiền kiểm và chuẩn bị độc lập cho TGIF N=400: (1) Leakage audit pHash (dHash 64-bit Hamming <= 3) hoàn tất PASS: 0 collisions với 1.368 ảnh Option P (1.094.400 phép so sánh), 0 collisions cross-source nội bộ N=400 (319.200 phép so sánh), 0 collisions với 106 ảnh Phase 4C.7B; biên nhận xuất tại `research/evidence/phase-4c.7b/tgif_train_phash_leakage_audit_receipt.json`. (2) Cấu hình evaluation máy đọc đóng băng tại `research/evidence/phase-4c.7b/tgif_independent_evaluation_execution_config.json`: liên kết locked manifest N=400 SHA-256 `53a6ee47...`, intake receipt, phash receipt, package zip SHA-256 `27046ec2...`, 5 outer-fold checkpoints đã hash đối soát và backbone weights MobileNetV3-small. (3) Kế hoạch thống kê tiền đăng ký: Stratified Paired Source Cluster Bootstrap (resampling unit: source_cluster; bảo toàn chính xác 14 Large / 221 Medium / 165 Small trong mọi replicate; 10.000 replicates; PCG64 seed 20261007; shared indices; estimand: unweighted arithmetic mean của 5 fold Macro-F1; nhóm Large n=14 chỉ báo cáo mô tả; ME < 0.01 không cam kết). (4) Runner độc lập tại `scripts/research/run_tgif_independent_evaluation.py`: tích hợp chốt fail-closed, kiểm thử mock dry-run PASS 100% không gọi detector thật. (5) Bộ test 29/29 PASS. Đã dừng nghiêm ngặt trước detector inference. Detector calls = 0, model training = 0, independent performance `NOT_MEASURED`.<br>
-> **Findings status**: `NOT_MEASURED` (0 detector calls, 0 cohort evaluation)<br>
+> **Phase**: Phase 4C.7B — Independent Cohort Acquisition & Independent Evaluation<br>
+> **Status**: `TGIF_TRAIN_COHORT_INDEPENDENT_EVALUATION_AUDITED_PASS_INCONCLUSIVE` — Hoàn tất thực thi và kiểm toán độc lập cho tập kiểm định TGIF-Train-Clean-Subset N=400 (14 Large, 221 Medium, 165 Small; 800 ảnh) trên LOCAL CPU theo phê duyệt chính thức của Human Reviewer (Dũng Phạm <valdung04@gmail.com> lúc 2026-10-09T18:08:30Z). Thời gian thực thi: 420.81 giây (~7.01 phút), thực hiện 4.800 lượt suy luận backbone thị giác (backbone forward passes / visual feature extractions: 800 ảnh × 6 điều kiện) và 48.000 lượt chấm điểm phân loại (fold & recipe classifier scorings: 800 ảnh × 6 điều kiện × 2 recipes × 5 outer folds). Đóng băng 100% 5 outer-fold checkpoints (fold_model.json), backbone MobileNetV3-small (047dcff4...) và 16 đặc trưng DSP canonical; zero fitting, zero recalibration, zero threshold tuning. Primary endpoint tại `jpeg_q75`: Visual Calibrated Macro-F1 = 0.5624 ± 0.0060, Late Fusion DSP Augmented Macro-F1 = 0.5596 ± 0.0126, Delta point estimate = -0.0027 (Stratified Paired Source Cluster Bootstrap 10.000 reps, PCG64 seed 20261007: 95% Percentile CI [-0.0126, +0.0072], cắt 0.0, Bootstrap positive fraction P(Delta* > 0) = 30.29%). Kết luận khoa học chính thức: `INDEPENDENT_JPEG75_INCONCLUSIVE`. Chưa chứng minh được sự cải thiện của Late Fusion DSP Augmented so với Visual Calibrated trên tập kiểm định độc lập nguồn mới trong TGIF tại endpoint sơ cấp jpeg_q75. Kiểm toán kết quả (`audit_tgif_independent_evaluation_results.py`): 100% khớp số học bit-exact từ predictions đã lưu, 0 detector reruns. Commit thực thi: `528015837d76af286f4290afe0f958b3b896889b`.<br>
+> **Findings status**: `MEASURED_INCONCLUSIVE_AT_JPEG75` (4.800 backbone passes, 48.000 classifier scorings, 400 source pairs / 800 images evaluated; Primary ΔMacro-F1 = -0.0027 [-0.0126, +0.0072]; verdict INDEPENDENT_JPEG75_INCONCLUSIVE)<br>
 > **Current TGIF intake execution commit**: `9d98a2d5c6afea16f9b3a71a03f0c2d6f43204e4` (archive-layout-resolving N=400 Colab worker snapshot; canonical notebook pins this full SHA and local auditor binds worker SHA-256 `22db265ce6f2b4ff9b3784c047290722c7f27341e5d5ba094b0833682176e081`). Historical pilot/diagnostic/calibration binding `79775250ee5393c9f193bdc0485f77998cefaddf` remains unchanged.<br>
+> **Evaluation execution commit**: `528015837d76af286f4290afe0f958b3b896889b` (full completed LOCAL CPU evaluation run at 2026-10-09T18:23:24Z; auditor verified bit-exact reconciliation).<br>
 > **Real pilot / diagnostic / calibration**: `PILOT_V2_FEASIBILITY_CONCLUDED_8_PAIRS_PENDING_HUMAN_CONTENT_QC` (8 pairs in `pilot-20261009T111247Z` evaluated, Agent recommends 1 ACCEPT / 7 REJECT, Human Content QC PENDING; 2 calibration attempts in `calib-20261009T015749Z` Agent recommends REJECT, Human Content QC PENDING; 6 diagnostic attempts in `diag-20261008T154628Z` 6/6 REJECT; 8 historical pilot pairs in `pilot-20261008T113700Z` PENDING; full 400-pair run remains `NOT_RUN`)<br>
 > **Training runs**: 0 fits, 0 refits; frozen models untouched; retired locked-test not accessed (only its 343 source IDs are read for the disjoint guard)<br>
 > **Evidence classification**: run/commit/artifact observations are `internal-empirical`; model cards/documentation are `external-source`; latent-capacity/context-bias explanations remain `unverified-hypothesis`. Citation keys resolve through `docs/references.bib`.<br>
@@ -1515,9 +1516,10 @@ Kết quả tại `research/evidence/phase-4c.7b/acquisition_smoke_receipt.json`
 | **Giao thức nghiên cứu**      | Protocol Amendment v1.8.0, 5 outer-fold checkpoints đóng băng, Stratified Paired Cluster Bootstrap 10.000 replicates     |
 | **Mô hình candidate**         | 5 outer-fold models giữ nguyên 100% trọng số `fold_model.json` và SHA-256 hash đã kiểm toán                           |
 | **Cohort kiểm định**          | TGIF-Train-Clean-Subset N=400 pairs (14 Large, 221 Medium, 165 Small; 800 ảnh) từ package zip 320 MB                 |
-| **Detector execution**        | Đã chạy 4.800 forward passes (800 ảnh × 6 conditions) trên LOCAL CPU sau khi nhận Human Review Approval               |
-| **Independent Performance**   | **`MEASURED`** — Primary endpoint ΔMacro-F1 at jpeg_q75: -0.0027 [-0.0126, +0.0072]; verdict: `INDEPENDENT_JPEG75_INCONCLUSIVE` |
+| **Detector execution**        | Đã thực hiện 4.800 lượt suy luận backbone thị giác (backbone forward passes: 800 ảnh × 6 điều kiện) và 48.000 lượt chấm điểm phân loại (classifier scoring: 800 ảnh × 6 điều kiện × 2 recipes × 5 outer folds) trên LOCAL CPU sau khi nhận Human Review Approval |
+| **Independent Performance**   | **`MEASURED`** — Primary endpoint ΔMacro-F1 at jpeg_q75: -0.0027 [-0.0126, +0.0072]; verdict: `INDEPENDENT_JPEG75_INCONCLUSIVE` (chưa chứng minh được sự cải thiện) |
 | **Cohort Acquisition Status** | **`COMPLETED`** (TGIF-Train-Clean-Subset N=400 acquired, audited PASS and evaluated)                                   |
+| **Kết quả Nghiệm thu (Audit)**| **`RESULTS_AUDIT_PASS`** — 100% bit-exact recomputed từ predictions đã lưu, 0 detector reruns, 0 model fit/refit        |
 | **Quy tắc Git**               | Làm việc trên branch `research/independent-cohort-acquisition`, **không tạo Pull Request**                             |
 | **Trạng thái Phase**          | **`INDEPENDENT_EVALUATION_COMPLETED_INCONCLUSIVE`**                                                                    |
 
@@ -1535,8 +1537,10 @@ Kết quả tại `research/evidence/phase-4c.7b/acquisition_smoke_receipt.json`
 - **Phần cứng & Thiết bị**: LOCAL CPU (Intel/AMD x86_64, Windows)
 - **Thời gian thực thi**: 420.81 giây (~7.01 phút; Bắt đầu: `2026-10-09T18:16:23Z`, Kết thúc: `2026-10-09T18:23:24Z`)
 - **Runtime Versions**: Python 3.12.10, PyTorch 2.5.1+cu121, NumPy 2.1.3, Pillow 11.1.0
-- **Git Commit**: `528015837d76af286f4290afe0f958b3b896889b`
-- **Số lượng Forward Passes**: 4.800 passes (800 ảnh × 6 điều kiện × 5 outer-fold models)
+- **Git Commit thực thi hoàn thành**: `528015837d76af286f4290afe0f958b3b896889b`
+- **Khối lượng Tính toán Phân rã**:
+  - *Backbone forward passes (Trích xuất đặc trưng thị giác MobileNetV3)*: **4.800 lượt suy luận backbone** (800 ảnh × 6 điều kiện).
+  - *Classifier scoring passes (Chấm điểm phân loại qua 2 recipes và 5 outer folds)*: **48.000 lượt chấm điểm** (800 ảnh × 6 điều kiện × 2 recipes × 5 outer folds).
 
 ### 7.3. Kết Quả Tổng Thể Qua 6 Điều Kiện
 
@@ -1553,22 +1557,166 @@ Kết quả tại `research/evidence/phase-4c.7b/acquisition_smoke_receipt.json`
 
 - **Visual Calibrated Macro-F1** (arithmetic mean across 5 folds): **0.5624** (Folds: Fold 0: 0.5726, Fold 1: 0.5595, Fold 2: 0.5573, Fold 3: 0.5600, Fold 4: 0.5623)
 - **Late Fusion DSP Augmented Macro-F1** (arithmetic mean across 5 folds): **0.5596** (Folds: Fold 0: 0.5702, Fold 1: 0.5588, Fold 2: 0.5416, Fold 3: 0.5547, Fold 4: 0.5728)
-- **Ước lượng điểm (Point Estimate Δ)**: **-0.0027**
+- **Ước lượng điểm (Point Estimate Δ)**: **-0.0027** (chính xác: `-0.0027361535022448757`)
 - **Stratified Paired Source Cluster Bootstrap** (10.000 replicates, PCG64 seed `20261007`, bảo toàn chính xác 14 Large / 221 Medium / 165 Small clusters per replicate):
-  - **Mean Δ**: -0.0027
-  - **Median Δ**: -0.0027
-  - **95% Percentile Bootstrap CI**: **[-0.0126, +0.0072]**
+  - **Mean Δ**: -0.0027 (`-0.0027168393598284817`)
+  - **Median Δ**: -0.0027 (`-0.00266903171439542`)
+  - **95% Percentile Bootstrap CI**: **[-0.0126, +0.0072]** (`[-0.012585936556473653, +0.007151835157978143]`)
   - **Khoảng tin cậy chứa 0.0**: **TRUE** (Khoảng CI cắt 0.0)
-  - **Xác suất cải thiện $P(\Delta > 0)$**: **30.29%**
+  - **Tỷ lệ số lượt bootstrap dương (Bootstrap positive fraction)**: **30.29%** (tỷ lệ các lượt bootstrap replicate có $\Delta^* > 0$; tuyệt đối không diễn giải là xác suất giả thuyết nghiên cứu đúng).
 - **Kết Luận Khoa Học Chính Thức**: **`INDEPENDENT_JPEG75_INCONCLUSIVE`**
+  - **Chưa chứng minh được sự cải thiện (unproven improvement)** của phương pháp Late Fusion DSP Augmented so với Visual Calibrated tại điều kiện nén JPEG Q=75.
+  - Tuyệt đối **không kết luận là "bác bỏ sự cải thiện"** hay tuyên bố hai phương pháp tương đương nhau (equivalence/non-inferiority chưa được chứng minh).
 
 ### 7.5. Trung Thực Khoa Học & Đối Chiếu với Kết Quả Thăm Dò Phát Triển
 
-1. **Không quan sát thấy sự vượt trội ngoài phân phối huấn luyện**: Trong Phase 4C.6B trên tập phát triển, Late Fusion DSP Augmented đạt $\Delta = +0.1363$ tại `jpeg_q75` do cứu vãn được suy giảm của visual branch trên dữ liệu đó. Tuy nhiên, trên tập kiểm định độc lập TGIF N=400 (unseen sources), visual branch duy trì hiệu năng vững chắc hơn (Macro-F1 0.5624), trong khi tín hiệu DSP kết hợp không mang lại cải thiện thống kê nào ($\Delta = -0.0027$, CI chứa 0).
-2. **Không cherry-picking, không refit**: Báo cáo đầy đủ và trung thực kết quả âm / không cải thiện này; không tiến hành điều chỉnh ngưỡng hay sửa đổi cấu hình nhằm tìm kiếm kết quả tích cực giả tạo.
+1. **Phân biệt rạch ròi kết quả phát triển vs kiểm định nguồn mới**: Trong Phase 4C.6B trên tập phát triển (341 nguồn Option P, inner-validation), Late Fusion DSP Augmented đạt $\Delta = +0.1363$ [95% CI: $+0.1057, +0.1681$] tại `jpeg_q75` do cứu vãn được sự suy giảm sâu của nhánh visual trên dữ liệu đó. Tuy nhiên, trên tập kiểm định độc lập TGIF N=400 (unseen sources trong cùng benchmark TGIF SD2-sp), nhánh visual duy trì hiệu năng vững chắc hơn (Macro-F1 0.5624), trong khi tín hiệu DSP kết hợp không mang lại cải thiện thống kê nào ($\Delta = -0.0027$, CI chứa 0, $P(\Delta^* > 0) = 30.29\%$).
+2. **Không cherry-picking, không refit**: Báo cáo đầy đủ và trung thực kết quả inconclusive này; không tiến hành điều chỉnh ngưỡng hay sửa đổi cấu hình nhằm tìm kiếm kết quả tích cực giả tạo.
 3. **Nhóm Large ($n=14$, 3.5%)**: Giữ vững cam kết chỉ báo cáo mô tả; không đưa ra kết luận khái quát hóa riêng cho nhóm có cỡ mẫu nhỏ này.
 
 ### 7.6. Hiện Vật Xuất Bản
 - **Biên nhận kiểm định máy đọc**: `research/evidence/phase-4c.7b/tgif_train_independent_evaluation_receipt.json` (2.573.414 bytes, SHA-256 `720c9a3a4f7f6ed1d13f7aa3f3e77efc82af5544dbc04cfcbae238a0e4aef54a`).
-- **Dữ liệu dự đoán chi tiết**: `research/evidence/phase-4c.7b/tgif_train_independent_evaluation_predictions.json` (2.520.928 bytes, SHA-256 `703d40a2186710b10c6c8f4c17e9e7d7960fc4733943f10b158967b6a65aa4a6`), lưu trữ đầy đủ 800 ảnh × 6 điều kiện × 2 recipes × 5 folds để tái lập 100% metrics mà không cần chạy lại mô hình.
+- **Dữ liệu dự đoán chi tiết**: `research/evidence/phase-4c.7b/tgif_train_independent_evaluation_predictions.json` (2.520.928 bytes, SHA-256 `703d40a2186710b10c6c8f4c17e9e7d7960fc4733943f10b158967b6a65aa4a6`), lưu trữ đầy đủ 800 ảnh × 6 điều kiện × 2 recipes × 5 folds (48.000 xác suất và 48.000 nhãn dự đoán) để tái lập 100% metrics mà không cần chạy lại mô hình.
+- **Biên nhận kiểm toán kết quả độc lập**: `research/evidence/phase-4c.7b/tgif_independent_evaluation_results_audit_receipt.json` (SHA-256 ghi nhận sau audit).
+
+---
+
+## 8. Nghiệm Thu Pháp Chứng & Tư Liệu Cho Bài Báo Nghiên Cứu (Forensic Audit & Manuscript Dossier)
+
+### 8.1. Biên Bản Nghiệm Thu Độc Lập Bằng Predictions Đã Lưu (Audit Verdict: PASS)
+Kiểm toán độc lập thực hiện tại chỗ (LOCAL) thông qua `scripts/research/audit_tgif_independent_evaluation_results.py` với **0 detector calls, 0 feature extraction, 0 refit/tuning**:
+
+1. **Xác minh Khóa Mật Mã & Ràng Buộc Thực Thi**:
+   - `tgif_independent_evaluation_execution_config.json` SHA-256: `dd1b0cfdf16008420d32b8747a4d27fbd3caaefa8d964744cc439b7c3b67ae73` (PASS, 100% khớp receipt).
+   - `tgif_train_clean_subset_manifest_locked_n400.json` SHA-256: `53a6ee472fe840a42abd97ccb7475932e0720f5788f745f57f7a2bcfbc32cc8c` (PASS).
+   - `tgif_train_intake_audit_receipt.json` SHA-256: `cc31255d8e6e1e0fc90f5da4108c1778086406255509e2027329940f88b95477` (PASS).
+   - `tgif_train_phash_leakage_audit_receipt.json` SHA-256: `597a21c64e2628d537296954bd58b51cdb08ee95da57654b7af45deb45d0ff60` (PASS).
+   - `candidate_model_bindings.json` SHA-256: `d6b6ab8aa08e98b21d3c3b8a70670414dc5469195cdc48a471986d7faff46ebb` (PASS).
+   - 5 outer-fold `fold_model.json` checkpoints và MobileNetV3-small backbone weights (`047dcff4...`): 100% khớp mã băm trên đĩa.
+   - Source commit của lần chạy hoàn thành: ghi nhận chính xác **`528015837d76af286f4290afe0f958b3b896889b`** trong cả receipt và predictions file.
+2. **Đối Chiếu Hai Sửa Lỗi Hotfix (Commits `ca63d56` và `5280158`)**:
+   - `ca63d56` (`fix(research): correct MobileNetV3 parameter freeze in evaluation runner`): Chỉ sửa import thừa trong runner (`apply_frozen_backbone_policy`) và gán tường minh `p.requires_grad = False` cho backbone; không đổi trọng số checkpoint, preprocessing hay estimand.
+   - `5280158` (`fix(research): map TGIF candidates to package archive member paths`): Sửa cách ánh xạ tên file thành viên trong gói ZIP (`c.get("authentic_relpath", f"authentic/{cat}/{rid}_orig.png")`); không đổi mô hình, preprocessing hay estimand.
+   - Nhật ký lỗi của 2 lần chạy trước được bảo toàn nguyên vẹn trong `.system_generated/tasks/` (`task-721.log` và `task-750.log`), không sửa chữa hiện vật gốc.
+3. **Kiểm Tra Cấu Trúc, Cardinality và Ngưỡng Quyết Định**:
+   - Đủ chính xác 800 samples, 400 unique `source_id`, phân tầng 14 Large / 221 Medium / 165 Small.
+   - Ghép cặp hoàn hảo: 400/400 sources chứa đúng 1 ảnh authentic (nhãn 0) và 1 ảnh edited (nhãn 1).
+   - Đủ 6 conditions × 2 recipes × 5 folds = **48.000 xác suất** và **48.000 nhãn dự đoán**.
+   - 100% xác suất nằm trong $[0.0, 1.0]$.
+   - 100% nhãn dự đoán khớp chính xác quy tắc $\text{pred} = 1$ khi $\text{prob} \ge 0.5$ (ngưỡng quyết định 0.5 đã khóa cứng).
+4. **Tái Tính Toán Chỉ Số & Đối Chiếu Số Học (Bit-Exact Reconciliation)**:
+   - Tái tính Macro-F1, Balanced Accuracy, AUROC, Brier Score từng fold/condition: sai lệch tối đa so với receipt là **$1.11 \times 10^{-16}$ (bit-exact)**.
+   - Primary point estimate $\Delta = -0.0027361535022448757$ (bit-exact).
+   - Tái thực thi Stratified Paired Source Cluster Bootstrap (10.000 replicates, PCG64 seed `20261007`, phân tầng 14/221/165, paired indices chia sẻ):
+     - Mean $\Delta$: `-0.0027168393598284817` (bit-exact).
+     - Median $\Delta$: `-0.00266903171439542` (bit-exact).
+     - 95% Percentile CI: `[-0.012585936556473653, +0.007151835157978143]` (bit-exact).
+     - Tỷ lệ số lượt bootstrap dương: `0.3029` ($30.29\%$, bit-exact).
+   - **Kết Luận Nghiệm Thu: AUDIT PASS 100%**.
+
+---
+
+### 8.2. Bảng Kết Quả Chi Tiết Cho Bài Báo Nghiên Cứu (Manuscript Results Table)
+
+Dưới đây là bảng số liệu tổng hợp chính thức trên tập kiểm định độc lập TGIF N=400 (800 ảnh, 400 cặp nguồn chưa từng thấy, chuẩn hóa canvas $512 \times 512$):
+
+| Điều Kiện (Condition) | Mô Hình (Recipe) | Macro-F1 (Mean ± Std) | Balanced Acc (Mean ± Std) | AUROC (Mean ± Std) | Brier Score (Mean ± Std) | ECE (Mean ± Std) | $\Delta \text{Macro-F1}$ [95% Bootstrap CI] |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| `original` | Visual Calibrated | 0.5611 ± 0.0084 | 0.5613 ± 0.0085 | 0.5858 ± 0.0025 | 0.2456 ± 0.0007 | 0.0246 ± 0.0104 | Ref |
+| `original` | Late Fusion DSP Aug | 0.5681 ± 0.0076 | 0.5681 ± 0.0076 | 0.5960 ± 0.0044 | 0.2457 ± 0.0006 | 0.0326 ± 0.0135 | +0.0070 [-0.0021, +0.0163] |
+| `jpeg_q95` | Visual Calibrated | 0.5598 ± 0.0090 | 0.5600 ± 0.0090 | 0.5851 ± 0.0024 | 0.2457 ± 0.0007 | 0.0264 ± 0.0099 | Ref |
+| `jpeg_q95` | Late Fusion DSP Aug | 0.5664 ± 0.0081 | 0.5665 ± 0.0081 | 0.5936 ± 0.0046 | 0.2460 ± 0.0006 | 0.0348 ± 0.0125 | +0.0066 [-0.0027, +0.0160] |
+| **`jpeg_q75` (Primary)** | **Visual Calibrated** | **0.5624 ± 0.0060** | **0.5624 ± 0.0060** | **0.5849 ± 0.0033** | **0.2460 ± 0.0006** | **0.0249 ± 0.0087** | **Ref** |
+| **`jpeg_q75` (Primary)** | **Late Fusion DSP Aug** | **0.5596 ± 0.0126** | **0.5597 ± 0.0126** | **0.5910 ± 0.0065** | **0.2468 ± 0.0006** | **0.0329 ± 0.0097** | **-0.0027 [-0.0126, +0.0072]** |
+| `jpeg_q50` | Visual Calibrated | 0.5580 ± 0.0033 | 0.5580 ± 0.0033 | 0.5802 ± 0.0024 | 0.2469 ± 0.0004 | 0.0315 ± 0.0094 | Ref |
+| `jpeg_q50` | Late Fusion DSP Aug | 0.5485 ± 0.0098 | 0.5486 ± 0.0098 | 0.5794 ± 0.0067 | 0.2483 ± 0.0007 | 0.0407 ± 0.0118 | -0.0095 [-0.0199, +0.0010] |
+| `resize_0.5` | Visual Calibrated | 0.5586 ± 0.0065 | 0.5587 ± 0.0066 | 0.5828 ± 0.0024 | 0.2464 ± 0.0005 | 0.0267 ± 0.0097 | Ref |
+| `resize_0.5` | Late Fusion DSP Aug | 0.5657 ± 0.0049 | 0.5657 ± 0.0049 | 0.5914 ± 0.0051 | 0.2461 ± 0.0007 | 0.0305 ± 0.0116 | +0.0071 [-0.0015, +0.0159] |
+| `resize_0.5_jpeg_q75` | Visual Calibrated | 0.5510 ± 0.0059 | 0.5510 ± 0.0060 | 0.5772 ± 0.0017 | 0.2476 ± 0.0005 | 0.0336 ± 0.0096 | Ref |
+| `resize_0.5_jpeg_q75` | Late Fusion DSP Aug | 0.5375 ± 0.0124 | 0.5376 ± 0.0124 | 0.5750 ± 0.0064 | 0.2494 ± 0.0009 | 0.0416 ± 0.0089 | -0.0135 [-0.0250, -0.0022] |
+
+*Ghi chú*: Kết quả biểu thị giá trị trung bình số học $\pm$ độ lệch chuẩn trên 5 outer-fold models. Endpoint sơ cấp tiền đăng ký là $\Delta \text{Macro-F1}$ tại `jpeg_q75`. Khoảng tin cậy 95% tính theo phương pháp Stratified Paired Source Cluster Bootstrap (10.000 replicates, PCG64 seed `20261007`).
+
+---
+
+### 8.3. Biểu Đồ Primary Endpoint $\Delta$ và 95% Bootstrap CI (ASCII Diagram)
+
+```text
+====================================================================================================
+PRIMARY ENDPOINT: Delta Macro-F1 at jpeg_q75 (Late Fusion DSP Augmented - Visual Calibrated)
+Estimand: Unweighted Arithmetic Mean across 5 Outer Folds | Resampling: Stratified Paired Cluster
+====================================================================================================
+
+      Favors Visual Calibrated                         Favors Late Fusion DSP Augmented
+               <-----------------------------------+----------------------------------->
+                                                   |
+                                            Zero Effect (0.0)
+                                                   |
+   -0.020        -0.015        -0.010        -0.005|       +0.000        +0.005        +0.010
+     +-------------+-------------+-------------+---|---------+-------------+-------------+
+                                                   |
+                                 [-0.0126]         |                 [+0.0072]
+                                     |=============*=========|
+                                                   |
+                                                   ^ Point Estimate: -0.002736
+                                                   |
+                                                   | 95% Percentile CI: [-0.012586, +0.007152]
+                                                   | CI contains 0.0: TRUE
+                                                   | Bootstrap positive fraction: 30.29%
+                                                   |
+     +-------------+-------------+-------------+---|---------+-------------+-------------+
+   -0.020        -0.015        -0.010        -0.005|       +0.000        +0.005        +0.010
+
+Scientific Verdict: INDEPENDENT_JPEG75_INCONCLUSIVE
+Conclusion: Unproven improvement; the 95% CI spans zero; no statistical evidence of superiority.
+====================================================================================================
+```
+
+---
+
+### 8.4. Thảo Luận Khoa Học Cho Bài Báo (Discussion Draft)
+
+#### 1. Sự Đối Lập Giữa Kết Quả Phát Triển và Kiểm Định Độc Lập
+Trong giai đoạn phát triển mô hình (Phase 4C.6B trên 341 nguồn Option P thuộc inner-validation), việc kết hợp các tín hiệu phân tích số DSP (2D FFT, DCT, noise residual) thông qua bộ phân loại Late Fusion đã mang lại sự cải thiện rõ rệt tại điều kiện nén JPEG Q=75 ($\Delta \text{Macro-F1} = +0.1363$ [95% CI: $+0.1057, +0.1681$]), giải cứu hiệu năng của nhánh thị giác vốn bị sụt giảm sâu (từ $0.4401$ lên $0.5764$). 
+
+Tuy nhiên, khi tiến hành kiểm định độc lập trên tập mẫu mới $N=400$ ($800$ ảnh từ $400$ nguồn ảnh hoàn toàn chưa từng thấy trong quá trình huấn luyện và lựa chọn mô hình), kết quả cho thấy một bức tranh hoàn toàn khác:
+- Nhánh thị giác Visual Calibrated (MobileNetV3-small \cite{howard2019mobilenetv3} kết hợp Temperature Scaling \cite{guo2017calibration}) duy trì hiệu năng vững vàng hơn dự kiến, đạt Macro-F1 là **$0.5624 \pm 0.0060$**.
+- Nhánh kết hợp Late Fusion DSP Augmented đạt Macro-F1 là **$0.5596 \pm 0.0126$**, dẫn đến độ chênh lệch điểm ước lượng là **$\Delta = -0.0027$**.
+- Khoảng tin cậy bootstrap 95% là **$[-0.0126, +0.0072]$**, hoàn toàn bao trùm giá trị 0.0, và tỷ lệ số lượt bootstrap dương chỉ đạt **$30.29\%$**.
+
+#### 2. Tính Chất Của Kết Quả Kiểm Định: Unseen Sources Trong Cùng Phân Phối
+Cần phân biệt rõ ràng: Đây là kiểm định trên **ảnh nguồn mới (unseen sources)** nhưng **trong cùng họ benchmark TGIF** (\cite{mareen2024tgif}) và **cùng kiến trúc mô hình tạo sinh Stable Diffusion 2 (SD2)**. 
+- **Tuyệt đối không gọi đây là bằng chứng khái quát ngoài phân phối (out-of-distribution - OOD)**.
+- Kết quả này phản ánh năng lực khái quát hóa cấp độ nguồn ảnh (source-level generalization) trong điều kiện in-distribution / in-benchmark.
+
+#### 3. Phân Tích Nguyên Nhân Kỹ Thuật
+Hiện tượng Late Fusion DSP không duy trì được ưu thế vượt trội trên tập kiểm định độc lập có thể được giải thích thông qua bản chất vật lý của tín hiệu:
+- Các đặc trưng DSP (phổ tần số 2D FFT, hệ số DCT, phương sai nhiễu) được tính toán trên toàn bộ canvas ảnh $512 \times 512$. Trong bài toán inpainting cục bộ, vùng can thiệp chỉ chiếm từ $1\%$ đến $50\%$ diện tích ảnh; phần lớn diện tích còn lại là ảnh gốc tự nhiên.
+- Khi toàn bộ ảnh bị nén JPEG ($Q=75$), các đặc trưng DSP toàn cục bị chi phối mạnh mẽ bởi cấu trúc nén lưới $8 \times 8$ trên toàn ảnh hơn là vết ghép cục bộ nhỏ.
+- Trong tập dữ liệu phát triển, bộ phân loại Late Fusion có thể đã vô tình khai thác một số đặc điểm phương sai cụ thể của các nguồn phát triển. Khi chuyển sang 400 nguồn ảnh mới, bộ trích xuất đặc trưng thị giác CNN nhẹ kết hợp hiệu chuẩn nhiệt độ đã đóng vai trò là bộ ước lượng ổn định hơn, trong khi việc cộng thêm các đặc trưng DSP toàn cục không cung cấp thêm lượng thông tin hữu ích vượt trội.
+
+---
+
+### 8.5. Hạn Chế Nghiên Cứu Cho Bài Báo (Limitations Draft)
+
+1. **Phân Bổ Lệch Của Tầng Large ($n=14$)**: Do tính chất phân đoạn của tập dữ liệu TGIF gốc (\cite{mareen2024tgif}), số lượng ảnh có vùng chỉnh sửa lớn ($\ge 30\%$ canvas) chỉ có đúng 14 nguồn khả dụng ($3.5\%$). Do đó, nhóm Large chỉ mang tính chất báo cáo mô tả; nghiên cứu không đưa ra kết luận kiểm định riêng cho nhóm này.
+2. **Chưa Đánh Giá Cross-Generator (OOD)**: Nghiên cứu độc lập hiện tại chỉ đánh giá trên bộ tạo sinh SD2. Năng lực tổng quát hóa trên các kiến trúc tạo sinh khác (như Adobe Firefly, SDXL, Midjourney, hoặc các mô hình inpainting dựa trên autoregressive / flow-matching) chưa được đo đạc thực nghiệm trên cohort này (\cite{wang2023dire,ojha2023universal}).
+3. **Phạm Vi Bài Toán 2 Lớp**: Tập kiểm định độc lập chỉ bao gồm hai lớp (`authentic` vs `ai_edited`), chưa đánh giá trên không gian 3 lớp toàn diện kèm ảnh tạo sinh toàn phần (`fully_generated`) (\cite{zhu2023genimage}).
+4. **Không Cam Kết Sai Số $ME < 0.01$**: Do phân tầng thực tế lệch nhiều so với thiết kế lý thuyết 50/50 ban đầu, nghiên cứu từ bỏ cam kết biên độ sai số $ME < 0.01$.
+
+---
+
+### 8.6. Trích Dẫn Thư Mục Chuẩn (BibTeX References Used)
+Tất cả các trích dẫn sử dụng các khóa chính thức từ `docs/references.bib`:
+- `\cite{mareen2024tgif}`: Mareen et al., *TGIF: Text-Guided Inpainting Forgery Dataset*, IEEE WIFS 2024.
+- `\cite{mareen2026tgif2}`: Mareen et al., *TGIF2: Extended Text-Guided Inpainting Forgery Dataset and Benchmark*, JIS 2026.
+- `\cite{howard2019mobilenetv3}`: Howard et al., *Searching for MobileNetV3*, IEEE ICCV 2019.
+- `\cite{guo2017calibration}`: Guo et al., *On Calibration of Modern Neural Networks*, ICML 2017.
+- `\cite{wang2020cnndetection}`: Wang et al., *CNN-Generated Images Are Surprisingly Easy to Spot... for Now*, IEEE CVPR 2020.
+- `\cite{ojha2023universal}`: Ojha et al., *Towards Universal Fake Image Detectors That Generalize Across Generative Models*, IEEE CVPR 2023.
+- `\cite{wang2023dire}`: Wang et al., *DIRE for Diffusion-Generated Image Detection*, IEEE ICCV 2023.
+- `\cite{zhu2023genimage}`: Zhu et al., *GenImage: A Million-Scale Benchmark for Detecting AI-Generated Image*, NeurIPS 2023.
+- `\cite{guillaro2023trufor}`: Guillaro et al., *TruFor: Leveraging All-Round Clues for Trustworthy Image Forgery Detection and Localization*, IEEE CVPR 2023.
+- `\cite{giakoumoglou2025sagi}`: Giakoumoglou et al., *SAGI: Semantically Aligned and Uncertainty Guided AI Image Inpainting*, 2025.
+
 
