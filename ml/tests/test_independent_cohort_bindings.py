@@ -27,6 +27,7 @@ from ml.evaluation.independent_cohort import SourceOverlapError
 from ml.evaluation.independent_cohort_acquisition import (
     CandidateEligibilityError,
     CandidateSpec,
+    ContentGroundingError,
     DiffusersInpaintingEngine,
     GenerationContractError,
     INPAINTING_MODEL_REGISTRY,
@@ -42,6 +43,8 @@ from ml.evaluation.independent_cohort_acquisition import (
     execute_cohort_acquisition,
     generate_canonical_candidate_plan,
     generate_synthetic_fixture_plan,
+    load_candidate_catalog_extension,
+    load_content_grounded_edit_plan,
     load_historical_source_keys,
     verify_model_access_preflight,
 )
@@ -248,6 +251,182 @@ def test_notebook_cell3_and_cell4_calibration_mode(tmp_path):
     exec(cells[4], ns)
     assert any("--mode" in c and "calibration" in c and "--audit-run" in c for c in calls)
     assert (tmp_path / "runs" / "calib-20261009T010000Z_package.zip").is_file()
+
+
+def test_notebook_cell3_and_cell4_pilot_v2_mode(tmp_path):
+    cells = _cells()
+    ns = _helpers()
+    calls = []
+
+    def mock_run(cmd, cwd=None):
+        calls.append(list(cmd))
+
+    run_dir = tmp_path / "runs" / "pilot-20261009T120000Z"
+    run_dir.mkdir(parents=True)
+    (run_dir / "test.txt").write_text("hello", encoding="utf-8")
+
+    plan_path = tmp_path / "content_grounded_pilot_plan_v2_proposal.json"
+    plan_path.write_text("{}", encoding="utf-8")
+    ext_path = tmp_path / "candidate_catalog_extension_v1.0.0.json"
+    ext_path.write_text("{}", encoding="utf-8")
+
+    ns.update(
+        run=mock_run,
+        REPO_DIR=tmp_path,
+        EXPECTED_COMMIT="a" * 40,
+        RUN_ID="pilot-20261009T120000Z",
+        RUNS_ROOT=tmp_path / "runs",
+        RESUME_RUN_ID=None,
+        EXECUTION_MODE="pilot",
+        EDIT_PLAN_PATH=plan_path,
+        CATALOG_EXTENSION_PATH=ext_path,
+    )
+
+    # Execute Cell 3
+    exec(cells[3], ns)
+    assert any(
+        "--mode" in c and "pilot" in c
+        and "--edit-plan-path" in c and any(str(arg) == str(plan_path) for arg in c)
+        and "--catalog-extension" in c and any(str(arg) == str(ext_path) for arg in c)
+        for c in calls
+    )
+    assert "RUN_CONTEXT" in ns
+    assert ns["RUN_CONTEXT"]["mode"] == "pilot"
+    assert ns["RUN_CONTEXT"]["plan_path"] == plan_path
+    assert ns["RUN_CONTEXT"]["catalog_extension_path"] == str(ext_path)
+
+    # Execute Cell 4
+    calls.clear()
+    exec(cells[4], ns)
+    assert any(
+        "--mode" in c and "pilot" in c and "--audit-run" in c
+        and "--edit-plan-path" in c and any(str(arg) == str(plan_path) for arg in c)
+        and "--catalog-extension" in c and any(str(arg) == str(ext_path) for arg in c)
+        for c in calls
+    )
+    assert (tmp_path / "runs" / "pilot-20261009T120000Z_package.zip").is_file()
+
+
+def test_pilot_v2_pending_proposal_blocks_generation_via_cli(monkeypatch, tmp_path):
+    from scripts.research.run_cohort_acquisition import main
+    import scripts.research.run_cohort_acquisition as rca
+
+    monkeypatch.setattr(rca, "verify_checkout", lambda repo, commit: commit)
+
+    real_proposal = REPO_ROOT / "research/evidence/phase-4c.7b/content_grounded_pilot_plan_v2_proposal.json"
+    real_ext = REPO_ROOT / "research/evidence/phase-4c.7b/candidate_catalog_extension_v1.0.0.json"
+    out_root = tmp_path / "runs"
+
+    with pytest.raises(SystemExit) as exc:
+        main([
+            "--mode", "pilot",
+            "--run-id", "pilot-guard-test",
+            "--expected-commit", "a" * 40,
+            "--output-root", str(out_root),
+            "--edit-plan-path", str(real_proposal),
+            "--catalog-extension", str(real_ext),
+        ])
+    assert exc.value.code == 1
+    assert not (out_root / "pilot-guard-test").exists()
+
+
+def test_pilot_v2_missing_or_mismatched_extension_is_rejected(tmp_path):
+    real_proposal = REPO_ROOT / "research/evidence/phase-4c.7b/content_grounded_pilot_plan_v2_proposal.json"
+    real_data = json.loads(real_proposal.read_text(encoding="utf-8"))
+
+    # 1. Missing extension: plan requiring extension candidate without catalog_extension_path fails
+    no_ext_plan_data = dict(real_data)
+    no_ext_plan_data.pop("catalog_extension_path", None)
+    no_ext_plan_data.pop("catalog_extension_sha256", None)
+    no_ext_plan_path = tmp_path / "no_ext_plan.json"
+    no_ext_plan_path.write_text(json.dumps(no_ext_plan_data), encoding="utf-8")
+
+    canonical_without_ext = generate_canonical_candidate_plan()
+    with pytest.raises(ContentGroundingError, match="COCO_EXT_SDXL_001"):
+        load_content_grounded_edit_plan(
+            canonical_without_ext,
+            no_ext_plan_path,
+            target_per_stratum=2,
+            require_human_approval=False,
+            catalog_extension_path=None,
+        )
+
+    # 2. Mismatched extension hash in plan: fails closed
+    mismatched_plan_data = dict(real_data)
+    mismatched_plan_data["catalog_extension_sha256"] = "0" * 64
+    mismatched_plan_path = tmp_path / "mismatched_plan.json"
+    mismatched_plan_path.write_text(json.dumps(mismatched_plan_data), encoding="utf-8")
+    with pytest.raises(ContentGroundingError, match="catalog extension sha256 mismatch"):
+        load_content_grounded_edit_plan(
+            canonical_without_ext,
+            mismatched_plan_path,
+            target_per_stratum=2,
+            require_human_approval=False,
+        )
+
+    # 3. Corrupted/invalid extension parent hash: fails closed with CandidateEligibilityError
+    bad_ext = tmp_path / "bad_ext.json"
+    bad_ext.write_text(json.dumps({
+        "schema_version": "1.0.0",
+        "extension_id": "bad_ext",
+        "parent_catalog_relpath": "research/evidence/phase-4c.7b/verified_candidate_catalog_v2.json",
+        "parent_catalog_sha256": "0" * 64,
+        "extension_candidates": [],
+    }), encoding="utf-8")
+    with pytest.raises(CandidateEligibilityError, match="parent catalog sha256 mismatch"):
+        load_candidate_catalog_extension(bad_ext)
+
+    # 4. Audit fails if expected binding lacks catalog_extension_sha256 while run had it
+    bound_with_ext = _binding() | {"catalog_extension_sha256": "ext_hash_123"}
+    bound_without_ext = _binding()
+    run_dir = tmp_path / "audit_test_run"
+    run_dir.mkdir()
+    (run_dir / "run_receipt.json").write_text(json.dumps({
+        "binding": bound_with_ext,
+        "status": "PASS",
+        "manifest_sha256": "m",
+        "total_valid_pairs": 8,
+    }), encoding="utf-8")
+    (run_dir / "run_binding.json").write_text(json.dumps(bound_with_ext), encoding="utf-8")
+    with pytest.raises(RunAuditError, match="Run receipt binding differs"):
+        audit_acquisition_run(run_dir, bound_without_ext)
+
+
+def test_notebook_does_not_accidentally_execute_calibration_or_historical_pilot():
+    nb = json.loads(NOTEBOOK.read_text(encoding="utf-8"))
+    cell2 = "".join(nb["cells"][2]["source"])
+
+    # Must be explicitly configured for pilot v2 launcher
+    assert 'EXECUTION_MODE = "pilot"' in cell2
+    assert "content_grounded_pilot_plan_v2_proposal.json" in cell2
+    assert "content_grounded_pilot_plan.json" not in cell2
+    assert "candidate_catalog_extension_v1.0.0.json" in cell2
+
+    # RUN_ID generation for pilot mode must use pilot- prefix
+    assert '"pilot-"' in cell2
+
+    # Preflight in Cell 2 must branch to --check-pilot-plan
+    assert "--check-pilot-plan" in cell2
+    assert "--pilot-plan-path" in cell2
+
+    # Cell 3 must pass both edit plan and catalog extension for pilot mode
+    cell3 = "".join(nb["cells"][3]["source"])
+    assert 'mode == "pilot"' in cell3
+    assert "--edit-plan-path" in cell3
+    assert "--catalog-extension" in cell3
+    assert '"catalog_extension_path"' in cell3
+
+    # Cell 4 must pass both edit plan and catalog extension for pilot mode audit
+    cell4 = "".join(nb["cells"][4]["source"])
+    assert 'mode == "pilot"' in cell4
+    assert "--audit-run" in cell4
+    assert "--edit-plan-path" in cell4
+    assert "--catalog-extension" in cell4
+
+    # Ensure historical pilot directory is never used as target/output
+    assert 'RUNS_ROOT / "pilot-20261008T113700Z"' not in cell3
+    assert 'RUNS_ROOT / "pilot-20261008T113700Z"' not in cell4
+
 
 
 def test_drive_mount_failure_stops_and_creates_no_scratch_run(tmp_path, monkeypatch):

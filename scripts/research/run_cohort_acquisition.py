@@ -55,6 +55,7 @@ from ml.evaluation.independent_cohort_acquisition import (
     TOTAL_BUFFER_PAIRS,
     CandidateEligibilityError,
     CandidateSpec,
+    ContentGroundingError,
     GenerationContractError,
     MockInpaintingEngine,
     RunAuditError,
@@ -637,13 +638,17 @@ def main(argv: list[str] | None = None) -> None:
         plan = allocation_plan
     else:
         edit_plan_path = Path(args.edit_plan_path)
-        plan = load_content_grounded_edit_plan(
-            allocation_plan,
-            edit_plan_path,
-            target_per_stratum=target,
-            require_human_approval=True,
-            catalog_extension_path=args.catalog_extension,
-        )
+        try:
+            plan = load_content_grounded_edit_plan(
+                allocation_plan,
+                edit_plan_path,
+                target_per_stratum=target,
+                require_human_approval=True,
+                catalog_extension_path=args.catalog_extension,
+            )
+        except ContentGroundingError as e:
+            print(f"ERROR: Edit plan approval check failed: {e}", file=sys.stderr)
+            raise SystemExit(1)
     binding = build_run_binding(
         args.run_id,
         commit,
