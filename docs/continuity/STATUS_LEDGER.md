@@ -1,3 +1,13 @@
+## Final Manuscript Editorial & Research Objectives Reconciliation (Phase 4C.7B trace)
+
+- **Claims tempered strictly to evidence**: RQ1 restricted to observed Macro-F1 (~0.56 on binary task) without asserting proof of exceeding baseline; Brier Score reported purely descriptively without claims of significant improvement; eliminated all absolute claims regarding reproducibility, data privacy, and production software behavior.
+- **Methods strictly reconciled with implementation & receipts**: 16 canonical DSP features aligned with `ml/training/dsp_features.py`; image preprocessing (512x512 Lanczos center-crop for RGB, Nearest-neighbor for masks); `StandardScaler` fitted on outer-train original images only; temperature scaling ($T_v, T_d$) optimizing NLL on inner-OOF; and 5 outer folds (5x4 nested CV) documented exactly as executed in code. Zero data/model/receipt alterations.
+- **Related work and citations grounded**: Nuanced technical appraisals of TruFor and ONNX Runtime Web; 100% citations verified against canonical `docs/references.bib`.
+- **Relative paths and figure matching**: Converted all links to repository-relative paths (`../...`); updated Figure 1 caption to match vector SVG elements (Zero Effect line, 95% bootstrap CI, point estimate diamond, verdict badge); preserved all author and affiliation placeholders.
+- **Unfinished objectives transparently documented**: Explicitly registered that TGIF independent evaluation (2-class) is completed, whereas RQ1 3-class, RQ3 INT8, RQ4 browser runtime, and RQ5 localization remain uncompleted (`not evaluated` / `not measured`), preserving original research questions intact.
+
+---
+
 ## Complete Research Manuscript Finalized & Scientific Verification Reconciled (Phase 4C.7B trace)
 
 - **Comprehensive research manuscript authored**: Created `docs/MANUSCRIPT.md` covering Abstract, Introduction, Related Work, Methods, Results, Discussion, Limitations, RQ-Evidence Matrix, Conclusion, References, and Reproducibility Guide.
