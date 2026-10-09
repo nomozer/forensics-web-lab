@@ -445,17 +445,21 @@ def execute_independent_evaluation(
     for c in candidates:
         sid = c["source_id"]
         stratum = c["stratum_area_class"]
+        cat = c["category"]
+        rid = c["raw_id"]
+        auth_rel = c.get("authentic_relpath", f"authentic/{cat}/{rid}_orig.png")
+        edit_rel = c.get("edited_relpath", f"edited/{cat}/{rid}_sd2.png")
         samples_meta.append({
             "source_id": sid,
             "stratum": stratum,
             "label": 0,
-            "relpath": c["authentic_relpath"],
+            "relpath": auth_rel,
         })
         samples_meta.append({
             "source_id": sid,
             "stratum": stratum,
             "label": 1,
-            "relpath": c["edited_relpath"],
+            "relpath": edit_rel,
         })
 
     n_samples = len(samples_meta)
