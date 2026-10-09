@@ -423,7 +423,7 @@ def execute_independent_evaluation(
 
     # 3. Setup neural feature extractor with frozen weights on CPU
     import torch
-    from ml.training.mobilenetv3_forensics import MobileNetV3Forensics, apply_frozen_backbone_policy
+    from ml.training.mobilenetv3_forensics import MobileNetV3Forensics
     from ml.training.phase_4c2h_development import build_canonical_transform
 
     device = torch.device("cpu")
@@ -432,7 +432,8 @@ def execute_independent_evaluation(
         num_classes=2, pretrained=False, weights_path=str(weights_path), freeze_backbone=True
     ).to(device)
     backbone_model.eval()
-    apply_frozen_backbone_policy(backbone_model)
+    for p in backbone_model.parameters():
+        p.requires_grad = False
     canonical_transform = build_canonical_transform()
 
     # 4. Load the 5 outer-fold candidate models
