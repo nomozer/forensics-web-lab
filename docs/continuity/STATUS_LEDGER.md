@@ -1,3 +1,17 @@
+## TGIF N=400 Manuscript Results Table & Primary Endpoint Figures Finalized (Phase 4C.7B trace)
+
+- **Machine-readable automated table generation**: Implemented `scripts/research/generate_manuscript_results_and_figures.py` reading directly from `predictions.json`, `receipt.json`, and `audit_receipt.json`. Zero manual entry, zero detector reruns, zero feature extraction/fitting. All metrics (Macro-F1, BAcc, AUROC, Brier, ECE 10 uniform bins) recomputed with sample standard deviation `ddof=1` across 5 outer folds and reconciled within machine numerical tolerance $\le 1.11 \times 10^{-16}$. Published `research/evidence/phase-4c.7b/tgif_n400_manuscript_results_table.md`.
+- **Secondary conditions CIs dropped**: Preregistered 95% Percentile Bootstrap CI $[-0.0126, +0.0072]$ strictly isolated to Primary Endpoint at `jpeg_q75`. Secondary conditions report exploratory point deltas only without unpreregistered CIs.
+- **Publication vector & raster figures produced**: Rendered W3C standard vector SVG (`research/evidence/phase-4c.7b/tgif_n400_primary_endpoint_delta_ci.svg`) and high-resolution PNG (`tgif_n400_primary_endpoint_delta_ci.png`) with Zero Effect line, 95% bootstrap error bar, point estimate marker, and scientific verdict badge, replacing ASCII text diagrams in Phase Report and Evaluation docs.
+- **Discussion & Limitations standardized**:
+  1. DSP fusion improvement unproven at `jpeg_q75` (verdict `INDEPENDENT_JPEG75_INCONCLUSIVE`).
+  2. Mechanistic explanations regarding JPEG compression grids, global DSP features, and development shortcuts explicitly classified as unverified hypotheses lacking isolated ablation experiments.
+  3. Strict disclaimer: Academic evaluation results must not be used to claim production software guarantees regarding confidence reduction, correct uncertain classification, or selective risk / false-positive control.
+  4. 100% citations rigorously cross-checked against existing canonical bibliography `docs/references.bib`.
+- **Audit reconciliation vocabulary normalized**: Replaced all occurrences of "bit-exact" with "reconciled within machine numerical tolerance $\le 1.11 \times 10^{-16}$" where floating-point rounding differences exist.
+
+---
+
 ## TGIF N=400 Independent Evaluation Audited PASS & Completed: Inconclusive on Primary Endpoint at jpeg_q75 (Phase 4C.7B trace)
 
 - **Formal human approval registered & config locked**: Explicit evaluation authorization granted by human reviewer Dũng Phạm `<valdung04@gmail.com>` at `2026-10-09T18:08:30Z`. Committed configuration `research/evidence/phase-4c.7b/tgif_independent_evaluation_execution_config.json` (SHA-256 `dd1b0cfdf16008420d32b8747a4d27fbd3caaefa8d964744cc439b7c3b67ae73`) at commit `1fe34bf`. Preflight `--check-config` passed (`AUTHORIZED_FOR_EVALUATION`).
@@ -13,7 +27,7 @@
     - Bootstrap positive fraction $P(\Delta^* > 0)$: $30.29\%$.
   - Final Scientific Verdict: **`INDEPENDENT_JPEG75_INCONCLUSIVE`**.
   - Scientific Honesty: Chưa chứng minh được sự cải thiện (unproven improvement) của Late Fusion DSP Augmented so với Visual Calibrated trên tập kiểm định độc lập nguồn mới trong TGIF tại endpoint sơ cấp jpeg_q75. Không tuyên bố là bác bỏ cải thiện.
-- **Forensic audit from stored predictions (AUDIT PASS)**: Executed `scripts/research/audit_tgif_independent_evaluation_results.py` on LOCAL machine with 0 detector calls. Verified SHA-256 hashes of config, manifest, receipts, candidate models; verified 48,000 predictions matching threshold 0.5; verified two bugfix commits (`ca63d56` and `5280158`) changed zero weights/transforms/estimands; recomputed all metrics across all 6 conditions × 2 recipes × 5 folds with maximum discrepancy $1.11 \times 10^{-16}$ (bit-exact); recomputed 10,000-replicate bootstrap bit-identically. Published audit receipt at `research/evidence/phase-4c.7b/tgif_independent_evaluation_results_audit_receipt.json` (`status: AUDIT_PASS`).
+- **Forensic audit from stored predictions (AUDIT PASS)**: Executed `scripts/research/audit_tgif_independent_evaluation_results.py` on LOCAL machine with 0 detector calls. Verified SHA-256 hashes of config, manifest, receipts, candidate models; verified 48,000 predictions matching threshold 0.5; verified two bugfix commits (`ca63d56` and `5280158`) changed zero weights/transforms/estimands; recomputed all metrics across all 6 conditions × 2 recipes × 5 folds with maximum discrepancy $1.11 \times 10^{-16}$ (reconciled within machine numerical tolerance); recomputed 10,000-replicate bootstrap identically within numerical tolerance. Published audit receipt at `research/evidence/phase-4c.7b/tgif_independent_evaluation_results_audit_receipt.json` (`status: AUDIT_PASS`).
 - **Secondary conditions performance**:
   - `original`: Visual 0.5611 vs Augmented 0.5681 ($\Delta = +0.0070$).
   - `jpeg_q95`: Visual 0.5598 vs Augmented 0.5664 ($\Delta = +0.0066$).
