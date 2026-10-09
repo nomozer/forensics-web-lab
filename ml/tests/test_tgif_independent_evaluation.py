@@ -221,3 +221,42 @@ def test_candidate_models_format_and_loader_integrity() -> None:
         assert model.stacker.coef.shape == (2,)
         assert isinstance(model.stacker.intercept, float)
 
+
+def test_independent_evaluation_receipt_and_predictions_integrity() -> None:
+    """Verifies that the executed evaluation receipt and predictions are present and conform to specification."""
+    receipt_path = REPO_ROOT / "research/evidence/phase-4c.7b/tgif_train_independent_evaluation_receipt.json"
+    preds_path = REPO_ROOT / "research/evidence/phase-4c.7b/tgif_train_independent_evaluation_predictions.json"
+
+    assert receipt_path.is_file(), f"Missing receipt: {receipt_path}"
+    assert preds_path.is_file(), f"Missing predictions: {preds_path}"
+
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    assert receipt["status"] == "INDEPENDENT_EVALUATION_SUCCESS"
+    assert receipt["verdict"] == "INDEPENDENT_JPEG75_INCONCLUSIVE"
+    assert receipt["num_pairs"] == 400
+    assert receipt["num_samples"] == 800
+    assert receipt["detector_calls"] == 4800
+    assert receipt["strata_counts"] == {"large_over_30pct": 14, "medium_10_to_30pct": 221, "small_under_10pct": 165}
+
+    # Primary endpoint checks
+    assert abs(receipt["primary_point_delta"] - (-0.002736)) < 1e-4
+    b = receipt["bootstrap"]
+    assert b["replicates"] == 10000
+    assert b["seed"] == 20261007
+    assert b["ci_contains_zero"] is True
+    assert -0.015 < b["ci_lower_95"] < -0.010
+    assert 0.005 < b["ci_upper_95"] < 0.010
+
+    # Predictions check
+    preds = json.loads(preds_path.read_text(encoding="utf-8"))
+    assert len(preds["samples_index"]) == 800
+    assert set(preds["detailed_predictions"].keys()) == set(CONDITIONS)
+    for c in CONDITIONS:
+        for r in ("visual_calibrated", "late_fusion_dsp_augmented"):
+            assert len(preds["detailed_predictions"][c][r]) == 5
+            for f in range(5):
+                fold_key = f"outer_{f}"
+                assert len(preds["detailed_predictions"][c][r][fold_key]["probabilities"]) == 800
+                assert len(preds["detailed_predictions"][c][r][fold_key]["predictions"]) == 800
+
+

@@ -662,29 +662,29 @@ def execute_independent_evaluation(
 
     # Print comprehensive table
     print("\n" + "=" * 80)
-    print(f"TGIF N=400 INDEPENDENT EVALUATION REPORT (LOCAL CPU)")
+    print("TGIF N=400 INDEPENDENT EVALUATION REPORT (LOCAL CPU)")
     print("=" * 80)
     print(f"Verdict: {verdict}")
     print(f"Total Duration: {total_duration:.2f}s ({total_duration/60:.2f} min)")
     print(f"Strata Breakdown: {boot_res['strata_counts']}")
     print("-" * 80)
-    print(f"{'Condition':<20} | {'Visual F1 (mean±std)':<22} | {'Augmented F1 (mean±std)':<24} | {'Δ Macro-F1':<12}")
+    print(f"{'Condition':<20} | {'Visual F1 (mean+/-std)':<24} | {'Augmented F1 (mean+/-std)':<26} | {'Delta F1':<10}")
     print("-" * 80)
     for cond in CONDITIONS:
         v_m = condition_results[cond]["visual_calibrated"]
         a_m = condition_results[cond]["late_fusion_dsp_augmented"]
-        v_f1_str = f"{v_m['mean_metrics']['macro_f1']:.4f} ± {v_m['std_metrics']['macro_f1']:.4f}"
-        a_f1_str = f"{a_m['mean_metrics']['macro_f1']:.4f} ± {a_m['std_metrics']['macro_f1']:.4f}"
+        v_f1_str = f"{v_m['mean_metrics']['macro_f1']:.4f} +/- {v_m['std_metrics']['macro_f1']:.4f}"
+        a_f1_str = f"{a_m['mean_metrics']['macro_f1']:.4f} +/- {a_m['std_metrics']['macro_f1']:.4f}"
         delta = a_m["mean_metrics"]["macro_f1"] - v_m["mean_metrics"]["macro_f1"]
         mark = " (PRIMARY)" if cond == PRIMARY_CONDITION else ""
-        print(f"{cond:<20} | {v_f1_str:<22} | {a_f1_str:<24} | {delta:+.4f}{mark}")
+        print(f"{cond:<20} | {v_f1_str:<24} | {a_f1_str:<26} | {delta:+.4f}{mark}")
     print("-" * 80)
     print(f"PRIMARY ENDPOINT at {PRIMARY_CONDITION}:")
-    print(f"  Δ Macro-F1 point estimate: {primary_delta:+.4f}")
-    print(f"  Stratified Paired Cluster Bootstrap (10,000 reps, PCG64 seed 20261007):")
+    print(f"  Delta Macro-F1 point estimate: {primary_delta:+.4f}")
+    print("  Stratified Paired Cluster Bootstrap (10,000 reps, PCG64 seed 20261007):")
     print(f"    95% CI: [{boot_res['ci_lower_95']:+.4f}, {boot_res['ci_upper_95']:+.4f}]")
-    print(f"    Mean Δ: {boot_res['mean_delta']:+.4f}, Median Δ: {boot_res['median_delta']:+.4f}")
-    print(f"    P(Δ > 0): {boot_res['proportion_greater_than_zero']:.4f}")
+    print(f"    Mean Delta: {boot_res['mean_delta']:+.4f}, Median Delta: {boot_res['median_delta']:+.4f}")
+    print(f"    P(Delta > 0): {boot_res['proportion_greater_than_zero']:.4f}")
     print(f"    CI contains zero: {boot_res['ci_contains_zero']}")
     print("=" * 80)
 

@@ -1,3 +1,31 @@
+## TGIF N=400 Independent Evaluation Completed: Inconclusive on Primary Endpoint at jpeg_q75 (Phase 4C.7B trace)
+
+- **Formal human approval registered & config locked**: Explicit evaluation authorization granted by human reviewer Dũng Phạm `<valdung04@gmail.com>` at `2026-10-09T18:08:30Z`. Committed configuration `research/evidence/phase-4c.7b/tgif_independent_evaluation_execution_config.json` (SHA-256 `dd1b0cfdf16008420d32b8747a4d27fbd3caaefa8d964744cc439b7c3b67ae73`) at commit `1fe34bf`. Preflight `--check-config` passed (`AUTHORIZED_FOR_EVALUATION`).
+- **Full LOCAL CPU evaluation execution**: Executed `scripts/research/run_tgif_independent_evaluation.py --execute` with `ml/.venv` on LOCAL CPU. Evaluated exactly 400 source pairs (800 images) across 6 canonical conditions, consuming 4,800 detector/backbone forward passes. Total runtime: 420.81s (7.01 min). Reused frozen 5 outer-fold `fold_model.json` checkpoints and MobileNetV3-small backbone (`047dcff4...`). Zero retraining, zero recalibration, zero threshold tuning, zero replacement.
+- **Primary endpoint results (jpeg_q75)**:
+  - Visual Calibrated Macro-F1 (arithmetic mean across 5 folds): 0.5624 ± 0.0060 (folds: [0.5726, 0.5595, 0.5573, 0.5600, 0.5623]).
+  - Late Fusion DSP Augmented Macro-F1 (arithmetic mean across 5 folds): 0.5596 ± 0.0126 (folds: [0.5702, 0.5588, 0.5416, 0.5547, 0.5728]).
+  - Point estimate $\Delta \text{Macro-F1} = -0.0027$.
+  - Pre-registered Stratified Paired Source Cluster Bootstrap (10,000 replicates, PCG64 seed `20261007`, exactly 14 Large / 221 Medium / 165 Small resampled per replicate):
+    - Mean $\Delta = -0.0027$, Median $\Delta = -0.0027$.
+    - 95% Percentile Bootstrap CI: $[-0.0126, +0.0072]$.
+    - CI strictly contains 0.0 (`ci_contains_zero: true`).
+    - Proportion $\Delta > 0$: $30.29\%$.
+  - Final Scientific Verdict: **`INDEPENDENT_JPEG75_INCONCLUSIVE`**.
+  - Scientific Honesty: Unlike exploratory development data (Phase 4C.6B $\Delta = +0.1363$), the late fusion DSP augmented model fails to demonstrate superiority or statistically confirmed improvement over the visual calibrated baseline on unseen independent TGIF data under JPEG compression q75.
+- **Secondary conditions performance**:
+  - `original`: Visual 0.5611 vs Augmented 0.5681 ($\Delta = +0.0070$).
+  - `jpeg_q95`: Visual 0.5598 vs Augmented 0.5664 ($\Delta = +0.0066$).
+  - `jpeg_q50`: Visual 0.5580 vs Augmented 0.5485 ($\Delta = -0.0095$).
+  - `resize_0.5`: Visual 0.5586 vs Augmented 0.5657 ($\Delta = +0.0071$).
+  - `resize_0.5_jpeg_q75`: Visual 0.5510 vs Augmented 0.5375 ($\Delta = -0.0135$).
+- **Published artifacts & complete prediction records**:
+  - Evaluation receipt: `research/evidence/phase-4c.7b/tgif_train_independent_evaluation_receipt.json` (2,573,414 bytes, SHA-256 `720c9a3a4f7f6ed1d13f7aa3f3e77efc82af5544dbc04cfcbae238a0e4aef54a`).
+  - Standalone predictions: `research/evidence/phase-4c.7b/tgif_train_independent_evaluation_predictions.json` (2,520,928 bytes, SHA-256 `703d40a2186710b10c6c8f4c17e9e7d7960fc4733943f10b158967b6a65aa4a6`), storing all 800 samples across 6 conditions, 2 recipes and 5 folds for reproducible metric recomputation without detector rerun.
+- **Test suite**: 8/8 tests PASS in `ml/tests/test_tgif_independent_evaluation.py`.
+
+---
+
 ## TGIF N=400 Independent Evaluation Preflight PASS, pHash Leakage Audit PASS & Statistical Plan Locked (Phase 4C.7B trace)
 
 - **Leakage & perceptual hash audit (PASS)**: Difference Hash (`dHash` 64-bit, Hamming distance $\le 3$, hash_size=8) executed via `scripts/research/verify_tgif_leakage_phash.py`: 0 / 1,094,400 collisions against Option P (1,368 images), 0 / 319,200 cross-source collisions within N=400 (400 sources), 0 / 84,800 collisions against Phase 4C.7B pilot/diagnostic/calibration images (106 images). Receipt published at `research/evidence/phase-4c.7b/tgif_train_phash_leakage_audit_receipt.json` (`PHASH_LEAKAGE_AUDIT_PASS`).

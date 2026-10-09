@@ -1512,11 +1512,63 @@ Kết quả tại `research/evidence/phase-4c.7b/acquisition_smoke_receipt.json`
 
 | Hạng Mục                      | Trạng Thái Ghi Nhận                                                                                                    |
 | :---------------------------- | :--------------------------------------------------------------------------------------------------------------------- |
-| **Giao thức nghiên cứu**      | Historical v1.2/v1.3 model/source bindings retained; content-grounded amendment v1.4 proposed and pending human review |
-| **Mô hình candidate**         | 5 outer-fold models giữ nguyên 100% trọng số và SHA-256 hash đã kiểm toán                                              |
-| **Candidate sources**         | Verified real photographs from COCO 2017 and Wikimedia Commons; historical Option P disjoint guards retained           |
-| **Detector isolation**        | Tuyệt đối tuân thủ, zero detector calls trong thu thập và QC                                                           |
-| **Independent Performance**   | Tiếp tục giữ trạng thái **`NOT_MEASURED`** (chưa đánh giá)                                                             |
-| **Cohort Acquisition Status** | **`NOT_ACQUIRED`** (in progress, ready for remote GPU pilot execution)                                                 |
+| **Giao thức nghiên cứu**      | Protocol Amendment v1.8.0, 5 outer-fold checkpoints đóng băng, Stratified Paired Cluster Bootstrap 10.000 replicates     |
+| **Mô hình candidate**         | 5 outer-fold models giữ nguyên 100% trọng số `fold_model.json` và SHA-256 hash đã kiểm toán                           |
+| **Cohort kiểm định**          | TGIF-Train-Clean-Subset N=400 pairs (14 Large, 221 Medium, 165 Small; 800 ảnh) từ package zip 320 MB                 |
+| **Detector execution**        | Đã chạy 4.800 forward passes (800 ảnh × 6 conditions) trên LOCAL CPU sau khi nhận Human Review Approval               |
+| **Independent Performance**   | **`MEASURED`** — Primary endpoint ΔMacro-F1 at jpeg_q75: -0.0027 [-0.0126, +0.0072]; verdict: `INDEPENDENT_JPEG75_INCONCLUSIVE` |
+| **Cohort Acquisition Status** | **`COMPLETED`** (TGIF-Train-Clean-Subset N=400 acquired, audited PASS and evaluated)                                   |
 | **Quy tắc Git**               | Làm việc trên branch `research/independent-cohort-acquisition`, **không tạo Pull Request**                             |
-| **Trạng thái Phase**          | **`READY_FOR_COLAB_REAL_ACQUISITION_PILOT`**                                                                           |
+| **Trạng thái Phase**          | **`INDEPENDENT_EVALUATION_COMPLETED_INCONCLUSIVE`**                                                                    |
+
+---
+
+## 7. Thực Thi Độc Lập TGIF-Train-Clean-Subset N=400 (Independent Evaluation Execution Results)
+
+### 7.1. Phê Duyệt Thực Thi Chính Thức (Human Review Approval)
+- **Người phê duyệt**: Dũng Phạm `<valdung04@gmail.com>`
+- **Thời điểm phê duyệt UTC**: `2026-10-09T18:08:30Z`
+- **Phạm vi cấp phép**: Thực thi independent evaluation trên LOCAL CPU với cấu hình đã đóng băng. Cấm generation/training, cấm dùng retired locked-test, cấm refit/recalibration/threshold tuning.
+- **Cam kết cấu hình**: Đã khóa và kiểm toán cấu hình máy đọc tại `research/evidence/phase-4c.7b/tgif_independent_evaluation_execution_config.json` (SHA-256 `dd1b0cfdf16008420d32b8747a4d27fbd3caaefa8d964744cc439b7c3b67ae73`).
+
+### 7.2. Môi Trường Thực Nghiệm & Telemetry
+- **Phần cứng & Thiết bị**: LOCAL CPU (Intel/AMD x86_64, Windows)
+- **Thời gian thực thi**: 420.81 giây (~7.01 phút; Bắt đầu: `2026-10-09T18:16:23Z`, Kết thúc: `2026-10-09T18:23:24Z`)
+- **Runtime Versions**: Python 3.12.10, PyTorch 2.5.1+cu121, NumPy 2.1.3, Pillow 11.1.0
+- **Git Commit**: `528015837d76af286f4290afe0f958b3b896889b`
+- **Số lượng Forward Passes**: 4.800 passes (800 ảnh × 6 điều kiện × 5 outer-fold models)
+
+### 7.3. Kết Quả Tổng Thể Qua 6 Điều Kiện
+
+| Điều kiện (Condition) | Visual Calibrated (Mean ± Std) | Late Fusion DSP Augmented (Mean ± Std) | Δ Macro-F1 (Aug - Vis) | Ghi chú |
+| :--- | :---: | :---: | :---: | :--- |
+| `original` | 0.5611 ± 0.0084 | 0.5681 ± 0.0076 | **+0.0070** | Điểm gốc không nén |
+| `jpeg_q95` | 0.5598 ± 0.0090 | 0.5664 ± 0.0081 | **+0.0066** | Nén JPEG nhẹ |
+| **`jpeg_q75`** | **0.5624 ± 0.0060** | **0.5596 ± 0.0126** | **-0.0027** | **PRIMARY ENDPOINT** |
+| `jpeg_q50` | 0.5580 ± 0.0033 | 0.5485 ± 0.0098 | **-0.0095** | Nén JPEG nặng |
+| `resize_0.5` | 0.5586 ± 0.0065 | 0.5657 ± 0.0049 | **+0.0071** | Downsampling 50% |
+| `resize_0.5_jpeg_q75` | 0.5510 ± 0.0059 | 0.5375 ± 0.0124 | **-0.0135** | Compound transform |
+
+### 7.4. Phân Tích Primary Endpoint tại `jpeg_q75`
+
+- **Visual Calibrated Macro-F1** (arithmetic mean across 5 folds): **0.5624** (Folds: Fold 0: 0.5726, Fold 1: 0.5595, Fold 2: 0.5573, Fold 3: 0.5600, Fold 4: 0.5623)
+- **Late Fusion DSP Augmented Macro-F1** (arithmetic mean across 5 folds): **0.5596** (Folds: Fold 0: 0.5702, Fold 1: 0.5588, Fold 2: 0.5416, Fold 3: 0.5547, Fold 4: 0.5728)
+- **Ước lượng điểm (Point Estimate Δ)**: **-0.0027**
+- **Stratified Paired Source Cluster Bootstrap** (10.000 replicates, PCG64 seed `20261007`, bảo toàn chính xác 14 Large / 221 Medium / 165 Small clusters per replicate):
+  - **Mean Δ**: -0.0027
+  - **Median Δ**: -0.0027
+  - **95% Percentile Bootstrap CI**: **[-0.0126, +0.0072]**
+  - **Khoảng tin cậy chứa 0.0**: **TRUE** (Khoảng CI cắt 0.0)
+  - **Xác suất cải thiện $P(\Delta > 0)$**: **30.29%**
+- **Kết Luận Khoa Học Chính Thức**: **`INDEPENDENT_JPEG75_INCONCLUSIVE`**
+
+### 7.5. Trung Thực Khoa Học & Đối Chiếu với Kết Quả Thăm Dò Phát Triển
+
+1. **Không quan sát thấy sự vượt trội ngoài phân phối huấn luyện**: Trong Phase 4C.6B trên tập phát triển, Late Fusion DSP Augmented đạt $\Delta = +0.1363$ tại `jpeg_q75` do cứu vãn được suy giảm của visual branch trên dữ liệu đó. Tuy nhiên, trên tập kiểm định độc lập TGIF N=400 (unseen sources), visual branch duy trì hiệu năng vững chắc hơn (Macro-F1 0.5624), trong khi tín hiệu DSP kết hợp không mang lại cải thiện thống kê nào ($\Delta = -0.0027$, CI chứa 0).
+2. **Không cherry-picking, không refit**: Báo cáo đầy đủ và trung thực kết quả âm / không cải thiện này; không tiến hành điều chỉnh ngưỡng hay sửa đổi cấu hình nhằm tìm kiếm kết quả tích cực giả tạo.
+3. **Nhóm Large ($n=14$, 3.5%)**: Giữ vững cam kết chỉ báo cáo mô tả; không đưa ra kết luận khái quát hóa riêng cho nhóm có cỡ mẫu nhỏ này.
+
+### 7.6. Hiện Vật Xuất Bản
+- **Biên nhận kiểm định máy đọc**: `research/evidence/phase-4c.7b/tgif_train_independent_evaluation_receipt.json` (2.573.414 bytes, SHA-256 `720c9a3a4f7f6ed1d13f7aa3f3e77efc82af5544dbc04cfcbae238a0e4aef54a`).
+- **Dữ liệu dự đoán chi tiết**: `research/evidence/phase-4c.7b/tgif_train_independent_evaluation_predictions.json` (2.520.928 bytes, SHA-256 `703d40a2186710b10c6c8f4c17e9e7d7960fc4733943f10b158967b6a65aa4a6`), lưu trữ đầy đủ 800 ảnh × 6 điều kiện × 2 recipes × 5 folds để tái lập 100% metrics mà không cần chạy lại mô hình.
+
