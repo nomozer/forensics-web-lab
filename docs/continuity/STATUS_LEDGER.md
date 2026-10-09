@@ -1,3 +1,12 @@
+## TGIF train cohort intake plan empirical verification, candidate manifest PENDING & Amendment v1.8.0 (Phase 4C.7B trace)
+
+- **Tripartite binding & COCO CDN parity**: Empirically proved authentic must be extracted from TGIF `orig_training.tar.gz` (`_orig.png`) due to native canvas scaling/interpolation differences vs raw COCO CDN. Proved edited (`sd2-sp variation 0`) changed pixels are 100% bounded within Photoshop adapted mask (`..._mask_segm.png_ps_mask.png`).
+- **Pipeline preprocessing & multi-level disjoint guard**: Fixed pipeline preprocessing: Lanczos center-crop to 512×512 RGB, Nearest-neighbor center-crop to 512×512 binary `{0, 255}` for mask; no letterbox. Filtered 684 historical Option P and 336 Phase 4C.7B sources (155 collisions purged) $\to$ 1,160 usable sources with valid masks ($1\% - 50\%$).
+- **Large stratum deficit & honest reporting**: Empirical scan of 2,179 tasks revealed Large ($\ge 30\%$) has ONLY 14 unique sources ($14 < 120$, deficit 106). Acknowledged deficit without relaxing criteria; proposed feasible configurations: $N=400$ recommended (14 Large [3.5%], 221 Medium [55.25%], 165 Small [41.25%]) and $N=200$ alternative (14 Large [7%], 93 Medium [46.5%], 93 Small [46.5%]).
+- **Machine-readable manifest & Colab worker**: Generated `tgif_train_candidate_manifest_pending.json` (SHA-256 `0197ffa2...`) and CSV (SHA-256 `480bd980...`) with seed `20261010`. Built Colab CPU worker `acquire_tgif_train_subset_colab.py` (temp 18.63 GiB, return ZIP ~120-160 MB, 0 MB masks) and local audit `audit_tgif_train_subset_local.py` (prohibits benchmark recompositing). Drafted Protocol Amendment v1.8.0 PENDING. Full cohort locked, detector calls = 0, independent performance `NOT_MEASURED`.
+
+---
+
 ## Existing benchmark continuation local metadata verification & TGIF train cohort proposal (Phase 4C.7B trace)
 
 - **Local metadata audit & empirical findings**: Re-audited dataset registry (`registry.json`), bibliography (`references.bib`), and local TGIF manifests (`masks-manifest.jsonl`). Verified: 24,400 PNG masks in TGIF `train` are 100% locally resident on disk (`data/research/tgif/masks/training/`, 0 MB download). Proved that TGIF `training` split contains **1,558 unique COCO sources** (2,440 task instances) with **0 collision vs 684 historical Option P sources (100% disjoint)**. Reaffirmed: "thư mục chưa dùng" is NOT proof of disjointness (TGIF subfolders share COCO sources); grouped all source variants.
