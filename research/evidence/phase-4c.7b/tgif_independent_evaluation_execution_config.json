@@ -15,7 +15,9 @@
     "manifest_relpath": "research/evidence/phase-4c.7b/tgif_train_clean_subset_manifest_locked_n400.json",
     "manifest_sha256": "53a6ee472fe840a42abd97ccb7475932e0720f5788f745f57f7a2bcfbc32cc8c",
     "intake_receipt_relpath": "research/evidence/phase-4c.7b/tgif_train_intake_audit_receipt.json",
+    "intake_receipt_sha256": "cc31255d8e6e1e0fc90f5da4108c1778086406255509e2027329940f88b95477",
     "phash_receipt_relpath": "research/evidence/phase-4c.7b/tgif_train_phash_leakage_audit_receipt.json",
+    "phash_receipt_sha256": "597a21c64e2628d537296954bd58b51cdb08ee95da57654b7af45deb45d0ff60",
     "package_zip_relpath": "data/research/local-artifacts/phase-4c.7b/tgif_train_clean_subset_package.zip",
     "package_zip_sha256": "27046ec2c10b92942cd1ef0acd10e3fdac37d55c7f2fa919ede0242d96b5ff66",
     "cohort_pairs": 400,
@@ -30,7 +32,10 @@
   },
   "candidate_model_bindings": {
     "bindings_manifest_path": "research/evidence/phase-4c.7a/candidate_model_bindings.json",
+    "bindings_manifest_sha256": "d6b6ab8aa08e98b21d3c3b8a70670414dc5469195cdc48a471986d7faff46ebb",
     "model_selection_policy": "ALL_FIVE_OUTER_FOLDS_FROZEN",
+    "model_artifact_format": "fold_model_json",
+    "model_loader": "ml.evaluation.independent_model_bindings.load_candidate_models",
     "fold_count": 5,
     "backbone": {
       "name": "mobilenet_v3_small_penultimate",
@@ -47,31 +52,41 @@
         "outer_fold": 0,
         "model_path": "data/research/local-artifacts/dsp_augmentation/fits/outer_0/fold_model.json",
         "model_sha256": "232d0994775a6e6cfdfb1bb3fd79f28557439e372e15e4760d0ffbbdba72f609",
-        "size_bytes": 58418
+        "size_bytes": 58418,
+        "receipt_path": "data/research/local-artifacts/dsp_augmentation/fits/outer_0/fold_receipt.json",
+        "receipt_sha256": "97e9a1ddd4721bbf068932f30c9d0d26c3720a334f544647c2fe1733c6da8df8"
       },
       {
         "outer_fold": 1,
         "model_path": "data/research/local-artifacts/dsp_augmentation/fits/outer_1/fold_model.json",
         "model_sha256": "c07c582322f7671f3b9f352f5d5388f5a39cec5fa11c80d8441cbb366a3fc15f",
-        "size_bytes": 58030
+        "size_bytes": 58030,
+        "receipt_path": "data/research/local-artifacts/dsp_augmentation/fits/outer_1/fold_receipt.json",
+        "receipt_sha256": "adc65030fd29517447d1bd411166b80ac3d0221615af4ef86797c2ed7e0f31eb"
       },
       {
         "outer_fold": 2,
         "model_path": "data/research/local-artifacts/dsp_augmentation/fits/outer_2/fold_model.json",
         "model_sha256": "8a979e35339f1ab2728f6c96d94ce2ef828ad13aad66e0e3ae8339a1be8fb324",
-        "size_bytes": 58465
+        "size_bytes": 58465,
+        "receipt_path": "data/research/local-artifacts/dsp_augmentation/fits/outer_2/fold_receipt.json",
+        "receipt_sha256": "6f9bbb8274163f6ea2964f87c7e2ccda83b633a68c28e0220aa4380a23ccae56"
       },
       {
         "outer_fold": 3,
         "model_path": "data/research/local-artifacts/dsp_augmentation/fits/outer_3/fold_model.json",
         "model_sha256": "60358c2fbdfd54d96dee68a1ce43106560ee4da5792343c0d14d85beb1d5fca3",
-        "size_bytes": 58455
+        "size_bytes": 58455,
+        "receipt_path": "data/research/local-artifacts/dsp_augmentation/fits/outer_3/fold_receipt.json",
+        "receipt_sha256": "8f142ebf42e1d009f5514290c7fb2a0abc5d79e7071b8589a16adc9963233cef"
       },
       {
         "outer_fold": 4,
         "model_path": "data/research/local-artifacts/dsp_augmentation/fits/outer_4/fold_model.json",
         "model_sha256": "efe517db09c5aecdd219eabc878b6f538e908c03b8b8c0648b2d0f6ec4356a6c",
-        "size_bytes": 58390
+        "size_bytes": 58390,
+        "receipt_path": "data/research/local-artifacts/dsp_augmentation/fits/outer_4/fold_receipt.json",
+        "receipt_sha256": "90c321316eaae111d036196b838d88376f4bfb019207d7418d62e2f50ceb5863"
       }
     ]
   },

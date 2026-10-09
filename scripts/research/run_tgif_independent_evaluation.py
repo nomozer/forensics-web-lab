@@ -175,27 +175,34 @@ def verify_configuration_readiness(config_path: Path = DEFAULT_CONFIG_PATH) -> d
     phash_receipt_file = REPO_ROOT / cohort["phash_receipt_relpath"]
     package_zip_file = REPO_ROOT / cohort["package_zip_relpath"]
 
-    for name, f in [
-        ("Locked manifest", manifest_file),
-        ("Intake receipt", intake_receipt_file),
-        ("pHash receipt", phash_receipt_file),
-        ("Package ZIP", package_zip_file),
+    for name, f, exp_sha in [
+        ("Locked manifest", manifest_file, cohort.get("manifest_sha256")),
+        ("Package ZIP", package_zip_file, cohort.get("package_zip_sha256")),
+        ("Intake receipt", intake_receipt_file, cohort.get("intake_receipt_sha256")),
+        ("pHash receipt", phash_receipt_file, cohort.get("phash_receipt_sha256")),
     ]:
         if not f.is_file():
             raise ConfigurationIntegrityError(f"Missing required artifact: {name} ({f})")
+        if exp_sha:
+            actual_sha = sha256_file(f)
+            if actual_sha.lower() != exp_sha.lower():
+                raise ConfigurationIntegrityError(f"{name} SHA-256 mismatch: {actual_sha} != {exp_sha}")
 
-    actual_manifest_sha = sha256_file(manifest_file)
-    if actual_manifest_sha != cohort["manifest_sha256"]:
-        raise ConfigurationIntegrityError(f"Manifest SHA-256 mismatch: {actual_manifest_sha} != {cohort['manifest_sha256']}")
+    print("Cohort artifacts verified: locked manifest, package ZIP, intake and phash receipts match bindings.")
 
-    actual_pkg_sha = sha256_file(package_zip_file)
-    if actual_pkg_sha != cohort["package_zip_sha256"]:
-        raise ConfigurationIntegrityError(f"Package ZIP SHA-256 mismatch: {actual_pkg_sha} != {cohort['package_zip_sha256']}")
-
-    print(f"Cohort artifacts verified: locked manifest and package ZIP hashes match commit bindings.")
-
-    # 2. Check 5 fold model checkpoints
+    # 2. Check Candidate model bindings manifest
     models_spec = config["candidate_model_bindings"]
+    bindings_manifest_file = REPO_ROOT / models_spec["bindings_manifest_path"]
+    if not bindings_manifest_file.is_file():
+        raise ConfigurationIntegrityError(f"Missing candidate model bindings manifest: {bindings_manifest_file}")
+    if "bindings_manifest_sha256" in models_spec:
+        actual_bm_sha = sha256_file(bindings_manifest_file)
+        if actual_bm_sha.lower() != models_spec["bindings_manifest_sha256"].lower():
+            raise ConfigurationIntegrityError(
+                f"Candidate model bindings manifest SHA-256 mismatch: {actual_bm_sha} != {models_spec['bindings_manifest_sha256']}"
+            )
+
+    # 3. Check 5 fold model JSONs and fold receipts
     outer_folds = models_spec["outer_folds"]
     if len(outer_folds) != 5:
         raise ConfigurationIntegrityError(f"Expected 5 outer folds, found {len(outer_folds)}")
@@ -206,23 +213,34 @@ def verify_configuration_readiness(config_path: Path = DEFAULT_CONFIG_PATH) -> d
         if not f_path.is_file():
             raise ConfigurationIntegrityError(f"Fold {f_idx} model file missing: {f_path}")
         f_sha = sha256_file(f_path)
-        if f_sha != fold["model_sha256"]:
+        if f_sha.lower() != fold["model_sha256"].lower():
             raise ConfigurationIntegrityError(f"Fold {f_idx} model SHA-256 mismatch: {f_sha} != {fold['model_sha256']}")
 
-    print("Candidate model checkpoints verified: all 5 outer fold JSON models present and hash-identical.")
+        if "receipt_path" in fold:
+            r_path = REPO_ROOT / fold["receipt_path"]
+            if not r_path.is_file():
+                raise ConfigurationIntegrityError(f"Fold {f_idx} receipt file missing: {r_path}")
+            if "receipt_sha256" in fold:
+                r_sha = sha256_file(r_path)
+                if r_sha.lower() != fold["receipt_sha256"].lower():
+                    raise ConfigurationIntegrityError(
+                        f"Fold {f_idx} receipt SHA-256 mismatch: {r_sha} != {fold['receipt_sha256']}"
+                    )
 
-    # 3. Check backbone weights
+    print("Candidate models verified: all 5 outer fold fold_model.json files and receipts present and hash-identical.")
+
+    # 4. Check backbone weights
     backbone = models_spec["backbone"]
     bb_path = REPO_ROOT / backbone["weights_path"]
     if not bb_path.is_file():
         raise ConfigurationIntegrityError(f"Backbone weights missing: {bb_path}")
     bb_sha = sha256_file(bb_path)
-    if bb_sha != backbone["weights_sha256"]:
+    if bb_sha.lower() != backbone["weights_sha256"].lower():
         raise ConfigurationIntegrityError(f"Backbone SHA-256 mismatch: {bb_sha} != {backbone['weights_sha256']}")
 
     print("Backbone weights verified: mobilenet_v3_small-047dcff4.pth present and hash-identical.")
 
-    # 4. Check approval gate
+    # 5. Check approval gate
     gate = config.get("human_approval_gate", {})
     authorized = gate.get("evaluation_authorized", False)
     status = "READY_FOR_HUMAN_APPROVAL" if not authorized else "AUTHORIZED_FOR_EVALUATION"
@@ -235,6 +253,8 @@ def verify_configuration_readiness(config_path: Path = DEFAULT_CONFIG_PATH) -> d
         "total_images": cohort["total_images"],
         "strata": cohort["strata_breakdown"],
         "outer_folds_verified": 5,
+        "model_artifact_format": models_spec.get("model_artifact_format", "fold_model_json"),
+        "model_loader": models_spec.get("model_loader", "load_candidate_models"),
         "backbone_verified": True,
         "conditions": config["evaluation_protocol"]["conditions"],
         "primary_endpoint": config["evaluation_protocol"]["primary_endpoint"],
@@ -372,6 +392,16 @@ def execute_independent_evaluation(
     """Execute real independent evaluation on TGIF N=400.
 
     STRICTLY ENFORCES: human_approval_gate.evaluation_authorized == True.
+    When authorized:
+    - Uses locked manifest & packaged 800 images from ZIP
+    - Applies 6 canonical conditions via apply_operations (Pillow)
+    - Extracts 576-d visual features with frozen MobileNetV3-small backbone
+    - Extracts 16-d DSP features via extract_dsp_features
+    - Scores 5 outer-fold models for visual_calibrated and late_fusion_dsp_augmented
+    - Zero fitting, zero recalibration, zero threshold tuning
+    - Stratified Paired Source Cluster Bootstrap (10,000 replicates, PCG64 seed 20261007)
+    - Preserves 14 Large / 221 Medium / 165 Small strata
+    - Emits atomic receipt JSON
     """
     config = json.loads(config_path.read_text(encoding="utf-8"))
     gate = config.get("human_approval_gate", {})
@@ -382,8 +412,145 @@ def execute_independent_evaluation(
             "Zero detector calls made."
         )
 
-    # If authorized, this is where the full real evaluation execution would run.
-    raise NotImplementedError("Real evaluation gate is not authorized yet.")
+    # 1. Preflight configuration check
+    verify_configuration_readiness(config_path)
+
+    # 2. Load locked manifest and package zip
+    manifest_file = REPO_ROOT / config["cohort_binding"]["manifest_relpath"]
+    manifest_data = json.loads(manifest_file.read_text(encoding="utf-8"))
+    candidates = manifest_data["selected_candidates"]
+    package_zip_path = REPO_ROOT / config["cohort_binding"]["package_zip_relpath"]
+
+    # 3. Setup neural feature extractor with frozen weights on CPU
+    import torch
+    from ml.training.mobilenetv3_forensics import MobileNetV3Forensics, apply_frozen_backbone_policy
+    from ml.training.phase_4c2h_development import build_canonical_transform
+
+    device = torch.device("cpu")
+    weights_path = REPO_ROOT / config["candidate_model_bindings"]["backbone"]["weights_path"]
+    backbone_model = MobileNetV3Forensics(
+        num_classes=2, pretrained=False, weights_path=str(weights_path), freeze_backbone=True
+    ).to(device)
+    backbone_model.eval()
+    apply_frozen_backbone_policy(backbone_model)
+    canonical_transform = build_canonical_transform()
+
+    # 4. Load the 5 outer-fold candidate models
+    bindings_manifest = REPO_ROOT / config["candidate_model_bindings"]["bindings_manifest_path"]
+    candidate_models = load_candidate_models(bindings_manifest, repo_root=REPO_ROOT)
+
+    # 5. Load and decode images from package ZIP
+    samples_meta: list[dict[str, Any]] = []
+    for c in candidates:
+        sid = c["source_id"]
+        stratum = c["stratum_area_class"]
+        samples_meta.append({
+            "source_id": sid,
+            "stratum": stratum,
+            "label": 0,
+            "relpath": c["authentic_relpath"],
+        })
+        samples_meta.append({
+            "source_id": sid,
+            "stratum": stratum,
+            "label": 1,
+            "relpath": c["edited_relpath"],
+        })
+
+    n_samples = len(samples_meta)
+    source_ids = [s["source_id"] for s in samples_meta]
+    strata = [s["stratum"] for s in samples_meta]
+    labels = np.array([s["label"] for s in samples_meta], dtype=int)
+
+    base_images: list[Image.Image] = []
+    with zipfile.ZipFile(package_zip_path, "r") as zf:
+        for s in samples_meta:
+            data = zf.read(s["relpath"])
+            img = Image.open(io.BytesIO(data)).convert("RGB")
+            base_images.append(img)
+
+    # 6. Evaluate all 6 conditions
+    condition_results: dict[str, Any] = {}
+    vis_q75_probs: list[np.ndarray] = []
+    aug_q75_probs: list[np.ndarray] = []
+
+    for cond in CONDITIONS:
+        operations = CANONICAL_CONDITIONS[cond]
+
+        transformed_images: list[Image.Image] = []
+        for img in base_images:
+            t_img, _ = apply_operations(img, operations)
+            transformed_images.append(t_img)
+
+        batch_tensors = torch.stack([canonical_transform(t_img) for t_img in transformed_images]).to(device)
+        with torch.no_grad():
+            visual_feats = torch.flatten(backbone_model.avgpool(backbone_model.features(batch_tensors)), 1).detach().cpu().numpy().astype(np.float64)
+
+        dsp_feats = np.stack([extract_dsp_features(t_img) for t_img in transformed_images]).astype(np.float64)
+
+        recipe_metrics: dict[str, Any] = {}
+        for recipe in RECIPES:
+            fold_predictions: list[dict[str, np.ndarray]] = []
+            for m in candidate_models:
+                scores = m.score(visual_feats, dsp_feats)
+                fold_predictions.append(scores[recipe])
+
+            agg = aggregate_per_model_metrics(fold_predictions, labels)
+            recipe_metrics[recipe] = agg
+
+            if cond == PRIMARY_CONDITION:
+                probs_list = [fp["probability"] for fp in fold_predictions]
+                if recipe == "visual_calibrated":
+                    vis_q75_probs = probs_list
+                elif recipe == "late_fusion_dsp_augmented":
+                    aug_q75_probs = probs_list
+
+        condition_results[cond] = recipe_metrics
+
+    # 7. Stratified Paired Cluster Bootstrap on primary condition (jpeg_q75)
+    boot_res = run_stratified_paired_cluster_bootstrap(
+        source_ids=source_ids,
+        strata=strata,
+        labels=labels,
+        visual_model_probs=vis_q75_probs,
+        augmented_model_probs=aug_q75_probs,
+        replicates=10000,
+        seed=20261007,
+    )
+
+    verdict = derive_independent_verdict(
+        ci_lower=boot_res["ci_lower_95"],
+        ci_upper=boot_res["ci_upper_95"],
+        is_synthetic=False,
+    )
+
+    vis_mean_f1 = condition_results[PRIMARY_CONDITION]["visual_calibrated"]["mean_metrics"]["macro_f1"]
+    aug_mean_f1 = condition_results[PRIMARY_CONDITION]["late_fusion_dsp_augmented"]["mean_metrics"]["macro_f1"]
+    primary_delta = aug_mean_f1 - vis_mean_f1
+
+    result = {
+        "schema_version": "1.0.0",
+        "phase": "4C.7B",
+        "status": "INDEPENDENT_EVALUATION_SUCCESS",
+        "created_at_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "is_synthetic": False,
+        "detector_calls": n_samples * len(CONDITIONS),
+        "cohort_name": config["cohort_binding"]["cohort_name"],
+        "num_pairs": len(candidates),
+        "num_samples": n_samples,
+        "strata_counts": boot_res["strata_counts"],
+        "verdict": verdict,
+        "primary_point_delta": primary_delta,
+        "bootstrap": boot_res,
+        "condition_results": condition_results,
+    }
+
+    # Atomic write receipt
+    tmp_path = receipt_out_path.with_suffix(".json.part")
+    tmp_path.write_text(json.dumps(result, indent=2), encoding="utf-8")
+    tmp_path.replace(receipt_out_path)
+    print(f"Independent evaluation receipt written to {receipt_out_path}")
+    return result
 
 
 def main(argv: list[str] | None = None) -> None:

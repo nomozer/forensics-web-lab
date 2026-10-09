@@ -143,3 +143,81 @@ def test_hermetic_mock_dry_run_success() -> None:
     assert set(result["conditions_evaluated"]) == set(CONDITIONS)
     assert "ci_lower_95" in result["bootstrap"]
     assert "ci_upper_95" in result["bootstrap"]
+
+
+def test_tampered_receipt_hashes_rejected(tmp_path: Path) -> None:
+    """Verifies that verify_configuration_readiness rejects any tampered or mismatched binding hashes."""
+    from scripts.research.run_tgif_independent_evaluation import ConfigurationIntegrityError
+
+    base_cfg = json.loads(DEFAULT_CONFIG_PATH.read_text(encoding="utf-8"))
+
+    # 1. Tamper intake receipt hash
+    cfg1 = json.loads(json.dumps(base_cfg))
+    cfg1["cohort_binding"]["intake_receipt_sha256"] = "0000000000000000000000000000000000000000000000000000000000000000"
+    p1 = tmp_path / "cfg_tamper_intake.json"
+    p1.write_text(json.dumps(cfg1), encoding="utf-8")
+    with pytest.raises(ConfigurationIntegrityError, match="Intake receipt SHA-256 mismatch"):
+        verify_configuration_readiness(p1)
+
+    # 2. Tamper pHash receipt hash
+    cfg2 = json.loads(json.dumps(base_cfg))
+    cfg2["cohort_binding"]["phash_receipt_sha256"] = "1111111111111111111111111111111111111111111111111111111111111111"
+    p2 = tmp_path / "cfg_tamper_phash.json"
+    p2.write_text(json.dumps(cfg2), encoding="utf-8")
+    with pytest.raises(ConfigurationIntegrityError, match="pHash receipt SHA-256 mismatch"):
+        verify_configuration_readiness(p2)
+
+    # 3. Tamper bindings manifest hash
+    cfg3 = json.loads(json.dumps(base_cfg))
+    cfg3["candidate_model_bindings"]["bindings_manifest_sha256"] = "2222222222222222222222222222222222222222222222222222222222222222"
+    p3 = tmp_path / "cfg_tamper_bm.json"
+    p3.write_text(json.dumps(cfg3), encoding="utf-8")
+    with pytest.raises(ConfigurationIntegrityError, match="Candidate model bindings manifest SHA-256 mismatch"):
+        verify_configuration_readiness(p3)
+
+    # 4. Tamper fold model hash
+    cfg4 = json.loads(json.dumps(base_cfg))
+    cfg4["candidate_model_bindings"]["outer_folds"][0]["model_sha256"] = "3333333333333333333333333333333333333333333333333333333333333333"
+    p4 = tmp_path / "cfg_tamper_fold_model.json"
+    p4.write_text(json.dumps(cfg4), encoding="utf-8")
+    with pytest.raises(ConfigurationIntegrityError, match="Fold 0 model SHA-256 mismatch"):
+        verify_configuration_readiness(p4)
+
+    # 5. Tamper fold receipt hash
+    cfg5 = json.loads(json.dumps(base_cfg))
+    cfg5["candidate_model_bindings"]["outer_folds"][0]["receipt_sha256"] = "4444444444444444444444444444444444444444444444444444444444444444"
+    p5 = tmp_path / "cfg_tamper_fold_receipt.json"
+    p5.write_text(json.dumps(cfg5), encoding="utf-8")
+    with pytest.raises(ConfigurationIntegrityError, match="Fold 0 receipt SHA-256 mismatch"):
+        verify_configuration_readiness(p5)
+
+
+def test_candidate_models_format_and_loader_integrity() -> None:
+    """Verifies that candidate models are 5 outer fold_model.json files loaded via load_candidate_models."""
+    from ml.evaluation.independent_model_bindings import FoldCandidateModel, load_candidate_models
+
+    models = load_candidate_models(REPO_ROOT / "research/evidence/phase-4c.7a/candidate_model_bindings.json")
+    assert len(models) == 5
+
+    for fold_idx, model in enumerate(models):
+        assert isinstance(model, FoldCandidateModel)
+        assert model.outer_fold == fold_idx
+
+        # Visual scorer dimension 576
+        assert model.visual_scorer.scaler_mean.shape == (576,)
+        assert model.visual_scorer.scaler_scale.shape == (576,)
+        assert model.visual_scorer.coef.shape == (576,)
+        assert isinstance(model.visual_scorer.intercept, float)
+        assert model.visual_scorer.temperature > 0.0
+
+        # DSP scorer dimension 16
+        assert model.dsp_augmented_scorer.scaler_mean.shape == (16,)
+        assert model.dsp_augmented_scorer.scaler_scale.shape == (16,)
+        assert model.dsp_augmented_scorer.coef.shape == (16,)
+        assert isinstance(model.dsp_augmented_scorer.intercept, float)
+        assert model.dsp_augmented_scorer.temperature > 0.0
+
+        # Stacker scorer dimension 2
+        assert model.stacker.coef.shape == (2,)
+        assert isinstance(model.stacker.intercept, float)
+

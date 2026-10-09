@@ -27,15 +27,17 @@ Hồ sơ tiền kiểm và chuẩn bị độc lập hoàn tất trước phiên
 - **Ràng buộc mật mã & cấu trúc**:
   - Locked cohort manifest SHA-256: `53a6ee472fe840a42abd97ccb7475932e0720f5788f745f57f7a2bcfbc32cc8c` (400 cặp, 800 ảnh).
   - Package ZIP SHA-256: `27046ec2c10b92942cd1ef0acd10e3fdac37d55c7f2fa919ede0242d96b5ff66`.
-  - Intake audit receipt SHA-256: `a938c362...` (`LOCAL_INTAKE_AUDIT_PASS`).
-  - pHash audit receipt SHA-256: `b0ecaaeb...` (`PHASH_LEAKAGE_AUDIT_PASS`).
-  - Đúng 5 outer-fold checkpoints đã kiểm toán SHA-256 và kích thước trên đĩa:
-    - Fold 0: `models/research/checkpoints/stage1_n250_seed42/best_checkpoint.pt` (`232d0994...`, 58,418 bytes).
-    - Fold 1: `models/research/checkpoints/stage1_n250_seed1337/best_checkpoint.pt` (`c07c5823...`, 58,030 bytes).
-    - Fold 2: `models/research/checkpoints/stage1_n250_seed2025/best_checkpoint.pt` (`8a979e35...`, 58,465 bytes).
-    - Fold 3: `models/research/checkpoints/stage1_n250_seed3407/best_checkpoint.pt` (`60358c2f...`, 58,455 bytes).
-    - Fold 4: `models/research/checkpoints/stage1_n250_seed9001/best_checkpoint.pt` (`efe517db...`, 58,390 bytes).
-  - Pretrained backbone weights: `models/research/pretrained/mobilenet_v3_small-047dcff4.pth` (`047dcff4...`).
+  - Intake audit receipt SHA-256: `cc31255d8e6e1e0fc90f5da4108c1778086406255509e2027329940f88b95477` ([`tgif_train_intake_audit_receipt.json`](research/evidence/phase-4c.7b/tgif_train_intake_audit_receipt.json)).
+  - pHash audit receipt SHA-256: `597a21c64e2628d537296954bd58b51cdb08ee95da57654b7af45deb45d0ff60` ([`tgif_train_phash_leakage_audit_receipt.json`](research/evidence/phase-4c.7b/tgif_train_phash_leakage_audit_receipt.json)).
+  - Candidate model bindings manifest SHA-256: `d6b6ab8aa08e98b21d3c3b8a70670414dc5469195cdc48a471986d7faff46ebb` ([`candidate_model_bindings.json`](research/evidence/phase-4c.7a/candidate_model_bindings.json)).
+  - Đúng 5 outer-fold model JSON artifacts từ Phase 4C.6B Controlled DSP Augmentation (loader: `ml.evaluation.independent_model_bindings.load_candidate_models`):
+    - Fold 0: `data/research/local-artifacts/dsp_augmentation/fits/outer_0/fold_model.json` (`232d0994775a6e6cfdfb1bb3fd79f28557439e372e15e4760d0ffbbdba72f609`, 58,418 bytes; receipt: `97e9a1ddd4721bbf068932f30c9d0d26c3720a334f544647c2fe1733c6da8df8`).
+    - Fold 1: `data/research/local-artifacts/dsp_augmentation/fits/outer_1/fold_model.json` (`c07c582322f7671f3b9f352f5d5388f5a39cec5fa11c80d8441cbb366a3fc15f`, 58,030 bytes; receipt: `adc65030fd29517447d1bd411166b80ac3d0221615af4ef86797c2ed7e0f31eb`).
+    - Fold 2: `data/research/local-artifacts/dsp_augmentation/fits/outer_2/fold_model.json` (`8a979e35339f1ab2728f6c96d94ce2ef828ad13aad66e0e3ae8339a1be8fb324`, 58,465 bytes; receipt: `6f9bbb8274163f6ea2964f87c7e2ccda83b633a68c28e0220aa4380a23ccae56`).
+    - Fold 3: `data/research/local-artifacts/dsp_augmentation/fits/outer_3/fold_model.json` (`60358c2fbdfd54d96dee68a1ce43106560ee4da5792343c0d14d85beb1d5fca3`, 58,455 bytes; receipt: `8f142ebf42e1d009f5514290c7fb2a0abc5d79e7071b8589a16adc9963233cef`).
+    - Fold 4: `data/research/local-artifacts/dsp_augmentation/fits/outer_4/fold_model.json` (`efe517db09c5aecdd219eabc878b6f538e908c03b8b8c0648b2d0f6ec4356a6c`, 58,390 bytes; receipt: `90c321316eaae111d036196b838d88376f4bfb019207d7418d62e2f50ceb5863`).
+  - Pretrained backbone weights: `models/research/pretrained/mobilenet_v3_small-047dcff4.pth` (`047dcff4addef86ea5bc2eff13c9614dc11f47ab1160d0a71a25e7db994f4e1f`).
+  - Đính chính đối chiếu kỹ thuật: Các mô hình đánh giá cho 2 recipes (`visual_calibrated` và `late_fusion_dsp_augmented`) là 5 tệp JSON `fold_model.json` chứa trọng số chuẩn hóa và hệ số hồi quy logic / stacker, nạp qua `load_candidate_models()`, không phải `best_checkpoint.pt` (trọng số PyTorch huấn luyện tuyến tính Stage 1 cũ). Giữ nguyên tuyệt đối các file receipts lịch sử và mã băm thực tế.
   - 6 điều kiện thực nghiệm chuẩn tắc: `original`, `jpeg_q95`, `jpeg_q75`, `jpeg_q50`, `resize_0.5`, `resize_0.5_jpeg_q75`.
   - Primary endpoint: $\Delta \text{Macro-F1}$ tại `jpeg_q75` (`late_fusion_dsp_augmented` − `visual_calibrated`).
   - Cấm: Không tuning, không refit, không calibration refitting, không dùng retired locked-test (chỉ dùng source ID để guard).
