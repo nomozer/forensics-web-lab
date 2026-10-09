@@ -174,118 +174,169 @@ Dựa trên bằng chứng tích lũy qua 4 đợt chạy (8 pilot attempts, 6 d
 Hồ sơ tiền kiểm nội dung toàn diện cho 8 dòng phân bổ (allocation slots) của kế hoạch tạo sinh, tuân thủ nghiêm ngặt các nguyên tắc khoa học và chuẩn tắc dữ liệu:
 - Sử dụng catalog chuẩn tắc hiện hành (`verified_candidate_catalog_v2.json`) và ảnh authentic thực tế chuẩn hóa $512 \times 512$ đã được xem xét trực tiếp.
 - Phân định rõ ràng: Bbox target là hộp chữ nhật bao vùng đặt dự kiến, không đại diện cho diện tích phân đoạn (segmentation mask) thực tế của vật thể.
+- Phân biệt rạch ròi giữa việc đạt quota diện tích ($\ge 30\%$) và việc bao trọn target đăng ký (target containment).
 - Phân tách rạch ròi giữa kết quả thực nghiệm đã tạo sinh (quan sát lịch sử) và đánh giá tiền kiểm hình ảnh authentic (chưa sinh).
 - Tuyệt đối không chọn candidate dựa trên bộ dò (detector calls = 0).
-- Giữ nguyên định mức allocation hiện hành: 4 strata $\times$ 2 dòng = 8 dòng (3 replacement, 1 removal, 4 insertion | 3 small, 2 medium, 3 large).
+- Giữ nguyên định mức allocation đã khóa: 4 strata $\times$ 2 dòng = 8 dòng (3 replacement, 1 removal, 4 insertion | 3 small, 2 medium, 3 large).
 - Ưu tiên đối tượng tách biệt và ranh giới tự nhiên; không mô tả vùng trời trống hoặc mảng màu liên tục là ranh giới tự nhiên nếu mask vẫn cắt ngang qua một bề mặt đồng nhất. Không nới mask chỉ để đủ quota nếu làm phá vỡ cấu trúc cảnh. Không khẳng định mask lớn hơn sẽ bảo đảm sinh đúng vật thể.
 - Tất cả các dòng đề xuất mới giữ nguyên trạng thái **`PENDING_HUMAN_REVIEW`** (`reviewer: null`, `timestamp: null`). Không tự cấp ngân sách generation trong phiên này.
-- **Tài liệu trực quan tự chứa**: Toàn bộ ảnh authentic, overlay target (đỏ) vs mask (vàng), zoom vùng tiếp giáp và phương án thay thế được tích hợp trong tệp HTML tự chứa: [`candidate_mask_screening_contact_sheet.html`](../../../data/research/local-artifacts/phase-4c.7b/candidate_mask_screening_contact_sheet.html) (20,976,123 bytes, nhúng Base64 hoàn chỉnh, mã hóa UTF-8 chuẩn).
+- **Tài liệu trực quan tự chứa**: Toàn bộ ảnh authentic, overlay target (đỏ) vs mask (vàng), zoom vùng tiếp giáp và phương án thay thế/thẩm tra hình học được tích hợp trong tệp HTML tự chứa: [`candidate_mask_screening_contact_sheet.html`](../../../data/research/local-artifacts/phase-4c.7b/candidate_mask_screening_contact_sheet.html) (14,749,399 bytes, nhúng Base64 hoàn chỉnh, mã hóa UTF-8 chuẩn).
 
-### Bảng 8 Dòng Dossier Tiền kiểm Hiện hành (Active Allocation)
+### Bảng 1: Đối Chiếu Bản Quyền Chuẩn Tắc (Canonical License Evidence Table)
+
+Tuyệt đối không suy diễn bản quyền; toàn bộ thông tin giấy phép được đối chiếu trực tiếp giữa Catalog (`verified_candidate_catalog_v2.json`), Báo cáo nghiên cứu, HTML Contact Sheet và metadata từ nguồn gốc chính thức (Flickr API / Wikimedia Commons ExtMetadata):
+
+| Candidate ID | Nguồn gốc & Origin ID | Tác giả Ghi công | Giấy phép Nguồn Chuẩn xác | Trạng thái Đối chiếu | Bằng chứng Xác minh (Verified Canonical Source) |
+| :--- | :--- | :--- | :--- | :---: | :--- |
+| `IND_COCO_SD2_001` | `coco:397133` | Pot Noodle | `CC BY 2.0` | **KHỚP** | Flickr photo 6255196340; license id 4 (`Attribution License`). |
+| `IND_COCO_SD2_002` | `coco:37777` | larrylawfer | `CC BY-NC-SA 2.0` | **KHỚP** | Flickr photo 7839199426; license id 2 (`Attribution-NonCommercial-ShareAlike`). |
+| `IND_COCO_SDXL_002` | `coco:293044` | john-norris | `CC BY-SA 2.0` | **KHỚP** | Flickr photo 2544265538; license id 5 (`Attribution-ShareAlike License`). |
+| `IND_COCO_SDXL_041` | `coco:189310` | an iconoclast | `CC BY 2.0` | **KHỚP** | Flickr photo 7375894572; license id 4 (`Attribution License`). |
+| `IND_COMMONS_SD2_001` | `commons:92533678` | Moahim | `CC BY-SA 4.0` | **KHỚP** | Wikimedia Commons File:"La Ciotat" - panoramio.jpg. |
+| `IND_COMMONS_SD2_002` | `commons:81567907` | Mr.choppers | `CC BY-SA 3.0` | **KHỚP** | Wikimedia Commons File:"1932" Pur Sang Bugatti Type 55. |
+| `IND_COMMONS_SDXL_001` | `commons:166503140` | Crisco 1492 | `CC BY-SA 4.0` | **KHỚP** | Wikimedia Commons File:"Tower of Freedom" by Ed Dwight. |
+| `IND_COMMONS_SDXL_003` | `commons:166529058` | Crisco 1492 | `CC BY-SA 4.0` | **KHỚP** | Wikimedia Commons File:"Tower Song" by Ted Bieler. |
+| `IND_COCO_SDXL_042` | `coco:448076` | luis.leao | `CC BY 2.0` | **KHỚP** | Flickr photo 2260856815; license id 4 (`Attribution License`). |
+| `IND_COCO_SDXL_040` | `coco:578489` | laura47 | `CC BY-NC 2.0` | **ĐÍNH CHÍNH** | Catalog ghi đúng `Attribution-NonCommercial License` (`CC BY-NC 2.0`), đính chính nhầm lẫn bản nháp ghi `CC BY 2.0`. |
+| `IND_COMMONS_SD2_040` | `commons:172876577` | Chainwit. | `CC BY 4.0` | **ĐÍNH CHÍNH** | Wikimedia Commons API xác nhận `CC BY 4.0` (không có SA), đính chính nhầm lẫn bản nháp ghi `CC BY-SA 4.0`. |
+| `IND_COMMONS_SDXL_020` | `commons:192692840` | Igor123121 | `CC BY 4.0` | **ĐÍNH CHÍNH** | Wikimedia Commons API xác nhận `CC BY 4.0` (không có SA), đính chính nhầm lẫn bản nháp ghi `CC BY-SA 4.0`. |
+| `IND_COMMONS_SDXL_005` | `commons:171463547` | Chris Woodrich | `CC BY-SA 4.0` | **KHỚP** | Wikimedia Commons File:"Triptych" by Gord Smith. |
+| `COCO_EXT_SDXL_001` | `coco:460160` | PratarPersilja | `CC BY-SA 2.0` | **XÁC MINH MỚI** | Flickr photo 9345977086; Flickr oEmbed xác nhận `CC BY-SA 2.0` (`https://flic.kr/p/feSznY`). |
+
+---
+
+### Bảng 2: 8 Dòng Dossier Tiền kiểm Hiện hành (Active Allocation)
 
 | Slot | Candidate ID & Nguồn gốc Chuẩn tắc | Stratum & Phân loại Quota | Target BBox, Mask BBox & Prompt | Raster Mask Area & Tỷ lệ Canvas | Đánh giá Tiền kiểm & Rủi ro Kỹ thuật | Trạng thái Tiền kiểm |
 | :---: | :--- | :--- | :--- | :--- | :--- | :--- |
 | **1** | `IND_COCO_SD2_001`<br>Origin: `coco:397133`<br>Pool index: 0<br>Tác giả: Pot Noodle<br>License: CC BY 2.0 | `coco_sd2`<br>`object_replacement`<br>`small_under_10pct` | **Target:** Chảo đồng tròn treo trên tường bếp.<br>**Prompt:** *"a round brass wall clock mounted naturally on the kitchen wall, matching the warm indoor lighting"*<br>Target bbox: `[207, 117, 270, 182]`<br>Mask bbox: `[195, 95, 280, 205]` | **9.350 px**<br>(**3.566742%**)<br>Thuần nhất nhị phân `{0, 255}`. | Target bbox nằm hoàn toàn trong mask bbox. Ranh giới chảo tròn khép kín nhưng mask chữ nhật cắt ngang mạch ron gạch men ốp tường; inpaint đồng hồ có rủi ro lệch bước mạch gạch nếu phối cảnh không khớp. | **KEPT_WITH_DOCUMENTED_RISKS**<br>Chảo đồng là vật thể hiện hữu tách biệt. Giữ lại kèm cảnh báo rủi ro biên ron gạch men. |
 | **2** | `IND_COCO_SD2_002`<br>Origin: `coco:37777`<br>Pool index: 1<br>Tác giả: larrylawfer<br>License: CC BY-NC-SA 2.0 | `coco_sd2`<br>`object_replacement`<br>`large_over_30pct` | **Target:** Máy hút mùi trắng và hệ tủ bếp trên màu vàng.<br>**Prompt:** *"matte navy-blue upper kitchen cabinets with a stainless-steel range hood, realistic residential interior photograph"*<br>Target bbox: `[145, 125, 410, 260]`<br>Mask bbox: `[95, 75, 415, 323]` | **79.360 px**<br>(**30.273438%**)<br>Thuần nhất nhị phân `{0, 255}`. | Target bbox nằm hoàn toàn trong mask bbox. Mask chiếm 30.27% diện tích, bao trùm cụm tủ trên và máy hút mùi. Rủi ro lệch đường tụ phối cảnh tại chân nóc tủ và tiếp giáp trần bếp. | **KEPT_WITH_DOCUMENTED_RISKS**<br>Thay thế hệ tủ cũ bằng tủ màu navy giữ nguyên cấu trúc không gian bếp. Đạt định mức large (30.27%). |
-| **3** | `IND_COCO_SDXL_002`<br>Origin: `coco:293044`<br>Pool index: 1<br>Tác giả: john-norris<br>License: CC BY-SA 2.0 | `coco_sdxl`<br>`object_insertion`<br>`small_under_10pct` | **Target:** Quả cà chua bi đỏ đặt trên lát bánh mì.<br>**Prompt:** *"a small red cherry tomato resting on the slice of bread, matching the lunchbox lighting and camera angle"*<br>Target bbox: `[375, 265, 430, 320]`<br>Mask bbox: `[345, 245, 455, 335]` | **9.900 px**<br>(**3.776550%**)<br>Thuần nhất nhị phân `{0, 255}`. | Thực nghiệm ghi nhận omission ở 4 attempts thuộc 3 run (pilot 113700Z, diagnostic Arm A, calibration G7.5 và G9.5) trên cùng candidate và seed. Bề mặt ruột bánh mì xốp với hoa văn lỗ khí phức tạp lấn át việc kích hoạt tạo sinh quả cà chua trơn láng. | **BLOCKED / PENDING_TRADE_OFF**<br>Không có cơ sở kỳ vọng tiếp tục chạy full-canvas trên lát bánh mì này sẽ hết omission. Cần người dùng duyệt phương án thay thế. |
-| **4** | `IND_COCO_SDXL_041`<br>Origin: `coco:189310`<br>Pool index: 40<br>Tác giả: an iconoclast<br>License: CC BY 2.0 | `coco_sdxl`<br>`object_insertion`<br>`large_over_30pct` | **Target:** Khoảng trần mở phía trên phòng khách cho đèn chùm.<br>**Prompt:** *"an elegant crystal chandelier hanging from the living room ceiling, warm interior illumination matching the residential lighting"*<br>Target bbox: `[180, 15, 332, 140]`<br>Mask bbox: `[0, 0, 512, 155]` | **79.360 px**<br>(**30.273438%**)<br>Thuần nhất nhị phân `{0, 255}`. | Target bbox nằm hoàn toàn trong mask bbox. Đèn chùm thực tế chỉ chiếm ~7.86% diện tích, nhưng mask bị kéo ngang $512 \times 155$ để ép đủ quota $\ge 30\%$, gây bước nhảy tông độ sáng mặt phẳng trần tại $y=155$ và chạm vi mô mép rèm cửa trái ($x \in [12, 25]$). | **BLOCKED / PENDING_TRADE_OFF**<br>Ép mask trần phẳng 30% phá vỡ sự đồng nhất kết cấu của mảng trần. Cần người dùng duyệt phương án thay thế. |
+| **3** | `IND_COCO_SDXL_002`<br>Origin: `coco:293044`<br>Pool index: 1<br>Tác giả: john-norris<br>License: CC BY-SA 2.0 | `coco_sdxl`<br>`object_insertion`<br>`small_under_10pct` | **Target:** Quả cà chua bi đỏ đặt trên lát bánh mì.<br>**Prompt:** *"a small red cherry tomato resting on the slice of bread, matching the lunchbox lighting and camera angle"*<br>Target bbox: `[375, 265, 430, 320]`<br>Mask bbox: `[345, 245, 455, 335]` | **9.900 px**<br>(**3.776550%**)<br>Thuần nhất nhị phân `{0, 255}`. | **Lịch sử thực nghiệm chính xác:** Omission xảy ra ở 4 attempts (pilot 113700Z, diagnostic Arm A, calibration G7.5 và G9.5) trên cùng candidate và seed. Riêng diagnostic Arm B **đã tạo sinh được quả cà chua**, nhưng đã bị **Human Content QC REJECT** chính thức bởi người duyệt (Dũng Phạm, `2026-10-08T19:34:30Z`) vì khuyết tật bước nhảy biên (boundary step) và kết cấu vụn bánh mì không đạt chuẩn chất lượng thị giác. | **BLOCKED / PENDING_TRADE_OFF**<br>Không có cơ sở kỳ vọng tiếp tục chạy full-canvas trên lát bánh mì này sẽ hết omission hoặc đạt chuẩn biên. Cần người dùng duyệt phương án thay thế. |
+| **4** | `IND_COCO_SDXL_041`<br>Origin: `coco:189310`<br>Pool index: 40<br>Tác giả: an iconoclast<br>License: CC BY 2.0 | `coco_sdxl`<br>`object_insertion`<br>`large_over_30pct` | **Target:** Khoảng trần mở phía trên phòng khách cho đèn chùm.<br>**Prompt:** *"an elegant crystal chandelier hanging from the living room ceiling, warm interior illumination matching the residential lighting"*<br>Target bbox: `[180, 15, 332, 140]`<br>Mask bbox: `[0, 0, 512, 155]` | **79.360 px**<br>(**30.273438%**)<br>Thuần nhất nhị phân `{0, 255}`. | Target bbox nằm hoàn toàn trong mask bbox. Đèn chùm thực tế chỉ chiếm ~7.86% diện tích, nhưng mask bị kéo ngang $512 \times 155$ để ép đủ quota $\ge 30\%$, gây bước nhảy tông độ sáng mặt phẳng trần tại $y=155$ và chạm vi mô mép rèm cửa trái ($x \in [12, 25]$). Rà soát toàn bộ 9 large + 12 medium insertion trong stratum `coco_sdxl` xác nhận không có ca nào trong catalog đạt chuẩn. | **BLOCKED / PENDING_TRADE_OFF**<br>Ép mask trần phẳng 30% phá vỡ sự đồng nhất kết cấu của mảng trần. Cần người dùng duyệt phương án mở rộng catalog COCO. |
 | **5** | `IND_COMMONS_SD2_001`<br>Origin: `commons:92533678`<br>Pool index: 0<br>Tác giả: Moahim<br>License: CC BY-SA 4.0 | `commons_sd2`<br>`object_removal_and_infill`<br>`medium_10_to_30pct` | **Target:** Mũi đất rừng thông, chân vách đá và bãi đá ngầm nhô ra biển.<br>**Prompt:** *"open sea and distant coastline continuing naturally through the removed foreground headland, photorealistic sunset landscape"*<br>Target bbox: `[190, 308, 512, 512]`<br>Mask bbox: `[190, 305, 512, 512]` | **66.654 px**<br>(**25.426483%**)<br>Thuần nhất nhị phân `{0, 255}`. | Target bbox nằm hoàn toàn trong mask bbox. Bờ vịnh lõm chéo khiến mask chữ nhật bắt buộc phải bao trùm một phần mặt nước vịnh ($x=190..340$) và chân dãy nhà/khách sạn sườn đồi ($x=440..512, y=305..335$). Rủi ro lặp vân sóng hoặc nhòe chân công trình. | **KEPT_WITH_DOCUMENTED_RISKS**<br>Candidate duy nhất trong stratum cho removal. Option A bao trùm toàn bộ mũi đất và rặng thông. Chấp nhận rủi ro inpaint chân khách sạn. |
-| **6** | `IND_COMMONS_SD2_002`<br>Origin: `commons:81567907`<br>Pool index: 1<br>Tác giả: Mr.choppers<br>License: CC BY-SA 3.0 | `commons_sd2`<br>`object_insertion`<br>`medium_10_to_30pct` | **Target:** Vali du lịch da nâu đặt trên mặt đường đá cuội.<br>**Prompt:** *"a brown leather travel suitcase standing on the cobblestones beside the vintage car, realistic scale and daylight shadows"*<br>Target bbox: `[45, 355, 190, 495]`<br>Mask bbox: `[0, 340, 225, 512]` | **38.700 px**<br>(**14.762878%**)<br>Thuần nhất nhị phân `{0, 255}`. | Target bbox nằm hoàn toàn trong mask bbox. Quan sát thực nghiệm: SD2 sinh ra xe hơi đồ chơi ở Arm B và omission ở Arm A. Giả thuyết: Bối cảnh xe đua Bugatti quá mạnh lấn át token vali trong text prompt. Mép mask $x=225$ tiếp xúc sát trục bánh xe. | **BLOCKED / PENDING_TRADE_OFF**<br>Rủi ro ảo giác hoặc không tạo đối tượng cao khi đặt vali cạnh xe đua. Cần người dùng duyệt phương án thay thế. |
+| **6** | `IND_COMMONS_SD2_002`<br>Origin: `commons:81567907`<br>Pool index: 1<br>Tác giả: Mr.choppers<br>License: CC BY-SA 3.0 | `commons_sd2`<br>`object_insertion`<br>`medium_10_to_30pct` | **Target:** Vali du lịch da nâu đặt trên mặt đường đá cuội.<br>**Prompt:** *"a brown leather travel suitcase standing on the cobblestones beside the vintage car, realistic scale and daylight shadows"*<br>Target bbox: `[45, 355, 190, 495]`<br>Mask bbox: `[0, 340, 225, 512]` | **38.700 px**<br>(**14.762878%**)<br>Thuần nhất nhị phân `{0, 255}`. | Target bbox nằm hoàn toàn trong mask bbox. Quan sát thực nghiệm: SD2 sinh ra xe hơi đồ chơi ở Arm B và omission ở Arm A. Bối cảnh xe đua Bugatti quá mạnh lấn át token vali trong text prompt. Mép mask $x=225$ tiếp xúc sát trục bánh xe. | **BLOCKED / PENDING_TRADE_OFF**<br>Rủi ro ảo giác hoặc không tạo đối tượng cao khi đặt vali cạnh xe đua. Cần người dùng duyệt phương án thay thế. |
 | **7** | `IND_COMMONS_SDXL_001`<br>Origin: `commons:166503140`<br>Pool index: 0<br>Tác giả: Crisco 1492<br>License: CC BY-SA 4.0 | `commons_sdxl`<br>`object_insertion`<br>`small_under_10pct` | **Target:** Con chim nhỏ bay trên nền trời mây mở.<br>**Prompt:** *"a small dark bird flying in the cloudy sky, distant scale and natural daylight"*<br>Target bbox: `[395, 75, 455, 125]`<br>Mask bbox: `[350, 45, 500, 160]` | **17.250 px**<br>(**6.580353%**)<br>Thuần nhất nhị phân `{0, 255}`. | Target bbox nằm hoàn toàn trong mask bbox. Biên mask cắt giữa bầu trời mây có gradient độ sáng liên tục (không phải biên tự nhiên của chủ thể). Rủi ro: SDXL tạo mảng trời chữ nhật lệch tone ($\Delta\text{RGB} \approx -3.5$) và chim có thể bị lệch vị trí ($dy = +41\text{ px}$). | **KEPT_WITH_DOCUMENTED_RISKS**<br>Vùng trời không cắt cấu trúc vật lý. Rủi ro thuần túy là khả năng định vị của SDXL và độ khớp màu trời. Đạt định mức small (6.58%). |
 | **8** | `IND_COMMONS_SDXL_003`<br>Origin: `commons:166529058`<br>Pool index: 2<br>Tác giả: Crisco 1492<br>License: CC BY-SA 4.0 | `commons_sdxl`<br>`object_replacement`<br>`large_over_30pct` | **Target:** Thân cột điêu khắc nhôm thẳng đứng 'Tower Song'.<br>**Prompt:** *"the visible shaft of a classical fluted Greco-Roman marble column standing naturally in the public park, realistic outdoor daylight and weathered stone texture"*<br>Target bbox: `[190, 0, 360, 512]`<br>Mask bbox: `[170, 0, 380, 512]` | **107.520 px**<br>(**41.015625%**)<br>Thuần nhất nhị phân `{0, 255}`. | Target bbox nằm hoàn toàn trong mask bbox. Mask dọc $x \in [170, 380]$ cắt ngang qua thanh lan can kim loại liên tục kéo dài 210 px ở hậu cảnh. Trong ảnh đã sinh, lan can bị đứt; điều này cho thấy inpainting tại vùng này có rủi ro đứt đoạn cấu trúc rất cao. | **BLOCKED / PENDING_TRADE_OFF**<br>Xung đột hình học cắt ngang lan can kim loại là rủi ro thiết kế cố hữu. Bắt buộc người dùng duyệt thay thế candidate hoặc điều chỉnh phương pháp mask. |
 
 ---
 
-### Phương Án Thay Thế Cụ Thể Cho Bốn Slot BLOCKED (Tiền Kiểm Dossier)
+### Phương Án Đề Xuất PENDING Cho 4 Slot Bị Chặn (Screening Proposals)
 
-Được chọn lọc trực tiếp từ `candidate_acquisition_plan_v2.json` và `verified_candidate_catalog_v2.json`, ưu tiên xét theo thứ tự `pool_index`, kiểm tra toàn diện ảnh authentic chuẩn hóa 512×512, đảm bảo 100% target nằm trong mask và đạt định mức diện tích protocol:
+Các phương án đề xuất được rà soát nghiêm ngặt theo nội dung, xuất xứ bản quyền, disjointness đối với 684 nguồn Option P lịch sử, và hình học mask chuẩn tắc. **Tất cả các đề xuất đều ở trạng thái `PENDING_HUMAN_REVIEW`, không sửa catalog/plan đã niêm phong và không ghi nhận approval:**
 
-#### 1. Slot 3 Thay Thế (`coco_sdxl`, `object_insertion`, `small_under_10pct`) — Hoàn thiện lựa chọn cuối
-- **Phương án Khuyến nghị (RECOMMENDED)**: `IND_COCO_SDXL_042` (Pool index: 41).
-  * Origin ID: `coco:448076` | Nguồn ảnh trực tiếp: [Flickr luis.leao](https://www.flickr.com/photos/luisleao/2260856815/) | Tác giả: luis.leao | Giấy phép: CC BY 2.0.
+#### 1. Slot 3 Đề Xuất PENDING (`coco_sdxl`, `object_insertion`, `small_under_10pct`)
+- **Phương án Khuyến nghị (RECOMMENDED PENDING)**: `IND_COCO_SDXL_042` (Pool index: 41).
+  * Origin ID: `coco:448076` | Nguồn ảnh trực tiếp: [Flickr luis.leao](https://www.flickr.com/photos/luisleao/2260856815/) | Tác giả: luis.leao | Giấy phép: `CC BY 2.0`.
   * Disjoint Guard: **PASS** (Zero overlap với 684 nguồn Option P lịch sử).
-  * Mô tả cảnh authentic: Gian hàng triển lãm hàng không TAM. Khoảng thảm đỏ phía trước ($x \in [200, 360], y \in [360, 500]$) hoàn toàn rộng mở, sạch sẽ, không có đồ vật che chắn (người đứng tại vách sau $y < 370$ và mép trái $x < 150$).
-  * Target đề xuất: `a professional black leather business briefcase standing upright on the red carpet`.
-  * Prompt đề xuất (PENDING): *"a professional black leather business briefcase standing upright on the red exhibition carpet, realistic studio floodlights and soft ground shadow"*.
+  * Mô tả cảnh authentic: Gian hàng triển lãm hàng không TAM. Khoảng thảm đỏ phía trước ($x \in [200, 360], y \in [360, 500]$) hoàn toàn rộng mở, sạch sẽ, phẳng đồng nhất, không có đồ vật che chắn (người đứng ở vách sau $y < 370$ và mép trái $x < 150$).
+  * Target đề xuất: Cặp táp doanh nhân bằng da đen đứng thẳng trên thảm đỏ.
+  * Prompt đề xuất: *"a professional black leather business briefcase standing upright on the red exhibition carpet, realistic studio floodlights and soft ground shadow"*.
   * Target bbox: `[235, 395, 335, 485]` | Mask bbox: `[220, 380, 350, 500]`.
-  * Target nằm trong mask: **ĐẠT** ($220 \le 235 < 335 \le 350$ và $380 \le 395 < 485 \le 500$).
+  * Target containment: **100% bao trọn** ($220 \le 235 < 335 \le 350$ và $380 \le 395 < 485 \le 500$).
   * Diện tích raster mask: **15.600 px** (**5.950928%**), chuẩn `small_under_10pct` ($1\% - 10\%$).
-  * Lý do khuyến nghị: Mặt thảm đỏ phẳng đồng nhất, khoảng lề rộng rãi tạo điều kiện quan sát hình thái đổ bóng tiếp xúc chân thực, loại bỏ hoàn toàn nguy cơ chạm lấn vật thể lân cận.
-  * Giới hạn & Cảnh báo: Việc nền thảm phẳng tối ưu hóa điều kiện tiền kiểm nhưng **không khẳng định nền đơn giản bảo đảm loại trừ hoàn toàn omission**.
-- **Phương án Dự phòng (BACKUP)**: `IND_COCO_SDXL_040` (Pool index: 39).
-  * Origin ID: `coco:578489` | Nguồn ảnh trực tiếp: [Flickr laura47](https://www.flickr.com/photos/laura47/3181988690/) | Tác giả: laura47 | Giấy phép: CC BY 2.0.
-  * Target đề xuất: Đôi dép đi trong nhà bằng len xám trên sàn gỗ phòng khách (`[40, 420, 130, 490]`, Mask `[30, 410, 140, 500]`, 9.900 px = 3.776550%).
-  * Giới hạn tiền kiểm: Giày da sẫm màu của người đàn ông trên sofa nằm sát mép mask tại $x=100..120$; sàn gỗ có phản xạ gương góc chéo. Giữ làm phương án dự phòng.
-- **Các candidate khác trong pool đã rà soát**: `IND_COCO_SDXL_011` (loại do ảnh đen trắng), `IND_COCO_SDXL_013` (loại do rơm rạ và tay người đan xen).
+  * Rủi ro & Cảnh báo: Mặt thảm đỏ phẳng đồng nhất tối ưu hóa điều kiện tiền kiểm, loại trừ va chạm vật thể lân cận; tuy nhiên không khẳng định nền đơn giản bảo đảm loại trừ hoàn toàn omission.
+- **Phương án Dự phòng (BACKUP PENDING)**: `IND_COCO_SDXL_040` (Pool index: 39).
+  * Origin ID: `coco:578489` | Nguồn ảnh: [Flickr laura47](https://www.flickr.com/photos/laura47/3181988690/) | Tác giả: laura47 | Giấy phép: `CC BY-NC 2.0` (Attribution-NonCommercial).
+  * Target đề xuất: Đôi dép len xám trên sàn gỗ (`[40, 420, 130, 490]`, Mask `[30, 410, 140, 500]`, 9.900 px = 3.776550%).
+  * Rủi ro: Giày da của người đàn ông trên sofa nằm sát mép mask tại $x=100..120$; sàn gỗ có vân phản xạ chéo.
 
-#### 2. Slot 4 — Tiếp tục BLOCKED (Không có Candidate đạt yêu cầu trong Pool)
-- **Đính chính & Loại bỏ `IND_COCO_SDXL_005`**:
-  * Rà soát zoom ảnh $512 \times 512$ xác nhận vùng mask `[0, 260, 320, 512]` **không chỉ chứa sân đỗ trống**: vùng này chứa nhân viên mặt đất mặc áo phản quang vàng, xe đẩy hành lý có lồng sắt, và bóng phản xạ mũi máy bay. Chèn mask tại đây sẽ đè mất con người và trang thiết bị sân bay, biến insertion thành phá hủy/thay thế đối tượng thực tế.
-- **Rà soát toàn diện pool `coco_sdxl`**:
-  * Đã kiểm tra trực tiếp toàn bộ 9 candidate large insertion đã đăng ký:
-    1. Pool 0 (`IND_COCO_SDXL_001`): Mèo trong bồn rửa mặt — không có 30% diện tích trống nếu không thay mèo đen.
-    2. Pool 4 (`IND_COCO_SDXL_005`): Sân bay đêm — mask chứa nhân viên mặt đất, xe đẩy lồng sắt và phản xạ máy bay.
-    3. Pool 28 (`IND_COCO_SDXL_029`): Người vác chuối tại chợ — người và sọt chuối lấp kín trung tâm cảnh.
-    4. Pool 32 (`IND_COCO_SDXL_033`): Bàn tiệc Đan Mạch — bàn đầy đĩa, ly, hoa và người chụp ảnh.
-    5. Pool 40 (`IND_COCO_SDXL_041`): Đèn chùm trần nhà — trần phẳng bị kéo $512 \times 155$ gây lệch tông độ sáng.
-    6. Pool 52 (`IND_COCO_SDXL_053`): Bồn rửa mặt — dính kính phản chiếu và khung viền trầy xước vintage.
-    7. Pool 66 (`IND_COCO_SDXL_067`): 4 bát đồ ăn vặt — đĩa bát chiếm 95% diện tích khung hình.
-    8. Pool 69 (`IND_COCO_SDXL_070`): Bánh mì trên tay — tay và bánh mì chéo kín khung hình.
-    9. Pool 107 (`IND_COCO_SDXL_108`): Phố Chicago — người đi bộ, cột đèn tín hiệu giữa ảnh, thùng rác, cây xanh.
-  * Đồng thời kiểm tra mở rộng 12 candidate medium insertion: 100% đều không có vùng trống $\ge 30\%$ tự nhiên mà không trùm người hay chủ thể cần bảo toàn.
-- **Quyết định Quản trị**: **Tiếp tục giữ BLOCKED cho Slot 4**. Ba hướng xử lý trình người dùng duyệt:
-  * *(A) Ban hành Protocol Amendment cho phép chuyển thao tác Slot 4 sang `object_replacement`*.
-  * *(B) Mở rộng tìm kiếm candidate mới ngoài catalog hiện hành có phong cảnh/sân trống rộng*.
-  * *(C) Chấp nhận đánh đổi bậc lệch tông trần phẳng của `IND_COCO_SDXL_041`*.
+#### 2. Slot 4 Đề Xuất PENDING (`coco_sdxl`, `object_insertion`, `large_over_30pct`) — Đề Xuất Mở Rộng Catalog COCO
+- **Nguyên tắc**: Giữ nguyên stratum `coco_sdxl`, SDXL, thao tác `object_insertion`, định mức `large_over_30pct` ($\ge 30\%$) và allocation đã khóa. Không đổi sang replacement.
+- **Phạm vi rà soát catalog hiện hành**: Rà soát chính xác toàn bộ **9 large insertion + 12 medium insertion** trong stratum `coco_sdxl` của catalog `verified_candidate_catalog_v2.json` (không suy rộng thành toàn bộ pool chung):
+  1. Pool 0 (`_001`): Mèo trong bồn rửa — không có 30% canvas trống.
+  2. Pool 4 (`_005`): Sân bay đêm — mask trùm nhân viên mặc áo phản quang, xe đẩy lồng sắt và bóng phản xạ mũi máy bay.
+  3. Pool 28 (`_029`): Người vác chuối tại chợ — người và sọt chuối kín trung tâm cảnh.
+  4. Pool 32 (`_033`): Bàn tiệc Đan Mạch — bàn đầy đĩa, ly, hoa và người chụp ảnh.
+  5. Pool 40 (`_041`): Đèn chùm trần nhà — trần phẳng kéo $512 \times 155$ gây lệch tông độ sáng mặt phẳng trần.
+  6. Pool 52 (`_053`): Bồn rửa mặt — dính gương phản chiếu và khung viền trầy xước.
+  7. Pool 66 (`_067`): 4 bát đồ ăn vặt — đĩa bát chiếm 95% diện tích khung hình.
+  8. Pool 69 (`_070`): Bánh mì trên tay — tay và bánh mì chéo kín khung hình.
+  9. Pool 107 (`_108`): Phố Chicago — người đi bộ, cột đèn tín hiệu giữa ảnh, thùng rác, cây xanh.
+  * Đồng thời kiểm tra 12 candidate medium insertion: 100% đều không có vùng trống $\ge 30\%$ tự nhiên mà không đè lên con người hoặc chủ thể cần bảo toàn.
+- **Đề xuất Mở rộng Catalog COCO Riêng biệt (PROPOSED COCO EXTENSION PENDING)**:
+  * Tạo đề xuất độc lập `slot4_coco_extension_proposal.json` mà **không chỉnh sửa catalog hay plan đã niêm phong**.
+  * **Candidate đề xuất**: **`COCO_EXT_SDXL_001`**.
+  * Origin ID: `coco:460160` | Flickr Photo ID: `9345977086` | Nguồn: [Flickr PratarPersilja](https://www.flickr.com/photos/12297627@N03/9345977086/) | Tác giả: PratarPersilja | Giấy phép: `CC BY-SA 2.0` (xác minh chính thức qua Flickr oEmbed URL `https://flic.kr/p/feSznY`).
+  * Disjoint Guard: **PASS** (Zero overlap với 684 nguồn Option P lịch sử).
+  * Đặc điểm cảnh authentic: Bờ biển mở rộng với thảm cỏ và bãi cát tự nhiên ở tiền cảnh ($y \in [260, 510]$), hậu cảnh là mặt nước và bầu trời mây overcast. Cảnh tĩnh mịch, hoàn toàn không có người, xe cộ hay kết cấu kiến trúc phức tạp.
+  * Thao tác: `object_insertion` | Định mức: `large_over_30pct`.
+  * Target đề xuất: Bàn dã ngoại bằng gỗ mộc có ghế băng gắn liền đặt trên bờ cỏ ven biển (`[20, 280, 330, 490]`, diện tích 65.100 px = 24.83%).
+  * Prompt đề xuất: *"a weathered wooden picnic table with attached bench seating on the grassy coastal ground, natural overcast daylight and soft ground contact shadow"*.
+  * Mask AABB đề xuất: `[10, 260, 340, 510]`.
+  * Diện tích raster mask: **82.500 px** (**31.471252%**), đạt chuẩn `large_over_30pct` ($\ge 30\%$, dư +3.857 px).
+  * Target containment: **100% bao trọn** ($10 \le 20 < 330 \le 340$ và $260 \le 280 < 490 \le 510$).
+  * Ưu điểm: Vùng chèn nằm trọn trên mặt đất tự nhiên (cỏ và cát), không cắt ngang mặt phẳng nhẵn liên tục (tránh lỗi bước nhảy tông như trần thạch cao), bóng đổ tiếp xúc mặt đất tự nhiên.
 
-#### 3. Slot 6 Thay Thế (`commons_sd2`, `object_insertion`, `medium_10_to_30pct`) — Đơn giản hóa hình khối
-- **Phương án Khuyến nghị (RECOMMENDED Đơn giản hóa)**: `IND_COMMONS_SD2_040` (Pool index: 39).
-  * Origin ID: `commons:172876577` | Nguồn ảnh trực tiếp: [Wikimedia Commons Chainwit.](https://commons.wikimedia.org/wiki/File:%22Eyes_of_Sibiu%22_at_house_Strada_Ocnei_2,_Sibiu_(2023)_-_img_07.jpg) | Tác giả: Chainwit. | Giấy phép: CC BY-SA 4.0.
+#### 3. Slot 6 Đề Xuất PENDING (`commons_sd2`, `object_insertion`, `medium_10_to_30pct`)
+- **Phương án Khuyến nghị (RECOMMENDED PENDING)**: `IND_COMMONS_SD2_040` (Pool index: 39).
+  * Origin ID: `commons:172876577` | Nguồn ảnh trực tiếp: [Wikimedia Commons Chainwit.](https://commons.wikimedia.org/wiki/File:%22Eyes_of_Sibiu%22_at_house_Strada_Ocnei_2,_Sibiu_(2023)_-_img_07.jpg) | Tác giả: Chainwit. | Giấy phép: `CC BY 4.0` (Creative Commons Attribution 4.0 International).
   * Disjoint Guard: **PASS** (Zero overlap với 684 nguồn Option P lịch sử).
   * Mô tả cảnh authentic: "Eyes of Sibiu" — Quảng trường nhà cổ Sibiu với mặt đường lát đá cuội rộng thoáng ở tiền cảnh ($y \in [360, 512]$), hoàn toàn tĩnh lặng và không có phương tiện cơ giới.
   * **Đơn giản hóa hình khối**: Thay vì xe đạp với nan hoa mỏng, xích và khoảng trống xuyên thấu phức tạp (dễ sinh lỗi đứt gãy hình học không cần thiết cho kiểm thử insertion), đề xuất chậu hoa thùng gỗ mộc có hình khối trụ đặc vững chắc, biên ranh giới rõ ràng, diện mạo ăn nhập hoàn hảo với quảng trường cổ Sibiu.
-  * Target đề xuất (PENDING): `a rustic wooden barrel planter filled with colorful blooming flowers sitting on the cobblestone square`.
-  * Prompt đề xuất (PENDING): *"a rustic wooden barrel planter filled with vibrant blooming flowers sitting naturally on the cobblestone pavement, realistic daylight shadows and weathered wood texture matching the historic town square"*.
-  * Target bbox: `[45, 375, 215, 495]` | Mask bbox: `[20, 360, 240, 512]`.
-  * Target nằm trong mask: **ĐẠT** ($20 \le 45 < 215 \le 240$ và $360 \le 375 < 495 \le 512$).
+  * Target đề xuất: Chậu hoa thùng gỗ mộc trên mặt đường lát đá cuội (`[45, 375, 215, 495]`, 20.400 px = 7.78%).
+  * Prompt đề xuất: *"a rustic wooden barrel planter filled with vibrant blooming flowers sitting naturally on the cobblestone pavement, realistic daylight shadows and weathered wood texture matching the historic town square"*.
+  * Mask AABB đề xuất: `[20, 360, 240, 512]`.
+  * Target containment: **100% bao trọn** ($20 \le 45 < 215 \le 240$ và $360 \le 375 < 495 \le 512$).
   * Diện tích raster mask: **33.440 px** (**12.756348%**), chuẩn `medium_10_to_30pct` ($10\% - 30\%$).
-  * Giới hạn & Cảnh báo: Target và prompt là đề xuất PENDING, không sửa plan lịch sử và không khẳng định trước tỷ lệ thành công tạo sinh.
-- **Phương án Tàu kéo `IND_COMMONS_SD2_021` — Hạ xuống BLOCKED**:
+- **Phương án Tàu kéo `IND_COMMONS_SD2_021` — Chính thức BLOCKED**:
   * Origin ID: `commons:132687303` | Nguồn: [Wikimedia Commons JoachimKohler-HB](https://commons.wikimedia.org/wiki/File:%22Cap_San_Diego%22_%26_Elbphilharmonie_(Hamburg,_2019).jpg).
-  * Rà soát authentic xác nhận mask `[0, 375, 240, 512]` chứa cầu đi bộ Überseebrücke, cọc trụ bê tông cảng và phao nổi đón khách. Phần nước trống bên dưới cầu chỉ đạt 20.500 px (7.82%), hụt định mức medium ($\ge 10\%$). Không tồn tại hình học mask nào đạt quota mà không phá hoại cầu cảng. **Chính thức hạ xuống BLOCKED**.
+  * Rà soát authentic xác nhận mask `[0, 375, 240, 512]` chứa cầu đi bộ Überseebrücke, cọc trụ bê tông cảng và phao nổi đón khách. Phần nước trống bên dưới cầu chỉ đạt 20.500 px (7.82%), hụt định mức medium ($\ge 10\%$). Không tồn tại hình học mask nào đạt quota mà không phá hoại cầu cảng.
 
-#### 4. Slot 8 — Rà soát hình học chân nhà & BLOCKED chờ Amendment
-- **Phân tích hình học `IND_COMMONS_SDXL_020`** (Pool index: 19):
-  * Origin ID: `commons:192692840` | Nguồn ảnh trực tiếp: [Wikimedia Commons Igor123121](https://commons.wikimedia.org/wiki/File:%22%C5%BByletkowce%22_office_buildings_in_Krakow,_11_Kazimierza_Kordylewskiego_street,._Krak%C3%B3w,_Poland.jpg) | Tác giả: Igor123121 | Giấy phép: CC BY-SA 4.0.
-  * Disjoint Guard: **PASS** (Zero overlap với 684 nguồn Option P lịch sử).
-  * Target đánh giá: `[60, 145, 385, 365]` | Mask đánh giá: `[50, 130, 395, 375]` (84.525 px = 32.243729%, chuẩn `large_over_30pct`).
-  * **Rà soát chi tiết hình học chân tòa nhà & mái tiền cảnh**:
-    1. *Phần thay thế*: Khối tháp 10 tầng có lam chắn nắng bê tông từ tầng 2 đến tầng 10 ($y=158..348$) và khối tum thang máy trên nóc ($y=148..158$).
-    2. *Phần bị giữ lại / cắt lẹm*: Chân sảnh phụ phía trái có cửa xanh ($x=60..140, y=365..388$) bị cắt ngang ở $y=375$.
-    3. *Cấu trúc khác nằm trong mask*: Đỉnh vòm kính tròn (skylight dome) của khối nhà tiền cảnh nhô lên tại $x \in [140, 260], y \in [362, 420]$. Mask chữ nhật `[50, 130, 395, 375]` cắt lẹm ~13 pixel đỉnh vòm kính tròn và bao trùm một góc mái bằng tiền cảnh phía phải.
-    4. *Hạn chế AABB Mask*: Thu hẹp mask lên trên $y=360$ sẽ hụt quota large ($<30\%$); mở rộng xuống dưới $y=425$ sẽ biến đổi cả vòm kính tiền cảnh. Để thay thế chuẩn xác tòa tháp cần **Polygon Mask** (ôm theo chân tháp và lượn né đỉnh vòm kính), đòi hỏi Protocol Amendment v1.7.0 cho pipeline.
-  * **Quyết định Quản trị**: **Tiếp tục giữ BLOCKED cho Slot 8 chờ quyết định phương pháp luận**. Tuyệt đối không quay lại tượng Ed Dwight ôm trẻ (`IND_COMMONS_SDXL_002`) làm lựa chọn mặc định.
+#### 4. Slot 8 Thẩm Tra Hình Học Offline & Đề Xuất Thay Thế Trong Cùng Allocation (`commons_sdxl`, `object_replacement`, `large_over_30pct`)
+- **Thẩm tra hình học offline trên `IND_COMMONS_SDXL_020` (Żyletkowce)**:
+  * Nguồn: `commons:192692840` | Tác giả: Igor123121 | Giấy phép: `CC BY 4.0`.
+  * Target đăng ký: `[60, 145, 385, 365]` (71.500 px = 27.275391% canvas).
+  * **Sửa sai lệch và phân định rõ ràng về Mask AABB `[50, 130, 395, 360]`**:
+    * Kích thước: $345 \times 230 =$ **79.350 px** (**30.269623%** canvas).
+    * Mask này **ĐẠT định mức quota large** ($\ge 30\%$, dư +707 px).
+    * Nhưng mask này **KHÔNG bao trọn target**: Thiếu 5 pixel bên phải ở khoảng $x \in [360, 365]$; đáy mask $y=360$ cắt lẹm 5 pixel chân thân nhà; đồng thời vẫn lấn khoảng 13 pixel đỉnh vòm kính tròn tiền cảnh ($x \in [140, 260], y \in [360, 375]$).
+  * **Đo đạc Raster Contour Mask Nháp Offline (né đỉnh vòm kính và cấu trúc tiền cảnh)**:
+    * Xuất raster nhị phân và overlay bám theo mép thực của thân tháp trên ảnh authentic 512×512: `IND_COMMONS_SDXL_020_contour_mask.png` và `IND_COMMONS_SDXL_020_contour_overlay.png`.
+    * Số pixel mask contour thực tế: **65.792 px** (**25.097656%** canvas).
+    * Kết quả kiểm tra quota: **KHÔNG ĐẠT định mức large** ($\ge 30\%$, thiếu hụt nghiêm trọng -12.851 px hay -4.90%).
+    * Kết quả che phủ target (Target Coverage): Chỉ bao phủ **65.496 px / 71.500 px** (**91.60%** diện tích target; bỏ sót 6.004 px = 8.40% diện tích target tại chân tháp).
+    * Tuân thủ nguyên tắc trung thực khoa học: Tuyệt đối không thu hẹp hoặc tái đăng ký target post-hoc để hợp thức hóa mask.
+  * **Kiểm tra khả năng hỗ trợ trong Schema & Runner hiện có**:
+    * Schema (`independent_validation_protocol.yaml`) và Runner (`ml/evaluation/independent_cohort_acquisition.py`, hàm `_validate_content_grounded_candidate` và `build_content_grounded_mask`) chỉ hỗ trợ trục tọa độ hộp chữ nhật `mask_bbox_xyxy: tuple[int, int, int, int]`.
+    * Runner hoàn toàn **KHÔNG hỗ trợ mặt nạ raster contour/polygon tùy ý**. Muốn hỗ trợ bắt buộc phải ban hành Protocol Amendment v1.7.0 và sửa đổi toàn diện code runner/schema.
+- **Rà soát Candidate Khác Trong Cùng Allocation (`commons_sdxl`, `object_replacement`, `large_over_30pct`)**:
+  * Đã rà soát toàn bộ các candidate replacement trong catalog `verified_candidate_catalog_v2.json`.
+  * **Phương án Khuyến nghị (RECOMMENDED PENDING)**: **`IND_COMMONS_SDXL_005`** (Pool index: 4).
+    * Origin ID: `commons:171463547` | Nguồn: [Wikimedia Commons Chris Woodrich](https://commons.wikimedia.org/wiki/File:%22Triptych%22_by_Gord_Smith_(rear_view),_Windsor,_Ontario,_2025-08-01.jpg) | Tác giả: Chris Woodrich | Giấy phép: `CC BY-SA 4.0`.
+    * Disjoint Guard: **PASS** (Zero overlap với 684 nguồn Option P lịch sử).
+    * Mô tả cảnh authentic: Khối điêu khắc đồng đồ sộ "Triptych" tại Windsor Sculpture Park. Khối tượng đứng độc lập hoàn toàn trên thảm cỏ xanh; hậu cảnh là bầu trời mây và rặng cây xanh; **hoàn toàn KHÔNG vướng lan can kim loại xuyên suốt**, **hoàn toàn KHÔNG vướng vòm kính tròn hay công trình tiền cảnh**.
+    * Target thay thế: Cột kỷ niệm bằng đá cẩm thạch trắng đứng trên bệ khối vững chắc trong công viên.
+    * Prompt đề xuất: *"a classical white marble commemorative column standing on a solid plinth in the public park, realistic overcast daylight and weathered stone texture"*.
+    * Target bbox: `[145, 50, 355, 465]` (diện tích 87.150 px = 33.245850%).
+    * Mask AABB đề xuất: `[135, 40, 365, 475]`.
+    * Diện tích raster mask: **100.050 px** (**38.166046%** canvas), đạt chuẩn `large_over_30pct` ($\ge 30\%$).
+    * Target containment: **100% bao trọn** ($135 \le 145 < 355 \le 365$ và $40 \le 50 < 465 \le 475$).
+    * **Tính tương thích Runner**: Sử dụng chuẩn hộp chữ nhật AABB, **tương thích 100% với schema và code runner hiện hành mà không cần sửa code hay ban hành Protocol Amendment!**
+  * **Phương án Dự phòng (BACKUP PENDING)**: `IND_COMMONS_SDXL_002` (Pool index: 1, tượng Ed Dwight ôm trẻ, CC BY-SA 4.0; target `[180, 120, 400, 430]`, mask `[170, 110, 410, 440]`, 79.200 px = 30.21%). Lưu ý rủi ro đồng nhất danh tính và cánh tay tiếp xúc.
 
 ---
 
-### Bảng Tổng Hợp So Sánh Đối Chiếu 4 Slot Cũ vs Phương Án Rà Soát Cuối Cùng
+### Bảng Tổng Hợp 4 Slot Đề Xuất PENDING Trình Duyệt
 
-| Slot | Stratum & Phân loại | Phương Án Cũ (BLOCKED) | Lý Do Chặn Cũ | Phương Án Khuyến Nghị (RECOMMENDED) | Phương Án Dự Phòng / Trạng Thái Rà Soát | Trạng Thái Review |
-| :---: | :--- | :--- | :--- | :--- | :--- | :---: |
-| **3** | `coco_sdxl`<br>insertion, small | `IND_COCO_SDXL_002`<br>(cà chua trên bánh mì) | Omission 4/4 attempts qua 3 runs cùng seed; vân bánh mì xốp lấn át vật thể. | **`IND_COCO_SDXL_042`** (Pool 41)<br>Cặp táp da trên thảm đỏ gian hàng TAM.<br>Mask `[220, 380, 350, 500]` (5.95%) | `IND_COCO_SDXL_040` (Pool 39)<br>Dép len trên sàn gỗ phòng khách.<br>Mask `[30, 410, 140, 500]` (3.78%) | `PENDING`<br>(`reviewer: null`) |
-| **4** | `coco_sdxl`<br>insertion, large | `IND_COCO_SDXL_041`<br>(đèn chùm trần nhà) | Đèn chùm chỉ ~7.86%, ép mask 512x155 (30.27%) gây bậc lệch tông trần phẳng. | **TIẾP TỤC BLOCKED**<br>(Không có candidate đạt quota large insertion sạch trong pool) | Đã loại `_005` (dính người/xe đẩy/máy bay); đã rà soát 9 large + 12 medium insertion. | `BLOCKED`<br>(Chờ quyết định trade-off) |
-| **6** | `commons_sd2`<br>insertion, medium | `IND_COMMONS_SD2_002`<br>(vali da cạnh Bugatti) | Bối cảnh xe đua cổ mạnh; Arm A omission, Arm B sinh xe hơi đồ chơi. | **`IND_COMMONS_SD2_040`** (Pool 39)<br>Chậu hoa thùng gỗ mộc trên quảng trường Sibiu.<br>Mask `[20, 360, 240, 512]` (12.76%) | Đã hạ `_021` xuống BLOCKED (dính cầu đi bộ Überseebrücke; nước trống hụt quota). | `PENDING`<br>(`reviewer: null`) |
-| **8** | `commons_sdxl`<br>replacement, large | `IND_COMMONS_SDXL_003`<br>(cột đá Tower Song) | Mask cắt ngang 210 px lan can kim loại liên tục ở hậu cảnh, gây đứt gãy kiến trúc. | **BLOCKED CHỜ AMENDMENT**<br>`IND_COMMONS_SDXL_020` (Żyletkowce)<br>Chân tháp vướng vòm kính tròn tiền cảnh; cần polygon mask. | Không quay lại tượng Ed Dwight ôm trẻ (`_002`) làm lựa chọn mặc định. | `BLOCKED`<br>(Chờ quyết định polygon mask) |
+| Slot | Stratum & Thao Tác | Candidate Đề Xuất (PENDING) | Geometry (Target & Mask BBox) | Diện Tích Mask & Quota | Provenance & Giấy Phép Xác Minh | Rủi Ro Kỹ Thuật Còn Lại | Nội Dung Chính Xác Cần Người Dùng Duyệt |
+| :---: | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **3** | `coco_sdxl`<br>insertion<br>small | **`IND_COCO_SDXL_042`**<br>(Pool 41, gian hàng TAM) | Target: `[235, 395, 335, 485]`<br>Mask: `[220, 380, 350, 500]` | **15.600 px**<br>(**5.95%**)<br>Đạt `small` (1-10%) | `coco:448076`<br>Tác giả: luis.leao<br>License: `CC BY 2.0` | Thảm phẳng tối ưu tiền kiểm nhưng không bảo đảm 100% loại trừ omission của SDXL. | Duyệt thay thế `IND_COCO_SDXL_002` bằng `IND_COCO_SDXL_042` (cặp táp da trên thảm đỏ). |
+| **4** | `coco_sdxl`<br>insertion<br>large | **`COCO_EXT_SDXL_001`**<br>(Đề xuất mở rộng COCO) | Target: `[20, 280, 330, 490]`<br>Mask: `[10, 260, 340, 510]` | **82.500 px**<br>(**31.47%**)<br>Đạt `large` (&ge;30%) | `coco:460160`<br>Tác giả: PratarPersilja<br>License: `CC BY-SA 2.0` | Bờ biển tự nhiên; cần theo dõi tiếp xúc chân bàn gỗ với nền cỏ/cát. | Duyệt mở rộng catalog COCO với candidate `COCO_EXT_SDXL_001` (bàn dã ngoại gỗ trên bờ cỏ). |
+| **6** | `commons_sd2`<br>insertion<br>medium | **`IND_COMMONS_SD2_040`**<br>(Pool 39, phố cổ Sibiu) | Target: `[45, 375, 215, 495]`<br>Mask: `[20, 360, 240, 512]` | **33.440 px**<br>(**12.76%**)<br>Đạt `medium` (10-30%) | `commons:172876577`<br>Tác giả: Chainwit.<br>License: `CC BY 4.0` | Nền đá cuội cổ; SD2 cần tạo bóng đổ tiếp xúc tự nhiên với mặt đường. | Duyệt thay thế `IND_COMMONS_SD2_002` bằng `IND_COMMONS_SD2_040` (chậu hoa thùng gỗ mộc). |
+| **8** | `commons_sdxl`<br>replacement<br>large | **`IND_COMMONS_SDXL_005`**<br>(Pool 4, tượng Triptych) | Target: `[145, 50, 355, 465]`<br>Mask: `[135, 40, 365, 475]` | **100.050 px**<br>(**38.17%**)<br>Đạt `large` (&ge;30%) | `commons:171463547`<br>Tác giả: Chris Woodrich<br>License: `CC BY-SA 4.0` | Thay thế tượng đồng bằng cột đá; rủi ro khớp chân bệ với mặt cỏ công viên. Không vướng lan can hay vòm kính. | Duyệt thay thế `IND_COMMONS_SDXL_003` bằng `IND_COMMONS_SDXL_005` (thay tượng Triptych bằng cột đá). |
+
+---
 
 ### Các Bước Kế Tiếp & Điều Kiện Phê Duyệt (Actionable Decisions)
-1. **Phê duyệt của Người dùng**: Người dùng xem xét contact sheet và bảng tổng hợp, đưa ra quyết định chấp thuận phương án Khuyến nghị (hoặc Dự phòng) cho từng slot trong 4 slot trên.
-2. **Soạn thảo Amendment v1.7.0**: Sau khi có quyết định duyệt, soạn thảo kế hoạch JSON chính thức mới (`content_grounded_pilot_plan_v2.json`) gắn kết bindings đã phê duyệt. Tuyệt đối không sửa đè `content_grounded_pilot_plan.json` cũ.
+1. **Phê duyệt của Người dùng**: Người dùng xem xét contact sheet và bảng quyết định ngắn, đưa ra quyết định chấp thuận chính thức cho 4 slot đề xuất PENDING.
+2. **Soạn thảo Kế hoạch Tạo Sinh Mới**: Sau khi người dùng phê duyệt, mới tiến hành soạn thảo kế hoạch acquisition plan mới (`candidate_acquisition_plan_v3.json`) và đề xuất ngân sách generation. Tuyệt đối không sửa đè plan v2 đã niêm phong.
 3. **Bảo tồn Quản trị**:
    - Diagnostic run: giữ nguyên **6/6 REJECT**.
    - Calibration run: giữ nguyên **2 PENDING** (Agent đề xuất REJECT).
    - Follow-up pilot cũ: giữ nguyên **8 PENDING**.
    - Full cohort tiếp tục **LOCKED** ($N=400$); số lượt gọi detector = 0; hiệu năng độc lập = `NOT_MEASURED`.
    - Notebook tiếp tục ghim ở commit functional `045ea70cb9067ede3833f7a01562199869f4ae56`.
+   - Không đăng ký thêm ngân sách generation trong bước này.
 
 
 
