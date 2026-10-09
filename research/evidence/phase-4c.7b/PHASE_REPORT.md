@@ -1,12 +1,148 @@
 # Phase 4C.7B — Independent Cohort Acquisition: Protocol Amendment, Automated Pipeline, and Feasibility Alignment
 
 > **Phase**: Phase 4C.7B — Independent Cohort Acquisition & Feasibility Alignment (Pilot v2 Feasibility Closure and Existing Dataset Continuation Proposal)<br>
-> **Status**: `PILOT_V2_FEASIBILITY_CONCLUDED_INSUFFICIENT_EVIDENCE_FOR_400_PAIRS`. Run `pilot-20261009T111247Z` (bound to functional commit `79775250ee5393c9f193bdc0485f77998cefaddf`, approved plan `a95c96c594777025aac58049ca81978245035a54ad98c9298c0cf5a1ec0d8565`, and catalog extension `0d875b81a8044e3285ecf0331beec6646d94b085915baaaa32247e86ee9023e7`; package ZIP SHA-256 `a0521a16f3b5fd498aac5fc15ecc43def83f5bc64c7d907123a73e251ce1de0d`, 6,700,761 bytes) safely extracted into dedicated directory `data/research/local-artifacts/phase-4c.7b/pilot-20261009T111247Z/` (34 members, 0 traversal, 0 overwrite). Production CLI audit at bound commit `79775250ee5393c9f193bdc0485f77998cefaddf` PASS (8/8 pairs, Technical QC PASS). Visual examination by Agent recommends 1 ACCEPT / 7 REJECT; formal Human Content QC status remains strictly `PENDING_CONTENT_QC` across all 8 pairs awaiting user decision. Bounded conclusion: **“Chưa đủ bằng chứng để mở rộng cấu hình hiện tại lên 400 cặp.”** Agent 1/8 recommendation is not an official acceptance rate; local-crop diagnostic Arm B was formally rejected 6/6 by Human Content QC; does not imply all inpainting models fail. Proposal for continuation using existing audited external benchmark datasets prepared; full cohort ($N=400$) strictly locked; detector calls = 0; independent performance `NOT_MEASURED`.<br>
+> **Status**: `EXISTING_BENCHMARK_CONTINUATION_VERIFIED_PENDING_HUMAN_INTAKE_APPROVAL` — Hoàn tất xác minh thực địa khả năng tiếp tục nghiên cứu bằng benchmark có sẵn (TGIF/TGIF2 priority audit & Option P cross-disjointness). Đã chứng minh: 1,558 unique COCO sources trong split `training` của TGIF hoàn toàn disjoint 100% với 684 nguồn Option P lịch sử (0 collision); kho mask `data/research/tgif/masks/training/` đã có sẵn 100% trên máy cục bộ (24,400 PNG masks, 0 MB tải thêm). Phân định rõ spliced (`sp`, nhãn `ai_edited` kèm mask thật/giả phục vụ RQ5) vs fully-regenerated (`fr`, không được gán `fully_generated`, mask chỉ là request area); tuyệt đối không coi thư mục chưa dùng là bằng chứng disjoint nếu cùng chia sẻ nguồn COCO. Đề xuất đúng 1 tập kiểm định khả thi `TGIF-Train-Clean-Subset` ($N=400$ hoặc $N=200$ cặp, phân tầng theo 3 khoảng diện tích mask) kèm preregistration protocol và kế hoạch tiếp nhận 5 bước trình người dùng phê duyệt trước khi tải bất kỳ ảnh nào. Bàn giao 26 quyết định Human Content QC đang PENDING (8 Pilot v2, 2 Calibration, 8 Follow-up pilot v1, 8 Pilot v0). Full cohort ($N=400$) tiếp tục KHÓA CHẶT; zero generation, detector calls = 0; independent performance `NOT_MEASURED`.<br>
 > **Findings status**: `NOT_MEASURED` (0 detector calls, 0 cohort evaluation)<br>
 > **Current corrective functional commit**: `79775250ee5393c9f193bdc0485f77998cefaddf` (functional commit registering human approval for Pilot Plan v2 proposal and Protocol Amendment v1.7.0; canonical notebook pins this full SHA).<br>
 > **Real pilot / diagnostic / calibration**: `PILOT_V2_FEASIBILITY_CONCLUDED_8_PAIRS_PENDING_HUMAN_CONTENT_QC` (8 pairs in `pilot-20261009T111247Z` evaluated, Agent recommends 1 ACCEPT / 7 REJECT, Human Content QC PENDING; 2 calibration attempts in `calib-20261009T015749Z` Agent recommends REJECT, Human Content QC PENDING; 6 diagnostic attempts in `diag-20261008T154628Z` 6/6 REJECT; 8 historical pilot pairs in `pilot-20261008T113700Z` PENDING; full 400-pair run remains `NOT_RUN`)<br>
 > **Training runs**: 0 fits, 0 refits; frozen models untouched; retired locked-test not accessed (only its 343 source IDs are read for the disjoint guard)<br>
 > **Evidence classification**: run/commit/artifact observations are `internal-empirical`; model cards/documentation are `external-source`; latent-capacity/context-bias explanations remain `unverified-hypothesis`. Citation keys resolve through `docs/references.bib`.<br>
+
+## LL. Xác Minh Thực Địa Tiếp Tục Nghiên Cứu bằng Benchmark Có Sẵn (TGIF/TGIF2 Priority Audit & Option P Cross-Disjointness) (2026-10-09)
+
+Hồ sơ xác minh kỹ thuật và siêu dữ liệu thực tế tại chỗ (Local Metadata & Benchmark Verification) nhằm đánh giá khả năng tiếp tục kiểm định độc lập bằng bộ dữ liệu benchmark có sẵn, sau khi đã chốt dừng hoàn toàn việc tự sinh ảnh inpainting thủ công.
+
+### 1. Khảo Sát Nguồn Sơ Cấp & Siêu Dữ Liệu Thực Tế (Primary Sources & Empirical Metadata)
+
+Dự án tái sử dụng toàn diện các tài nguyên đã thẩm định trong repository: Dataset Registry (`datasets/registry.json`), Bibliography chuẩn tắc (`docs/references.bib`: `[@mareen2024tgif]`, `[@mareen2026tgif2]`, `[@giakoumoglou2025sagi]`, `[@zhu2023genimage]`), và Bảng đăng ký minh chứng (`docs/EVIDENCE_REGISTER.md`: `EV-MASK-CARDINALITY-RESOLVED-001`, `EV-TGIF-CARDINALITY-001`, `EV-TGIF-SEMANTICS-001`).
+
+1. **Khả năng lấy bộ ba tương ứng (Tripartite Tuple)**:
+   - Hệ thống hoàn toàn **LẤY ĐƯỢC 100%** bộ ba tương ứng gồm `authentic` (ảnh máy ảnh MS-COCO val2017 gốc), `ai_edited` (ảnh inpainting), và `ground_truth_mask` (mặt nạ nhị phân vùng can thiệp).
+   - *Mask*: Toàn bộ kho mặt nạ của TGIF gồm 31,238 file mask PNG (141.5 MB giải nén, 2,242 unique COCO `source_id`, 3,124 task instances) **ĐÃ CÓ SẴN 100% TRÊN MÁY CỤC BỘ** tại `data/research/tgif/masks/` từ Phase 4B.0 (manifest tại `data/research/tgif/manifests/masks-manifest.jsonl`).
+   - *Authentic*: Tập ảnh gốc MS-COCO val2017 có sẵn trong kho lưu trữ của TGIF (`orig`) và trên CDN chính thức của MS-COCO (`http://images.cocodataset.org/val2017/`).
+   - *Edited*: Có sẵn trong các thư mục inpainting của TGIF (`sd2-sp` - Stable Diffusion 2 spliced, `ps-sp` - Adobe Firefly spliced).
+2. **Phân biệt bản chất `sp` (Spliced) vs `fr` (Fully-Regenerated) và ý nghĩa Ground-Truth Mask**:
+   - Tuân thủ nghiêm ngặt kiểm toán ngữ nghĩa nhãn trong `docs/PILOT_PROTOCOL.md` (Mục 2.2):
+     - **`sp` (Spliced inpainting)**: Chỉ vùng bên trong mask được mô hình AI sinh ra và ghép đè (*spliced*) trở lại ảnh chụp MS-COCO gốc; 100% pixel bên ngoài mask là pixel máy ảnh thật nguyên bản. Đây là đại diện chuẩn mực cho nhãn khoa học **`ai_edited`**. Ground-truth mask của `sp` phản ánh **chính xác 100% ranh giới giữa pixel thật và pixel AI**, phục vụ trực tiếp cho bài toán định vị (Auxiliary RQ5 Localization: mIoU, Dice, Heatmap IoU).
+     - **`fr` (Fully-Regenerated)**: Toàn bộ canvas đi qua quá trình khuếch tán/VAE của mô hình inpainting mà không ghép đè trở lại. Mọi pixel đều mang dấu vết sinh số, nhưng nội dung và bố cục không gian bị điều kiện hóa bởi ảnh MS-COCO gốc. Theo `PILOT_PROTOCOL.md`, `fr` **KHÔNG ĐƯỢC COI LÀ `fully_generated`** (để tránh mâu thuẫn nhãn phân loại); đồng thời mask trong `fr` chỉ là bounding box / request prompt lúc chạy inpainting, **KHÔNG PHẢI là ranh giới giữa pixel thật và pixel AI**. Do đó `fr` không có ranh giới ghép nối cục bộ và không dùng làm ground-truth localization theo nghĩa biên thật/giả.
+3. **Danh sách Source IDs để lọc trước khi tải ảnh**:
+   - **ĐÃ CÓ SẴN CỤC BỘ 100%**. Tệp `data/research/tgif/manifests/masks-manifest.jsonl` (31,238 dòng) chứa đầy đủ danh mục `source_id` (12 chữ số chuẩn COCO) và `instance_id` (`{category}_{source_id}`) cho toàn bộ 3 split:
+     - Split `train`: **1,558 unique COCO `source_id`** (tạo thành 2,440 task instances do 571 ảnh COCO chứa nhiều nhãn đối tượng khác nhau).
+     - Split `val`: **341 unique COCO `source_id`** (341 task instances).
+     - Split `test`: **343 unique COCO `source_id`** (343 task instances).
+   - Nhờ có sẵn manifest cục bộ, hệ thống có thể lọc và lập danh sách ID cần lấy **TRƯỚC KHI** thực hiện bất kỳ lệnh tải mạng nào.
+4. **Cách tải chọn lọc, dung lượng dự kiến, giấy phép và attribution**:
+   - *Cách tải và dung lượng*:
+     - Kho Nextcloud công khai của TGIF (`https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o`) đóng gói theo split archive: `orig_training.tar.gz` (5.26 GiB), `sd2-sp_training.tar.gz` (13.37 GiB).
+     - Để tránh tải toàn bộ 18.6 GiB về máy trạm cá nhân (tránh nguy cơ nghẽn đĩa và vi phạm trần mạng):
+       * Nguồn authentic: Tải trực tiếp $N$ ảnh gốc từ official MS-COCO CDN (`http://images.cocodataset.org/val2017/{source_id}.jpg`) $\to$ Dung lượng cực nhỏ: chỉ ~40–60 MB cho 400 ảnh!
+       * Nguồn mask: Đã có sẵn 100% trên đĩa local $\to$ **0 MB tải thêm**.
+       * Nguồn edited: Khuyến nghị thực thi một tác vụ trích xuất trên Google Colab (tải `sd2-sp_training.tar.gz` về môi trường Colab tạm thời, trích xuất chính xác $N$ ảnh theo danh sách ID đã preregister, đóng gói thành package ZIP nhỏ ~60 MB tải về local). Tổng dung lượng nhận về local chỉ ~100–120 MB.
+   - *Giấy phép & Attribution*:
+     - TGIF được cấp phép dưới `CC BY-SA 4.0`. Ảnh gốc MS-COCO cấp phép dưới `CC BY 4.0` (và Flickr per-image terms).
+     - Attribution chuẩn tắc: Mareen et al., *"TGIF: Text-Guided Inpainting Forgery Dataset"*, IEEE WIFS 2024 (`@mareen2024tgif`).
+     - Tuân thủ ADR-0006: Thuộc Research Track (`data/research/`), chỉ dùng cho nghiên cứu học thuật/khóa luận, cấm đưa vào sản phẩm thương mại Product Track.
+
+### 2. Đối Chiếu Metadata Với 684 Nguồn Option P Lịch Sử (Disjointness Audit)
+
+Nhằm bảo đảm tính độc lập khoa học tuyệt đối, hệ thống thực hiện đối chiếu chéo metadata giữa kho TGIF và toàn bộ 684 nguồn ảnh Option P đã sử dụng trong các Phase trước (tại `data/research/tgif/manifests/manifest_pilot_a_option_p.csv`):
+
+1. **Tuyệt đối không coi "thư mục chưa dùng" là bằng chứng disjoint**:
+   - Trong TGIF, toàn bộ 4 thư mục inpainting (`sd2-sp`, `ps-sp`, `sd2-fr`, `sdxl-fr`) và thư mục ảnh gốc `orig` đều bắt nguồn từ cùng một tập 2,242 ảnh nguồn MS-COCO.
+   - Option P lịch sử đã sử dụng toàn bộ 684 ảnh nguồn của hai split `validation` (341 sources: 250 `development_train` + 91 `inner_validation`) và `testing` (343 sources: `locked_test`).
+   - Nếu lấy ảnh từ các thư mục "chưa từng tải" như `ps-sp` (Photoshop) hay `sdxl-fr` thuộc split `validation` hoặc `testing`, thì những ảnh này **CHIA SẺ 100% CÙNG NGUỒN GỐC ẢNH VÀ NỀN MS-COCO** với tập dev và locked-test mà mô hình đã học hoặc niêm phong. Chúng chỉ là các biến thể (*variants*) khác nhau của cùng một bức ảnh gốc!
+   - Việc kiểm tra trên các thư mục này sẽ gây rò rỉ danh tính ảnh nguồn (*source identity leakage*), phá vỡ nguyên tắc Group Split.
+2. **Nhóm mọi biến thể của cùng ảnh nguồn (Source-Level Grouping)**:
+   - Mọi tệp ảnh mang cùng tiền tố COCO image ID 12 chữ số (ví dụ `000000002261`) đều được gom chung vào một nhóm nguồn thống kê duy nhất (`source_id`).
+   - Bất kỳ ảnh nào thuộc 684 `source_id` của Option P đều bị **CHẶN TUYỆT ĐỐI** khỏi tập kiểm định mới.
+3. **Phân vùng Disjoint thực tế trong TGIF**:
+   - Nguồn duy nhất trong TGIF chưa từng xuất hiện trong Option P là **split `training` gốc** của TGIF.
+   - Kết quả kiểm toán giao tập giữa các split của TGIF và Option P (684 sources):
+     - Giao giữa Option P và TGIF Val (341 sources): **341 / 341 (100% trùng)**.
+     - Giao giữa Option P và TGIF Test (343 sources): **343 / 343 (100% trùng)**.
+     - Giao giữa Option P và TGIF Train (1,558 unique sources): **0 / 1,558 (0.0% trùng lặp — 100% DISJOINT TUYỆT ĐỐI)**.
+4. **Phân định các kiểm tra đã hoàn thành vs cần tải ảnh mới làm được**:
+   - *Kiểm tra ID/Metadata đã hoàn thành 100%*: Đối chiếu 1,558 `source_id` của split Train với 684 Option P IDs đạt 0 collision. Toàn bộ 24,400 file mask trong Train đã có sẵn mã băm SHA-256 cục bộ.
+   - *Kiểm tra cần tải ảnh mới làm được*: Mã băm SHA-256 của file ảnh gốc tải về (`raw_sha256`), mã băm ảnh sau chuẩn hóa 512x512 (`master_sha256`), và khoảng cách perceptual hash (`pHash`).
+5. **Giới hạn tuyên bố khoa học về Pretraining**:
+   - MS-COCO val2017 là tập dữ liệu mở phổ biến từ năm 2014. Các mô hình thị giác lớn (MobileNetV3 pretrained trên ImageNet) và các mô hình khuếch tán (Stable Diffusion 2, SDXL) có thể đã tiếp xúc với phân phối ảnh COCO trong các tập dữ liệu tiền huấn luyện công khai khổng lồ (LAION, v.v.).
+   - Dự án **KHÔNG TUYÊN BỐ và KHÔNG CÓ BẰNG CHỨNG** để khẳng định dữ liệu MS-COCO chưa từng xuất hiện trong pretraining của các mô hình nền tảng bên ngoài.
+   - Tính "độc lập" ở đây **chỉ là tính độc lập thực nghiệm (experimental disjointness)** đối với quy trình huấn luyện, tinh chỉnh, chọn mô hình và hiệu chuẩn nội bộ của dự án này (hoàn toàn tách biệt khỏi 684 ảnh Option P).
+
+### 3. Đề Xuất Đúng Một Tập Kiểm Định Khả Thi (Proposed Independent Benchmark Cohort)
+
+Dựa trên kết quả kiểm toán, đề xuất đúng MỘT tập kiểm định độc lập khả thi kỹ thuật:
+
+- **Tên tập kiểm định**: `TGIF-Train-Independent-Benchmark-Subset` (viết tắt: **`TGIF-Train-Clean-Subset`**).
+- **Nguồn dữ liệu tuyển chọn**:
+  - Tuyển chọn từ **split `training` gốc của TGIF**:
+    * Nhánh Authentic: Ảnh gốc MS-COCO val2017 tương ứng với các task đã chọn.
+    * Nhánh AI-Edited: Ảnh `sd2-sp_training` (Stable Diffusion 2 inpainting ghép đè).
+    * Nhánh Mask: Mặt nạ phân đoạn đối tượng tương ứng từ `masks/training/` (đã có sẵn).
+- **Phạm vi kiểm định (Validation Scope)**:
+  - *Về ảnh nguồn*: Kiểm định trên **ảnh nguồn mới chưa từng thấy trong cùng phân phối dataset** (**Unseen In-Distribution Sources**). Cả 1,558 ảnh nguồn này hoàn toàn mới đối với mô hình của dự án.
+  - *Về công cụ sinh*:
+    * Nhánh chính: Kiểm định trên **cùng công cụ sinh (Same Generator - Inpainting SD2)** trên ảnh nguồn mới độc lập.
+    * Nhánh mở rộng (nếu tải thêm được `ps-sp_training` từ TGIF): Kiểm định trên **công cụ sinh mới chưa từng học (Cross-Generator Generalization - Adobe Firefly vs SD2)**.
+- **Quy mô và Điều chỉnh Giao thức (Protocol Amendment)**:
+  - Phase 4C.7A trước đó thiết kế ma trận $2 \times 2$ gồm 400 cặp (COCO + Unsplash $\times$ SD2 + SDXL).
+  - Tuy nhiên, việc tạo inpainting thủ công trên Unsplash và SDXL đã bị chốt dừng sau thất bại kỹ thuật của Pilot v2. Trong benchmark có sẵn TGIF, toàn bộ ảnh nguồn là MS-COCO và công cụ ghép có mask là SD2-sp (và PS-sp).
+  - Do đó, **không thể giữ nguyên ma trận nguồn cũ có Unsplash**.
+  - **Đề xuất điều chỉnh protocol trình duyệt**:
+    * Giữ quy mô $N_{\text{target}} = 400$ cặp (400 authentic vs 400 ai_edited), tuyển chọn ngẫu nhiên có kiểm soát từ 1,558 ảnh nguồn sạch của TGIF Train.
+    * Cân bằng trực giao theo **3 khoảng diện tích mask**: Small (1%–10%), Medium (10%–30%), Large (30%–50%).
+    * (Hoặc phương án tinh gọn $N=200$ cặp nếu người dùng muốn tối thiểu hóa dung lượng tiếp nhận).
+    * Ban hành Protocol Amendment điều chỉnh cơ cấu phân tầng trước khi tiếp nhận dữ liệu.
+
+### 4. Đăng Ký Tiền Kiểm Chuẩn (Preregistration Protocol)
+
+Nhằm triệt tiêu hoàn toàn nguy cơ thiên vị chọn mẫu (*selection bias*) và gian lận khoa học, toàn bộ quy trình được đăng ký trước (Preregistered):
+
+1. **Tiêu chuẩn tuyển chọn mẫu (A Priori Selection Criteria)**:
+   - *Mặt nạ phân đoạn thực tế*: Chỉ chọn mặt nạ phân đoạn (`segm` - segmentation mask), **loại bỏ 100% mặt nạ hộp chữ nhật (`bbox`)** để bảo đảm vùng chỉnh sửa bám sát đường biên vật thể tự nhiên, không tạo ra các cạnh cắt hộp nhân tạo.
+   - *Biến thể inpainting cố định*: Chọn cố định biến thể `_0.png` (variation 0) của mỗi instance.
+   - *Ghép cặp 1:1 nghiêm ngặt*: Mỗi bức ảnh nguồn MS-COCO chỉ xuất hiện đúng 1 lần duy nhất trong tập kiểm định (1 authentic ↔ 1 ai_edited ↔ 1 mask). Nếu một ảnh có nhiều category task, chỉ chọn 1 task instance ngẫu nhiên bằng PRNG seed cố định (`seed = 20261010`).
+   - *Phân bổ diện tích mask cân bằng*:
+     * Small ($1\% \le \text{mask\_area} < 10\%$): chiếm ~33.3% quota.
+     * Medium ($10\% \le \text{mask\_area} < 30\%$): chiếm ~33.3% quota.
+     * Large ($30\% \le \text{mask\_area} \le 50\%$): chiếm ~33.3% quota (chặn trên 50% để giữ bản chất can thiệp cục bộ).
+2. **Quy trình tiền xử lý ảnh và mask (Standardized Preprocessing)**:
+   - Chuẩn hóa canvas: Resize/crop bảo toàn tỷ lệ về $512 \times 512$ RGB bằng Lanczos / bicubic letterboxing trung tính theo đúng contract của `ml/evaluation/`.
+   - Mask: Binarize nghiêm ngặt thành ảnh 1 kênh $L$ với giá trị $\in \{0, 255\}$ (ngưỡng 128).
+   - Lưu trữ: Định dạng lossless PNG cho cả ảnh và mask. Không nén lại JPEG trong quá trình nạp dữ liệu gốc.
+3. **Tiêu chí loại trừ định trước (A Priori Exclusion Criteria)**:
+   - Trùng `source_id` với bất kỳ nguồn nào trong 684 Option P sources (loại ngay lập tức ở bước lọc ID).
+   - Lỗi giải mã PIL (tệp hỏng/không đọc được).
+   - Ảnh blank hoặc độ lệch chuẩn thấp ($\text{std} < 2.0$).
+   - Diện tích mask ngoài dải quy định ($< 1\%$ hoặc $> 50\%$).
+   - Mask rỗng hoặc không có sự thay đổi pixel giữa authentic và edited ($\text{inside\_mean\_L1} < 1.0$).
+4. **Cam kết không chọn dữ liệu theo điểm mô hình (Zero Model-Informed Selection)**:
+   - Danh mục candidate catalog và edit manifest được tạo và khóa bằng mã băm SHA-256 **HOÀN TOÀN ĐỘC LẬP VÀ TRƯỚC KHI** nạp mô hình vào bộ nhớ.
+   - `assert_detector_isolation()` fail-closed: Tuyệt đối cấm xem điểm detector, xác suất dự đoán hay phân tích độ chính xác để chọn hoặc thay thế mẫu.
+5. **Nhận thức về Shortcut của Benchmark Công Khai**:
+   - Thừa nhận khoa học trung thực: TGIF sử dụng phương pháp dán vùng inpainting vào ảnh gốc (splicing). Quy trình này có thể để lại các forensic shortcuts như sai lệch mức nhiễu cảm biến giữa vùng dán và nền thật, hiện vật nén VAE decoder, hoặc bước nhảy biên vi mô.
+   - Kết quả kiểm định trên tập này phản ánh năng lực phát hiện inpainting trong điều kiện của benchmark, không suy diễn thành năng lực phát hiện tuyệt đối trong môi trường mở thế giới thực.
+
+### 5. Bàn Giao Ngắn & Kế Hoạch Tiếp Nhận Cụ Thể
+
+- **Nguồn được chọn**: TGIF Training Split (`orig_training` + `sd2-sp_training`).
+- **Số ảnh nguồn đủ điều kiện**:
+  - *Đã xác minh thực tế*: **1,558 unique COCO sources** (2,440 inpainting tasks) trong kho mask `data/research/tgif/masks/training/`, 100% disjoint với 684 Option P sources.
+  - *Còn UNKNOWN*: Số lượng file thực tế trong archive `ps-sp_training` của TGIF (cần kiểm toán PROPFIND chi tiết trên Nextcloud); dung lượng nén chi tiết từng split của TGIF2 (archive tổng >110 GB); tình trạng bản quyền của SAGI-D (đang `blocked`).
+- **Cách tải & Dung lượng dự kiến**:
+  - Mask: 0 MB (đã có sẵn 100% cục bộ).
+  - Authentic: Tải 400 ảnh gốc từ MS-COCO CDN (`http://images.cocodataset.org/val2017/`) $\to$ ~40–60 MB.
+  - Edited: Thực thi script trích xuất trên Colab từ `sd2-sp_training.tar.gz`, đóng gói ZIP package 400 ảnh $\to$ ~60 MB tải về local.
+  - Tổng dung lượng nhận về local: **~100–120 MB** (hoàn toàn khả thi, không gây tràn đĩa).
+- **Hạn chế chính**: Chỉ kiểm định trên miền ảnh MS-COCO; không có ảnh Unsplash; mô hình có thể phát hiện dựa trên đặc trưng ghép nối của TGIF.
+- **Kế hoạch tiếp nhận 5 bước trình người dùng phê duyệt**:
+  1. *Bước 1*: Người dùng duyệt đề xuất tập kiểm định `TGIF-Train-Clean-Subset` và phê duyệt Protocol Amendment điều chỉnh ma trận nguồn ($N=400$ hoặc $N=200$ cặp COCO Train $\times$ SD2-sp).
+  2. *Bước 2*: Chạy script local tạo danh mục candidate catalog và manifest tuyển chọn từ `masks-manifest.jsonl`, khóa chặt bằng SHA-256.
+  3. *Bước 3*: Tải ảnh authentic từ MS-COCO CDN (~50 MB) và đóng gói Colab worker trích xuất ảnh edited tương ứng (~60 MB).
+  4. *Bước 4*: Ingest package, chạy Technical QC tự động (PIL decode, std check, outside/inside L1, mask bounds) và lập audit receipt.
+  5. *Bước 5*: Thực hiện kiểm định độc lập với 5 outer-fold checkpoints theo đúng protocol Phase 4C.7A.
+
+---
 
 ## KK. Chốt Đánh Giá Tính Khả Thi Phase 4C.7B sau Pilot v2 & Đề Xuất Nghiên Cứu Tiếp Tục bằng Dữ Liệu Sẵn Có (2026-10-09)
 

@@ -1,3 +1,12 @@
+## Existing benchmark continuation local metadata verification & TGIF train cohort proposal (Phase 4C.7B trace)
+
+- **Local metadata audit & empirical findings**: Re-audited dataset registry (`registry.json`), bibliography (`references.bib`), and local TGIF manifests (`masks-manifest.jsonl`). Verified: 24,400 PNG masks in TGIF `train` are 100% locally resident on disk (`data/research/tgif/masks/training/`, 0 MB download). Proved that TGIF `training` split contains **1,558 unique COCO sources** (2,440 task instances) with **0 collision vs 684 historical Option P sources (100% disjoint)**. Reaffirmed: "thư mục chưa dùng" is NOT proof of disjointness (TGIF subfolders share COCO sources); grouped all source variants.
+- **Scientific distinction & protocol proposal**: Re-enforced `PILOT_PROTOCOL.md` (Sec 2.2): spliced (`sp`) is authentic label for `ai_edited` with genuine forensic boundary for RQ5 localization; fully-regenerated (`fr`) cannot be labeled `fully_generated` and lacks spliced boundary. Proposed single viable validation cohort `TGIF-Train-Clean-Subset` ($N=400$ or $N=200$ pairs) evaluating in-distribution unseen COCO sources on SD2 inpainter (and Adobe Firefly if `ps-sp` accessible).
+- **Preregistration & intake plan**: Preregistered selection (segmentation masks only, 1:1 pairing, stratified mask areas $1\%-10\%$, $10\%-30\%$, $30\%-50\%$, canvas $512 \times 512$ lossless PNG, a priori exclusions, zero cherry-picking, explicit acknowledgment of benchmark shortcuts). Outlined 5-step intake plan (~100–120 MB total: authentic via COCO CDN ~50 MB, edited via Colab worker ~60 MB, masks 0 MB).
+- **Governance strictly preserved**: Full cohort ($N=400$) strictly locked; detector calls = 0; independent performance `NOT_MEASURED`; 26 historical Human Content QC decisions remain PENDING; zero generation, evaluation, or large downloads executed.
+
+---
+
 ## Phase 4C.7B trace - Feasibility Conclusion after Pilot v2 & Proposal for Existing Dataset Continuation
 
 - **Feasibility conclusion established**: Bounded determination: **“Chưa đủ bằng chứng để mở rộng cấu hình hiện tại lên 400 cặp.”** Across 4 runs, full-canvas 512×512 inpainting showed recurrent defects: semantic omission (3.78% to 14.76% mask area), semantic hallucination, placement deficits ($dy = +41$ px), and boundary seams. Agent 1/8 recommendation is not an official acceptance rate; local-crop diagnostic was rejected 6/6 by Human Content QC; does not imply all inpainting models fail.
