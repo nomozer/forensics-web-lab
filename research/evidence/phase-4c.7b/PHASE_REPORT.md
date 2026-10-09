@@ -1,12 +1,57 @@
 # Phase 4C.7B — Independent Cohort Acquisition: Protocol Amendment, Automated Pipeline, and Feasibility Alignment
 
-> **Phase**: Phase 4C.7B — Independent Cohort Acquisition & Feasibility Alignment (diagnostic run intake, audit, and empirical A/B evaluation)<br>
-> **Status**: `DIAGNOSTIC_EVALUATED_6_REJECTED_CALIBRATION_PROPOSAL_APPROVED_RUNNER_IMPLEMENTED`. Run `diag-20261008T154628Z` (bound to functional commit `0f99897c8ee003dc8ecbb55b09c4aaeb2994c2bc` and approved plan `e352504016960a24c3c539b5d33a2876c222d1975426a7911de0ec35fe9df157`; package ZIP SHA-256 `f13d7baf458e9db86809bced5a20c27f37adb6f698353a5678b200262a481d20`) passed safe intake and production CLI audit (6 attempts, 6 accepted pairs, 0 errors, 3 candidates x 2 arms; outside-mask L1 = 0.000000 enforced by compositing). Human Content QC evaluation completed by human reviewer with formal determination: **6/6 REJECT** across all diagnostic attempts, recorded in machine-readable dossier `diagnostic_content_qc_determinations.json`. Eight historical pilot pairs (`pilot-20261008T113700Z`) remain strictly **PENDING_CONTENT_QC**. Exploratory calibration proposal `content_grounded_calibration_proposal.json` (approved SHA-256 `2611af81c2e104fb04235c4f3c15371b2c95e8ae57a72190e5a82623f91dbf2c`) is **APPROVED** by human reviewer Dũng Phạm for strictly 2 attempts on `IND_COCO_SDXL_002` (guidance 7.5 vs 9.5, canvas 512×512, seed 20272319). Dedicated calibration runner, fail-closed guards, production CLI (`--mode calibration`), notebook packaging (`calib-<TIMESTAMP>_package.zip`), and 12-test suite implemented; zero local generation executed.<br>
+> **Phase**: Phase 4C.7B — Independent Cohort Acquisition & Feasibility Alignment (diagnostic and calibration run intake, audit, and empirical evaluation)<br>
+> **Status**: `CALIBRATION_EVALUATED_2_PENDING_DIAGNOSTIC_6_REJECTED`. Run `calib-20261009T015749Z` (bound to functional commit `045ea70cb9067ede3833f7a01562199869f4ae56` and approved plan `2611af81c2e104fb04235c4f3c15371b2c95e8ae57a72190e5a82623f91dbf2c`; package ZIP SHA-256 `a547c47144f09bf875045e7a5e2673cd8b257742ab48ded17042c859da3aae90`, 3,628,851 bytes) safely extracted into dedicated directory `data/research/local-artifacts/phase-4c.7b/calib-20261009T015749Z/` (14 members, 0 traversal, 0 overwrite). Production CLI audit at bound commit `045ea70cb9067ede3833f7a01562199869f4ae56` PASS: exactly 2 attempts on candidate `IND_COCO_SDXL_002` (seed 20272319, canvas 512×512, steps 30; STARTED/ACCEPTED are lifecycle pairs of the same attempt, not 4 attempts). Input bit-parity verified: all authentic and mask PNG pixel arrays match bit-identically to sealed inputs from `pilot-20261008T113700Z` (`max_auth_diff == 0`, `max_mask_diff == 0`). Outside-mask L1 = 0.000000 enforced strictly by 1-bit binary compositing; raw diffusion output before compositing drifted by mean L1 = 4.0973 (G7.5) and 4.1187 (G9.5) with max delta 41.0 and 38.0. Inside mean L1: G7.5 = 16.4117 vs G9.5 = 16.9891 (delta between G9.5 and G7.5 inside mask: mean L1 = 5.6830, max delta = 41.0). Visual inspection across 5 separated criteria (presence, position/scale, realism/lighting, background crumb texture, boundary step): both attempts resulted in complete semantic omission (0 cherry tomato synthesized; infilled bread crumb texture); guidance scale shift from 7.5 to 9.5 shifted grain pattern but did not trigger object formation. Boundary step along mask boundary `[345, 245, 455, 335]`: top edge step mean L1 = 8.17 (G7.5) and 9.27 (G9.5) vs natural 1.81; left edge step mean L1 = 9.56 (G7.5) and 9.29 (G9.5). Inside L1 increase does not guarantee semantic success ("L1 tăng không bảo đảm thành công ngữ nghĩa"). Telemetry faithfully recorded: Python 3.13.15, Linux 6.6.122+, PyTorch 2.11.0+cu130, Diffusers 0.40.0, Transformers 5.18.0, CUDA 13.0, Tesla T4. Enriched self-contained HTML contact sheet `calibration_contact_sheet.html` with Base64 embedded authentic, raw, composite, overlay, and zoom panels; raw Colab contact sheet backed up intact. Agent recommends REJECT for both calibration attempts; formal Human Content QC status remains strictly **PENDING** (2 decisions awaiting human reviewer). Diagnostic 6/6 REJECT and pilot 8 PENDING preserved. Full cohort remains locked; detector calls = 0; independent performance `NOT_MEASURED`.<br>
 > **Findings status**: `NOT_MEASURED` (0 detector calls, 0 cohort evaluation)<br>
 > **Current corrective functional commit**: `045ea70cb9067ede3833f7a01562199869f4ae56` (calibration functional commit); canonical notebook pins functional SHA.<br>
-> **Real pilot / diagnostic / calibration**: `DIAGNOSTIC_TECHNICAL_PASS_CONTENT_QC_REJECTED` (6 diagnostic attempts in `diag-20261008T154628Z` 6/6 REJECT; 8 pilot pairs in `pilot-20261008T113700Z` PENDING; calibration 2 attempts pending Colab execution; full 400-pair run remains `NOT_RUN`)<br>
+> **Real pilot / diagnostic / calibration**: `CALIBRATION_EVALUATED_2_PENDING_DIAGNOSTIC_6_REJECTED` (2 calibration attempts in `calib-20261009T015749Z` evaluated, Agent recommends REJECT, Human Content QC PENDING; 6 diagnostic attempts in `diag-20261008T154628Z` 6/6 REJECT; 8 pilot pairs in `pilot-20261008T113700Z` PENDING; full 400-pair run remains `NOT_RUN`)<br>
 > **Training runs**: 0 fits, 0 refits; frozen models untouched; retired locked-test not accessed (only its 343 source IDs are read for the disjoint guard)<br>
 > **Evidence classification**: run/commit/artifact observations are `internal-empirical`; model cards/documentation are `external-source`; latent-capacity/context-bias explanations remain `unverified-hypothesis`. Citation keys resolve through `docs/references.bib`.<br>
+
+## FF. Calibration run calib-20261009T015749Z intake, audit, and empirical evaluation (2026-10-09)
+
+- **Archive Intake & Safety Audit**:
+  - ZIP package: `data/research/local-artifacts/phase-4c.7b/calib-20261009T015749Z_package.zip` (3,628,851 bytes, SHA-256 `a547c47144f09bf875045e7a5e2673cd8b257742ab48ded17042c859da3aae90`).
+  - Pre-extraction safety check: 14 archive members inspected, 0 directory traversals (`..`), 0 leading slashes, 0 absolute paths, 0 symlinks, 0 filename collisions.
+  - Archive structure: Flat top-level paths (`images/`, `masks/`, `run_binding.json`, `calibration_receipt.json`, `attempt_ledger.jsonl`, `provenance_ledger.jsonl`, `calibration_contact_sheet.html`) without run directory prefix. Safely extracted into dedicated directory `data/research/local-artifacts/phase-4c.7b/calib-20261009T015749Z/` without overwriting historical pilot or diagnostic runs. All original ZIP, image, mask, receipt, and ledger files preserved intact.
+- **Production CLI Audit & Binding Verification**:
+  - Executed official CLI audit command at bound commit `045ea70cb9067ede3833f7a01562199869f4ae56`:
+    `python scripts/research/run_cohort_acquisition.py --mode calibration --run-id calib-20261009T015749Z --expected-commit 045ea70cb9067ede3833f7a01562199869f4ae56 --audit-run data/research/local-artifacts/phase-4c.7b/calib-20261009T015749Z` $\to$ **`PASS`**.
+  - Verified run ID `calib-20261009T015749Z`, source commit `045ea70cb9067ede3833f7a01562199869f4ae56`, approved plan SHA-256 `2611af81c2e104fb04235c4f3c15371b2c95e8ae57a72190e5a82623f91dbf2c`.
+  - Attempt accounting: exactly 2 attempts on candidate `IND_COCO_SDXL_002` (`STARTED` and `ACCEPTED` in `attempt_ledger.jsonl` represent two lifecycle events within each attempt, not 4 attempts).
+  - Input bit-parity: authentic and mask PNG pixel arrays match bit-identically to sealed inputs from `pilot-20261008T113700Z` (`max_auth_diff == 0`, `max_mask_diff == 0`). Disk PNG file hashes changed due to Pillow re-encoding in Colab, but pixel arrays are bit-exact.
+  - Candidate configuration: seed `20272319`, canvas 512×512, no crop, no feathering, EulerDiscreteScheduler, 30 steps, strength 1.0, guidance scale 7.5 (attempt 1) and 9.5 (attempt 2).
+  - Telemetry: Python 3.13.15, Linux 6.6.122+, PyTorch 2.11.0+cu130, Diffusers 0.40.0, Transformers 5.18.0, CUDA 13.0, Tesla T4 (NumPy 2.1.3, Pillow 11.3.0).
+- **Recalculated Pixel-Level Metrics & Comparison**:
+  - Background invariance: strictly verified across both attempts (`outside_mean_l1 == 0.000000`, `outside_max_delta == 0.0`), enforced by 1-bit binary compositing.
+  - Raw diffusion output drift before compositing:
+    * Attempt 1 (Guidance 7.5): mean L1 = `4.0973` (std 3.23), max delta `41.0`.
+    * Attempt 2 (Guidance 9.5): mean L1 = `4.1187` (std 3.24), max delta `38.0`.
+  - Inside-mask mean L1:
+    * Attempt 1 (Guidance 7.5): mean L1 = `16.4117` (std 33.60), max delta `89.0`.
+    * Attempt 2 (Guidance 9.5): mean L1 = `16.9891` (std 33.02), max delta `87.0`.
+    * Delta between G9.5 and G7.5 inside mask: mean L1 = `5.6830`, max delta = `41.0`.
+  - Boundary step along mask boundary `[345, 245, 455, 335]`:
+    * Top edge step mean L1: `8.17` (G7.5) and `9.27` (G9.5) vs natural authentic `1.81`.
+    * Left edge step mean L1: `9.56` (G7.5) and `9.29` (G9.5) vs natural authentic `3.24`.
+- **Visual Analysis across Separated Criteria**:
+  - *Tomato Presence*: Total semantic omission in both attempts. 0 cherry tomato synthesized. Both attempts generated infilled bread crumb texture.
+  - *Position / Scale*: Target bbox `[375, 265, 430, 320]` contains no target object in either attempt.
+  - *Realism / Lighting*: Inpainted region shows rough bread crumb texture, without the target object.
+  - *Crumb Texture*: Guidance scale increase from 7.5 to 9.5 shifted crumb grain pattern slightly (internal L1 delta 5.68), but did not trigger object formation.
+  - *Boundary Quality*: Hard binary compositing creates noticeable textural transition steps along registered mask boundary `[345, 245, 455, 335]`.
+  - *Methodological & Scientific Insight*: "L1 tăng không bảo đảm thành công ngữ nghĩa" — inside L1 increased from 16.41 to 16.99, yet both attempts are complete omissions. Outside L1 = 0.000000 is an artifact of 1-bit compositing, not native diffusion behavior (~4.1 L1 drift).
+- **Contact Sheet & Governance Dossier**:
+  - Original Colab contact sheet backed up to `calibration_contact_sheet_raw_colab.html`.
+  - Derived coordinate overlays and zoom panels rendered into `derived_overlays/`.
+  - Enriched self-contained HTML contact sheet: `data/research/local-artifacts/phase-4c.7b/calib-20261009T015749Z/calibration_contact_sheet.html` (3,441,428 bytes, 15 Base64 embedded PNGs, authentic, raw, composite, overlay, and zoom panels).
+  - 15/15 Base64 embeddings verified byte-for-byte against disk PNGs; table metrics match calculated values.
+  - Governance separation: Agent recommends REJECT for both calibration attempts; formal Human Content QC status remains strictly **PENDING** (2 decisions awaiting human reviewer).
+  - Historical diagnostic determinations (6/6 REJECT) and 8 historical pilot pairs (PENDING) preserved intact. Full cohort remains locked; detector calls = 0; independent performance `NOT_MEASURED`.
+- **Scientific Bounds & Limitations**:
+  - Phép thử chỉ so sánh guidance scale 7.5 với 9.5 trong cấu hình văn bản mới cố định, trên một candidate (`IND_COCO_SDXL_002`) và một seed (`20272319`).
+  - So sánh lịch sử với pilot cũ chỉ mang tính tham khảo vì prompt và negative prompt đã thay đổi đồng thời.
+  - Không kết luận cơ chế omission, hiệu quả tổng quát của guidance scale, hoặc lựa chọn pipeline production từ hai attempts.
 
 ## EE. Approved calibration runner implementation & diagnostic determinations dossier (2026-10-08)
 
