@@ -888,10 +888,22 @@ def test_load_content_grounded_edit_plan_with_catalog_extension():
     assert triptych.mask_bbox_xyxy == (135, 40, 365, 475)
 
 
-def test_pilot_plan_v2_proposal_approval_guard():
-    """Verify approval gate strictly blocks unapproved proposal when require_human_approval=True."""
+def test_pilot_plan_v2_proposal_approval_guard(tmp_path):
+    """Verify approval gate passes approved proposal and strictly blocks unapproved copy when require_human_approval=True."""
     plan_path = REPO_ROOT / "research/evidence/phase-4c.7b/content_grounded_pilot_plan_v2_proposal.json"
     alloc = generate_canonical_candidate_plan()
 
+    # 1. Canonical approved plan succeeds when require_human_approval=True
+    approved = load_content_grounded_edit_plan(alloc, plan_path, target_per_stratum=2, require_human_approval=True)
+    assert len(approved) == 8
+    assert all(c.prompt for c in approved)
+
+    # 2. Unapproved copy is strictly blocked
+    pending_data = json.loads(plan_path.read_text(encoding="utf-8"))
+    pending_data["human_review_status"] = "PENDING"
+    pending_path = tmp_path / "pending_pilot_plan_v2.json"
+    pending_path.write_text(json.dumps(pending_data), encoding="utf-8")
+
     with pytest.raises(ContentGroundingError, match="content-grounded edit plan is not human-approved"):
-        load_content_grounded_edit_plan(alloc, plan_path, target_per_stratum=2, require_human_approval=True)
+        load_content_grounded_edit_plan(alloc, pending_path, target_per_stratum=2, require_human_approval=True)
+

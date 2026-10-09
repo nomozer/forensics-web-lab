@@ -317,17 +317,40 @@ def test_pilot_v2_pending_proposal_blocks_generation_via_cli(monkeypatch, tmp_pa
     real_ext = REPO_ROOT / "research/evidence/phase-4c.7b/candidate_catalog_extension_v1.0.0.json"
     out_root = tmp_path / "runs"
 
+    pending_data = json.loads(real_proposal.read_text(encoding="utf-8"))
+    pending_data["human_review_status"] = "PENDING"
+    pending_proposal = tmp_path / "pending_pilot_plan_v2.json"
+    pending_proposal.write_text(json.dumps(pending_data), encoding="utf-8")
+
     with pytest.raises(SystemExit) as exc:
         main([
             "--mode", "pilot",
             "--run-id", "pilot-guard-test",
             "--expected-commit", "a" * 40,
             "--output-root", str(out_root),
-            "--edit-plan-path", str(real_proposal),
+            "--edit-plan-path", str(pending_proposal),
             "--catalog-extension", str(real_ext),
         ])
     assert exc.value.code == 1
     assert not (out_root / "pilot-guard-test").exists()
+
+
+def test_pilot_v2_approved_proposal_preflight_passes(capsys):
+    from scripts.research.run_cohort_acquisition import main
+    real_proposal = REPO_ROOT / "research/evidence/phase-4c.7b/content_grounded_pilot_plan_v2_proposal.json"
+    real_ext = REPO_ROOT / "research/evidence/phase-4c.7b/candidate_catalog_extension_v1.0.0.json"
+
+    main([
+        "--check-pilot-plan",
+        "--pilot-plan-path", str(real_proposal),
+        "--catalog-extension", str(real_ext),
+    ])
+    out = capsys.readouterr().out
+    assert '"status": "PASS"' in out
+    assert '"generation_authorized": true' in out
+    assert '"approval_gate": "PASSED"' in out
+    assert '"human_review_status": "APPROVED"' in out
+
 
 
 def test_pilot_v2_missing_or_mismatched_extension_is_rejected(tmp_path):

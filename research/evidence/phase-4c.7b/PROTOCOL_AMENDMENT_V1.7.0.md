@@ -5,10 +5,10 @@ Metadata:
 - Workstream: `independent_cohort_acquisition`
 - Phase trace: `Phase 4C.7B`
 - Amendment version: `1.7.0`
-- Status: **`PENDING_HUMAN_REVIEW`**
-- Human reviewer: `null`
-- Human reviewed at: `null`
-- Bound plan proposal: [`content_grounded_pilot_plan_v2_proposal.json`](research/evidence/phase-4c.7b/content_grounded_pilot_plan_v2_proposal.json) (SHA-256: `cd9086120b6b54a75d73db8482f1364ed7ee2643668c2a6fa44e66282355fb64`)
+- Status: **`APPROVED_BY_HUMAN_REVIEWER`**
+- Human reviewer: `Dũng Phạm <valdung04@gmail.com>`
+- Human reviewed at: `2026-10-09T10:24:00Z`
+- Bound plan proposal: [`content_grounded_pilot_plan_v2_proposal.json`](research/evidence/phase-4c.7b/content_grounded_pilot_plan_v2_proposal.json) (Approved SHA-256: `a95c96c594777025aac58049ca81978245035a54ad98c9298c0cf5a1ec0d8565`; Pre-approval SHA-256: `cd9086120b6b54a75d73db8482f1364ed7ee2643668c2a6fa44e66282355fb64`)
 - Bound catalog extension: [`candidate_catalog_extension_v1.0.0.json`](research/evidence/phase-4c.7b/candidate_catalog_extension_v1.0.0.json) (SHA-256: `0d875b81a8044e3285ecf0331beec6646d94b085915baaaa32247e86ee9023e7`)
 - Parent catalog: [`verified_candidate_catalog_v2.json`](research/evidence/phase-4c.7b/verified_candidate_catalog_v2.json) (SHA-256: `d85595c6b43d5acf8d312993a270278b4f17f481dca0f8286efdae07bcd281a5`)
 - Proposed attempt budget: exactly 8 attempts (1 attempt per candidate, 0 retries)
@@ -43,18 +43,18 @@ Amendment v1.7.0 bảo toàn 100% định mức ma trận phân bổ của Proto
 - **Phân bổ Thao tác**: `object_replacement: 3` (Slot 1, 2, 8), `object_removal_and_infill: 1` (Slot 5), `object_insertion: 4` (Slot 3, 4, 6, 7).
 - **Phân bổ Định mức Diện tích**: `small_under_10pct: 3` (Slot 1, 3, 7), `medium_10_to_30pct: 2` (Slot 5, 6), `large_over_30pct: 3` (Slot 2, 4, 8).
 
-### Bảng Phân Bổ 8 Dòng Chuẩn Tắc Pilot Plan v2 Proposal (PENDING Human Review)
+### Bảng Phân Bổ 8 Dòng Chuẩn Tắc Pilot Plan v2 (APPROVED Human Review)
 
 | Slot | Candidate ID | Origin ID & Nguồn Gốc | Prompt Đề Xuất | Target BBox [x1, y1, x2, y2] & Diện Tích | Mask BBox [x1, y1, x2, y2] & Diện Tích | Trạng Thái Review |
 | :---: | :--- | :--- | :--- | :---: | :---: | :---: |
-| **1** | `IND_COCO_SD2_001` | `coco:397133`<br>Pot Noodle (`CC BY 2.0`) | _"a round brass wall clock mounted naturally on the kitchen wall, matching the warm indoor lighting"_ | `[207, 117, 270, 182]`<br>$63 \times 65 =$ **4.095 px** (1.56%) | `[195, 95, 280, 205]`<br>$85 \times 110 =$ **9.350 px** (3.57%) | **PENDING** |
-| **2** | `IND_COCO_SD2_002` | `coco:37777`<br>larrylawfer (`CC BY-NC-SA 2.0`) | _"matte navy-blue upper kitchen cabinets with a stainless-steel range hood, realistic residential interior photograph"_ | `[145, 125, 410, 260]`<br>$265 \times 135 =$ **35.775 px** (13.65%) | `[95, 75, 415, 323]`<br>$320 \times 248 =$ **79.360 px** (30.27%) | **PENDING** |
-| **3** | `IND_COCO_SDXL_042` | `coco:448076`<br>luis.leao (`CC BY 2.0`) | _"a professional black leather business briefcase standing upright on the red exhibition carpet, realistic studio floodlights and soft ground shadow"_ | `[235, 395, 335, 485]`<br>$100 \times 90 =$ **9.000 px** (3.43%) | `[220, 380, 350, 500]`<br>$130 \times 120 =$ **15.600 px** (5.95%) | **PENDING** |
-| **4** | `COCO_EXT_SDXL_001` | `coco:460160`<br>PratarPersilja (`CC BY-SA 2.0`) | _"a weathered wooden picnic table with attached bench seating on the grassy coastal ground, natural overcast daylight and soft ground contact shadow"_ | `[20, 280, 330, 490]`<br>$310 \times 210 =$ **65.100 px** (24.83%) | `[10, 260, 340, 510]`<br>$330 \times 250 =$ **82.500 px** (31.47%) | **PENDING** |
-| **5** | `IND_COMMONS_SD2_001` | `commons:92533678`<br>Moahim (`CC BY-SA 4.0`) | _"open sea and distant coastline continuing naturally through the removed foreground headland, photorealistic sunset landscape"_ | `[190, 308, 512, 512]`<br>$322 \times 204 =$ **65.688 px** (25.06%) | `[190, 305, 512, 512]`<br>$322 \times 207 =$ **66.654 px** (25.43%) | **PENDING** |
-| **6** | `IND_COMMONS_SD2_040` | `commons:172876577`<br>Chainwit. (`CC BY 4.0`) | _"a rustic wooden barrel planter filled with vibrant blooming flowers sitting naturally on the cobblestone pavement, realistic daylight shadows and weathered wood texture matching the historic town square"_ | `[45, 375, 215, 495]`<br>$170 \times 120 =$ **20.400 px** (7.78%) | `[20, 360, 240, 512]`<br>$220 \times 152 =$ **33.440 px** (12.76%) | **PENDING** |
-| **7** | `IND_COMMONS_SDXL_001` | `commons:166503140`<br>Crisco 1492 (`CC BY-SA 4.0`) | _"a small dark bird flying in the cloudy sky, distant scale and natural daylight"_ | `[395, 75, 455, 125]`<br>$60 \times 50 =$ **3.000 px** (1.14%) | `[350, 45, 500, 160]`<br>$150 \times 115 =$ **17.250 px** (6.58%) | **PENDING** |
-| **8** | `IND_COMMONS_SDXL_005` | `commons:171463547`<br>Chris Woodrich (`CC BY-SA 4.0`) | _"a classical white marble commemorative column standing on a solid plinth in the public park, realistic overcast daylight and weathered stone texture"_ | `[145, 45, 355, 465]`<br>$210 \times 420 =$ **88.200 px** (33.65%) | `[135, 40, 365, 475]`<br>$230 \times 435 =$ **100.050 px** (38.17%) | **PENDING** |
+| **1** | `IND_COCO_SD2_001` | `coco:397133`<br>Pot Noodle (`CC BY 2.0`) | _"a round brass wall clock mounted naturally on the kitchen wall, matching the warm indoor lighting"_ | `[207, 117, 270, 182]`<br>$63 \times 65 =$ **4.095 px** (1.56%) | `[195, 95, 280, 205]`<br>$85 \times 110 =$ **9.350 px** (3.57%) | **APPROVED** |
+| **2** | `IND_COCO_SD2_002` | `coco:37777`<br>larrylawfer (`CC BY-NC-SA 2.0`) | _"matte navy-blue upper kitchen cabinets with a stainless-steel range hood, realistic residential interior photograph"_ | `[145, 125, 410, 260]`<br>$265 \times 135 =$ **35.775 px** (13.65%) | `[95, 75, 415, 323]`<br>$320 \times 248 =$ **79.360 px** (30.27%) | **APPROVED** |
+| **3** | `IND_COCO_SDXL_042` | `coco:448076`<br>luis.leao (`CC BY 2.0`) | _"a professional black leather business briefcase standing upright on the red exhibition carpet, realistic studio floodlights and soft ground shadow"_ | `[235, 395, 335, 485]`<br>$100 \times 90 =$ **9.000 px** (3.43%) | `[220, 380, 350, 500]`<br>$130 \times 120 =$ **15.600 px** (5.95%) | **APPROVED** |
+| **4** | `COCO_EXT_SDXL_001` | `coco:460160`<br>PratarPersilja (`CC BY-SA 2.0`) | _"a weathered wooden picnic table with attached bench seating on the grassy coastal ground, natural overcast daylight and soft ground contact shadow"_ | `[20, 280, 330, 490]`<br>$310 \times 210 =$ **65.100 px** (24.83%) | `[10, 260, 340, 510]`<br>$330 \times 250 =$ **82.500 px** (31.47%) | **APPROVED** |
+| **5** | `IND_COMMONS_SD2_001` | `commons:92533678`<br>Moahim (`CC BY-SA 4.0`) | _"open sea and distant coastline continuing naturally through the removed foreground headland, photorealistic sunset landscape"_ | `[190, 308, 512, 512]`<br>$322 \times 204 =$ **65.688 px** (25.06%) | `[190, 305, 512, 512]`<br>$322 \times 207 =$ **66.654 px** (25.43%) | **APPROVED** |
+| **6** | `IND_COMMONS_SD2_040` | `commons:172876577`<br>Chainwit. (`CC BY 4.0`) | _"a rustic wooden barrel planter filled with vibrant blooming flowers sitting naturally on the cobblestone pavement, realistic daylight shadows and weathered wood texture matching the historic town square"_ | `[45, 375, 215, 495]`<br>$170 \times 120 =$ **20.400 px** (7.78%) | `[20, 360, 240, 512]`<br>$220 \times 152 =$ **33.440 px** (12.76%) | **APPROVED** |
+| **7** | `IND_COMMONS_SDXL_001` | `commons:166503140`<br>Crisco 1492 (`CC BY-SA 4.0`) | _"a small dark bird flying in the cloudy sky, distant scale and natural daylight"_ | `[395, 75, 455, 125]`<br>$60 \times 50 =$ **3.000 px** (1.14%) | `[350, 45, 500, 160]`<br>$150 \times 115 =$ **17.250 px** (6.58%) | **APPROVED** |
+| **8** | `IND_COMMONS_SDXL_005` | `commons:171463547`<br>Chris Woodrich (`CC BY-SA 4.0`) | _"a classical white marble commemorative column standing on a solid plinth in the public park, realistic overcast daylight and weathered stone texture"_ | `[145, 45, 355, 465]`<br>$210 \times 420 =$ **88.200 px** (33.65%) | `[135, 40, 365, 475]`<br>$230 \times 435 =$ **100.050 px** (38.17%) | **APPROVED** |
 
 ---
 
@@ -122,4 +122,4 @@ Amendment v1.7.0 bảo toàn 100% định mức ma trận phân bổ của Proto
 - **Ngân sách thực thi**: Đúng 8 attempts trên 8 candidates trong `content_grounded_pilot_plan_v2_proposal.json`. Mỗi candidate đúng 1 attempt duy nhất, zero retries.
 - **Ràng buộc mã thực thi**: Ghim tại commit functional `38df28b4f7fcae0d8788057418410c27d1ca5852` (nạp catalog extension, kiểm chứng proposal v2 preflight, và bảo toàn toàn bộ pin/audit lịch sử).
 - **Ràng buộc Colab**: Chỉ thực thi trên môi trường GPU Colab sau khi người dùng phê duyệt; không chạy generation cục bộ.
-- **Trạng thái hiện tại**: **PENDING_HUMAN_REVIEW**.
+- **Trạng thái hiện tại**: **APPROVED_BY_HUMAN_REVIEWER** (được phê duyệt bởi Dũng Phạm <valdung04@gmail.com> lúc 2026-10-09T10:24:00Z; cho phép thực thi Colab GPU pilot).

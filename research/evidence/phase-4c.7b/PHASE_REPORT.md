@@ -342,35 +342,37 @@ Các phương án đề xuất được rà soát nghiêm ngặt theo nội dung
 
 ---
 
-### Bảng 3: 8 Dòng Chuẩn Tắc Bàn Giao Duyệt Pilot Plan v2 Proposal (PENDING Human Review)
+### Bảng 3: 8 Dòng Chuẩn Tắc Pilot Plan v2 Đã Phê Duyệt (APPROVED Human Review)
 
 | Slot | Candidate ID | Origin ID & Tác Giả / Giấy Phép | Prompt Đề Xuất Chuẩn Tắc | Target BBox [x1, y1, x2, y2] & Diện Tích | Mask BBox [x1, y1, x2, y2] & Diện Tích Tính Từ Tọa Độ | Trạng Thái Phê Duyệt |
 | :---: | :--- | :--- | :--- | :---: | :---: | :---: |
-| **1** | `IND_COCO_SD2_001` | `coco:397133`<br>Pot Noodle (`CC BY 2.0`) | _"a round brass wall clock mounted naturally on the kitchen wall, matching the warm indoor lighting"_ | `[207, 117, 270, 182]`<br>$63 \times 65 =$ **4.095 px** (1.5621%) | `[195, 95, 280, 205]`<br>$85 \times 110 =$ **9.350 px** (3.5667%) | **PENDING** |
-| **2** | `IND_COCO_SD2_002` | `coco:37777`<br>larrylawfer (`CC BY-NC-SA 2.0`) | _"matte navy-blue upper kitchen cabinets with a stainless-steel range hood, realistic residential interior photograph"_ | `[145, 125, 410, 260]`<br>$265 \times 135 =$ **35.775 px** (13.6471%) | `[95, 75, 415, 323]`<br>$320 \times 248 =$ **79.360 px** (30.2734%) | **PENDING** |
-| **3** | `IND_COCO_SDXL_042` | `coco:448076`<br>luis.leao (`CC BY 2.0`) | _"a professional black leather business briefcase standing upright on the red exhibition carpet, realistic studio floodlights and soft ground shadow"_ | `[235, 395, 335, 485]`<br>$100 \times 90 =$ **9.000 px** (3.4332%) | `[220, 380, 350, 500]`<br>$130 \times 120 =$ **15.600 px** (5.9509%) | **PENDING** |
-| **4** | `COCO_EXT_SDXL_001` | `coco:460160`<br>PratarPersilja (`CC BY-SA 2.0`) | _"a weathered wooden picnic table with attached bench seating on the grassy coastal ground, natural overcast daylight and soft ground contact shadow"_ | `[20, 280, 330, 490]`<br>$310 \times 210 =$ **65.100 px** (24.8337%) | `[10, 260, 340, 510]`<br>$330 \times 250 =$ **82.500 px** (31.4713%) | **PENDING** |
-| **5** | `IND_COMMONS_SD2_001` | `commons:92533678`<br>Moahim (`CC BY-SA 4.0`) | _"open sea and distant coastline continuing naturally through the removed foreground headland, photorealistic sunset landscape"_ | `[190, 308, 512, 512]`<br>$322 \times 204 =$ **65.688 px** (25.0580%) | `[190, 305, 512, 512]`<br>$322 \times 207 =$ **66.654 px** (25.4265%) | **PENDING** |
-| **6** | `IND_COMMONS_SD2_040` | `commons:172876577`<br>Chainwit. (`CC BY 4.0`) | _"a rustic wooden barrel planter filled with vibrant blooming flowers sitting naturally on the cobblestone pavement, realistic daylight shadows and weathered wood texture matching the historic town square"_ | `[45, 375, 215, 495]`<br>$170 \times 120 =$ **20.400 px** (7.7820%) | `[20, 360, 240, 512]`<br>$220 \times 152 =$ **33.440 px** (12.7563%) | **PENDING** |
-| **7** | `IND_COMMONS_SDXL_001` | `commons:166503140`<br>Crisco 1492 (`CC BY-SA 4.0`) | _"a small dark bird flying in the cloudy sky, distant scale and natural daylight"_ | `[395, 75, 455, 125]`<br>$60 \times 50 =$ **3.000 px** (1.1444%) | `[350, 45, 500, 160]`<br>$150 \times 115 =$ **17.250 px** (6.5804%) | **PENDING** |
-| **8** | `IND_COMMONS_SDXL_005` | `commons:171463547`<br>Chris Woodrich (`CC BY-SA 4.0`) | _"a classical white marble commemorative column standing on a solid plinth in the public park, realistic overcast daylight and weathered stone texture"_ | `[145, 45, 355, 465]`<br>$210 \times 420 =$ **88.200 px** (33.6456%) | `[135, 40, 365, 475]`<br>$230 \times 435 =$ **100.050 px** (38.1660%) | **PENDING** |
+| **1** | `IND_COCO_SD2_001` | `coco:397133`<br>Pot Noodle (`CC BY 2.0`) | _"a round brass wall clock mounted naturally on the kitchen wall, matching the warm indoor lighting"_ | `[207, 117, 270, 182]`<br>$63 \times 65 =$ **4.095 px** (1.5621%) | `[195, 95, 280, 205]`<br>$85 \times 110 =$ **9.350 px** (3.5667%) | **APPROVED** |
+| **2** | `IND_COCO_SD2_002` | `coco:37777`<br>larrylawfer (`CC BY-NC-SA 2.0`) | _"matte navy-blue upper kitchen cabinets with a stainless-steel range hood, realistic residential interior photograph"_ | `[145, 125, 410, 260]`<br>$265 \times 135 =$ **35.775 px** (13.6471%) | `[95, 75, 415, 323]`<br>$320 \times 248 =$ **79.360 px** (30.2734%) | **APPROVED** |
+| **3** | `IND_COCO_SDXL_042` | `coco:448076`<br>luis.leao (`CC BY 2.0`) | _"a professional black leather business briefcase standing upright on the red exhibition carpet, realistic studio floodlights and soft ground shadow"_ | `[235, 395, 335, 485]`<br>$100 \times 90 =$ **9.000 px** (3.4332%) | `[220, 380, 350, 500]`<br>$130 \times 120 =$ **15.600 px** (5.9509%) | **APPROVED** |
+| **4** | `COCO_EXT_SDXL_001` | `coco:460160`<br>PratarPersilja (`CC BY-SA 2.0`) | _"a weathered wooden picnic table with attached bench seating on the grassy coastal ground, natural overcast daylight and soft ground contact shadow"_ | `[20, 280, 330, 490]`<br>$310 \times 210 =$ **65.100 px** (24.8337%) | `[10, 260, 340, 510]`<br>$330 \times 250 =$ **82.500 px** (31.4713%) | **APPROVED** |
+| **5** | `IND_COMMONS_SD2_001` | `commons:92533678`<br>Moahim (`CC BY-SA 4.0`) | _"open sea and distant coastline continuing naturally through the removed foreground headland, photorealistic sunset landscape"_ | `[190, 308, 512, 512]`<br>$322 \times 204 =$ **65.688 px** (25.0580%) | `[190, 305, 512, 512]`<br>$322 \times 207 =$ **66.654 px** (25.4265%) | **APPROVED** |
+| **6** | `IND_COMMONS_SD2_040` | `commons:172876577`<br>Chainwit. (`CC BY 4.0`) | _"a rustic wooden barrel planter filled with vibrant blooming flowers sitting naturally on the cobblestone pavement, realistic daylight shadows and weathered wood texture matching the historic town square"_ | `[45, 375, 215, 495]`<br>$170 \times 120 =$ **20.400 px** (7.7820%) | `[20, 360, 240, 512]`<br>$220 \times 152 =$ **33.440 px** (12.7563%) | **APPROVED** |
+| **7** | `IND_COMMONS_SDXL_001` | `commons:166503140`<br>Crisco 1492 (`CC BY-SA 4.0`) | _"a small dark bird flying in the cloudy sky, distant scale and natural daylight"_ | `[395, 75, 455, 125]`<br>$60 \times 50 =$ **3.000 px** (1.1444%) | `[350, 45, 500, 160]`<br>$150 \times 115 =$ **17.250 px** (6.5804%) | **APPROVED** |
+| **8** | `IND_COMMONS_SDXL_005` | `commons:171463547`<br>Chris Woodrich (`CC BY-SA 4.0`) | _"a classical white marble commemorative column standing on a solid plinth in the public park, realistic overcast daylight and weathered stone texture"_ | `[145, 45, 355, 465]`<br>$210 \times 420 =$ **88.200 px** (33.6456%) | `[135, 40, 365, 475]`<br>$230 \times 435 =$ **100.050 px** (38.1660%) | **APPROVED** |
 
 ---
 
-### Các Bước Kế Tiếp & Điều Kiện Phê Duyệt (Actionable Decisions)
+### Các Bước Kế Tiếp & Phê Duyệt Chính Thức (Formal Approval & Actionable Status)
 
-1. **Hồ sơ Amendment & Kế hoạch Đã Chuẩn bị (PENDING)**: Đã soạn thảo đầy đủ:
-   - Hồ sơ sửa đổi: [`PROTOCOL_AMENDMENT_V1.7.0.md`](research/evidence/phase-4c.7b/PROTOCOL_AMENDMENT_V1.7.0.md).
-   - Kế hoạch Pilot v2 đề xuất: [`content_grounded_pilot_plan_v2_proposal.json`](research/evidence/phase-4c.7b/content_grounded_pilot_plan_v2_proposal.json).
-2. **Quy định Phê duyệt**: Người dùng xem xét contact sheet và bảng quyết định ngắn, đưa ra quyết định chấp thuận chính thức cho 4 slot đề xuất PENDING.
-3. **Cảnh báo Kỷ luật Quản trị**:
-   - **Việc chuẩn bị amendment và plan proposal KHÔNG đồng nghĩa được phép generation**. Mọi generation phải chờ phê duyệt chính thức từ người dùng.
-   - Diagnostic run: giữ nguyên **6/6 REJECT**.
-   - Calibration run: giữ nguyên **2 PENDING** (Agent đề xuất REJECT).
-   - Follow-up pilot cũ: giữ nguyên **8 PENDING**.
-   - Full cohort tiếp tục **LOCKED** ($N=400$); số lượt gọi detector = 0; hiệu năng độc lập = `NOT_MEASURED`.
-   - Notebook ghim ở commit functional `38df28b4f7fcae0d8788057418410c27d1ca5852` (chứa catalog extension và CLI preflight kiểm tra proposal v2; bảo toàn các run và pin lịch sử).
-   - Không đăng ký thêm ngân sách generation trong bước này.
+1. **Phê Duyệt Chính Thức Pilot Plan v2 & Protocol Amendment v1.7.0 (APPROVED)**:
+   - Toàn bộ 8 instruction trong Pilot Plan v2 proposal (`content_grounded_pilot_plan_v2_proposal.json`) và Protocol Amendment v1.7.0 (`PROTOCOL_AMENDMENT_V1.7.0.md`) đã được phê duyệt chính thức bởi người duyệt: **Dũng Phạm <valdung04@gmail.com>** vào lúc **`2026-10-09T10:24:00Z`**.
+   - SHA-256 Kế hoạch trước phê duyệt: `cd9086120b6b54a75d73db8482f1364ed7ee2643668c2a6fa44e66282355fb64` (đã đối chiếu khớp 100% trước khi ghi nhận).
+   - SHA-256 Kế hoạch sau phê duyệt: `a95c96c594777025aac58049ca81978245035a54ad98c9298c0cf5a1ec0d8565`.
+   - SHA-256 Catalog Extension: `0d875b81a8044e3285ecf0331beec6646d94b085915baaaa32247e86ee9023e7`.
+   - Ngân sách thực thi: Tối đa 8 attempts, mỗi candidate đúng 1 attempt duy nhất; attempt lỗi vẫn tính ngân sách; tuyệt đối không retry hoặc automatic replacement.
+2. **Cảnh báo Kỷ luật Quản trị & Phạm Vi Cho Phép**:
+   - **Phê duyệt chỉ cho phép thực thi pilot trên GPU Colab**; tuyệt đối **không generation cục bộ**, không detector/training, không mở khóa full cohort ($N=400$ locked).
+   - Giữ nguyên mọi quyết định Human Content QC lịch sử: Diagnostic run 6/6 REJECT, Calibration run 2 PENDING, Historical pilot 8 PENDING.
+   - Phê duyệt này chỉ cho phép thực hiện pilot, hoàn toàn không đồng nghĩa với nghiệm thu ảnh đầu ra (ảnh sinh ra phải trải qua Human Content QC độc lập sau khi thu thập).
+3. **Quy Trình Triển Khai Colab**:
+   - Notebook được ghim chặt chẽ vào commit chứa approval chính thức.
+   - Người dùng thực hiện chạy tuần tự từng cell trên môi trường GPU Colab (T4 / A100).
+
 
 ## EE. Approved calibration runner implementation & diagnostic determinations dossier (2026-10-08)
 

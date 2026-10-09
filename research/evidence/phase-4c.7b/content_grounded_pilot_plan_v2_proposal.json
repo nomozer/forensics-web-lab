@@ -3,10 +3,10 @@
   "workstream": "independent_cohort_acquisition",
   "phase_trace": "4C.7B",
   "proposal_id": "content_grounded_pilot_plan_v2_proposal",
-  "purpose": "Proposed Bounded Eight-Pair Follow-Up Pilot Plan v2 resolving blocked candidates; strictly PENDING human review; zero generation permitted until explicit approval.",
-  "human_review_status": "PENDING",
-  "human_reviewer": null,
-  "human_reviewed_at_utc": null,
+  "purpose": "Approved Bounded Eight-Pair Follow-Up Pilot Plan v2 resolving blocked candidates; strictly APPROVED by human reviewer; execution authorized for Colab GPU pilot under Protocol Amendment v1.7.0.",
+  "human_review_status": "APPROVED",
+  "human_reviewer": "Dũng Phạm <valdung04@gmail.com>",
+  "human_reviewed_at_utc": "2026-10-09T10:24:00Z",
   "coordinate_space": "normalized_512x512_canvas_xyxy_half_open",
   "attempt_budget": 8,
   "automatic_replacement": false,
@@ -68,7 +68,7 @@
         "note": "Copper pan hanging above range; mask 3.57% (9,350 px) avoids cook. Historical pilot pair pending content QC.",
         "human_decision_required": "Confirm or reject pan-to-clock replacement instruction."
       },
-      "status": "PENDING_CONFIRMATION"
+      "status": "APPROVED"
     },
     {
       "slot": 2,
@@ -107,7 +107,7 @@
         "note": "Upper cabinet group; mask 30.27% (79,360 px) satisfies large quota and avoids lower stove. Historical pilot pair pending content QC.",
         "human_decision_required": "Confirm or reject upper-cabinet replacement instruction."
       },
-      "status": "PENDING_CONFIRMATION"
+      "status": "APPROVED"
     },
     {
       "slot": 3,
@@ -146,7 +146,7 @@
         "note": "Flat red exhibition carpet at TAM booth; clean surface with zero object collisions; mask 5.95% (15,600 px). Flat carpet optimizes pre-generation screening conditions but does not guarantee elimination of omission risk.",
         "human_decision_required": "Approve substitution of IND_COCO_SDXL_002 with IND_COCO_SDXL_042 (briefcase on red carpet)."
       },
-      "status": "PENDING_HUMAN_REVIEW"
+      "status": "APPROVED"
     },
     {
       "slot": 4,
@@ -185,7 +185,7 @@
         "note": "Open coastal shoreline with natural turf/sand foreground; mask 31.47% (82,500 px) satisfies large quota. Natural terrain provides expected margins for legs/shadow, but does not guarantee elimination of seam or tonal step risk.",
         "human_decision_required": "Approve catalog extension substitution of IND_COCO_SDXL_041 with COCO_EXT_SDXL_001 (picnic table on coastal shore)."
       },
-      "status": "PENDING_HUMAN_REVIEW"
+      "status": "APPROVED"
     },
     {
       "slot": 5,
@@ -224,7 +224,7 @@
         "note": "Foreground headland, cliff, and offshore stacks; mask 25.43% (66,654 px). Sole removal candidate in stratum; accepts risk of hotel foot infill. Historical pilot pair pending content QC.",
         "human_decision_required": "Confirm or reject headland removal instruction."
       },
-      "status": "PENDING_CONFIRMATION"
+      "status": "APPROVED"
     },
     {
       "slot": 6,
@@ -263,7 +263,7 @@
         "note": "Sibiu cobblestone pavement; solid volumetric wooden barrel planter with flowers; mask 12.76% (33,440 px). Replaces fragile bicycle parts with solid cylinder geometry.",
         "human_decision_required": "Approve substitution of IND_COMMONS_SD2_002 with IND_COMMONS_SD2_040 (rustic barrel planter on cobblestones)."
       },
-      "status": "PENDING_HUMAN_REVIEW"
+      "status": "APPROVED"
     },
     {
       "slot": 7,
@@ -302,7 +302,7 @@
         "note": "Open cloudy sky above Ed Dwight monument; mask 6.58% (17,250 px). Avoids monument structure; accepts sky tone matching risk. Historical pilot pair pending content QC.",
         "human_decision_required": "Confirm or reject bird insertion instruction."
       },
-      "status": "PENDING_CONFIRMATION"
+      "status": "APPROVED"
     },
     {
       "slot": 8,
@@ -341,7 +341,7 @@
         "note": "Monumental bronze sculpture Triptych and concrete plinth; target [145, 45, 355, 465] covers apex at y=45 through plinth at y=465; mask [135, 40, 365, 475] (100,050 px = 38.17%) satisfies large quota. Avoids railing and glass dome collisions; leaves 5px top and 10px bottom margin with unverified risk of lawn base or shadow mismatch.",
         "human_decision_required": "Approve substitution of IND_COMMONS_SDXL_003 with IND_COMMONS_SDXL_005 (classical marble column replacing Triptych sculpture)."
       },
-      "status": "PENDING_HUMAN_REVIEW"
+      "status": "APPROVED"
     }
   ]
 }
