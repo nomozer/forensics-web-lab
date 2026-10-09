@@ -1,12 +1,59 @@
 # Phase 4C.7B — Independent Cohort Acquisition: Protocol Amendment, Automated Pipeline, and Feasibility Alignment
 
 > **Phase**: Phase 4C.7B — Independent Cohort Acquisition & Feasibility Alignment (Pilot v2 Feasibility Closure and Existing Dataset Continuation Proposal)<br>
-> **Status**: `TGIF_TRAIN_COHORT_INTAKE_READY_FOR_COLAB_RETRY_AFTER_PATH_FIX` — Lần chạy thật đầu tiên đã tải hai archive nhưng dừng fail-closed ở orig vì manifest logical path `orig/training/...` không trùng physical member `training/...`. Bản sửa bounded giữ nguyên manifest SHA-256, selection N=400, phân bổ 14/221/165, preprocessing, QC và benchmark pixels; worker/auditor giờ tách logical path khỏi physical TAR member, receipt 1.2.0 ghi detected layout, và mọi mixed/duplicate/ambiguous/near-variant đều bị chặn. Tests LOCAL 24/24 PASS; synthetic fixtures không phải bằng chứng intake thật. Detector calls = 0, independent performance `NOT_MEASURED`.<br>
+> **Status**: `TGIF_TRAIN_COHORT_INTAKE_AUDITED_PASS_PRE_EVALUATION` — Package `tgif_train_clean_subset_package.zip` (320,519,898 bytes, SHA-256 `27046ec2c10b92942cd1ef0acd10e3fdac37d55c7f2fa919ede0242d96b5ff66`) đã được tiếp nhận và kiểm toán cục bộ PASS bằng `scripts/research/audit_tgif_train_subset_local.py`. Archive security: 802 entries, 306.38 MB uncompressed (<1 GB), 0 traversal, 0 symlink. Manifest locked N=400 SHA-256 `53a6ee47...` và Colab receipt 1.2.0 (execution commit `9d98a2d5...`, worker SHA-256 `22db265c...`, detected layout `component-stripped` cho cả orig và sd2-sp) được bind tuyệt đối. Đủ 400 cặp / 800 ảnh chuẩn hóa 512×512 RGB. Phân bổ: 14 Large / 221 Medium / 165 Small. Đối chiếu 400 resident masks trên đĩa: 100% hash parity và pixel area parity. Tripartite pixel audit: Inside mean L1 = 52.85 [min 16.42, max 138.33] (mọi sample >= 1.0), Outside mean L1 = 0.01 [min 0.00, max 0.06] phản ánh native benchmark variance, strictly zero compositing. Multi-level Disjoint Guard: 0/400 source ID trùng lặp với 684 Option P và 336 Phase 4C.7B development sources; 0/800 historical byte-hash collisions; pHash ghi nhận NOT_EVALUATED theo contract (chưa chạy trong intake auditor). Receipt ghi nhận tại `research/evidence/phase-4c.7b/tgif_train_intake_audit_receipt.json`; contact sheet tự chứa tại `data/research/local-artifacts/phase-4c.7b/tgif_train_clean_subset_review_contact_sheet.html`. Đã dừng nghiêm ngặt tại ranh giới intake: detector calls = 0, model training = 0, independent performance `NOT_MEASURED`.<br>
 > **Findings status**: `NOT_MEASURED` (0 detector calls, 0 cohort evaluation)<br>
 > **Current TGIF intake execution commit**: `9d98a2d5c6afea16f9b3a71a03f0c2d6f43204e4` (archive-layout-resolving N=400 Colab worker snapshot; canonical notebook pins this full SHA and local auditor binds worker SHA-256 `22db265ce6f2b4ff9b3784c047290722c7f27341e5d5ba094b0833682176e081`). Historical pilot/diagnostic/calibration binding `79775250ee5393c9f193bdc0485f77998cefaddf` remains unchanged.<br>
 > **Real pilot / diagnostic / calibration**: `PILOT_V2_FEASIBILITY_CONCLUDED_8_PAIRS_PENDING_HUMAN_CONTENT_QC` (8 pairs in `pilot-20261009T111247Z` evaluated, Agent recommends 1 ACCEPT / 7 REJECT, Human Content QC PENDING; 2 calibration attempts in `calib-20261009T015749Z` Agent recommends REJECT, Human Content QC PENDING; 6 diagnostic attempts in `diag-20261008T154628Z` 6/6 REJECT; 8 historical pilot pairs in `pilot-20261008T113700Z` PENDING; full 400-pair run remains `NOT_RUN`)<br>
 > **Training runs**: 0 fits, 0 refits; frozen models untouched; retired locked-test not accessed (only its 343 source IDs are read for the disjoint guard)<br>
 > **Evidence classification**: run/commit/artifact observations are `internal-empirical`; model cards/documentation are `external-source`; latent-capacity/context-bias explanations remain `unverified-hypothesis`. Citation keys resolve through `docs/references.bib`.<br>
+
+## OO. Tiếp Nhận Dữ Liệu TGIF N=400 và Kiểm Toán Cục Bộ LOCAL Forensic Audit PASS (2026-10-10)
+
+Hồ sơ kiểm toán pháp chứng độc lập tại chỗ (LOCAL Forensic Intake Audit) cho gói dữ liệu tiếp nhận `TGIF-Train-Clean-Subset` ($N=400$ cặp):
+
+### 1. Thông Tin Tiếp Nhận & Tính Toàn Vẹn Gói Dữ Liệu (Package Provenance)
+- **File gói dữ liệu**: `data/research/local-artifacts/phase-4c.7b/tgif_train_clean_subset_package.zip` (được lưu trữ tại vùng `local-artifacts` ngoài Git).
+- **Kích thước file**: `320,519,898 bytes` (~305.67 MB).
+- **Mã băm SHA-256**: `27046ec2c10b92942cd1ef0acd10e3fdac37d55c7f2fa919ede0242d96b5ff66`.
+- **Ghi chú đối chiếu truyền tải**: Chưa đối chiếu truyền tải do chưa có mã băm Colab độc lập từ phía người dùng cung cấp. Gói dữ liệu đã được xác thực toàn vẹn cấu trúc và nội dung trực tiếp qua khóa mật mã của Colab receipt và manifest copy.
+
+### 2. Kết Quả Kiểm Toán An Toàn & Ràng Buộc Mã Nguồn (Security & Provenance Binding)
+- **Archive Security Guard**: Đạt chuẩn an toàn (PASS).
+  - Tổng số entry: 802 entries (400 authentic + 400 edited + `manifest_copy.json` + `colab_intake_receipt.json`).
+  - Tổng dung lượng giải nén: 306.38 MB (321,262,492 bytes) $\ll$ giới hạn zipbomb 1 GB.
+  - Zero directory traversal: 0 file chứa `..`, absolute path hoặc drive colon `:`.
+  - Zero symlink: 100% regular files.
+- **Ràng buộc Manifest & Snapshot thực thi**:
+  - `manifest_copy.json` SHA-256: `53a6ee472fe840a42abd97ccb7475932e0720f5788f745f57f7a2bcfbc32cc8c` (khớp chính xác tuyệt đối locked manifest 400 dòng).
+  - `colab_intake_receipt.json`: Schema 1.2.0, status `COLAB_CPU_INTAKE_SUCCESS`, execution commit `9d98a2d5c6afea16f9b3a71a03f0c2d6f43204e4`, worker SHA-256 `22db265ce6f2b4ff9b3784c047290722c7f27341e5d5ba094b0833682176e081`.
+  - Physical TAR member layouts quan sát được trong receipt: Cả hai archive đều là `component-stripped` (`orig_training.tar.gz` và `sd2-sp_training.tar.gz`).
+  - Kiểm toán 800 tệp ảnh: 100% khớp `normalized_sha256`, kích thước $512 \times 512$ RGB, không có tệp trắng/rỗng ($\text{std} \ge 2.0$).
+  - Phân bổ phân tầng: Đúng 14 Large / 221 Medium / 165 Small, đúng 400 unique `source_id`.
+
+### 3. Kiểm Toán Bộ Ba Căn Chỉnh Cục Bộ (Tripartite Alignment Audit)
+Đối chiếu trực tiếp 400 cặp ảnh trong gói với 400 file mask resident có sẵn tại `data/research/tgif/masks/training/`:
+- **Độ tương đồng mask**: 100% (400/400) mask khớp chính xác SHA-256 (`mask_sha256`) và diện tích pixel sau chuẩn hóa Nearest-neighbor $512 \times 512$ (`mask_px_512`).
+- **Inside Mask Delta (Vùng chỉnh sửa)**:
+  - Inside mean L1 trung bình: **$52.85$** (min: $16.42$, max: $138.33$).
+  - 100% (400/400) mẫu đạt $\text{inside\_mean\_l1} \ge 1.0$ (Technical QC PASS).
+- **Outside Mask Delta (Vùng nguyên bản)**:
+  - Outside mean L1 trung bình: **$0.01$** (min: $0.00$, max: $0.06$).
+  - Không có compositing (`compositing_applied: false`): Giữ nguyên phương sai pixel tự nhiên của benchmark TGIF SD2-sp. Tuyệt đối không can thiệp hoặc chỉnh sửa ảnh benchmark.
+
+### 4. Đánh Giá Rò Rỉ Đa Cấp (Multi-Level Disjoint Guard)
+- **Source ID Disjointness**:
+  - Đối chiếu 684 nguồn Option P lịch sử: **0 / 400 trùng lặp (PASS)**.
+  - Đối chiếu 336 nguồn phát triển Phase 4C.7B: **0 / 400 trùng lặp (PASS)**.
+- **Image Byte-Hash Disjointness**:
+  - Đối chiếu 800 ảnh với tập historical image hashes: **0 / 800 trùng lặp (PASS)**.
+- **Perceptual Hash (pHash)**:
+  - Trạng thái: **`NOT_EVALUATED`** (bước này chưa có trong intake auditor runner hiện có; không tuyên bố là đã PASS theo nguyên tắc Scientific Honesty).
+
+### 5. Hiện Vật Xuất Bản & Ranh Giới Dừng (Artifacts & Governance)
+- **Biên nhận kiểm toán cục bộ**: [`research/evidence/phase-4c.7b/tgif_train_intake_audit_receipt.json`](research/evidence/phase-4c.7b/tgif_train_intake_audit_receipt.json) (Schema v1.0.0, status `LOCAL_INTAKE_AUDIT_PASS`).
+- **Contact sheet tự chứa kiểm tra trực quan**: `data/research/local-artifacts/phase-4c.7b/tgif_train_clean_subset_review_contact_sheet.html` (4,820,056 bytes, Base64 embedded 16 cặp mẫu đại diện kèm difference map).
+- **Ranh giới dừng**: Đã dừng nghiêm ngặt tại ranh giới intake (Evaluator calls = 0, detector calls = 0, model training = 0). Chưa thực hiện bất kỳ bước đánh giá hay kiểm định detector nào.
 
 ## NN. Sửa Phân Giải Logical Path ↔ Physical TAR Member (2026-10-09)
 

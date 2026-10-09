@@ -1,3 +1,13 @@
+## TGIF N=400 Local Intake Forensic Audit PASS (Phase 4C.7B trace)
+
+- **Package arrival & security audit**: Package `tgif_train_clean_subset_package.zip` (320,519,898 bytes, SHA-256 `27046ec2c10b92942cd1ef0acd10e3fdac37d55c7f2fa919ede0242d96b5ff66`) audited locally via `scripts/research/audit_tgif_train_subset_local.py`. Archive security verified PASS: 802 entries, 306.38 MB uncompressed (<1 GB), zero directory traversal, zero symlinks.
+- **Cryptographic & provenance binding**: Bound strictly to locked N=400 manifest SHA-256 `53a6ee472fe840a42abd97ccb7475932e0720f5788f745f57f7a2bcfbc32cc8c` and Colab receipt 1.2.0 (execution commit `9d98a2d5c6afea16f9b3a71a03f0c2d6f43204e4`, worker SHA-256 `22db265ce6f2b4ff9b3784c047290722c7f27341e5d5ba094b0833682176e081`, detected layout `component-stripped` for both `orig` and `sd2-sp`). Exactly 400 pairs / 800 normalized 512×512 RGB images, 400 unique source IDs, preserving allocation 14 Large / 221 Medium / 165 Small.
+- **Tripartite alignment with local resident masks**: 100% (400/400) masks on local disk (`data/research/tgif/masks/training/`) matched expected hash parity and pixel area parity. Tripartite pixel audit: inside mean L1 = 52.85 (min 16.42, max 138.33, all pairs >= 1.0, Technical QC PASS); outside mean L1 = 0.01 (min 0.00, max 0.06) reflecting native benchmark variance; strictly ZERO benchmark recompositing.
+- **Disjoint Guard multi-level verification**: 0/400 source ID overlap vs 684 historical Option P and 336 Phase 4C.7B development sources; 0/800 historical byte-hash collisions; pHash recorded as NOT_EVALUATED per contract (not run in intake auditor; no false claim of PASS).
+- **Artifacts & governance**: Local audit receipt exported to `research/evidence/phase-4c.7b/tgif_train_intake_audit_receipt.json`; self-contained HTML contact sheet (4,820,056 bytes) rendered to `data/research/local-artifacts/phase-4c.7b/tgif_train_clean_subset_review_contact_sheet.html`. Strictly stopped before evaluation: detector calls = 0, model training = 0, independent performance `NOT_MEASURED`.
+
+---
+
 ## TGIF N=400 Archive Member Path Resolution Fix (Phase 4C.7B trace)
 
 - **Observed real failure**: The first Colab intake reused the approved locked N=400 manifest but stopped fail-closed at orig extraction (`Expected 400 files, found 0`). Actual member evidence was `training/truck/362682_orig.png`; the manifest intentionally retains the logical dataset path `orig/training/...`. The two large archives remain available in the user's current Colab `/content`; no redownload was performed locally.
