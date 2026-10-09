@@ -43,6 +43,19 @@ Amendment v1.7.0 bảo toàn 100% định mức ma trận phân bổ của Proto
 - **Phân bổ Thao tác**: `object_replacement: 3` (Slot 1, 2, 8), `object_removal_and_infill: 1` (Slot 5), `object_insertion: 4` (Slot 3, 4, 6, 7).
 - **Phân bổ Định mức Diện tích**: `small_under_10pct: 3` (Slot 1, 3, 7), `medium_10_to_30pct: 2` (Slot 5, 6), `large_over_30pct: 3` (Slot 2, 4, 8).
 
+### Bảng Phân Bổ 8 Dòng Chuẩn Tắc Pilot Plan v2 Proposal (PENDING Human Review)
+
+| Slot | Candidate ID | Origin ID & Nguồn Gốc | Prompt Đề Xuất | Target BBox [x1, y1, x2, y2] & Diện Tích | Mask BBox [x1, y1, x2, y2] & Diện Tích | Trạng Thái Review |
+| :---: | :--- | :--- | :--- | :---: | :---: | :---: |
+| **1** | `IND_COCO_SD2_001` | `coco:397133`<br>Pot Noodle (`CC BY 2.0`) | _"a round brass wall clock mounted naturally on the kitchen wall, matching the warm indoor lighting"_ | `[207, 117, 270, 182]`<br>$63 \times 65 =$ **4.095 px** (1.56%) | `[195, 95, 280, 205]`<br>$85 \times 110 =$ **9.350 px** (3.57%) | **PENDING** |
+| **2** | `IND_COCO_SD2_002` | `coco:37777`<br>larrylawfer (`CC BY-NC-SA 2.0`) | _"matte navy-blue upper kitchen cabinets with a stainless-steel range hood, realistic residential interior photograph"_ | `[145, 125, 410, 260]`<br>$265 \times 135 =$ **35.775 px** (13.65%) | `[95, 75, 415, 323]`<br>$320 \times 248 =$ **79.360 px** (30.27%) | **PENDING** |
+| **3** | `IND_COCO_SDXL_042` | `coco:448076`<br>luis.leao (`CC BY 2.0`) | _"a professional black leather business briefcase standing upright on the red exhibition carpet, realistic studio floodlights and soft ground shadow"_ | `[235, 395, 335, 485]`<br>$100 \times 90 =$ **9.000 px** (3.43%) | `[220, 380, 350, 500]`<br>$130 \times 120 =$ **15.600 px** (5.95%) | **PENDING** |
+| **4** | `COCO_EXT_SDXL_001` | `coco:460160`<br>PratarPersilja (`CC BY-SA 2.0`) | _"a weathered wooden picnic table with attached bench seating on the grassy coastal ground, natural overcast daylight and soft ground contact shadow"_ | `[20, 280, 330, 490]`<br>$310 \times 210 =$ **65.100 px** (24.83%) | `[10, 260, 340, 510]`<br>$330 \times 250 =$ **82.500 px** (31.47%) | **PENDING** |
+| **5** | `IND_COMMONS_SD2_001` | `commons:92533678`<br>Moahim (`CC BY-SA 4.0`) | _"open sea and distant coastline continuing naturally through the removed foreground headland, photorealistic sunset landscape"_ | `[190, 308, 512, 512]`<br>$322 \times 204 =$ **65.688 px** (25.06%) | `[190, 305, 512, 512]`<br>$322 \times 207 =$ **66.654 px** (25.43%) | **PENDING** |
+| **6** | `IND_COMMONS_SD2_040` | `commons:172876577`<br>Chainwit. (`CC BY 4.0`) | _"a rustic wooden barrel planter filled with vibrant blooming flowers sitting naturally on the cobblestone pavement, realistic daylight shadows and weathered wood texture matching the historic town square"_ | `[45, 375, 215, 495]`<br>$170 \times 120 =$ **20.400 px** (7.78%) | `[20, 360, 240, 512]`<br>$220 \times 152 =$ **33.440 px** (12.76%) | **PENDING** |
+| **7** | `IND_COMMONS_SDXL_001` | `commons:166503140`<br>Crisco 1492 (`CC BY-SA 4.0`) | _"a small dark bird flying in the cloudy sky, distant scale and natural daylight"_ | `[395, 75, 455, 125]`<br>$60 \times 50 =$ **3.000 px** (1.14%) | `[350, 45, 500, 160]`<br>$150 \times 115 =$ **17.250 px** (6.58%) | **PENDING** |
+| **8** | `IND_COMMONS_SDXL_005` | `commons:171463547`<br>Chris Woodrich (`CC BY-SA 4.0`) | _"a classical white marble commemorative column standing on a solid plinth in the public park, realistic overcast daylight and weathered stone texture"_ | `[145, 45, 355, 465]`<br>$210 \times 420 =$ **88.200 px** (33.65%) | `[135, 40, 365, 475]`<br>$230 \times 435 =$ **100.050 px** (38.17%) | **PENDING** |
+
 ---
 
 ## 3. Chi Tiết 4 Đề Xuất Thay Thế & Mở Rộng Cụ Thể (PENDING)
