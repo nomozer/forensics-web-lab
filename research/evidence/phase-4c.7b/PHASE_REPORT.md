@@ -74,101 +74,138 @@ Hồ sơ tổng hợp toàn diện các đợt chạy thực nghiệm độc l�
 
 | Đợt chạy Thực nghiệm | Giao thức / Mục tiêu | Quy mô & Ngân sách | Technical QC (std / inside L1 / outside L1) | Human Content QC | Lỗi / Khiếm khuyết Đã Chứng minh |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Pilot lịch sử**<br>`pilot-20261007T132003Z`<br>*(kèm các incident trước đó)* | Pilot 8 cặp đầu tiên trên 4 strata; kiểm tra vận hành hệ thống thu thập tự động. | 8 cặp kế hoạch<br>(2 cặp / stratum).<br>Ngân sách: 8 attempts. | **8/8 PASS**<br>(std > 5.0, inside L1 $\ge 3.0$, outside L1 $\le 0.5$). | **8 PENDING**<br>*(Agent screening phát hiện 8/8 có vấn đề nội dung)*. | 1. Upstream 401 Unauthorized (`sd2-inpainting`).<br>2. Lỗi Diffusers pipeline thiếu `height/width` làm SDXL sinh 1024×1024, gây burn through 110 pool candidates.<br>3. Omission diện rộng trên mask nhỏ. |
-| **Follow-up pilot**<br>`pilot-20261008T113700Z` | Thử nghiệm 8 cặp sau sửa đổi hướng dẫn nội dung (content-grounded instructions). | 8 cặp kế hoạch<br>(2 cặp / stratum).<br>Ngân sách: 8 attempts. | **8/8 PASS**<br>(inside L1 11.08–76.14; outside L1 = 0.000000 nhờ 1-bit compositing). | **8 PENDING**<br>*(Chưa có quyết định người duyệt)*. | 1. Omission trên mask nhỏ (cà chua, chim, vali).<br>2. Đứt gãy cấu trúc (lan can kim loại bị cắt cụt 210 px).<br>3. Lệch tone mảng lớn (trần nhà 30% area). |
-| **Diagnostic**<br>`diag-20261008T154628Z` | So sánh đối đầu Full Canvas 512×512 (Arm A) vs Local Crop có padding ở độ phân giải gốc (Arm B) trên 3 ca omission. | 3 candidates $\times$ 2 arms = đúng 6 attempts.<br>Ngân sách: 6 attempts. | **6/6 PASS**<br>(outside L1 = 0.000000 qua compositing). | **6/6 REJECT**<br>*(Đã chốt chính thức bởi Dũng Phạm lúc 2026-10-08T19:34:30Z)*. | 1. Arm A: 3/3 ca omission hoàn toàn.<br>2. Arm B cà chua: bậc biên mask & vụn bánh mì.<br>3. Arm B vali: semantic hallucination (xe hơi đồ chơi).<br>4. Arm B chim: lệch placement ngoài target bbox 41 px & lệch tone mảng trời. |
-| **Calibration**<br>`calib-20261009T015749Z` | Can thiệp đơn biến: so sánh Guidance Scale 7.5 vs 9.5 với prompt/negative prompt mới trên `IND_COCO_SDXL_002` (seed 20272319). | 1 candidate $\times$ 2 guidance scales = đúng 2 attempts.<br>Ngân sách: 2 attempts. | **2/2 PASS**<br>(inside L1 16.41 / 16.99; outside L1 = 0.000000). | **2 PENDING**<br>*(Agent đề xuất REJECT; chờ người duyệt)*. | 1. Cả 2 attempt đều omission hoàn toàn (0 quả cà chua; tái tạo vân ruột bánh mì).<br>2. Bậc nhảy tương phản vi mô tại biên mask (top edge step 8.17 / 9.27 vs 1.81). |
+| **Pilot lịch sử**<br>`pilot-20261007T132003Z` | Pilot 8 cặp đầu tiên trên 4 strata; kiểm tra vận hành hệ thống thu thập tự động. | 8 cặp kế hoạch<br>(2 cặp / stratum).<br>Ngân sách: 8 attempts. | **8/8 PASS (lịch sử)**<br>Mã tại binding commit `7d2eea4` bỏ qua kiểm tra `outside_l1 <= 0.5`.<br>Kiểm toán lại: outside L1 đo được **3.808–9.311** ở cả 8 cặp do thiếu compositing. | **8 PENDING**<br>*(Agent screening phát hiện 8/8 có vấn đề nội dung; chưa có quyết định người duyệt)*. | 1. Thiếu kiểm tra và bảo tồn pixel ngoài mask (outside L1 vượt ngưỡng 0.5 ở cả 8 cặp).<br>2. Thiếu đăng ký mục tiêu cụ thể (dùng prompt chung theo index và mask ellipse ngẫu nhiên trên canvas 512×512). |
+| **Follow-up pilot**<br>`pilot-20261008T113700Z` | Thử nghiệm 8 cặp sau sửa đổi hướng dẫn nội dung (content-grounded instructions). | 8 cặp kế hoạch<br>(2 cặp / stratum).<br>Ngân sách: 8 attempts. | **8/8 PASS**<br>(inside L1 11.08–76.14; outside L1 = 0.000000 nhờ 1-bit compositing). | **8 PENDING**<br>*(Chưa có quyết định người duyệt)*. | 1. Omission trên các mask: `IND_COCO_SDXL_002` (3.78%), `IND_COMMONS_SDXL_001` (6.58%), `IND_COMMONS_SD2_002` (14.76%).<br>2. Đứt gãy cấu trúc (lan can kim loại bị cắt cụt 210 px ở `IND_COMMONS_SDXL_003`).<br>3. Lệch tone mảng lớn (trần nhà 30% area ở `IND_COCO_SDXL_041`). |
+| **Diagnostic**<br>`diag-20261008T154628Z` | So sánh đối đầu Full Canvas 512×512 (Arm A) vs Local Crop có padding ở độ phân giải gốc (Arm B) trên 3 ca omission. | 3 candidates $\times$ 2 arms = đúng 6 attempts.<br>Ngân sách: 6 attempts. | **6/6 PASS**<br>(outside L1 = 0.000000 qua compositing). | **6/6 REJECT**<br>*(Đã chốt chính thức bởi Dũng Phạm lúc 2026-10-08T19:34:30Z)*. | 1. Arm A: 3/3 ca omission hoàn toàn (`IND_COCO_SDXL_002`, `IND_COMMONS_SD2_002`, `IND_COMMONS_SDXL_001`).<br>2. Arm B cà chua: bậc biên mask & vụn bánh mì.<br>3. Arm B vali: semantic hallucination (xe hơi đồ chơi).<br>4. Arm B chim: lệch placement ngoài target bbox 41 px & lệch tone mảng trời. |
+| **Calibration**<br>`calib-20261009T015749Z` | Can thiệp đơn biến: so sánh Guidance Scale 7.5 vs 9.5 với prompt/negative prompt mới trên `IND_COCO_SDXL_002` (seed 20272319). | 1 candidate $\times$ 2 guidance scales = đúng 2 attempts.<br>Ngân sách: 2 attempts. | **2/2 PASS**<br>(inside L1 16.4117 / 16.9891; outside L1 = 0.000000). | **2 PENDING**<br>*(Agent đề xuất REJECT; chờ người duyệt)*. | 1. Cả 2 attempt đều omission hoàn toàn (0 quả cà chua; tái tạo vân ruột bánh mì).<br>2. Bậc nhảy tương phản vi mô tại biên mask (top edge step 8.17 / 9.27 vs 1.81 authentic; left edge step 9.56 / 9.29 vs 4.12 authentic). |
 
 ### 2. Phân loại 5 Nhóm Khiếm khuyết Chất lượng Tạo sinh (Defect Taxonomy)
 
 1. **Hiện tượng Thiếu vật thể hoàn toàn (Semantic Omission)**:
    - *Biểu hiện*: Vùng mask không xuất hiện đối tượng được yêu cầu trong prompt mà bị lấp đầy bởi hoa văn nền xung quanh (infill).
-   - *Bằng chứng thực nghiệm*: Xuất hiện nhất quán trên SDXL full canvas 512×512 khi diện tích mask nhỏ (cà chua 3.78%, chim 1.15%, vali 1.70%). Đợt calibration chứng minh rằng việc tăng guidance scale (7.5 $\to$ 9.5) kèm negative prompt phủ định cụ thể (`bread crumb only`, `background infill`) hoàn toàn không giải quyết được omission trên canvas 512×512.
+   - *Bằng chứng thực nghiệm*: Quan sát thấy trên cả SDXL và SD2 full canvas 512×512 qua 3 ca thử nghiệm:
+     * `IND_COCO_SDXL_002` (cà chua): 9.900 px, **3.776550%** canvas.
+     * `IND_COMMONS_SDXL_001` (chim): 17.250 px, **6.580353%** canvas.
+     * `IND_COMMONS_SD2_002` (vali): 38.700 px, **14.762878%** canvas.
+     *Lưu ý khoa học*: Omission xuất hiện ở các mức diện tích từ 3.78% đến 14.76%; không kết luận rằng omission chỉ giới hạn dưới 5% và không tự đặt ngưỡng loại trừ mask < 5%.
+   - Đợt calibration trên `IND_COCO_SDXL_002` (seed 20272319) chứng minh rằng việc tăng guidance scale (7.5 $\to$ 9.5) kèm negative prompt cụ thể (`bread crumb only`, `background infill`) không kích hoạt hình thành quả cà chua trong phạm vi cấu hình đã thử.
 2. **Sai lệch Đối tượng Ngữ nghĩa (Semantic Hallucination)**:
    - *Biểu hiện*: Mô hình tạo ra một vật thể hoàn chỉnh nhưng hoàn toàn sai lệch so với prompt văn bản.
-   - *Bằng chứng thực nghiệm*: Quan sát thấy ở SD2 inpainting khi áp dụng local crop 1.6x (vali Arm B trong `diag-20261008T154628Z`): mô hình sinh ra một chiếc xe hơi đồ chơi cổ thay vì chiếc vali hành lý, dù inside L1 tăng cao (43.39 vs 30.74).
+   - *Bằng chứng thực nghiệm*: Quan sát thấy ở SD2 inpainting khi áp dụng local crop 1.6x (`IND_COMMONS_SD2_002` Arm B trong `diag-20261008T154628Z`): mô hình sinh ra một chiếc xe hơi đồ chơi cổ thay vì chiếc vali hành lý, dù inside L1 tăng cao (43.39 vs 30.74).
 3. **Sai lệch Vị trí và Tỷ lệ (Placement & Scale Deficit)**:
    - *Biểu hiện*: Mô hình sinh được đối tượng mục tiêu nhưng đặt sai vị trí hình học so với tọa độ kỳ vọng.
-   - *Bằng chứng thực nghiệm*: Quan sát thấy ở SDXL native resolution local crop (chim Arm B trong diagnostic): chim xuất hiện nhưng bị dịch chuyển xuống dưới target bounding box $dy = +41.0$ px ($dx = -30.5$ px, độ trùng khớp theo chiều dọc = 0 px), nằm ngoài target box dù vẫn nằm 100% trong mask.
+   - *Bằng chứng thực nghiệm*: Quan sát thấy ở SDXL native resolution local crop (`IND_COMMONS_SDXL_001` Arm B trong diagnostic): bóng chim xuất hiện nhưng bị dịch chuyển xuống dưới target bounding box $dy = +41.0$ px ($dx = -30.5$ px, độ trùng khớp theo chiều dọc = 0 px), nằm ngoài target box `[395, 75, 455, 125]` dù vẫn nằm 100% trong mask.
 4. **Lệch Ánh sáng, Tông màu & Kết cấu (Lighting, Texture & Tone Mismatch)**:
    - *Biểu hiện*: Vùng can thiệp có mức độ phơi sáng, tông màu hoặc kết cấu không đồng nhất với ảnh authentic xung quanh.
-   - *Bằng chứng thực nghiệm*: Mảng trời xung quanh chim Arm B bị lệch tone vuông góc ($\Delta\text{RGB} \approx -3.5$ đến $-4.0$), tạo thành một mảng chữ nhật xám mờ rõ rệt. Vùng vụn bánh mì infilled trong mask cà chua có độ tương phản và mật độ hạt mịn khác biệt với phần bánh mì authentic bên ngoài.
+   - *Bằng chứng thực nghiệm*: Mảng trời xung quanh chim Arm B bị lệch tone chữ nhật ($\Delta\text{RGB} \approx [-3.07, -3.79, -3.66]$), tạo thành một mảng chữ nhật xám mờ rõ rệt. Vùng vụn bánh mì infilled trong mask cà chua có độ tương phản và mật độ hạt mịn khác biệt với phần bánh mì authentic bên ngoài.
 5. **Biên ghép Vi mô và Đứt gãy Cấu trúc (Boundary Seams & Structural Severance)**:
    - *Biểu hiện*: Bậc tương phản vi mô tại đường ranh giới mask và sự đứt đoạn vật lý của các thực thể hình học kéo dài.
    - *Bằng chứng thực nghiệm*:
-     * Hard binary compositing (1-bit) luôn tạo ra bước nhảy tương phản vi mô tại biên (ví dụ mép trên mask cà chua có step 8.17–9.27 so với authentic 1.81).
-     * Khi mask cắt ngang các cấu trúc liên tục (lan can kim loại trong pilot), việc ghép nhị phân cắt đứt cấu trúc vật lý, tạo ra forensic artifact lộ liễu.
-     * Thử nghiệm feathering cosine ($k=2$ px) đã chứng minh chỉ làm mịn được bậc chuyển tiếp 1-2 pixel nhưng không thể khắc phục sự đứt gãy hình học vĩ mô hay tonal mismatch diện tích lớn.
+     * Hard binary compositing (1-bit) luôn tạo ra bước nhảy tương phản vi mô tại biên (mép trên mask cà chua có step 8.17–9.27 so với authentic 1.81; mép trái có step 9.56–9.29 so với authentic 4.12).
+     * Khi mask cắt ngang các cấu trúc liên tục (lan can kim loại ở `IND_COMMONS_SDXL_003`), phép ghép nhị phân cắt đứt cấu trúc vật lý 210 px.
+     * Thử nghiệm feathering cosine ($k=2$ px) chứng minh chỉ làm mịn bậc chuyển tiếp 1-2 pixel nhưng không thể khắc phục sự đứt gãy hình học vĩ mô hay tonal mismatch diện tích lớn.
 
 ### 3. Phân tách Nghiêm ngặt: Thực nghiệm, Lỗi phần mềm và Giả thuyết
-- **Quan sát Thực nghiệm (Empirical Observations - Đã xác minh)**:
-  * Tỷ lệ omission thực tế trên canvas 512×512 đối với mask nhỏ.
-  * Tọa độ chim bị lệch khỏi target box.
-  * Xe hơi thay thế vali dưới crop 1.6x.
+- **Quan sát Thực nghiệm (Empirical Observations - Đã đo đạc xác minh)**:
+  * Tỷ lệ omission thực tế trên canvas 512×512 đối với 3 ca thử nghiệm (cà chua 3.78%, chim 6.58%, vali 14.76%).
+  * Tọa độ bóng chim bị lệch khỏi target box ($dy = +41.0\text{ px}$).
+  * Xe hơi đồ chơi thay thế vali dưới crop 1.6x.
   * Bước nhảy L1 tại biên mask và sự trôi lệch raw diffusion $\approx 4.1$ L1.
-  * `outside_mean_l1 == 0.000000` hoàn toàn do lớp ghép 1-bit bảo đảm, không phải do mô hình diffusion tự bảo tồn nền.
-- **Lỗi Phần mềm Đã Chứng minh (Proven Software Defects - Đã khắc phục)**:
-  * Lỗi 401 deprecation của checkpoint SD2 upstream (khắc phục bằng mirror cộng đồng).
-  * Lỗi thiếu tham số `height`/`width` trong Diffusers SDXL inpainting pipeline gây nhảy vọt 1024×1024 (khắc phục bằng contract cứng 512×512).
-- **Giả thuyết Chưa Kiểm chứng (Unverified Hypotheses - Tuyệt đối không nâng thành nguyên nhân)**:
-  * *Giả thuyết Latent Capacity Deficit*: Cho rằng độ phân giải latent quá nhỏ ($13 \times 11$ hoặc $18 \times 14$ latent pixels) không đủ không gian biểu diễn cho các vật thể phức tạp. Chưa có bằng chứng thực nghiệm phân tách giữa latent token capacity và cross-attention feature map.
-  * *Giả thuyết Context Attention Infill Bias*: Cho rằng cơ chế cross-attention bị chi phối bởi các token ngữ cảnh nền xung quanh dẫn đến ưu tiên infill. Chưa có phân tích attention map định lượng.
-  * *Nguy cơ Forensic Shortcut*: Giả thuyết cho rằng các bậc biên ghép vi mô hoặc làm mờ nhân tạo có thể trở thành "đường tắt" (shortcut features) cho bộ dò pháp chứng. Đây là rủi ro phương pháp luận được ghi nhận, không khẳng định hiệu năng bộ dò bị thổi phồng khi chưa đo thực tế (`NOT_MEASURED`).
+  * `outside_mean_l1 == 0.000000` hoàn toàn do lớp ghép 1-bit bảo đảm theo định nghĩa, không chứng minh mô hình diffusion tự bảo tồn nền.
+- **Lỗi Phần mềm Đã Chứng minh (Proven Software Defects - Đã phân định)**:
+  * Sự cố lịch sử trước pilot: 401 upstream checkpoint `sd2-inpainting` và lỗi thiếu tham số `height/width` trong pipeline SDXL (đã khắc phục bằng mirror cộng đồng và contract cứng 512×512).
+  * Lỗi thiếu kiểm tra `outside_l1` trong runner cũ của `pilot-20261007T132003Z` (đã khắc phục từ `pilot-20261008T113700Z`).
+  * Lỗ hổng quan sát trong receipt: `calibration_receipt.json` chưa lưu SHA-256 của file đầu vào tại thời điểm preflight.
+- **Hồ sơ Lịch sử vs Catalog Chuẩn tắc Hiện hành**:
+  * Các tệp `candidate_acquisition_plan.json` và `acquisition_smoke_receipt.json` (ngày 06/10) chứa `unsplash_*` và biên nhận `synthetic_smoke` là **hồ sơ lịch sử**, không đủ điều kiện nhập cohort.
+  * Catalog chuẩn tắc hiện hành chứa `commons_*` là:
+    - Catalog: `research/evidence/phase-4c.7b/verified_candidate_catalog_v2.json` (SHA-256 `d85595c6b43d5acf8d312993a270278b4f17f481dca0f8286efdae07bcd281a5`).
+    - Kế hoạch: `research/evidence/phase-4c.7b/candidate_acquisition_plan_v2.json` (SHA-256 `7c4190fbaae9605ad2ff462dd4d128f2707109f88bb9fe4dc272fab1963caa5c`).
+    - Kiểm toán: `research/evidence/phase-4c.7b/catalog_eligibility_audit.json` (SHA-256 `1cc6b9b576a99ab21e72125b56424718753819408ba224c5bfff8ec5b2a8c3d4`).
+- **Giả thuyết Chưa Kiểm chứng (Unverified Hypotheses - Giữ đúng trạng thái giả định)**:
+  * *Giả thuyết Latent Downsampling Capacity*: Nhận định cho rằng diện tích latent nhỏ thiếu dung lượng biểu diễn chỉ là suy luận từ kiến trúc $8\times$ downsampling; chưa được cô lập thực nghiệm bằng phân tích tensor nội bộ.
+  * *Giả thuyết Context Infill Attention Bias*: Giả định rằng embedding bối cảnh xung quanh lấn át prompt văn bản; chưa được đo đạc qua cross-attention maps.
+  * *Nguy cơ Forensic Shortcut*: Nhận định cho rằng biên ghép 1-bit hoặc feathering nhân tạo có thể tạo shortcut cho mô hình detector là nguy cơ phương pháp luận cần kiểm soát; không khẳng định hiệu năng detector đã bị thổi phồng khi chưa đo thực tế (`NOT_MEASURED`).
 
 ---
 
-## HH. Đề xuất Định hướng Tiếp theo & Các Quyết định Phương pháp Cần Thẩm duyệt (2026-10-09)
+## HH. Đề xuất Định hướng Tiếp theo & Bốn Phương án Kỹ thuật (2026-10-09)
 
-Dựa trên bằng chứng tích lũy qua 4 đợt chạy (8 pilot attempts, 6 diagnostic attempts, 2 calibration attempts), việc tiếp tục thu thập full cohort $N=400$ theo quy trình hiện tại là **chưa khả thi về mặt chất lượng nội dung**, do các vấn đề cốt lõi về omission, sai placement và biên ghép vẫn chưa được giải quyết triệt để.
+Dựa trên bằng chứng tích lũy qua 4 đợt chạy (8 pilot attempts, 6 diagnostic attempts, 2 calibration attempts), việc tiếp tục thu thập full cohort $N=400$ theo quy trình hiện tại là **chưa khả thi về mặt chất lượng nội dung**, do các vấn đề về omission, sai placement, sai đối tượng và biên ghép đứt gãy vẫn tồn tại trên các candidate đã thử.
 
-### 1. Bốn Phương án Định hướng Kỹ thuật
+### 1. Phân tích Bốn Phương án Định hướng Kỹ thuật
 
 #### Phương án 1: Tiếp tục vi điều chỉnh siêu tham số và prompt trên từng candidate (Micro-Tuning)
-- *Vấn đề giải quyết*: Tìm kiếm tổ hợp prompt, negative prompt, seed và guidance scale để ép mô hình full canvas 512×512 sinh được vật thể trên từng candidate bị lỗi.
-- *Bằng chứng hỗ trợ & Phần chưa biết*: Đợt calibration `calib-20261009T015749Z` chứng minh việc tăng guidance scale 7.5 $\to$ 9.5 kèm negative prompt phủ định không giải quyết được omission trên SDXL. Chưa biết liệu các seed khác có thành công ngẫu nhiên hay không.
-- *Thay đổi phương pháp*: Không thay đổi allocation matrix; giữ nguyên pipeline.
-- *Điều kiện & Kế hoạch*: Yêu cầu lập kế hoạch thử nghiệm mới được duyệt.
-- *Đánh giá*: **Không khuyến nghị**. Phương pháp này tốn kém ngân sách thử nghiệm mò mẫm, dễ dẫn đến thiên kiến chọn lọc (cherry-picking) và không có tính mở rộng cho toàn bộ 400 cặp của cohort.
+- *Vấn đề giải quyết*: Tìm kiếm tổ hợp prompt, negative prompt, seed và guidance scale trên canvas 512×512 cho từng candidate cụ thể.
+- *Bằng chứng hỗ trợ & Phần chưa biết*: Đợt calibration `calib-20261009T015749Z` chứng minh việc tăng guidance scale 7.5 $\to$ 9.5 kèm negative prompt không giải quyết được omission trên `IND_COCO_SDXL_002` (seed 20272319). Trong phạm vi candidate và seed đã thử, việc thay đổi guidance không kích hoạt tạo vật thể.
+- *Thay đổi phương pháp*: Không đổi allocation; giữ nguyên pipeline.
+- *Điều kiện & Kế hoạch*: Yêu cầu một kế hoạch thử nghiệm mới được duyệt.
+- *Đánh giá*: **Không khuyến nghị**. Dễ dẫn đến việc thử mò mẫm từng candidate vô hạn, khó mở rộng cho toàn bộ cohort.
 
-#### Phương án 2: Chuyển đổi sang Pipeline Local-Crop có điều kiện với phân giải gốc (Native-Resolution Cropped Pipeline)
-- *Vấn đề giải quyết*: Khắc phục hiện tượng omission trên mask nhỏ (đã chứng minh ở Arm B diagnostic: 2/2 ca SDXL Arm B tạo được quả cà chua và chim).
-- *Bằng chứng hỗ trợ & Phần chưa biết*: Arm B tạo được vật thể nhưng làm phát sinh 3 vấn đề mới: sai placement (chim lệch 41 px), tone mismatch (mảng trời xám), và hallucination ở SD2 (xe hơi). Chưa có cơ chế tự động căn chỉnh placement trong crop hoặc hòa trộn tone nền mà không tạo ra shortcut artifact.
+#### Phương án 2: Chuyển đổi sang Pipeline Local-Crop có điều kiện ở độ phân giải gốc (Native-Resolution Cropped Pipeline)
+- *Vấn đề giải quyết*: Khắc phục hiện tượng omission trên candidate nhỏ (đã chứng minh ở Arm B diagnostic: 2/2 ca SDXL Arm B tạo được quả cà chua và chim).
+- *Bằng chứng hỗ trợ & Phần chưa biết*: Arm B tạo được vật thể nhưng làm phát sinh các lỗi mới: chim lệch vị trí $dy = +41\text{ px}$, mảng trời xám lệch tông, và SD2 hallucination xe đồ chơi. Chưa có cơ chế giải quyết placement và độ khớp tông màu mà không tạo vết biên nhân tạo.
 - *Thay đổi phương pháp*: Yêu cầu thay đổi kiến trúc pipeline (crop, coordinate mapping, upscaling/downscaling, blending) và sửa đổi quy chuẩn thu thập.
 - *Điều kiện & Kế hoạch*: Yêu cầu một Protocol Amendment mới, prototype kiểm thử và phê duyệt từ người dùng.
-- *Đánh giá*: Tiềm năng về mặt kỹ thuật tạo vật thể, nhưng có độ phức tạp cao và tiềm ẩn nguy cơ đưa các dấu vết xử lý biên nhân tạo vào tập dữ liệu kiểm định.
+- *Đánh giá*: Tiềm năng về việc kích hoạt tạo vật thể, nhưng có độ phức tạp cao và chưa giải quyết được các khiếm khuyết nội dung phát sinh.
 
-#### Phương án 3 (Khuyến nghị Cốt lõi): Rà soát lại Tiêu chí Chọn mẫu và Đề tài Can thiệp (Content-Grounded Candidate & Mask Curation)
-- *Vấn đề giải quyết*: Giải quyết tận gốc cả hai nguyên nhân chính gây suy giảm chất lượng: (1) mask quá nhỏ (<5% diện tích) trên canvas 512×512 dễ bị omission, và (2) mask cắt ngang các cấu trúc hình học liên tục gây đứt gãy vật lý.
+#### Phương án 3 (Khuyến nghị Cốt lõi): Rà soát Tiêu chuẩn Chọn mẫu và Đề tài Can thiệp (Content-Grounded Candidate & Mask Curation)
+- *Vấn đề giải quyết*: Nhắm đến việc hạn chế các ca can thiệp có rủi ro nội dung cao ngay từ khâu tiền kiểm: tránh các vùng can thiệp cắt ngang cấu trúc hình học liên tục (như lan can, chân tường) và các vùng bối cảnh có nguy cơ xung đột ngữ nghĩa cao.
 - *Bằng chứng hỗ trợ & Phần chưa biết*:
-  * Bằng chứng pilot cho thấy các mask có diện tích hợp lý (10% - 30%) với nền đồng nhất tạo ra kết quả tự nhiên hơn nhiều so với các mask vi mô 1% - 3.7%.
-  * Bằng chứng feathering chứng minh rằng xử lý hậu kỳ không thể sửa chữa sự đứt gãy hình học; do đó tiêu chí chọn mẫu ban đầu phải bảo đảm ranh giới mask ôm trọn các thực thể độc lập tự nhiên.
+  * Bằng chứng thực nghiệm cho thấy việc cắt ngang lan can kim loại liên tục (`IND_COMMONS_SDXL_003`) gây đứt gãy không thể khắc phục bằng inpainting hay feathering.
+  * Chưa biết: Việc thay đổi tiêu chí chọn mẫu có loại bỏ hoàn toàn omission trên canvas 512x512 hay không (cần kiểm chứng trên các candidate mới có nền phẳng/trơn). Không tự cam kết rằng mask lớn hơn sẽ bảo đảm sinh đúng vật thể.
 - *Thay đổi phương pháp & Cohort*:
-  * Giữ nguyên cơ cấu 4 strata (`coco_sd2`, `coco_sdxl`, `commons_sd2`, `commons_sdxl`) và tỷ lệ phân bổ $2 \times 2$.
-  * Điều chỉnh tiêu chuẩn chọn lọc candidate trong `verified_candidate_catalog_v2.json`: loại bỏ các ứng viên có diện tích mask < 5% canvas; cấm các kịch bản chỉnh sửa cắt ngang vật thể kéo dài (lan can, đường ray, chân tường); ưu tiên các kịch bản chèn/thay thế đối tượng rời rạc có biên tự nhiên.
-- *Điều kiện cần đạt*:
-  * Người dùng phê duyệt định hướng curation.
-  * Soạn thảo Protocol Amendment v1.4 chính thức khóa tiêu chuẩn chọn lọc hình học.
-  * Chạy một đợt pilot thử nghiệm chuẩn hóa 8 cặp mới có phê duyệt con người trước khi xem xét mở khóa cohort.
-- *Đánh giá*: **Khuyến nghị cao nhất**. Phương án này tôn trọng giới hạn thực tế của công nghệ diffusion inpainting hiện nay, duy trì tính trung thực khoa học, triệt tiêu nguy cơ shortcut artifact và tiết kiệm tài nguyên tính toán.
+  * Giữ nguyên cơ cấu 4 strata (`coco_sd2`, `coco_sdxl`, `commons_sd2`, `commons_sdxl`), 8 allocation slots (3 replacement, 1 removal, 4 insertion | 3 small, 2 medium, 3 large).
+  * Tiền kiểm nội dung từng candidate trước khi đưa vào kế hoạch chạy: ưu tiên vật thể tách biệt, có ranh giới tự nhiên; không nới mask chỉ để đủ quota nếu làm phá vỡ cấu trúc cảnh.
+- *Điều kiện cần đạt trước khi cân nhắc Full Cohort*:
+  * Người dùng phê duyệt định hướng curation và các quyết định trade-off cụ thể.
+  * Soạn thảo Kế hoạch Thử nghiệm Curation mới được phê duyệt chính thức.
+  * Đạt kết quả thẩm định con người khả quan trên gate pilot mới trước khi mở khóa cohort.
+- *Đánh giá*: **Khuyến nghị**. Phương án này tập trung giải quyết các lỗi thiết kế kịch bản can thiệp, tránh lãng phí GPU trên các ca có xung đột hình học cố hữu.
 
-#### Phương án 4: Tạm dừng thu thập cohort tạo sinh inpainting, chuyển trọng tâm sang các Benchmark Ngoại vi Độc lập (External Benchmark Cohort Evaluation)
-- *Vấn đề giải quyết*: Tránh toàn bộ rủi ro về chất lượng tạo sinh và thời gian chuẩn bị dữ liệu inpainting.
-- *Đánh giá*: Lựa chọn dự phòng nếu người dùng muốn tập trung toàn bộ nguồn lực vào việc đánh giá mô hình trên các bộ dữ liệu công khai sẵn có (GenImage, TGIF, v.v.) thay vì tự xây dựng cohort inpainting mới.
+#### Phương án 4: Tạm dừng thu thập cohort tạo sinh inpainting, chuyển trọng tâm sang Benchmark Ngoại vi Độc lập (External Benchmark Pivot)
+- *Vấn đề giải quyết*: Tránh rủi ro về chất lượng tạo sinh và thời gian chuẩn bị dữ liệu inpainting nội bộ.
+- *Đánh giá*: Lựa chọn dự phòng nếu người dùng muốn tập trung toàn bộ nguồn lực vào việc đánh giá mô hình trên các bộ dữ liệu công khai sẵn có (GenImage, TGIF, v.v.).
 
 ---
 
-### 2. Các Quyết định Cần Người Dùng Duyệt (Handover & Governance Checklist)
+## II. Dossier Rà soát Candidate & Mask Tiền kiểm trước Generation (Pre-Generation Screening Dossier)
 
-1. **Hai Quyết định Content QC cho Calibration Run `calib-20261009T015749Z`**:
-   - `CALIB_COCO_SDXL_002_PROMPT_G75`: Trạng thái hiện tại: **`PENDING`** *(Khuyến nghị của Agent: REJECT do omission hoàn toàn).*
-   - `CALIB_COCO_SDXL_002_PROMPT_G95`: Trạng thái hiện tại: **`PENDING`** *(Khuyến nghị của Agent: REJECT do omission hoàn toàn).*
-2. **Quyết định Định hướng Phương pháp luận Tiếp theo**:
-   - Xác nhận lựa chọn giữa **Phương án 3 (Khuyến nghị: Rà soát & Tinh lọc Candidate/Mask Curation)**, Phương án 2 (Local Crop), Phương án 1 (Micro-tuning), hoặc Phương án 4 (External Benchmarks).
-3. **Bảo tồn các Bất biến Quản trị**:
+Hồ sơ tiền kiểm nội dung toàn diện cho 8 dòng phân bổ (allocation slots) của kế hoạch tạo sinh, tuân thủ nghiêm ngặt nguyên tắc:
+- Sử dụng catalog chuẩn tắc hiện hành (`verified_candidate_catalog_v2.json`) và ảnh authentic thực tế chuẩn hóa $512 \times 512$ đã được xem xét trực tiếp.
+- Tuyệt đối không chọn candidate dựa trên bộ dò (detector calls = 0).
+- Giữ nguyên định mức allocation hiện hành: 4 strata $\times$ 2 dòng = 8 dòng (3 replacement, 1 removal, 4 insertion | 3 small, 2 medium, 3 large).
+- Ưu tiên đối tượng tách biệt và ranh giới tự nhiên. Không nới mask chỉ để đủ quota nếu phá chủ thể hoặc cấu trúc cảnh. Không khẳng định mask lớn hơn sẽ bảo đảm sinh đúng vật thể.
+- Tất cả các dòng đề xuất giữ trạng thái **`PENDING_HUMAN_REVIEW`** (`reviewer: null`, `timestamp: null`). Không tự cấp ngân sách generation trong phiên làm việc này.
+- **Tài liệu trực quan tự chứa**: Toàn bộ ảnh authentic, overlay target (đỏ) vs mask (vàng), và zoom vùng tiếp giáp đã được tổng hợp thành tệp HTML tự chứa: [`candidate_mask_screening_contact_sheet.html`](../../../data/research/local-artifacts/phase-4c.7b/candidate_mask_screening_contact_sheet.html) (9,052,966 bytes, nhúng Base64 hoàn chỉnh).
+
+### Bảng 8 Dòng Dossier Tiền kiểm Chi tiết
+
+| Slot | Candidate ID & Provenance | Stratum, Mod Type & Protocol Class | Target, Prompt & Bounding Boxes | Raster Mask Area & Tỷ lệ Canvas | Rủi ro Tiền kiểm (Pre-gen Risks) | Đánh giá & Kiến nghị Tiền kiểm |
+| :---: | :--- | :--- | :--- | :--- | :--- | :--- |
+| **1** | `IND_COCO_SD2_001`<br>Origin: `coco:397133`<br>Tác giả: Pot Noodle<br>License: CC BY 2.0 | `coco_sd2`<br>`object_replacement`<br>`small_under_10pct` | **Target:** Chảo đồng tròn treo trên tường bếp.<br>**Prompt:** *"a round brass wall clock mounted naturally on the kitchen wall, matching the warm indoor lighting"*<br>Target bbox: `[207, 117, 270, 182]`<br>Mask bbox: `[195, 95, 280, 205]` | **9.350 px**<br>(**3.566742%**)<br>Thuần nhất nhị phân `{0, 255}`. | Cắt ngang các đường ron gạch men ốp tường (tile grout lines) tại $y=95, 205$ và $x=195, 280$ tạo bậc tương phản vi mô 1-pixel. Mask nhỏ 3.57% có nguy cơ omission hoặc tạo hình mờ nếu thiếu text attention. | **KEPT_WITH_DOCUMENTED_RISKS**<br>Chảo đồng là vật thể hiện hữu tách biệt (`VERIFIED_EXISTING_TARGET`), đạt định mức small. Kiến nghị giữ lại kèm cảnh báo rủi ro biên ron gạch men. |
+| **2** | `IND_COCO_SD2_002`<br>Origin: `coco:37777`<br>Tác giả: larrylawfer<br>License: CC BY-NC-SA 2.0 | `coco_sd2`<br>`object_replacement`<br>`large_over_30pct` | **Target:** Máy hút mùi trắng và hệ tủ bếp trên màu vàng.<br>**Prompt:** *"matte navy-blue upper kitchen cabinets with a stainless-steel range hood, realistic residential interior photograph"*<br>Target bbox: `[145, 125, 410, 260]`<br>Mask bbox: `[95, 75, 415, 323]` | **79.360 px**<br>(**30.273438%**)<br>Thuần nhất nhị phân `{0, 255}`. | Mask chiếm 30.27% diện tích, bao trùm toàn bộ không gian tủ trên. Nguy cơ lệch điểm tụ phối cảnh (vanishing points) và cắt ngang đường phân cách tủ/tường tại $x=95, 415$. | **KEPT_WITH_DOCUMENTED_RISKS**<br>Thay thế hệ tủ cũ bằng tủ màu navy giữ nguyên cấu trúc không gian bếp, tránh phi lý của prompt cũ (đàn guitar). Đạt định mức large. |
+| **3** | `IND_COCO_SDXL_002`<br>Origin: `coco:293044`<br>Tác giả: john-norris<br>License: CC BY-SA 2.0 | `coco_sdxl`<br>`object_insertion`<br>`small_under_10pct` | **Target:** Quả cà chua cherry đỏ đặt trên lát bánh mì.<br>**Prompt:** *"a ripe red cherry tomato with shiny skin, distinct green calyx stem, sharp focus, natural daylight photography"*<br>Target bbox: `[375, 265, 430, 320]`<br>Mask bbox: `[345, 245, 455, 335]` | **9.900 px**<br>(**3.776550%**)<br>Thuần nhất nhị phân `{0, 255}`. | Thực nghiệm chứng minh SDXL full-canvas 512x512 thất bại omission 100% qua cả 4 đợt chạy độc lập (pilot, diagnostic Arm A, calib G7.5 & G9.5). Biên mask cắt ngang vân ruột bánh mì gây bậc tương phản vi mô cao (9.29 - 9.56 vs 4.12 tự nhiên). | **BLOCKED / PENDING_TRADE_OFF**<br>Không có cơ sở thực nghiệm để kỳ vọng tiếp tục chạy full-canvas trên lát bánh mì này sẽ hết omission. Đề xuất trade-off: hoặc chấp nhận rủi ro omission cao, hoặc thay thế bằng candidate có bề mặt phẳng/trơn trong pool `coco_sdxl`. |
+| **4** | `IND_COCO_SDXL_041`<br>Origin: `coco:189310`<br>Tác giả: an iconoclast<br>License: CC BY 2.0 | `coco_sdxl`<br>`object_insertion`<br>`large_over_30pct` | **Target:** Đèn chùm pha lê treo trần phòng khách.<br>**Prompt:** *"an elegant crystal chandelier hanging from the living room ceiling, warm interior illumination matching the residential lighting"*<br>Target bbox: `[180, 15, 332, 140]`<br>Mask bbox: `[0, 0, 512, 155]` | **79.360 px**<br>(**30.273438%**)<br>Thuần nhất nhị phân `{0, 255}`. | Kéo mask phủ toàn bộ mảng trần 512x155 để ép đủ quota $\ge 30\%$ tạo ra bậc lệch tông mặt phẳng trần (Planar Tonal Step) rõ rệt tại $y=155$. Tiếp xúc/chạm mép uốn rèm cửa tại $x \in [12, 25]$ độ sâu 3-4 px. | **BLOCKED / PENDING_TRADE_OFF**<br>Đèn chùm thực chất chỉ chiếm ~7.9% diện tích. Ép mask 30% vi phạm nguyên tắc không nới mask làm phá vỡ cấu trúc cảnh. Cần người dùng duyệt: chấp nhận lệch tông mảng trần hoặc thay thế bằng candidate có vật thể lớn tự nhiên. |
+| **5** | `IND_COMMONS_SD2_001`<br>Origin: `commons:92533678`<br>Tác giả: Moahim<br>License: CC BY-SA 4.0 | `commons_sd2`<br>`object_removal_and_infill`<br>`medium_10_to_30pct` | **Target:** Mũi đất rừng thông, chân vách đá và bãi đá ngầm nhô ra biển.<br>**Prompt:** *"open sea and distant coastline continuing naturally through the removed foreground headland, photorealistic sunset landscape"*<br>Target bbox: `[190, 308, 512, 512]`<br>Mask bbox: `[190, 305, 512, 512]` | **66.654 px**<br>(**25.426483%**)<br>Thuần nhất nhị phân `{0, 255}`. | Bờ vịnh chéo và lõm khiến mask chữ nhật bắt buộc phải bao trùm một phần mặt nước vịnh ($x=190..340$) và chân dãy nhà/khách sạn màu trắng ở sườn đồi ($x=440..512, y=305..335$), buộc mô hình phải tự vẽ lại chân công trình. | **KEPT_WITH_DOCUMENTED_RISKS**<br>Là candidate duy nhất trong stratum cho quota removal. Option A bao trùm 100% mũi đất và rặng thông. Chấp nhận rủi ro inpaint chân khách sạn theo đăng ký có sẵn. |
+| **6** | `IND_COMMONS_SD2_002`<br>Origin: `commons:81567907`<br>Tác giả: Mr.choppers<br>License: CC BY-SA 3.0 | `commons_sd2`<br>`object_insertion`<br>`medium_10_to_30pct` | **Target:** Vali du lịch da màu nâu đặt trên mặt đường đá cuội.<br>**Prompt:** *"a brown leather travel suitcase standing on the cobblestones beside the vintage car, realistic scale and daylight shadows"*<br>Target bbox: `[45, 355, 190, 495]`<br>Mask bbox: `[0, 340, 225, 512]` | **38.700 px**<br>(**14.762878%**)<br>Thuần nhất nhị phân `{0, 255}`. | Thực nghiệm chứng minh bối cảnh xe đua cổ mạnh mẽ khiến SD2 bị thiên lệch sinh ra xe ô tô đồ chơi (hallucination ở Arm B) hoặc omission (Arm A). Mép mask $x=225$ tiếp xúc sát trục/lốp xe đua. | **BLOCKED / PENDING_TRADE_OFF**<br>Việc đặt vali bên cạnh xe đua cổ có nguy cơ ảo giác cao. Cần người dùng duyệt: hoặc tinh chỉnh prompt cực mạnh cách ly token ô tô, hoặc thay thế bằng candidate mặt đất phi xe cộ trong pool `commons_sd2`. |
+| **7** | `IND_COMMONS_SDXL_001`<br>Origin: `commons:166503140`<br>Tác giả: Crisco 1492<br>License: CC BY-SA 4.0 | `commons_sdxl`<br>`object_insertion`<br>`small_under_10pct` | **Target:** Con chim nhỏ bay trên nền trời mây mở.<br>**Prompt:** *"a small dark bird flying in the cloudy sky, distant scale and natural daylight"*<br>Target bbox: `[395, 75, 455, 125]`<br>Mask bbox: `[350, 45, 500, 160]` | **17.250 px**<br>(**6.580353%**)<br>Thuần nhất nhị phân `{0, 255}`. | Bầu trời mở không có cấu trúc hình học bị cắt, nhưng có rủi ro lệch vị trí placement (chim dạt xuống dưới như ở Arm B $dy = +41\text{ px}$) và mảng trời chữ nhật lệch độ dốc sáng với mây xung quanh. | **KEPT_WITH_DOCUMENTED_RISKS**<br>Vùng bầu trời là vùng đặt tự nhiên lý tưởng, không cắt cấu trúc vật lý. Rủi ro thuần túy là khả năng định vị của SDXL. Đạt định mức small (6.58%). |
+| **8** | `IND_COMMONS_SDXL_003`<br>Origin: `commons:166529058`<br>Tác giả: Crisco 1492<br>License: CC BY-SA 4.0 | `commons_sdxl`<br>`object_replacement`<br>`large_over_30pct` | **Target:** Thân cột điêu khắc nhôm thẳng đứng 'Tower Song'.<br>**Prompt:** *"the visible shaft of a classical fluted Greco-Roman marble column standing naturally in the public park, realistic outdoor daylight and weathered stone texture"*<br>Target bbox: `[190, 0, 360, 512]`<br>Mask bbox: `[170, 0, 380, 512]` | **107.520 px**<br>(**41.015625%**)<br>Thuần nhất nhị phân `{0, 255}`. | Mask dọc $x \in [170, 380]$ cắt ngang qua thanh lan can kim loại liên tục kéo dài tại $y \approx 340..375$. Lan can bị cắt đứt 210 px, mô hình inpainting không thể tự động nối khớp hai đầu lan can bị cắt, tạo ra đứt gãy cấu trúc vật lý không thể khắc phục. | **BLOCKED / DEFINITIVE_STRUCTURAL_CONFLICT**<br>Lỗi đứt gãy lan can là xung đột hình học không thể khắc phục bằng mô hình hay feathering. Bắt buộc thay thế candidate khác trong pool `commons_sdxl` hoặc đổi sang đối tượng không bị lan can cắt ngang. |
+
+### Các Quyết định Tiền kiểm Cụ thể Cần Người Dùng Duyệt (Governance Handover)
+1. **Bốn Quyết định Trade-Off Tiền kiểm**:
+   - **Slot 3 (`IND_COCO_SDXL_002`)**: Chấp nhận rủi ro omission cao trên lát bánh mì, hay phê duyệt thay thế bằng candidate mặt bàn/đĩa phẳng trong pool `coco_sdxl`?
+   - **Slot 4 (`IND_COCO_SDXL_041`)**: Chấp nhận rủi ro lệch tông mảng trần 30% do ép mask, hay phê duyệt thay thế bằng candidate có vật thể lớn tự nhiên $\ge 30\%$?
+   - **Slot 6 (`IND_COMMONS_SD2_002`)**: Chấp nhận rủi ro thiên lệch ngữ cảnh xe cộ (nguy cơ hallucination), hay phê duyệt thay thế bằng candidate mặt đất phi xe cộ trong pool `commons_sd2`?
+   - **Slot 8 (`IND_COMMONS_SDXL_003`)**: Phê duyệt thay thế candidate để tránh đứt gãy thanh lan can kim loại 210 px, hay thay đổi phương pháp mask?
+2. **Quy trình Amendment**:
+   - Nếu người dùng phê duyệt thay thế candidate hoặc điều chỉnh định mức, cần soạn thảo một bản **Protocol Amendment mới** (ví dụ Amendment v1.7.0) kèm kế hoạch JSON mới (`content_grounded_curated_pilot_plan.json`) trước khi đăng ký ngân sách chạy.
+   - Không sửa plan đã duyệt `content_grounded_pilot_plan.json` (SHA-256 `eeace0e57a34f9f3824a3ce1a52bfa374670dca3cc19c668554d62257141632d`) để bảo tồn tính toàn vẹn của hồ sơ lịch sử.
+3. **Bảo tồn Quyết định Con người Hiện hành**:
    - Giữ nguyên quyết định chính thức **6/6 REJECT** của diagnostic run `diag-20261008T154628Z`.
+   - Giữ nguyên trạng thái **2 PENDING** của calibration run `calib-20261009T015749Z` (Agent khuyến nghị REJECT).
    - Giữ nguyên trạng thái **8 PENDING** của pilot run cũ `pilot-20261008T113700Z`.
-   - Giữ nguyên trạng thái **LOCKED** của full independent cohort ($N=400$).
-   - Số lượt gọi detector = 0; hiệu năng độc lập = `NOT_MEASURED`.
+   - Full cohort tiếp tục **LOCKED** ($N=400$); detector calls = 0; hiệu năng độc lập = `NOT_MEASURED`.
 
 
 ## EE. Approved calibration runner implementation & diagnostic determinations dossier (2026-10-08)
