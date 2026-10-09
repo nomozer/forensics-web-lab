@@ -1,12 +1,64 @@
 # Phase 4C.7B — Independent Cohort Acquisition: Protocol Amendment, Automated Pipeline, and Feasibility Alignment
 
 > **Phase**: Phase 4C.7B — Independent Cohort Acquisition & Feasibility Alignment (Pilot v2 Feasibility Closure and Existing Dataset Continuation Proposal)<br>
-> **Status**: `EXISTING_BENCHMARK_CONTINUATION_VERIFIED_PENDING_HUMAN_INTAKE_APPROVAL` — Hoàn tất xác minh thực địa khả năng tiếp tục nghiên cứu bằng benchmark có sẵn (TGIF/TGIF2 priority audit & Option P cross-disjointness). Đã chứng minh: 1,558 unique COCO sources trong split `training` của TGIF hoàn toàn disjoint 100% với 684 nguồn Option P lịch sử (0 collision); kho mask `data/research/tgif/masks/training/` đã có sẵn 100% trên máy cục bộ (24,400 PNG masks, 0 MB tải thêm). Phân định rõ spliced (`sp`, nhãn `ai_edited` kèm mask thật/giả phục vụ RQ5) vs fully-regenerated (`fr`, không được gán `fully_generated`, mask chỉ là request area); tuyệt đối không coi thư mục chưa dùng là bằng chứng disjoint nếu cùng chia sẻ nguồn COCO. Đề xuất đúng 1 tập kiểm định khả thi `TGIF-Train-Clean-Subset` ($N=400$ hoặc $N=200$ cặp, phân tầng theo 3 khoảng diện tích mask) kèm preregistration protocol và kế hoạch tiếp nhận 5 bước trình người dùng phê duyệt trước khi tải bất kỳ ảnh nào. Bàn giao 26 quyết định Human Content QC đang PENDING (8 Pilot v2, 2 Calibration, 8 Follow-up pilot v1, 8 Pilot v0). Full cohort ($N=400$) tiếp tục KHÓA CHẶT; zero generation, detector calls = 0; independent performance `NOT_MEASURED`.<br>
+> **Status**: `TGIF_TRAIN_COHORT_INTAKE_APPROVED_PRE_EXECUTION` — Người dùng chính thức phê duyệt Phương án $N=400$ cặp (14 Large [3,5%], 221 Medium [55,25%], 165 Small [41,25%]) và chấp thuận phạm vi INTAKE ONLY bằng Colab CPU (tải 2 archive 18,63 GiB từ Nextcloud chính thức của IMEC, trích xuất chọn lọc 400 cặp, đóng gói ZIP ~120-160 MB trả về local; chưa cho phép detector/evaluation hoặc model training). Ghi nhận các nguyên tắc khoa học: (1) Không coi phân bổ này là tỷ lệ tự nhiên; nhóm Large chỉ có 14 nguồn nên không đưa ra kết luận mạnh riêng cho nhóm đó. (2) Đính chính thống kê: căn cứ "N=400 đảm bảo ME<0,01" từ Phase 4C.7A thuộc về thiết kế cân bằng cũ, CHƯA XÁC LẬP cho thiết kế mới; bắt buộc kiểm tra lại căn cứ thống kê trước evaluation. (3) Bổ sung SHA-256 từng mask được chọn (100% khớp hash trên đĩa cục bộ) và niêm phong danh mục 400 dòng đã khóa (`tgif_train_clean_subset_manifest_locked_n400.json`, SHA-256 `53a6ee472fe840a42abd97ccb7475932e0720f5788f745f57f7a2bcfbc32cc8c`; CSV SHA-256 `dc9584b31899e5484a4eb40dd6ec653909e39f08de48ada17ba138f8dabd03d4`; pool manifest JSON `9e4ef2c9...`, CSV `ba122a4f...`). (4) Khóa quy tắc: bước kiểm tra bộ ba thực hiện chính thức tại LOCAL sau intake (sử dụng 100% masks có sẵn); khóa preprocessing (Lanczos 512x512 RGB, Nearest 512x512 mask binary, cấm letterbox) và Technical QC; quy tắc xử lý mẫu thiếu/hỏng: FAIL-CLOSED, cấm tự chọn mẫu thay thế (zero automatic replacement); an toàn trích xuất và bảo toàn benchmark (cấm sửa/recomposite ảnh). (5) Hoàn thiện launcher Colab CPU (`notebooks/tgif_train_cohort_acquisition_colab.ipynb`), worker (`acquire_tgif_train_subset_colab.py`), runner audit local (`audit_tgif_train_subset_local.py`), và bộ test (`ml/tests/test_tgif_train_intake.py`, 8/8 PASS). 26 quyết định Human Content QC lịch sử tiếp tục PENDING. Full cohort locked, detector calls = 0, independent performance `NOT_MEASURED`.<br>
 > **Findings status**: `NOT_MEASURED` (0 detector calls, 0 cohort evaluation)<br>
 > **Current corrective functional commit**: `79775250ee5393c9f193bdc0485f77998cefaddf` (functional commit registering human approval for Pilot Plan v2 proposal and Protocol Amendment v1.7.0; canonical notebook pins this full SHA).<br>
 > **Real pilot / diagnostic / calibration**: `PILOT_V2_FEASIBILITY_CONCLUDED_8_PAIRS_PENDING_HUMAN_CONTENT_QC` (8 pairs in `pilot-20261009T111247Z` evaluated, Agent recommends 1 ACCEPT / 7 REJECT, Human Content QC PENDING; 2 calibration attempts in `calib-20261009T015749Z` Agent recommends REJECT, Human Content QC PENDING; 6 diagnostic attempts in `diag-20261008T154628Z` 6/6 REJECT; 8 historical pilot pairs in `pilot-20261008T113700Z` PENDING; full 400-pair run remains `NOT_RUN`)<br>
 > **Training runs**: 0 fits, 0 refits; frozen models untouched; retired locked-test not accessed (only its 343 source IDs are read for the disjoint guard)<br>
 > **Evidence classification**: run/commit/artifact observations are `internal-empirical`; model cards/documentation are `external-source`; latent-capacity/context-bias explanations remain `unverified-hypothesis`. Citation keys resolve through `docs/references.bib`.<br>
+
+## MM. Đăng Ký Phê Duyệt Tiếp Nhận TGIF Train N=400, Đính Chính Thống Kê & Bàn Giao Colab CPU Launcher (2026-10-09)
+
+Hồ sơ đăng ký quyết định phê duyệt chính thức của người dùng cho việc tiếp nhận dữ liệu tập kiểm định độc lập `TGIF-Train-Clean-Subset` ($N=400$ cặp) thông qua môi trường Colab CPU:
+
+### 1. Quyết Định Phê Duyệt & Giới Hạn Quyền Hạn (Human Approval & Scope)
+- **Người duyệt**: Dũng Phạm `<valdung04@gmail.com>`.
+- **Thời điểm duyệt**: `2026-10-09T14:19:44Z` (Giờ địa phương: `2026-10-09T21:19:44+07:00`).
+- **Phương án lựa chọn**: Cỡ mẫu **$N = 400$ cặp** (14 Large, 221 Medium, 165 Small), ghép cặp 1:1 nguồn duy nhất.
+- **Phạm vi phê duyệt**: **CHỈ DÀNH CHO TIẾP NHẬN DỮ LIỆU (INTAKE ONLY)** trên Colab CPU.
+  - Cho phép tải 2 archive từ Nextcloud chính thức của IMEC (`orig_training.tar.gz` 5.26 GiB và `sd2-sp_training.tar.gz` 13.37 GiB, tổng 18.63 GiB) vào ổ đĩa tạm `/content/`.
+  - Cho phép trích xuất chọn lọc đúng 400 cặp đã khóa và đóng gói thành `tgif_train_clean_subset_package.zip` (~120–160 MB) để tải về máy local.
+  - **TUYỆT ĐỐI CHƯA CHO PHÉP**: Chạy mô hình detector, đánh giá kiểm định (evaluation pipeline) hoặc huấn luyện mô hình (model training). Toàn bộ mô hình tiếp tục ở trạng thái đóng băng và khóa chặt.
+
+### 2. Các Cam Kết Khoa Học & Đính Chính Thống Kê Bắt Buộc
+1. **Không coi phân bổ là tỷ lệ tự nhiên**: Nhóm Large chỉ có 14 nguồn khả dụng trong toàn bộ split ($3,5\%$). Đây là đặc thù dữ liệu phân đoạn của MS-COCO/TGIF, không phải tỷ lệ can thiệp tự nhiên. **Tuyệt đối không đưa ra kết luận mạnh riêng cho nhóm Large**.
+2. **Đính chính căn cứ sai số ME < 0,01**: Tuyên bố trước đó cho rằng "N=400 đảm bảo $\text{ME} < 0,01$" xuất phát từ mô phỏng Monte Carlo ở Phase 4C.7A trên giả định phân bổ cân bằng $50/50$. Đối với thiết kế phân tầng mới có độ lệch lớn, **căn cứ này CHƯA XÁC LẬP** và bắt buộc phải kiểm tra lại căn cứ thống kê trước khi tiến hành evaluation.
+3. **Bước kiểm tra bộ ba thực hiện tại LOCAL sau intake**: Colab chỉ trích xuất ảnh authentic và edited. Bước kiểm tra bộ ba (tripartite alignment audit) được thực hiện chính thức trên máy LOCAL sau intake bằng `audit_tgif_train_subset_local.py`, đối chiếu với 100% kho mask đã có sẵn trên đĩa cục bộ (0 MB mạng trên Colab).
+4. **Khóa Preprocessing & QC; Cấm tự chọn mẫu thay thế (FAIL-CLOSED)**:
+   - Preprocessing đã khóa: center-crop Lanczos về $512 \times 512$ RGB không nén cho ảnh; center-crop Nearest-neighbor về $512 \times 512$ binarize $\{0, 255\}$ cho mask; diện tích mask tính sau biến đổi; cấm letterboxing.
+   - QC đã khóa: PIL decode 100%, $\text{std} \ge 2,0$, $\text{inside\_mean\_l1} \ge 1,0$.
+   - **Quy tắc xử lý mẫu thiếu/hỏng**: Nếu bất kỳ mẫu nào bị thiếu hoặc lỗi, worker ghi nhận lỗi vào receipt và dừng quy trình. **CẤM TỰ ĐỘNG CHỌN MẪU THAY THẾ (zero automatic replacement)** từ pool nếu chưa có sự phê duyệt của người dùng.
+5. **An toàn trích xuất & Bảo toàn tính nguyên bản benchmark**:
+   - Sử dụng phương pháp đọc luồng tar (`tarfile` stream) để trích xuất trực tiếp 400 tệp mà không giải nén 18,63 GiB ra đĩa. Kiểm tra nghiêm ngặt chống TarSlip/ZipSlip (chặn `..`, absolute paths, symlinks).
+   - **Tuyệt đối không sửa hoặc composite lại ảnh benchmark** để ép outside L1 về 0. Giữ nguyên độ biến thiên pixel thực tế của tác giả TGIF.
+
+### 3. Hồ Sơ Manifest Đã Khóa (Cryptographic Locked Manifests)
+- **Manifest tuyển chọn 400 dòng đã khóa (Locked Selection Manifest)**:
+  - JSON: [`research/evidence/phase-4c.7b/tgif_train_clean_subset_manifest_locked_n400.json`](research/evidence/phase-4c.7b/tgif_train_clean_subset_manifest_locked_n400.json) (SHA-256: `53a6ee472fe840a42abd97ccb7475932e0720f5788f745f57f7a2bcfbc32cc8c`)
+  - CSV: [`research/evidence/phase-4c.7b/tgif_train_clean_subset_manifest_locked_n400.csv`](research/evidence/phase-4c.7b/tgif_train_clean_subset_manifest_locked_n400.csv) (SHA-256: `dc9584b31899e5484a4eb40dd6ec653909e39f08de48ada17ba138f8dabd03d4`)
+  - Toàn bộ 400 mask trên đĩa đã được băm SHA-256 và kiểm tra toàn vẹn bit 100% khớp với manifest khi tính diện tích.
+- **Manifest hồ sơ ứng viên (Candidate Pool Manifest)**:
+  - JSON: [`research/evidence/phase-4c.7b/tgif_train_candidate_manifest_pending.json`](research/evidence/phase-4c.7b/tgif_train_candidate_manifest_pending.json) (SHA-256: `9e4ef2c9f89ad7dc1316d764c0acfff3b55dbc60dcc666d8928ff49a04dcd7b6`)
+  - CSV: [`research/evidence/phase-4c.7b/tgif_train_candidate_manifest_pending.csv`](research/evidence/phase-4c.7b/tgif_train_candidate_manifest_pending.csv) (SHA-256: `ba122a4f934c18dd49d59f33fda2c790101eae8eaf9d4a354d18ae4d39a1f6f3`)
+
+### 4. Bàn Giao Launcher Colab CPU & Bộ Công Cụ
+- **Colab CPU Launcher Notebook**: [`notebooks/tgif_train_cohort_acquisition_colab.ipynb`](notebooks/tgif_train_cohort_acquisition_colab.ipynb) (6 cells tự động: kiểm tra đĩa >= 25 GB, clone/pull branch và kiểm tra mã băm manifest, tải 2 archive từ Nextcloud, chạy worker trích xuất luồng chọn lọc, bàn giao và hỗ trợ tải package ZIP về máy).
+- **Colab Worker Script**: [`scripts/research/acquire_tgif_train_subset_colab.py`](scripts/research/acquire_tgif_train_subset_colab.py).
+- **Local Forensic Audit Script**: [`scripts/research/audit_tgif_train_subset_local.py`](scripts/research/audit_tgif_train_subset_local.py).
+- **Bộ Kiểm Thử Tự Động**: [`ml/tests/test_tgif_train_intake.py`](ml/tests/test_tgif_train_intake.py) (8/8 PASS).
+
+### 5. Kế Hoạch Sau Intake (Post-Intake Protocol)
+1. Người dùng khởi chạy notebook trên Colab CPU để tải và đóng gói `tgif_train_clean_subset_package.zip`.
+2. Tải package ZIP về máy LOCAL vào thư mục `data/research/local-artifacts/phase-4c.7b/`.
+3. Chạy lệnh audit tại LOCAL:
+   ```bash
+   python scripts/research/audit_tgif_train_subset_local.py --package-zip data/research/local-artifacts/phase-4c.7b/tgif_train_clean_subset_package.zip
+   ```
+4. Kiểm toán an toàn ZIP, đối soát bộ ba, kiểm tra leakage Disjoint Guard (0 overlap), và mở HTML contact sheet tự chứa để người dùng thẩm định.
+5. **DỪNG LẠI TRƯỚC EVALUATION** để bàn giao kết quả intake cho người dùng.
+
+---
 
 ## LL. Xác Minh Thực Địa Tiếp Tục Nghiên Cứu bằng Benchmark Có Sẵn (TGIF/TGIF2 Priority Audit & Option P Cross-Disjointness) (2026-10-09)
 

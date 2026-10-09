@@ -1,3 +1,14 @@
+## Formal Human Approval registered for TGIF Train Clean Subset N=400 Intake (Phase 4C.7B trace)
+
+- **Formal Human Approval registered (INTAKE ONLY)**: User Dũng Phạm <valdung04@gmail.com> approved Option $N=400$ pairs (14 Large [3.5%], 221 Medium [55.25%], 165 Small [41.25%]) and authorized Colab CPU data intake: downloading 2 archives ~18.63 GiB on Colab ephemeral disk and returning package ~120-160 MB to local. Detector/evaluation and training strictly NOT AUTHORIZED.
+- **Scientific caveats & statistical rectification**: (1) Distribution is not a natural ratio; Large n=14 yields no strong separate conclusions. (2) Rectified statistical claim: Phase 4C.7A "N=400 ensures ME < 0.01" does NOT apply to this skewed design; statistical basis must be re-checked before evaluation. (3) Tripartite audit deferred to LOCAL after intake, using 100% locally resident masks on disk (0 MB mask network).
+- **Locked selection manifest with mask SHA-256**: Locked 400-row manifest exported and verified: `tgif_train_clean_subset_manifest_locked_n400.json` (SHA-256 `53a6ee472fe840a42abd97ccb7475932e0720f5788f745f57f7a2bcfbc32cc8c`) and `.csv` (SHA-256 `dc9584b31899e5484a4eb40dd6ec653909e39f08de48ada17ba138f8dabd03d4`). 100% of 400 masks verified on disk matching hash and pixel area. Pool manifest updated with `mask_sha256`: JSON (`9e4ef2c9...`), CSV (`ba122a4f...`).
+- **Fail-closed rules & extraction security**: Preprocessing (Lanczos 512x512 RGB, Nearest 512x512 mask binary, no letterbox) and Technical QC locked. Missing/corrupt sample rule: FAIL-CLOSED with zero automatic replacement. Official IMEC Nextcloud URLs bound; tar stream-extraction with traversal/link guards; benchmark native variance preserved (zero recompositing).
+- **Colab CPU launcher & test suite**: Canonical launcher `notebooks/tgif_train_cohort_acquisition_colab.ipynb` finalized with 6 cells and download helper. Unit test suite `ml/tests/test_tgif_train_intake.py` implemented (8/8 PASS).
+- **Governance strictly preserved**: Full cohort locked before evaluation, detector calls = 0, independent performance `NOT_MEASURED`, 26 historical Content QC decisions PENDING.
+
+---
+
 ## TGIF train cohort intake plan empirical verification, candidate manifest PENDING & Amendment v1.8.0 (Phase 4C.7B trace)
 
 - **Tripartite binding & COCO CDN parity**: Empirically proved authentic must be extracted from TGIF `orig_training.tar.gz` (`_orig.png`) due to native canvas scaling/interpolation differences vs raw COCO CDN. Proved edited (`sd2-sp variation 0`) changed pixels are 100% bounded within Photoshop adapted mask (`..._mask_segm.png_ps_mask.png`).

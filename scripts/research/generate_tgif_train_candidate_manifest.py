@@ -117,6 +117,8 @@ def main():
         sid = str(int(raw_id))
         if sid in forbidden_ids:
             continue
+        mask_bytes = p.stat().st_size
+        mask_sha = sha256_file(p)
         px, pct, orig_dim = transform_mask_512(p)
         bracket = classify_bracket(pct)
         if bracket.startswith("excluded"):
@@ -133,6 +135,8 @@ def main():
             "mask_type": "segm",
             "variation_idx": 0,
             "mask_rel_path": rel_mask_path,
+            "mask_sha256": mask_sha,
+            "mask_file_bytes": mask_bytes,
             "orig_rel_path_in_archive": f"orig/training/{category}/{raw_id}_orig.png",
             "sd2_rel_path_in_archive": f"sd2-sp/training/{category}/{raw_id}_mask_segm.png_ps_mask.png_sd2_0.png",
             "canvas_size": [512, 512],
@@ -218,15 +222,23 @@ def main():
 
     all_pool_sources = large_ordered + medium_ordered + small_ordered
     print(f"Total pool sources cataloged: {len(all_pool_sources)}")
-    print(f"Total selected in N=400: {sum(1 for s in all_pool_sources if s.get('selected_in_n400'))}")
-    print(f"Total selected in N=200: {sum(1 for s in all_pool_sources if s.get('selected_in_n200'))}")
+    print(f"Total selected in N=400: {len(target_400_sources)}")
+
+    # Verify each selected mask on disk matches mask_sha256
+    print("Verifying 400 selected masks on disk against computed SHA-256...")
+    for idx, s in enumerate(target_400_sources, 1):
+        mp = REPO_ROOT / s["mask_rel_path"]
+        assert mp.is_file(), f"Selected mask not found on disk: {mp}"
+        disk_sha = sha256_file(mp)
+        assert disk_sha == s["mask_sha256"], f"Mask hash mismatch for {s['task_id']}: {disk_sha} != {s['mask_sha256']}"
+    print("100% of 400 selected masks verified bit-identical on disk.")
 
     manifest_metadata = {
         "schema_version": "1.0.0",
         "phase": "4C.7B",
         "manifest_name": "tgif_train_candidate_manifest_pending",
-        "status": "PENDING_HUMAN_APPROVAL",
-        "generated_at_utc": "2026-10-09T14:10:00Z",
+        "status": "APPROVED_BY_HUMAN_INTAKE_ONLY",
+        "generated_at_utc": "2026-10-09T14:20:00Z",
         "selection_seed": 20261010,
         "rng_engine": "PCG64",
         "pairing_contract": "1_to_1_unique_source_pairing",
@@ -252,12 +264,31 @@ def main():
             "small_under_10pct": len(small_ordered),
             "total_eligible_unique_sources": len(all_pool_sources)
         },
+        "human_approval_registered": {
+            "reviewer": "Dũng Phạm <valdung04@gmail.com>",
+            "decision": "APPROVED_OPTION_N400_INTAKE_ONLY",
+            "approved_at_utc": "2026-10-09T14:19:44Z",
+            "approval_scope": "INTAKE_ONLY (Colab CPU download of orig_training.tar.gz and sd2-sp_training.tar.gz ~18.63 GiB, selective extraction of 400 pairs, return zip ~120-160 MB to local. Detector/evaluation and training NOT PERMITTED)",
+            "selected_allocation": {
+                "total_pairs": 400,
+                "large_over_30pct": 14,
+                "medium_10_to_30pct": 221,
+                "small_under_10pct": 165
+            },
+            "scientific_honesty_caveats": [
+                "Không coi phân bổ này là tỷ lệ tự nhiên; nhóm large chỉ có 14 nguồn nên không đưa ra kết luận mạnh riêng cho nhóm đó.",
+                "Tuyên bố 'N=400 đảm bảo ME<0,01' chưa xác lập cho thiết kế mới; kiểm tra lại căn cứ thống kê trước evaluation.",
+                "Bước kiểm tra bộ ba thực hiện chính thức tại LOCAL sau intake (sử dụng 100% masks đã có sẵn trên đĩa local).",
+                "Khóa preprocessing và QC; quy tắc xử lý mẫu thiếu/hỏng: FAIL-CLOSED, không tự chọn mẫu thay thế.",
+                "Không sửa/composite lại ảnh benchmark; bảo toàn nguyên vẹn độ biến thiên thực tế của tác giả."
+            ]
+        },
         "deficit_analysis_and_quota_recommendation": {
             "large_over_30pct": {
                 "v1_protocol_target_quota_pairs": 120,
                 "available_in_tgif_training_pool": 14,
                 "quota_deficit": 106,
-                "scientific_action": "Strictly report deficit without relaxing mask area thresholds (do not lower from 30% to 20%). Take 100% of available large sources (14 pairs)."
+                "scientific_action": "Strictly report deficit without relaxing mask area thresholds. Take 100% of available large sources (14 pairs)."
             },
             "medium_10_to_30pct": {
                 "v1_protocol_target_quota_pairs": 160,
@@ -296,7 +327,7 @@ def main():
             "colab_archive_sd2_gib": 13.37,
             "colab_subset_extracted_authentic_pngs": 400,
             "colab_subset_extracted_edited_pngs": 400,
-            "local_download_package_zip_mb": "~100-150 MB",
+            "local_download_package_zip_mb": "~120-160 MB",
             "local_resident_masks_mb": 0.0
         }
     }
@@ -306,16 +337,17 @@ def main():
         "candidates": all_pool_sources
     }
 
+    # 1. Output candidate pool manifest
     out_json = REPO_ROOT / "research/evidence/phase-4c.7b/tgif_train_candidate_manifest_pending.json"
     with open(out_json, "w", encoding="utf-8") as f:
         json.dump(manifest_output, f, indent=2, ensure_ascii=False)
-    print(f"Wrote JSON manifest to {out_json}")
+    print(f"Wrote JSON pool manifest to {out_json}")
 
     out_csv = REPO_ROOT / "research/evidence/phase-4c.7b/tgif_train_candidate_manifest_pending.csv"
     csv_fields = [
         "source_id", "raw_id", "category", "task_id", "mask_type", "variation_idx",
         "stratum_area_class", "rank_in_stratum", "selected_in_n400", "selected_in_n200",
-        "mask_px_512", "mask_pct_512", "mask_rel_path",
+        "mask_px_512", "mask_pct_512", "mask_rel_path", "mask_sha256", "mask_file_bytes",
         "orig_rel_path_in_archive", "sd2_rel_path_in_archive"
     ]
     with open(out_csv, "w", encoding="utf-8", newline="") as f:
@@ -324,12 +356,58 @@ def main():
         for c in all_pool_sources:
             row = {k: c.get(k, "") for k in csv_fields}
             writer.writerow(row)
-    print(f"Wrote CSV manifest to {out_csv}")
+    print(f"Wrote CSV pool manifest to {out_csv}")
 
-    json_sha = sha256_file(out_json)
-    csv_sha = sha256_file(out_csv)
-    print(f"JSON SHA-256: {json_sha}")
-    print(f"CSV SHA-256: {csv_sha}")
+    # 2. Output LOCKED 400-row selection manifest
+    locked_metadata = dict(manifest_metadata)
+    locked_metadata["manifest_name"] = "tgif_train_clean_subset_manifest_locked_n400"
+    locked_metadata["status"] = "LOCKED_APPROVED_SELECTION_N400"
+    locked_metadata["selected_cohort_count"] = len(target_400_sources)
+
+    # Re-order target_400_sources deterministically: Large (1..14), Medium (1..221), Small (1..165)
+    target_400_sources_sorted = sorted(
+        target_400_sources,
+        key=lambda x: (
+            {"large_over_30pct": 0, "medium_10_to_30pct": 1, "small_under_10pct": 2}[x["stratum_area_class"]],
+            x["rank_in_stratum"]
+        )
+    )
+
+    for overall_idx, item in enumerate(target_400_sources_sorted, 1):
+        item["selection_index_1based"] = overall_idx
+
+    locked_json_path = REPO_ROOT / "research/evidence/phase-4c.7b/tgif_train_clean_subset_manifest_locked_n400.json"
+    locked_output = {
+        "metadata": locked_metadata,
+        "selected_candidates": target_400_sources_sorted
+    }
+    with open(locked_json_path, "w", encoding="utf-8") as f:
+        json.dump(locked_output, f, indent=2, ensure_ascii=False)
+    print(f"Wrote LOCKED 400 JSON manifest to {locked_json_path}")
+
+    locked_csv_path = REPO_ROOT / "research/evidence/phase-4c.7b/tgif_train_clean_subset_manifest_locked_n400.csv"
+    locked_csv_fields = [
+        "selection_index_1based", "source_id", "raw_id", "category", "task_id", "mask_type", "variation_idx",
+        "stratum_area_class", "rank_in_stratum", "mask_px_512", "mask_pct_512",
+        "mask_rel_path", "mask_sha256", "mask_file_bytes",
+        "orig_rel_path_in_archive", "sd2_rel_path_in_archive"
+    ]
+    with open(locked_csv_path, "w", encoding="utf-8", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=locked_csv_fields)
+        writer.writeheader()
+        for c in target_400_sources_sorted:
+            row = {k: c.get(k, "") for k in locked_csv_fields}
+            writer.writerow(row)
+    print(f"Wrote LOCKED 400 CSV manifest to {locked_csv_path}")
+
+    pool_json_sha = sha256_file(out_json)
+    pool_csv_sha = sha256_file(out_csv)
+    locked_json_sha = sha256_file(locked_json_path)
+    locked_csv_sha = sha256_file(locked_csv_path)
+    print(f"Pool JSON SHA-256: {pool_json_sha}")
+    print(f"Pool CSV SHA-256: {pool_csv_sha}")
+    print(f"LOCKED 400 JSON SHA-256: {locked_json_sha}")
+    print(f"LOCKED 400 CSV SHA-256: {locked_csv_sha}")
 
 if __name__ == "__main__":
     main()
