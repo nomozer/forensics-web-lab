@@ -1,12 +1,134 @@
 # Phase 4C.7B — Independent Cohort Acquisition: Protocol Amendment, Automated Pipeline, and Feasibility Alignment
 
-> **Phase**: Phase 4C.7B — Independent Cohort Acquisition & Feasibility Alignment (Pilot v2 run intake, production CLI audit, and empirical Content QC evaluation)<br>
-> **Status**: `PILOT_V2_EVALUATED_8_PAIRS_PENDING_HUMAN_CONTENT_QC`. Run `pilot-20261009T111247Z` (bound to functional commit `79775250ee5393c9f193bdc0485f77998cefaddf`, approved plan `a95c96c594777025aac58049ca81978245035a54ad98c9298c0cf5a1ec0d8565`, and catalog extension `0d875b81a8044e3285ecf0331beec6646d94b085915baaaa32247e86ee9023e7`; package ZIP SHA-256 `a0521a16f3b5fd498aac5fc15ecc43def83f5bc64c7d907123a73e251ce1de0d`, 6,700,761 bytes) safely extracted into dedicated directory `data/research/local-artifacts/phase-4c.7b/pilot-20261009T111247Z/` (34 members, 0 traversal, 0 overwrite). Production CLI audit at bound commit `79775250ee5393c9f193bdc0485f77998cefaddf` PASS: exactly 8 attempts consumed (1 attempt per candidate, 0 retries, `automatic_replacement=false`), Technical QC status `PARTIAL_PILOT_TECHNICAL_PASS` (8/8 valid pairs). Input bit-parity and mask geometries verified bit-exact from PNGs. Outside-mask L1 = 0.000000 enforced strictly by 1-bit binary compositing (not diffusion native invariance). Inside mean L1 ranges from 11.08 to 61.74; reiterates that inside L1 is not a semantic success metric. Visual inspection across all 8 pairs revealed: Slot 1 REJECT (hallucinated distorted glass/metal, severed pan arcs); Slot 2 ACCEPT (matte navy-blue upper cabinets and range hood with high realism and natural perspective); Slot 3 REJECT (total semantic omission on flat red carpet, sharp rectangular step seams); Slot 4 REJECT (hallucinatory hybrid structure with pants/ladder/lamps, severe horizontal/vertical seams); Slot 5 REJECT (headland removed, but unintended chalk cliff regenerated in distant bay with blurry water); Slot 6 REJECT (solid wooden barrel generated with shadow, but flowers omitted and bottom of historic blue wooden door severely clipped/distorted); Slot 7 REJECT (total semantic omission of bird, darker rectangular sky patch tone mismatch); Slot 8 REJECT (commemorative column generated, but severed bronze apex sticks out above y=40, orange tent structure cut off at x=135, plinth reflective clash). Agent recommends 1 ACCEPT / 7 REJECT. Formal Human Content QC status remains strictly **PENDING** across all 8 pairs awaiting user decision. Diagnostic 6/6 REJECT, calibration 2 PENDING, historical pilot 8 PENDING preserved. Full cohort remains locked ($N=400$); detector calls = 0; independent performance `NOT_MEASURED`.<br>
+> **Phase**: Phase 4C.7B — Independent Cohort Acquisition & Feasibility Alignment (Pilot v2 Feasibility Closure and Existing Dataset Continuation Proposal)<br>
+> **Status**: `PILOT_V2_FEASIBILITY_CONCLUDED_INSUFFICIENT_EVIDENCE_FOR_400_PAIRS`. Run `pilot-20261009T111247Z` (bound to functional commit `79775250ee5393c9f193bdc0485f77998cefaddf`, approved plan `a95c96c594777025aac58049ca81978245035a54ad98c9298c0cf5a1ec0d8565`, and catalog extension `0d875b81a8044e3285ecf0331beec6646d94b085915baaaa32247e86ee9023e7`; package ZIP SHA-256 `a0521a16f3b5fd498aac5fc15ecc43def83f5bc64c7d907123a73e251ce1de0d`, 6,700,761 bytes) safely extracted into dedicated directory `data/research/local-artifacts/phase-4c.7b/pilot-20261009T111247Z/` (34 members, 0 traversal, 0 overwrite). Production CLI audit at bound commit `79775250ee5393c9f193bdc0485f77998cefaddf` PASS (8/8 pairs, Technical QC PASS). Visual examination by Agent recommends 1 ACCEPT / 7 REJECT; formal Human Content QC status remains strictly `PENDING_CONTENT_QC` across all 8 pairs awaiting user decision. Bounded conclusion: **“Chưa đủ bằng chứng để mở rộng cấu hình hiện tại lên 400 cặp.”** Agent 1/8 recommendation is not an official acceptance rate; local-crop diagnostic Arm B was formally rejected 6/6 by Human Content QC; does not imply all inpainting models fail. Proposal for continuation using existing audited external benchmark datasets prepared; full cohort ($N=400$) strictly locked; detector calls = 0; independent performance `NOT_MEASURED`.<br>
 > **Findings status**: `NOT_MEASURED` (0 detector calls, 0 cohort evaluation)<br>
 > **Current corrective functional commit**: `79775250ee5393c9f193bdc0485f77998cefaddf` (functional commit registering human approval for Pilot Plan v2 proposal and Protocol Amendment v1.7.0; canonical notebook pins this full SHA).<br>
-> **Real pilot / diagnostic / calibration**: `PILOT_V2_EVALUATED_8_PAIRS_PENDING_HUMAN_CONTENT_QC` (8 pairs in `pilot-20261009T111247Z` evaluated, Agent recommends 1 ACCEPT / 7 REJECT, Human Content QC PENDING; 2 calibration attempts in `calib-20261009T015749Z` Agent recommends REJECT, Human Content QC PENDING; 6 diagnostic attempts in `diag-20261008T154628Z` 6/6 REJECT; 8 historical pilot pairs in `pilot-20261008T113700Z` PENDING; full 400-pair run remains `NOT_RUN`)<br>
+> **Real pilot / diagnostic / calibration**: `PILOT_V2_FEASIBILITY_CONCLUDED_8_PAIRS_PENDING_HUMAN_CONTENT_QC` (8 pairs in `pilot-20261009T111247Z` evaluated, Agent recommends 1 ACCEPT / 7 REJECT, Human Content QC PENDING; 2 calibration attempts in `calib-20261009T015749Z` Agent recommends REJECT, Human Content QC PENDING; 6 diagnostic attempts in `diag-20261008T154628Z` 6/6 REJECT; 8 historical pilot pairs in `pilot-20261008T113700Z` PENDING; full 400-pair run remains `NOT_RUN`)<br>
 > **Training runs**: 0 fits, 0 refits; frozen models untouched; retired locked-test not accessed (only its 343 source IDs are read for the disjoint guard)<br>
 > **Evidence classification**: run/commit/artifact observations are `internal-empirical`; model cards/documentation are `external-source`; latent-capacity/context-bias explanations remain `unverified-hypothesis`. Citation keys resolve through `docs/references.bib`.<br>
+
+## KK. Chốt Đánh Giá Tính Khả Thi Phase 4C.7B sau Pilot v2 & Đề Xuất Nghiên Cứu Tiếp Tục bằng Dữ Liệu Sẵn Có (2026-10-09)
+
+Hồ sơ chốt đánh giá tính khả thi kỹ thuật của Phase 4C.7B sau đợt chạy Pilot v2 (`pilot-20261009T111247Z`), tích hợp đầy đủ chuỗi thực chứng từ 4 đợt chạy độc lập (Pilot v1, Diagnostic, Calibration, Pilot v2) và đề xuất phương án tiếp tục nghiên cứu trên dữ liệu có sẵn. Không chạy thêm pilot, calibration, retry hay generation.
+
+### 1. Phân Định Rạch Ròi Ba Cấp Độ Thẩm Định Kỹ Thuật và Nội Dung
+
+Nhằm đảm bảo tính trung thực khoa học tuyệt đối (*Scientific Honesty*), hệ thống phân tách nghiêm ngặt ba cấp độ thẩm định:
+
+1. **Technical QC (Tự động / Số học)**:
+   - *Bản chất*: Bộ lọc tự động kiểm tra định dạng file ảnh PNG lossless $512 \times 512$, độ lệch chuẩn ảnh authentic $\ge 5.0$, delta tuyệt đối nội vùng mask L1 $\ge 3.0$, delta ngoại vùng mask $\le 0.5$, và mask nhị phân $\{0, 255\}$.
+   - *Kết quả*: **PASS 100%** trên toàn bộ các attempt hợp lệ đã thực hiện (nhờ lớp ghép 1-bit binary request mask compositing cưỡng chế `outside_mean_l1 == 0.000000` và `outside_max_delta == 0.0`).
+   - *Ý nghĩa pháp lý*: Technical QC chỉ xác nhận pipeline không lỗi crash, tệp ảnh hợp lệ và không biến đổi pixel ngoài mask; **tuyệt đối không đo lường độ chính xác ngữ nghĩa hay chất lượng thị giác**.
+2. **Khuyến nghị của Agent (Sơ bộ / Heuristic)**:
+   - *Bản chất*: Đánh giá định tính ban đầu của tác nhân AI dựa trên các tiêu chí kiểm tra trực quan (sự hiện diện vật thể, vị trí/tỷ lệ, độ chân thực/ánh sáng, chất lượng đường biên).
+   - *Kết quả Pilot v2*: Agent khuyến nghị **1 ACCEPT** (Slot 2: tủ bếp navy-blue) / **7 REJECT** (Slot 1, 3, 4, 5, 6, 7, 8).
+   - *Ý nghĩa pháp lý*: Khuyến nghị của Agent chỉ là thông tin hỗ trợ kỹ thuật; **tuyệt đối không có giá trị nghiệm thu chính thức và không được coi là tỷ lệ thành công của hệ thống**.
+3. **Quyết định Human Content QC (Chính thức / Quyết định Người Thẩm Định)**:
+   - *Bản chất*: Quyết định phê duyệt hoặc từ chối độc lập của người thẩm định con người (Dũng Phạm `<valdung04@gmail.com>`).
+   - *Hiện trạng trong toàn bộ Phase 4C.7B*:
+     - **Diagnostic run** (`diag-20261008T154628Z`): **6/6 REJECT** (Đã chốt chính thức tại `diagnostic_content_qc_determinations.json` lúc `2026-10-08T19:34:30Z`).
+     - **Pilot v2** (`pilot-20261009T111247Z`): **8 cặp PENDING** (`PENDING_CONTENT_QC`, chưa có quyết định người duyệt).
+     - **Calibration** (`calib-20261009T015749Z`): **2 attempts PENDING** (`PENDING_CONTENT_QC`, chưa có quyết định người duyệt).
+     - **Follow-up pilot v1** (`pilot-20261008T113700Z`): **8 cặp PENDING** (`PENDING_CONTENT_QC`, chưa có quyết định người duyệt).
+     - **Historical pilot v0** (`pilot-20261007T132003Z`): **8 cặp PENDING** (`PENDING_CONTENT_QC`).
+   - *Quy tắc bất biến*: Chỉ ghi nhận ACCEPT/REJECT khi người dùng đã ra quyết định chính thức; tất cả các cặp chưa được duyệt tiếp tục giữ nguyên trạng thái **PENDING**.
+
+### 2. Tổng Hợp Kết Quả Các Run Thực Nghiệm và Phân Loại Khiếm Khuyết
+
+Tổng hợp ngắn các đợt chạy đã thực hiện trong Phase 4C.7B, bao quát đầy đủ các dạng thất bại kỹ thuật và chất lượng tạo sinh (liên kết trực tiếp các run, commit, và artifact hiện có mà không tạo dossier trùng lặp):
+
+1. **Bỏ sót đối tượng (Semantic Omission)**:
+   - *Cà chua nhỏ* (`IND_COCO_SDXL_002`, mask 3.78%): 4 attempts qua 3 đợt chạy (Pilot v1, Diagnostic Arm A, Calibration 2 attempts với guidance 7.5 và 9.5) đều thất bại hoàn toàn. Mô hình inpaint vân ruột bánh mì thay vì tạo quả cà chua bi.
+   - *Cặp táp da* (`IND_COCO_SDXL_042`, mask 5.95%, Pilot v2 Slot 3): Omission 100% trên nền thảm đỏ phẳng đồng nhất (max delta vùng target chỉ 37.0).
+   - *Chim bay* (`IND_COMMONS_SDXL_001`, mask 6.58%): Omission 100% trên bầu trời mây trong Pilot v1, Diagnostic Arm A, và Pilot v2 (Slot 7).
+   - *Vali hành lý* (`IND_COMMONS_SD2_002`, mask 14.76%): Omission 100% trên đường đá cuội trong Pilot v1 và Diagnostic Arm A.
+   - *Chậu hoa* (`IND_COMMONS_SD2_040`, mask 12.76%, Pilot v2 Slot 6): Tạo được khối thùng gỗ mộc nhưng bỏ sót hoàn toàn hoa (thùng rỗng).
+2. **Sai ngữ nghĩa & Ảo giác (Semantic Hallucination)**:
+   - *Vali hành lý* (`IND_COMMONS_SD2_002`, Diagnostic Arm B, crop 1.6x): Mô hình tạo ra một chiếc xe hơi đồ chơi cổ hoàn chỉnh có bánh và mui thay vì chiếc vali hành lý, dù inside L1 tăng vọt (43.39 vs 30.74).
+   - *Đồng hồ treo tường* (`IND_COCO_SD2_001`, Pilot v2 Slot 1): Thất bại tạo hình đồng hồ tròn; sinh mảng phản xạ kính/kim loại đa diện méo mó.
+   - *Bàn dã ngoại* (`COCO_EXT_SDXL_001`, Pilot v2 Slot 4): Dị dạng cấu trúc nặng nề, chân bàn phủ lớp màu xanh giống ống quần; nan sắt chìm dưới cát và chao đèn lơ lửng.
+   - *Mũi đất biển* (`IND_COMMONS_SD2_001`, Pilot v2 Slot 5): Xóa sạch mũi đất tiền cảnh nhưng tự tái sinh một sườn vách đá phấn trắng dựng đứng mới thay thế đường bờ vịnh/thị trấn xa.
+3. **Sai lệch vị trí & Đứt gãy hình học (Placement Deficit & Structural Severance)**:
+   - *Chim bay* (`IND_COMMONS_SDXL_001`, Diagnostic Arm B): Sinh được bóng chim nhưng trôi lệch xuống dưới target box $dy = +41.0$ px ($dx = -30.5$ px, độ trùng khớp theo chiều dọc = 0 px).
+   - *Cột đá kỷ niệm* (`IND_COMMONS_SDXL_005`, Pilot v2 Slot 8): Sinh được cột đá nhưng đỉnh ngọn tượng đồng cũ thò ra ngoài đỉnh mask ($y < 40$); rạp cam phía sau bị cắt cụt thẳng đứng tại $x=135$.
+   - *Cắt cụt chảo đồng lân cận* tại Slot 1 (`IND_COCO_SD2_001`) do biên mask chữ nhật AABB cắt ngang chảo.
+   - *Cắt vỡ chân cửa gỗ lịch sử* tại Slot 6 (`IND_COMMONS_SD2_040`) do mask chữ nhật chạm chân công trình.
+   - *Cắt đứt lan can kim loại 210 px* tại `IND_COMMONS_SDXL_003` trong Pilot v1.
+4. **Lỗi bậc biên & Lệch tông mảng lớn (Boundary Seams & Tonal Steps)**:
+   - *Bước nhảy vi mô tại biên mask*: Hard binary compositing (1-bit) luôn tạo ra bậc nhảy tương phản vi mô tại biên (top/left edge L1 step 8.17–9.56 vs authentic 1.81–4.12 trên cà chua).
+   - *Lệch tông diện tích lớn*: Mảng trời chữ nhật đậm màu bao quanh chim trong Diagnostic Arm B và Pilot v2 Slot 7 ($\Delta\text{RGB} \approx [-10, -11, -3]$); mảng trần nhà 30% area trong Pilot v1 (`IND_COCO_SDXL_041`); mảng thảm đỏ lệch tông trong Pilot v2 Slot 3.
+   - *Thử nghiệm feathering cosine ($k=2$ px)*: Đã kiểm chứng thực nghiệm tại `derived_feathered_k2/` — chỉ làm mịn bậc vi mô 1–2 px nhưng không thể khắc phục sự đứt gãy hình học vĩ mô hay tonal mismatch diện tích lớn.
+5. **Liên kết Lineage Artifacts Hiện Có**:
+   - `pilot-20261009T111247Z`: Functional commit `79775250ee5393c9f193bdc0485f77998cefaddf`, artifact `data/research/local-artifacts/phase-4c.7b/pilot-20261009T111247Z/`, review sheet `pilot_v2_content_qc_review_contact_sheet.html`.
+   - `calib-20261009T015749Z`: Functional commit `045ea70cb9067ede3833f7a01562199869f4ae56`, artifact `data/research/local-artifacts/phase-4c.7b/calib-20261009T015749Z/`, review sheet `calibration_contact_sheet.html`.
+   - `diag-20261008T154628Z`: Functional commit `0f99897c8ee003dc8ecbb55b09c4aaeb2994c2bc`, artifact `data/research/local-artifacts/phase-4c.7b/diag-20261008T154628Z/`, review sheet `diagnostic_contact_sheet.html`, dossier `diagnostic_content_qc_determinations.json`.
+   - `pilot-20261008T113700Z`: Functional commit `d9d99b678053972436032a828056a76a6392fbb5`, artifact `data/research/local-artifacts/phase-4c.7b/pilot-20261008T113700Z/`, review sheet `content_qc_contact_sheet.html`.
+   - `pilot-20261007T132003Z`: Historical commit `7d2eea4027e2a17b51e6665ff81d481e4e333d48`, artifact `data/research/local-artifacts/phase-4c.7b/pilot-20261007T132003Z/`.
+
+### 3. Kết Luận Có Giới Hạn (Bounded Feasibility Conclusion)
+
+Dựa trên toàn bộ dữ liệu thực chứng thu được, kết luận chính thức về tính khả thi của quy trình hiện tại được xác lập như sau:
+
+> **“Chưa đủ bằng chứng để mở rộng cấu hình hiện tại lên 400 cặp.”**
+
+Các nguyên tắc khoa học giới hạn kết luận:
+1. **Không coi 1/8 khuyến nghị ACCEPT là tỷ lệ nghiệm thu chính thức**:
+   - Con số 1/8 chỉ là khuyến nghị sơ bộ của Agent từ quan sát thị giác; toàn bộ 8 cặp vẫn đang giữ trạng thái `PENDING_CONTENT_QC` chờ người dùng thẩm định.
+   - Về mặt thống kê, một mẫu pilot $n=8$ mang tính thăm dò không đủ độ tin cậy để suy rộng thành tỷ lệ chấp nhận của toàn bộ cohort $N=400$.
+2. **Không khẳng định local crop đã giải quyết chất lượng**:
+   - Mặc dù Arm B trong diagnostic tạo được vật thể ở 2/2 ca SDXL, toàn bộ **6/6 attempts trong diagnostic đã bị Human Content QC chính thức REJECT** (do sai lệch placement $dy = +41.0$ px, bậc nhảy tương phản biên, texture disparity, và xe hơi đồ chơi hallucination trên SD2).
+   - Local crop giải quyết được độ phân giải cục bộ nhưng gây mất ngữ cảnh toàn cục, làm phát sinh các lỗi nghiêm trọng về vị trí và độ đồng nhất tông màu.
+3. **Không suy rộng thành kết luận mọi mô hình inpainting đều thất bại**:
+   - Kết luận này **chỉ giới hạn nghiêm ngặt trong cấu hình kỹ thuật cụ thể đã kiểm thử thực nghiệm**: Stable Diffusion 2 Inpainting (qua mirror cộng đồng) và SDXL Inpainting 1.0 (Diffusers), hoạt động trên canvas toàn phần $512 \times 512$, sử dụng mặt nạ hình chữ nhật AABB ghép nhị phân 1-bit, trên tập prompt và candidate của catalog hiện hành.
+   - Kết luận không khẳng định các công nghệ inpainting khác (như FLUX Inpainting, BrushNet, PowerPaint, contour-guided inpainting, hoặc multi-scale Poisson blending) đều thất bại.
+
+### 4. Đề Xuất Tiếp Tục Nghiên Cứu bằng Dữ Liệu Sẵn Có
+
+Để giải quyết bài toán kiểm định độc lập mà không tiếp tục tiêu tốn tài nguyên vào việc vi điều chỉnh inpainting thủ công, đề xuất phương án chuyển trọng tâm sang sử dụng các bộ dữ liệu / benchmark có sẵn.
+
+#### 4.1. Rà Soát Dataset / Benchmark trong Registry và Bibliography Hiện Có
+
+| Dataset / Benchmark | Nguồn Sơ Cấp (Primary Source) | Giấy Phép & Bản Quyền | Cấu Trúc Nhãn & Mask | Trạng Thái Registry | Đánh Giá Tính Sẵn Sàng cho Nghiên Cứu Hiện Tại |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **TGIF** | Mareen et al., WIFS 2024 `[@mareen2024tgif]` | `CC BY-SA 4.0` (COCO base `CC BY 4.0`) | `ai_edited` vs `authentic`, ground-truth masks binary (`bbox`, `segm`) | `research-only`, `verified` | Đã có Option P trong repo (684 task instances). Kho Nextcloud còn các subfolder chưa dùng (`sd2-fr`, `sdxl-fr`, `ps-sp`). Có thể tuyển chọn tập con ngoại vi sạch với điều kiện vượt qua Disjoint Guard với 684 nguồn Option P. |
+| **TGIF2** | Mareen et al., JIS 2026 `[@mareen2026tgif2]` | `CC BY-SA 4.0` | `ai_edited` vs `authentic`, FLUX.1 inpainting, ground-truth masks | `research-only`, `verified` | Mở rộng TGIF thêm FLUX.1 (schnell, dev, filldev). Dung lượng nén rất lớn (>180 GB). Cần lọc tập con nhỏ và kiểm toán disjointness với MS-COCO Option P. |
+| **SAGI-D** | Giakoumoglou et al., ICCV 2025 `[@giakoumoglou2025sagi]` | Code: Apache-2.0 / Dataset: Academic Research | `ai_edited` (>95k ảnh inpainting) + binary masks | `blocked`, `proposed` | Cần xác minh nguồn sơ cấp về quyền phân phối lại của các ảnh nguồn gốc trước khi mở khóa tiếp nhận. |
+| **GenImage** | Zhu et al., NeurIPS 2023 `[@zhu2023genimage]` | `CC BY-NC-SA 4.0` | `authentic` vs `fully_generated` (8 generators), **KHÔNG CÓ mask** | `research-only`, `verified` | Đã đăng ký trong registry. Tuy nhiên **chỉ có dữ liệu tạo sinh toàn phần (`fully_generated`)**, không có nhãn `ai_edited` và không có mask inpainting. |
+| **RAID / RealHD** | RAID benchmark / RealHD | Code Apache-2.0 / Chưa công bố | Hỗn hợp, unreleased | `blocked` | Chưa đủ điều kiện pháp lý và kỹ thuật để tiếp nhận. |
+
+#### 4.2. Đối Chiếu với Câu Hỏi Nghiên Cứu AI-Edited Hiện Tại
+
+Câu hỏi nghiên cứu hiện tại yêu cầu:
+1. **Không gian nhãn**: Nhị phân `authentic` vs `ai_edited` (hoặc mở rộng 3 lớp với `fully_generated`).
+2. **Provenance & Giấy phép**: Nguồn gốc xác minh, giấy phép phù hợp với Research Track (ADR-0006: cấm đưa vào sản phẩm, chỉ dùng cho nghiên cứu/bài báo).
+3. **Split & Chống Leakage (Tuyệt đối quan trọng)**:
+   - Các mô hình hiện tại (5 outer-fold checkpoints) đã được huấn luyện/đánh giá trên 684 nguồn Option P lịch sử (COCO sources).
+   - Bất kỳ bộ dữ liệu ngoại vi nào đưa vào đánh giá độc lập **BẮT BUỘC phải vượt qua 4-level Disjoint Guard**: Không trùng `source_id`, không trùng `origin_id`, không trùng mã băm ảnh gốc `raw_sha256`, và không trùng mã băm ảnh chuẩn hóa `master_sha256`.
+4. **Mask vùng sửa (Ground-Truth Mask)**:
+   - Cần thiết để đánh giá **Auxiliary RQ5 (Inpainting Heatmap Localization)** thông qua mIoU/Dice giữa patch heatmap của mô hình và mask thực tế.
+5. **Khả năng đánh giá độc lập**: Dữ liệu chưa từng được mô hình tiếp xúc trong quá trình huấn luyện, chọn siêu tham số hay hiệu chuẩn.
+
+#### 4.3. Phân Định Rõ Hai Hướng Lựa Chọn
+
+- **Lựa chọn A: Giữ Nguyên Câu Hỏi Nghiên Cứu Hiện Tại (Khuyến Nghị)**:
+  - *Phương pháp*: Tuyển chọn một tập con ngoại vi kiểm toán (**External Benchmark Inpainting Subset**) từ nguồn công khai sẵn có đã có ground-truth mask (ví dụ: các mẫu sạch từ subfolder chưa dùng của TGIF/TGIF2 sau khi chạy lọc loại trừ toàn bộ 684 COCO IDs Option P, hoặc SAGI-D sau khi hoàn thành xác minh bản quyền ảnh nguồn sơ cấp).
+  - *Mục tiêu giữ nguyên*:
+    * Giữ nguyên **RQ1** ở nhánh 2 lớp (`authentic` vs `ai_edited`).
+    * Giữ nguyên **Auxiliary RQ5** (định vị vùng chỉnh sửa dựa trên ground-truth mask).
+    * Giữ nguyên 5 outer-fold checkpoints đã niêm phong và giao thức đánh giá độc lập Phase 4C.7A.
+  - *Ưu điểm*: Loại bỏ hoàn toàn công sức tự sinh ảnh inpainting; loại bỏ nguy cơ tạo ra các hiện vật vi mô (forensic shortcuts) do compositing nhân tạo; bảo toàn 100% mục tiêu nghiên cứu đã đăng ký.
+- **Lựa chọn B: Cần Thay Đổi Giao Thức (Protocol Amendment & Scope Shift)**:
+  - *Trường hợp 1 (Pivot sang GenImage)*:
+    * Chuyển bài toán sang phân loại 3 lớp (`authentic`, `fully_generated`, `ai_edited`) hoặc 2 lớp `authentic` vs `fully_generated`.
+    * *Thay đổi protocol bắt buộc*: Cần bổ sung dữ liệu `fully_generated`, mở khóa class-coverage guard (`EV-CLASS-COVERAGE-GUARD-001`), và huấn luyện/fine-tune lại classification head.
+    * *Hệ quả*: Phải **hủy bỏ hoặc đình chỉ Auxiliary RQ5 (Localization)** vì GenImage là ảnh sinh toàn phần, không có mask cục bộ.
+  - *Trường hợp 2 (Dùng inpainting dataset không có mask)*:
+    * Phải ban hành Protocol Amendment sửa đổi loại bỏ Auxiliary RQ5 khỏi phạm vi đánh giá độc lập.
+
+*Cam kết trung thực*: Dự án **CHƯA tải dữ liệu quy mô lớn (> 50 MB)** và **CHƯA chạy detector scoring / evaluation** trong phiên làm việc này.
+
+---
 
 ## JJ. Pilot v2 run pilot-20261009T111247Z intake, audit, and empirical Content QC evaluation (2026-10-09)
 

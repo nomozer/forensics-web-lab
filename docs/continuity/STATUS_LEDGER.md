@@ -1,3 +1,12 @@
+## Phase 4C.7B trace - Feasibility Conclusion after Pilot v2 & Proposal for Existing Dataset Continuation
+
+- **Feasibility conclusion established**: Bounded determination: **“Chưa đủ bằng chứng để mở rộng cấu hình hiện tại lên 400 cặp.”** Across 4 runs, full-canvas 512×512 inpainting showed recurrent defects: semantic omission (3.78% to 14.76% mask area), semantic hallucination, placement deficits ($dy = +41$ px), and boundary seams. Agent 1/8 recommendation is not an official acceptance rate; local-crop diagnostic was rejected 6/6 by Human Content QC; does not imply all inpainting models fail.
+- **Human Content QC decisions accounted**: Diagnostic run 6/6 REJECT preserved (`diagnostic_content_qc_determinations.json`); 26 decisions remain strictly PENDING (8 Pilot v2 in `pilot-20261009T111247Z`, 2 Calibration in `calib-20261009T015749Z`, 8 Follow-up pilot v1 in `pilot-20261008T113700Z`, 8 Historical pilot v0 in `pilot-20261007T132003Z`).
+- **Research continuation proposal prepared**: Proposed pivoting to an audited External Benchmark Inpainting Subset (e.g. TGIF/TGIF2 clean subsets or verified SAGI-D) with ground-truth masks. Preserves RQ1 (2-class authentic vs ai_edited) and Auxiliary RQ5 (heatmap localization), eliminates manual GPU generation and artificial compositing forensic shortcuts. Requires 4-level Disjoint Guard vs 684 historical Option P sources (COCO overlap prevention). Contrasted with GenImage 3-class pivot which requires protocol amendment and drops localization.
+- **Governance strictly preserved**: Full cohort ($N=400$) strictly locked; detector calls = 0; independent performance `NOT_MEASURED`; zero large downloads (>50 MB) or generation executed.
+
+---
+
 ## Pilot v2 run intake, production CLI audit PASS & empirical Content QC evaluation (Phase 4C.7B trace)
 
 - **Pilot v2 package intake & extraction**: Ingested `pilot-20261009T111247Z_package.zip` (6,700,761 bytes, SHA-256 `a0521a16f3b5fd498aac5fc15ecc43def83f5bc64c7d907123a73e251ce1de0d`) from `data/research/local-artifacts/phase-4c.7b/`. Pre-extraction safety audit confirmed 34 archive members, 0 directory traversals (`..`), 0 leading slashes, 0 absolute paths, 0 symlinks. Safely extracted into dedicated directory `data/research/local-artifacts/phase-4c.7b/pilot-20261009T111247Z/`. All historical run directories preserved intact.
