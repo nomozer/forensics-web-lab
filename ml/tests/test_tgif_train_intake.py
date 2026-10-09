@@ -23,6 +23,7 @@ import json
 from pathlib import Path
 import re
 import stat
+import subprocess
 import tarfile
 import tempfile
 from typing import Any
@@ -245,6 +246,38 @@ def test_selective_extraction_rejects_suffix_only_archive_binding(tmp_path: Path
     assert result["extracted_count"] == 1
     assert result["records"][0]["normalized_path"] == "authentic/dog/000000000001_orig.png"
 
+def test_selective_extraction_rejects_archive_link_even_with_valid_target(tmp_path: Path):
+    """Catch unsafe TAR links being silently ignored when all requested regular files exist."""
+    image = np.zeros((32, 32, 3), dtype=np.uint8)
+    image[:, :16] = (255, 0, 0)
+    image[:, 16:] = (0, 255, 0)
+    image_buf = io.BytesIO()
+    Image.fromarray(image, mode="RGB").save(image_buf, format="PNG")
+    target_path = "orig/training/dog/000000000001_orig.png"
+    tar_path = tmp_path / "link-and-target.tar.gz"
+    with tarfile.open(tar_path, "w:gz") as tf:
+        link = tarfile.TarInfo(name="orig/training/dog/link.png")
+        link.type = tarfile.SYMTYPE
+        link.linkname = "/etc/passwd"
+        tf.addfile(link)
+        member = tarfile.TarInfo(name=target_path)
+        member.size = len(image_buf.getvalue())
+        tf.addfile(member, io.BytesIO(image_buf.getvalue()))
+
+    candidate = {
+        "task_id": "fixture-task",
+        "source_id": "1",
+        "raw_id": "000000000001",
+        "category": "dog",
+    }
+    with pytest.raises(CohortIntakeError, match="Unsafe tar member detected"):
+        extract_selective_stream(
+            tar_path,
+            {target_path: candidate},
+            tmp_path / "link-out",
+            "orig",
+        )
+
 def test_colab_worker_dry_run():
     """Verify Colab intake worker dry-run succeeds fail-closed."""
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -281,12 +314,25 @@ def test_canonical_colab_notebook_contract():
 
     commit_match = re.search(r'EXPECTED_EXECUTION_COMMIT\s*=\s*"([0-9a-f]{40})"', all_source)
     assert commit_match, "Notebook must pin one full 40-character execution commit SHA"
+    assert commit_match.group(1) == local_audit.EXPECTED_COLAB_EXECUTION_COMMIT
+    worker_at_snapshot = subprocess.check_output(
+        [
+            "git",
+            "show",
+            f"{commit_match.group(1)}:scripts/research/acquire_tgif_train_subset_colab.py",
+        ],
+        cwd=REPO_ROOT,
+    )
+    assert hashlib.sha256(worker_at_snapshot).hexdigest() == local_audit.EXPECTED_COLAB_WORKER_SHA256
     assert '"checkout", "--detach"' in all_source
     assert '"rev-parse", "HEAD"' in all_source
     assert all_source.index('"rev-parse", "HEAD"') < all_source.index("Manifest Path:")
     assert all_source.index("Manifest Path:") < all_source.index("Download TGIF Archives")
     code_source = "\n".join("".join(c["source"]) for c in cells if c["cell_type"] == "code")
     assert "assert " not in code_source, "Notebook gates must remain active under optimized Python"
+    assert "sha256_file," in code_source
+    assert code_source.index("sha256_file,") < code_source.index("zip_sha = sha256_file")
+    assert "--expected-execution-commit" in code_source
 
 def test_local_audit_forbidden_registry_covers_both_historical_sets():
     """Catch omission of either Option P or Phase 4C.7B development sources from local audit."""
@@ -325,6 +371,28 @@ def test_local_audit_rejects_unbound_receipt_before_reading_images(tmp_path: Pat
         zf.writestr("colab_intake_receipt.json", json.dumps(receipt))
 
     with pytest.raises(LocalAuditError, match="Receipt manifest SHA-256 mismatch"):
+        audit_subset_package(zip_path, LOCKED_MANIFEST_PATH)
+
+def test_local_audit_rejects_wrong_execution_binding_before_image_records(tmp_path: Path):
+    """Catch a self-consistent package produced by an execution snapshot other than the pinned one."""
+    zip_path = tmp_path / "wrong-execution.zip"
+    manifest_bytes = LOCKED_MANIFEST_PATH.read_bytes()
+    receipt = {
+        "status": "COLAB_CPU_INTAKE_SUCCESS",
+        "execution_device": "CPU",
+        "execution_commit": "0" * 40,
+        "worker_sha256": "0" * 64,
+        "manifest_sha256": EXPECTED_LOCKED_MANIFEST_SHA256,
+        "cohort_pairs": 400,
+        "replacement_policy": "FAIL_CLOSED_NO_AUTOMATIC_REPLACEMENT",
+        "authentic_records": [],
+        "edited_records": [],
+    }
+    with zipfile.ZipFile(zip_path, "w") as zf:
+        zf.writestr("manifest_copy.json", manifest_bytes)
+        zf.writestr("colab_intake_receipt.json", json.dumps(receipt))
+
+    with pytest.raises(LocalAuditError, match="execution commit"):
         audit_subset_package(zip_path, LOCKED_MANIFEST_PATH)
 
 def test_local_audit_inside_l1_gate_is_fail_closed():

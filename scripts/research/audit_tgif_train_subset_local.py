@@ -6,7 +6,7 @@ Audits downloaded TGIF subset ZIP package locally:
 2. Bit-parity and decoding: 100% PIL decode, exactly 512x512 RGB.
 3. Binary mask verification: mode L, strictly binary {0, 255}, matches mask_sha256 on disk.
 4. Tripartite alignment audit: verifies unchanged and changed benchmark pixels without compositing.
-5. 4-Level Disjoint Guard: zero collision with 684 historical Option P sources.
+5. Disjoint Guard: zero collision with 684 Option P and 336 Phase 4C.7B development sources.
 6. Self-contained review contact sheet generation for visual inspection.
 7. STOPS BEFORE EVALUATION: no detector scoring, no model loading, no evaluation pipeline run.
 """
@@ -37,6 +37,25 @@ EXPECTED_POOL_MANIFEST_SHA256 = "9e4ef2c9f89ad7dc1316d764c0acfff3b55dbc60dcc666d
 TARGET_CANVAS_SIZE = (512, 512)
 EXPECTED_OPTION_P_SOURCE_COUNT = 684
 EXPECTED_PHASE_4C7B_DEVELOPMENT_SOURCE_COUNT = 336
+EXPECTED_COLAB_EXECUTION_COMMIT = "282e7fea0bc1df845aa456aea849809fe9f6cff7"
+EXPECTED_COLAB_WORKER_SHA256 = "fe95c7cfd5b1f5bbeb7acf1877eba9418e925bdbca1e15cca717c86853a47d59"
+EXPECTED_STRATA_BREAKDOWN = {
+    "large_over_30pct": 14,
+    "medium_10_to_30pct": 221,
+    "small_under_10pct": 165,
+}
+EXPECTED_ARCHIVES = {
+    "orig_archive": {
+        "name": "orig_training.tar.gz",
+        "bytes": 5652563073,
+        "extracted_count": 400,
+    },
+    "sd2_archive": {
+        "name": "sd2-sp_training.tar.gz",
+        "bytes": 14359902282,
+        "extracted_count": 400,
+    },
+}
 
 class LocalAuditError(Exception):
     """Raised when an archive security violation, integrity error, or audit gate fails."""
@@ -158,12 +177,72 @@ def validate_package_binding(
         raise LocalAuditError(
             f"Receipt manifest SHA-256 mismatch: {receipt.get('manifest_sha256')} != {manifest_sha}"
         )
+    if receipt.get("execution_commit") != EXPECTED_COLAB_EXECUTION_COMMIT:
+        raise LocalAuditError(
+            "Receipt execution commit mismatch: "
+            f"{receipt.get('execution_commit')} != {EXPECTED_COLAB_EXECUTION_COMMIT}"
+        )
+    if receipt.get("worker_sha256") != EXPECTED_COLAB_WORKER_SHA256:
+        raise LocalAuditError(
+            f"Receipt worker SHA-256 mismatch: {receipt.get('worker_sha256')} != {EXPECTED_COLAB_WORKER_SHA256}"
+        )
+
+    expected_receipt_keys = {
+        "schema_version",
+        "phase",
+        "run_id",
+        "status",
+        "execution_device",
+        "execution_commit",
+        "worker_sha256",
+        "manifest_path",
+        "manifest_sha256",
+        "cohort_pairs",
+        "strata_breakdown",
+        "orig_archive",
+        "sd2_archive",
+        "technical_qc",
+        "tripartite_audit_location",
+        "scientific_integrity_note",
+        "replacement_policy",
+        "human_approval_registered",
+        "authentic_records",
+        "edited_records",
+    }
+    if set(receipt) != expected_receipt_keys:
+        raise LocalAuditError("Colab receipt schema fields do not match the locked 1.1.0 contract")
+    if receipt.get("schema_version") != "1.1.0" or receipt.get("phase") != "4C.7B":
+        raise LocalAuditError("Colab receipt schema version or phase mismatch")
+    if not re.fullmatch(r"intake-tgif-train-\d{8}T\d{6}Z", str(receipt.get("run_id", ""))):
+        raise LocalAuditError("Colab receipt run_id format mismatch")
     if receipt.get("status") != "COLAB_CPU_INTAKE_SUCCESS":
         raise LocalAuditError(f"Unexpected Colab intake status: {receipt.get('status')}")
     if receipt.get("execution_device") != "CPU" or receipt.get("cohort_pairs") != 400:
         raise LocalAuditError("Colab receipt execution device or cohort size mismatch")
     if receipt.get("replacement_policy") != "FAIL_CLOSED_NO_AUTOMATIC_REPLACEMENT":
         raise LocalAuditError("Colab receipt replacement policy mismatch")
+    if receipt.get("manifest_path") != "tgif_train_clean_subset_manifest_locked_n400.json":
+        raise LocalAuditError("Colab receipt manifest filename mismatch")
+    if receipt.get("strata_breakdown") != EXPECTED_STRATA_BREAKDOWN:
+        raise LocalAuditError("Colab receipt stratum allocation mismatch")
+    for archive_key, expected_archive in EXPECTED_ARCHIVES.items():
+        if receipt.get(archive_key) != expected_archive:
+            raise LocalAuditError(f"Colab receipt {archive_key} binding mismatch")
+    expected_approval = {
+        "reviewer": "Dũng Phạm <valdung04@gmail.com>",
+        "scope": "INTAKE_ONLY",
+        "approved_at_utc": "2026-10-09T14:19:44Z",
+    }
+    if receipt.get("human_approval_registered") != expected_approval:
+        raise LocalAuditError("Colab receipt approval binding mismatch")
+    if receipt.get("scientific_integrity_note") != (
+        "Zero recompositing applied. Native benchmark variance preserved."
+    ):
+        raise LocalAuditError("Colab receipt scientific integrity statement mismatch")
+    if receipt.get("tripartite_audit_location") != (
+        "LOCAL_POST_INTAKE (Tripartite alignment and mask checks performed on LOCAL workstation using resident masks)"
+    ):
+        raise LocalAuditError("Colab receipt tripartite audit location mismatch")
 
     candidate_by_task = {candidate["task_id"]: candidate for candidate in candidates}
     if len(candidate_by_task) != 400:
@@ -180,6 +259,21 @@ def validate_package_binding(
             raise LocalAuditError(f"Receipt {records_key} must contain exactly 400 records")
         by_task: dict[str, dict[str, Any]] = {}
         for record in records:
+            expected_record_keys = {
+                "task_id",
+                "source_id",
+                "raw_id",
+                "category",
+                "archive_member",
+                "raw_bytes",
+                "raw_sha256",
+                "normalized_sha256",
+                "normalized_path",
+                "std_512",
+                "native_size",
+            }
+            if not isinstance(record, dict) or set(record) != expected_record_keys:
+                raise LocalAuditError(f"Receipt record schema mismatch in {records_key}")
             task_id = record.get("task_id")
             if task_id in by_task or task_id not in candidate_by_task:
                 raise LocalAuditError(f"Invalid or duplicate task binding in {records_key}: {task_id}")
@@ -193,13 +287,46 @@ def validate_package_binding(
             for field in ("source_id", "raw_id", "category"):
                 if str(record.get(field)) != str(candidate[field]):
                     raise LocalAuditError(f"Receipt {field} binding mismatch for {task_id}")
+            archive_field = "orig_rel_path_in_archive" if suffix == "orig" else "sd2_rel_path_in_archive"
+            if record.get("archive_member") != candidate[archive_field]:
+                raise LocalAuditError(f"Receipt archive member binding mismatch for {task_id}")
+            if not isinstance(record.get("raw_bytes"), int) or record["raw_bytes"] <= 0:
+                raise LocalAuditError(f"Invalid raw byte count for {task_id}")
+            if not re.fullmatch(r"[0-9a-f]{64}", str(record.get("raw_sha256", ""))):
+                raise LocalAuditError(f"Invalid raw SHA-256 for {task_id}")
             if not re.fullmatch(r"[0-9a-f]{64}", str(record.get("normalized_sha256", ""))):
                 raise LocalAuditError(f"Invalid normalized SHA-256 for {task_id}")
+            if not isinstance(record.get("std_512"), (int, float)) or record["std_512"] < 2.0:
+                raise LocalAuditError(f"Invalid normalized image standard deviation for {task_id}")
+            native_size = record.get("native_size")
+            if (
+                not isinstance(native_size, list)
+                or len(native_size) != 2
+                or any(not isinstance(value, int) or value <= 0 for value in native_size)
+            ):
+                raise LocalAuditError(f"Invalid native image size for {task_id}")
             by_task[task_id] = record
             expected_image_paths.add(expected_path)
         if set(by_task) != set(candidate_by_task):
             raise LocalAuditError(f"Receipt {records_key} task set differs from locked manifest")
         record_maps.append(by_task)
+
+    technical_qc = receipt.get("technical_qc")
+    if not isinstance(technical_qc, dict) or set(technical_qc) != {
+        "pil_decode_rate",
+        "min_std",
+        "non_blank_verified",
+        "all_512x512_rgb",
+    }:
+        raise LocalAuditError("Colab receipt technical QC schema mismatch")
+    all_records = list(record_maps[0].values()) + list(record_maps[1].values())
+    if (
+        technical_qc.get("pil_decode_rate") != 1.0
+        or technical_qc.get("non_blank_verified") is not True
+        or technical_qc.get("all_512x512_rgb") is not True
+        or technical_qc.get("min_std") != min(record["std_512"] for record in all_records)
+    ):
+        raise LocalAuditError("Colab receipt technical QC values mismatch")
 
     expected_files = expected_image_paths | {"manifest_copy.json", "colab_intake_receipt.json"}
     actual_files = {info.filename for info in zf.infolist() if not info.is_dir()}
@@ -459,6 +586,8 @@ def audit_subset_package(
         "package_zip": str(package_zip_path.name),
         "package_sha256": package_sha,
         "manifest_sha256": manifest_sha,
+        "colab_execution_commit": EXPECTED_COLAB_EXECUTION_COMMIT,
+        "colab_worker_sha256": EXPECTED_COLAB_WORKER_SHA256,
         "cohort_pairs_audited": len(tripartite_results),
         "disjoint_guard": {
             "status": "PASS",
