@@ -45,6 +45,7 @@ from scripts.research.acquire_tgif_train_subset_colab import (
     ARCHIVE_URLS,
     ARCHIVE_BUDGET,
     CohortIntakeError,
+    build_archive_member_targets,
     load_and_verify_manifest,
     normalize_rgb_image,
     normalize_mask,
@@ -203,48 +204,180 @@ def test_locked_intake_rejects_pool_manifest():
     with pytest.raises(CohortIntakeError, match="locked manifest SHA-256"):
         load_and_verify_manifest(POOL_MANIFEST_PATH)
 
-def test_selective_extraction_rejects_suffix_only_archive_binding(tmp_path: Path):
-    """Catch a wrong archive root being accepted solely because its member ends with a target path."""
+def test_orig_archive_resolves_logical_path_to_exact_physical_member_only(tmp_path: Path):
+    """Catch treating logical roots or resolution variants as the physical orig member."""
     image = np.zeros((32, 32, 3), dtype=np.uint8)
     image[:, :16] = (255, 0, 0)
     image[:, 16:] = (0, 255, 0)
     image_buf = io.BytesIO()
     Image.fromarray(image, mode="RGB").save(image_buf, format="PNG")
 
-    target_path = "orig/training/dog/000000000001_orig.png"
+    target_path = "orig/training/truck/362682_orig.png"
     tar_path = tmp_path / "fixture.tar.gz"
     with tarfile.open(tar_path, "w:gz") as tf:
-        member = tarfile.TarInfo(name=f"unexpected-root/{target_path}")
-        member.size = len(image_buf.getvalue())
-        tf.addfile(member, io.BytesIO(image_buf.getvalue()))
+        for member_name in (
+            "training/truck/362682_orig_512.png",
+            "training/truck/362682_orig_1024.png",
+            "training/truck/362682_orig.png",
+        ):
+            member = tarfile.TarInfo(name=member_name)
+            member.size = len(image_buf.getvalue())
+            tf.addfile(member, io.BytesIO(image_buf.getvalue()))
 
     candidate = {
         "task_id": "fixture-task",
-        "source_id": "1",
-        "raw_id": "000000000001",
-        "category": "dog",
+        "source_id": "362682",
+        "raw_id": "362682",
+        "category": "truck",
     }
+    result = extract_selective_stream(
+        tar_path,
+        {target_path: candidate},
+        tmp_path / "out",
+        "orig",
+        archive_kind="orig",
+    )
+    assert result["extracted_count"] == 1
+    assert result["archive_layout"] == "component-stripped"
+    assert result["records"][0]["logical_archive_path"] == target_path
+    assert result["records"][0]["archive_member"] == "training/truck/362682_orig.png"
+    assert result["records"][0]["normalized_path"] == "authentic/truck/362682_orig.png"
+
+def test_orig_archive_rejects_variants_when_exact_member_is_missing(tmp_path: Path):
+    """Catch fallback from the approved _orig.png member to a near-name resolution variant."""
+    image_buf = io.BytesIO()
+    Image.new("RGB", (32, 32), color=(20, 80, 160)).save(image_buf, format="PNG")
+    target_path = "orig/training/truck/362682_orig.png"
+    tar_path = tmp_path / "variants-only.tar.gz"
+    with tarfile.open(tar_path, "w:gz") as tf:
+        for member_name in (
+            "training/truck/362682_orig_512.png",
+            "training/truck/362682_orig_1024.png",
+        ):
+            member = tarfile.TarInfo(name=member_name)
+            member.size = len(image_buf.getvalue())
+            tf.addfile(member, io.BytesIO(image_buf.getvalue()))
+
+    candidate = {"task_id": "fixture-task", "source_id": "362682", "raw_id": "362682", "category": "truck"}
     with pytest.raises(CohortIntakeError, match="found only 0"):
         extract_selective_stream(
             tar_path,
             {target_path: candidate},
             tmp_path / "out",
             "orig",
+            archive_kind="orig",
         )
 
-    exact_tar_path = tmp_path / "exact.tar.gz"
-    with tarfile.open(exact_tar_path, "w:gz") as tf:
-        member = tarfile.TarInfo(name=target_path)
+def test_orig_archive_rejects_duplicate_exact_member(tmp_path: Path):
+    """Catch duplicate physical TAR entries being accepted for one logical orig path."""
+    image = np.zeros((32, 32, 3), dtype=np.uint8)
+    image[:, :16] = (255, 0, 0)
+    image[:, 16:] = (0, 255, 0)
+    image_buf = io.BytesIO()
+    Image.fromarray(image, mode="RGB").save(image_buf, format="PNG")
+    target_path = "orig/training/truck/362682_orig.png"
+    tar_path = tmp_path / "duplicate.tar.gz"
+    with tarfile.open(tar_path, "w:gz") as tf:
+        for _ in range(2):
+            member = tarfile.TarInfo(name="training/truck/362682_orig.png")
+            member.size = len(image_buf.getvalue())
+            tf.addfile(member, io.BytesIO(image_buf.getvalue()))
+
+    candidate = {"task_id": "fixture-task", "source_id": "362682", "raw_id": "362682", "category": "truck"}
+    with pytest.raises(CohortIntakeError, match="Duplicate target member"):
+        extract_selective_stream(
+            tar_path,
+            {target_path: candidate},
+            tmp_path / "out",
+            "orig",
+            archive_kind="orig",
+        )
+
+def test_archive_mapping_rejects_duplicate_normalized_logical_path():
+    """Catch two manifest spellings silently overwriting one physical member binding."""
+    targets = {
+        "orig/training/truck/362682_orig.png": {"task_id": "fixture-one"},
+        "orig\\training\\truck\\362682_orig.png": {"task_id": "fixture-two"},
+    }
+    with pytest.raises(CohortIntakeError, match="Ambiguous archive mapping"):
+        build_archive_member_targets(targets, "orig")
+
+@pytest.mark.parametrize(
+    ("physical_member", "expected_layout"),
+    [
+        (
+            "sd2-sp/training/truck/362682_mask_segm.png_ps_mask.png_sd2_0.png",
+            "component-prefixed",
+        ),
+        (
+            "training/truck/362682_mask_segm.png_ps_mask.png_sd2_0.png",
+            "component-stripped",
+        ),
+    ],
+)
+def test_sd2_archive_supports_only_explicit_exact_layouts(
+    tmp_path: Path,
+    physical_member: str,
+    expected_layout: str,
+):
+    """Catch broad sd2 lookup while supporting the two explicitly registered layouts."""
+    image = np.zeros((32, 32, 3), dtype=np.uint8)
+    image[:, :16] = (255, 0, 0)
+    image[:, 16:] = (0, 255, 0)
+    image_buf = io.BytesIO()
+    Image.fromarray(image, mode="RGB").save(image_buf, format="PNG")
+    logical_path = "sd2-sp/training/truck/362682_mask_segm.png_ps_mask.png_sd2_0.png"
+    tar_path = tmp_path / f"{expected_layout}.tar.gz"
+    with tarfile.open(tar_path, "w:gz") as tf:
+        member = tarfile.TarInfo(name=physical_member)
         member.size = len(image_buf.getvalue())
         tf.addfile(member, io.BytesIO(image_buf.getvalue()))
+
+    candidate = {"task_id": "fixture-task", "source_id": "362682", "raw_id": "362682", "category": "truck"}
     result = extract_selective_stream(
-        exact_tar_path,
-        {target_path: candidate},
-        tmp_path / "exact-out",
-        "orig",
+        tar_path,
+        {logical_path: candidate},
+        tmp_path / expected_layout,
+        "sd2",
+        archive_kind="sd2-sp",
     )
-    assert result["extracted_count"] == 1
-    assert result["records"][0]["normalized_path"] == "authentic/dog/000000000001_orig.png"
+    assert result["archive_layout"] == expected_layout
+    assert result["records"][0]["logical_archive_path"] == logical_path
+    assert result["records"][0]["archive_member"] == physical_member
+
+def test_sd2_archive_rejects_mixed_supported_layouts(tmp_path: Path):
+    """Catch an archive mixing prefixed and stripped member layouts across targets."""
+    image = np.zeros((32, 32, 3), dtype=np.uint8)
+    image[:, :16] = (255, 0, 0)
+    image[:, 16:] = (0, 255, 0)
+    image_buf = io.BytesIO()
+    Image.fromarray(image, mode="RGB").save(image_buf, format="PNG")
+    targets = {
+        "sd2-sp/training/truck/362682_mask_segm.png_ps_mask.png_sd2_0.png": {
+            "task_id": "fixture-one", "source_id": "362682", "raw_id": "362682", "category": "truck"
+        },
+        "sd2-sp/training/apple/407825_mask_segm.png_ps_mask.png_sd2_0.png": {
+            "task_id": "fixture-two", "source_id": "407825", "raw_id": "407825", "category": "apple"
+        },
+    }
+    tar_path = tmp_path / "mixed.tar.gz"
+    with tarfile.open(tar_path, "w:gz") as tf:
+        for member_name in (
+            "sd2-sp/training/truck/362682_mask_segm.png_ps_mask.png_sd2_0.png",
+            "training/apple/407825_mask_segm.png_ps_mask.png_sd2_0.png",
+        ):
+            member = tarfile.TarInfo(name=member_name)
+            member.size = len(image_buf.getvalue())
+            tf.addfile(member, io.BytesIO(image_buf.getvalue()))
+
+    with pytest.raises(CohortIntakeError, match="Mixed or ambiguous archive layouts"):
+        extract_selective_stream(
+            tar_path,
+            targets,
+            tmp_path / "out",
+            "sd2",
+            archive_kind="sd2-sp",
+        )
 
 def test_selective_extraction_rejects_archive_link_even_with_valid_target(tmp_path: Path):
     """Catch unsafe TAR links being silently ignored when all requested regular files exist."""
@@ -276,6 +409,7 @@ def test_selective_extraction_rejects_archive_link_even_with_valid_target(tmp_pa
             {target_path: candidate},
             tmp_path / "link-out",
             "orig",
+            archive_kind="orig",
         )
 
 def test_colab_worker_dry_run():
@@ -333,6 +467,8 @@ def test_canonical_colab_notebook_contract():
     assert "sha256_file," in code_source
     assert code_source.index("sha256_file,") < code_source.index("zip_sha = sha256_file")
     assert "--expected-execution-commit" in code_source
+    assert "check=True" in code_source
+    assert "stdout/stderr were streamed above" in code_source
 
 def test_local_audit_forbidden_registry_covers_both_historical_sets():
     """Catch omission of either Option P or Phase 4C.7B development sources from local audit."""
@@ -402,6 +538,28 @@ def test_local_audit_inside_l1_gate_is_fail_closed():
     validator("boundary-pass", 1.0)
     with pytest.raises(LocalAuditError, match="inside_mean_l1"):
         validator("below-threshold", 0.9999)
+
+def test_local_audit_resolves_receipt_members_from_explicit_recorded_layout():
+    """Catch local audit comparing physical TAR members directly to logical manifest paths."""
+    resolver = getattr(local_audit, "resolve_receipt_archive_member", None)
+    assert resolver is not None, "Local audit must resolve logical and physical archive paths separately"
+    assert resolver(
+        "orig/training/truck/362682_orig.png",
+        "orig",
+        "component-stripped",
+    ) == "training/truck/362682_orig.png"
+    assert resolver(
+        "sd2-sp/training/truck/362682_mask_segm.png_ps_mask.png_sd2_0.png",
+        "sd2-sp",
+        "component-prefixed",
+    ) == "sd2-sp/training/truck/362682_mask_segm.png_ps_mask.png_sd2_0.png"
+    assert resolver(
+        "sd2-sp/training/truck/362682_mask_segm.png_ps_mask.png_sd2_0.png",
+        "sd2-sp",
+        "component-stripped",
+    ) == "training/truck/362682_mask_segm.png_ps_mask.png_sd2_0.png"
+    with pytest.raises(LocalAuditError, match="Unsupported archive layout"):
+        resolver("orig/training/truck/362682_orig.png", "orig", "component-prefixed")
 
 def test_local_audit_synthetic_smoke():
     """Verify local audit runner on a synthetic mini package."""

@@ -1,3 +1,13 @@
+## TGIF N=400 Archive Member Path Resolution Fix (Phase 4C.7B trace)
+
+- **Observed real failure**: The first Colab intake reused the approved locked N=400 manifest but stopped fail-closed at orig extraction (`Expected 400 files, found 0`). Actual member evidence was `training/truck/362682_orig.png`; the manifest intentionally retains the logical dataset path `orig/training/...`. The two large archives remain available in the user's current Colab `/content`; no redownload was performed locally.
+- **Bounded fix**: Worker execution snapshot `9d98a2d5c6afea16f9b3a71a03f0c2d6f43204e4` resolves logical paths to exact physical members by archive kind. Orig permits only `orig/...` → stripped `...`; sd2-sp runner support is explicitly limited to either a wholly prefixed or wholly stripped layout. Exact full paths remain mandatory, `_orig_512.png`/`_orig_1024.png` are not substitutes, and mixed/duplicate/ambiguous bindings stop intake.
+- **Receipt/audit provenance**: Receipt schema 1.2.0 records `logical_archive_path`, observed physical `archive_member`, and detected `member_layout`. Local audit independently resolves and checks each binding against the locked manifest and pinned worker blob.
+- **Verification**: `ml/.venv` targeted suite 24/24 PASS. A disposable synthetic N=400 package passed receipt 1.2.0, dual-registry, mask, and tripartite audit and was deleted afterward; this fixture is not evidence that real TGIF intake passed. Real sd2-sp training archive layout and real 800-image intake remain pending the Colab retry.
+- **Governance**: Locked manifest SHA-256 `53a6ee472fe840a42abd97ccb7475932e0720f5788f745f57f7a2bcfbc32cc8c`, selection 400, 14/221/165 allocation, preprocessing, QC thresholds, benchmark pixels, and intake-only scope are unchanged. Zero detector/evaluation/training/generation; no PR/merge/main changes.
+
+---
+
 ## TGIF N=400 Launcher Hardening and LOCAL Handoff Readiness (Phase 4C.7B trace)
 
 - **Execution binding**: Canonical 6-cell Colab CPU notebook now fetches the existing branch only to make objects reachable, checks out detached full worker execution commit `282e7fea0bc1df845aa456aea849809fe9f6cff7`, verifies `git rev-parse HEAD` and a clean checkout, then verifies locked-manifest SHA-256 `53a6ee472fe840a42abd97ccb7475932e0720f5788f745f57f7a2bcfbc32cc8c` before any archive download. Worker receipt schema 1.1.0 records that commit and the worker blob SHA-256; local audit checks both exactly.

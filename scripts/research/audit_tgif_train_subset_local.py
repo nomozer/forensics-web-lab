@@ -37,12 +37,21 @@ EXPECTED_POOL_MANIFEST_SHA256 = "9e4ef2c9f89ad7dc1316d764c0acfff3b55dbc60dcc666d
 TARGET_CANVAS_SIZE = (512, 512)
 EXPECTED_OPTION_P_SOURCE_COUNT = 684
 EXPECTED_PHASE_4C7B_DEVELOPMENT_SOURCE_COUNT = 336
-EXPECTED_COLAB_EXECUTION_COMMIT = "282e7fea0bc1df845aa456aea849809fe9f6cff7"
-EXPECTED_COLAB_WORKER_SHA256 = "fe95c7cfd5b1f5bbeb7acf1877eba9418e925bdbca1e15cca717c86853a47d59"
+EXPECTED_COLAB_EXECUTION_COMMIT = "9d98a2d5c6afea16f9b3a71a03f0c2d6f43204e4"
+EXPECTED_COLAB_WORKER_SHA256 = "22db265ce6f2b4ff9b3784c047290722c7f27341e5d5ba094b0833682176e081"
 EXPECTED_STRATA_BREAKDOWN = {
     "large_over_30pct": 14,
     "medium_10_to_30pct": 221,
     "small_under_10pct": 165,
+}
+ARCHIVE_MEMBER_LAYOUTS = {
+    "orig": {
+        "component-stripped": ("orig/", ""),
+    },
+    "sd2-sp": {
+        "component-prefixed": ("sd2-sp/", "sd2-sp/"),
+        "component-stripped": ("sd2-sp/", ""),
+    },
 }
 EXPECTED_ARCHIVES = {
     "orig_archive": {
@@ -150,11 +159,39 @@ def validate_inside_mean_l1(task_id: str, inside_mean_l1: float) -> None:
             f"Technical QC failure for {task_id}: inside_mean_l1={inside_mean_l1:.4f} < 1.0"
         )
 
+def resolve_receipt_archive_member(
+    logical_path: str,
+    archive_kind: str,
+    member_layout: str,
+) -> str:
+    """Resolve one locked logical path to its exact physical TAR member."""
+    layouts = ARCHIVE_MEMBER_LAYOUTS.get(archive_kind)
+    if layouts is None or member_layout not in layouts:
+        raise LocalAuditError(f"Unsupported archive layout for {archive_kind}: {member_layout}")
+    logical_prefix, physical_prefix = layouts[member_layout]
+    normalized_logical = logical_path.replace("\\", "/").removeprefix("./")
+    parts = normalized_logical.split("/")
+    if (
+        normalized_logical.startswith("/")
+        or ":" in normalized_logical
+        or any(part in ("", ".", "..") for part in parts)
+    ):
+        raise LocalAuditError(f"Unsafe logical archive path: {logical_path}")
+    if not normalized_logical.startswith(logical_prefix):
+        raise LocalAuditError(
+            f"Logical path {logical_path} does not match the {archive_kind} prefix {logical_prefix}"
+        )
+    return physical_prefix + normalized_logical[len(logical_prefix):]
+
 def validate_package_binding(
     zf: zipfile.ZipFile,
     candidates: list[dict[str, Any]],
     manifest_sha: str,
-) -> tuple[dict[str, dict[str, Any]], dict[str, dict[str, Any]]]:
+) -> tuple[
+    dict[str, dict[str, Any]],
+    dict[str, dict[str, Any]],
+    dict[str, str],
+]:
     """Bind every packaged image to the locked manifest and Colab receipt."""
     zip_names = zf.namelist()
     if len(zip_names) != len(set(zip_names)):
@@ -210,8 +247,8 @@ def validate_package_binding(
         "edited_records",
     }
     if set(receipt) != expected_receipt_keys:
-        raise LocalAuditError("Colab receipt schema fields do not match the locked 1.1.0 contract")
-    if receipt.get("schema_version") != "1.1.0" or receipt.get("phase") != "4C.7B":
+        raise LocalAuditError("Colab receipt schema fields do not match the locked 1.2.0 contract")
+    if receipt.get("schema_version") != "1.2.0" or receipt.get("phase") != "4C.7B":
         raise LocalAuditError("Colab receipt schema version or phase mismatch")
     if not re.fullmatch(r"intake-tgif-train-\d{8}T\d{6}Z", str(receipt.get("run_id", ""))):
         raise LocalAuditError("Colab receipt run_id format mismatch")
@@ -225,9 +262,21 @@ def validate_package_binding(
         raise LocalAuditError("Colab receipt manifest filename mismatch")
     if receipt.get("strata_breakdown") != EXPECTED_STRATA_BREAKDOWN:
         raise LocalAuditError("Colab receipt stratum allocation mismatch")
+    archive_layouts: dict[str, str] = {}
     for archive_key, expected_archive in EXPECTED_ARCHIVES.items():
-        if receipt.get(archive_key) != expected_archive:
+        archive_binding = receipt.get(archive_key)
+        if not isinstance(archive_binding, dict) or set(archive_binding) != {
+            *expected_archive,
+            "member_layout",
+        }:
+            raise LocalAuditError(f"Colab receipt {archive_key} schema mismatch")
+        if any(archive_binding.get(key) != value for key, value in expected_archive.items()):
             raise LocalAuditError(f"Colab receipt {archive_key} binding mismatch")
+        archive_kind = "orig" if archive_key == "orig_archive" else "sd2-sp"
+        member_layout = archive_binding.get("member_layout")
+        if member_layout not in ARCHIVE_MEMBER_LAYOUTS[archive_kind]:
+            raise LocalAuditError(f"Unsupported archive layout for {archive_kind}: {member_layout}")
+        archive_layouts[archive_kind] = member_layout
     expected_approval = {
         "reviewer": "Dũng Phạm <valdung04@gmail.com>",
         "scope": "INTAKE_ONLY",
@@ -250,9 +299,9 @@ def validate_package_binding(
 
     record_maps: list[dict[str, dict[str, Any]]] = []
     expected_image_paths: set[str] = set()
-    for records_key, package_root, suffix in (
-        ("authentic_records", "authentic", "orig"),
-        ("edited_records", "edited", "sd2"),
+    for records_key, package_root, suffix, archive_kind in (
+        ("authentic_records", "authentic", "orig", "orig"),
+        ("edited_records", "edited", "sd2", "sd2-sp"),
     ):
         records = receipt.get(records_key)
         if not isinstance(records, list) or len(records) != 400:
@@ -264,6 +313,7 @@ def validate_package_binding(
                 "source_id",
                 "raw_id",
                 "category",
+                "logical_archive_path",
                 "archive_member",
                 "raw_bytes",
                 "raw_sha256",
@@ -288,7 +338,15 @@ def validate_package_binding(
                 if str(record.get(field)) != str(candidate[field]):
                     raise LocalAuditError(f"Receipt {field} binding mismatch for {task_id}")
             archive_field = "orig_rel_path_in_archive" if suffix == "orig" else "sd2_rel_path_in_archive"
-            if record.get("archive_member") != candidate[archive_field]:
+            logical_path = candidate[archive_field]
+            if record.get("logical_archive_path") != logical_path:
+                raise LocalAuditError(f"Receipt logical archive path binding mismatch for {task_id}")
+            expected_archive_member = resolve_receipt_archive_member(
+                logical_path,
+                archive_kind,
+                archive_layouts[archive_kind],
+            )
+            if record.get("archive_member") != expected_archive_member:
                 raise LocalAuditError(f"Receipt archive member binding mismatch for {task_id}")
             if not isinstance(record.get("raw_bytes"), int) or record["raw_bytes"] <= 0:
                 raise LocalAuditError(f"Invalid raw byte count for {task_id}")
@@ -334,7 +392,7 @@ def validate_package_binding(
         missing = sorted(expected_files - actual_files)
         extra = sorted(actual_files - expected_files)
         raise LocalAuditError(f"Package inventory mismatch: missing={missing[:3]}, extra={extra[:3]}")
-    return record_maps[0], record_maps[1]
+    return record_maps[0], record_maps[1], archive_layouts
 
 def create_diff_map_image(orig_arr: np.ndarray, edit_arr: np.ndarray) -> Image.Image:
     """Generates an amplified difference visualization map."""
@@ -410,7 +468,11 @@ def audit_subset_package(
 
     print("\n--- Step 3: Package Binding & Multi-Level Disjoint Guard Audit ---")
     with zipfile.ZipFile(package_zip_path, "r") as zf:
-        authentic_records, edited_records = validate_package_binding(zf, candidates, manifest_sha)
+        authentic_records, edited_records, archive_layouts = validate_package_binding(
+            zf,
+            candidates,
+            manifest_sha,
+        )
 
     option_p_ids, phase_4c7b_ids, historical_hashes = load_forbidden_source_ids()
 
@@ -588,6 +650,7 @@ def audit_subset_package(
         "manifest_sha256": manifest_sha,
         "colab_execution_commit": EXPECTED_COLAB_EXECUTION_COMMIT,
         "colab_worker_sha256": EXPECTED_COLAB_WORKER_SHA256,
+        "archive_member_layouts": archive_layouts,
         "cohort_pairs_audited": len(tripartite_results),
         "disjoint_guard": {
             "status": "PASS",
