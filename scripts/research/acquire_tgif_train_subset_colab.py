@@ -197,7 +197,7 @@ def build_archive_member_targets(
                 )
             physical_path = physical_prefix + normalized_logical[len(logical_prefix):]
             existing = physical_targets.get(physical_path)
-            if existing is not None and existing["logical_path"] != normalized_logical:
+            if existing is not None:
                 raise CohortIntakeError(
                     f"Ambiguous archive mapping: {existing['logical_path']} and {normalized_logical} "
                     f"both resolve to {physical_path}"
