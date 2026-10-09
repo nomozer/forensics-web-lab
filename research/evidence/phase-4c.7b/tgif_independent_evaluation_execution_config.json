@@ -3,12 +3,14 @@
   "phase": "4C.7B",
   "experiment_id": "tgif_train_independent_evaluation_n400",
   "created_at_utc": "2026-10-10T00:38:00Z",
-  "status": "CONFIG_LOCKED_PENDING_HUMAN_EVALUATION_APPROVAL",
+  "status": "CONFIG_LOCKED_HUMAN_EVALUATION_AUTHORIZED",
   "purpose": "Prespecified machine-readable configuration for Phase 4C.7B independent evaluation on TGIF-Train-Clean-Subset N=400.",
   "human_approval_gate": {
-    "evaluation_authorized": false,
-    "status": "PENDING_HUMAN_REVIEW",
-    "authorization_note": "Requires explicit human reviewer authorization before detector execution. Zero detector calls permitted under this configuration."
+    "evaluation_authorized": true,
+    "status": "HUMAN_EVALUATION_AUTHORIZED",
+    "approved_by": "Dũng Phạm <valdung04@gmail.com>",
+    "approved_at_utc": "2026-10-09T18:08:30Z",
+    "authorization_note": "Explicit human authorization granted by Dũng Phạm <valdung04@gmail.com> for independent evaluation on LOCAL CPU under frozen configuration."
   },
   "cohort_binding": {
     "cohort_name": "TGIF-Train-Clean-Subset",

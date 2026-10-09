@@ -462,19 +462,35 @@ def execute_independent_evaluation(
     strata = [s["stratum"] for s in samples_meta]
     labels = np.array([s["label"] for s in samples_meta], dtype=int)
 
+    start_time = time.time()
+    start_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(start_time))
+
+    import subprocess
+    try:
+        git_commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO_ROOT, text=True).strip()
+    except Exception:
+        git_commit = "UNKNOWN"
+
     base_images: list[Image.Image] = []
+    print(f"Loading {n_samples} images from package ZIP: {package_zip_path.name}...")
     with zipfile.ZipFile(package_zip_path, "r") as zf:
         for s in samples_meta:
             data = zf.read(s["relpath"])
             img = Image.open(io.BytesIO(data)).convert("RGB")
             base_images.append(img)
+    print(f"Decoded {len(base_images)} base images successfully.")
 
     # 6. Evaluate all 6 conditions
     condition_results: dict[str, Any] = {}
+    detailed_predictions: dict[str, dict[str, dict[str, Any]]] = {}
     vis_q75_probs: list[np.ndarray] = []
     aug_q75_probs: list[np.ndarray] = []
 
-    for cond in CONDITIONS:
+    batch_size = 32
+
+    for cond_idx, cond in enumerate(CONDITIONS):
+        cond_t0 = time.time()
+        print(f"[{cond_idx + 1}/{len(CONDITIONS)}] Processing condition '{cond}'...")
         operations = CANONICAL_CONDITIONS[cond]
 
         transformed_images: list[Image.Image] = []
@@ -482,18 +498,40 @@ def execute_independent_evaluation(
             t_img, _ = apply_operations(img, operations)
             transformed_images.append(t_img)
 
-        batch_tensors = torch.stack([canonical_transform(t_img) for t_img in transformed_images]).to(device)
-        with torch.no_grad():
-            visual_feats = torch.flatten(backbone_model.avgpool(backbone_model.features(batch_tensors)), 1).detach().cpu().numpy().astype(np.float64)
+        # Mini-batched feature extraction for memory efficiency
+        visual_feats_chunks: list[np.ndarray] = []
+        for b_start in range(0, len(transformed_images), batch_size):
+            b_imgs = transformed_images[b_start : b_start + batch_size]
+            b_tensors = torch.stack([canonical_transform(t_img) for t_img in b_imgs]).to(device)
+            with torch.no_grad():
+                b_feats = (
+                    torch.flatten(backbone_model.avgpool(backbone_model.features(b_tensors)), 1)
+                    .detach()
+                    .cpu()
+                    .numpy()
+                    .astype(np.float64)
+                )
+            visual_feats_chunks.append(b_feats)
+        visual_feats = np.concatenate(visual_feats_chunks, axis=0)
 
+        # DSP feature extraction (16 canonical features)
         dsp_feats = np.stack([extract_dsp_features(t_img) for t_img in transformed_images]).astype(np.float64)
 
         recipe_metrics: dict[str, Any] = {}
+        detailed_predictions[cond] = {}
+
         for recipe in RECIPES:
             fold_predictions: list[dict[str, np.ndarray]] = []
-            for m in candidate_models:
+            detailed_predictions[cond][recipe] = {}
+
+            for fold_idx, m in enumerate(candidate_models):
                 scores = m.score(visual_feats, dsp_feats)
                 fold_predictions.append(scores[recipe])
+
+                detailed_predictions[cond][recipe][f"outer_{fold_idx}"] = {
+                    "probabilities": [float(p) for p in scores[recipe]["probability"]],
+                    "predictions": [int(pred) for pred in scores[recipe]["prediction"]],
+                }
 
             agg = aggregate_per_model_metrics(fold_predictions, labels)
             recipe_metrics[recipe] = agg
@@ -506,8 +544,13 @@ def execute_independent_evaluation(
                     aug_q75_probs = probs_list
 
         condition_results[cond] = recipe_metrics
+        elapsed_cond = time.time() - cond_t0
+        vis_f1 = recipe_metrics["visual_calibrated"]["mean_metrics"]["macro_f1"]
+        aug_f1 = recipe_metrics["late_fusion_dsp_augmented"]["mean_metrics"]["macro_f1"]
+        print(f"    Done '{cond}' in {elapsed_cond:.2f}s | Visual F1: {vis_f1:.4f} | Augmented F1: {aug_f1:.4f} (delta: {aug_f1 - vis_f1:+.4f})")
 
     # 7. Stratified Paired Cluster Bootstrap on primary condition (jpeg_q75)
+    print("\nRunning Stratified Paired Source Cluster Bootstrap (10,000 replicates, seed 20261007)...")
     boot_res = run_stratified_paired_cluster_bootstrap(
         source_ids=source_ids,
         strata=strata,
@@ -528,28 +571,118 @@ def execute_independent_evaluation(
     aug_mean_f1 = condition_results[PRIMARY_CONDITION]["late_fusion_dsp_augmented"]["mean_metrics"]["macro_f1"]
     primary_delta = aug_mean_f1 - vis_mean_f1
 
+    end_time = time.time()
+    end_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(end_time))
+    total_duration = end_time - start_time
+
+    cohort_cfg = config["cohort_binding"]
+    models_cfg = config["candidate_model_bindings"]
+
     result = {
         "schema_version": "1.0.0",
         "phase": "4C.7B",
         "status": "INDEPENDENT_EVALUATION_SUCCESS",
-        "created_at_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "verdict": verdict,
         "is_synthetic": False,
-        "detector_calls": n_samples * len(CONDITIONS),
-        "cohort_name": config["cohort_binding"]["cohort_name"],
+        "runtime_environment": {
+            "python_version": sys.version,
+            "torch_version": torch.__version__,
+            "numpy_version": np.__version__,
+            "pillow_version": Image.__version__,
+            "platform": sys.platform,
+            "device": "cpu",
+        },
+        "git_commit": git_commit,
+        "timing": {
+            "start_time_utc": start_iso,
+            "end_time_utc": end_iso,
+            "duration_seconds": round(total_duration, 2),
+        },
+        "artifact_hashes": {
+            "config_sha256": sha256_file(config_path),
+            "manifest_sha256": cohort_cfg.get("manifest_sha256"),
+            "package_zip_sha256": cohort_cfg.get("package_zip_sha256"),
+            "intake_receipt_sha256": cohort_cfg.get("intake_receipt_sha256"),
+            "phash_receipt_sha256": cohort_cfg.get("phash_receipt_sha256"),
+            "bindings_manifest_sha256": models_cfg.get("bindings_manifest_sha256"),
+            "backbone_weights_sha256": models_cfg.get("backbone", {}).get("weights_sha256"),
+            "fold_models_sha256": {
+                f"outer_{f['outer_fold']}": f["model_sha256"] for f in models_cfg.get("outer_folds", [])
+            },
+        },
+        "cohort_name": cohort_cfg["cohort_name"],
         "num_pairs": len(candidates),
         "num_samples": n_samples,
+        "detector_calls": n_samples * len(CONDITIONS),
         "strata_counts": boot_res["strata_counts"],
-        "verdict": verdict,
         "primary_point_delta": primary_delta,
         "bootstrap": boot_res,
         "condition_results": condition_results,
+        "samples_index": [
+            {
+                "sample_idx": idx,
+                "source_id": s["source_id"],
+                "image_relpath": s["relpath"],
+                "stratum": s["stratum"],
+                "true_label": int(s["label"]),
+            }
+            for idx, s in enumerate(samples_meta)
+        ],
+        "detailed_predictions": detailed_predictions,
     }
 
     # Atomic write receipt
     tmp_path = receipt_out_path.with_suffix(".json.part")
     tmp_path.write_text(json.dumps(result, indent=2), encoding="utf-8")
     tmp_path.replace(receipt_out_path)
-    print(f"Independent evaluation receipt written to {receipt_out_path}")
+    print(f"\n[RECEIPT EXPORTED] {receipt_out_path} ({receipt_out_path.stat().st_size:,} bytes)")
+
+    # Also save separate predictions file for convenient standalone consumption
+    preds_out_path = receipt_out_path.parent / "tgif_train_independent_evaluation_predictions.json"
+    preds_data = {
+        "schema_version": "1.0.0",
+        "phase": "4C.7B",
+        "cohort_name": cohort_cfg["cohort_name"],
+        "created_at_utc": end_iso,
+        "git_commit": git_commit,
+        "config_sha256": sha256_file(config_path),
+        "num_samples": n_samples,
+        "samples_index": result["samples_index"],
+        "detailed_predictions": detailed_predictions,
+    }
+    tmp_preds = preds_out_path.with_suffix(".json.part")
+    tmp_preds.write_text(json.dumps(preds_data, indent=2), encoding="utf-8")
+    tmp_preds.replace(preds_out_path)
+    print(f"[PREDICTIONS EXPORTED] {preds_out_path} ({preds_out_path.stat().st_size:,} bytes)")
+
+    # Print comprehensive table
+    print("\n" + "=" * 80)
+    print(f"TGIF N=400 INDEPENDENT EVALUATION REPORT (LOCAL CPU)")
+    print("=" * 80)
+    print(f"Verdict: {verdict}")
+    print(f"Total Duration: {total_duration:.2f}s ({total_duration/60:.2f} min)")
+    print(f"Strata Breakdown: {boot_res['strata_counts']}")
+    print("-" * 80)
+    print(f"{'Condition':<20} | {'Visual F1 (mean±std)':<22} | {'Augmented F1 (mean±std)':<24} | {'Δ Macro-F1':<12}")
+    print("-" * 80)
+    for cond in CONDITIONS:
+        v_m = condition_results[cond]["visual_calibrated"]
+        a_m = condition_results[cond]["late_fusion_dsp_augmented"]
+        v_f1_str = f"{v_m['mean_metrics']['macro_f1']:.4f} ± {v_m['std_metrics']['macro_f1']:.4f}"
+        a_f1_str = f"{a_m['mean_metrics']['macro_f1']:.4f} ± {a_m['std_metrics']['macro_f1']:.4f}"
+        delta = a_m["mean_metrics"]["macro_f1"] - v_m["mean_metrics"]["macro_f1"]
+        mark = " (PRIMARY)" if cond == PRIMARY_CONDITION else ""
+        print(f"{cond:<20} | {v_f1_str:<22} | {a_f1_str:<24} | {delta:+.4f}{mark}")
+    print("-" * 80)
+    print(f"PRIMARY ENDPOINT at {PRIMARY_CONDITION}:")
+    print(f"  Δ Macro-F1 point estimate: {primary_delta:+.4f}")
+    print(f"  Stratified Paired Cluster Bootstrap (10,000 reps, PCG64 seed 20261007):")
+    print(f"    95% CI: [{boot_res['ci_lower_95']:+.4f}, {boot_res['ci_upper_95']:+.4f}]")
+    print(f"    Mean Δ: {boot_res['mean_delta']:+.4f}, Median Δ: {boot_res['median_delta']:+.4f}")
+    print(f"    P(Δ > 0): {boot_res['proportion_greater_than_zero']:.4f}")
+    print(f"    CI contains zero: {boot_res['ci_contains_zero']}")
+    print("=" * 80)
+
     return result
 
 
