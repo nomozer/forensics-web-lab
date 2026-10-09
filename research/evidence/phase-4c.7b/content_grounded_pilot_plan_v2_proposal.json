@@ -1,0 +1,281 @@
+{
+  "schema_version": "1.0.0",
+  "workstream": "independent_cohort_acquisition",
+  "phase_trace": "4C.7B",
+  "proposal_id": "content_grounded_pilot_plan_v2_proposal",
+  "purpose": "Proposed Bounded Eight-Pair Follow-Up Pilot Plan v2 resolving blocked candidates; strictly PENDING human review; zero generation permitted until explicit approval.",
+  "human_review_status": "PENDING",
+  "human_reviewer": null,
+  "human_reviewed_at_utc": null,
+  "coordinate_space": "normalized_512x512_canvas_xyxy_half_open",
+  "attempt_budget": 8,
+  "automatic_replacement": false,
+  "locked_quota_summary": {
+    "stratum_counts": {
+      "coco_sd2": 2,
+      "coco_sdxl": 2,
+      "commons_sd2": 2,
+      "commons_sdxl": 2
+    },
+    "modification_type_counts": {
+      "object_replacement": 3,
+      "object_removal_and_infill": 1,
+      "object_insertion": 4
+    },
+    "mask_area_class_counts": {
+      "small_under_10pct": 3,
+      "medium_10_to_30pct": 2,
+      "large_over_30pct": 3
+    }
+  },
+  "candidates": [
+    {
+      "slot": 1,
+      "candidate_id": "IND_COCO_SD2_001",
+      "stratum_id": "coco_sd2",
+      "tool_key": "stable_diffusion_2_inpainting",
+      "modification_type": "object_replacement",
+      "mask_area_class": "small_under_10pct",
+      "source_status": "KEPT_ACTIVE_FROM_V1",
+      "origin_id": "coco:397133",
+      "author": "Pot Noodle",
+      "license": "CC BY 2.0",
+      "target_description": "the round copper pan hanging above the center-left cooking range",
+      "placement_rationale": "The target is visible before generation and the tightened mask stays around the selected hanging pan without covering the cook.",
+      "target_bbox_xyxy": [
+        207,
+        117,
+        270,
+        182
+      ],
+      "mask_bbox_xyxy": [
+        195,
+        95,
+        280,
+        205
+      ],
+      "mask_area_pixels": 9350,
+      "mask_area_ratio": 0.03566741943359375,
+      "prompt": "a round brass wall clock mounted naturally on the kitchen wall, matching the warm indoor lighting",
+      "disjoint_historical_option_p": true,
+      "status": "PENDING_CONFIRMATION"
+    },
+    {
+      "slot": 2,
+      "candidate_id": "IND_COCO_SD2_002",
+      "stratum_id": "coco_sd2",
+      "tool_key": "stable_diffusion_2_inpainting",
+      "modification_type": "object_replacement",
+      "mask_area_class": "large_over_30pct",
+      "source_status": "KEPT_ACTIVE_FROM_V1",
+      "origin_id": "coco:37777",
+      "author": "larrylawfer",
+      "license": "CC BY-NC-SA 2.0",
+      "target_description": "the white range hood and honey-colored upper cabinets above the stove and counter",
+      "placement_rationale": "The upper fixture group is visible before generation; large region stays above foreground bowl and avoids lower stove.",
+      "target_bbox_xyxy": [
+        145,
+        125,
+        410,
+        260
+      ],
+      "mask_bbox_xyxy": [
+        95,
+        75,
+        415,
+        323
+      ],
+      "mask_area_pixels": 79360,
+      "mask_area_ratio": 0.302734375,
+      "prompt": "matte navy-blue upper kitchen cabinets with a stainless-steel range hood, realistic residential interior photograph",
+      "disjoint_historical_option_p": true,
+      "status": "PENDING_CONFIRMATION"
+    },
+    {
+      "slot": 3,
+      "candidate_id": "IND_COCO_SDXL_042",
+      "stratum_id": "coco_sdxl",
+      "tool_key": "sdxl_inpainting",
+      "modification_type": "object_insertion",
+      "mask_area_class": "small_under_10pct",
+      "source_status": "PROPOSED_SUBSTITUTION_FOR_IND_COCO_SDXL_002",
+      "origin_id": "coco:448076",
+      "author": "luis.leao",
+      "license": "CC BY 2.0",
+      "target_description": "a professional black leather business briefcase standing upright on the red exhibition carpet",
+      "placement_rationale": "Clean flat red carpet foreground at TAM airline booth; unobstructed surface with zero object collisions; optimal margin for ground shadow.",
+      "target_bbox_xyxy": [
+        235,
+        395,
+        335,
+        485
+      ],
+      "mask_bbox_xyxy": [
+        220,
+        380,
+        350,
+        500
+      ],
+      "mask_area_pixels": 15600,
+      "mask_area_ratio": 0.05950927734375,
+      "prompt": "a professional black leather business briefcase standing upright on the red exhibition carpet, realistic studio floodlights and soft ground shadow",
+      "disjoint_historical_option_p": true,
+      "status": "PENDING_HUMAN_REVIEW"
+    },
+    {
+      "slot": 4,
+      "candidate_id": "COCO_EXT_SDXL_001",
+      "stratum_id": "coco_sdxl",
+      "tool_key": "sdxl_inpainting",
+      "modification_type": "object_insertion",
+      "mask_area_class": "large_over_30pct",
+      "source_status": "PROPOSED_CATALOG_EXTENSION_SUBSTITUTION_FOR_IND_COCO_SDXL_041",
+      "origin_id": "coco:460160",
+      "author": "PratarPersilja",
+      "license": "CC BY-SA 2.0",
+      "target_description": "a weathered wooden picnic table with attached bench seating on the grassy coastal ground",
+      "placement_rationale": "Open coastal shoreline with expansive natural grass/sand foreground; clean support surface with zero scene clutter; avoids flat ceiling tone jumps.",
+      "target_bbox_xyxy": [
+        20,
+        280,
+        330,
+        490
+      ],
+      "mask_bbox_xyxy": [
+        10,
+        260,
+        340,
+        510
+      ],
+      "mask_area_pixels": 82500,
+      "mask_area_ratio": 0.3147125244140625,
+      "prompt": "a weathered wooden picnic table with attached bench seating on the grassy coastal ground, natural overcast daylight and soft ground contact shadow",
+      "disjoint_historical_option_p": true,
+      "status": "PENDING_HUMAN_REVIEW"
+    },
+    {
+      "slot": 5,
+      "candidate_id": "IND_COMMONS_SD2_001",
+      "stratum_id": "commons_sd2",
+      "tool_key": "stable_diffusion_2_inpainting",
+      "modification_type": "object_removal_and_infill",
+      "mask_area_class": "medium_10_to_30pct",
+      "source_status": "KEPT_ACTIVE_FROM_V1",
+      "origin_id": "commons:92533678",
+      "author": "Moahim",
+      "license": "CC BY-SA 4.0",
+      "target_description": "the foreground headland, rocky cliff base, sea stacks, and pine tree canopy",
+      "placement_rationale": "Sole removal candidate in stratum; mask envelopes entire headland landform and offshore sea stacks; accepts risk of hotel foot infill.",
+      "target_bbox_xyxy": [
+        190,
+        308,
+        512,
+        512
+      ],
+      "mask_bbox_xyxy": [
+        190,
+        305,
+        512,
+        512
+      ],
+      "mask_area_pixels": 66654,
+      "mask_area_ratio": 0.25426483154296875,
+      "prompt": "open sea and distant coastline continuing naturally through the removed foreground headland, photorealistic sunset landscape",
+      "disjoint_historical_option_p": true,
+      "status": "PENDING_CONFIRMATION"
+    },
+    {
+      "slot": 6,
+      "candidate_id": "IND_COMMONS_SD2_040",
+      "stratum_id": "commons_sd2",
+      "tool_key": "stable_diffusion_2_inpainting",
+      "modification_type": "object_insertion",
+      "mask_area_class": "medium_10_to_30pct",
+      "source_status": "PROPOSED_SUBSTITUTION_FOR_IND_COMMONS_SD2_002",
+      "origin_id": "commons:172876577",
+      "author": "Chainwit.",
+      "license": "CC BY 4.0",
+      "target_description": "a rustic wooden barrel planter filled with blooming flowers on the cobblestone pavement",
+      "placement_rationale": "Sibiu historic town square; quiet wide cobblestone pavement; replaces fragile bike spokes with solid cylindrical barrel geometry.",
+      "target_bbox_xyxy": [
+        45,
+        375,
+        215,
+        495
+      ],
+      "mask_bbox_xyxy": [
+        20,
+        360,
+        240,
+        512
+      ],
+      "mask_area_pixels": 33440,
+      "mask_area_ratio": 0.1275634765625,
+      "prompt": "a rustic wooden barrel planter filled with vibrant blooming flowers sitting naturally on the cobblestone pavement, realistic daylight shadows and weathered wood texture matching the historic town square",
+      "disjoint_historical_option_p": true,
+      "status": "PENDING_HUMAN_REVIEW"
+    },
+    {
+      "slot": 7,
+      "candidate_id": "IND_COMMONS_SDXL_001",
+      "stratum_id": "commons_sdxl",
+      "tool_key": "sdxl_inpainting",
+      "modification_type": "object_insertion",
+      "mask_area_class": "small_under_10pct",
+      "source_status": "KEPT_ACTIVE_FROM_V1",
+      "origin_id": "commons:166503140",
+      "author": "Crisco 1492",
+      "license": "CC BY-SA 4.0",
+      "target_description": "a small dark bird flying in the open cloudy sky",
+      "placement_rationale": "Open cloudy sky region above Ed Dwight monument; avoids physical sculpture; accepts sky tone matching risk.",
+      "target_bbox_xyxy": [
+        395,
+        75,
+        455,
+        125
+      ],
+      "mask_bbox_xyxy": [
+        350,
+        45,
+        500,
+        160
+      ],
+      "mask_area_pixels": 17250,
+      "mask_area_ratio": 0.06580352783203125,
+      "prompt": "a small dark bird flying in the cloudy sky, distant scale and natural daylight",
+      "disjoint_historical_option_p": true,
+      "status": "PENDING_CONFIRMATION"
+    },
+    {
+      "slot": 8,
+      "candidate_id": "IND_COMMONS_SDXL_005",
+      "stratum_id": "commons_sdxl",
+      "tool_key": "sdxl_inpainting",
+      "modification_type": "object_replacement",
+      "mask_area_class": "large_over_30pct",
+      "source_status": "PROPOSED_SUBSTITUTION_FOR_IND_COMMONS_SDXL_003",
+      "origin_id": "commons:171463547",
+      "author": "Chris Woodrich",
+      "license": "CC BY-SA 4.0",
+      "target_description": "the monumental bronze sculpture Triptych standing on a solid plinth in Windsor Sculpture Park",
+      "placement_rationale": "Freestanding vertical sculpture on public park lawn; clear separation from backdrop; zero railing collisions; zero glass dome collisions; standard AABB mask 100% compatible with existing runner without code changes.",
+      "target_bbox_xyxy": [
+        145,
+        50,
+        355,
+        465
+      ],
+      "mask_bbox_xyxy": [
+        135,
+        40,
+        365,
+        475
+      ],
+      "mask_area_pixels": 100050,
+      "mask_area_ratio": 0.38166046142578125,
+      "prompt": "a classical white marble commemorative column standing on a solid plinth in the public park, realistic overcast daylight and weathered stone texture",
+      "disjoint_historical_option_p": true,
+      "status": "PENDING_HUMAN_REVIEW"
+    }
+  ]
+}

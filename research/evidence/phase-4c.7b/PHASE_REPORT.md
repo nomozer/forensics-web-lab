@@ -264,8 +264,11 @@ Các phương án đề xuất được rà soát nghiêm ngặt theo nội dung
   * Prompt đề xuất: *"a weathered wooden picnic table with attached bench seating on the grassy coastal ground, natural overcast daylight and soft ground contact shadow"*.
   * Mask AABB đề xuất: `[10, 260, 340, 510]`.
   * Diện tích raster mask: **82.500 px** (**31.471252%**), đạt chuẩn `large_over_30pct` ($\ge 30\%$, dư +3.857 px).
-  * Target containment: **100% bao trọn** ($10 \le 20 < 330 \le 340$ và $260 \le 280 < 490 \le 510$).
-  * Ưu điểm: Vùng chèn nằm trọn trên mặt đất tự nhiên (cỏ và cát), không cắt ngang mặt phẳng nhẵn liên tục (tránh lỗi bước nhảy tông như trần thạch cao), bóng đổ tiếp xúc mặt đất tự nhiên.
+  * **Phân biệt BBox Containment với Coverage Đối tượng Thực tế**:
+    * *BBox Containment*: 100% target bbox nằm trong mask bbox ($10 \le 20 < 330 \le 340$ và $260 \le 280 < 490 \le 510$).
+    * *Bản chất thao tác insertion*: Ảnh authentic là nền bờ biển tự nhiên, chưa có đối tượng trước khi sinh. Target bbox là hộp bao không gian cho bàn gỗ và ghế băng. Đối tượng vật lý được tạo sinh (mặt bàn, chân bàn, ghế băng, bóng đổ tiếp xúc) sẽ chiếm một diện mạo 3D thực tế là tập con bên trong target bbox.
+    * *Kiểm tra bệ/chân & bóng đổ tiếp xúc*: Khoảng lề đáy $y \in [490, 510]$ (20 px) và lề ngang $x \in [10, 20]$ & $[330, 340]$ (10 px) bảo đảm chân bàn gỗ cắm tự nhiên vào mặt cỏ/cát và bóng đổ tiếp xúc trải mềm trên nền đất mà không bị cắt cụt bởi ranh giới mask.
+    * *Kiểm tra vật thể lân cận*: Vùng bờ biển hoàn toàn sạch, không có người, xe cộ hay công trình xây dựng. Bề mặt đất cỏ/cát tự nhiên triệt tiêu rủi ro bước nhảy tông như trên mặt trần thạch cao phẳng của `_041`.
 
 #### 3. Slot 6 Đề Xuất PENDING (`commons_sd2`, `object_insertion`, `medium_10_to_30pct`)
 - **Phương án Khuyến nghị (RECOMMENDED PENDING)**: `IND_COMMONS_SD2_040` (Pool index: 39).
@@ -286,32 +289,33 @@ Các phương án đề xuất được rà soát nghiêm ngặt theo nội dung
 - **Thẩm tra hình học offline trên `IND_COMMONS_SDXL_020` (Żyletkowce)**:
   * Nguồn: `commons:192692840` | Tác giả: Igor123121 | Giấy phép: `CC BY 4.0`.
   * Target đăng ký: `[60, 145, 385, 365]` (71.500 px = 27.275391% canvas).
-  * **Sửa sai lệch và phân định rõ ràng về Mask AABB `[50, 130, 395, 360]`**:
-    * Kích thước: $345 \times 230 =$ **79.350 px** (**30.269623%** canvas).
-    * Mask này **ĐẠT định mức quota large** ($\ge 30\%$, dư +707 px).
-    * Nhưng mask này **KHÔNG bao trọn target**: Thiếu 5 pixel bên phải ở khoảng $x \in [360, 365]$; đáy mask $y=360$ cắt lẹm 5 pixel chân thân nhà; đồng thời vẫn lấn khoảng 13 pixel đỉnh vòm kính tròn tiền cảnh ($x \in [140, 260], y \in [360, 375]$).
+  * **Sửa sai lệch tọa độ và phân tích chính xác Mask AABB `[50, 130, 395, 360]`**:
+    * Kích thước: $345 \times 230 =$ **79.350 px** (**30.269623%** canvas). Đạt định mức quota large ($\ge 30\%$, dư +707 px).
+    * *Đính chính tọa độ*: Mask kết thúc tại $y=360$, **chỉ thiếu đúng 5 hàng đáy target** ($y \in [360, 365)$ trên chiều rộng 325 px, tương đương 1.625 px hay 2.27% diện tích target). Mask **hoàn toàn không thiếu cạnh phải** (trục X $x \in [50, 395]$ bao trọn target $x \in [60, 385]$ với 10 px padding mỗi bên).
+    * *Tính lại giao với vòm kính từ raster*: Đỉnh khung kim loại vòm kính đạt $y=358$ tại $x \approx 208..212$. Mask $y \in [130, 360)$ cắt lẹm đúng **2 hàng đỉnh khung vòm kính** ($y=358, 359$, khoảng 14 px raster), **không tái sử dụng số đo 13 px của mask cũ** (13 px là độ sâu của mask cũ kéo tới $y=375$).
   * **Đo đạc Raster Contour Mask Nháp Offline (né đỉnh vòm kính và cấu trúc tiền cảnh)**:
-    * Xuất raster nhị phân và overlay bám theo mép thực của thân tháp trên ảnh authentic 512×512: `IND_COMMONS_SDXL_020_contour_mask.png` và `IND_COMMONS_SDXL_020_contour_overlay.png`.
+    * Xuất raster nhị phân và overlay bám theo mép thực của thân tháp: `IND_COMMONS_SDXL_020_contour_mask.png` và `IND_COMMONS_SDXL_020_contour_overlay.png`.
     * Số pixel mask contour thực tế: **65.792 px** (**25.097656%** canvas).
     * Kết quả kiểm tra quota: **KHÔNG ĐẠT định mức large** ($\ge 30\%$, thiếu hụt nghiêm trọng -12.851 px hay -4.90%).
     * Kết quả che phủ target (Target Coverage): Chỉ bao phủ **65.496 px / 71.500 px** (**91.60%** diện tích target; bỏ sót 6.004 px = 8.40% diện tích target tại chân tháp).
     * Tuân thủ nguyên tắc trung thực khoa học: Tuyệt đối không thu hẹp hoặc tái đăng ký target post-hoc để hợp thức hóa mask.
   * **Kiểm tra khả năng hỗ trợ trong Schema & Runner hiện có**:
-    * Schema (`independent_validation_protocol.yaml`) và Runner (`ml/evaluation/independent_cohort_acquisition.py`, hàm `_validate_content_grounded_candidate` và `build_content_grounded_mask`) chỉ hỗ trợ trục tọa độ hộp chữ nhật `mask_bbox_xyxy: tuple[int, int, int, int]`.
-    * Runner hoàn toàn **KHÔNG hỗ trợ mặt nạ raster contour/polygon tùy ý**. Muốn hỗ trợ bắt buộc phải ban hành Protocol Amendment v1.7.0 và sửa đổi toàn diện code runner/schema.
+    * Runner (`ml/evaluation/independent_cohort_acquisition.py`) chỉ hỗ trợ trục tọa độ hộp chữ nhật `mask_bbox_xyxy: tuple[int, int, int, int]`, hoàn toàn không hỗ trợ raster mask polygon nếu không sửa code và ban hành amendment.
 - **Rà soát Candidate Khác Trong Cùng Allocation (`commons_sdxl`, `object_replacement`, `large_over_30pct`)**:
-  * Đã rà soát toàn bộ các candidate replacement trong catalog `verified_candidate_catalog_v2.json`.
   * **Phương án Khuyến nghị (RECOMMENDED PENDING)**: **`IND_COMMONS_SDXL_005`** (Pool index: 4).
     * Origin ID: `commons:171463547` | Nguồn: [Wikimedia Commons Chris Woodrich](https://commons.wikimedia.org/wiki/File:%22Triptych%22_by_Gord_Smith_(rear_view),_Windsor,_Ontario,_2025-08-01.jpg) | Tác giả: Chris Woodrich | Giấy phép: `CC BY-SA 4.0`.
     * Disjoint Guard: **PASS** (Zero overlap với 684 nguồn Option P lịch sử).
-    * Mô tả cảnh authentic: Khối điêu khắc đồng đồ sộ "Triptych" tại Windsor Sculpture Park. Khối tượng đứng độc lập hoàn toàn trên thảm cỏ xanh; hậu cảnh là bầu trời mây và rặng cây xanh; **hoàn toàn KHÔNG vướng lan can kim loại xuyên suốt**, **hoàn toàn KHÔNG vướng vòm kính tròn hay công trình tiền cảnh**.
     * Target thay thế: Cột kỷ niệm bằng đá cẩm thạch trắng đứng trên bệ khối vững chắc trong công viên.
     * Prompt đề xuất: *"a classical white marble commemorative column standing on a solid plinth in the public park, realistic overcast daylight and weathered stone texture"*.
     * Target bbox: `[145, 50, 355, 465]` (diện tích 87.150 px = 33.245850%).
     * Mask AABB đề xuất: `[135, 40, 365, 475]`.
     * Diện tích raster mask: **100.050 px** (**38.166046%** canvas), đạt chuẩn `large_over_30pct` ($\ge 30\%$).
-    * Target containment: **100% bao trọn** ($135 \le 145 < 355 \le 365$ và $40 \le 50 < 465 \le 475$).
-    * **Tính tương thích Runner**: Sử dụng chuẩn hộp chữ nhật AABB, **tương thích 100% với schema và code runner hiện hành mà không cần sửa code hay ban hành Protocol Amendment!**
+    * **Phân tích BBox Containment với Coverage Đối tượng Thực tế**:
+      * *BBox Containment*: 100% target bbox nằm trong mask bbox ($135 \le 145 < 355 \le 365$ và $40 \le 50 < 465 \le 475$).
+      * *Che phủ đối tượng thực tế (Physical Object Coverage)*: Khối điêu khắc đồng "Triptych" trải dài từ $x=145$ đến $x=352$ và từ $y=45$ đến $y=465$ (bao gồm cả bệ bê tông chân tượng tại $y=445..465$). Toàn bộ thân tượng và bệ đỡ đều nằm trọn 100% trong mask AABB.
+      * *Kiểm tra bệ/chân & bóng đổ tiếp xúc*: Chân bệ bê tông kết thúc ở $y \approx 465$, thảm cỏ bắt đầu từ $y \approx 470$. Khoảng lề đáy $y \in [465, 475]$ cho phép cột đá mới sinh một bệ móng vững chắc cắm sâu vào mặt cỏ công viên và trải bóng đổ tự nhiên mà không để lại vết sẹo biên.
+      * *Kiểm tra vật thể lân cận*: Hoàn toàn không có lan can kim loại (khắc phục lỗi của Tower Song `_003`), không có vòm kính tròn (khắc phục lỗi của Żyletkowce `_020`), không có người đi bộ. Hậu cảnh là bầu trời mây và rặng cây công viên ở xa.
+      * *Tính tương thích Runner/Schema*: Sử dụng hộp chữ nhật AABB chuẩn, **tương thích 100% với schema và code runner hiện hành mà không cần sửa code hay ban hành amendment!**
   * **Phương án Dự phòng (BACKUP PENDING)**: `IND_COMMONS_SDXL_002` (Pool index: 1, tượng Ed Dwight ôm trẻ, CC BY-SA 4.0; target `[180, 120, 400, 430]`, mask `[170, 110, 410, 440]`, 79.200 px = 30.21%). Lưu ý rủi ro đồng nhất danh tính và cánh tay tiếp xúc.
 
 ---
@@ -321,16 +325,19 @@ Các phương án đề xuất được rà soát nghiêm ngặt theo nội dung
 | Slot | Stratum & Thao Tác | Candidate Đề Xuất (PENDING) | Geometry (Target & Mask BBox) | Diện Tích Mask & Quota | Provenance & Giấy Phép Xác Minh | Rủi Ro Kỹ Thuật Còn Lại | Nội Dung Chính Xác Cần Người Dùng Duyệt |
 | :---: | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | **3** | `coco_sdxl`<br>insertion<br>small | **`IND_COCO_SDXL_042`**<br>(Pool 41, gian hàng TAM) | Target: `[235, 395, 335, 485]`<br>Mask: `[220, 380, 350, 500]` | **15.600 px**<br>(**5.95%**)<br>Đạt `small` (1-10%) | `coco:448076`<br>Tác giả: luis.leao<br>License: `CC BY 2.0` | Thảm phẳng tối ưu tiền kiểm nhưng không bảo đảm 100% loại trừ omission của SDXL. | Duyệt thay thế `IND_COCO_SDXL_002` bằng `IND_COCO_SDXL_042` (cặp táp da trên thảm đỏ). |
-| **4** | `coco_sdxl`<br>insertion<br>large | **`COCO_EXT_SDXL_001`**<br>(Đề xuất mở rộng COCO) | Target: `[20, 280, 330, 490]`<br>Mask: `[10, 260, 340, 510]` | **82.500 px**<br>(**31.47%**)<br>Đạt `large` (&ge;30%) | `coco:460160`<br>Tác giả: PratarPersilja<br>License: `CC BY-SA 2.0` | Bờ biển tự nhiên; cần theo dõi tiếp xúc chân bàn gỗ với nền cỏ/cát. | Duyệt mở rộng catalog COCO với candidate `COCO_EXT_SDXL_001` (bàn dã ngoại gỗ trên bờ cỏ). |
+| **4** | `coco_sdxl`<br>insertion<br>large | **`COCO_EXT_SDXL_001`**<br>(Đề xuất mở rộng COCO) | Target: `[20, 280, 330, 490]`<br>Mask: `[10, 260, 340, 510]` | **82.500 px**<br>(**31.47%**)<br>Đạt `large` (&ge;30%) | `coco:460160`<br>Tác giả: PratarPersilja<br>License: `CC BY-SA 2.0` | Bờ biển tự nhiên; cần theo dõi tiếp xúc chân bàn gỗ với nền cỏ/cát. Nền mặt đất tránh được lỗi bước nhảy tông mặt trần. | Duyệt mở rộng catalog COCO với candidate `COCO_EXT_SDXL_001` (bàn dã ngoại gỗ trên bờ cỏ). |
 | **6** | `commons_sd2`<br>insertion<br>medium | **`IND_COMMONS_SD2_040`**<br>(Pool 39, phố cổ Sibiu) | Target: `[45, 375, 215, 495]`<br>Mask: `[20, 360, 240, 512]` | **33.440 px**<br>(**12.76%**)<br>Đạt `medium` (10-30%) | `commons:172876577`<br>Tác giả: Chainwit.<br>License: `CC BY 4.0` | Nền đá cuội cổ; SD2 cần tạo bóng đổ tiếp xúc tự nhiên với mặt đường. | Duyệt thay thế `IND_COMMONS_SD2_002` bằng `IND_COMMONS_SD2_040` (chậu hoa thùng gỗ mộc). |
 | **8** | `commons_sdxl`<br>replacement<br>large | **`IND_COMMONS_SDXL_005`**<br>(Pool 4, tượng Triptych) | Target: `[145, 50, 355, 465]`<br>Mask: `[135, 40, 365, 475]` | **100.050 px**<br>(**38.17%**)<br>Đạt `large` (&ge;30%) | `commons:171463547`<br>Tác giả: Chris Woodrich<br>License: `CC BY-SA 4.0` | Thay thế tượng đồng bằng cột đá; rủi ro khớp chân bệ với mặt cỏ công viên. Không vướng lan can hay vòm kính. | Duyệt thay thế `IND_COMMONS_SDXL_003` bằng `IND_COMMONS_SDXL_005` (thay tượng Triptych bằng cột đá). |
 
 ---
 
 ### Các Bước Kế Tiếp & Điều Kiện Phê Duyệt (Actionable Decisions)
-1. **Phê duyệt của Người dùng**: Người dùng xem xét contact sheet và bảng quyết định ngắn, đưa ra quyết định chấp thuận chính thức cho 4 slot đề xuất PENDING.
-2. **Soạn thảo Kế hoạch Tạo Sinh Mới**: Sau khi người dùng phê duyệt, mới tiến hành soạn thảo kế hoạch acquisition plan mới (`candidate_acquisition_plan_v3.json`) và đề xuất ngân sách generation. Tuyệt đối không sửa đè plan v2 đã niêm phong.
-3. **Bảo tồn Quản trị**:
+1. **Hồ sơ Amendment & Kế hoạch Đã Chuẩn bị (PENDING)**: Đã soạn thảo đầy đủ:
+   - Hồ sơ sửa đổi: [`PROTOCOL_AMENDMENT_V1.7.0.md`](research/evidence/phase-4c.7b/PROTOCOL_AMENDMENT_V1.7.0.md).
+   - Kế hoạch Pilot v2 đề xuất: [`content_grounded_pilot_plan_v2_proposal.json`](research/evidence/phase-4c.7b/content_grounded_pilot_plan_v2_proposal.json).
+2. **Quy định Phê duyệt**: Người dùng xem xét contact sheet và bảng quyết định ngắn, đưa ra quyết định chấp thuận chính thức cho 4 slot đề xuất PENDING.
+3. **Cảnh báo Kỷ luật Quản trị**:
+   - **Việc chuẩn bị amendment và plan proposal KHÔNG đồng nghĩa được phép generation**. Mọi generation phải chờ phê duyệt chính thức từ người dùng.
    - Diagnostic run: giữ nguyên **6/6 REJECT**.
    - Calibration run: giữ nguyên **2 PENDING** (Agent đề xuất REJECT).
    - Follow-up pilot cũ: giữ nguyên **8 PENDING**.
