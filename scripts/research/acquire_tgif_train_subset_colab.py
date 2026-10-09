@@ -23,6 +23,7 @@ import json
 import os
 from pathlib import Path
 import shutil
+import subprocess
 import sys
 import tarfile
 import time
@@ -36,6 +37,7 @@ from PIL import Image
 EXPECTED_LOCKED_MANIFEST_SHA256 = "53a6ee472fe840a42abd97ccb7475932e0720f5788f745f57f7a2bcfbc32cc8c"
 EXPECTED_POOL_MANIFEST_SHA256 = "9e4ef2c9f89ad7dc1316d764c0acfff3b55dbc60dcc666d8928ff49a04dcd7b6"
 TARGET_CANVAS_SIZE = (512, 512)
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 # TGIF Nextcloud Official Download URLs (IDLab IMEC Public Benchmark Share)
 TGIF_NEXTCLOUD_BASE = "https://cloud.ilabt.imec.be/index.php/s/xEeAzrY7ES9KA8o"
@@ -179,9 +181,9 @@ def extract_selective_stream(
 
     with tarfile.open(tar_path, "r:gz") as tf:
         for member in tf:
+            normalized_name = safe_tar_member_check(member)
             if not member.isreg():
                 continue
-            normalized_name = safe_tar_member_check(member)
             
             # Check matching against any normalized target path
             matched_candidate = target_rel_paths.get(normalized_name)
@@ -233,7 +235,7 @@ def extract_selective_stream(
                     "source_id": matched_candidate["source_id"],
                     "raw_id": raw_id,
                     "category": category,
-                    "archive_member": member.name,
+                    "archive_member": normalized_name,
                     "raw_bytes": len(raw_bytes),
                     "raw_sha256": raw_sha,
                     "normalized_sha256": norm_sha,
@@ -288,6 +290,7 @@ def execute_cohort_intake(
     archive_dir: Path,
     do_download: bool = False,
     dry_run: bool = False,
+    expected_execution_commit: str | None = None,
 ) -> dict[str, Any]:
     """Main intake execution entry point."""
     print("=" * 70)
@@ -322,6 +325,26 @@ def execute_cohort_intake(
             "archive_budget": ARCHIVE_BUDGET,
             "strata_breakdown": dict(strata_counts),
         }
+
+    if expected_execution_commit is None:
+        raise CohortIntakeError(
+            "A full --expected-execution-commit SHA is required for non-dry-run intake."
+        )
+    if len(expected_execution_commit) != 40 or any(
+        char not in "0123456789abcdef" for char in expected_execution_commit
+    ):
+        raise CohortIntakeError("Expected execution commit must be a lowercase 40-character Git SHA.")
+    try:
+        actual_execution_commit = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=REPO_ROOT, text=True
+        ).strip()
+    except (OSError, subprocess.CalledProcessError) as exc:
+        raise CohortIntakeError(f"Cannot verify execution checkout: {exc}") from exc
+    if actual_execution_commit != expected_execution_commit:
+        raise CohortIntakeError(
+            f"Execution commit mismatch: {actual_execution_commit} != {expected_execution_commit}"
+        )
+    worker_sha256 = sha256_file(Path(__file__).resolve())
 
     # 3. Archive preparation
     archive_dir.mkdir(parents=True, exist_ok=True)
@@ -367,11 +390,13 @@ def execute_cohort_intake(
     # 5. Build Colab Intake Receipt
     print("\n--- Step 4: Generating Intake Receipt & Packaging ZIP ---")
     receipt = {
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "phase": "4C.7B",
         "run_id": f"intake-tgif-train-{time.strftime('%Y%m%dT%H%M%SZ', time.gmtime())}",
         "status": "COLAB_CPU_INTAKE_SUCCESS",
         "execution_device": "CPU",
+        "execution_commit": actual_execution_commit,
+        "worker_sha256": worker_sha256,
         "manifest_path": str(manifest_path.name),
         "manifest_sha256": manifest_sha,
         "cohort_pairs": 400,
@@ -464,6 +489,10 @@ def main():
         help="Directory holding or downloading orig and sd2 tar.gz archives",
     )
     parser.add_argument(
+        "--expected-execution-commit",
+        help="Full Git commit SHA checked before any archive download or extraction",
+    )
+    parser.add_argument(
         "--download",
         action="store_true",
         help="Download archives from Nextcloud before extraction",
@@ -481,6 +510,7 @@ def main():
         archive_dir=args.archive_dir,
         do_download=args.download,
         dry_run=args.dry_run,
+        expected_execution_commit=args.expected_execution_commit,
     )
 
 if __name__ == "__main__":
