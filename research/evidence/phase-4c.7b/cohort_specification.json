@@ -1,0 +1,187 @@
+{
+  "schema_version": "1.3.0",
+  "phase": "4C.7B",
+  "specification_name": "canonical_independent_cohort_specification_v1.3",
+  "amendment_reference": "research/evidence/phase-4c.7b/PROTOCOL_AMENDMENT_V1.3.md",
+  "status": "COHORT_SPECIFICATION_AMENDED_LOCKED_PRE_ACQUISITION",
+  "locked_at_utc": "2026-10-07T05:55:00Z",
+  "target_sample_size_pairs": 400,
+  "acquisition_buffer_pairs": 440,
+  "total_target_images": 800,
+  "task_scope": {
+    "classification": "binary",
+    "classes": {
+      "0": "authentic",
+      "1": "ai_edited"
+    },
+    "three_class_note": "fully_generated (3-class generalization, RQ1) is excluded from this cohort due to absent 3-class data."
+  },
+  "authentic_sources": [
+    {
+      "source_key": "coco_2017",
+      "name": "COCO 2017 Dataset (Clean Partitions outside Historical Option P)",
+      "quota_percentage": 50,
+      "target_pairs": 200,
+      "buffer_pairs": 220,
+      "license": "Per-image Flickr license verified via oEmbed (CC-BY 2.0, CC-BY-SA 2.0, CC-BY 3.0, CC-BY-SA 3.0, CC-BY 4.0, CC-BY-SA 4.0)",
+      "license_audit_note": "Do NOT assume all COCO images share a single license; Flickr source license must be verified per sample. NoDerivs strictly excluded.",
+      "provenance_tracking": "Flickr image ID, author name, Flickr URL, license name, license URL, date_captured",
+      "acquisition_readiness": "AUTOMATED_DOWNLOAD_READY",
+      "authenticity_note": "Pre-2017 capture prevents modern text-to-image AI artifacts; does not mathematically guarantee zero analog/digital editing."
+    },
+    {
+      "source_key": "wikimedia_commons",
+      "name": "Wikimedia Commons Quality & Featured Photographic Works",
+      "quota_percentage": 50,
+      "target_pairs": 200,
+      "buffer_pairs": 220,
+      "license": "Creative Commons Attribution licenses permitting derivative works and redistribution (CC-BY, CC-BY-SA)",
+      "license_audit_note": "Requires artist attribution and record of page ID, creation date, and publication timestamp. NoDerivs strictly excluded.",
+      "provenance_tracking": "Wikimedia Commons page ID, title, artist name, source page URL, DateTimeOriginal, DateTime",
+      "acquisition_readiness": "AUTOMATED_DOWNLOAD_READY",
+      "authenticity_note": "High-resolution curated photography with verified creator metadata and explicit CC licensing permitting derivatives."
+    }
+  ],
+  "inpainting_tools": [
+    {
+      "tool_key": "stable_diffusion_2_inpainting",
+      "name": "Stable Diffusion 2 Inpainting",
+      "checkpoint": "sd2-community/stable-diffusion-2-inpainting",
+      "revision": "5f74973cbb64c8568780732c17f43eb269d63a0d",
+      "checkpoint_source_type": "community_mirror",
+      "upstream_original_checkpoint": "stabilityai/stable-diffusion-2-inpainting",
+      "model_type": "open_weights_diffusion",
+      "quota_percentage": 50,
+      "target_pairs": 200,
+      "parameters": {
+        "scheduler": "DDIM",
+        "num_inference_steps": 50,
+        "guidance_scale": 7.5,
+        "resolution": [512, 512],
+        "seed_policy": "fixed_prng_sequence"
+      },
+      "license": "CreativeML OpenRAIL++",
+      "execution_environment": "Google Colab T4 / A100 GPU",
+      "feasibility_status": "AVAILABLE_COMMUNITY_MIRROR"
+    },
+    {
+      "tool_key": "sdxl_inpainting",
+      "name": "SDXL Inpainting 1.0",
+      "checkpoint": "diffusers/stable-diffusion-xl-1.0-inpainting-0.1",
+      "revision": "115134f363124c53c7d878647567d04daf26e41e",
+      "checkpoint_source_type": "official_diffusers",
+      "upstream_original_checkpoint": "diffusers/stable-diffusion-xl-1.0-inpainting-0.1",
+      "model_type": "open_weights_diffusion",
+      "quota_percentage": 50,
+      "target_pairs": 200,
+      "parameters": {
+        "scheduler": "EulerDiscreteScheduler",
+        "num_inference_steps": 30,
+        "guidance_scale": 7.5,
+        "resolution": [512, 512],
+        "seed_policy": "fixed_prng_sequence"
+      },
+      "license": "CreativeML OpenRAIL++",
+      "execution_environment": "Google Colab T4 / A100 GPU (fp16 requires ~6.6GB VRAM; exceeds local 4GB GTX 1650)",
+      "feasibility_status": "AVAILABLE_OFFICIAL_DIFFUSERS"
+    }
+  ],
+  "orthogonal_allocation_matrix": {
+    "description": "2x2 Orthogonal balanced allocation of inpainting tools across authentic sources to control designed factors (does NOT eliminate unobserved confounding).",
+    "strata": [
+      {
+        "stratum_id": "coco_sd2",
+        "authentic_source": "coco_2017",
+        "inpainting_tool": "stable_diffusion_2_inpainting",
+        "target_pairs": 100,
+        "buffer_pairs": 110
+      },
+      {
+        "stratum_id": "coco_sdxl",
+        "authentic_source": "coco_2017",
+        "inpainting_tool": "sdxl_inpainting",
+        "target_pairs": 100,
+        "buffer_pairs": 110
+      },
+      {
+        "stratum_id": "commons_sd2",
+        "authentic_source": "wikimedia_commons",
+        "inpainting_tool": "stable_diffusion_2_inpainting",
+        "target_pairs": 100,
+        "buffer_pairs": 110
+      },
+      {
+        "stratum_id": "commons_sdxl",
+        "authentic_source": "wikimedia_commons",
+        "inpainting_tool": "sdxl_inpainting",
+        "target_pairs": 100,
+        "buffer_pairs": 110
+      }
+    ],
+    "column_totals": {
+      "sd2_pairs": 200,
+      "sdxl_pairs": 200,
+      "total_pairs": 400
+    },
+    "stratum_preserving_replacement_rule": "If a candidate in stratum (S, T) fails technical QC, content QC, or disjoint checks, it is replaced solely by the next pre-ordered candidate in the EXACT SAME stratum (S, T) from the buffer pool. Zero quota re-allocation between strata is permitted."
+  },
+  "modification_types": {
+    "object_replacement": {
+      "quota_percentage": 40,
+      "target_pairs": 160,
+      "per_stratum_pairs": 40
+    },
+    "object_removal_and_infill": {
+      "quota_percentage": 30,
+      "target_pairs": 120,
+      "per_stratum_pairs": 30
+    },
+    "object_insertion": {
+      "quota_percentage": 30,
+      "target_pairs": 120,
+      "per_stratum_pairs": 30
+    }
+  },
+  "mask_area_classes": {
+    "small_under_10pct": {
+      "quota_percentage": 30,
+      "target_pairs": 120,
+      "per_stratum_pairs": 30,
+      "range": [0.01, 0.10]
+    },
+    "medium_10_to_30pct": {
+      "quota_percentage": 40,
+      "target_pairs": 160,
+      "per_stratum_pairs": 40,
+      "range": [0.10, 0.30]
+    },
+    "large_over_30pct": {
+      "quota_percentage": 30,
+      "target_pairs": 120,
+      "per_stratum_pairs": 30,
+      "range": [0.30, 0.50]
+    }
+  },
+  "technical_qc_gates": {
+    "canvas_resolution": [512, 512],
+    "image_format": "PNG",
+    "color_channels": 3,
+    "color_mode": "RGB",
+    "bit_depth": 8,
+    "mask_values": [0, 255],
+    "mask_area_tolerance": 0.02,
+    "min_masked_pixel_delta_l1": 3.0,
+    "max_unmasked_pixel_delta_l1": 0.5,
+    "non_blank_std_threshold": 5.0
+  },
+  "content_qc_protocol": {
+    "contact_sheet_format": "HTML",
+    "evaluation_mode": "PENDING_CONTENT_QC",
+    "prohibition": "Zero detector scores may be rendered on content QC sheets (Detector Isolation Invariant).",
+    "criteria": [
+      "Inpainted object semantically satisfies the assigned prompt category.",
+      "No severe visual boundary tearing or unnatural seam artifacts.",
+      "Unmodified background outside the request mask remains photorealistic and consistent."
+    ]
+  }
+}

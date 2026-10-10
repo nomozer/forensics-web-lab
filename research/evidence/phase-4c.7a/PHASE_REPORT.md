@@ -10,6 +10,7 @@
 > **Real evaluations**: 0 (deferred to cohort acquisition in Phase 4C.7B)<br>
 > **Task scope**: Binary classification (`authentic` = 0 vs. `ai_edited` = 1)<br>
 > **Three-class note**: Evaluation of `fully_generated` (3-class generalization, RQ1) remains incomplete within the broader project and is excluded due to absent 3-class data.
+> **Evidence classification**: cited architecture/calibration/dataset claims are `external-source`; model-binding, simulation and test results are `internal-empirical`; bibliography keys resolve through `docs/references.bib`.
 
 ---
 
@@ -18,7 +19,7 @@
 Sau khi Phase 4C.6B chứng minh rằng kỹ thuật augmentation DSP giải cứu hiệu năng của late fusion dưới các điều kiện nén JPEG và resize trên tập phát triển 341 sources (`EXPLORATORY_JPEG75_IMPROVEMENT`), các kết quả này vẫn mang tính chất **thăm dò (exploratory)** do tập phát triển đã được tái sử dụng nhiều lần qua các phase trước.
 
 Giai đoạn **Phase 4C.7A** thực hiện việc chuẩn bị toàn diện, tiền đăng ký (prespecified) và khóa chặt mọi quy tắc kiểm định độc lập giữa hai mô hình:
-1. `visual_calibrated`: Mô hình thị giác đối chứng (MobileNetV3-Small linear probe + Temperature Scaling).
+1. `visual_calibrated`: Mô hình thị giác đối chứng (MobileNetV3-Small `[@howard2019mobilenetv3; @torchvisionMobilenetV3Small]` linear probe + Temperature Scaling `[@guo2017calibration]`). Các nguồn ngoài hỗ trợ kiến trúc/phương pháp, không chứng minh kết quả nội bộ.
 2. `late_fusion_dsp_augmented`: Mô hình kết hợp DSP augmented (Phase 4C.6B).
 
 Việc chuẩn bị này được hoàn thành **trước khi tiếp cận bất kỳ dữ liệu mới nào**, nhằm loại bỏ hoàn toàn rủi ro p-hacking, lựa chọn mô hình thiên vị, hoặc thay đổi giả thuyết hậu nghiệm.
@@ -61,7 +62,7 @@ Các điểm mâu thuẫn metadata còn tồn đọng trong Phase 4C.6B đã đ�
 - **Đối soát mâu thuẫn báo cáo**: Bản thảo trước đó của báo cáo ghi sai kích thước cả 5 mô hình là 43.264 bytes placeholder (sao chép số liệu ước tính tạm thời). Kích thước file thực tế dao động từ 58,030 đến 58,465 bytes do sự khác biệt nhỏ về số chữ số thập phân trong vector trọng số được serialize JSON giữa các fold.
 
 ### 3.2. Đối Chiếu Feature Contract Chuẩn Xác (DSP Feature Contract)
-- **Visual Branch**: MobileNetV3-Small (576 chiều), weights PyTorch ImageNet V1 (`047dcff4...`).
+- **Visual Branch**: MobileNetV3-Small (576 chiều), weights PyTorch ImageNet V1 (`047dcff4...`). Architecture/enum metadata: `[@howard2019mobilenetv3; @torchvisionMobilenetV3Small]`; hash và feature dimension là binding nội bộ từ artifact.
 - **DSP Branch**: 16 chiều, đối chiếu khớp 100% với định nghĩa và thứ tự chuẩn `DSP_FEATURE_NAMES` từ `ml/training/dsp_features.py`:
   1. `fft_high_freq_energy_ratio`
   2. `fft_spectral_peak_count`
@@ -125,7 +126,7 @@ Tất cả các tài liệu protocol, amendment, cohort plan và execution guide
 - **Quần thể đích**: Ảnh đời thực tự nhiên được chỉnh sửa cục bộ bằng inpainting hiện đại; cân bằng giữa người, đồ vật, phong cảnh và kiến trúc.
 - **Nguồn ảnh authentic & Quotas**:
   * Research Field Collection (ảnh tự chụp độc quyền): **40% (160 pairs)**.
-  * COCO 2017 Dataset (CC-BY 4.0, ngoài Option P): **35% (140 pairs)**.
+  * COCO 2017 Dataset (ngoài Option P): **35% (140 pairs)**. Ghi chú license correction: không dùng blanket `CC BY 4.0` thay cho provenance; mỗi origin phải giữ author/license record riêng như intake Phase 4C.7B.
   * Unsplash Verified (ảnh trước 2022): **25% (100 pairs)**.
 - **Công cụ inpainting & Quotas**:
   * Stable Diffusion 2 Inpainting (`stabilityai/stable-diffusion-2-inpainting`): **40% (160 pairs)**.

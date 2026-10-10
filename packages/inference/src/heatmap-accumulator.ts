@@ -1,5 +1,5 @@
-import { SuspiciousRegion, LocalizationResult } from '@forensics/shared';
-import { PatchItem } from './patch-extractor.js';
+import { SuspiciousRegion, LocalizationResult } from "@forensics/shared";
+import { PatchItem } from "./patch-extractor.js";
 
 export interface ScoredPatch {
   patch: PatchItem;
@@ -14,7 +14,7 @@ export class HeatmapAccumulator {
     scoredPatches: ScoredPatch[],
     gridRows = 32,
     gridCols = 32,
-    threshold = 0.65
+    threshold = 0.65,
   ): {
     localization: LocalizationResult;
     heatmapGrid: number[][];
@@ -30,8 +30,14 @@ export class HeatmapAccumulator {
       };
     }
 
-    const grid = Array.from({ length: gridRows }, () => new Float32Array(gridCols));
-    const weightGrid = Array.from({ length: gridRows }, () => new Float32Array(gridCols));
+    const grid = Array.from(
+      { length: gridRows },
+      () => new Float32Array(gridCols),
+    );
+    const weightGrid = Array.from(
+      { length: gridRows },
+      () => new Float32Array(gridCols),
+    );
 
     // Splat patch scores with Gaussian kernel
     for (const item of scoredPatches) {
@@ -81,7 +87,12 @@ export class HeatmapAccumulator {
     const suspiciousAreaRatio = suspiciousCells / (totalCells || 1);
 
     // Extract bounding regions for clusters exceeding threshold
-    const regions = this.extractRegions(normalizedGrid, gridRows, gridCols, threshold);
+    const regions = this.extractRegions(
+      normalizedGrid,
+      gridRows,
+      gridCols,
+      threshold,
+    );
 
     return {
       localization: {
@@ -102,7 +113,7 @@ export class HeatmapAccumulator {
     grid: number[][],
     rows: number,
     cols: number,
-    threshold: number
+    threshold: number,
   ): SuspiciousRegion[] {
     const visited = Array.from({ length: rows }, () => new Uint8Array(cols));
     const regions: SuspiciousRegion[] = [];
@@ -162,7 +173,7 @@ export class HeatmapAccumulator {
                 height: (maxR - minR + 1) / rows,
               },
               score: Math.round(avgScore * 100) / 100,
-              label: 'Vùng mô hình nghi ngờ can thiệp',
+              label: "Vùng mô hình nghi ngờ can thiệp",
             });
           }
         }
@@ -178,7 +189,7 @@ export class HeatmapAccumulator {
   public static renderColormapRgba(
     grid: number[][],
     outWidth: number,
-    outHeight: number
+    outHeight: number,
   ): Uint8ClampedArray {
     const rows = grid.length;
     const cols = rows > 0 ? grid[0].length : 0;
@@ -206,7 +217,9 @@ export class HeatmapAccumulator {
         const v10 = grid[y0][x1];
         const v01 = grid[y1][x0];
         const v11 = grid[y1][x1];
-        const val = (1 - fy) * ((1 - fx) * v00 + fx * v10) + fy * ((1 - fx) * v01 + fx * v11);
+        const val =
+          (1 - fy) * ((1 - fx) * v00 + fx * v10) +
+          fy * ((1 - fx) * v01 + fx * v11);
 
         // Turbo colormap approximation
         const [r, g, b] = this.turboColormap(val);
@@ -237,10 +250,9 @@ export class HeatmapAccumulator {
               x *
                 (4.5974 -
                   x *
-                    (42.3277 -
-                      x * (130.5887 - x * (150.5667 - x * 58.1375))))
-          )
-        )
+                    (42.3277 - x * (130.5887 - x * (150.5667 - x * 58.1375)))),
+          ),
+        ),
     );
     const g = Math.round(
       255 *
@@ -251,11 +263,9 @@ export class HeatmapAccumulator {
             0.0914 +
               x *
                 (2.1856 +
-                  x *
-                    (4.8052 -
-                      x * (14.0195 - x * (4.2109 + x * 2.7747))))
-          )
-        )
+                  x * (4.8052 - x * (14.0195 - x * (4.2109 + x * 2.7747)))),
+          ),
+        ),
     );
     const b = Math.round(
       255 *
@@ -266,11 +276,9 @@ export class HeatmapAccumulator {
             0.1067 +
               x *
                 (12.5732 -
-                  x *
-                    (83.812 -
-                      x * (280.983 - x * (365.176 - x * 151.2))))
-          )
-        )
+                  x * (83.812 - x * (280.983 - x * (365.176 - x * 151.2)))),
+          ),
+        ),
     );
     return [r, g, b];
   }

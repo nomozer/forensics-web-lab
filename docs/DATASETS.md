@@ -30,8 +30,8 @@ data/
 
 ### 2.1 GenImage
 * **Mục đích**: Nghiên cứu phát hiện toàn ảnh nhân tạo từ nhiều bộ tạo sinh khác nhau (`purpose: scientific-benchmark`).
-* **Nguồn chính thức**: [GitHub: GenImage-Dataset/GenImage](https://github.com/GenImage-Dataset/GenImage)
-* **Văn bản giấy phép**: [GenImage License](https://github.com/GenImage-Dataset/GenImage/blob/main/License)
+* **Nguồn chính thức**: [GitHub: GenImage-Dataset/GenImage](https://github.com/GenImage-Dataset/GenImage) `[@zhu2023genimage; @genimageDatasetRepository]`.
+* **Văn bản giấy phép**: [GenImage License](https://github.com/GenImage-Dataset/GenImage/blob/746781bfa446619e1a4629726eb98d5e69c18240/License) (revision cố định trong `genimageDatasetRepository`).
 * **Giấy phép chính thức**: `CC BY-NC-SA 4.0 with additional dataset terms`.
 * **Hạn chế pháp lý**: Chỉ dùng cho mục đích phi thương mại (nghiên cứu, giảng dạy). Nghiêm cấm sử dụng dataset và **sản phẩm phái sinh (derivative works)** cho mục đích thương mại.
 * **Tình trạng trọng số phái sinh và chính sách dự án**:
@@ -46,9 +46,9 @@ data/
 
 ### 2.2 TGIF & TGIF2 (Text-Guided Inpainting Forgery Dataset)
 * **Mục đích**: Nghiên cứu phát hiện và định vị inpainting cục bộ có hướng dẫn bằng văn bản (`ai_edited`, `purpose: scientific-benchmark`).
-* **Nguồn chính thức**: [GitHub: IDLabMedia/tgif-dataset](https://github.com/IDLabMedia/tgif-dataset) | [Paper WIFS 2024](https://arxiv.org/abs/2407.11566) | [Paper JIS 2026](https://arxiv.org/abs/2603.28613)
+* **Nguồn chính thức**: [GitHub: IDLabMedia/tgif-dataset](https://github.com/IDLabMedia/tgif-dataset) | [Paper WIFS 2024](https://doi.org/10.1109/WIFS61860.2024.10810690) | [Paper JIS 2026](https://doi.org/10.1186/s13635-026-00235-9) `[@mareen2024tgif; @mareen2026tgif2; @tgifDatasetRepository]`.
 * **Giấy phép dataset**: `CC BY-SA 4.0` (tác giả phân phối công khai).
-* **Nguồn ảnh gốc**: MS-COCO (`CC BY 4.0`).
+* **Nguồn ảnh gốc**: TGIF repository mô tả ảnh authentic từ MS-COCO là `CC BY 4.0`; dự án coi đây là metadata do tác giả dataset báo cáo, không phải blanket proof cho mọi ảnh Flickr, và tiếp tục lưu author/license theo từng asset khi intake `[@tgifDatasetRepository]`.
 * **Bộ tạo sinh**: SD2, SDXL, Adobe Photoshop/Firefly (TGIF) và FLUX.1 schnell/dev/filldev (TGIF2).
 * **Ground-truth masks**: Cung cấp đầy đủ mask nhị phân (segmentation, bounding box, random rectangle).
 * **Khảo sát Metadata Nextcloud**:
@@ -74,8 +74,8 @@ data/
 
 ### 2.4 SAGI-D (Synthetic and AI-Generated Inpainting Dataset)
 * **Mục đích**: Nghiên cứu phát hiện và định vị inpainting cục bộ (`ai_edited`, `purpose: scientific-benchmark`).
-* **Nguồn chính thức**: [GitHub: mever-team/SAGI](https://github.com/mever-team/SAGI)
-* **Giấy phép**: `unverified` về bằng chứng phân phối lại ảnh gốc.
+* **Nguồn chính thức**: [GitHub: mever-team/SAGI](https://github.com/mever-team/SAGI) và bài báo ICCV 2025 `[@giakoumoglou2025sagi; @sagiRepository]`.
+* **Giấy phép**: code repository là `Apache-2.0`; bằng chứng phân phối lại toàn bộ ảnh nguồn trong SAGI-D vẫn `unverified` và không được suy từ license code.
 * **Quyết định**: **`blocked`** (`status: proposed`, `licenseStatus: unverified`, `acquisitionEnabled: false`).
 
 ### 2.5 RAID Benchmark

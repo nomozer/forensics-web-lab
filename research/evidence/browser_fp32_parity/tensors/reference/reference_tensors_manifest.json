@@ -1,0 +1,457 @@
+{
+  "schema_version": "1.0.0",
+  "description": "Python Reference Preprocessed Float32 Input Tensors [1, 3, 224, 224]",
+  "source": "torchvision.transforms.Compose([Resize((224, 224), BICUBIC), ToTensor(), Normalize])",
+  "num_samples": 16,
+  "total_elements": 2408448,
+  "samples": [
+    {
+      "sample_index": 0,
+      "source_id": "000000002261",
+      "label": 0,
+      "label_name": "authentic",
+      "image_filename": "000000002261_authentic.png",
+      "image_sha256": "e790a14dccf65fd5c41e09adf247569368d9e3de49cc3210842404f9de17dad0",
+      "image_width": 1024,
+      "image_height": 683,
+      "tensor_filename": "sample_00_000000002261_authentic.bin",
+      "tensor_shape": [
+        1,
+        3,
+        224,
+        224
+      ],
+      "tensor_dtype": "float32",
+      "tensor_layout": "NCHW",
+      "tensor_num_elements": 150528,
+      "tensor_byte_length": 602112,
+      "tensor_sha256": "ceb0026fe66ee7584fe49a05d294e7d497979a17e3c1f1541b4e538ee71372cd",
+      "tensor_stats": {
+        "min": -2.1007792949676514,
+        "max": 2.640000104904175,
+        "mean": 0.5880944728851318,
+        "l1_norm": 119828.5703125
+      }
+    },
+    {
+      "sample_index": 1,
+      "source_id": "000000002261",
+      "label": 1,
+      "label_name": "ai_edited",
+      "image_filename": "000000002261_ai_edited.png",
+      "image_sha256": "704e09069f6f50f6a479a1b385cf8804bc60e6b230ac127f2e54895c1b00a8ca",
+      "image_width": 1024,
+      "image_height": 683,
+      "tensor_filename": "sample_01_000000002261_ai_edited.bin",
+      "tensor_shape": [
+        1,
+        3,
+        224,
+        224
+      ],
+      "tensor_dtype": "float32",
+      "tensor_layout": "NCHW",
+      "tensor_num_elements": 150528,
+      "tensor_byte_length": 602112,
+      "tensor_sha256": "8776306e6806ad3dcaf5b3d65ff0c0010f5269d3202eea3f60772d8c17f5d029",
+      "tensor_stats": {
+        "min": -2.1007792949676514,
+        "max": 2.640000104904175,
+        "mean": 0.5942683815956116,
+        "l1_norm": 120189.984375
+      }
+    },
+    {
+      "sample_index": 2,
+      "source_id": "000000004765",
+      "label": 0,
+      "label_name": "authentic",
+      "image_filename": "000000004765_authentic.png",
+      "image_sha256": "ba89eb16d58ec6e3c6edd313ebfd2783235d7d3658f5a145c30704aaa38f1b4b",
+      "image_width": 612,
+      "image_height": 612,
+      "tensor_filename": "sample_02_000000004765_authentic.bin",
+      "tensor_shape": [
+        1,
+        3,
+        224,
+        224
+      ],
+      "tensor_dtype": "float32",
+      "tensor_layout": "NCHW",
+      "tensor_num_elements": 150528,
+      "tensor_byte_length": 602112,
+      "tensor_sha256": "d55bf397e7cdb3ccba114da09eb196461fa8e4abd581ad19c80bb1e35c9b533b",
+      "tensor_stats": {
+        "min": -1.7069098949432373,
+        "max": 2.3785624504089355,
+        "mean": 0.5184180736541748,
+        "l1_norm": 124399.4453125
+      }
+    },
+    {
+      "sample_index": 3,
+      "source_id": "000000004765",
+      "label": 1,
+      "label_name": "ai_edited",
+      "image_filename": "000000004765_ai_edited.png",
+      "image_sha256": "9a7c36b666efbd4b65196c64c8ba21bf6a51d49de4a9043a148b4ecbce0d8385",
+      "image_width": 612,
+      "image_height": 612,
+      "tensor_filename": "sample_03_000000004765_ai_edited.bin",
+      "tensor_shape": [
+        1,
+        3,
+        224,
+        224
+      ],
+      "tensor_dtype": "float32",
+      "tensor_layout": "NCHW",
+      "tensor_num_elements": 150528,
+      "tensor_byte_length": 602112,
+      "tensor_sha256": "9b7ac1b1ce9c4fd8ae45931f974dd2208fe4933664c6e7c45f3ad617aab8d32b",
+      "tensor_stats": {
+        "min": -1.7069098949432373,
+        "max": 2.6051416397094727,
+        "mean": 0.5440245866775513,
+        "l1_norm": 128261.4453125
+      }
+    },
+    {
+      "sample_index": 4,
+      "source_id": "000000007278",
+      "label": 0,
+      "label_name": "authentic",
+      "image_filename": "000000007278_authentic.png",
+      "image_sha256": "9fc9d6bab57005199d91470a89ba4adb90a9e03025c8dc31814cc6d9f2bcd07d",
+      "image_width": 1023,
+      "image_height": 771,
+      "tensor_filename": "sample_04_000000007278_authentic.bin",
+      "tensor_shape": [
+        1,
+        3,
+        224,
+        224
+      ],
+      "tensor_dtype": "float32",
+      "tensor_layout": "NCHW",
+      "tensor_num_elements": 150528,
+      "tensor_byte_length": 602112,
+      "tensor_sha256": "a780ae211c0f8dceea216c4aea10f246513fc17becf3afef7741ab84a7152d1d",
+      "tensor_stats": {
+        "min": -2.1179039478302,
+        "max": 2.082265853881836,
+        "mean": 0.29549020528793335,
+        "l1_norm": 99371.546875
+      }
+    },
+    {
+      "sample_index": 5,
+      "source_id": "000000007278",
+      "label": 1,
+      "label_name": "ai_edited",
+      "image_filename": "000000007278_ai_edited.png",
+      "image_sha256": "6a3c094c0b149f1872cd5a1c1827225b7f7e87dbe3884b8390071d2717def2cb",
+      "image_width": 1023,
+      "image_height": 771,
+      "tensor_filename": "sample_05_000000007278_ai_edited.bin",
+      "tensor_shape": [
+        1,
+        3,
+        224,
+        224
+      ],
+      "tensor_dtype": "float32",
+      "tensor_layout": "NCHW",
+      "tensor_num_elements": 150528,
+      "tensor_byte_length": 602112,
+      "tensor_sha256": "2a967d58b70210b6dcc63ff6e82b3214157395a56230640666dc6e2c72887425",
+      "tensor_stats": {
+        "min": -2.1179039478302,
+        "max": 2.0648367404937744,
+        "mean": 0.29468390345573425,
+        "l1_norm": 99308.90625
+      }
+    },
+    {
+      "sample_index": 6,
+      "source_id": "000000007977",
+      "label": 0,
+      "label_name": "authentic",
+      "image_filename": "000000007977_authentic.png",
+      "image_sha256": "295702fa29efae25b2d576b94d5236ef64272e996d4b63023f48772342188c75",
+      "image_width": 687,
+      "image_height": 1023,
+      "tensor_filename": "sample_06_000000007977_authentic.bin",
+      "tensor_shape": [
+        1,
+        3,
+        224,
+        224
+      ],
+      "tensor_dtype": "float32",
+      "tensor_layout": "NCHW",
+      "tensor_num_elements": 150528,
+      "tensor_byte_length": 602112,
+      "tensor_sha256": "9d40d36a1a6bf9b32925bf4ff6cbd982908f2dc4f2ad0099e0ec55b4d4ec522e",
+      "tensor_stats": {
+        "min": -1.9466564655303955,
+        "max": 2.483137607574463,
+        "mean": 0.587471067905426,
+        "l1_norm": 168573.4375
+      }
+    },
+    {
+      "sample_index": 7,
+      "source_id": "000000007977",
+      "label": 1,
+      "label_name": "ai_edited",
+      "image_filename": "000000007977_ai_edited.png",
+      "image_sha256": "24800841c8fbadf29d9dd55ca9f6df7033e14f6388fef6d5b24b269ee42af6d8",
+      "image_width": 687,
+      "image_height": 1023,
+      "tensor_filename": "sample_07_000000007977_ai_edited.bin",
+      "tensor_shape": [
+        1,
+        3,
+        224,
+        224
+      ],
+      "tensor_dtype": "float32",
+      "tensor_layout": "NCHW",
+      "tensor_num_elements": 150528,
+      "tensor_byte_length": 602112,
+      "tensor_sha256": "00d34df7d12ff9c79d23c0b8456fd85dea1b3ac3ebdcdde62186316b5a4d60d5",
+      "tensor_stats": {
+        "min": -1.9466564655303955,
+        "max": 2.483137607574463,
+        "mean": 0.5921841859817505,
+        "l1_norm": 169297.5
+      }
+    },
+    {
+      "sample_index": 8,
+      "source_id": "000000010092",
+      "label": 0,
+      "label_name": "authentic",
+      "image_filename": "000000010092_authentic.png",
+      "image_sha256": "09320b5ae9d8c493327702ff9eb2361908e219ea51c6005556f5c375e1eb7bf7",
+      "image_width": 800,
+      "image_height": 533,
+      "tensor_filename": "sample_08_000000010092_authentic.bin",
+      "tensor_shape": [
+        1,
+        3,
+        224,
+        224
+      ],
+      "tensor_dtype": "float32",
+      "tensor_layout": "NCHW",
+      "tensor_num_elements": 150528,
+      "tensor_byte_length": 602112,
+      "tensor_sha256": "75f444816f186ad6c0d963b87c780c0d199aea2251ba63f55671bdba83d7da0a",
+      "tensor_stats": {
+        "min": -1.9306721687316895,
+        "max": 2.640000104904175,
+        "mean": -0.09251629561185837,
+        "l1_norm": 141998.03125
+      }
+    },
+    {
+      "sample_index": 9,
+      "source_id": "000000010092",
+      "label": 1,
+      "label_name": "ai_edited",
+      "image_filename": "000000010092_ai_edited.png",
+      "image_sha256": "d268a6eec467af1f0889c8b1c2d2d77f67c550ba806dd9e32bcf2ba5424ede79",
+      "image_width": 800,
+      "image_height": 533,
+      "tensor_filename": "sample_09_000000010092_ai_edited.bin",
+      "tensor_shape": [
+        1,
+        3,
+        224,
+        224
+      ],
+      "tensor_dtype": "float32",
+      "tensor_layout": "NCHW",
+      "tensor_num_elements": 150528,
+      "tensor_byte_length": 602112,
+      "tensor_sha256": "b8007e3beb1de7b9eccda262451781de744b662f09132e47a3b7484ed8de7d5d",
+      "tensor_stats": {
+        "min": -1.9306721687316895,
+        "max": 2.640000104904175,
+        "mean": -0.1382729709148407,
+        "l1_norm": 146515.15625
+      }
+    },
+    {
+      "sample_index": 10,
+      "source_id": "000000012639",
+      "label": 0,
+      "label_name": "authentic",
+      "image_filename": "000000012639_authentic.png",
+      "image_sha256": "965ec488e641065d88e68d49fb13de24db1b3e8868d2033a135e410f99cb8c9e",
+      "image_width": 768,
+      "image_height": 1024,
+      "tensor_filename": "sample_10_000000012639_authentic.bin",
+      "tensor_shape": [
+        1,
+        3,
+        224,
+        224
+      ],
+      "tensor_dtype": "float32",
+      "tensor_layout": "NCHW",
+      "tensor_num_elements": 150528,
+      "tensor_byte_length": 602112,
+      "tensor_sha256": "494431198496d0ba7fe7034e93c6ded6c62f8ad29f4af551da9ecff150fcbc94",
+      "tensor_stats": {
+        "min": -1.8439079523086548,
+        "max": 2.640000104904175,
+        "mean": 0.12147359549999237,
+        "l1_norm": 120359.625
+      }
+    },
+    {
+      "sample_index": 11,
+      "source_id": "000000012639",
+      "label": 1,
+      "label_name": "ai_edited",
+      "image_filename": "000000012639_ai_edited.png",
+      "image_sha256": "497b428b4ccb764b35f70c8ea2ad83313a9ff2c634ec332d5601fc2c359bbf5e",
+      "image_width": 768,
+      "image_height": 1024,
+      "tensor_filename": "sample_11_000000012639_ai_edited.bin",
+      "tensor_shape": [
+        1,
+        3,
+        224,
+        224
+      ],
+      "tensor_dtype": "float32",
+      "tensor_layout": "NCHW",
+      "tensor_num_elements": 150528,
+      "tensor_byte_length": 602112,
+      "tensor_sha256": "c4c3fa66c6b4dfa18bb27285b18cf8d550ef575059683e08a62305fbd4ef5699",
+      "tensor_stats": {
+        "min": -1.9809060096740723,
+        "max": 2.640000104904175,
+        "mean": 0.11540654301643372,
+        "l1_norm": 120820.078125
+      }
+    },
+    {
+      "sample_index": 12,
+      "source_id": "000000015956",
+      "label": 0,
+      "label_name": "authentic",
+      "image_filename": "000000015956_authentic.png",
+      "image_sha256": "3224fc785a4f5b25cf1a9092285f38654a0f8ff2e2a1d87df1d1996bf70a5596",
+      "image_width": 1024,
+      "image_height": 768,
+      "tensor_filename": "sample_12_000000015956_authentic.bin",
+      "tensor_shape": [
+        1,
+        3,
+        224,
+        224
+      ],
+      "tensor_dtype": "float32",
+      "tensor_layout": "NCHW",
+      "tensor_num_elements": 150528,
+      "tensor_byte_length": 602112,
+      "tensor_sha256": "f97de1bfa0df5c69f1f8e8457e8767e2282945c4c16d28a9d6c21c5ae6bbfbd6",
+      "tensor_stats": {
+        "min": -1.7925336360931396,
+        "max": 2.640000104904175,
+        "mean": -0.025766286998987198,
+        "l1_norm": 73030.40625
+      }
+    },
+    {
+      "sample_index": 13,
+      "source_id": "000000015956",
+      "label": 1,
+      "label_name": "ai_edited",
+      "image_filename": "000000015956_ai_edited.png",
+      "image_sha256": "3f2082680055f46c0673839e0dfc0c8551ccd4702da1504bf1fca603f351fabe",
+      "image_width": 1024,
+      "image_height": 768,
+      "tensor_filename": "sample_13_000000015956_ai_edited.bin",
+      "tensor_shape": [
+        1,
+        3,
+        224,
+        224
+      ],
+      "tensor_dtype": "float32",
+      "tensor_layout": "NCHW",
+      "tensor_num_elements": 150528,
+      "tensor_byte_length": 602112,
+      "tensor_sha256": "66b9fb2a07ca6d16525f55e89f8af72c9f53b5697dfdd0a0d4b3f6be1bd98738",
+      "tensor_stats": {
+        "min": -2.1179039478302,
+        "max": 2.640000104904175,
+        "mean": -0.07969868183135986,
+        "l1_norm": 78980.5703125
+      }
+    },
+    {
+      "sample_index": 14,
+      "source_id": "000000017178",
+      "label": 0,
+      "label_name": "authentic",
+      "image_filename": "000000017178_authentic.png",
+      "image_sha256": "f86f1b067a564a1565a1ec3a0b4e3b7f46c1ed66aab039eb47966b1533e5aab1",
+      "image_width": 1024,
+      "image_height": 683,
+      "tensor_filename": "sample_14_000000017178_authentic.bin",
+      "tensor_shape": [
+        1,
+        3,
+        224,
+        224
+      ],
+      "tensor_dtype": "float32",
+      "tensor_layout": "NCHW",
+      "tensor_num_elements": 150528,
+      "tensor_byte_length": 602112,
+      "tensor_sha256": "1e383a4ffef9c90c3f0a044af9dbcb30daf5edf81a3d3dc3ce7776133b9fd3c5",
+      "tensor_stats": {
+        "min": -2.1179039478302,
+        "max": 2.640000104904175,
+        "mean": -0.32262468338012695,
+        "l1_norm": 134774.703125
+      }
+    },
+    {
+      "sample_index": 15,
+      "source_id": "000000017178",
+      "label": 1,
+      "label_name": "ai_edited",
+      "image_filename": "000000017178_ai_edited.png",
+      "image_sha256": "49fa0f5507c34ed1c7f195424ebff70ac81255c6d61e3983e8a5095bf504c02f",
+      "image_width": 1024,
+      "image_height": 683,
+      "tensor_filename": "sample_15_000000017178_ai_edited.bin",
+      "tensor_shape": [
+        1,
+        3,
+        224,
+        224
+      ],
+      "tensor_dtype": "float32",
+      "tensor_layout": "NCHW",
+      "tensor_num_elements": 150528,
+      "tensor_byte_length": 602112,
+      "tensor_sha256": "6253badcb7df280cabf1df4dac276317fec2c65ac8a80100e65751b3fcf12104",
+      "tensor_stats": {
+        "min": -2.1179039478302,
+        "max": 2.640000104904175,
+        "mean": -0.3001536428928375,
+        "l1_norm": 133671.390625
+      }
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "4C.7B",
+  "audit_timestamp_utc": "2026-10-09T17:37:33Z",
+  "status": "PHASH_LEAKAGE_AUDIT_PASS",
+  "algorithm": "difference_hash_dhash_64bit",
+  "hash_size": 8,
+  "max_hamming_distance_threshold": 3,
+  "n400_package": {
+    "path": "tgif_train_clean_subset_package.zip",
+    "total_images_hashed": 800,
+    "total_sources_hashed": 400
+  },
+  "option_p_disjointness": {
+    "status": "PASS",
+    "historical_images_checked": 1368,
+    "comparisons_count": 1094400,
+    "collisions_count": 0,
+    "collisions": []
+  },
+  "internal_n400_disjointness": {
+    "status": "PASS",
+    "cross_source_pairs_checked": 319200,
+    "collisions_count": 0,
+    "collisions": []
+  },
+  "phase_4c7b_development_disjointness": {
+    "status": "PASS",
+    "pilot_images_checked": 106,
+    "collisions_count": 0,
+    "collisions": []
+  },
+  "conclusion": "ZERO perceptual hash duplicates detected across historical Option P, internal cross-sources, and Phase 4C.7B development images at Hamming distance threshold <= 3."
+}

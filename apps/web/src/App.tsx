@@ -10,8 +10,10 @@ import { EvidenceLedger } from './components/EvidenceLedger.js';
 import { ForensicsInspector } from './components/ForensicsInspector.js';
 import { ProvenanceInspector } from './components/ProvenanceInspector.js';
 import { ReportActions } from './components/ReportActions.js';
+import { ResearchLabView } from './components/ResearchLabView.js';
 
 export const App: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<'standard' | 'research'>('standard');
   const [selectedImage, setSelectedImage] = useState<ValidatedImageData | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progressEvent, setProgressEvent] = useState<AnalysisProgressEvent | null>(null);
@@ -93,63 +95,114 @@ export const App: React.FC = () => {
     <div className="app-container">
       <Header />
 
-      {!selectedImage && !isProcessing && (
-        <ImageDropzone onImageSelected={handleImageSelected} isProcessing={isProcessing} />
-      )}
-
-      {isProcessing && progressEvent && (
-        <AnalysisProgress progressEvent={progressEvent} onCancel={handleCancel} />
-      )}
-
-      {globalError && (
-        <div
-          className="glass-panel"
+      <div
+        style={{
+          display: 'flex',
+          gap: '12px',
+          margin: '0 auto 24px auto',
+          maxWidth: '1200px',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+          paddingBottom: '12px',
+        }}
+      >
+        <button
+          id="tab-standard"
+          onClick={() => setActiveTab('standard')}
           style={{
-            padding: '16px 20px',
-            marginBottom: '24px',
-            borderLeft: '4px solid var(--accent-rose)',
-            background: 'rgba(244, 63, 94, 0.1)',
-            color: '#fca5a5',
+            padding: '10px 20px',
+            borderRadius: '8px',
+            border: activeTab === 'standard' ? '1px solid var(--accent-cyan, #06b6d4)' : '1px solid transparent',
+            background: activeTab === 'standard' ? 'rgba(6, 182, 212, 0.15)' : 'rgba(255, 255, 255, 0.05)',
+            color: activeTab === 'standard' ? '#38bdf8' : '#94a3b8',
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
           }}
         >
-          <strong>Lỗi hệ thống:</strong> {globalError}
-        </div>
-      )}
+          🔬 Giám Định Tiêu Chuẩn (Production Track)
+        </button>
 
-      {result && selectedImage && (
+        <button
+          id="tab-research-lab"
+          onClick={() => setActiveTab('research')}
+          style={{
+            padding: '10px 20px',
+            borderRadius: '8px',
+            border: activeTab === 'research' ? '1px solid #a855f7' : '1px solid transparent',
+            background: activeTab === 'research' ? 'rgba(168, 85, 247, 0.15)' : 'rgba(255, 255, 255, 0.05)',
+            color: activeTab === 'research' ? '#c084fc' : '#94a3b8',
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+          }}
+        >
+          🧪 Research Lab FP32 (RQ3–RQ4 Outer-Fold Parity)
+        </button>
+      </div>
+
+      {activeTab === 'research' ? (
+        <ResearchLabView />
+      ) : (
         <>
-          <ResultVerdictCard
-            verdict={result.result.label}
-            confidence={result.result.confidence}
-            probabilities={result.result.probabilities}
-            explanation={result.result.explanation}
-            modelAvailable={result.modelAvailable}
-            modelStatus={result.modelStatus}
-          />
+          {!selectedImage && !isProcessing && (
+            <ImageDropzone onImageSelected={handleImageSelected} isProcessing={isProcessing} />
+          )}
 
-          <HeatmapViewer
-            previewUrl={selectedImage.previewUrl}
-            width={selectedImage.width}
-            height={selectedImage.height}
-            localization={result.localization}
-          />
+          {isProcessing && progressEvent && (
+            <AnalysisProgress progressEvent={progressEvent} onCancel={handleCancel} />
+          )}
 
-          <EvidenceLedger
-            supportingEvidence={result.forensics.supportingEvidence}
-            refutingEvidence={result.forensics.refutingEvidence}
-            limitations={result.limitations}
-          />
+          {globalError && (
+            <div
+              className="glass-panel"
+              style={{
+                padding: '16px 20px',
+                marginBottom: '24px',
+                borderLeft: '4px solid var(--accent-rose)',
+                background: 'rgba(244, 63, 94, 0.1)',
+                color: '#fca5a5',
+              }}
+            >
+              <strong>Lỗi hệ thống:</strong> {globalError}
+            </div>
+          )}
 
-          <div className="grid-2col">
-            <ForensicsInspector signals={result.forensics.signals} />
-            <ProvenanceInspector provenance={result.provenance} />
-          </div>
+          {result && selectedImage && (
+            <>
+              <ResultVerdictCard
+                verdict={result.result.label}
+                confidence={result.result.confidence}
+                probabilities={result.result.probabilities}
+                explanation={result.result.explanation}
+                modelAvailable={result.modelAvailable}
+                modelStatus={result.modelStatus}
+              />
 
-          <ReportActions
-            result={result}
-            onClearSession={handleClearSession}
-            onNewImage={handleNewImage}
-          />
+              <HeatmapViewer
+                previewUrl={selectedImage.previewUrl}
+                width={selectedImage.width}
+                height={selectedImage.height}
+                localization={result.localization}
+              />
+
+              <EvidenceLedger
+                supportingEvidence={result.forensics.supportingEvidence}
+                refutingEvidence={result.forensics.refutingEvidence}
+                limitations={result.limitations}
+              />
+
+              <div className="grid-2col">
+                <ForensicsInspector signals={result.forensics.signals} />
+                <ProvenanceInspector provenance={result.provenance} />
+              </div>
+
+              <ReportActions
+                result={result}
+                onClearSession={handleClearSession}
+                onNewImage={handleNewImage}
+              />
+            </>
+          )}
         </>
       )}
     </div>

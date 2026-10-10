@@ -117,7 +117,7 @@ graph TD
 * [x] **TASK-366**: Establish machine-readable Evidence Register (`docs/EVIDENCE_REGISTER.md`, `research/evidence/phase-3.6/evidence-manifest.json`) and JSON Schema (`docs/schemas/evidence-manifest.v1.schema.json`).
 * [x] **TASK-367**: Implement automated manifest validator and expand registry validator to enforce 7 mandatory readiness gates with test coverage.
 * [x] **TASK-368**: Expand `docs/MODEL_ACQUISITION_GATE.md` with 17 mandatory criteria before admitting any model to `ready` status.
-* [x] **TASK-369**: Author `docs/PHASE_4A_DATA_FEASIBILITY.md` with dataset decision matrix and user authorization gate.
+* [x] **TASK-369**: Author `docs/DATA_FEASIBILITY.md` with dataset decision matrix and user authorization gate.
 * [x] **TASK-370**: Execute genuine verification runs and capture execution summaries (`environment.json`, `test-summary.json`, `build-summary.json`).
 
 ---

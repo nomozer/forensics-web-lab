@@ -28,6 +28,14 @@ Certain organic photographic techniques can trigger localized signal discrepanci
 * Traditional manual retouching (Photoshop clone stamp, frequency separation).
 While the multi-modal evidence fusion engine penalizes conflicting signals to avoid false positives, complex composites may still occasionally register elevated suspicion or yield an `uncertain` verdict.
 
+### 2.4 Independent Evaluation & Generalization Boundaries (TGIF N=400 Cohort)
+* **Unproven Improvement of DSP Fusion at JPEG Q=75**: On unseen independent sources at `jpeg_q75`, Late Fusion DSP Augmented yields $\Delta \text{Macro-F1} = -0.0027$ with a 95% bootstrap CI $[-0.0126, +0.0072]$ spanning zero ($P(\Delta^* > 0) = 30.29\%$). Improvement is **unproven** on independent data (`INDEPENDENT_JPEG75_INCONCLUSIVE`), contrasting with exploratory development gains ($\Delta = +0.1363$). Superiority or non-inferiority must not be claimed.
+* **Mechanistic Explanations Remain Unverified Hypotheses**: Tentative explanations regarding global DSP feature degradation under JPEG compression grids ($8 \times 8$) or the dissolution of development shortcuts are **unverified hypotheses**. They have not been established through isolated ablation experiments.
+* **No Production Behavioral Guarantees**: Academic evaluation results must not be construed as operational guarantees that the deployed client-side web application will reliably reduce confidence, correctly emit `uncertain` flags, or control false-positive rates under wild social-media compression pipelines.
+* **Unseen Sources vs. Out-of-Distribution (OOD)**: The independent evaluation on the TGIF N=400 cohort tests detector performance on unseen source images within the same benchmark family (MS-COCO background sources from TGIF, \cite{mareen2024tgif}) and the same inpainting generator (Stable Diffusion 2). This establishes source-level generalization in-distribution, but **does not constitute empirical proof of out-of-distribution (OOD) generalization** across unseen generative architectures (such as Adobe Firefly, SDXL, Midjourney, or autoregressive/flow-matching models \cite{ojha2023universal,wang2023dire}).
+* **Sample Size Allocation & Large Stratum Imbalance ($n=14$)**: The strata distribution (14 Large [3.5%], 221 Medium [55.25%], 165 Small [41.25%]) reflects benchmark segmentation constraints rather than natural manipulation prevalence. The Large stratum ($n=14$) is strictly descriptive; no separate statistical claims are made for this stratum, and the $ME < 0.01$ margin of error is abandoned.
+* **Two-Class Scope**: The independent cohort is restricted to binary classification (`authentic` vs `ai_edited`) based on localized inpainting; it does not evaluate full-image generation (`fully_generated`, \cite{zhu2023genimage}).
+
 ---
 
 ## 3. Scope Boundaries (Unsupported Media)

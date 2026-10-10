@@ -1,4 +1,4 @@
-import { MODEL_CONFIG, BoundingBox } from '@forensics/shared';
+import { MODEL_CONFIG, BoundingBox } from "@forensics/shared";
 
 export interface PatchItem {
   box: BoundingBox; // Normalized [0, 1]
@@ -15,7 +15,7 @@ export class PatchExtractor {
     rgba: Uint8ClampedArray | Uint8Array,
     imgWidth: number,
     imgHeight: number,
-    targetPatchSize = MODEL_CONFIG.PATCH_SIZE
+    targetPatchSize = MODEL_CONFIG.PATCH_SIZE,
   ): PatchItem[] {
     const patches: PatchItem[] = [];
 
@@ -45,7 +45,9 @@ export class PatchExtractor {
 
     for (const py of yCoords) {
       for (const px of xCoords) {
-        const patchData = new Float32Array(3 * targetPatchSize * targetPatchSize);
+        const patchData = new Float32Array(
+          3 * targetPatchSize * targetPatchSize,
+        );
         const planeSize = targetPatchSize * targetPatchSize;
 
         // Extract and normalize pixels: (pixel / 255 - mean) / std
@@ -60,7 +62,8 @@ export class PatchExtractor {
             const g = rgba[srcIdx + 1] / 255.0;
             const b = rgba[srcIdx + 2] / 255.0;
 
-            patchData[dstIdx] = (r - MODEL_CONFIG.NORM_MEAN[0]) / MODEL_CONFIG.NORM_STD[0];
+            patchData[dstIdx] =
+              (r - MODEL_CONFIG.NORM_MEAN[0]) / MODEL_CONFIG.NORM_STD[0];
             patchData[planeSize + dstIdx] =
               (g - MODEL_CONFIG.NORM_MEAN[1]) / MODEL_CONFIG.NORM_STD[1];
             patchData[2 * planeSize + dstIdx] =
@@ -99,7 +102,7 @@ export class PatchExtractor {
     rgba: Uint8ClampedArray | Uint8Array,
     imgWidth: number,
     imgHeight: number,
-    targetSize = MODEL_CONFIG.PATCH_SIZE
+    targetSize = MODEL_CONFIG.PATCH_SIZE,
   ): Float32Array {
     const tensor = new Float32Array(3 * targetSize * targetSize);
     const planeSize = targetSize * targetSize;
@@ -117,9 +120,12 @@ export class PatchExtractor {
         const g = rgba[srcIdx + 1] / 255.0;
         const b = rgba[srcIdx + 2] / 255.0;
 
-        tensor[dstIdx] = (r - MODEL_CONFIG.NORM_MEAN[0]) / MODEL_CONFIG.NORM_STD[0];
-        tensor[planeSize + dstIdx] = (g - MODEL_CONFIG.NORM_MEAN[1]) / MODEL_CONFIG.NORM_STD[1];
-        tensor[2 * planeSize + dstIdx] = (b - MODEL_CONFIG.NORM_MEAN[2]) / MODEL_CONFIG.NORM_STD[2];
+        tensor[dstIdx] =
+          (r - MODEL_CONFIG.NORM_MEAN[0]) / MODEL_CONFIG.NORM_STD[0];
+        tensor[planeSize + dstIdx] =
+          (g - MODEL_CONFIG.NORM_MEAN[1]) / MODEL_CONFIG.NORM_STD[1];
+        tensor[2 * planeSize + dstIdx] =
+          (b - MODEL_CONFIG.NORM_MEAN[2]) / MODEL_CONFIG.NORM_STD[2];
       }
     }
 

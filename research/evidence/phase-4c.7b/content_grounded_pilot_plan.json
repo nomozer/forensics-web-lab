@@ -1,0 +1,192 @@
+{
+  "schema_version": "1.0.0",
+  "workstream": "independent_cohort_acquisition",
+  "phase_trace": "4C.7B",
+  "purpose": "Bounded eight-pair follow-up pilot plan; no automatic replacement candidates are authorized.",
+  "human_review_status": "APPROVED",
+  "human_reviewer": "Dũng Phạm <valdung04@gmail.com>",
+  "human_reviewed_at_utc": "2026-10-08T07:34:38Z",
+  "coordinate_space": "normalized_512x512_canvas_xyxy_half_open",
+  "attempt_budget": 8,
+  "automatic_replacement": false,
+  "locked_quota_summary": {
+    "stratum_counts": {
+      "coco_sd2": 2,
+      "coco_sdxl": 2,
+      "commons_sd2": 2,
+      "commons_sdxl": 2
+    },
+    "modification_type_counts": {
+      "object_replacement": 3,
+      "object_removal_and_infill": 1,
+      "object_insertion": 4
+    },
+    "mask_area_class_counts": {
+      "small_under_10pct": 3,
+      "medium_10_to_30pct": 2,
+      "large_over_30pct": 3
+    }
+  },
+  "candidates": [
+    {
+      "candidate_id": "IND_COCO_SD2_001",
+      "stratum_id": "coco_sd2",
+      "tool_key": "stable_diffusion_2_inpainting",
+      "modification_type": "object_replacement",
+      "mask_area_class": "small_under_10pct",
+      "target_description": "the round copper pan hanging above the center-left cooking range",
+      "placement_rationale": "The target is visible before generation and the tightened mask stays around the selected hanging pan without covering the cook.",
+      "target_bbox_xyxy": [207, 117, 270, 182],
+      "mask_bbox_xyxy": [195, 95, 280, 205],
+      "prompt": "a round brass wall clock mounted naturally on the kitchen wall, matching the warm indoor lighting",
+      "instruction_review": {
+        "target_or_placement": "VERIFIED_EXISTING_TARGET",
+        "bbox_prompt_alignment": "ALIGNED_AFTER_REVISION",
+        "mask_scope": "TIGHTENED_TO_TARGET",
+        "agent_status": "READY_FOR_HUMAN_DECISION",
+        "note": "The copper pan is visible. The prior rectangle included more adjacent cookware; the revised rectangle is narrower and excludes the cook. Mask area: 3.566742% (9,350 px).",
+        "human_decision_required": "Approve or revise the pan-to-clock replacement instruction."
+      }
+    },
+    {
+      "candidate_id": "IND_COCO_SD2_002",
+      "stratum_id": "coco_sd2",
+      "tool_key": "stable_diffusion_2_inpainting",
+      "modification_type": "object_replacement",
+      "mask_area_class": "large_over_30pct",
+      "target_description": "the white range hood and honey-colored upper cabinets above the stove and counter",
+      "placement_rationale": "The upper fixture group is visible before generation; the large region remains above the foreground table and fruit bowl and avoids the lower stove body.",
+      "target_bbox_xyxy": [145, 125, 410, 260],
+      "mask_bbox_xyxy": [95, 75, 415, 323],
+      "prompt": "matte navy-blue upper kitchen cabinets with a stainless-steel range hood, realistic residential interior photograph",
+      "instruction_review": {
+        "target_or_placement": "VERIFIED_EXISTING_TARGET",
+        "bbox_prompt_alignment": "ALIGNED_AFTER_REVISION",
+        "mask_scope": "SCENE_SCALE_TARGET_WITH_CONTEXT",
+        "agent_status": "READY_FOR_HUMAN_DECISION",
+        "note": "The prior [95,75,415,315] bbox covered 29.296875% and did not satisfy large_over_30pct. Extending its lower edge by 8 px within the same backsplash/upper-fixture context yields 30.273438%, stays above the foreground bowl, and preserves the intended target and quota.",
+        "human_decision_required": "Approve or revise the upper-cabinet/range-hood replacement."
+      }
+    },
+    {
+      "candidate_id": "IND_COCO_SDXL_041",
+      "stratum_id": "coco_sdxl",
+      "tool_key": "sdxl_inpainting",
+      "modification_type": "object_insertion",
+      "mask_area_class": "large_over_30pct",
+      "target_description": "the open ceiling area above the living room for a crystal chandelier",
+      "placement_rationale": "The living room ceiling is flat and visually clear; the revised 30.27% mask covers the ceiling plane up to y=155, clearing the ceiling-wall junction (y>=173) and furniture, but has minor localized boundary contact of ~3-4 px depth with the left curtain valance apex at x in [12, 25].",
+      "target_bbox_xyxy": [180, 15, 332, 140],
+      "mask_bbox_xyxy": [0, 0, 512, 155],
+      "prompt": "an elegant crystal chandelier hanging from the living room ceiling, warm interior illumination matching the residential lighting",
+      "instruction_review": {
+        "target_or_placement": "VERIFIED_SCENE_COMPATIBLE_PLACEMENT",
+        "bbox_prompt_alignment": "ALIGNED",
+        "mask_scope": "LIMITED_TO_CEILING_WITH_LOCALIZED_VALANCE_EDGE_CONTACT",
+        "agent_status": "READY_FOR_HUMAN_DECISION",
+        "note": "The ceiling provides an open upper support plane. The mask bbox is tightened to [0, 0, 512, 155] (30.273438%, strictly preserving large_over_30pct) and clears the ceiling-wall line (y>=173) and living room furniture. Optical pixel inspection confirms localized boundary contact at y=155 with the highest ornamental curve of the left curtain valance across x in [12, 25] (contact depth ~3-4 px from fold apex y~151). This minor boundary contact is registered explicitly for human review; walls, paintings, and furniture remain completely outside the mask.",
+        "human_decision_required": "Approve proposed candidate substitution of IND_COCO_SDXL_041 (living room ceiling chandelier) replacing blocked candidate IND_COCO_SDXL_001, accepting the minor localized boundary contact with curtain valance apex at x in [12, 25], y=155."
+      }
+    },
+    {
+      "candidate_id": "IND_COCO_SDXL_002",
+      "stratum_id": "coco_sdxl",
+      "tool_key": "sdxl_inpainting",
+      "modification_type": "object_insertion",
+      "mask_area_class": "small_under_10pct",
+      "target_description": "a small red cherry tomato to insert on the bread slice",
+      "placement_rationale": "The bread provides a visible horizontal support surface and the small mask avoids the surrounding lunch compartments.",
+      "target_bbox_xyxy": [375, 265, 430, 320],
+      "mask_bbox_xyxy": [345, 245, 455, 335],
+      "prompt": "a small red cherry tomato resting on the slice of bread, matching the lunchbox lighting and camera angle",
+      "instruction_review": {
+        "target_or_placement": "VERIFIED_SCENE_COMPATIBLE_PLACEMENT",
+        "bbox_prompt_alignment": "ALIGNED",
+        "mask_scope": "LIMITED_TO_BREAD",
+        "agent_status": "READY_FOR_HUMAN_DECISION",
+        "note": "The target bbox lies on the bread and the small mask avoids adjacent lunch compartments. Mask area: 3.776550% (9,900 px).",
+        "human_decision_required": "Approve or revise the tomato insertion instruction."
+      }
+    },
+    {
+      "candidate_id": "IND_COMMONS_SD2_001",
+      "stratum_id": "commons_sd2",
+      "tool_key": "stable_diffusion_2_inpainting",
+      "modification_type": "object_removal_and_infill",
+      "mask_area_class": "medium_10_to_30pct",
+      "target_description": "the foreground forested rocky headland, cliff base, offshore sea stack rocks, and pine canopy occupying the lower-right quadrant",
+      "placement_rationale": "The foreground headland, cliff base, offshore rocks, and pine trees are identified for removal. The axis-aligned rectangular mask [190, 305, 512, 512] (25.43%) envelops the headland landform, offshore rocks, and pine canopy. Because the bay is concave, this rectangular mask unavoidably encompasses bay water (x=190..340, y=305..340) and the base of the white hotel and hillside houses on the right shoreline (x=440..512, y=305..335), which will be infilled along with the headland. Sky, distant horizon, and main beach remain outside the mask.",
+      "target_bbox_xyxy": [190, 308, 512, 512],
+      "mask_bbox_xyxy": [190, 305, 512, 512],
+      "prompt": "open sea and distant coastline continuing naturally through the removed foreground headland, photorealistic sunset landscape",
+      "instruction_review": {
+        "target_or_placement": "VERIFIED_EXISTING_TARGET",
+        "bbox_prompt_alignment": "ALIGNED_AFTER_REVISION",
+        "mask_scope": "ENVELOPES_FOREGROUND_LANDFORM_WITH_SHORELINE_CONTEXT",
+        "agent_status": "READY_FOR_HUMAN_DECISION",
+        "note": "Option A [190, 305, 512, 512] (25.426483%, medium_10_to_30pct) is the proposed plan: it envelops 100% of the registered headland, pine canopy (y>=308), and offshore rocks (x>=190). Due to the concave diagonal shoreline, an axis-aligned bbox unavoidably captures cove water and right-shoreline hotel/houses (x in [440, 512], y in [305, 335]), which will be infilled/regenerated along with the headland. Option B ([220, 340, 512, 512], 19.158936%) is documented for reference only and DOES NOT satisfy the registered full headland removal: it severs pine crowns (y in [308, 340]) and leaves offshore rocks (x in [190, 220]) stranded in the sea, which would fail Content QC for full removal. If the user selects Option B, the target definition and QC criteria must be re-registered.",
+        "human_decision_required": "Approve proposed Option A mask [190, 305, 512, 512] for full headland removal (accepting infill of right-shoreline hotel/town edge); or reject Option A and re-register target/criteria under Option B."
+      }
+    },
+    {
+      "candidate_id": "IND_COMMONS_SD2_002",
+      "stratum_id": "commons_sd2",
+      "tool_key": "stable_diffusion_2_inpainting",
+      "modification_type": "object_insertion",
+      "mask_area_class": "medium_10_to_30pct",
+      "target_description": "a brown leather travel suitcase to insert on the cobblestones beside the car",
+      "placement_rationale": "The lower-left cobblestone area is a visible ground plane beside the vehicle; the tightened region stops before the front wheel assembly.",
+      "target_bbox_xyxy": [45, 355, 190, 495],
+      "mask_bbox_xyxy": [0, 340, 225, 512],
+      "prompt": "a brown leather travel suitcase standing on the cobblestones beside the vintage car, realistic scale and daylight shadows",
+      "instruction_review": {
+        "target_or_placement": "VERIFIED_SCENE_COMPATIBLE_PLACEMENT",
+        "bbox_prompt_alignment": "ALIGNED_AFTER_REVISION",
+        "mask_scope": "TIGHTENED_AWAY_FROM_WHEEL",
+        "agent_status": "READY_FOR_HUMAN_DECISION",
+        "note": "The prior mask clipped the front-wheel boundary despite its rationale. The revised mask remains on cobblestones and ends before the wheel. Mask area: 14.762878% (38,700 px).",
+        "human_decision_required": "Approve or revise the suitcase size and placement."
+      }
+    },
+    {
+      "candidate_id": "IND_COMMONS_SDXL_001",
+      "stratum_id": "commons_sdxl",
+      "tool_key": "sdxl_inpainting",
+      "modification_type": "object_insertion",
+      "mask_area_class": "small_under_10pct",
+      "target_description": "a small dark bird to insert in the open cloudy sky at upper-right",
+      "placement_rationale": "The sky region is visually unobstructed and supports a small airborne object without altering the monument text or sculpture.",
+      "target_bbox_xyxy": [395, 75, 455, 125],
+      "mask_bbox_xyxy": [350, 45, 500, 160],
+      "prompt": "a small dark bird flying in the cloudy sky, distant scale and natural daylight",
+      "instruction_review": {
+        "target_or_placement": "VERIFIED_SCENE_COMPATIBLE_PLACEMENT",
+        "bbox_prompt_alignment": "ALIGNED",
+        "mask_scope": "LIMITED_TO_OPEN_SKY",
+        "agent_status": "READY_FOR_HUMAN_DECISION",
+        "note": "The registered region is open sky and does not cover the monument, inscription, or sculpture.",
+        "human_decision_required": "Approve or revise the small-bird insertion instruction."
+      }
+    },
+    {
+      "candidate_id": "IND_COMMONS_SDXL_003",
+      "stratum_id": "commons_sdxl",
+      "tool_key": "sdxl_inpainting",
+      "modification_type": "object_replacement",
+      "mask_area_class": "large_over_30pct",
+      "target_description": "the visible vertical shaft of the abstract aluminium sculpture column 'Tower Song' by Ted Bieler, cropped at upper and lower canvas boundaries",
+      "placement_rationale": "The abstract aluminium sculpture column is an isolated vertical structure. The full-height mask [170, 0, 380, 512] (41.02%) encloses the visible shaft from top to bottom (y=0..512). Because the column width is ~110 px, the 210 px mask width unavoidably encompasses background lawn, river, riverside railing, and background trees within x in [170, 380], which carries the risk of background alteration by inpainting. Outside x in [170, 380], the scene is preserved by compositing.",
+      "target_bbox_xyxy": [190, 0, 360, 512],
+      "mask_bbox_xyxy": [170, 0, 380, 512],
+      "prompt": "the visible shaft of a classical fluted Greco-Roman marble column standing naturally in the public park, realistic outdoor daylight and weathered stone texture",
+      "instruction_review": {
+        "target_or_placement": "VERIFIED_EXISTING_TARGET",
+        "bbox_prompt_alignment": "ALIGNED",
+        "mask_scope": "ENVELOPES_VISIBLE_COLUMN_SHAFT_WITH_BACKGROUND_STRIP",
+        "agent_status": "READY_FOR_HUMAN_DECISION",
+        "note": "The candidate completely eliminates the intertwining child-adult limbs confound of IND_COMMONS_SDXL_002. The sculpture is vertically cropped by both upper and lower image boundaries, so the instruction targets the visible shaft. The mask (41.015625%, large_over_30pct) encloses the visible column but spans x=170..380, so adjacent background trees, river, and railing inside that strip carry inpainting alteration risk. Areas outside x=170..380 are preserved.",
+        "human_decision_required": "Approve candidate substitution of IND_COMMONS_SDXL_003 replacing IND_COMMONS_SDXL_002, or retain candidate 002 with explicit confound risk acceptance."
+      }
+    }
+  ]
+}

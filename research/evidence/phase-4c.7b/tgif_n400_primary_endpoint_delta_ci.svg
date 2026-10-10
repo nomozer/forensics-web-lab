@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 520" width="960" height="520">
+  <defs>
+    <style>
+      .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 20px; font-weight: 700; fill: #1e293b; }
+      .subtitle { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 13px; font-weight: 400; fill: #64748b; }
+      .axis-label { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 13px; font-weight: 500; fill: #475569; }
+      .tick-label { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 12px; font-weight: 400; fill: #64748b; }
+      .val-label { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 13px; font-weight: 700; fill: #0f172a; }
+      .box-text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 12px; font-weight: 400; fill: #334155; }
+      .box-bold { font-weight: 600; fill: #0f172a; }
+      .verdict-inconclusive { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 700; fill: #b45309; }
+    </style>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-opacity="0.06"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="960" height="520" fill="#f8fafc" />
+  <rect x="24" y="20" width="912" height="480" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" filter="url(#shadow)" />
+
+  <!-- Title and Header -->
+  <text x="50" y="60" class="title">TGIF N=400 Primary Endpoint: Δ Macro-F1 at jpeg_q75</text>
+  <text x="50" y="82" class="subtitle">Late Fusion DSP Augmented vs Visual Calibrated (Stratified Paired Cluster Bootstrap, 10,000 Replicates)</text>
+
+  <!-- Region Shading -->
+  <rect x="120" y="120" width="411.42857142857133" height="190" fill="#f1f5f9" opacity="0.6" />
+  <rect x="531.4285714285713" y="120" width="308.57142857142867" height="190" fill="#f8fafc" opacity="0.4" />
+
+  <!-- Region Headers -->
+  <text x="325.71428571428567" y="145" text-anchor="middle" class="axis-label" fill="#475569">← Ưa thích Visual Calibrated</text>
+  <text x="685.7142857142857" y="145" text-anchor="middle" class="axis-label" fill="#475569">Ưa thích Late Fusion DSP Augmented →</text>
+
+  <!-- Grid Lines & Ticks -->
+  <line x1="120.0" y1="160" x2="120.0" y2="300" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="3 3" />
+  <text x="120.0" y="325" text-anchor="middle" class="tick-label">-0.020</text>
+  <line x1="222.8571428571429" y1="160" x2="222.8571428571429" y2="300" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="3 3" />
+  <text x="222.8571428571429" y="325" text-anchor="middle" class="tick-label">-0.015</text>
+  <line x1="325.71428571428567" y1="160" x2="325.71428571428567" y2="300" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="3 3" />
+  <text x="325.71428571428567" y="325" text-anchor="middle" class="tick-label">-0.010</text>
+  <line x1="428.5714285714285" y1="160" x2="428.5714285714285" y2="300" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="3 3" />
+  <text x="428.5714285714285" y="325" text-anchor="middle" class="tick-label">-0.005</text>
+  <line x1="531.4285714285713" y1="160" x2="531.4285714285713" y2="300" stroke="#cbd5e1" stroke-width="1" />
+  <text x="531.4285714285713" y="325" text-anchor="middle" class="tick-label">0.000</text>
+  <line x1="634.2857142857143" y1="160" x2="634.2857142857143" y2="300" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="3 3" />
+  <text x="634.2857142857143" y="325" text-anchor="middle" class="tick-label">+0.005</text>
+  <line x1="737.142857142857" y1="160" x2="737.142857142857" y2="300" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="3 3" />
+  <text x="737.142857142857" y="325" text-anchor="middle" class="tick-label">+0.010</text>
+  <line x1="840.0" y1="160" x2="840.0" y2="300" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="3 3" />
+  <text x="840.0" y="325" text-anchor="middle" class="tick-label">+0.015</text>
+
+  <!-- Zero Reference Line (Null Effect) -->
+  <line x1="531.4285714285713" y1="150" x2="531.4285714285713" y2="305" stroke="#94a3b8" stroke-width="2" />
+  <text x="531.4285714285713" y="165" text-anchor="middle" class="axis-label" fill="#64748b" font-size="11">Zero Effect (0.0)</text>
+
+  <!-- 95% Confidence Interval Bar -->
+  <line x1="272.517876552542" y1="240" x2="678.5520375355503" y2="240" stroke="#2563eb" stroke-width="4.5" stroke-linecap="round" />
+  <line x1="272.517876552542" y1="228.0" x2="272.517876552542" y2="252.0" stroke="#2563eb" stroke-width="3" stroke-linecap="round" />
+  <line x1="678.5520375355503" y1="228.0" x2="678.5520375355503" y2="252.0" stroke="#2563eb" stroke-width="3" stroke-linecap="round" />
+
+  <!-- CI Labels -->
+  <text x="272.517876552542" y="224" text-anchor="middle" class="val-label" fill="#1d4ed8">-0.0126</text>
+  <text x="272.517876552542" y="208" text-anchor="middle" class="tick-label">2.5% CI Low</text>
+  <text x="678.5520375355503" y="224" text-anchor="middle" class="val-label" fill="#1d4ed8">+0.0072</text>
+  <text x="678.5520375355503" y="208" text-anchor="middle" class="tick-label">97.5% CI Upp</text>
+
+  <!-- Point Estimate Diamond/Marker -->
+  <circle cx="475.1419850966768" cy="240" r="7" fill="#dc2626" stroke="#ffffff" stroke-width="2.5" />
+  <text x="475.1419850966768" y="268" text-anchor="middle" class="val-label" fill="#b91c1c">Δ = -0.0027</text>
+  <text x="475.1419850966768" y="284" text-anchor="middle" class="tick-label">Point Estimate</text>
+
+  <!-- Summary Information Card -->
+  <rect x="50" y="360" width="860" height="115" rx="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1" />
+  <text x="75" y="388" class="box-text"><tspan class="box-bold">Estimand:</tspan> Trung bình số học không trọng số của 5 Outer Folds Macro-F1</text>
+  <text x="75" y="410" class="box-text"><tspan class="box-bold">Ước lượng điểm (Point Estimate):</tspan> -0.002736 | <tspan class="box-bold">Mean Bootstrap Δ:</tspan> -0.002717</text>
+  <text x="75" y="432" class="box-text"><tspan class="box-bold">95% Percentile Bootstrap CI:</tspan> [-0.012586, +0.007152] (Khoảng CI bao trùm 0.0: TRUE)</text>
+  <text x="75" y="454" class="box-text"><tspan class="box-bold">Tỷ lệ lượt bootstrap dương P(Δ* &gt; 0):</tspan> 30.29% (Không diễn giải là xác suất giả thuyết đúng)</text>
+
+  <!-- Verdict Badge -->
+  <rect x="560" y="375" width="330" height="85" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5" />
+  <text x="575" y="402" class="verdict-inconclusive">KẾT LUẬN: INCONCLUSIVE</text>
+  <text x="575" y="424" class="box-text" font-size="11">Phán quyết: INDEPENDENT_JPEG75_INCONCLUSIVE</text>
+  <text x="575" y="442" class="box-text" font-size="11">Chưa chứng minh được cải thiện (unproven improvement);</text>
+  <text x="575" y="456" class="box-text" font-size="11">Không tuyên bố bác bỏ cải thiện hay tương đương.</text>
+</svg>

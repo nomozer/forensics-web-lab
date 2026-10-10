@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "extension_id": "candidate_catalog_extension_v1.0.0",
+  "phase_trace": "4C.7B",
+  "parent_catalog_relpath": "research/evidence/phase-4c.7b/verified_candidate_catalog_v2.json",
+  "parent_catalog_sha256": "d85595c6b43d5acf8d312993a270278b4f17f481dca0f8286efdae07bcd281a5",
+  "purpose": "Versioned candidate catalog extension for Phase 4C.7B follow-up pilot v2 proposal, binding vetted replacement COCO_EXT_SDXL_001 for blocked slot 4 without modifying sealed parent catalog.",
+  "extension_candidates": [
+    {
+      "candidate_id": "COCO_EXT_SDXL_001",
+      "stratum_id": "coco_sdxl",
+      "source_origin": "coco_2017",
+      "acquisition_channel": "coco_2017_image_info",
+      "tool_key": "sdxl_inpainting",
+      "modification_type": "object_insertion",
+      "mask_area_class": "large_over_30pct",
+      "origin_id": "coco:460160",
+      "coco_image_id": 460160,
+      "flickr_photo_id": "9345977086",
+      "source_keys": [
+        "coco:460160",
+        "flickr:9345977086"
+      ],
+      "creator_name": "PratarPersilja",
+      "creator_url": "https://www.flickr.com/photos/12297627@N03/",
+      "creator_verification": "VERIFIED_FROM_SOURCE",
+      "creator_evidence_url": "https://www.flickr.com/services/oembed/?format=json&url=https%3A%2F%2Fwww.flickr.com%2Fphotos%2F12297627%40N03%2F9345977086%2F",
+      "download_url": "http://images.cocodataset.org/val2017/000000460160.jpg",
+      "source_page_url": "https://www.flickr.com/photos/12297627@N03/9345977086/",
+      "flickr_url": "https://live.staticflickr.com/5450/9345977086_e5b53caae4_z.jpg",
+      "license_id": 5,
+      "license_name": "Attribution-ShareAlike License",
+      "license_url": "https://creativecommons.org/licenses/by-sa/2.0/",
+      "license_version": "2.0",
+      "license_evidence_source": "COCO annotations captions_val2017.json + Flickr oEmbed",
+      "provenance_checked_at_utc": "2026-10-09T03:30:00Z",
+      "download_rendition": "COCO-hosted copy of the original Flickr photographic rendition (640x480)",
+      "date_captured": "2013-07-22 17:34:40",
+      "date_captured_source": "COCO captions_val2017.json images[].date_captured",
+      "published_date": null,
+      "published_date_source": null,
+      "generation_seed": 20294843,
+      "pool_index": 999,
+      "disjoint_historical_option_p": true,
+      "disjoint_proof": "source_key 'coco:460160' verified absent from all 684 historical Option P source IDs (disjoint set intersection = empty set)."
+    }
+  ]
+}

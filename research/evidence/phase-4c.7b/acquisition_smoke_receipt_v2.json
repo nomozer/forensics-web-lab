@@ -1,0 +1,18 @@
+{
+  "timestamp_utc": "2026-10-07T12:43:37.914521+00:00",
+  "phase": "4C.7B",
+  "smoke_test_status": "PASS",
+  "elapsed_seconds": 1.369,
+  "evidence_class": "synthetic_smoke",
+  "eligible_for_independent_cohort": false,
+  "note": "SYNTHETIC fixture only; not a real-image or GPU pilot.",
+  "detector_isolation_verified": true,
+  "legacy_catalog_rejection": "verified_candidate_catalog.json: coco_candidates has 0/220 eligible candidates (220 evaluated); exclusion reasons: {'ACQUISITION_CHANNEL_UNDECLARED': 220, 'CREATOR_MISSING': 220, 'CREATOR_PLACEHOLDER': 220, 'CREATOR_UNVERIFIED': 220, 'DATE_PROVENANCE_UNLABELED': 220, 'LICENSE_ND_NO_EDITED_EXPORT': 91, 'PROVENANCE_FIELD_MISSING:download_rendition': 220, 'PROVENANCE_FIELD_MISSING:license_version': 220, 'PROVENANCE_FIELD_MISSING:provenance_checked_at_utc': 220, 'PROVENANCE_FIELD_MISSING:source_page_url': 220, 'SOURCE_KEYS_MISSING': 220}",
+  "checks": [
+    "superseded_v1_catalog_rejected",
+    "fail_closed_synthetic_rejection_before_writes",
+    "run_binding_and_audit",
+    "foreign_binding_rejected",
+    "sha256_tamper_detection_on_resume"
+  ]
+}

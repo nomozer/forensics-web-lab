@@ -1,7 +1,7 @@
 # Evaluation & Benchmark Protocol: Forensics Web Lab
 
-> **Phiên bản**: Phase 4A.2 (Metric Hierarchy Freeze)  
-> **Trạng thái tài liệu**: Đã đóng băng hệ thống chỉ số (*Evaluation Protocol Frozen*)  
+> **Phiên bản**: Phase 4A.2 (Metric Hierarchy Freeze)
+> **Trạng thái tài liệu**: Đã đóng băng hệ thống chỉ số (*Evaluation Protocol Frozen*)
 > **Nguyên tắc**: Trung thực khoa học (*Scientific Honesty*), toàn bộ chỉ số thực nghiệm tiếp tục mang trạng thái `not evaluated`.
 
 ---
@@ -138,4 +138,37 @@ Chi tiết quy định tại [SMALL_DATA_PROTOCOL.md](docs/SMALL_DATA_PROTOCOL.m
 4. **Độ Ổn định qua các Hạt giống**: Độ lệch chuẩn $\sigma_{\text{Macro-F1}} < 0.03$ trên tối thiểu 3 seeds (exploratory) và 5 seeds (confirmatory).
 5. **Độ Đơn điệu của Đường cong Học tập**: Đường cong học tập trên các mức $N \in \{50, 100, 250\}$ thể hiện xu hướng tăng trưởng nhất quán.
 6. **Định nghĩa Trạng thái Quyết định**: Nhãn `no_ai_evidence` chỉ biểu thị không phát hiện đủ bằng chứng AI trong phạm vi mô hình và dữ liệu đánh giá; không đồng nghĩa với chứng minh ảnh thật tuyệt đối. Mọi trường hợp độ tin cậy thấp hoặc xung đột tín hiệu bắt buộc chuyển sang `uncertain`.
+
+---
+
+## 5. Kết Quả Kiểm Định Độc Lập Thực Tế (Empirical Independent Evaluation Results — TGIF N=400 Cohort)
+
+> **Căn cứ thực nghiệm**: Thực thi kiểm định độc lập Phase 4C.7B trên tập dữ liệu `TGIF-Train-Clean-Subset` ($N=400$ cặp nguồn MS-COCO chưa từng thấy, 800 ảnh) trên LOCAL CPU theo phê duyệt chính thức ngày `2026-10-09T18:08:30Z`. Kiểm toán số học 100% PASS từ predictions đã lưu (khớp trong dung sai số học máy $\le 1.11 \times 10^{-16}$, không chạy lại detector).
+
+### 5.1. Bảng Kết Quả Tổng Hợp Qua 6 Điều Kiện
+
+| Điều Kiện (Condition) | Visual Calibrated (Mean ± Std) | Late Fusion DSP Augmented (Mean ± Std) | $\Delta \text{Macro-F1}$ (Aug - Vis) | 95% Bootstrap CI | Kết Luận Thống Kê |
+| :--- | :---: | :---: | :---: | :---: | :--- |
+| `original` | 0.5611 ± 0.0084 | 0.5681 ± 0.0076 | +0.0070 | *(không đăng ký)* | Phân tích phụ khám phá |
+| `jpeg_q95` | 0.5598 ± 0.0090 | 0.5664 ± 0.0081 | +0.0066 | *(không đăng ký)* | Phân tích phụ khám phá |
+| **`jpeg_q75` (Primary)** | **0.5624 ± 0.0060** | **0.5596 ± 0.0126** | **-0.0027** | **[-0.0126, +0.0072]** | **`INCONCLUSIVE` (CI cắt 0.0)** |
+| `jpeg_q50` | 0.5580 ± 0.0033 | 0.5485 ± 0.0098 | -0.0095 | *(không đăng ký)* | Phân tích phụ khám phá |
+| `resize_0.5` | 0.5586 ± 0.0065 | 0.5657 ± 0.0049 | +0.0071 | *(không đăng ký)* | Phân tích phụ khám phá |
+| `resize_0.5_jpeg_q75` | 0.5510 ± 0.0059 | 0.5375 ± 0.0124 | -0.0135 | *(không đăng ký)* | Phân tích phụ khám phá |
+
+*Ghi chú quy ước thống kê*: Độ lệch chuẩn qua 5 outer folds dùng mẫu `ddof=1` nhất quán. Khoảng tin cậy 95% Percentile Bootstrap chỉ áp dụng cho Primary Endpoint `jpeg_q75` (Stratified Paired Cluster Bootstrap, 10.000 reps, PCG64 seed `20261007`). Bảng chi tiết đầy đủ 5 chỉ số (Macro-F1, BAcc, AUROC, Brier, ECE 10 bins) và đồ thị vector xuất bản tại [`research/evidence/phase-4c.7b/tgif_n400_primary_endpoint_delta_ci.svg`](../research/evidence/phase-4c.7b/tgif_n400_primary_endpoint_delta_ci.svg) và [`tgif_n400_manuscript_results_table.md`](../research/evidence/phase-4c.7b/tgif_n400_manuscript_results_table.md).
+
+### 5.2. Kết Luận Khoa Học Cho Endpoint Sơ Cấp tại `jpeg_q75`
+- **Chỉ số Sơ cấp**: $\Delta \text{Macro-F1} = \text{Macro-F1}_{\text{augmented}} - \text{Macro-F1}_{\text{visual}} = -0.0027$.
+- **Stratified Paired Source Cluster Bootstrap** (10.000 replicates, PCG64 seed `20261007`, phân tầng 14 Large / 221 Medium / 165 Small):
+  - 95% Percentile CI: **$[-0.0126, +0.0072]$** (bao trùm giá trị 0.0).
+  - Tỷ lệ số lượt bootstrap dương: **$30.29\%$** (không phải xác suất giả thuyết nghiên cứu đúng).
+- **Phán Quyết Khoa Học**: **`INDEPENDENT_JPEG75_INCONCLUSIVE`**.
+- **Diễn giải Trung thực Khoa học**:
+  1. **DSP fusion chưa chứng minh cải thiện (unproven improvement)** của phương pháp Late Fusion DSP Augmented so với Visual Calibrated trên tập kiểm định độc lập tại điều kiện nén JPEG Q=75. Tuyệt đối không kết luận là "bác bỏ sự cải thiện" hay tuyên bố hai phương pháp tương đương nhau.
+  2. **Phân biệt kết quả phát triển vs kiểm định độc lập**: Hiệu quả cải thiện $\Delta = +0.1363$ quan sát được trên tập phát triển (Phase 4C.6B) không tái lập được trên tập kiểm định nguồn mới (Phase 4C.7B).
+  3. **Phạm vi kiểm định**: Đây là kiểm định trên các ảnh nguồn mới (unseen sources) trong cùng họ benchmark TGIF (\cite{mareen2024tgif}) và cùng generator SD2, **không phải bằng chứng khái quát ngoài phân phối (OOD)**.
+  4. **Giải thích cơ chế chỉ là giả thuyết (unverified hypotheses)**: Các lý giải về tác động của nén JPEG lên đặc trưng DSP toàn cục hay sự phân rã của shortcut learning chỉ là các giả thuyết chưa được kiểm chứng bằng thí nghiệm đối chứng cô lập.
+  5. **Không cam kết tính năng sản phẩm**: Tuyệt đối không dùng kết quả này để cam kết web app thương mại tự động giảm độ tin cậy, trả về `uncertain` chuẩn xác, hay kiểm soát false positives trong môi trường vận hành thực tế.
+
 
