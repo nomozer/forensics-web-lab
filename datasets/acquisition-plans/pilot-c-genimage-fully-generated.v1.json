@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "1.0.0",
+  "planId": "pilot-c-genimage-fully-generated",
+  "datasetId": "genimage",
+  "pilotId": "pilot_c_three_class_rq1",
+  "approvalStatus": "pending-user-approval",
+  "researchPurpose": "Acquire candidate fully_generated image cohort from GenImage (NeurIPS 2023) to complete the 3-class space (authentic, ai_edited, fully_generated) for RQ1/RQ2.",
+  "destination": "data/research/genimage",
+  "license": {
+    "datasetLicense": "CC BY-NC-SA 4.0 with additional dataset terms",
+    "originalImagesLicense": "ImageNet (academic/non-commercial)",
+    "track": "research-only",
+    "derivativeWeightsPolicy": "quarantined-to-research-track-prohibited-from-production"
+  },
+  "requiredFreeDiskBytes": 25769803776,
+  "downloadMethod": "google-drive-multipart",
+  "resumeCapability": {
+    "resumeSupported": true,
+    "notes": "Multi-part zip segments can be downloaded incrementally via Google Drive API or authenticated gdown."
+  },
+  "checksumPolicy": {
+    "upstreamChecksumAvailable": true,
+    "postDownloadVerification": "sha256-hash-generation-and-manifest-cross-check"
+  },
+  "extractionPolicy": {
+    "stagingDirectory": "data/research/genimage/.staging",
+    "safeZipExtraction": true,
+    "enforceDiskCheck": true
+  },
+  "manifestOutput": {
+    "path": "data/research/genimage/manifests/manifest_genimage_sd14_candidates.csv",
+    "groupKey": "source_id",
+    "variantKey": "variant_id"
+  },
+  "components": [
+    {
+      "componentId": "genimage-sd14-ai-val",
+      "remoteFolder": "stable_diffusion_v_1_4",
+      "remoteUrl": "https://drive.google.com/drive/folders/1jGt10bwTbhEZuGXLyvrCuxOI0cBqQ1FS",
+      "assignedLabel": "fully_generated",
+      "semanticRole": "fully_generated_diffusion_text2image",
+      "verifiedSizeBytes": 12884901888,
+      "estimatedExtractedBytes": 15000000000,
+      "expectedCardinality": {
+        "count": 341,
+        "status": "estimated",
+        "notes": "Target balanced cohort matching 341 authentic and 341 ai_edited development sources"
+      },
+      "status": "unverified"
+    }
+  ]
+}

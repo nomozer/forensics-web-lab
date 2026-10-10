@@ -1,0 +1,77 @@
+{
+  "preflight_version": "1.0.0",
+  "protocol_id": "PROTO-RQ1-RQ2-3CLASS-V1",
+  "protocol_status": "DRAFT_PENDING_ACQUISITION",
+  "dataset_readiness_status": "DATA_BLOCKED_MISSING_FULLY_GENERATED",
+  "blocking_reason": "L\u1edbp fully_generated v\u1eafng m\u1eb7t tr\u00ean LOCAL (0 \u1ea3nh). Kh\u00f4ng t\u1ea1o split gi\u1ea3.",
+  "baselines_verified": {
+    "baseline_1_visual_only": {
+      "backbone": "mobilenet_v4_small",
+      "input_dim": 1280,
+      "output_dim": 3
+    },
+    "baseline_2_visual_dsp": {
+      "backbone": "mobilenet_v4_small",
+      "dsp_features": "canonical_dsp_16d",
+      "input_dim": 1296,
+      "output_dim": 3
+    }
+  },
+  "dry_run_metrics_simulation": {
+    "sample_size": 30,
+    "macro_f1": 1.0,
+    "balanced_accuracy": 1.0,
+    "confusion_matrix": [
+      [
+        10,
+        0,
+        0
+      ],
+      [
+        0,
+        10,
+        0
+      ],
+      [
+        0,
+        0,
+        10
+      ]
+    ],
+    "per_class": {
+      "0": {
+        "tp": 10,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "1": {
+        "tp": 10,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "2": {
+        "tp": 10,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      }
+    },
+    "multiclass_brier_score": 0.0883,
+    "multiclass_top_class_ece": 0.2333,
+    "sample_predictive_entropies": [
+      0.6129,
+      0.6129,
+      0.6129
+    ],
+    "metrics_computation_status": "VERIFIED_PASS"
+  },
+  "preflight_conclusion": "Protocol configuration and mathematical metric functions (Macro-F1, Brier, ECE, Confusion Matrix) are fully verified and operational. Execution of training remains officially BLOCKED pending acquisition of the fully_generated cohort."
+}

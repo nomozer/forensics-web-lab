@@ -1,3 +1,14 @@
+## Three-Class RQ1 & RQ2 Experiment Preparation Completed (Phase 4C.8 trace, branch research/independent-cohort-acquisition)
+
+- **Local Dataset Inventory Audited**: Scanned and Pillow-decoded 6,156 real images on LOCAL. Eligible development: 341 authentic + 341 ai_edited. Fully generated: 0 images (DATA_BLOCKED). 343 locked-test sources and TGIF N=400 quarantined. Manifest: `research/evidence/three_class_preparation/candidate_cohort_manifest.json` (6,156 records, 13 fields).
+- **Leakage & Confounding Audit PASS**: 341/341 source groups paired, 0 exact SHA-256 duplicates, 0 cross-source dHash near-duplicates (Hamming <= 3), 0 cross-cohort leakage with sealed cohorts. Format uniform (PNG both classes), resolutions heterogeneous. Report: `leakage_and_confounding_report.json`.
+- **Three-Class Protocol Drafted & Preflight Verified**: `ml/configs/three_class_evaluation_protocol.yaml` specifying 3 classes, 2 baselines (visual-only 1280-d vs visual+DSP 1296-d), source-group disjoint splits, 6 multiclass metrics. Synthetic dry-run simulation verified all metric functions (Macro-F1, Brier, ECE, Confusion Matrix). Status: `DRAFT_PENDING_ACQUISITION`.
+- **GenImage Acquisition Plan Drafted**: `pilot-c-genimage-fully-generated.v1.json` conforming to schema v1, targeting GenImage SD v1.4; approval `pending-user-approval`; disk check PASS (65 GB free > 24 GB required). No data downloaded.
+- **Literature Research Gap Updated**: Added 2 new candidate gaps for RQ1 (3-class on lightweight CNN) and RQ2 (DSP 16-D in 3-class space), total 5 candidate gaps.
+- **15/15 ML pytest PASS, pnpm test PASS (67 JS + 13 continuity tests)**.
+
+---
+
 ## User Upload FP32 Binary Pipeline Reconciled & Verified (Phase 4C.8 trace)
 
 - **User Upload Live FP32 Pipeline Reconciled ($systematic-debugging, $executing-plans)**: Resolved root causes of the legacy "Model not installed / uncertain" issue: unified the application entrypoint in `apps/web/src/App.tsx` around the live FP32 binary detector with user upload dropzone, eliminated 404s on GitHub Pages by committing the 3.72 MB FP32 ONNX model and automating WASM asset staging via `apps/web/scripts/prepare-assets.mjs`, and replaced hardcoded `/wasm/` base paths with dynamic runtime resolution.

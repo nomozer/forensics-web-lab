@@ -42,6 +42,16 @@
 >      **Phase 4C.8 status**: `USER_UPLOAD_BINARY_FP32_VERIFIED_PASS`<br>
 >      **Next approved action**: Commit, push lên `origin/main` và kiểm tra trực tiếp trên live URL `https://nomozer.github.io/forensics-web-lab/`.<br>
 
+> 8. _Chuẩn Bị Thực Nghiệm Ba Lớp RQ1 & RQ2 (Three-Class Preparation, Branch `research/independent-cohort-acquisition`)_:
+>    - **Kiểm kê dữ liệu LOCAL**: Quét và xác thực 6,156 ảnh thực tế (Pillow decode + SHA-256). Kết quả: 2 lớp khả dụng (`authentic`: 341 eligible dev, `ai_edited`: 341 eligible dev), lớp `fully_generated`: **0 ảnh trên LOCAL**. Trạng thái chính thức `DATA_BLOCKED: MISSING_FULLY_GENERATED_COHORT`. Niêm phong 343 locked-test sources (3,087 ảnh) và TGIF N=400.
+>    - **Kiểm toán Leakage & Confounding**: 341/341 source groups hoàn chỉnh (PASS), 0 exact duplicates (PASS), 0 cross-source near-duplicates dHash Hamming <= 3 (PASS), 0 cross-cohort leakage với sealed cohorts (PASS). Verdict: `LEAKAGE_AUDIT_PASS`.
+>    - **Protocol & Preflight**: `ml/configs/three_class_evaluation_protocol.yaml` (3 lớp, 2 baselines, 6 metrics, status `DRAFT_PENDING_ACQUISITION`). Dry-run metrics verified: `VERIFIED_PASS`.
+>    - **Acquisition Plan GenImage**: `datasets/acquisition-plans/pilot-c-genimage-fully-generated.v1.json`; approval `pending-user-approval`; disk PASS (65 GB > 24 GB required). Không tải dữ liệu nào.
+>    - **Y Văn**: Mở rộng `docs/LITERATURE_RESEARCH_GAP.md` thêm 2 ứng viên khoảng trống mới cho RQ1 và RQ2, nâng tổng lên 5.
+>    - **Tests**: 15/15 ML pytest PASS, pnpm test PASS (67 JS + 13 continuity).
+>    - **Next approved action**: Commit và push lên `origin/research/independent-cohort-acquisition`.
+
+
 ---
 
 ## 1. Định vị Đề tài & Mục tiêu Nghiên cứu

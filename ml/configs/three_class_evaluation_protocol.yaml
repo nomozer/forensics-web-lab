@@ -1,0 +1,143 @@
+# Forensics Web Lab - RQ1 & RQ2 Evaluation Protocol Specification
+# ==============================================================================
+# Protocol Version: 1.0.0-draft
+# Research Questions:
+#   - RQ1: Phân loại ba lớp authentic / ai_edited / fully_generated
+#   - RQ2: Đối chứng visual-only vs visual + canonical DSP 16-D
+#
+# Status: DRAFT_PENDING_ACQUISITION
+# Training Readiness: DATA_BLOCKED_FOR_3CLASS
+# Note: Lớp fully_generated hiện chưa có trên LOCAL (0 ảnh). Không tạo splits giả.
+#       Sau khi hoàn thành acquisition từ GenImage, protocol này sẽ được khóa (LOCKED).
+# ==============================================================================
+
+protocol_metadata:
+  protocol_id: "PROTO-RQ1-RQ2-3CLASS-V1"
+  version: "1.0.0-draft"
+  status: "DRAFT_PENDING_ACQUISITION"
+  training_readiness: "DATA_BLOCKED_FOR_3CLASS"
+  blocking_reason: "Lớp fully_generated vắng mặt trên LOCAL (0 ảnh). Không tạo split giả."
+  frozen_baseline_lock: false
+
+class_mapping:
+  num_classes: 3
+  classes:
+    - id: 0
+      name: "authentic"
+      description: "Ảnh chụp tự nhiên chưa qua can thiệp AI tạo sinh (MS-COCO 2014)."
+    - id: 1
+      name: "ai_edited"
+      description: "Ảnh thật bị chỉnh sửa cục bộ qua inpainting tạo sinh (TGIF SD2 inpainting)."
+    - id: 2
+      name: "fully_generated"
+      description: "Ảnh tạo sinh toàn phần từ văn bản/nhiễu (GenImage SD1.4/SDXL candidate)."
+
+prediction_decision_rule:
+  rule_type: "softmax_argmax_with_entropy_rejection"
+  softmax_temperature: 1.0
+  uncertainty_metric: "shannon_entropy"
+  uncertainty_threshold: 0.95  # Reject/uncertain if entropy exceeds 0.95 nats
+  no_model_fallback_state: "uncertain"
+
+baselines:
+  baseline_1_visual_only:
+    name: "Visual-Only Baseline"
+    description: "Trích xuất đặc trưng thị giác từ backbone MobileNetV4 nhẹ, qua đầu phân loại 3 lớp."
+    backbone:
+      name: "mobilenet_v4_small"
+      frozen: true
+      feature_dim: 1280
+      pretrained_source: "official_weights_reused"
+    classification_head:
+      type: "linear_projection"
+      input_dim: 1280
+      output_dim: 3
+      dropout: 0.1
+      trainable: true
+
+  baseline_2_visual_dsp:
+    name: "Visual + Canonical DSP 16-D"
+    description: "Kết hợp đặc trưng thị giác MobileNetV4 với vector DSP 16 chiều (tần số DCT + residual statistics)."
+    backbone:
+      name: "mobilenet_v4_small"
+      frozen: true
+      feature_dim: 1280
+    dsp_extractor:
+      name: "canonical_dsp_16d"
+      frozen: true
+      feature_dim: 16
+      components:
+        - name: "radial_band_energies"
+          dims: 8
+        - name: "azimuthal_symmetry_scores"
+          dims: 4
+        - name: "high_frequency_residual_moments"
+          dims: 4
+    classification_head:
+      type: "linear_projection"
+      input_dim: 1296  # 1280 + 16
+      output_dim: 3
+      dropout: 0.1
+      trainable: true
+
+evaluation_budget_parity:
+  rule: "Cả hai baseline được đánh giá trên cùng tập dữ liệu, cùng split, cùng ngân sách tối ưu và cùng siêu tham số học."
+  learning_rate: 0.001
+  batch_size: 32
+  max_epochs: 20
+  early_stopping_patience: 5
+  seed: 42
+
+split_design_rules:
+  split_strategy: "source_group_disjoint"
+  source_group_key: "source_group_id"
+  proportions:
+    development_train: 0.70
+    inner_validation: 0.30
+  holdout_test_rule: "Tách biệt hoàn toàn, không tham gia vào fitting classifier, chuẩn hóa scaler, hoặc chọn threshold."
+  quarantine_cohorts:
+    - "TGIF N=400 independent evaluation cohort (read-only verification only)"
+    - "Phase 4B/4C.2G locked-test cohort (343 sources) (quarantined from training)"
+
+evaluation_metrics:
+  classification_metrics:
+    - name: "macro_f1"
+      definition: "Unweighted arithmetic mean of per-class F1 scores."
+      formula: "(F1_auth + F1_edit + F1_gen) / 3"
+    - name: "balanced_accuracy"
+      definition: "Arithmetic mean of sensitivity (recall) across each class."
+      formula: "(Recall_auth + Recall_edit + Recall_gen) / 3"
+    - name: "per_class_precision_recall_f1"
+      classes: ["authentic", "ai_edited", "fully_generated"]
+    - name: "confusion_matrix"
+      shape: [3, 3]
+      rows: "ground_truth"
+      columns: "predicted"
+
+  probabilistic_calibration_metrics:
+    - name: "multiclass_brier_score"
+      formula: "(1 / N) * sum_{i=1}^N sum_{k=1}^K (p_{ik} - y_{ik})^2"
+    - name: "multiclass_top_class_ece"
+      definition: "Expected Calibration Error computed over top-predicted confidence using 10 uniform bins [0, 1]."
+      bins: 10
+
+robustness_transforms:
+  transforms:
+    - name: "jpeg_compression_q90"
+      type: "jpeg"
+      quality: 90
+    - name: "jpeg_compression_q75"
+      type: "jpeg"
+      quality: 75
+    - name: "jpeg_compression_q50"
+      type: "jpeg"
+      quality: 50
+    - name: "gaussian_blur_sigma1"
+      type: "gaussian_blur"
+      sigma: 1.0
+    - name: "downscale_0.8x"
+      type: "resize"
+      scale: 0.8
+    - name: "downscale_0.5x"
+      type: "resize"
+      scale: 0.5

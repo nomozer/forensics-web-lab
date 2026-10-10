@@ -1,9 +1,9 @@
 # Khảo Sát Tài Liệu và Xác Minh Khoảng Trống Nghiên Cứu (Literature & Research Gap Analysis)
 
 > **Dự án**: `Forensics Web Lab`
-> **Phạm vi**: RQ3 (Lượng tử hóa ONNX/INT8), RQ4 (Browser CPU/WASM Runtime), và Phân loại dấu vết pháp chứng ảnh chỉnh sửa cục bộ
-> **Tài liệu tham chiếu chuẩn tắc**: [`docs/references.bib`](references.bib), [`docs/EVIDENCE_REGISTER.md`](EVIDENCE_REGISTER.md), [`docs/MANUSCRIPT.md`](MANUSCRIPT.md)
-> **Nguyên tắc học thuật**: Tuân thủ tuyệt đối chuẩn mực trung thực khoa học (*Scientific Honesty*); không tuyên bố "đầu tiên", "chưa ai làm" hay tính mới tuyệt đối chỉ vì kết quả mô hình nội bộ còn thấp hoặc inconclusive. Mọi nhận định đều được đối chiếu với các nguồn sơ cấp đã công bố.
+> **Phạm vi**: RQ1 (Phân loại ba lớp authentic / ai_edited / fully_generated), RQ2 (Visual-only vs Visual + DSP), RQ3 (Lượng tử hóa ONNX/INT8), và RQ4 (Browser CPU/WASM Runtime)
+> **Tài liệu tham chiếu chuẩn tắc**: [`docs/references.bib`](references.bib), [`docs/EVIDENCE_REGISTER.md`](EVIDENCE_REGISTER.md), [`docs/MANUSCRIPT.md`](MANUSCRIPT.md), [`docs/PILOT_PROTOCOL.md`](PILOT_PROTOCOL.md)
+> **Nguyên tắc học thuật**: Tuân thủ tuyệt đối chuẩn mực trung thực khoa học (*Scientific Honesty*); không tuyên bố "đầu tiên", "chưa ai làm" hay tính mới tuyệt đối chỉ vì thêm DSP, ba lớp, hoặc chạy browser. Mọi nhận định đều được đối chiếu với các nguồn sơ cấp đã công bố.
 
 ---
 
@@ -56,21 +56,29 @@ Dựa trên bảng khảo sát y văn và thực tiễn triển khai của dự 
 - **Hạ tầng ONNX Runtime Web**: Microsoft đã cung cấp runtime hoàn chỉnh hỗ trợ WebAssembly SIMD và WebGPU trong trình duyệt web \cite{onnxRuntimeWebDocs}.
 
 ### 3.2. Các Khía Cạnh Chưa Thấy Trong Phạm Vi Rà Soát (Not Observed in Reviewed Scope)
-- **Đánh giá lượng tử hóa INT8 trên bài toán pháp chứng số ảnh chỉnh sửa cục bộ**:
+- **Phân loại đồng thời ba lớp (authentic / ai_edited / fully_generated) trên kiến trúc thị giác gọn nhẹ**:
+  Hầu hết các công trình y văn chia tách thành hai bài toán nhị phân độc lập: hoặc phát hiện ảnh sinh toàn phần (GenImage, LAID), hoặc phát hiện ảnh inpainting cục bộ (TGIF, TruFor, INP-X). Chưa thấy công trình nào trong phạm vi rà soát khảo sát một không gian quyết định 3 lớp thống nhất trên cùng một backbone nhẹ (<5M tham số) để phân biệt ranh giới giữa: (1) ảnh tự nhiên, (2) ảnh có vùng inpainting cục bộ, và (3) ảnh tạo sinh toàn phần từ đầu.
+- **Đóng góp của đặc trưng DSP canonical 16-D trong không gian ba lớp (RQ2)**:
+  Các đặc trưng phổ tần số (DCT radial/azimuthal) thường được đề xuất để nhận diện dấu vết upsampling toàn ảnh. Tuy nhiên, hiệu quả thực sự của DSP khi đối mặt đồng thời với ảnh inpainting (vùng nhân tạo nhỏ, nền tự nhiên lấn át) và ảnh fully-generated (100% pixel nhân tạo) trên cùng một phân phối kiểm định chưa từng được đo lường cô lập và có đối chứng trên cùng cohort/budget.
+- **Đánh giá lượng tử hóa INT8 trên bài toán pháp chứng số ảnh chỉnh sửa cục bộ (RQ3)**:
   Trong các bài toán thị giác máy tính truyền thống (ImageNet classification, object detection), việc suy giảm độ chính xác khi lượng tử hóa INT8 thường được coi là nhỏ trong nhiều báo cáo công nghiệp (*chưa có nguồn trực tiếp kiểm chứng trong bối cảnh forensics: unverified*). Trong lĩnh vực pháp chứng số ảnh inpainting, các dấu vết vi mô ở biên vẽ bù và phương sai nhiễu dư có đặc tính tín hiệu yếu. Hiện chưa thấy công trình nào đo đạc thực nghiệm có kiểm soát xem việc lượng tử hóa tĩnh (PTQ) hay động các tầng tích chập của mạng nhẹ có làm suy thoái các đặc trưng pháp chứng này hay không.
-- **Hệ thống Zero-Egress Client-Side Browser hoàn chỉnh cho Inpainting**:
+- **Hệ thống Zero-Egress Client-Side Browser hoàn chỉnh cho Inpainting (RQ4)**:
   Hầu hết các giải pháp phát hiện inpainting hiện nay bắt buộc người dùng tải ảnh lên máy chủ GPU. Rất hiếm công trình học thuật nào thiết kế, đóng gói và đo đạc thực nghiệm toàn diện một quy trình phát hiện inpainting chạy 100% cục bộ trên trình duyệt (Zero-Egress qua WASM Web Worker) với thời gian phản hồi ở mức tương tác người dùng (< 500 ms).
 - **Tính bền vững của mô hình kết hợp DSP nhẹ qua các nguồn ảnh độc lập**:
   Như kết quả kiểm định độc lập của dự án trên TGIF N=400 đã chứng minh (`INDEPENDENT_JPEG75_INCONCLUSIVE`), các đặc trưng DSP toàn cục có thể biểu hiện mức cải thiện quan sát trên tập phát triển nhưng bị phân rã khi gặp nguồn ảnh mới độc lập. Khía cạnh này hiện được ghi nhận như một giả thuyết nghiên cứu chưa được kiểm chứng cô lập trong các công trình đề xuất đặc trưng tần số trước đây.
 
 ### 3.3. Ứng Viên Khoảng Trống Cần Xác Minh (Candidate Gaps to Verify)
-Chúng tôi định vị 3 câu hỏi kỹ thuật cụ thể là các ứng viên khoảng trống cần giải quyết trong các bước tiếp theo của đề tài:
+Chúng tôi định vị 5 câu hỏi kỹ thuật cụ thể là các ứng viên khoảng trống cần giải quyết trong các bước tiếp theo của đề tài:
 
-1. **Ứng viên Khoảng trống 1 (Trade-off Lượng tử hóa INT8 - RQ3)**:
+1. **Ứng viên Khoảng trống 1 (Không gian Phân loại Ba Lớp trên Mạng Nhẹ - RQ1)**:
+   *Câu hỏi*: Mạng tích chập gọn nhẹ (MobileNetV4/V3) có khả năng phân biệt đồng thời 3 lớp `authentic`, `ai_edited`, và `fully_generated` với Macro-F1 $> 0.65$ và Balanced Accuracy ổn định hay không, hay sẽ bị thiên vị (bias) gộp `ai_edited` vào `authentic` do phần lớn diện tích ảnh inpainting vẫn là nội dung thật?
+2. **Ứng viên Khoảng trống 2 (Đóng góp của Canonical DSP 16-D trong Không gian Ba Lớp - RQ2)**:
+   *Câu hỏi*: Việc kết hợp vector đặc trưng DSP 16-D (tần số DCT + thống kê nhiễu dư) với visual backbone nhẹ có mang lại mức tăng Macro-F1 và cải thiện độ tin cậy hiệu chuẩn (Multiclass Brier Score, ECE) có ý nghĩa thống kê dưới các phép biến đổi nén JPEG (Q=90, 75, 50) và làm mờ hay không, so với visual-only baseline trên cùng một split và ngân sách đánh giá?
+3. **Ứng viên Khoảng trống 3 (Trade-off Lượng tử hóa INT8 - RQ3)**:
    *Câu hỏi*: Việc lượng tử hóa tĩnh INT8 mô hình MobileNetV3-small backbone ảnh hưởng như thế nào đến độ chính xác phân loại (Macro-F1) dưới các điều kiện nén JPEG, và mức độ tiết kiệm dung lượng (MB) cùng tốc độ suy luận (ms) trên CPU là bao nhiêu?
-2. **Ứng viên Khoảng trống 2 (Độ trễ và Tính khả thi Runtime Trình duyệt - RQ4)**:
+4. **Ứng viên Khoảng trống 4 (Độ trễ và Tính khả thi Runtime Trình duyệt - RQ4)**:
    *Câu hỏi*: Một pipeline kết hợp gồm visual backbone (thực thi qua ONNX Runtime Web WASM SIMD trong Web Worker) và trích xuất DSP (thực thi ngoài graph bằng JavaScript/WASM) có đạt được độ trễ P95 $< 500$ ms và đỉnh bộ nhớ RAM $< 200$ MB trên các trình duyệt hiện đại hay không?
-3. **Ứng viên Khoảng trống 3 (Sự suy giảm tín hiệu DSP khi lượng tử hóa)**:
+5. **Ứng viên Khoảng trống 5 (Sự suy giảm tín hiệu DSP khi lượng tử hóa)**:
    *Câu hỏi*: Do DSP trích xuất độc lập ngoài graph ONNX và chỉ được kết hợp ở tầng logit qua stacker tuyến tính, việc lượng tử hóa INT8 nhánh thị giác có làm thay đổi điểm cân bằng đóng góp giữa nhánh thị giác và nhánh DSP trong mô hình Late Fusion hay không?
 
 ---

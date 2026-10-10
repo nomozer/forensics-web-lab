@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0.0",
+  "timestamp_utc": "2026-10-11T00:00:00Z",
+  "audit_scope": "LOCAL filesystem image assets",
+  "overall_status": "AUDITED_PASS_DATA_BLOCKED_FOR_3CLASS",
+  "three_class_data_status": {
+    "authentic": {
+      "present_on_local": 2052,
+      "eligible_development_count": 341,
+      "source": "MS-COCO 2014 via TGIF",
+      "status": "AVAILABLE"
+    },
+    "ai_edited": {
+      "present_on_local": 4104,
+      "eligible_development_count": 341,
+      "source": "Stable Diffusion 2 inpainting (sd2-sp) via TGIF",
+      "status": "AVAILABLE"
+    },
+    "fully_generated": {
+      "present_on_local": 0,
+      "eligible_development_count": 0,
+      "source": "None on LOCAL (GenImage recommended in official literature)",
+      "status": "MISSING_ON_LOCAL_BLOCKED"
+    }
+  },
+  "inventory_summary": {
+    "total_files_scanned": 6156,
+    "valid_decodable_images": 6156,
+    "corrupted_images": 0,
+    "eligibility_breakdown": {
+      "ELIGIBLE_DEVELOPMENT": 682,
+      "SECONDARY_DEVELOPMENT_VARIANT": 2387,
+      "SEALED_LOCKED_TEST": 3087
+    },
+    "eligible_development_unique_sources": 341,
+    "eligible_development_total_images": 682
+  },
+  "sealed_cohorts_isolation": {
+    "locked_test_sources_isolated": 343,
+    "tgif_n400_independent_sources_isolated": 400,
+    "sealed_images_quarantined_from_development": 3087
+  },
+  "scientific_conclusion": "Dữ liệu thực trên LOCAL chỉ có đủ 2 lớp authentic (341 cặp phát triển) và ai_edited (341 cặp phát triển). Lớp fully_generated có đúng 0 ảnh thực trên LOCAL. Tuyệt đối không sử dụng TGIF fr (conditional regeneration) để giả lập fully_generated. Trạng thái phân loại 3 lớp RQ1 chính thức là DATA_BLOCKED cho đến khi tập ảnh sinh toàn phần được nạp hợp lệ."
+}
