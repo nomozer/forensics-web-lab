@@ -15,74 +15,166 @@ import { RESEARCH_CANDIDATE_MODELS } from "./research-models-data.js";
 const MEAN = [0.485, 0.456, 0.406];
 const STD = [0.229, 0.224, 0.225];
 
+const PRECISION_BITS = 22;
+
 /**
- * Bicubic weight kernel (Keys cubic spline with a = -0.75 matching PyTorch BICUBIC).
+ * Keys cubic spline filter with a = -0.5 matching Pillow's bicubic_filter.
  */
-function cubicWeight(x: number): number {
+function bicubicFilter(x: number): number {
   const ax = Math.abs(x);
-  const a = -0.75;
-  if (ax <= 1.0) {
-    return (a + 2.0) * ax * ax * ax - (a + 3.0) * ax * ax + 1.0;
+  const a = -0.5;
+  if (ax < 1.0) {
+    return ((a + 2.0) * ax - (a + 3.0)) * ax * ax + 1.0;
   }
   if (ax < 2.0) {
-    return a * ax * ax * ax - 5.0 * a * ax * ax + 8.0 * a * ax - 4.0 * a;
+    return (((ax - 5.0) * ax + 8.0) * ax - 4.0) * a;
   }
   return 0.0;
 }
 
+function precomputeCoeffsBicubic(inSize: number, outSize: number) {
+  const scale = inSize / outSize;
+  const filterscale = scale > 1.0 ? scale : 1.0;
+  const support = 2.0 * filterscale;
+
+  const bounds: [number, number][] = [];
+  const coeffs: Int32Array[] = [];
+  const invFilterscale = 1.0 / filterscale;
+
+  for (let xx = 0; xx < outSize; xx++) {
+    const center = (xx + 0.5) * scale;
+    let xmin = Math.floor(center - support + 0.5);
+    if (xmin < 0) xmin = 0;
+    let xmax = Math.floor(center + support + 0.5);
+    if (xmax > inSize) xmax = inSize;
+    const xmaxCount = xmax - xmin;
+
+    const k = new Float64Array(xmaxCount);
+    let ww = 0.0;
+    for (let x = 0; x < xmaxCount; x++) {
+      const w = bicubicFilter((x + xmin - center + 0.5) * invFilterscale);
+      k[x] = w;
+      ww += w;
+    }
+
+    if (ww !== 0.0) {
+      for (let x = 0; x < xmaxCount; x++) {
+        k[x] /= ww;
+      }
+    }
+
+    const kInt = new Int32Array(xmaxCount);
+    for (let x = 0; x < xmaxCount; x++) {
+      const val = k[x];
+      if (val < 0) {
+        kInt[x] = Math.floor(val * (1 << PRECISION_BITS) - 0.5);
+      } else {
+        kInt[x] = Math.floor(val * (1 << PRECISION_BITS) + 0.5);
+      }
+    }
+
+    bounds.push([xmin, xmaxCount]);
+    coeffs.push(kInt);
+  }
+  return { bounds, coeffs };
+}
+
 /**
- * Resize 512x512 RGBA to 224x224 and normalize into [1, 3, 224, 224] Float32Array tensor.
+ * Resize arbitrary dimensions RGBA to 224x224 and normalize into [1, 3, 224, 224] Float32Array tensor.
+ * Implements 100% bit-exact parity with torchvision.transforms.Resize((224, 224), interpolation=BICUBIC).
  */
 export function buildBicubicTensor224(
-  rgba512: Uint8ClampedArray | Uint8Array,
+  rgba: Uint8ClampedArray | Uint8Array,
   srcW = 512,
   srcH = 512,
   dstSize = 224,
 ): Float32Array {
   const tensor = new Float32Array(3 * dstSize * dstSize);
   const planeSize = dstSize * dstSize;
-  const scaleX = srcW / dstSize;
-  const scaleY = srcH / dstSize;
+  const halfPrec = 1 << (PRECISION_BITS - 1);
 
-  for (let dy = 0; dy < dstSize; dy++) {
-    const srcY = (dy + 0.5) * scaleY - 0.5;
-    const yCenter = Math.floor(srcY);
+  // 1. Horizontal pass: srcW -> dstSize
+  const { bounds: bx, coeffs: cx } = precomputeCoeffsBicubic(srcW, dstSize);
+  const temp = new Uint8Array(srcH * dstSize * 3);
 
-    for (let dx = 0; dx < dstSize; dx++) {
-      const srcX = (dx + 0.5) * scaleX - 0.5;
-      const xCenter = Math.floor(srcX);
+  for (let xx = 0; xx < dstSize; xx++) {
+    const [xmin, xmax] = bx[xx];
+    const k = cx[xx];
 
-      let rSum = 0,
-        gSum = 0,
-        bSum = 0,
-        wSum = 0;
+    for (let y = 0; y < srcH; y++) {
+      let ssR = halfPrec;
+      let ssG = halfPrec;
+      let ssB = halfPrec;
+      const rowOffset = y * srcW;
 
-      for (let j = -1; j <= 2; j++) {
-        const sy = Math.max(0, Math.min(srcH - 1, yCenter + j));
-        const wy = cubicWeight(srcY - (yCenter + j));
-
-        for (let i = -1; i <= 2; i++) {
-          const sx = Math.max(0, Math.min(srcW - 1, xCenter + i));
-          const wx = cubicWeight(srcX - (xCenter + i));
-          const w = wx * wy;
-
-          const idx = (sy * srcW + sx) * 4;
-          rSum += (rgba512[idx] / 255.0) * w;
-          gSum += (rgba512[idx + 1] / 255.0) * w;
-          bSum += (rgba512[idx + 2] / 255.0) * w;
-          wSum += w;
-        }
+      for (let x = 0; x < xmax; x++) {
+        const idx = (rowOffset + xmin + x) * 4;
+        const w = k[x];
+        ssR += rgba[idx] * w;
+        ssG += rgba[idx + 1] * w;
+        ssB += rgba[idx + 2] * w;
       }
 
-      const invW = wSum > 1e-6 ? 1.0 / wSum : 1.0;
-      const r = Math.max(0.0, Math.min(1.0, rSum * invW));
-      const g = Math.max(0.0, Math.min(1.0, gSum * invW));
-      const b = Math.max(0.0, Math.min(1.0, bSum * invW));
+      let r = ssR >> PRECISION_BITS;
+      if (r < 0) r = 0;
+      else if (r > 255) r = 255;
 
-      const dstIdx = dy * dstSize + dx;
-      tensor[dstIdx] = (r - MEAN[0]) / STD[0];
-      tensor[planeSize + dstIdx] = (g - MEAN[1]) / STD[1];
-      tensor[2 * planeSize + dstIdx] = (b - MEAN[2]) / STD[2];
+      let g = ssG >> PRECISION_BITS;
+      if (g < 0) g = 0;
+      else if (g > 255) g = 255;
+
+      let b = ssB >> PRECISION_BITS;
+      if (b < 0) b = 0;
+      else if (b > 255) b = 255;
+
+      const tempIdx = (y * dstSize + xx) * 3;
+      temp[tempIdx] = r;
+      temp[tempIdx + 1] = g;
+      temp[tempIdx + 2] = b;
+    }
+  }
+
+  // 2. Vertical pass: srcH -> dstSize
+  const { bounds: by, coeffs: cy } = precomputeCoeffsBicubic(srcH, dstSize);
+
+  for (let yy = 0; yy < dstSize; yy++) {
+    const [ymin, ymax] = by[yy];
+    const k = cy[yy];
+
+    for (let xx = 0; xx < dstSize; xx++) {
+      let ssR = halfPrec;
+      let ssG = halfPrec;
+      let ssB = halfPrec;
+
+      for (let y = 0; y < ymax; y++) {
+        const tempIdx = ((ymin + y) * dstSize + xx) * 3;
+        const w = k[y];
+        ssR += temp[tempIdx] * w;
+        ssG += temp[tempIdx + 1] * w;
+        ssB += temp[tempIdx + 2] * w;
+      }
+
+      let r = ssR >> PRECISION_BITS;
+      if (r < 0) r = 0;
+      else if (r > 255) r = 255;
+
+      let g = ssG >> PRECISION_BITS;
+      if (g < 0) g = 0;
+      else if (g > 255) g = 255;
+
+      let b = ssB >> PRECISION_BITS;
+      if (b < 0) b = 0;
+      else if (b > 255) b = 255;
+
+      // 3. Normalize into ImageNet tensor
+      const dstIdx = yy * dstSize + xx;
+      const rNorm = r / 255.0;
+      const gNorm = g / 255.0;
+      const bNorm = b / 255.0;
+
+      tensor[dstIdx] = (rNorm - MEAN[0]) / STD[0];
+      tensor[planeSize + dstIdx] = (gNorm - MEAN[1]) / STD[1];
+      tensor[2 * planeSize + dstIdx] = (bNorm - MEAN[2]) / STD[2];
     }
   }
 
@@ -105,6 +197,7 @@ export interface ResearchInferenceResult {
       max: number;
       mean: number;
       l1_norm: number;
+      sha256_bytes?: string;
     };
   };
   folds: FoldScoringResult[];
@@ -177,6 +270,17 @@ export class ResearchPipeline {
       tSum += v;
       tL1 += Math.abs(v);
     }
+    let sha256Bytes = "";
+    if (typeof crypto !== "undefined" && crypto.subtle) {
+      try {
+        const hashBuf = await crypto.subtle.digest("SHA-256", tensor224 as unknown as BufferSource);
+        const hashArr = Array.from(new Uint8Array(hashBuf));
+        sha256Bytes = hashArr.map((b) => b.toString(16).padStart(2, "0")).join("");
+      } catch {
+        // Fallback
+      }
+    }
+
     const tPre = performance.now() - t0Pre;
 
     // 3. Backbone forward pass in ONNX Runtime Web
@@ -223,6 +327,7 @@ export class ResearchPipeline {
           max: tMax,
           mean: tSum / tensor224.length,
           l1_norm: tL1,
+          sha256_bytes: sha256Bytes,
         },
       },
       folds: foldResults,

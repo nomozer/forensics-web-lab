@@ -106,6 +106,7 @@ export const App: React.FC = () => {
         }}
       >
         <button
+          id="tab-standard"
           onClick={() => setActiveTab('standard')}
           style={{
             padding: '10px 20px',
@@ -122,6 +123,7 @@ export const App: React.FC = () => {
         </button>
 
         <button
+          id="tab-research-lab"
           onClick={() => setActiveTab('research')}
           style={{
             padding: '10px 20px',

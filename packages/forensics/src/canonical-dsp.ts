@@ -116,41 +116,110 @@ function fft1d(real: Float32Array, imag: Float32Array): void {
   }
 }
 
-/**
- * Bilinear resize to fixed target_size x target_size
- */
-function bilinearResize(
-  src: Float32Array,
+const PRECISION_BITS = 22;
+
+function bilinearFilter(x: number): number {
+  const ax = Math.abs(x);
+  if (ax < 1.0) return 1.0 - ax;
+  return 0.0;
+}
+
+function precomputeCoeffsBilinear(inSize: number, outSize: number) {
+  const scale = inSize / outSize;
+  const filterscale = scale > 1.0 ? scale : 1.0;
+  const support = 1.0 * filterscale;
+
+  const bounds: [number, number][] = [];
+  const coeffs: Int32Array[] = [];
+  const invFilterscale = 1.0 / filterscale;
+
+  for (let xx = 0; xx < outSize; xx++) {
+    const center = (xx + 0.5) * scale;
+    let xmin = Math.floor(center - support + 0.5);
+    if (xmin < 0) xmin = 0;
+    let xmax = Math.floor(center + support + 0.5);
+    if (xmax > inSize) xmax = inSize;
+    const xmaxCount = xmax - xmin;
+
+    const k = new Float64Array(xmaxCount);
+    let ww = 0.0;
+    for (let x = 0; x < xmaxCount; x++) {
+      const w = bilinearFilter((x + xmin - center + 0.5) * invFilterscale);
+      k[x] = w;
+      ww += w;
+    }
+
+    if (ww !== 0.0) {
+      for (let x = 0; x < xmaxCount; x++) {
+        k[x] /= ww;
+      }
+    }
+
+    const kInt = new Int32Array(xmaxCount);
+    for (let x = 0; x < xmaxCount; x++) {
+      const val = k[x];
+      if (val < 0) {
+        kInt[x] = Math.floor(val * (1 << PRECISION_BITS) - 0.5);
+      } else {
+        kInt[x] = Math.floor(val * (1 << PRECISION_BITS) + 0.5);
+      }
+    }
+
+    bounds.push([xmin, xmaxCount]);
+    coeffs.push(kInt);
+  }
+  return { bounds, coeffs };
+}
+
+function resampleBilinearPillow(
+  grayUint8: Uint8Array,
   w: number,
   h: number,
-  targetSize: number
-): Float32Array {
-  const dst = new Float32Array(targetSize * targetSize);
-  const scaleX = w / targetSize;
-  const scaleY = h / targetSize;
+  outSize: number
+): Uint8Array {
+  // Horizontal pass: w -> outSize
+  const { bounds: bx, coeffs: cx } = precomputeCoeffsBilinear(w, outSize);
+  const temp = new Uint8Array(h * outSize);
+  const halfPrec = 1 << (PRECISION_BITS - 1);
 
-  for (let y = 0; y < targetSize; y++) {
-    const srcY = (y + 0.5) * scaleY - 0.5;
-    const y0 = Math.max(0, Math.floor(srcY));
-    const y1 = Math.min(h - 1, y0 + 1);
-    const wy = srcY - y0;
+  for (let xx = 0; xx < outSize; xx++) {
+    const [xmin, xmax] = bx[xx];
+    const k = cx[xx];
 
-    for (let x = 0; x < targetSize; x++) {
-      const srcX = (x + 0.5) * scaleX - 0.5;
-      const x0 = Math.max(0, Math.floor(srcX));
-      const x1 = Math.min(w - 1, x0 + 1);
-      const wx = srcX - x0;
-
-      const p00 = src[y0 * w + x0];
-      const p10 = src[y0 * w + x1];
-      const p01 = src[y1 * w + x0];
-      const p11 = src[y1 * w + x1];
-
-      const val = (1 - wy) * ((1 - wx) * p00 + wx * p10) + wy * ((1 - wx) * p01 + wx * p11);
-      dst[y * targetSize + x] = Math.max(0.0, Math.min(1.0, val));
+    for (let y = 0; y < h; y++) {
+      let ss = halfPrec;
+      const rowOffset = y * w;
+      for (let x = 0; x < xmax; x++) {
+        ss += grayUint8[rowOffset + xmin + x] * k[x];
+      }
+      let val = ss >> PRECISION_BITS;
+      if (val < 0) val = 0;
+      else if (val > 255) val = 255;
+      temp[y * outSize + xx] = val;
     }
   }
-  return dst;
+
+  // Vertical pass: h -> outSize
+  const { bounds: by, coeffs: cy } = precomputeCoeffsBilinear(h, outSize);
+  const out = new Uint8Array(outSize * outSize);
+
+  for (let yy = 0; yy < outSize; yy++) {
+    const [ymin, ymax] = by[yy];
+    const k = cy[yy];
+
+    for (let xx = 0; xx < outSize; xx++) {
+      let ss = halfPrec;
+      for (let y = 0; y < ymax; y++) {
+        ss += temp[(ymin + y) * outSize + xx] * k[y];
+      }
+      let val = ss >> PRECISION_BITS;
+      if (val < 0) val = 0;
+      else if (val > 255) val = 255;
+      out[yy * outSize + xx] = val;
+    }
+  }
+
+  return out;
 }
 
 /**
@@ -166,9 +235,21 @@ export function computeCanonicalFft(
     return [0.0, 0.0, 0.0, -2.0];
   }
 
-  const res = (width === targetSize && height === targetSize)
-    ? new Float32Array(gray)
-    : bilinearResize(gray, width, height, targetSize);
+  let res: Float32Array;
+  if (width === targetSize && height === targetSize) {
+    res = new Float32Array(gray);
+  } else {
+    const total = width * height;
+    const grayUint8 = new Uint8Array(total);
+    for (let i = 0; i < total; i++) {
+      grayUint8[i] = Math.floor(Math.max(0.0, Math.min(1.0, gray[i])) * 255.0);
+    }
+    const resU8 = resampleBilinearPillow(grayUint8, width, height, targetSize);
+    res = new Float32Array(targetSize * targetSize);
+    for (let i = 0; i < targetSize * targetSize; i++) {
+      res[i] = resU8[i] / 255.0;
+    }
+  }
 
   const real = new Float32Array(res);
   const imag = new Float32Array(targetSize * targetSize);
@@ -402,11 +483,11 @@ export function computeCanonicalNoise(
   // 3x3 Laplacian symmetric convolution using reusable scratch buffer
   const residual = getNoiseResidualScratch(width * height);
   for (let y = 0; y < height; y++) {
-    const yPrev = y === 0 ? 1 : y - 1;
-    const yNext = y === height - 1 ? height - 2 : y + 1;
+    const yPrev = y === 0 ? 0 : y - 1;
+    const yNext = y === height - 1 ? height - 1 : y + 1;
     for (let x = 0; x < width; x++) {
-      const xPrev = x === 0 ? 1 : x - 1;
-      const xNext = x === width - 1 ? width - 2 : x + 1;
+      const xPrev = x === 0 ? 0 : x - 1;
+      const xNext = x === width - 1 ? width - 1 : x + 1;
 
       const top = gray[yPrev * width + x];
       const bottom = gray[yNext * width + x];

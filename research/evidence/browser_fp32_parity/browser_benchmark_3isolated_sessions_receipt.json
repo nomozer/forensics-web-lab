@@ -1,139 +1,355 @@
 {
   "schema_version": "1.0.0",
   "audit_name": "browser_benchmark_3isolated_sessions_receipt",
-  "run_id": "browser_3isolated_sessions_1791601200",
-  "timestamp_utc": "2026-10-10T03:45:00Z",
-  "target_evaluation": "RQ4 Performance Benchmark: Cold initialization vs Warm inference on 16 Development Samples across 3 Independent Browser Sessions",
+  "run_id": "browser_3isolated_sessions_1791643050",
+  "timestamp_utc": "2026-10-10T14:40:00Z",
+  "target_evaluation": "RQ4 Performance Benchmark: Cold initialization vs Warm inference on 16 Development Samples across 3 Independent Browser Sessions (Corrected FP32 Pipeline)",
   "environment": {
     "os": "Windows 11 Home x86_64",
     "cpu": "Intel(R) Core(TM) i5-10300H CPU @ 2.50GHz (4 cores, 8 threads)",
-    "browser": "Chromium 131.0 (Local Automation Instances)",
+    "browser": "Google Chrome (Headless Automation Context via CDP)",
     "runtime": "ONNX Runtime Web 1.30.0 (WASM SIMD, Thread=1)",
-    "isolation_protocol": "3 fresh, non-reused browser automation sessions executed sequentially with isolated memory spaces."
+    "isolation_protocol": "3 fresh, non-reused browser automation sessions executed sequentially with isolated temporary user data directories."
   },
   "sessions": [
     {
       "session_id": "session_1_cold_instance",
-      "cold_start_initialization_ms": 316.6,
+      "cold_start_initialization_ms": 844.1,
       "num_samples": 16,
       "raw_timings_ms": {
         "preprocessing": [
-          8.2, 7.9, 8.5, 9.1, 8.4, 8.0, 7.8, 8.3, 8.1, 7.9, 8.4, 8.2, 8.0, 7.9,
-          8.1, 8.3
+          41.3,
+          32,
+          21.8,
+          13.7,
+          37.9,
+          20.5,
+          17.2,
+          17.4,
+          11,
+          10.1,
+          17.6,
+          17,
+          16.8,
+          15.9,
+          15.3,
+          15.3
         ],
         "dsp_extraction": [
-          48.2, 45.1, 46.8, 49.3, 44.5, 45.9, 47.1, 46.2, 45.8, 44.9, 46.5,
-          47.2, 45.4, 46.1, 45.0, 46.8
+          127.1,
+          49.4,
+          69.8,
+          23.7,
+          46.3,
+          53.5,
+          36.5,
+          33.9,
+          20.2,
+          20,
+          33.3,
+          34.6,
+          34.1,
+          33.1,
+          29.4,
+          28.8
         ],
         "backbone_wasm": [
-          25.4, 23.8, 24.1, 26.2, 23.5, 24.0, 24.9, 23.7, 24.2, 23.9, 25.1,
-          24.8, 23.6, 24.3, 23.8, 25.0
+          33.1,
+          12.6,
+          12,
+          11.6,
+          11.7,
+          11.5,
+          11.8,
+          12.5,
+          20,
+          12.1,
+          10.5,
+          11.3,
+          11.1,
+          11.3,
+          11.2,
+          12.2
         ],
         "outer_fold_scoring": [
-          1.1, 0.9, 1.0, 1.2, 0.9, 1.0, 1.1, 0.9, 1.0, 0.9, 1.1, 1.0, 0.9, 1.0,
-          0.9, 1.0
+          0.6,
+          0.2,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
         ],
         "total_warm_pipeline": [
-          82.9, 77.7, 80.4, 85.8, 77.3, 78.9, 80.9, 79.1, 79.1, 77.6, 81.1,
-          81.2, 77.9, 79.3, 77.8, 81.1
+          202.1,
+          94.2,
+          103.6,
+          49.1,
+          95.9,
+          85.5,
+          65.5,
+          63.8,
+          51.2,
+          42.2,
+          61.5,
+          62.9,
+          62.1,
+          60.3,
+          56,
+          56.4
+        ]
+      },
+      "warm_statistics_ms": {
+        "mean": 75.8,
+        "median_p50": 62.9,
+        "p95": 202.1,
+        "min": 42.2,
+        "max": 202.1
+      },
+      "decisions_matched": 160,
+      "decisions_total": 160
+    },
+    {
+      "session_id": "session_2_isolated_instance",
+      "cold_start_initialization_ms": 1156.8,
+      "num_samples": 16,
+      "raw_timings_ms": {
+        "preprocessing": [
+          46.9,
+          31.5,
+          24.6,
+          12.9,
+          28,
+          23.5,
+          18,
+          17.9,
+          9.6,
+          10.5,
+          21.7,
+          15.7,
+          20.8,
+          20.4,
+          17,
+          17.8
+        ],
+        "dsp_extraction": [
+          129.9,
+          63.8,
+          79.4,
+          28.3,
+          68.2,
+          65.5,
+          34.5,
+          35.4,
+          19.8,
+          25,
+          36.8,
+          35.1,
+          35.9,
+          40.6,
+          33,
+          38.7
+        ],
+        "backbone_wasm": [
+          43.8,
+          25.8,
+          18.9,
+          12.3,
+          15,
+          21.6,
+          15.9,
+          16.6,
+          14.5,
+          18.1,
+          10.7,
+          10.8,
+          11.8,
+          15.7,
+          12.5,
+          12.5
+        ],
+        "outer_fold_scoring": [
+          0.9,
+          0.6,
+          0,
+          0,
+          0,
+          0.1,
+          0,
+          0,
+          0.1,
+          0,
+          0,
+          0.1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "total_warm_pipeline": [
+          221.6,
+          121.8,
+          123,
+          53.6,
+          111.3,
+          110.7,
+          68.4,
+          70,
+          44,
+          53.7,
+          69.2,
+          61.8,
+          68.5,
+          76.8,
+          62.5,
+          69
+        ]
+      },
+      "warm_statistics_ms": {
+        "mean": 86.6,
+        "median_p50": 69.2,
+        "p95": 221.6,
+        "min": 44.0,
+        "max": 221.6
+      },
+      "decisions_matched": 160,
+      "decisions_total": 160
+    },
+    {
+      "session_id": "session_3_isolated_instance",
+      "cold_start_initialization_ms": 874.9,
+      "num_samples": 16,
+      "raw_timings_ms": {
+        "preprocessing": [
+          43.1,
+          41,
+          28.4,
+          17,
+          32,
+          32.2,
+          22.1,
+          23.7,
+          8.8,
+          8.9,
+          19.3,
+          15.9,
+          19.9,
+          15.5,
+          21.8,
+          14.6
+        ],
+        "dsp_extraction": [
+          122.2,
+          47.5,
+          66.6,
+          23,
+          57.9,
+          48.6,
+          35.8,
+          35.2,
+          20.8,
+          20.8,
+          34.3,
+          33.5,
+          33.2,
+          34.4,
+          29.3,
+          35.7
+        ],
+        "backbone_wasm": [
+          34.5,
+          16.2,
+          15.4,
+          11.6,
+          18.3,
+          15.3,
+          13,
+          12.3,
+          14.6,
+          13.4,
+          11.9,
+          11,
+          11.7,
+          10.7,
+          11.5,
+          12.5
+        ],
+        "outer_fold_scoring": [
+          0.9,
+          0.2,
+          0,
+          0,
+          0.1,
+          0,
+          0,
+          0,
+          0,
+          0.1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "total_warm_pipeline": [
+          200.7,
+          104.9,
+          110.5,
+          51.6,
+          108.3,
+          96.1,
+          70.9,
+          71.3,
+          44.3,
+          43.1,
+          65.6,
+          60.5,
+          64.8,
+          60.6,
+          62.7,
+          62.9
         ]
       },
       "warm_statistics_ms": {
         "mean": 79.9,
-        "median_p50": 79.2,
-        "p95": 84.6,
-        "min": 77.3,
-        "max": 85.8
-      }
-    },
-    {
-      "session_id": "session_2_isolated_instance",
-      "cold_start_initialization_ms": 142.3,
-      "num_samples": 16,
-      "raw_timings_ms": {
-        "preprocessing": [
-          7.8, 7.5, 7.9, 8.2, 7.6, 7.7, 7.5, 7.8, 7.6, 7.4, 7.7, 7.9, 7.5, 7.6,
-          7.4, 7.7
-        ],
-        "dsp_extraction": [
-          44.8, 43.2, 44.5, 46.1, 42.9, 43.8, 44.2, 43.5, 43.9, 42.8, 44.1,
-          44.9, 43.1, 43.7, 42.9, 44.5
-        ],
-        "backbone_wasm": [
-          24.1, 22.9, 23.4, 25.0, 22.8, 23.1, 23.8, 22.9, 23.5, 23.0, 24.2,
-          23.9, 22.7, 23.4, 22.9, 24.1
-        ],
-        "outer_fold_scoring": [
-          1.0, 0.9, 0.9, 1.1, 0.8, 0.9, 1.0, 0.8, 0.9, 0.8, 1.0, 0.9, 0.8, 0.9,
-          0.8, 0.9
-        ],
-        "total_warm_pipeline": [
-          77.7, 74.5, 76.7, 80.4, 74.1, 75.5, 76.5, 75.0, 75.9, 74.0, 77.0,
-          77.6, 74.1, 75.6, 74.0, 77.2
-        ]
+        "median_p50": 65.6,
+        "p95": 200.7,
+        "min": 43.1,
+        "max": 200.7
       },
-      "warm_statistics_ms": {
-        "mean": 76.0,
-        "median_p50": 75.8,
-        "p95": 79.7,
-        "min": 74.0,
-        "max": 80.4
-      }
-    },
-    {
-      "session_id": "session_3_isolated_instance",
-      "cold_start_initialization_ms": 86.2,
-      "num_samples": 16,
-      "raw_timings_ms": {
-        "preprocessing": [
-          7.5, 7.2, 7.6, 7.9, 7.3, 7.4, 7.2, 7.5, 7.3, 7.1, 7.5, 7.6, 7.3, 7.4,
-          7.2, 7.5
-        ],
-        "dsp_extraction": [
-          43.5, 42.1, 43.2, 44.8, 41.8, 42.6, 43.0, 42.4, 42.7, 41.9, 43.0,
-          43.8, 42.0, 42.5, 41.8, 43.4
-        ],
-        "backbone_wasm": [
-          23.5, 22.3, 22.8, 24.2, 22.1, 22.5, 23.1, 22.4, 22.9, 22.3, 23.5,
-          23.1, 22.0, 22.8, 22.3, 23.4
-        ],
-        "outer_fold_scoring": [
-          0.9, 0.8, 0.9, 1.0, 0.8, 0.8, 0.9, 0.8, 0.8, 0.8, 0.9, 0.9, 0.8, 0.8,
-          0.8, 0.9
-        ],
-        "total_warm_pipeline": [
-          75.4, 72.4, 74.5, 77.9, 72.0, 73.3, 74.2, 73.1, 73.7, 72.1, 74.9,
-          75.4, 72.1, 73.5, 72.1, 75.2
-        ]
-      },
-      "warm_statistics_ms": {
-        "mean": 73.9,
-        "median_p50": 73.6,
-        "p95": 77.3,
-        "min": 72.0,
-        "max": 77.9
-      }
+      "decisions_matched": 160,
+      "decisions_total": 160
     }
   ],
   "aggregated_cross_session_summary": {
     "cold_start_initialization_range_ms": {
-      "min": 86.2,
-      "max": 316.6,
-      "mean": 181.7
+      "min": 844.1,
+      "max": 1156.8,
+      "mean": 958.6
     },
     "warm_inference_aggregated_48_runs": {
-      "mean_ms": 76.6,
-      "median_p50_ms": 76.2,
-      "p95_ms": 81.2,
-      "min_ms": 72.0,
-      "max_ms": 85.8
+      "mean_ms": 80.8,
+      "median_p50_ms": 65.6,
+      "p95_ms": 200.7,
+      "min_ms": 42.2,
+      "max_ms": 221.6
     },
     "percentile_methodology": "Computed via standard rank percentile method: sorted_array[floor(length * q)]. Cold start is strictly segregated and excluded from warm inference percentiles.",
     "target_compliance": {
       "target_budget_ms": 500.0,
-      "achieved_warm_p95_ms": 81.2,
-      "headroom_factor": 6.16,
-      "verdict": "PASS (Warm P95 achieves 81.2 ms, far exceeding the pre-registered sub-500ms budget with 6.16x headroom)."
+      "achieved_warm_p95_ms": 200.7,
+      "headroom_factor": 2.49,
+      "verdict": "PASS (Warm P95 achieves 200.7 ms, far exceeding the pre-registered sub-500ms budget with 2.49x headroom)."
     }
   }
 }

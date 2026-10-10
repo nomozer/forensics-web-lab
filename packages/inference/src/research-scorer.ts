@@ -89,6 +89,11 @@ export class StackerScorer {
 }
 
 export interface FoldScoringResult {
+  outerFold: number;
+  layer4_standardized?: {
+    visual_scaled: number[];
+    dsp_scaled: number[];
+  };
   visual_calibrated: {
     raw_logit: number;
     calibrated_logit: number;
@@ -133,7 +138,27 @@ export class FoldCandidateModel {
     const zFusion = this.stacker.fusionLogit(zVCal, zDCal);
     const pFusion = sigmoid(zFusion);
 
+    // 4. Layer 4 Standardized features
+    const vScaled = new Array(visualFeatures.length);
+    for (let i = 0; i < visualFeatures.length; i++) {
+      vScaled[i] =
+        (visualFeatures[i] - this.visualScorer.scalerMean[i]) /
+        this.visualScorer.scalerScale[i];
+    }
+
+    const dScaled = new Array(dspFeatures.length);
+    for (let i = 0; i < dspFeatures.length; i++) {
+      dScaled[i] =
+        (dspFeatures[i] - this.dspAugmentedScorer.scalerMean[i]) /
+        this.dspAugmentedScorer.scalerScale[i];
+    }
+
     return {
+      outerFold: this.outerFold,
+      layer4_standardized: {
+        visual_scaled: vScaled,
+        dsp_scaled: dScaled,
+      },
       visual_calibrated: {
         raw_logit: zVRaw,
         calibrated_logit: zVCal,

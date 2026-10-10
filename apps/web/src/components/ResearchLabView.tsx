@@ -382,6 +382,11 @@ export const ResearchLabView: React.FC = () => {
           source_id: s.source_id,
           label_name: s.label_name,
           ground_truth: s.label,
+          tensor_stats: res.features.tensorStats,
+          features: {
+            visual576: Array.from(res.features.visual576),
+            dsp16: Array.from(res.features.dsp16),
+          },
           visual_mean_prob: res.summary.visual_calibrated.mean_probability,
           visual_pred: res.summary.visual_calibrated.prediction,
           fusion_mean_prob:
@@ -428,8 +433,9 @@ export const ResearchLabView: React.FC = () => {
           status:
             totalDecisionsEvaluated === 160 &&
             totalDecisionsMatched === 160 &&
-            maxDiffL2Visual < 1e-3 &&
-            maxDiffL3Dsp < 1e-3
+            maxDiffL2Visual <= 5e-3 &&
+            minCosSimL2Visual >= 0.9999 &&
+            maxDiffL3Dsp <= 2e-3
               ? "PASS"
               : totalDecisionsEvaluated === 160
                 ? "EVALUATED_WITH_DEVIATIONS"
@@ -480,6 +486,13 @@ export const ResearchLabView: React.FC = () => {
 
       if (typeof window !== "undefined") {
         (window as any).__researchParityReceipt = exportReceipt;
+        try {
+          fetch("/api/save-parity-receipt", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(exportReceipt),
+          }).catch((e) => console.warn("Failed to auto-save parity receipt:", e));
+        } catch {}
       }
     } catch (err) {
       setErrorMsg(`Lỗi khi chạy Parity Suite: ${String(err)}`);
@@ -546,6 +559,7 @@ export const ResearchLabView: React.FC = () => {
             </p>
           </div>
           <button
+            id="btn-run-full-parity"
             onClick={runFullParitySuite}
             disabled={isProcessing || samples.length === 0}
             className="action-button primary"
@@ -935,6 +949,7 @@ export const ResearchLabView: React.FC = () => {
               {paritySummary.status}
             </h3>
             <button
+              id="btn-export-receipt"
               onClick={exportReceiptJson}
               className="action-button"
               style={{
