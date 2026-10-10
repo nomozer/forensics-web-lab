@@ -87,3 +87,9 @@ blob-report/
 playwright/.cache/
 ml/tests/fixtures/generated-smoke/
 
+# Web public binaries & runtime assets (Quarantined from Git)
+apps/web/public/models/
+apps/web/public/wasm/
+apps/web/public/samples/*.png
+research/evidence/browser_fp32_parity/*.png
+

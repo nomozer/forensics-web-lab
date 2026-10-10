@@ -10,6 +10,7 @@ export * from './dct2d.js';
 export * from './noise-analysis.js';
 export * from './jpeg-block-grid.js';
 export * from './ela.js';
+export * from './canonical-dsp.js';
 
 export interface ImageBufferView {
   rgba: Uint8ClampedArray | Uint8Array;

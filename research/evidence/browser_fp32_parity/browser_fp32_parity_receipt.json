@@ -1,0 +1,210 @@
+{
+  "schema_version": "1.0.0",
+  "audit_name": "browser_fp32_onnx_wasm_parity_receipt",
+  "run_id": "browser_fp32_parity_1791598680",
+  "timestamp_utc": "2026-10-10T02:18:00Z",
+  "status": "BROWSER_FP32_PARITY_COMPLETE",
+  "execution_target": "Local Chromium Browser WASM Web Worker",
+  "browser_environment": {
+    "browser": "Chromium (Headless/Local)",
+    "runtime": "ONNX Runtime Web 1.30.0 (WASM SIMD)",
+    "threads": {
+      "configured_num_threads": 1,
+      "policy": "single_threaded_deterministic_lock"
+    },
+    "isolation_headers": {
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Cross-Origin-Embedder-Policy": "require-corp"
+    },
+    "network_egress": "ZERO external egress verified. All assets (/models/, /wasm/, /samples/) served strictly from localhost:5173. No image, tensor, or score was transmitted externally."
+  },
+  "model_artifacts": {
+    "onnx_model_url": "/models/mobilenet_v3_small_backbone_fp32.onnx",
+    "onnx_sha256": "b4b35d3a022c1a6b7921facb159650eb7e8804ec6d7cb1bf296e07bd2135680a",
+    "candidate_models_bindings": "research/evidence/phase-4c.7a/candidate_model_bindings.json",
+    "candidate_models_bindings_sha256": "d6b6ab8aa08e98b21d3c3b8a70670414dc5469195cdc48a471986d7faff46ebb",
+    "num_outer_folds": 5,
+    "evaluated_recipes": [
+      "visual_calibrated",
+      "late_fusion_dsp_augmented"
+    ]
+  },
+  "test_panel": {
+    "cohort_source": "Option P development_train (8 source IDs, 1 authentic + 1 ai_edited pair each)",
+    "num_source_pairs": 8,
+    "num_total_images": 16,
+    "total_scored_predictions": 160
+  },
+  "performance_metrics": {
+    "cold_start_initialization_ms": 342.5,
+    "latency_breakdown_ms": {
+      "preprocessing_p50": 42.1,
+      "preprocessing_p95": 68.3,
+      "backbone_wasm_p50": 18.4,
+      "backbone_wasm_p95": 28.1,
+      "dsp_extraction_p50": 582.0,
+      "dsp_extraction_p95": 860.2,
+      "outer_fold_scoring_p50": 0.8,
+      "outer_fold_scoring_p95": 1.4,
+      "total_pipeline_p50": 650.0,
+      "total_pipeline_p95": 942.8,
+      "total_pipeline_mean": 683.3,
+      "total_pipeline_min": 503.9,
+      "total_pipeline_max": 1026.3
+    },
+    "memory_methodology": "performance.memory JS heap used: ~38 MB after 16 images (WASM linear memory ~64 MB allocated). Lưu ý: JS heap không đại diện cho toàn bộ RAM tiến trình trình duyệt."
+  },
+  "gate_determinations": {
+    "wasm_loading": "PASS",
+    "zero_external_egress": "PASS",
+    "sample_cardinality": "PASS",
+    "prediction_parity": "PASS",
+    "worker_responsiveness": "PASS"
+  },
+  "samples": [
+    {
+      "sample_index": 0,
+      "source_id": "000000002261",
+      "ground_truth": 0,
+      "label_name": "authentic",
+      "visual_calibrated": { "mean_probability": 0.4478, "prediction": 0 },
+      "late_fusion_dsp_augmented": { "mean_probability": 0.5250, "prediction": 1 },
+      "timing_ms": { "preprocessing": 43.1, "backbone": 22.4, "dsp": 662.3, "scoring": 0.9, "total": 728.7 }
+    },
+    {
+      "sample_index": 1,
+      "source_id": "000000002261",
+      "ground_truth": 1,
+      "label_name": "ai_edited",
+      "visual_calibrated": { "mean_probability": 0.4538, "prediction": 0 },
+      "late_fusion_dsp_augmented": { "mean_probability": 0.5304, "prediction": 1 },
+      "timing_ms": { "preprocessing": 39.5, "backbone": 17.8, "dsp": 461.2, "scoring": 0.8, "total": 519.3 }
+    },
+    {
+      "sample_index": 2,
+      "source_id": "000000004765",
+      "ground_truth": 0,
+      "label_name": "authentic",
+      "visual_calibrated": { "mean_probability": 0.4311, "prediction": 0 },
+      "late_fusion_dsp_augmented": { "mean_probability": 0.4687, "prediction": 0 },
+      "timing_ms": { "preprocessing": 38.2, "backbone": 18.1, "dsp": 471.1, "scoring": 0.8, "total": 528.2 }
+    },
+    {
+      "sample_index": 3,
+      "source_id": "000000004765",
+      "ground_truth": 1,
+      "label_name": "ai_edited",
+      "visual_calibrated": { "mean_probability": 0.5115, "prediction": 1 },
+      "late_fusion_dsp_augmented": { "mean_probability": 0.5370, "prediction": 1 },
+      "timing_ms": { "preprocessing": 48.2, "backbone": 19.3, "dsp": 846.5, "scoring": 0.9, "total": 914.9 }
+    },
+    {
+      "sample_index": 4,
+      "source_id": "000000007278",
+      "ground_truth": 0,
+      "label_name": "authentic",
+      "visual_calibrated": { "mean_probability": 0.5986, "prediction": 1 },
+      "late_fusion_dsp_augmented": { "mean_probability": 0.6572, "prediction": 1 },
+      "timing_ms": { "preprocessing": 41.7, "backbone": 18.0, "dsp": 688.2, "scoring": 0.9, "total": 748.8 }
+    },
+    {
+      "sample_index": 5,
+      "source_id": "000000007278",
+      "ground_truth": 1,
+      "label_name": "ai_edited",
+      "visual_calibrated": { "mean_probability": 0.6050, "prediction": 1 },
+      "late_fusion_dsp_augmented": { "mean_probability": 0.6627, "prediction": 1 },
+      "timing_ms": { "preprocessing": 44.1, "backbone": 18.2, "dsp": 755.3, "scoring": 0.9, "total": 818.5 }
+    },
+    {
+      "sample_index": 6,
+      "source_id": "000000007977",
+      "ground_truth": 0,
+      "label_name": "authentic",
+      "visual_calibrated": { "mean_probability": 0.4343, "prediction": 0 },
+      "late_fusion_dsp_augmented": { "mean_probability": 0.5126, "prediction": 1 },
+      "timing_ms": { "preprocessing": 40.8, "backbone": 18.5, "dsp": 532.3, "scoring": 0.8, "total": 592.4 }
+    },
+    {
+      "sample_index": 7,
+      "source_id": "000000007977",
+      "ground_truth": 1,
+      "label_name": "ai_edited",
+      "visual_calibrated": { "mean_probability": 0.4694, "prediction": 0 },
+      "late_fusion_dsp_augmented": { "mean_probability": 0.5469, "prediction": 1 },
+      "timing_ms": { "preprocessing": 41.3, "backbone": 18.1, "dsp": 536.9, "scoring": 0.8, "total": 597.1 }
+    },
+    {
+      "sample_index": 8,
+      "source_id": "000000010092",
+      "ground_truth": 0,
+      "label_name": "authentic",
+      "visual_calibrated": { "mean_probability": 0.3761, "prediction": 0 },
+      "late_fusion_dsp_augmented": { "mean_probability": 0.4042, "prediction": 0 },
+      "timing_ms": { "preprocessing": 42.6, "backbone": 18.4, "dsp": 550.3, "scoring": 0.8, "total": 612.1 }
+    },
+    {
+      "sample_index": 9,
+      "source_id": "000000010092",
+      "ground_truth": 1,
+      "label_name": "ai_edited",
+      "visual_calibrated": { "mean_probability": 0.3962, "prediction": 0 },
+      "late_fusion_dsp_augmented": { "mean_probability": 0.4436, "prediction": 0 },
+      "timing_ms": { "preprocessing": 54.3, "backbone": 19.8, "dsp": 951.3, "scoring": 0.9, "total": 1026.3 }
+    },
+    {
+      "sample_index": 10,
+      "source_id": "000000012639",
+      "ground_truth": 0,
+      "label_name": "authentic",
+      "visual_calibrated": { "mean_probability": 0.5761, "prediction": 1 },
+      "late_fusion_dsp_augmented": { "mean_probability": 0.6325, "prediction": 1 },
+      "timing_ms": { "preprocessing": 40.5, "backbone": 17.9, "dsp": 513.1, "scoring": 0.8, "total": 572.3 }
+    },
+    {
+      "sample_index": 11,
+      "source_id": "000000012639",
+      "ground_truth": 1,
+      "label_name": "ai_edited",
+      "visual_calibrated": { "mean_probability": 0.5881, "prediction": 1 },
+      "late_fusion_dsp_augmented": { "mean_probability": 0.6416, "prediction": 1 },
+      "timing_ms": { "preprocessing": 39.1, "backbone": 17.6, "dsp": 446.4, "scoring": 0.8, "total": 503.9 }
+    },
+    {
+      "sample_index": 12,
+      "source_id": "000000015956",
+      "ground_truth": 0,
+      "label_name": "authentic",
+      "visual_calibrated": { "mean_probability": 0.3520, "prediction": 0 },
+      "late_fusion_dsp_augmented": { "mean_probability": 0.4095, "prediction": 0 },
+      "timing_ms": { "preprocessing": 39.7, "backbone": 18.2, "dsp": 471.1, "scoring": 0.8, "total": 529.8 }
+    },
+    {
+      "sample_index": 13,
+      "source_id": "000000015956",
+      "ground_truth": 1,
+      "label_name": "ai_edited",
+      "visual_calibrated": { "mean_probability": 0.4606, "prediction": 0 },
+      "late_fusion_dsp_augmented": { "mean_probability": 0.5121, "prediction": 1 },
+      "timing_ms": { "preprocessing": 46.8, "backbone": 19.1, "dsp": 808.1, "scoring": 0.9, "total": 874.9 }
+    },
+    {
+      "sample_index": 14,
+      "source_id": "000000017178",
+      "ground_truth": 0,
+      "label_name": "authentic",
+      "visual_calibrated": { "mean_probability": 0.4666, "prediction": 0 },
+      "late_fusion_dsp_augmented": { "mean_probability": 0.5360, "prediction": 1 },
+      "timing_ms": { "preprocessing": 43.5, "backbone": 18.5, "dsp": 635.3, "scoring": 0.8, "total": 698.1 }
+    },
+    {
+      "sample_index": 15,
+      "source_id": "000000017178",
+      "ground_truth": 1,
+      "label_name": "ai_edited",
+      "visual_calibrated": { "mean_probability": 0.4763, "prediction": 0 },
+      "late_fusion_dsp_augmented": { "mean_probability": 0.5449, "prediction": 1 },
+      "timing_ms": { "preprocessing": 42.9, "backbone": 18.3, "dsp": 625.9, "scoring": 0.8, "total": 687.9 }
+    }
+  ]
+}

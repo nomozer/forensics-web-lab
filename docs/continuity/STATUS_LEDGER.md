@@ -1,3 +1,14 @@
+## In-Browser FP32 Web Worker Integration & Verification PASS (Phase 4C.8 trace)
+
+- **Hardened CPU Parity Harness**: Updated `verify_onnx_fp32_detector_parity.py` with fail-closed checks (`check_finite` for NaN/Inf rejection, shape/domain validation, zero assert statements, 16 dev samples, 160 predictions, tolerances locked at $2.0 \times 10^{-5}$ for features and $1.0 \times 10^{-4}$ for logits/probs, and runtime provenance logging). Added 3 unit tests in `ml/tests/test_onnx_fp32_parity.py` (6/6 PASS).
+- **Canonical 16-D DSP in TypeScript**: Implemented `packages/forensics/src/canonical-dsp.ts` strictly matching `ml/training/dsp_features.py` (FFT radial/decay, DCT 8x8 energy, Laplacian residual, JPEG grid, Laplacian variance; 9/9 vitest PASS).
+- **Research Algebraic Scorers & Pipeline**: Implemented `packages/inference/src/research-scorer.ts` and `research-pipeline.ts` with bicubic tensor generation and 5 frozen outer-fold models (StandardScaler, temperature scaling, stacker; 13/13 vitest PASS).
+- **Web Worker & Local Web App**: Integrated `START_RESEARCH_ANALYSIS` into `forensics.worker.ts`, locked `numThreads = 1` for deterministic parity, created `ResearchLabView.tsx` with dual-mode toggle, and configured static middleware for Zero-Egress.
+- **Chromium In-Browser Parity PASS**: Executed full 16-sample panel on live Chromium browser (`localhost:5173`), achieving 100% agreement (0/160 mismatches) with Python reference. P50 latency: Total 650.0 ms (Backbone WASM 18.4 ms, DSP 582.0 ms, Scoring 0.8 ms, Preprocessing 42.1 ms), cold start 342.5 ms. Firefox recorded as `not measured` (not installed). Receipt: `research/evidence/browser_fp32_parity/browser_fp32_parity_receipt.json`.
+- **Literature Reconciliation**: Reconciled INP-X citation to Nebioglu et al. (2026, arXiv:2602.00192); unverified claims labeled `unverified`; DSP drift labeled as hypothesis in `docs/LITERATURE_RESEARCH_GAP.md` and `docs/MANUSCRIPT.md`.
+
+---
+
 ## ONNX FP32 Pipeline Parity PASS & Research Gap Verified (Phase 4C.8 trace)
 
 - **ONNX FP32 visual backbone exported**: Implemented `MobileNetV3FeatureExtractor` in `ml/export/export_onnx.py` extracting 576-d penultimate features from MobileNetV3-small with frozen ImageNet weights (`047dcff4...`); exported `models/research/onnx/mobilenet_v3_small_backbone_fp32.onnx` (3.7 MB, opset 17, dynamic batch size).
