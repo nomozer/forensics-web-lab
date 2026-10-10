@@ -293,6 +293,21 @@ export function computeCanonicalFft(
 /**
  * 2D DCT Analysis matching compute_8x8_dct_analysis in dsp_features.py
  */
+// Precomputed 8x8 1D-DCT basis matrix: T[k][n] = 0.5 * (k === 0 ? 1/sqrt(2) : 1) * cos((2n + 1) * k * PI / 16)
+const DCT_BASIS_8X8 = new Float64Array(64);
+for (let k = 0; k < 8; k++) {
+  const c = k === 0 ? 1.0 / Math.SQRT2 : 1.0;
+  for (let n = 0; n < 8; n++) {
+    DCT_BASIS_8X8[k * 8 + n] = 0.5 * c * Math.cos(((2 * n + 1) * k * Math.PI) / 16.0);
+  }
+}
+
+// Scratch buffer for 1D row transform to avoid allocations per block
+const DCT_ROW_SCRATCH = new Float64Array(64);
+
+/**
+ * 8x8 Block High-Frequency Energy via Separable 2D-DCT matching compute_dct_block_energy in dsp_features.py
+ */
 export function computeCanonicalDct(
   gray: Float32Array,
   width: number,
@@ -312,25 +327,31 @@ export function computeCanonicalDct(
   let blockIdx = 0;
   for (let by = 0; by < blocksY; by++) {
     for (let bx = 0; bx < blocksX; bx++) {
-      let blockSum = 0.0;
+      // Step 1: 1D horizontal DCT along rows
+      for (let y = 0; y < 8; y++) {
+        const pixelRowOffset = (by * 8 + y) * width + bx * 8;
+        const rowOffset = y * 8;
+        for (let u = 0; u < 8; u++) {
+          const basisOffset = u * 8;
+          let s = 0.0;
+          for (let x = 0; x < 8; x++) {
+            s += gray[pixelRowOffset + x] * DCT_BASIS_8X8[basisOffset + x];
+          }
+          DCT_ROW_SCRATCH[rowOffset + u] = s;
+        }
+      }
 
+      // Step 2: 1D vertical DCT along columns for high frequencies (u + v >= 6)
+      let blockSum = 0.0;
       for (let u = 0; u < 8; u++) {
         for (let v = 0; v < 8; v++) {
           if (u + v < 6) continue;
 
-          let sum = 0.0;
+          const basisOffset = v * 8;
+          let coeff = 0.0;
           for (let y = 0; y < 8; y++) {
-            const cosY = Math.cos(((2 * y + 1) * v * Math.PI) / 16.0);
-            for (let x = 0; x < 8; x++) {
-              const cosX = Math.cos(((2 * x + 1) * u * Math.PI) / 16.0);
-              const pixel = gray[(by * 8 + y) * width + (bx * 8 + x)];
-              sum += pixel * cosX * cosY;
-            }
+            coeff += DCT_ROW_SCRATCH[y * 8 + u] * DCT_BASIS_8X8[basisOffset + y];
           }
-
-          const cu = u === 0 ? 1.0 / Math.SQRT2 : 1.0;
-          const cv = v === 0 ? 1.0 / Math.SQRT2 : 1.0;
-          const coeff = 0.25 * cu * cv * sum;
           blockSum += Math.abs(coeff);
         }
       }
@@ -356,6 +377,14 @@ export function computeCanonicalDct(
   return [meanHigh, variance, anomalyScore];
 }
 
+let noiseResidualScratch: Float64Array | null = null;
+function getNoiseResidualScratch(size: number): Float64Array {
+  if (!noiseResidualScratch || noiseResidualScratch.length < size) {
+    noiseResidualScratch = new Float64Array(size);
+  }
+  return noiseResidualScratch;
+}
+
 /**
  * Spatial Noise Residual Analysis matching compute_noise_residual_analysis in dsp_features.py
  */
@@ -370,8 +399,8 @@ export function computeCanonicalNoise(
     return [0.0, 1.0 / 50.0, 0.0, 0.0, 0.0];
   }
 
-  // 3x3 Laplacian symmetric convolution
-  const residual = new Float64Array(width * height);
+  // 3x3 Laplacian symmetric convolution using reusable scratch buffer
+  const residual = getNoiseResidualScratch(width * height);
   for (let y = 0; y < height; y++) {
     const yPrev = y === 0 ? 1 : y - 1;
     const yNext = y === height - 1 ? height - 2 : y + 1;

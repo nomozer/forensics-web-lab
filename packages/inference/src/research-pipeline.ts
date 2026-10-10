@@ -97,6 +97,12 @@ export interface ResearchInferenceResult {
   features: {
     visual576: Float32Array;
     dsp16: Float64Array;
+    tensorStats?: {
+      min: number;
+      max: number;
+      mean: number;
+      l1_norm: number;
+    };
   };
   folds: FoldScoringResult[];
   summary: {
@@ -152,6 +158,17 @@ export class ResearchPipeline {
     // 2. Preprocessing: bicubic resize to 224x224 and ImageNet normalization
     const t0Pre = performance.now();
     const tensor224 = buildBicubicTensor224(rgba512, 512, 512, 224);
+    let tMin = Infinity;
+    let tMax = -Infinity;
+    let tSum = 0;
+    let tL1 = 0;
+    for (let i = 0; i < tensor224.length; i++) {
+      const v = tensor224[i];
+      if (v < tMin) tMin = v;
+      if (v > tMax) tMax = v;
+      tSum += v;
+      tL1 += Math.abs(v);
+    }
     const tPre = performance.now() - t0Pre;
 
     // 3. Backbone forward pass in ONNX Runtime Web
@@ -192,6 +209,12 @@ export class ResearchPipeline {
       features: {
         visual576: visualFeatures,
         dsp16: dspFeatures,
+        tensorStats: {
+          min: tMin,
+          max: tMax,
+          mean: tSum / tensor224.length,
+          l1_norm: tL1,
+        },
       },
       folds: foldResults,
       summary: {

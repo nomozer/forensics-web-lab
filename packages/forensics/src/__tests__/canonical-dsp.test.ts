@@ -63,4 +63,58 @@ describe('Canonical 16-D DSP Feature Extractor', () => {
     expect(gray[1]).toBeCloseTo(0.587, 3);
     expect(gray[2]).toBeCloseTo(0.114, 3);
   });
+
+  it('profiles 512x512 DSP subcomponents', async () => {
+    const {
+      computeCanonicalFft,
+      computeCanonicalDct,
+      computeCanonicalNoise,
+      computeCanonicalJpeg,
+      computeCanonicalLaplacianVariance,
+    } = await import('../canonical-dsp.js');
+
+    const gray = new Float32Array(512 * 512);
+    for (let i = 0; i < gray.length; i++) {
+      gray[i] = ((i * 17) % 256) / 255.0;
+    }
+
+    // Warm-up
+    computeCanonicalFft(gray, 512, 512);
+    computeCanonicalDct(gray, 512, 512);
+    computeCanonicalNoise(gray, 512, 512);
+    computeCanonicalJpeg(gray, 512, 512);
+    computeCanonicalLaplacianVariance(gray, 512, 512);
+
+    const iters = 5;
+    let tFft = 0, tDct = 0, tNoise = 0, tJpeg = 0, tLap = 0;
+
+    for (let i = 0; i < iters; i++) {
+      let t0 = performance.now();
+      computeCanonicalFft(gray, 512, 512);
+      tFft += performance.now() - t0;
+
+      t0 = performance.now();
+      computeCanonicalDct(gray, 512, 512);
+      tDct += performance.now() - t0;
+
+      t0 = performance.now();
+      computeCanonicalNoise(gray, 512, 512);
+      tNoise += performance.now() - t0;
+
+      t0 = performance.now();
+      computeCanonicalJpeg(gray, 512, 512);
+      tJpeg += performance.now() - t0;
+
+      t0 = performance.now();
+      computeCanonicalLaplacianVariance(gray, 512, 512);
+      tLap += performance.now() - t0;
+    }
+
+    console.log('[DSP PROFILE] FFT (128x128):', (tFft / iters).toFixed(2), 'ms');
+    console.log('[DSP PROFILE] DCT (8x8):', (tDct / iters).toFixed(2), 'ms');
+    console.log('[DSP PROFILE] Noise Residual:', (tNoise / iters).toFixed(2), 'ms');
+    console.log('[DSP PROFILE] JPEG Grid:', (tJpeg / iters).toFixed(2), 'ms');
+    console.log('[DSP PROFILE] Laplacian Variance:', (tLap / iters).toFixed(2), 'ms');
+    console.log('[DSP PROFILE] TOTAL:', ((tFft + tDct + tNoise + tJpeg + tLap) / iters).toFixed(2), 'ms');
+  });
 });
