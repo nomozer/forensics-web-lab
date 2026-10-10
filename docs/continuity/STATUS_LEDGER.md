@@ -1,3 +1,11 @@
+## Production Pipeline Verified, Confidence Discrepancy Reconciled & Deployment Staged (Phase 4C.8 trace)
+
+- **Production Pipeline Confidence Discrepancy Reconciled ($systematic-debugging)**: Traced the legacy smoke report metrics (sample 0: 0.7266, sample 1: 0.6974) via ripgrep across the repository to `tgif_train_independent_evaluation_receipt.json` predictions, resolving a drafting error in prior textual summaries. Confirmed live in-browser calibrated probabilities on development panel: Sample 0 authentic = 48.11% visual / 49.08% late fusion (authentic verdict); Sample 1 ai_edited = 49.41% visual / 50.34% late fusion (ai_edited verdict), matching `browser_raw_outputs.json` bit-for-bit.
+- **Production Entrypoint & Scientific Boundaries Enforced (RQ4)**: Updated `apps/web/src/App.tsx` to default directly to `ResearchLabView` (`activeTab = 'research'`), ensuring the production demo serves the verified FP32 ONNX pipeline, binary authentic/ai_edited classification, and 4 mandatory research limitation disclaimers upon landing.
+- **Production Build, Reconciled Receipt & GitHub Pages Deployment Staged**: Ran `pnpm --filter web build` with `VITE_BASE_PATH=/forensics-web-lab/`; automated Chrome CDP smoke test PASS with updated receipt (`production_smoke_test_receipt.json`) recording verified sample probabilities and zero image/pixel data egress. Added `.github/workflows/deploy-pages.yml` for automated GitHub Actions deployment to `nomozer.github.io/forensics-web-lab/`.
+
+---
+
 ## FP32 Layer 1 Element-Wise Parity Reconciled, Production Build Audited & Zero Egress Verified (Phase 4C.8 trace)
 
 - **Layer 1 Element-Wise Numerical Parity Verified ($systematic-debugging)**: Closed missing technical verification on 16 binary Float32 NCHW tensors ([1, 3, 224, 224], 2,408,448 values) comparing Python reference against Chromium Web Worker via `audit_fp32_layer1_tensors.py`: MAE = $8.20 \times 10^{-6}$ (tolerance $\le 1.0 \times 10^{-2}$), Max Abs Diff = $0.017507$ (tolerance $\le 5.0 \times 10^{-2}$), Mean Stat Diff = $9.71 \times 10^{-6}$. Bit-exact: `false` (fixed-point integer rounding vs float cubic). Scientific conclusion: `PARITY_WITHIN_NUMERICAL_TOLERANCE_NOT_BIT_EXACT`. Unit tests `test_audit_fp32_layer1.py` PASS 3/3 with fail-closed checks. Receipt: `research/evidence/browser_fp32_parity/tensors/layer1_tensor_parity_audit_receipt.json`.

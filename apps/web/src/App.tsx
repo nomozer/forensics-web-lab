@@ -13,7 +13,7 @@ import { ReportActions } from './components/ReportActions.js';
 import { ResearchLabView } from './components/ResearchLabView.js';
 
 export const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'standard' | 'research'>('standard');
+  const [activeTab, setActiveTab] = useState<'standard' | 'research'>('research');
   const [selectedImage, setSelectedImage] = useState<ValidatedImageData | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progressEvent, setProgressEvent] = useState<AnalysisProgressEvent | null>(null);
