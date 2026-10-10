@@ -199,6 +199,7 @@ export interface ResearchInferenceResult {
       l1_norm: number;
       sha256_bytes?: string;
     };
+    tensor224?: Float32Array;
   };
   folds: FoldScoringResult[];
   summary: {
@@ -329,6 +330,7 @@ export class ResearchPipeline {
           l1_norm: tL1,
           sha256_bytes: sha256Bytes,
         },
+        tensor224: tensor224,
       },
       folds: foldResults,
       summary: {

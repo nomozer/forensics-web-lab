@@ -377,6 +377,35 @@ export const ResearchLabView: React.FC = () => {
           maxDiffL6Probs = Math.max(maxDiffL6Probs, maxProbDiffSample);
         }
 
+        if (res.features.tensor224) {
+          try {
+            const bytes = new Uint8Array(res.features.tensor224.buffer);
+            let binary = "";
+            const chunkSize = 8192;
+            for (let b = 0; b < bytes.length; b += chunkSize) {
+              binary += String.fromCharCode.apply(
+                null,
+                bytes.subarray(b, b + chunkSize) as unknown as number[],
+              );
+            }
+            const tensorB64 = btoa(binary);
+            fetch("/api/save-browser-tensor", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                sample_index: s.sample_index,
+                source_id: s.source_id,
+                label_name: s.label_name,
+                tensor_b64: tensorB64,
+                sha256_bytes: res.features.tensorStats?.sha256_bytes,
+                tensor_stats: res.features.tensorStats,
+              }),
+            }).catch(() => {});
+          } catch (e) {
+            console.warn("Could not send raw tensor:", e);
+          }
+        }
+
         logs.push({
           sample_index: s.sample_index,
           source_id: s.source_id,
@@ -579,6 +608,39 @@ export const ResearchLabView: React.FC = () => {
           </button>
         </div>
 
+        {/* Nghiên cứu & Giới hạn Pháp chứng Disclaimer Box */}
+        <div
+          id="research-disclaimer-box"
+          style={{
+            marginTop: "16px",
+            padding: "14px 18px",
+            borderRadius: "8px",
+            background: "rgba(59, 130, 246, 0.08)",
+            border: "1px solid rgba(59, 130, 246, 0.25)",
+            fontSize: "0.8125rem",
+            lineHeight: "1.5",
+            color: "#bfdbfe",
+          }}
+        >
+          <div style={{ fontWeight: 600, marginBottom: "4px", color: "#60a5fa" }}>
+            📌 Lưu ý Quan trọng Về Phạm vi Nghiên cứu & Giới hạn Pháp chứng:
+          </div>
+          <ul style={{ margin: 0, paddingLeft: "18px" }}>
+            <li>
+              <strong>Mục đích nghiên cứu:</strong> Giao diện phục vụ minh chứng thực nghiệm học thuật (research demonstration artifact) cho đề tài và bài báo khoa học.
+            </li>
+            <li>
+              <strong>Mô hình nhị phân:</strong> Pipeline vận hành mô hình 2 lớp (<code>authentic</code> vs <code>ai_edited</code>) với 5 outer-fold checkpoints độc lập.
+            </li>
+            <li>
+              <strong>Giới hạn kết luận:</strong> Kết quả là đánh giá xác suất trong phạm vi phân phối dữ liệu nghiên cứu của mô hình; <em>tuyệt đối không xác nhận ảnh thật hay nguyên bản tuyệt đối</em>.
+            </li>
+            <li>
+              <strong>Chưa triển khai:</strong> Chưa có bằng chứng phân loại ảnh tạo sinh toàn phần (<code>fully_generated</code>) hoặc định vị vùng chỉnh sửa (<code>localization heatmap</code>) trên luồng demo FP32 này.
+            </li>
+          </ul>
+        </div>
+
         {/* Panel Sample Selector */}
         <div style={{ marginTop: "20px" }}>
           <div
@@ -603,6 +665,8 @@ export const ResearchLabView: React.FC = () => {
             {samples.map((s) => (
               <button
                 key={`${s.source_id}_${s.label_name}`}
+                id={`btn-sample-${s.sample_index}`}
+                title={`${s.source_id} (${s.label_name})`}
                 onClick={() => handleSelectSample(s)}
                 disabled={isProcessing}
                 style={{
@@ -677,6 +741,7 @@ export const ResearchLabView: React.FC = () => {
       {/* Single Sample Result */}
       {result && (
         <div
+          id="single-sample-result"
           className="glass-panel"
           style={{ padding: "24px", marginBottom: "24px" }}
         >

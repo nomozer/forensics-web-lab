@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0.0",
+  "audit_name": "production_build_smoke_test_receipt",
+  "timestamp_utc": "2026-10-10T15:20:23.477Z",
+  "status": "PRODUCTION_BUILD_SMOKE_PASS",
+  "verdict": "PASS",
+  "preview_url": "http://localhost:4173/",
+  "test_results": {
+    "bundle_mount": "PASS",
+    "disclaimer_notices": {
+      "research_demonstration_notice": true,
+      "binary_classification_notice": true,
+      "model_bounded_limitation_notice": true,
+      "fully_generated_localization_boundary": true,
+      "status": "PASS"
+    },
+    "inference_sample_0": "PASS",
+    "image_switching_sample_1": "PASS",
+    "error_handling_boundary": "PASS",
+    "console_errors_count": 0,
+    "network_egress_audit": {
+      "total_requests": 11,
+      "internal_requests_count": 7,
+      "static_font_requests_count": 4,
+      "external_data_pixel_egress_count": 0,
+      "image_data_egress_detected": false,
+      "scientific_egress_claim": "Zero Image/Pixel Data Egress: All image decoding, DSP signals, and ONNX inferences run strictly inside the browser client. Static web font files (Inter/JetBrains Mono) are loaded from fonts.gstatic.com; hence absolute zero-egress is avoided in favor of precise image-data-egress verification.",
+      "status": "PASS"
+    }
+  },
+  "captured_endpoints": [
+    "/favicon.ico",
+    "/samples/panel_manifest.json",
+    "/samples/000000002261_authentic.png",
+    "/assets/forensics.worker-7LUXi1AH.js",
+    "/samples/000000002261_ai_edited.png"
+  ]
+}
