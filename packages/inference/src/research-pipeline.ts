@@ -223,8 +223,10 @@ export class ResearchPipeline {
   /**
    * Initializes the ONNX Runtime Web session from a model ArrayBuffer.
    */
-  public async initialize(modelBuffer: ArrayBuffer): Promise<void> {
-    ort.env.wasm.wasmPaths = "/wasm/";
+  public async initialize(modelBuffer: ArrayBuffer, wasmPath?: string): Promise<void> {
+    if (wasmPath) {
+      ort.env.wasm.wasmPaths = wasmPath.endsWith("/") ? wasmPath : wasmPath + "/";
+    }
     ort.env.wasm.numThreads = 1;
     ort.env.wasm.simd = true;
 

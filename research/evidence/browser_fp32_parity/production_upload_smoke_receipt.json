@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0.0",
+  "timestamp": "2026-10-10T16:38:59.633Z",
+  "target_url": "http://localhost:4173/forensics-web-lab/",
+  "environment": "Chromium Headless via CDP",
+  "pipeline_type": "FP32 Binary Forensic Detector (MobileNetV3 + 16-D DSP + 5 Folds)",
+  "results": {
+    "scientific_notice_verified": true,
+    "session_reset_verified": true,
+    "sample_0_authentic": {
+      "filename": "000000002261_authentic.png",
+      "verdict": "✅\nAUTHENTIC",
+      "visual_calibrated_probability": 0.48109999999999997,
+      "late_fusion_dsp_probability": 0.49079999999999996,
+      "latency_str": "480.5 ms",
+      "expected_verdict": "AUTHENTIC",
+      "tolerance_pass": true
+    },
+    "sample_1_ai_edited": {
+      "filename": "000000002261_ai_edited.png",
+      "verdict": "⚠️\nAI EDITED",
+      "visual_calibrated_probability": 0.4941,
+      "late_fusion_dsp_probability": 0.5034000000000001,
+      "latency_str": "130.7 ms",
+      "expected_verdict": "AI EDITED",
+      "tolerance_pass": true
+    },
+    "network_egress_audit": {
+      "total_requests": 8,
+      "external_data_requests_count": 0,
+      "zero_data_egress": true
+    }
+  },
+  "overall_status": "PASS"
+}

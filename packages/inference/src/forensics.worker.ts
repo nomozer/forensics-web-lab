@@ -15,8 +15,20 @@ import {
 } from "./research-pipeline.js";
 import * as ort from "onnxruntime-web";
 
+// Helper to determine base path from worker location
+function getAutoBasePath(): string {
+  if (typeof self !== "undefined" && self.location && self.location.pathname) {
+    const p = self.location.pathname;
+    if (p.includes("/forensics-web-lab/")) {
+      return "/forensics-web-lab/";
+    }
+  }
+  return "/";
+}
+
+const initialBasePath = getAutoBasePath();
 // Configure WASM paths and single-threaded execution for deterministic parity
-ort.env.wasm.wasmPaths = "/wasm/";
+ort.env.wasm.wasmPaths = initialBasePath + "wasm/";
 ort.env.wasm.numThreads = 1;
 
 export interface WorkerAnalyzePayload {
@@ -35,6 +47,7 @@ export interface ResearchWorkerPayload {
   rgba?: Uint8ClampedArray;
   width?: number;
   height?: number;
+  basePath?: string;
   modelUrl?: string;
   modelBuffer?: ArrayBuffer;
   filename?: string;
@@ -78,6 +91,13 @@ if (
       const t0Init = performance.now();
 
       try {
+        const basePath = data.basePath
+          ? data.basePath.endsWith("/")
+            ? data.basePath
+            : data.basePath + "/"
+          : "/";
+        ort.env.wasm.wasmPaths = basePath + "wasm/";
+
         postProgress({
           stage: "loading_model",
           progress: 0.2,
@@ -91,7 +111,7 @@ if (
             buf = data.modelBuffer;
           } else {
             const url =
-              data.modelUrl || "/models/mobilenet_v3_small_backbone_fp32.onnx";
+              data.modelUrl || `${basePath}models/mobilenet_v3_small_backbone_fp32.onnx`;
             const res = await fetch(url);
             if (!res.ok)
               throw new Error(
@@ -99,7 +119,7 @@ if (
               );
             buf = await res.arrayBuffer();
           }
-          await researchPipelineInstance.initialize(buf);
+          await researchPipelineInstance.initialize(buf, `${basePath}wasm/`);
         }
 
         if (isCancelled) return;

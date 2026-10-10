@@ -26,10 +26,21 @@
 > 6. _Xác nhận Production Demo Dùng Đúng Pipeline FP32 & Đối Soát Confidence ($systematic-debugging)_:
 >    - Truy nguyên nguồn gốc chênh lệch chỉ số: Số liệu cũ (mẫu 0: 0.7266, mẫu 1: 0.6974) được ripgrep xác nhận là các giá trị dự đoán từ tập độc lập TGIF (`tgif_train_independent_evaluation_receipt.json`), do trợ lý phiên trước ghi nhầm vào báo cáo tóm tắt.
 >    - Xác nhận xác suất thực nghiệm trên trình duyệt (Preview Server `localhost:4173`): Mẫu 0 (`000000002261_authentic.png`): Visual Calibrated = 48.11% (AUTHENTIC), Late Fusion DSP = 49.08% (AUTHENTIC); Mẫu 1 (`000000002261_ai_edited.png`): Visual Calibrated = 49.41% (AUTHENTIC), Late Fusion DSP = 50.34% (AI EDITED). Khớp bit-exact 100% với `browser_raw_outputs.json` và reference khoa học.
->    - Cập nhật entrypoint production demo (`apps/web/src/App.tsx`): Chuyển tab mặc định thành `research` (`activeTab = 'research'`), đảm bảo người dùng truy cập trực tiếp vào giao diện nghiên cứu FP32 đã kiểm chứng với đầy đủ 4 disclaimers, bảng 5 outer folds độc lập và ngưỡng nghiên cứu 0.50 (không có ngưỡng uncertain giả lập).
->    - Chuẩn bị hạ tầng triển khai: Cấu hình workflow GitHub Actions `.github/workflows/deploy-pages.yml` tự động build với `VITE_BASE_PATH=/forensics-web-lab/` và deploy lên GitHub Pages (`nomozer.github.io/forensics-web-lab/`).<br>
->      **Phase 4C.8 status**: `PRODUCTION_FP32_PIPELINE_VERIFIED_AND_DEPLOYMENT_STAGED_PASS`<br>
->      **Next approved action**: Commit, push lên `origin/main` và kiểm tra kích hoạt GitHub Pages trên repository.<br>
+> 7. _Hoàn Thiện Demo Nhị Phân Client-Side Cho Ảnh Người Dùng ($systematic-debugging, $executing-plans, $verification-before-completion)_:
+>    - **Truy nguyên nguyên nhân Model not installed**: (a) Giao diện cũ phân thành 2 tab, trong đó tab mặc định Production Track là giao diện 3-class chưa có model thật (Rule 3.5 No-Model State trả về uncertain); (b) File mô hình `mobilenet_v3_small_backbone_fp32.onnx` (3.72 MB) và thư mục `wasm/` bị `.gitignore` loại trừ, khiến GitHub Actions build ra bản web thiếu asset (404 trên GitHub Pages); (c) `research-pipeline.ts` và `forensics.worker.ts` hardcode `ort.env.wasm.wasmPaths = "/wasm/"`, làm hỏng việc nạp dynamic module trên subpath `/forensics-web-lab/`.
+>    - **Giải pháp kỹ thuật toàn diện**:
+>      * Unignore `apps/web/public/models/mobilenet_v3_small_backbone_fp32.onnx` (3.72 MB an toàn để track vào Git).
+>      * Tích hợp script prebuild `apps/web/scripts/prepare-assets.mjs` tự động copy 8 assets WASM từ package `onnxruntime-web` vào `public/wasm/` trước khi Vite build, không làm phình Git repo.
+>      * Hỗ trợ dynamic subpath: Worker tự nhận diện `basePath` từ `self.location.pathname` và `import.meta.env.BASE_URL`, đồng thời hàm `initialize` trong `research-pipeline.ts` chấp nhận `wasmPath` linh hoạt.
+>      * Xóa bỏ panel 16 ảnh tĩnh khỏi public bundle (quarantine vào `research/reference_samples/`), đảm bảo public build sạch 100% không chứa ảnh nghiên cứu.
+>      * Thống nhất giao diện web `apps/web/src/App.tsx` vào một luồng duy nhất: Demo Giám Định Nhị Phân FP32 với `ImageDropzone` hỗ trợ kéo thả/chọn ảnh người dùng (JPEG, PNG, WebP), banner ranh giới khoa học 4 điểm, thẻ `BinaryVerdictCard` minh bạch 5 outer folds và thời gian suy luận, cùng công cụ phân tích khám phá bổ trợ DSP & Provenance.
+>    - **Kiểm chứng thực nghiệm trên Preview Server (Chromium CDP)**:
+>      * Upload Sample 0 Authentic: P(visual) = 48.11%, P(late_fusion) = 49.08%, Verdict = `AUTHENTIC` (PASS, sai lệch 0.00% so với reference).
+>      * Upload Sample 1 AI Edited: P(visual) = 49.41%, P(late_fusion) = 50.34%, Verdict = `AI EDITED` (PASS, sai lệch 0.00% so với reference).
+>      * Session reset & clean replacement: PASS.
+>      * Zero Image/Pixel Data Egress: 0 byte rời khỏi trình duyệt (PASS). Receipt: `research/evidence/browser_fp32_parity/production_upload_smoke_receipt.json`.<br>
+>      **Phase 4C.8 status**: `USER_UPLOAD_BINARY_FP32_VERIFIED_PASS`<br>
+>      **Next approved action**: Commit, push lên `origin/main` và kiểm tra trực tiếp trên live URL `https://nomozer.github.io/forensics-web-lab/`.<br>
 
 ---
 

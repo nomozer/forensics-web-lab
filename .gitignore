@@ -4,6 +4,7 @@ node_modules/
 
 # Build outputs
 dist/
+dist_old/
 build/
 *.tsbuildinfo
 
@@ -88,8 +89,10 @@ playwright/.cache/
 ml/tests/fixtures/generated-smoke/
 
 # Web public binaries & runtime assets (Quarantined from Git)
-apps/web/public/models/
+apps/web/public/models/*
+!apps/web/public/models/mobilenet_v3_small_backbone_fp32.onnx
 apps/web/public/wasm/
-apps/web/public/samples/*.png
+apps/web/public/samples/
+research/reference_samples/
 research/evidence/browser_fp32_parity/*.png
 

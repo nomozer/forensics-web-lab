@@ -102,6 +102,7 @@ export class WorkerController {
       rgba?: Uint8ClampedArray;
       width?: number;
       height?: number;
+      basePath?: string;
       modelUrl?: string;
       modelBuffer?: ArrayBuffer;
     },
@@ -161,9 +162,18 @@ export class WorkerController {
       worker.addEventListener("message", handleMessage);
       worker.addEventListener("error", handleError);
 
+      const dynamicBasePath =
+        payload.basePath ||
+        (typeof import.meta !== "undefined" &&
+          (import.meta as any).env?.BASE_URL) ||
+        "/";
+
       worker.postMessage({
         type: "START_RESEARCH_ANALYSIS",
-        payload,
+        payload: {
+          ...payload,
+          basePath: dynamicBasePath,
+        },
       });
     });
   }

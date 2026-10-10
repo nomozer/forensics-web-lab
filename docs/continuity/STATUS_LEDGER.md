@@ -1,3 +1,11 @@
+## User Upload FP32 Binary Pipeline Reconciled & Verified (Phase 4C.8 trace)
+
+- **User Upload Live FP32 Pipeline Reconciled ($systematic-debugging, $executing-plans)**: Resolved root causes of the legacy "Model not installed / uncertain" issue: unified the application entrypoint in `apps/web/src/App.tsx` around the live FP32 binary detector with user upload dropzone, eliminated 404s on GitHub Pages by committing the 3.72 MB FP32 ONNX model and automating WASM asset staging via `apps/web/scripts/prepare-assets.mjs`, and replaced hardcoded `/wasm/` base paths with dynamic runtime resolution.
+- **Scientific Honesty & Public Dist Hygiene Preserved**: Relocated development test images to `research/reference_samples/` (outside public distribution build). Retained 100% verified model weights, Keys cubic spline preprocessing ($a = -0.5$), 16 canonical DSP features, scalers, Temperature Scaling, 5 outer folds, and 0.50 threshold without mock probabilities.
+- **Production Upload Smoke Test & Zero Egress Verified ($verification-before-completion)**: Implemented automated CDP test `smoke_test_user_upload_pipeline.mjs`. Verified on preview server and live GitHub Pages URL with exact numerical alignment: Sample 0 authentic = 48.11% visual / 49.08% late fusion (AUTHENTIC verdict); Sample 1 ai_edited = 49.41% visual / 50.34% late fusion (AI EDITED verdict); verified clean session reset and confirmed strictly zero image/pixel data egress. Receipt: `production_upload_smoke_receipt.json`.
+
+---
+
 ## Production Pipeline Verified, Confidence Discrepancy Reconciled & Deployment Staged (Phase 4C.8 trace)
 
 - **Production Pipeline Confidence Discrepancy Reconciled ($systematic-debugging)**: Traced the legacy smoke report metrics (sample 0: 0.7266, sample 1: 0.6974) via ripgrep across the repository to `tgif_train_independent_evaluation_receipt.json` predictions, resolving a drafting error in prior textual summaries. Confirmed live in-browser calibrated probabilities on development panel: Sample 0 authentic = 48.11% visual / 49.08% late fusion (authentic verdict); Sample 1 ai_edited = 49.41% visual / 50.34% late fusion (ai_edited verdict), matching `browser_raw_outputs.json` bit-for-bit.

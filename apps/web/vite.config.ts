@@ -10,9 +10,14 @@ export default defineConfig({
       name: 'serve-wasm-static',
       configureServer(server) {
         server.middlewares.use((req, res, next) => {
-          if (req.url && req.url.startsWith('/wasm/')) {
+          const basePath = process.env.VITE_BASE_PATH || '/';
+          const wasmPrefix = basePath.replace(/\/$/, '') + '/wasm/';
+          if (req.url && (req.url.startsWith('/wasm/') || req.url.startsWith(wasmPrefix))) {
             const cleanUrl = req.url.split('?')[0];
-            const filePath = path.resolve(__dirname, 'public', cleanUrl.replace(/^\//, ''));
+            const relativeWasm = cleanUrl.includes('/wasm/')
+              ? 'wasm/' + cleanUrl.split('/wasm/')[1]
+              : cleanUrl.replace(/^\//, '');
+            const filePath = path.resolve(__dirname, 'public', relativeWasm);
             if (fs.existsSync(filePath)) {
               const contentType = filePath.endsWith('.wasm')
                 ? 'application/wasm'
@@ -169,7 +174,7 @@ export default defineConfig({
     format: 'es',
   },
   build: {
-    emptyOutDir: false,
+    emptyOutDir: true,
   },
   optimizeDeps: {
     exclude: ['onnxruntime-web'],
