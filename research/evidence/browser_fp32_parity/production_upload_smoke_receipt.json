@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
-  "timestamp": "2026-10-10T16:38:59.633Z",
-  "target_url": "http://localhost:4173/forensics-web-lab/",
+  "timestamp": "2026-10-10T16:53:11.795Z",
+  "target_url": "https://nomozer.github.io/forensics-web-lab/",
   "environment": "Chromium Headless via CDP",
   "pipeline_type": "FP32 Binary Forensic Detector (MobileNetV3 + 16-D DSP + 5 Folds)",
   "results": {
@@ -12,7 +12,7 @@
       "verdict": "✅\nAUTHENTIC",
       "visual_calibrated_probability": 0.48109999999999997,
       "late_fusion_dsp_probability": 0.49079999999999996,
-      "latency_str": "480.5 ms",
+      "latency_str": "196.8 ms",
       "expected_verdict": "AUTHENTIC",
       "tolerance_pass": true
     },
@@ -21,12 +21,12 @@
       "verdict": "⚠️\nAI EDITED",
       "visual_calibrated_probability": 0.4941,
       "late_fusion_dsp_probability": 0.5034000000000001,
-      "latency_str": "130.7 ms",
+      "latency_str": "137.1 ms",
       "expected_verdict": "AI EDITED",
       "tolerance_pass": true
     },
     "network_egress_audit": {
-      "total_requests": 8,
+      "total_requests": 11,
       "external_data_requests_count": 0,
       "zero_data_egress": true
     }
