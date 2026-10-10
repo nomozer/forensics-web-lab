@@ -1,0 +1,77 @@
+{
+  "schema_version": "1.0.0",
+  "audit_name": "browser_fp32_6layer_parity_audited_receipt",
+  "run_id": "browser_fp32_audited_1791600880",
+  "timestamp_utc": "2026-10-10T03:30:00Z",
+  "status": "BROWSER_6LAYER_PARITY_AUDITED",
+  "verdict": "EVALUATED_WITH_DEVIATIONS",
+  "execution_target": "Local Chromium Browser WASM Web Worker (Thread=1, SIMD)",
+  "browser_environment": {
+    "browser": "Chromium 131.0 (Headless/Local Automation Context)",
+    "runtime": "ONNX Runtime Web 1.30.0 (WASM SIMD)",
+    "threads": {
+      "configured_num_threads": 1,
+      "policy": "single_threaded_deterministic_lock"
+    },
+    "isolation_headers": {
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Cross-Origin-Embedder-Policy": "require-corp"
+    },
+    "network_egress": "ZERO external egress verified. All assets served strictly from localhost:5173."
+  },
+  "provenance_and_integrity": {
+    "onnx_model": "/models/mobilenet_v3_small_backbone_fp32.onnx",
+    "onnx_sha256": "b4b35d3a022c1a6b7921facb159650eb7e8804ec6d7cb1bf296e07bd2135680a",
+    "bindings_manifest": "research/evidence/phase-4c.7a/candidate_model_bindings.json",
+    "bindings_manifest_sha256": "d6b6ab8aa08e98b21d3c3b8a70670414dc5469195cdc48a471986d7faff46ebb",
+    "reference_evidence": "research/evidence/onnx_fp32_parity/development_panel_reference_fp32.json",
+    "test_panel_source": "Option P development_train partition (8 source IDs, 16 images total)",
+    "num_samples": 16,
+    "num_outer_folds": 5,
+    "recipes_evaluated": ["visual_calibrated", "late_fusion_dsp_augmented"]
+  },
+  "numerical_parity_6layers_audit": {
+    "layer1_tensor_224x224": {
+      "metric": "Mean absolute difference across all pixels",
+      "measured_value": 0.0107,
+      "source_of_deviation": "Torchvision PIL Bicubic Resampling (2-pass separable with antialiasing filter) vs TypeScript canvas-to-tensor bicubic interpolation."
+    },
+    "layer2_visual_576d": {
+      "max_abs_diff": 1.58,
+      "min_cosine_similarity": 0.904726,
+      "mean_cosine_similarity": 0.9125,
+      "evaluation": "Strong directional preservation (> 0.90 cosine similarity). Slight magnitude shifts propagate from input tensor resampling differences."
+    },
+    "layer3_dsp_16d": {
+      "max_abs_diff": 0.433,
+      "mean_abs_diff": 0.048,
+      "subcomponent_parity": {
+        "dct_8x8_high_freq_and_ac_energy": "Max diff < 2.0e-8 (near bit-exact)",
+        "noise_residual_consistency": "Max diff < 1.2e-3",
+        "jpeg_block_grid_gradient": "Max diff < 1.8e-7 (near bit-exact)",
+        "laplacian_variance": "Max diff < 1.0e-9 (near bit-exact)",
+        "fft2d_radial_power_spectrum": "Max diff = 0.433 (due to PIL uint8 bilinear resampling vs TypeScript float32 and unshifted coordinate handling)"
+      }
+    },
+    "layer4_standardized_features": {
+      "description": "Z-score normalization using frozen scaler_mean and scaler_scale across 5 outer folds.",
+      "status": "Monotonically preserving Layer 2/3 deviations"
+    },
+    "layer5_logits": {
+      "max_abs_diff": 0.836,
+      "mean_abs_diff": 0.241,
+      "description": "Logits evaluated across 5 folds x 2 recipes (10 logits per sample)"
+    },
+    "layer6_probabilities_and_predictions": {
+      "max_abs_prob_diff": 0.145,
+      "mean_abs_prob_diff": 0.052,
+      "total_decisions_evaluated": 160,
+      "total_decisions_matched": 123,
+      "decision_concordance_rate_percent": 76.88
+    }
+  },
+  "scientific_conclusion": {
+    "parity_verdict": "EVALUATED_WITH_DEVIATIONS. The system achieves 76.88% exact decision agreement (123/160) and 0.905 min cosine similarity on the 16 development samples. Numerical deviations originate from standard browser Canvas2D/TypeScript resampling approximations compared to Python PIL/Torchvision antialiasing, not architectural or weight errors.",
+    "supersedes_prior_receipt": "Replaces the naive 0-diff claim in browser_fp32_parity_receipt.json with auditable, element-wise measured deviations."
+  }
+}

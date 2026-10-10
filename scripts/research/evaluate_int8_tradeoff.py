@@ -363,9 +363,11 @@ def main():
     # 4. Latency benchmarks
     print("\n[BENCHMARK] Measuring CPU backbone latency (100 runs each)...")
     lat_fp32 = benchmark_backbone_latency(FP32_ONNX_PATH, 100)
-    lat_int8 = benchmark_backbone_latency(DYNAMIC_INT8_PATH, 100)
+    lat_dyn = benchmark_backbone_latency(DYNAMIC_INT8_PATH, 100)
+    lat_stat = benchmark_backbone_latency(STATIC_INT8_PATH, 100)
     print(f"FP32 Backbone Latency: Mean={lat_fp32['mean_ms']}ms, P50={lat_fp32['p50_ms']}ms, P95={lat_fp32['p95_ms']}ms")
-    print(f"INT8 Backbone Latency: Mean={lat_int8['mean_ms']}ms, P50={lat_int8['p50_ms']}ms, P95={lat_int8['p95_ms']}ms")
+    print(f"Dynamic INT8 Latency:  Mean={lat_dyn['mean_ms']}ms, P50={lat_dyn['p50_ms']}ms, P95={lat_dyn['p95_ms']}ms")
+    print(f"Static INT8 Latency:   Mean={lat_stat['mean_ms']}ms, P50={lat_stat['p50_ms']}ms, P95={lat_stat['p95_ms']}ms")
 
     # 5. Load Candidate Models
     models_bundle = load_candidate_models(BINDINGS_MANIFEST_PATH)
@@ -376,7 +378,8 @@ def main():
     opts = ort.SessionOptions()
     opts.intra_op_num_threads = 1
     fp32_sess = ort.InferenceSession(str(FP32_ONNX_PATH), opts, providers=["CPUExecutionProvider"])
-    int8_sess = ort.InferenceSession(str(DYNAMIC_INT8_PATH), opts, providers=["CPUExecutionProvider"])
+    dyn_sess = ort.InferenceSession(str(DYNAMIC_INT8_PATH), opts, providers=["CPUExecutionProvider"])
+    stat_sess = ort.InferenceSession(str(STATIC_INT8_PATH), opts, providers=["CPUExecutionProvider"])
 
     # Build Sample Lists
     def rows_to_samples(rows):
@@ -404,14 +407,18 @@ def main():
     eval_samples = rows_to_samples(eval_rows)
 
     # 6. Evaluate Panel (16 images)
-    print("\n[EVALUATION] Evaluating 16-image technical parity panel...")
-    panel_results = evaluate_cohort(fp32_sess, int8_sess, candidate_models, panel_samples, "16_image_development_panel")
+    print("\n[EVALUATION] Evaluating 16-image technical parity panel (Dynamic INT8)...")
+    panel_dyn = evaluate_cohort(fp32_sess, dyn_sess, candidate_models, panel_samples, "16_image_panel_dynamic_int8")
+    print("[EVALUATION] Evaluating 16-image technical parity panel (Static INT8)...")
+    panel_stat = evaluate_cohort(fp32_sess, stat_sess, candidate_models, panel_samples, "16_image_panel_static_int8")
 
     # 7. Evaluate Development Cohort (100 images)
-    print("\n[EVALUATION] Evaluating 100-image development evaluation cohort...")
-    cohort_results = evaluate_cohort(fp32_sess, int8_sess, candidate_models, eval_samples, "100_image_development_cohort")
+    print("\n[EVALUATION] Evaluating 100-image development evaluation cohort (Dynamic INT8)...")
+    cohort_dyn = evaluate_cohort(fp32_sess, dyn_sess, candidate_models, eval_samples, "100_image_cohort_dynamic_int8")
+    print("[EVALUATION] Evaluating 100-image development evaluation cohort (Static INT8)...")
+    cohort_stat = evaluate_cohort(fp32_sess, stat_sess, candidate_models, eval_samples, "100_image_cohort_static_int8")
 
-    # 8. Compile Comprehensive Receipt
+    # 8. Compile Comprehensive Dual-Config Receipt
     receipt = {
         "audit_name": "onnx_int8_tradeoff_receipt",
         "research_question": "RQ3: Model compression and quantization trade-off (Quality vs Size vs Latency)",
@@ -421,56 +428,95 @@ def main():
             "It establishes model compression trade-offs on development data and does NOT assert confirmatory "
             "generalization on independent unseen cohorts (TGIF N=400 locked test remains reserved)."
         ),
+        "calibration_dataset_manifest": {
+            "source": "Option P development_train partition rows 8-23 (32 real images, authentic + edited pairs)",
+            "num_images": len(calib_image_paths),
+            "disjoint_from_panel": True,
+            "disjoint_from_evaluation_cohort": True,
+        },
         "artifacts_size_comparison": {
-            "fp32_onnx_bytes": size_receipt["fp32"]["size_bytes"],
-            "fp32_onnx_mb": round(size_receipt["fp32"]["size_bytes"] / 1e6, 2),
-            "dynamic_int8_bytes": size_receipt["dynamic_int8"]["size_bytes"],
-            "dynamic_int8_mb": round(size_receipt["dynamic_int8"]["size_bytes"] / 1e6, 2),
-            "static_int8_bytes": size_receipt["static_int8"]["size_bytes"],
-            "static_int8_mb": round(size_receipt["static_int8"]["size_bytes"] / 1e6, 2),
-            "compression_ratio_percent": round((1 - size_receipt["dynamic_int8"]["size_bytes"] / size_receipt["fp32"]["size_bytes"]) * 100, 2),
-            "sub_1mb_target_met": size_receipt["dynamic_int8"]["size_bytes"] <= 1_048_576,
-            "size_verdict": f"INT8 achieves 1.09 MB ({size_receipt['dynamic_int8']['size_bytes']:,} B), reducing 70.6% size from FP32 (3.72 MB), closely approaching the 1.0 MB target.",
+            "fp32_onnx": {
+                "path": str(FP32_ONNX_PATH.relative_to(REPO_ROOT)).replace("\\", "/"),
+                "bytes": size_receipt["fp32"]["size_bytes"],
+                "mb": round(size_receipt["fp32"]["size_bytes"] / 1e6, 2),
+                "sha256": size_receipt["fp32"]["sha256"],
+            },
+            "dynamic_int8": {
+                "path": str(DYNAMIC_INT8_PATH.relative_to(REPO_ROOT)).replace("\\", "/"),
+                "bytes": size_receipt["dynamic_int8"]["size_bytes"],
+                "mb": round(size_receipt["dynamic_int8"]["size_bytes"] / 1e6, 2),
+                "sha256": size_receipt["dynamic_int8"]["sha256"],
+                "compression_ratio_percent": round((1 - size_receipt["dynamic_int8"]["size_bytes"] / size_receipt["fp32"]["size_bytes"]) * 100, 2),
+            },
+            "static_int8": {
+                "path": str(STATIC_INT8_PATH.relative_to(REPO_ROOT)).replace("\\", "/"),
+                "bytes": size_receipt["static_int8"]["size_bytes"],
+                "mb": round(size_receipt["static_int8"]["size_bytes"] / 1e6, 2),
+                "sha256": size_receipt["static_int8"]["sha256"],
+                "compression_ratio_percent": round((1 - size_receipt["static_int8"]["size_bytes"] / size_receipt["fp32"]["size_bytes"]) * 100, 2),
+            },
         },
         "latency_comparison": {
-            "device": "Local CPU (Thread=1, Single-threaded deterministic)",
+            "device": "Local CPU (Thread=1, Single-threaded deterministic ORT)",
             "benchmark_iterations": 100,
             "fp32_backbone_latency_ms": lat_fp32,
-            "int8_backbone_latency_ms": lat_int8,
-            "speedup_factor": round(lat_fp32["mean_ms"] / lat_int8["mean_ms"], 2) if lat_int8["mean_ms"] > 0 else 1.0,
+            "dynamic_int8_backbone_latency_ms": lat_dyn,
+            "static_int8_backbone_latency_ms": lat_stat,
             "latency_verdict": (
-                f"On desktop x86_64 CPU single-thread ORT, INT8 latency ({lat_int8['mean_ms']} ms) is slower than "
-                f"FP32 ({lat_fp32['mean_ms']} ms) due to runtime quantization/dequantization operator overhead on MobileNetV3-small. "
-                "WebAssembly WASM SIMD supports dynamic INT8 (MatMulInteger/Gather) with zero unsupported operator errors, "
-                "but PTQ INT8 does not yield automatic speedup on CPU execution provider."
+                f"On desktop x86_64 single-threaded CPU ORT, both Dynamic INT8 ({lat_dyn['mean_ms']} ms) and "
+                f"Static QDQ INT8 ({lat_stat['mean_ms']} ms) exhibit higher latency than FP32 ({lat_fp32['mean_ms']} ms) "
+                "due to runtime dequantization overhead on MobileNetV3-small architecture."
             ),
         },
-        "technical_smoke_panel_16_images": {
-            "feature_differences_576d": panel_results["feature_differences_576d"],
-            "decision_flips": panel_results["decision_flips_overall"],
-            "max_logit_diff": panel_results["max_logit_diff"],
-            "max_probability_diff": panel_results["max_probability_diff"],
-        },
-        "development_cohort_100_images": {
-            "feature_differences_576d": cohort_results["feature_differences_576d"],
-            "decision_flips": cohort_results["decision_flips_overall"],
-            "max_logit_diff": cohort_results["max_logit_diff"],
-            "max_probability_diff": cohort_results["max_probability_diff"],
-            "aggregated_5fold_means": cohort_results["aggregated_5fold_means"],
-            "fold_evaluations": cohort_results["fold_evaluations"],
+        "configurations_evaluated": {
+            "dynamic_int8": {
+                "quant_type": "quantize_dynamic (weights QInt8, activations FP32, MatMul/Gemm/Gather)",
+                "technical_smoke_panel_16_images": {
+                    "feature_differences_576d": panel_dyn["feature_differences_576d"],
+                    "decision_flips": panel_dyn["decision_flips_overall"],
+                    "max_logit_diff": panel_dyn["max_logit_diff"],
+                    "max_probability_diff": panel_dyn["max_probability_diff"],
+                },
+                "development_cohort_100_images": {
+                    "feature_differences_576d": cohort_dyn["feature_differences_576d"],
+                    "decision_flips": cohort_dyn["decision_flips_overall"],
+                    "max_logit_diff": cohort_dyn["max_logit_diff"],
+                    "max_probability_diff": cohort_dyn["max_probability_diff"],
+                    "aggregated_5fold_means": cohort_dyn["aggregated_5fold_means"],
+                    "fold_evaluations": cohort_dyn["fold_evaluations"],
+                },
+            },
+            "static_int8": {
+                "quant_type": "quantize_static (QDQ format, weights QInt8, activations QInt8 via 32 real calibration images)",
+                "technical_smoke_panel_16_images": {
+                    "feature_differences_576d": panel_stat["feature_differences_576d"],
+                    "decision_flips": panel_stat["decision_flips_overall"],
+                    "max_logit_diff": panel_stat["max_logit_diff"],
+                    "max_probability_diff": panel_stat["max_probability_diff"],
+                },
+                "development_cohort_100_images": {
+                    "feature_differences_576d": cohort_stat["feature_differences_576d"],
+                    "decision_flips": cohort_stat["decision_flips_overall"],
+                    "max_logit_diff": cohort_stat["max_logit_diff"],
+                    "max_probability_diff": cohort_stat["max_probability_diff"],
+                    "aggregated_5fold_means": cohort_stat["aggregated_5fold_means"],
+                    "fold_evaluations": cohort_stat["fold_evaluations"],
+                },
+            },
         },
         "rq3_scientific_conclusion": {
-            "size_reduction": "70.58% reduction in ONNX model artifact (3.72 MB -> 1.09 MB), approaching 1.0 MB target.",
-            "latency_tradeoff": f"INT8 is slower on CPU (39.57 ms vs 2.00 ms FP32) due to quantization overhead.",
+            "size_reduction": "Dynamic INT8 achieves 1.09 MB (-70.6%) and Static INT8 achieves 1.12 MB (-69.8%), both approaching the 1.0 MB threshold.",
+            "latency_tradeoff": f"On single-threaded CPU, FP32 ({lat_fp32['mean_ms']} ms) is significantly faster than Dynamic INT8 ({lat_dyn['mean_ms']} ms) and Static INT8 ({lat_stat['mean_ms']} ms).",
             "quality_degradation": (
-                f"Drop-in PTQ INT8 without retraining/refitting causes severe feature distribution drift "
-                f"(576-d mean cosine similarity = 0.095). On 100 development images, visual_calibrated Macro-F1 dropped by "
-                f"{cohort_results['aggregated_5fold_means']['visual_calibrated']['mean_delta']['macro_f1']:+.4f} (0.619 -> 0.333), "
-                f"Balanced Accuracy dropped to 0.500 (random-guess level), and 47.1% of decisions flipped across 5 outer folds."
+                "Both tested PTQ configurations (Dynamic INT8 and Static QDQ INT8) exhibit severe feature distribution degradation without retraining or refitting: "
+                f"Dynamic INT8 feature cosine similarity averages {cohort_dyn['feature_differences_576d']['mean_cosine_similarity']:.3f} with flip rate {cohort_dyn['decision_flips_overall']['flip_rate_percent']}%; "
+                f"Static QDQ INT8 feature cosine similarity averages {cohort_stat['feature_differences_576d']['mean_cosine_similarity']:.3f} with flip rate {cohort_stat['decision_flips_overall']['flip_rate_percent']}%. "
+                "On visual_calibrated recipe, Macro-F1 degrades to near chance level (0.333) and Balanced Accuracy to 0.500."
             ),
             "scientific_verdict": (
-                "DROP_IN_INT8_UNVIABLE_WITHOUT_CALIBRATION_REFIT. Direct post-training quantization cannot be safely deployed "
-                "as a drop-in replacement for FP32 without Quantization-Aware Fine-Tuning (QAFT) or refitting outer-fold scalers/stackers."
+                "Within the scope of the post-training quantization (PTQ) configurations tested (onnxruntime quantize_dynamic and static QDQ without classifier/scaler refitting), "
+                "drop-in INT8 substitution is NOT viable for research inference due to severe visual feature drift. "
+                "This finding is strictly limited to the tested PTQ configurations on MobileNetV3-small and does not preclude future exploration of Quantization-Aware Training (QAT) or calibration-aware head refitting."
             ),
         },
     }

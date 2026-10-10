@@ -76,7 +76,11 @@ export class StackerScorer {
   }
 
   public fusionLogit(visualCalLogit: number, dspCalLogit: number): number {
-    return visualCalLogit * this.coef[0] + dspCalLogit * this.coef[1] + this.intercept;
+    return (
+      visualCalLogit * this.coef[0] +
+      dspCalLogit * this.coef[1] +
+      this.intercept
+    );
   }
 
   public probability(visualCalLogit: number, dspCalLogit: number): number {
@@ -114,7 +118,7 @@ export class FoldCandidateModel {
 
   public score(
     visualFeatures: Float64Array | Float32Array,
-    dspFeatures: Float64Array
+    dspFeatures: Float64Array,
   ): FoldScoringResult {
     // 1. Visual Calibrated branch
     const zVRaw = this.visualScorer.rawLogit(visualFeatures);

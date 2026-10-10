@@ -6,10 +6,10 @@
  *       -> ONNX Backbone 576-d -> 5 Outer Fold Models (visual_calibrated & late_fusion_dsp_augmented).
  */
 
-import * as ort from 'onnxruntime-web';
-import { extractCanonicalDspFeatures } from '@forensics/forensics';
-import { FoldCandidateModel, FoldScoringResult } from './research-scorer.js';
-import { RESEARCH_CANDIDATE_MODELS } from './research-models-data.js';
+import * as ort from "onnxruntime-web";
+import { extractCanonicalDspFeatures } from "@forensics/forensics";
+import { FoldCandidateModel, FoldScoringResult } from "./research-scorer.js";
+import { RESEARCH_CANDIDATE_MODELS } from "./research-models-data.js";
 
 // ImageNet normalization constants
 const MEAN = [0.485, 0.456, 0.406];
@@ -37,7 +37,7 @@ export function buildBicubicTensor224(
   rgba512: Uint8ClampedArray | Uint8Array,
   srcW = 512,
   srcH = 512,
-  dstSize = 224
+  dstSize = 224,
 ): Float32Array {
   const tensor = new Float32Array(3 * dstSize * dstSize);
   const planeSize = dstSize * dstSize;
@@ -52,7 +52,10 @@ export function buildBicubicTensor224(
       const srcX = (dx + 0.5) * scaleX - 0.5;
       const xCenter = Math.floor(srcX);
 
-      let rSum = 0, gSum = 0, bSum = 0, wSum = 0;
+      let rSum = 0,
+        gSum = 0,
+        bSum = 0,
+        wSum = 0;
 
       for (let j = -1; j <= 2; j++) {
         const sy = Math.max(0, Math.min(srcH - 1, yCenter + j));
@@ -120,19 +123,20 @@ export interface ResearchInferenceResult {
 
 export class ResearchPipeline {
   private session: ort.InferenceSession | null = null;
-  private readonly candidateModels: FoldCandidateModel[] = RESEARCH_CANDIDATE_MODELS;
+  private readonly candidateModels: FoldCandidateModel[] =
+    RESEARCH_CANDIDATE_MODELS;
 
   /**
    * Initializes the ONNX Runtime Web session from a model ArrayBuffer.
    */
   public async initialize(modelBuffer: ArrayBuffer): Promise<void> {
-    ort.env.wasm.wasmPaths = '/wasm/';
+    ort.env.wasm.wasmPaths = "/wasm/";
     ort.env.wasm.numThreads = 1;
     ort.env.wasm.simd = true;
 
     this.session = await ort.InferenceSession.create(modelBuffer, {
-      executionProviders: ['wasm'],
-      graphOptimizationLevel: 'all',
+      executionProviders: ["wasm"],
+      graphOptimizationLevel: "all",
     });
   }
 
@@ -143,21 +147,25 @@ export class ResearchPipeline {
   /**
    * Executes end-to-end research inference on 512x512 RGBA pixel buffer.
    */
-  public async analyzeImage512(rgba512: Uint8ClampedArray | Uint8Array): Promise<ResearchInferenceResult> {
+  public async analyzeImage(
+    rgba: Uint8ClampedArray | Uint8Array,
+    width = 512,
+    height = 512,
+  ): Promise<ResearchInferenceResult> {
     if (!this.session) {
-      throw new Error('Research ONNX session is not initialized.');
+      throw new Error("Research ONNX session is not initialized.");
     }
 
     const tStart = performance.now();
 
-    // 1. DSP extraction on 512x512 canvas
+    // 1. DSP extraction on original dimensions
     const t0Dsp = performance.now();
-    const dspFeatures = extractCanonicalDspFeatures(rgba512, 512, 512);
+    const dspFeatures = extractCanonicalDspFeatures(rgba, width, height);
     const tDsp = performance.now() - t0Dsp;
 
     // 2. Preprocessing: bicubic resize to 224x224 and ImageNet normalization
     const t0Pre = performance.now();
-    const tensor224 = buildBicubicTensor224(rgba512, 512, 512, 224);
+    const tensor224 = buildBicubicTensor224(rgba, width, height, 224);
     let tMin = Infinity;
     let tMax = -Infinity;
     let tSum = 0;
@@ -173,10 +181,11 @@ export class ResearchPipeline {
 
     // 3. Backbone forward pass in ONNX Runtime Web
     const t0Backbone = performance.now();
-    const inputTensor = new ort.Tensor('float32', tensor224, [1, 3, 224, 224]);
+    const inputTensor = new ort.Tensor("float32", tensor224, [1, 3, 224, 224]);
     const feeds = { input: inputTensor };
     const outputs = await this.session.run(feeds);
-    const visualOutput = outputs['visual_features'] || Object.values(outputs)[0];
+    const visualOutput =
+      outputs["visual_features"] || Object.values(outputs)[0];
     const visualFeatures = visualOutput.data as Float32Array;
     const tBackbone = performance.now() - t0Backbone;
 
@@ -226,8 +235,14 @@ export class ResearchPipeline {
           mean_probability: meanFusionProb,
           prediction: meanFusionProb >= 0.5 ? 1 : 0,
         },
-        note: 'Kết quả tổng hợp là giá trị trung bình cộng mô tả 5 outer folds; nghiên cứu chính thức bảo toàn 5 folds độc lập.',
+        note: "Kết quả tổng hợp là giá trị trung bình cộng mô tả 5 outer folds; nghiên cứu chính thức bảo toàn 5 folds độc lập.",
       },
     };
+  }
+
+  public async analyzeImage512(
+    rgba512: Uint8ClampedArray | Uint8Array,
+  ): Promise<ResearchInferenceResult> {
+    return this.analyzeImage(rgba512, 512, 512);
   }
 }
