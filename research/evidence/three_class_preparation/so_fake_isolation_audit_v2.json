@@ -1,0 +1,20 @@
+{
+  "schema_version": "2.0.0",
+  "action": "AUDIT_SO_FAKE_PROBE_ISOLATION_V2",
+  "manifest_path": "research/evidence/three_class_preparation/so_fake_probe_manifest_v2.json",
+  "total_probe_samples": 300,
+  "distinct_probe_hashes": 300,
+  "distinct_sample_ids": 300,
+  "distinct_source_groups": 300,
+  "cohorts_checked": [
+    "three_class_pilot_train_and_holdout",
+    "imagenet_authentic_train_a1",
+    "source_control_nature_imagenet",
+    "sealed_locked_test_343_sources",
+    "sealed_tgif_n400_sources"
+  ],
+  "collision_count": 0,
+  "collisions": [],
+  "source_independence_status": "unverified",
+  "status": "ISOLATION_AUDIT_PASS"
+}

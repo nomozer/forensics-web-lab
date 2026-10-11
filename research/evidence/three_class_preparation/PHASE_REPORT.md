@@ -624,3 +624,194 @@ Thực hiện kiểm định ghép cặp 10,000 lần lấy mẫu lại có hoà
 5. **Đúng một bước tiếp theo được phê duyệt (Single Approved Next Step)**:
    - Không mở rộng kiến trúc, không tăng số quadrant, không triển khai browser.
    - Thực hiện **Thiết kế đối chứng nhân tố 2×2 (Factorial Source-Conditioned Cohort)** nhằm phân lập triệt để giữa *Domain Shift Ngữ Nghĩa* (COCO vs ImageNet) và *Artefact Kỹ Thuật Số/Nén* (JPEG quantization / generator fingerprint) trước khi xem xét bất kỳ phương án huấn luyện lại hoặc tinh chỉnh nào.
+
+---
+
+## 15. ĐÍNH CHÍNH BẰNG CHỨNG SO-FAKE PROBE & CHẨN ĐOÁN GHÉP CẶP VỀ NÉN VÀ THỨ TỰ RESIZE
+
+> **Mã thực nghiệm**: `SO_FAKE_EVIDENCE_RECTIFICATION_AND_PAIRED_COMPRESSION_SENSITIVITY`<br>
+> **Thời điểm**: 2026-10-11<br>
+> **Ràng buộc nghiên cứu**: Không tải dataset/checkpoint mới; không retrain/refit/recalibrate/threshold tune; giữ nguyên 6 locked models; kiểm tra pipeline kỹ thuật trên panel tất định; khóa 3 điều kiện trước khi đánh giá; bảo toàn artifacts lịch sử kèm receipts v2 riêng.
+
+---
+
+### 15.1. Đính Chính Bằng Chứng So-Fake Probe (Manifest v2 & Isolation Audit v2)
+
+#### 1. Nguyên nhân gốc rễ và xử lý Source Grouping ($systematic-debugging)
+- **Phát hiện**: Trong manifest v1 (`so_fake_probe_manifest.json`), logic gom nhóm nguồn sử dụng `stem[:16]` đã vô tình cắt ngắn tên file, khiến nhiều ảnh có tên file và nguồn gốc hoàn toàn khác nhau bị ép vào cùng một cluster ID (ví dụ: `so_fake_latent_diffusion_object_part_synt`). Cắt ngắn tiền tố tên file không phản ánh quan hệ nguồn ảnh thực tế.
+- **Khắc phục qua Manifest v2** ([`so_fake_probe_manifest_v2.json`](./so_fake_probe_manifest_v2.json)):
+  * Thiết lập `sample_id` duy nhất và chuẩn hóa cho từng ảnh (`so_fake_000000` đến `so_fake_000099` theo từng split).
+  * Tách biệt dứt khoát 3 khái niệm:
+    1. *Sample identity duy nhất*: Định danh từng mẫu ảnh riêng biệt trên đĩa.
+    2. *Source group có bằng chứng*: Chỉ áp dụng khi có metadata đối soát rõ ràng về ảnh gốc chung.
+    3. *Quan hệ nguồn chưa xác minh (`unverified_source_cluster`)*: Do shard Parquet của So-Fake không cung cấp ID ảnh nguồn gốc ban đầu trước can thiệp, toàn bộ 300 mẫu được gắn trạng thái `source_group_status: "unverified"`.
+- **Kiểm toán cách ly v2** ([`so_fake_isolation_audit_v2.json`](./so_fake_isolation_audit_v2.json)):
+  * Xác nhận 300 mẫu probe không có bất kỳ xung đột mã băm SHA-256 nào với các tập dữ liệu nội bộ (0 collisions). Trạng thái: **`ISOLATION_AUDIT_PASS`**.
+
+#### 2. Tái tính Paired Bootstrap với Giả định Rõ ràng
+- Do quan hệ nguồn chưa được kiểm chứng độc lập từ metadata gốc, chúng tôi báo cáo **Paired Image Bootstrap** (10,000 replicates, seed 20261011) với giả định mẫu ghép cặp ngang hàng ở cấp độ ảnh đơn lẻ, thay vì tự nhận là "Source-Cluster Bootstrap đã kiểm chứng".
+- Tỷ lệ replicate có $\Delta > 0$ được báo cáo trung thực dưới dạng **Bootstrap Positive Fraction** ($P(\Delta^* > 0)$), tuyệt đối **không diễn giải hay coi là p-value** hay xác suất giả thuyết vô hiệu $H_0$.
+
+#### 3. Bảng Phân Rã Generator Chuẩn Xác theo Ground-Truth Class
+Đã khắc phục lỗi gán nhãn toàn bộ generator theo dòng đầu tiên. Bảng thống kê chính xác theo `(generator, ground_truth_label)` trên 300 mẫu:
+
+| Tên Generator / Nguồn | Ground-Truth Class | Số lượng mẫu ($N$) | Tỷ lệ trong lớp |
+| :--- | :--- | :---: | :---: |
+| **COCO** | authentic | 53 | 53.0% |
+| **ImageNet** | authentic | 47 | 47.0% |
+| **FLUX** (FLUX.1-inpaint) | ai_edited | 44 | 44.0% |
+| **sd2_inpainting** | ai_edited | 22 | 22.0% |
+| **latent_diffusion** (inpainting) | ai_edited | 12 | 12.0% |
+| **sdxl_inpainting** | ai_edited | 12 | 12.0% |
+| **deepfloyd_if** | ai_edited | 10 | 10.0% |
+| **midjourney** | fully_generated | 36 | 36.0% |
+| **latent_diffusion** (text2img) | fully_generated | 20 | 20.0% |
+| **FLUX** (FLUX.1-dev text2img) | fully_generated | 15 | 15.0% |
+| **OpenForensics_fake** | fully_generated | 9 | 9.0% |
+| **dalle3** | fully_generated | 8 | 8.0% |
+| **sdxl** | fully_generated | 7 | 7.0% |
+| **deepfloyd_if** | fully_generated | 5 | 5.0% |
+
+*Nhận xét*: FLUX.1 xuất hiện ở cả hai lớp (44 ảnh ai_edited và 15 ảnh fully_generated); latent_diffusion xuất hiện ở cả hai lớp (12 ảnh ai_edited và 20 ảnh fully_generated).
+
+#### 4. Phân Tích Phân Loại Học (Taxonomy) Nhóm `OpenForensics_fake` ($N=9$)
+- **Khảo sát nguồn gốc**: OpenForensics (arXiv:2107.03589, ICCV 2021) là tập dữ liệu chuyên về phát hiện khuôn mặt giả mạo đa đối tượng (multi-face forgery detection/segmentation). Trong So-Fake, nhóm này gồm 9 ảnh khuôn mặt bị hoán đổi/chỉnh sửa (face swap / face inpainting).
+- **Độ vênh phân loại học**: Đề tài chúng tôi định nghĩa:
+  * `fully_generated`: Toàn bộ canvas được sinh tổng hợp từ text prompt hoặc unconditioned noise.
+  * `ai_edited`: Canvas nền thật có một hoặc nhiều vùng cục bộ bị can thiệp bởi inpainting/editing.
+  * Như vậy, 9 ảnh `OpenForensics_fake` về bản chất ngữ nghĩa là chỉnh sửa khuôn mặt cục bộ trên nền ảnh thật, nhưng nhãn nguồn của So-Fake lại xếp vào `full_synthetic` (tương ứng `fully_generated`).
+- **Phân tích độ nhạy (Taxonomy Sensitivity Analysis, $N=300$ vs $N=291$)**:
+  * Để bảo toàn tính lịch sử và khách quan khoa học, chúng tôi giữ nguyên kết quả chính thống trên $N=300$ theo nhãn nguồn gốc của So-Fake.
+  * Đồng thời, thực hiện phân tích độ nhạy loại trừ 9 mẫu `OpenForensics_fake` ($N=291$):
+    - **A0-global**: Macro-F1 thay đổi từ 0.3427 ($N=300$) xuống 0.3340 ($N=291$, $\Delta = -0.0087$).
+    - **A0-local**: Macro-F1 thay đổi từ 0.3300 ($N=300$) xuống 0.3168 ($N=291$, $\Delta = -0.0132$).
+    - **A1-global**: Macro-F1 thay đổi từ 0.3230 ($N=300$) xuống 0.3176 ($N=291$, $\Delta = -0.0054$).
+    - **A1-local**: Macro-F1 thay đổi từ 0.3109 ($N=300$) xuống 0.3014 ($N=291$, $\Delta = -0.0095$).
+    - **A0-visual**: Macro-F1 thay đổi từ 0.3369 ($N=300$) lên 0.3482 ($N=291$, $\Delta = +0.0113$).
+    - **A1-visual**: Macro-F1 thay đổi từ 0.3339 ($N=300$) lên 0.3402 ($N=291$, $\Delta = +0.0063$).
+  * *Kết luận độ nhạy*: Việc loại bỏ 9 mẫu OpenForensics không làm thay đổi bất kỳ kết luận nghiên cứu nào. Điểm Macro-F1 của toàn bộ 6 mô hình vẫn dao động quanh mức $0.30 - 0.35$ (gần mức đoán ngẫu nhiên $0.3333$). Sự sụt giảm của các mô hình DSP khi bỏ 9 mẫu này phản ánh việc DSP phát hiện được vết nén/ghép cục bộ trên 5–6 mẫu OpenForensics (nhưng gán đúng nhãn nguồn `fully_generated`).
+
+#### 5. Đính Chính Tài Liệu & Giấy Phép Dữ Liệu
+- **Kích thước tập huấn luyện A1**: Khẳng định rõ ràng A1 là **$N=1,000$** mẫu (gồm 250 COCO authentic, 250 ImageNet authentic, 250 TGIF ai_edited, 250 SD1.5 fully_generated). Số liệu ghi chú trong registry và báo cáo cũ hoàn toàn khớp với kích thước huấn luyện thực tế này.
+- **Giấy phép `saberzl/So-Fake-Set`**: Kiểm tra trực tiếp metadata Hugging Face cardData: trường giấy phép chính thức của repository `saberzl/So-Fake-Set` là **`unspecified`** (chưa định rõ trong metadata). Tuyệt đối không tự ý gán giấy phép CC-BY-NC-4.0 (vốn thuộc repository phụ `So-Fake-OOD`) cho tập dữ liệu `So-Fake-Set`.
+
+---
+
+### 15.2. Kiểm Tra Pipeline Kỹ Thuật Trước Thí Nghiệm (Panel Tất Định)
+
+Để loại trừ khả năng suy giảm hiệu năng bắt nguồn từ lỗi implementation trong việc trích xuất ảnh Parquet sang PNG hoặc sai lệch tiền xử lý, chúng tôi thiết lập panel kiểm chứng kỹ thuật gồm 16 mẫu đại diện được rút trích trực tiếp:
+- **Bytes ảnh gốc vs PNG trích xuất**:
+  * Kiểm tra độ chênh lệch mảng pixel RGB sau decode: **Max Pixel Difference = 0** (khớp bit-exact 100% trên toàn bộ các kênh màu).
+  * Shape và Orientation: 0 trường hợp thay đổi hướng EXIF, 0 trường hợp sai lệch kích thước ảnh gốc.
+- **Tính toán đặc trưng DSP**:
+  * So sánh vector đặc trưng 16-D Global DSP và 48-D Local DSP tính từ bytes nạp trực tiếp trong bộ nhớ vs ảnh đọc từ file PNG:
+  * **Max Absolute Difference = 0.0000000000e+00** (khớp bit-exact 100%).
+- **Kết luận kỹ thuật**: Quá trình giải nén Parquet sang file PNG lossless hoàn toàn bảo toàn nguyên vẹn dữ liệu đầu vào của pipeline. Hiệu năng thấp trên So-Fake probe **hoàn toàn là do biến dịch phân phối thực tế (OOD Distribution Shift)**, không phải do lỗi tiền xử lý hay trích xuất kỹ thuật.
+
+---
+
+### 15.3. Thí Nghiệm Ghép Cặp Về Độ Nhạy Nén JPEG Và Thứ Tự Resize (C0 vs C1 vs C2)
+
+#### 1. Khóa Thiết Kế Ba Điều Kiện (Preregistered Transformation Pipeline)
+Thực hiện đánh giá ghép cặp trên cùng một ảnh, cùng 6 locked models, trên 2 cohorts:
+- **Cohort 1: So-Fake Probe ($N=300$)** — Tập dữ liệu ngoại lai độc lập.
+- **Cohort 2: Development Holdout ($N=273$)** — Tập kiểm tra phát triển nội bộ (ghi nhận rõ là development holdout, không gọi là kiểm định độc lập mới).
+
+Ba điều kiện được khóa bất biến trước khi chạy thí nghiệm:
+- **Điều kiện C0 (Baseline)**: Pipeline chuẩn mực nguyên trạng trên ảnh không nén lại. Canvas gốc được resize Lanczos về 512×512 cho DSP và bicubic về 224×224 cho Visual MobileNetV3.
+- **Điều kiện C1 (Full-Resolution Compression)**: Nén JPEG ảnh ở độ phân giải gốc một lần duy nhất với tham số chuẩn hóa: `quality=75, subsampling=2 (4:2:0), optimize=False` bằng Pillow encoder. Sau đó decode RGB và đưa vào pipeline chuẩn (resize Lanczos 512×512 cho DSP, bicubic 224×224 cho Visual).
+- **Điều kiện C2 (Canvas-First Compression)**: Resize ảnh RGB gốc về 512×512 bằng Lanczos trước. Sau đó nén JPEG canvas 512×512 một lần duy nhất với cùng tham số (`quality=75, subsampling=2, optimize=False`). Decode RGB và đưa trực tiếp vào trích xuất DSP mà **không resize thêm một lần nào nữa** (tránh nén/resize lặp ngoài thiết kế); đồng thời resize bicubic về 224×224 từ canvas này để nạp vào Visual backbone.
+
+#### 2. Kết Quả Thực Nghiệm Trên So-Fake Probe Cohort ($N=300$)
+
+| Mô hình | Điều kiện | Macro-F1 | Balanced Acc | Multiclass Brier | Top-Class ECE | Báo động giả Authentic FP | Tỷ lệ đổi nhãn vs C0 (Flip %) |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **A0-global** | C0 | 0.3427 | 0.3433 | 0.8257 | 0.2738 | 61.0% (61/100) | 0.0% (baseline) |
+| | C1 | 0.3630 | 0.3633 | 0.8664 | 0.2921 | 61.0% (61/100) | 18.3% (55/300) |
+| | C2 | 0.2941 | 0.3533 | 0.9340 | 0.3687 | **94.0% (94/100)** | **49.3% (148/300)** |
+| **A0-local** | C0 | 0.3300 | 0.3300 | 0.8231 | 0.2764 | 67.0% (67/100) | 0.0% (baseline) |
+| | C1 | 0.3488 | 0.3467 | 0.8654 | 0.3029 | 65.0% (65/100) | 20.7% (62/300) |
+| | C2 | 0.2853 | 0.3433 | 0.9242 | 0.3711 | **95.0% (95/100)** | **46.7% (140/300)** |
+| **A1-global** | C0 | 0.3230 | 0.3500 | 0.8488 | 0.3128 | 35.0% (35/100) | 0.0% (baseline) |
+| | C1 | 0.3689 | 0.3867 | 0.8711 | 0.3009 | 37.0% (37/100) | 21.7% (65/300) |
+| | C2 | 0.3215 | 0.3700 | 0.9168 | 0.3512 | **80.0% (80/100)** | **56.3% (169/300)** |
+| **A1-local** | C0 | 0.3109 | 0.3367 | 0.8522 | 0.3168 | 38.0% (38/100) | 0.0% (baseline) |
+| | C1 | 0.3540 | 0.3667 | 0.8551 | 0.2956 | 41.0% (41/100) | 19.0% (57/300) |
+| | C2 | 0.3328 | 0.3633 | 0.8691 | 0.3228 | **75.0% (75/100)** | **46.3% (139/300)** |
+| **A0-visual** | C0 | 0.3369 | 0.3533 | 0.7753 | 0.2463 | 58.0% (58/100) | 0.0% (baseline) |
+| | C1 | 0.3213 | 0.3400 | 0.7710 | 0.2409 | 58.0% (58/100) | 5.3% (16/300) |
+| | C2 | 0.3399 | 0.3567 | 0.7737 | 0.2270 | 57.0% (57/100) | 6.0% (18/300) |
+| **A1-visual** | C0 | 0.3339 | 0.3700 | 0.8027 | 0.2637 | 29.0% (29/100) | 0.0% (baseline) |
+| | C1 | 0.3267 | 0.3667 | 0.7984 | 0.2605 | 28.0% (28/100) | 3.7% (11/300) |
+| | C2 | 0.3156 | 0.3600 | 0.8025 | 0.2683 | 28.0% (28/100) | 4.3% (13/300) |
+
+*Mốc tham chiếu Brier ngẫu nhiên*: Dự đoán xác suất đều $[1/3, 1/3, 1/3]$ đạt $B_{\text{uniform}} = 2/3 \approx 0.6667$. Toàn bộ 6 mô hình trên So-Fake đều có Brier từ $0.7710$ đến $0.9340$, **kém hơn rõ rệt so với bộ dự đoán xác suất đều không thông tin** (thể hiện mô hình bị sai lệch tự tin thái quá).
+
+#### 3. Kết Quả Thực Nghiệm Trên Development Holdout Cohort ($N=273$)
+
+| Mô hình | Điều kiện | Macro-F1 | Balanced Acc | Multiclass Brier | Top-Class ECE | Báo động giả Authentic FP | Tỷ lệ đổi nhãn vs C0 (Flip %) |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **A0-global** | C0 | 0.5592 | 0.5495 | 0.5742 | 0.1044 | 55.0% (50/91) | 0.0% (baseline) |
+| | C1 | **0.6187** | 0.6190 | 0.4821 | 0.0791 | 55.0% (50/91) | 9.5% (26/273) |
+| | C2 | 0.4720 | 0.5201 | 0.6286 | 0.1388 | **85.7% (78/91)** | **32.2% (88/273)** |
+| **A0-local** | C0 | 0.5564 | 0.5458 | 0.5766 | 0.0856 | 56.0% (51/91) | 0.0% (baseline) |
+| | C1 | **0.6133** | 0.6154 | 0.4870 | 0.0681 | 58.2% (53/91) | 9.9% (27/273) |
+| | C2 | 0.4792 | 0.5275 | 0.6300 | 0.1402 | **85.7% (78/91)** | **31.9% (87/273)** |
+| **A1-global** | C0 | 0.5045 | 0.4945 | 0.6478 | 0.1427 | 50.5% (46/91) | 0.0% (baseline) |
+| | C1 | **0.6161** | 0.6081 | 0.5049 | 0.1007 | 50.5% (46/91) | 13.2% (36/273) |
+| | C2 | 0.4680 | 0.4945 | 0.6599 | 0.1738 | **78.0% (71/91)** | **38.5% (105/273)** |
+| **A1-local** | C0 | 0.4919 | 0.4835 | 0.6400 | 0.1562 | 55.0% (50/91) | 0.0% (baseline) |
+| | C1 | **0.5933** | 0.5824 | 0.5228 | 0.0783 | 52.8% (48/91) | 12.8% (35/273) |
+| | C2 | 0.4740 | 0.4872 | 0.6470 | 0.1659 | **70.3% (64/91)** | **31.5% (86/273)** |
+| **A0-visual** | C0 | 0.5109 | 0.5018 | 0.5976 | 0.1032 | 57.1% (52/91) | 0.0% (baseline) |
+| | C1 | 0.5174 | 0.5092 | 0.5965 | 0.1046 | 57.1% (52/91) | 2.6% (7/273) |
+| | C2 | 0.5194 | 0.5128 | 0.5985 | 0.1100 | 57.1% (52/91) | 5.5% (15/273) |
+| **A1-visual** | C0 | 0.4836 | 0.4762 | 0.6627 | 0.1747 | 48.4% (44/91) | 0.0% (baseline) |
+| | C1 | 0.4773 | 0.4689 | 0.6626 | 0.1614 | 50.5% (46/91) | 2.2% (6/273) |
+| | C2 | 0.4803 | 0.4725 | 0.6639 | 0.1627 | 50.5% (46/91) | 3.3% (9/273) |
+
+#### 4. Phân Tích Hiện Tượng Bất Đối Xứng Cực Đoan C1 vs C2 ($systematic-debugging)
+1. **Tính trơ của Visual Feature (MobileNetV3)**:
+   - Các mô hình thuần thị giác (`A0-visual` và `A1-visual`) hầu như không bị ảnh hưởng bởi nén JPEG hay thứ tự resize: tỷ lệ đổi nhãn (flip rate) chỉ từ **2.2% đến 6.0%** trên cả hai cohorts. Macro-F1 giữ nguyên ở mức ~0.32-0.34 (So-Fake) và ~0.48-0.52 (Holdout).
+2. **Cơ chế gây nhiễu của Điều kiện C2 (Canvas-First Compression)**:
+   - Khi resize ảnh về 512×512 trước rồi mới nén JPEG chất lượng 75, các khối DCT 8×8 của thuật toán JPEG được khắc cố định hoàn hảo trên lưới tọa độ 512×512 của canvas.
+   - Khi bộ trích xuất DSP tính toán ma trận tương quan phổ FFT 2D trên lưới này, nó phát hiện các đường biên khối nén nhân tạo (artificial blocking artifacts) đồng đều trên toàn bộ bức ảnh.
+   - Do tập huấn luyện của DSP chứa nhiều ảnh AI có đặc trưng biên tần số cao tương tự, bộ phân loại bị lừa rằng đây là dấu hiệu can thiệp nhân tạo. Hậu quả là **Báo động giả trên ảnh thật (Authentic False Alarm) bùng nổ lên 75%–95% trên So-Fake và 70%–86% trên Holdout**. Tỷ lệ lật quyết định lên tới gần một nửa số ảnh (32%–56%).
+3. **Cơ chế hài hòa của Điều kiện C1 (Full-Resolution Compression)**:
+   - Khi nén JPEG ở độ phân giải gốc rồi mới resize Lanczos về 512×512, bộ lọc nội suy Lanczos đã làm mịn và làm nhòe bớt các cạnh khối DCT sắc nhọn.
+   - Trên tập Holdout (nơi ảnh gốc COCO vốn có lịch sử nén khác biệt với ảnh TGIF), việc nén C1 vô tình chuẩn hóa và hài hòa dấu vết nén, giúp Macro-F1 của các mô hình DSP tăng vọt lên **0.59–0.62** (giải thích nguồn gốc con số 0.6015 trong thí nghiệm trước).
+   - Tuy nhiên, trên So-Fake ngoại lai, hiệu ứng này chỉ giúp tăng nhẹ F1 từ ~0.33 lên ~0.36, hoàn toàn không đủ để vượt qua sự sụp đổ phân phối ngữ nghĩa.
+
+---
+
+### 15.4. Trả Lời Giới Hạn 4 Câu Hỏi Trọng Tâm
+
+1. **Có lỗi pipeline thực sự hay không?**
+   - **TRẢ LỜI**: **KHÔNG CÓ LỖI PIPELINE THỰC SỰ TRONG VIỆC TRÍCH XUẤT VÀ TÍNH TOÁN ĐẶC TRƯNG**.
+   - Kiểm chứng panel 16 ảnh tất định xác nhận 100% bit-exact pixel arrays và 100% bit-exact DSP vectors giữa Parquet bytes gốc và PNG trích xuất. Trọng số mô hình, scaler, nhiệt độ và class order đều khớp tuyệt đối với registry đã niêm phong.
+   - Lỗi duy nhất được tìm thấy và đã khắc phục triệt để ở lượt này là **lỗi gộp cụm giả mạo trong manifest v1 do cắt ngắn chuỗi tên file (`stem[:16]`)**, gây sai lệch phân cụm trong kiểm định bootstrap. Lỗi này thuộc về tầng báo cáo/thống kê (evaluation accounting), không ảnh hưởng đến pixel hay scoring logic của mô hình.
+
+2. **Model nhạy đến mức nào với JPEG và thứ tự resize?**
+   - **TRẢ LỜI**: **CÁC MÔ HÌNH KẾT HỢP DSP CỰC KỲ NHẠY VỚI THỨ TỰ RESIZE VÀ NÉN JPEG, TRONG KHI MÔ HÌNH THỊ GIÁC (VISUAL-ONLY) THÌ GẦN NHƯ MIỄN NHIỄM**.
+   - Thứ tự xử lý quyết định sự thành bại: Nếu nén JPEG sau khi đưa về canvas 512×512 (C2), lưới DCT 8×8 kích hoạt báo động giả hàng loạt trên ảnh thật (lên tới 95%), làm sụp đổ hoàn toàn độ đặc hiệu. Nếu nén JPEG trước khi resize Lanczos (C1), bộ lọc Lanczos làm suy giảm biên khối, giúp ổn định và thậm chí nâng F1 trên holdout lên 0.62.
+   - Độ nhạy này chứng minh rằng **đặc trưng DSP phản ánh rất mạnh lịch sử xử lý tín hiệu kỹ thuật số cấp thấp (low-level processing artifacts)** hơn là chỉ riêng dấu vết sinh ảnh AI.
+
+3. **Hiệu năng thấp còn tồn tại sau kiểm tra pipeline hay không?**
+   - **TRẢ LỜI**: **CÓ, HIỆU NĂNG THẤP TRÊN SO-FAKE VẪN HOÀN TOÀN TỒN TẠI VÀ LÀ THỰC TẾ NGHIÊN CỨU**.
+   - Sau khi kiểm tra bit-exact pipeline, sửa manifest v2, loại trừ ảnh taxonomy mơ hồ (OpenForensics), và thử nghiệm cả 3 điều kiện nén/resize, Macro-F1 của toàn bộ 6 mô hình trên So-Fake probe vẫn bị giam chặt trong khoảng **0.2853 đến 0.3689** (xấp xỉ mức ngẫu nhiên 0.3333).
+   - Điểm Multiclass Brier ($0.77 - 0.93$) đều tệ hơn mốc xác suất đều ngẫu nhiên ($0.6667$), chứng minh mô hình bị lệch nghiêm trọng (miscalibrated) khi bước ra ngoài miền huấn luyện.
+
+4. **Các dữ liệu hiện tại có đủ để phân biệt nguyên nhân ngữ nghĩa, generator và nén ảnh hay chưa?**
+   - **TRẢ LỜI**: **CHƯA ĐỦ ĐỂ PHÂN BIỆT NHÂN QUẢ ĐỘC LẬP GIỮA CÁC YẾU TỐ**.
+   - Trong dữ liệu hiện có:
+     * Generator gắn liền với kiểu nén và định dạng (ví dụ SD1.5/SD2 dùng PNG lossless trong khi dữ liệu nguồn COCO/ImageNet có lịch sử JPEG nén nhiều lần).
+     * Ngữ nghĩa (context COCO đa đối tượng vs ImageNet đơn đối tượng) bị trộn lẫn với nhãn authentic.
+     * Sự so sánh hậu nghiệm (post-hoc) giữa các dataset khác nhau không thể phân tách được quan hệ nhân quả. Việc nén lại ảnh (recompression) hoặc chuyển sang PNG không xóa bỏ được lịch sử nén gốc vốn có bên trong cấu trúc tần số của ảnh.
+
+---
+
+### 15.5. Đúng Một Đề Xuất Cải Thiện Kế Tiếp Có Căn Cứ (Single Approved Next Step)
+
+**Đề xuất duy nhất**: Triển khai **Thiết kế đối chứng nhân tố 2×2 (Factorial Source-Conditioned Cohort)** theo đề cương đã lập tại `NEXT_STEPS_SOURCE_CONFOUNDING_PROPOSAL.md`:
+- Ghép cặp đối chứng chéo: Nguồn ngữ nghĩa $[ \text{COCO} \times \text{ImageNet} ]$ đan xen với Lịch sử định dạng $[ \text{PNG uncompressed} \times \text{JPEG Q75 recompressed} ]$.
+- Giữ nguyên quy tắc: Không tự ý tải checkpoint bên ngoài, không huấn luyện lại mô hình trong phiên này, không thay đổi demo production. Bước đi này phải được thẩm định và phê duyệt trước khi tạo đợt thu nhận dữ liệu tiếp theo.

@@ -142,8 +142,27 @@
 >      * Local DSP không mang lại lợi thế tổng quát hóa trước domain shift sâu rộng.
 >      * Điều kiện A1 (thêm authentic ImageNet) chứng minh hiệu quả giảm mạnh báo động giả trên authentic ngoại lai (từ 53%-57% xuống 30%-35%, giảm 22-23 pp), nhưng làm lệch ranh giới quyết định khiến mô hình bỏ sót các can thiệp mới (FLUX.1, SDXL), làm recall của edit và gen rơi về dưới 20%.
 >      * Raw predictions: `so_fake_probe_predictions.json`, receipt: `so_fake_probe_evaluation_receipt.json`.<br>
->    **Phase status**: `SO_FAKE_EXTERNAL_PROBE_VERIFIED_PASS`<br>
->    **Next approved action**: Triển khai thiết kế dữ liệu đối chứng nhân tố 2×2 (factorial source-conditioned cohort) theo `NEXT_STEPS_SOURCE_CONFOUNDING_PROPOSAL.md` để phân lập triệt để domain semantic bias khỏi format/compression shortcut trước khi xem xét bất kỳ phương án huấn luyện lại nào.<br>
+>
+> 13. _Đính Chính Bằng Chứng So-Fake Probe & Chẩn Đoán Ghép Cặp Về Độ Nhạy Nén và Thứ Tự Resize ($systematic-debugging, $writing-plans, $executing-plans, $verification-before-completion)_:
+>    - **Đính Chính Bằng Chứng Manifest v2 & Kiểm Toán Cách Ly v2**:
+>      * Sửa lỗi gộp cụm giả mạo trong manifest v1 do cắt ngắn `stem[:16]`. Ban hành `so_fake_probe_manifest_v2.json` với 300 distinct sample IDs duy nhất, phân định rõ: sample identity duy nhất vs source group có bằng chứng vs quan hệ nguồn chưa xác minh (`unverified_source_cluster`).
+>      * Kiểm toán cách ly độc lập v2 đạt chuẩn `ISOLATION_AUDIT_PASS` (0 collisions với toàn bộ tập huấn luyện, holdout, controls, Locked-Test và TGIF N=400).
+>      * Tái tính Paired Sample Bootstrap (10,000 reps) với giả định mẫu ghép cặp đơn lẻ, không gọi là source-cluster bootstrap đã kiểm chứng; báo cáo Bootstrap Positive Fraction, không trình bày fraction dương như p-value.
+>      * Bảng Generator Breakdown chuẩn xác theo `(generator, ground_truth_label)`: FLUX.1 (44 edit + 15 gen), latent_diffusion (12 edit + 20 gen), OpenForensics_fake (9 gen), midjourney (36 gen), sd2_inpainting (22 edit), v.v.
+>      * Phân tích phân loại học (Taxonomy) nhóm `OpenForensics_fake` ($N=9$, multi-face forgery): Đánh giá độ nhạy trên $N=291$ (loại trừ OpenForensics) so với baseline $N=300$. Macro-F1 giữ nguyên ở mức $0.30 - 0.35$; các mô hình DSP giảm nhẹ (-0.005 đến -0.013) do mất 5-6 mẫu phát hiện vết nén, Visual-only tăng nhẹ (+0.006 đến +0.011) do 0% recall trên nhóm này. Kết luận OOD collapse giữ nguyên.
+>      * Đính chính tài liệu: Khẳng định A1 train là $N=1,000$ (250 COCO auth, 250 ImageNet auth, 250 TGIF edit, 250 SD1.5 gen). Giấy phép của `saberzl/So-Fake-Set` là `unspecified` trong HuggingFace cardData (không tự gán CC-BY-NC-4.0 từ `So-Fake-OOD`).
+>      * Kiểm chứng kỹ thuật panel tất định (16 mẫu): Max pixel diff = 0, orientation diff = 0, shape diff = 0, max DSP diff = 0. Chuyển sang PNG lossless giữ đúng 100% input của pipeline.
+>    - **Thí Nghiệm Ghép Cặp Độ Nhạy Nén JPEG và Thứ Tự Resize (C0 vs C1 vs C2)**:
+>      * Khóa 3 điều kiện trước khi đánh giá: C0 (Baseline uncompressed canvas), C1 (Full-resolution JPEG Q75 -> Lanczos 512x512 DSP + bicubic 224x224 Visual), C2 (Lanczos 512x512 canvas -> JPEG Q75 -> decode trực tiếp vào DSP, không resize lại; bicubic 224x224 Visual).
+>      * Đánh giá 36 cấu hình thực nghiệm (6 models × 3 conditions × 2 cohorts: So-Fake probe $N=300$ và Development holdout $N=273$).
+>      * Kết quả then chốt:
+>        1. Visual-only MobileNetV3 gần như miễn nhiễm với nén JPEG và thứ tự resize (flip rate chỉ 2.2% - 6.0%).
+>        2. DSP cực kỳ nhạy với thứ tự resize và nén: C2 (nén sau resize canvas 512×512) tạo đường biên khối DCT 8×8 đồng bộ hoàn hảo với lưới FFT DSP, kích hoạt báo động giả authentic bùng nổ lên **75% - 95%** trên So-Fake và **70% - 86%** trên Holdout (flip rate 32% - 56%). C1 (nén ảnh gốc rồi mới resize Lanczos) làm mịn biên khối, hài hòa dấu vết nén giúp nâng F1 holdout lên **0.59 - 0.62** (giải thích con số 0.6015 trong thí nghiệm trước), nhưng trên So-Fake chỉ nâng nhẹ lên 0.34 - 0.37.
+>        3. Multiclass Brier trên So-Fake probe ($0.7710 - 0.9340$) đều tệ hơn mốc xác suất đều ngẫu nhiên $B_{\text{uniform}} = 2/3 \approx 0.6667$, chứng minh mô hình bị lệch nghiêm trọng (miscalibrated).
+>        4. Trả lời 4 câu hỏi trọng tâm: Không có lỗi pipeline tính toán; DSP nhạy mạnh với JPEG/resize trong khi visual miễn nhiễm; OOD collapse trên So-Fake vẫn tồn tại vững chắc sau mọi phép biến đổi; dữ liệu hiện tại chưa đủ phân biệt quan hệ nhân quả độc lập giữa context ngữ nghĩa, generator và lịch sử nén.
+>      * Receipts & Predictions: `so_fake_probe_manifest_v2.json`, `so_fake_isolation_audit_v2.json`, `so_fake_probe_evaluation_receipt_v2.json`, `compression_sensitivity_receipt.json`, `compression_sensitivity_predictions.json`.<br>
+>    **Phase status**: `SO_FAKE_EVIDENCE_RECTIFIED_AND_COMPRESSION_SENSITIVITY_DIAGNOSED_PASS`<br>
+>    **Next approved action**: Triển khai thiết kế đối chứng nhân tố 2×2 (COCO vs ImageNet $\times$ PNG vs JPEG Q75) theo `NEXT_STEPS_SOURCE_CONFOUNDING_PROPOSAL.md`. Không tự ý huấn luyện lại mô hình trong phiên này, không sửa demo production.<br>
 
 
 

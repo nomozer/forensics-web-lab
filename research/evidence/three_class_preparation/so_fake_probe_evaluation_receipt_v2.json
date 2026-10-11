@@ -1,0 +1,1109 @@
+{
+  "schema_version": "2.0.0",
+  "action": "EVALUATE_SO_FAKE_BASELINE_C0_V2",
+  "timestamp_utc": "2026-10-11T13:06:04Z",
+  "provenance_notes": {
+    "version": "v2.0.0",
+    "changes_from_v1": [
+      "Replaced truncated source group collapsing with distinct sample observation IDs.",
+      "Corrected generator breakdown to group by (generator, ground_truth_label), resolving FLUX.1 and latent_diffusion label collapsing.",
+      "Explicitly labeled resampling as paired sample bootstrap with unverified source caveats.",
+      "Added OpenForensics_fake taxonomy sensitivity analysis (N=300 vs N=291).",
+      "Benchmark multiclass Brier against uniform distribution baseline (0.6667)."
+    ],
+    "dataset_license": "unspecified in Hugging Face saberzl/So-Fake-Set cardData (distinct from saberzl/So-Fake-OOD cc-by-nc-4.0)",
+    "a1_training_size_confirmation": "N=1,000 (A0 pilot 750 + 250 supplemented ImageNet train, sample weights balanced 250/class)"
+  },
+  "uniform_baseline_benchmark": {
+    "uniform_probability_vector": [
+      0.3333333333333333,
+      0.3333333333333333,
+      0.3333333333333333
+    ],
+    "uniform_multiclass_brier": 0.6667,
+    "uniform_balanced_accuracy": 0.3333,
+    "note": "A model with multiclass Brier > 0.6667 performs worse in calibrated probability error than predicting uniform uncertainty [1/3, 1/3, 1/3]."
+  },
+  "models_evaluated": {
+    "A0-global": {
+      "config_id": "A0_GLOBAL_DSP_592D",
+      "feature_dim": 592,
+      "calibrated_temperature": 5.9577,
+      "metrics": {
+        "macro_f1": 0.3551,
+        "balanced_accuracy": 0.3567,
+        "multiclass_brier": 0.8101,
+        "top_class_ece": 0.2479,
+        "confusion_matrix": [
+          [
+            43,
+            41,
+            16
+          ],
+          [
+            37,
+            35,
+            28
+          ],
+          [
+            36,
+            35,
+            29
+          ]
+        ],
+        "per_class": {
+          "authentic": {
+            "precision": 0.3707,
+            "recall": 0.43,
+            "f1": 0.3981,
+            "support": 100
+          },
+          "ai_edited": {
+            "precision": 0.3153,
+            "recall": 0.35,
+            "f1": 0.3318,
+            "support": 100
+          },
+          "fully_generated": {
+            "precision": 0.3973,
+            "recall": 0.29,
+            "f1": 0.3353,
+            "support": 100
+          }
+        },
+        "authentic_control": {
+          "total_authentic": 100,
+          "false_positive_ai_count": 57,
+          "false_positive_ai_rate": 0.57,
+          "false_positive_ai_percent": 57.0,
+          "misclassified_as_edited": 41,
+          "misclassified_as_generated": 16
+        }
+      }
+    },
+    "A0-local": {
+      "config_id": "A0_LOCAL_DSP_640D",
+      "feature_dim": 640,
+      "calibrated_temperature": 6.014245647309195,
+      "metrics": {
+        "macro_f1": 0.3459,
+        "balanced_accuracy": 0.3467,
+        "multiclass_brier": 0.8151,
+        "top_class_ece": 0.259,
+        "confusion_matrix": [
+          [
+            37,
+            46,
+            17
+          ],
+          [
+            34,
+            38,
+            28
+          ],
+          [
+            38,
+            33,
+            29
+          ]
+        ],
+        "per_class": {
+          "authentic": {
+            "precision": 0.3394,
+            "recall": 0.37,
+            "f1": 0.3541,
+            "support": 100
+          },
+          "ai_edited": {
+            "precision": 0.3248,
+            "recall": 0.38,
+            "f1": 0.3502,
+            "support": 100
+          },
+          "fully_generated": {
+            "precision": 0.3919,
+            "recall": 0.29,
+            "f1": 0.3333,
+            "support": 100
+          }
+        },
+        "authentic_control": {
+          "total_authentic": 100,
+          "false_positive_ai_count": 63,
+          "false_positive_ai_rate": 0.63,
+          "false_positive_ai_percent": 63.0,
+          "misclassified_as_edited": 46,
+          "misclassified_as_generated": 17
+        }
+      }
+    },
+    "A1-global": {
+      "config_id": "A1_GLOBAL_DSP_592D",
+      "feature_dim": 592,
+      "calibrated_temperature": 4.9391,
+      "metrics": {
+        "macro_f1": 0.323,
+        "balanced_accuracy": 0.35,
+        "multiclass_brier": 0.8498,
+        "top_class_ece": 0.3072,
+        "confusion_matrix": [
+          [
+            65,
+            25,
+            10
+          ],
+          [
+            57,
+            20,
+            23
+          ],
+          [
+            48,
+            32,
+            20
+          ]
+        ],
+        "per_class": {
+          "authentic": {
+            "precision": 0.3824,
+            "recall": 0.65,
+            "f1": 0.4815,
+            "support": 100
+          },
+          "ai_edited": {
+            "precision": 0.2597,
+            "recall": 0.2,
+            "f1": 0.226,
+            "support": 100
+          },
+          "fully_generated": {
+            "precision": 0.3774,
+            "recall": 0.2,
+            "f1": 0.2614,
+            "support": 100
+          }
+        },
+        "authentic_control": {
+          "total_authentic": 100,
+          "false_positive_ai_count": 35,
+          "false_positive_ai_rate": 0.35,
+          "false_positive_ai_percent": 35.0,
+          "misclassified_as_edited": 25,
+          "misclassified_as_generated": 10
+        }
+      }
+    },
+    "A1-local": {
+      "config_id": "A1_LOCAL_DSP_640D",
+      "feature_dim": 640,
+      "calibrated_temperature": 5.168856331386276,
+      "metrics": {
+        "macro_f1": 0.3027,
+        "balanced_accuracy": 0.33,
+        "multiclass_brier": 0.8579,
+        "top_class_ece": 0.3139,
+        "confusion_matrix": [
+          [
+            62,
+            28,
+            10
+          ],
+          [
+            58,
+            19,
+            23
+          ],
+          [
+            54,
+            28,
+            18
+          ]
+        ],
+        "per_class": {
+          "authentic": {
+            "precision": 0.3563,
+            "recall": 0.62,
+            "f1": 0.4526,
+            "support": 100
+          },
+          "ai_edited": {
+            "precision": 0.2533,
+            "recall": 0.19,
+            "f1": 0.2171,
+            "support": 100
+          },
+          "fully_generated": {
+            "precision": 0.3529,
+            "recall": 0.18,
+            "f1": 0.2384,
+            "support": 100
+          }
+        },
+        "authentic_control": {
+          "total_authentic": 100,
+          "false_positive_ai_count": 38,
+          "false_positive_ai_rate": 0.38,
+          "false_positive_ai_percent": 38.0,
+          "misclassified_as_edited": 28,
+          "misclassified_as_generated": 10
+        }
+      }
+    },
+    "A0-visual": {
+      "config_id": "A0_VISUAL_ONLY_576D",
+      "feature_dim": 576,
+      "calibrated_temperature": 5.9818,
+      "metrics": {
+        "macro_f1": 0.3487,
+        "balanced_accuracy": 0.3667,
+        "multiclass_brier": 0.762,
+        "top_class_ece": 0.2429,
+        "confusion_matrix": [
+          [
+            47,
+            46,
+            7
+          ],
+          [
+            45,
+            47,
+            8
+          ],
+          [
+            40,
+            44,
+            16
+          ]
+        ],
+        "per_class": {
+          "authentic": {
+            "precision": 0.3561,
+            "recall": 0.47,
+            "f1": 0.4052,
+            "support": 100
+          },
+          "ai_edited": {
+            "precision": 0.3431,
+            "recall": 0.47,
+            "f1": 0.3966,
+            "support": 100
+          },
+          "fully_generated": {
+            "precision": 0.5161,
+            "recall": 0.16,
+            "f1": 0.2443,
+            "support": 100
+          }
+        },
+        "authentic_control": {
+          "total_authentic": 100,
+          "false_positive_ai_count": 53,
+          "false_positive_ai_rate": 0.53,
+          "false_positive_ai_percent": 53.0,
+          "misclassified_as_edited": 46,
+          "misclassified_as_generated": 7
+        }
+      }
+    },
+    "A1-visual": {
+      "config_id": "A1_VISUAL_ONLY_576D",
+      "feature_dim": 576,
+      "calibrated_temperature": 5.1812763222128995,
+      "metrics": {
+        "macro_f1": 0.3315,
+        "balanced_accuracy": 0.3667,
+        "multiclass_brier": 0.8036,
+        "top_class_ece": 0.2723,
+        "confusion_matrix": [
+          [
+            70,
+            27,
+            3
+          ],
+          [
+            72,
+            25,
+            3
+          ],
+          [
+            52,
+            33,
+            15
+          ]
+        ],
+        "per_class": {
+          "authentic": {
+            "precision": 0.3608,
+            "recall": 0.7,
+            "f1": 0.4762,
+            "support": 100
+          },
+          "ai_edited": {
+            "precision": 0.2941,
+            "recall": 0.25,
+            "f1": 0.2703,
+            "support": 100
+          },
+          "fully_generated": {
+            "precision": 0.7143,
+            "recall": 0.15,
+            "f1": 0.2479,
+            "support": 100
+          }
+        },
+        "authentic_control": {
+          "total_authentic": 100,
+          "false_positive_ai_count": 30,
+          "false_positive_ai_rate": 0.3,
+          "false_positive_ai_percent": 30.0,
+          "misclassified_as_edited": 27,
+          "misclassified_as_generated": 3
+        }
+      }
+    }
+  },
+  "paired_sample_bootstrap_comparisons": {
+    "A0_local_minus_global": {
+      "observed_delta": -0.0092,
+      "ci_95": [
+        -0.0378,
+        0.0204
+      ],
+      "p_positive_fraction": 0.2712,
+      "bootstrap_replicates": 10000,
+      "methodology": "paired_sample_resampling",
+      "assumptions_and_limits": "Resampling with replacement over N=300 paired image indices. Assumes conditional sample exchangeability on the probe cohort. Source independence is unverified because So-Fake metadata does not provide parent source IDs. p_positive_fraction is the fraction of bootstrap resamples with positive delta, not a frequentist p-value or Bayesian hypothesis posterior.",
+      "verdict": "INCONCLUSIVE"
+    },
+    "A1_local_minus_global": {
+      "observed_delta": -0.0203,
+      "ci_95": [
+        -0.046,
+        0.0041
+      ],
+      "p_positive_fraction": 0.0542,
+      "bootstrap_replicates": 10000,
+      "methodology": "paired_sample_resampling",
+      "assumptions_and_limits": "Resampling with replacement over N=300 paired image indices. Assumes conditional sample exchangeability on the probe cohort. Source independence is unverified because So-Fake metadata does not provide parent source IDs. p_positive_fraction is the fraction of bootstrap resamples with positive delta, not a frequentist p-value or Bayesian hypothesis posterior.",
+      "verdict": "INCONCLUSIVE"
+    },
+    "A0_global_minus_visual": {
+      "observed_delta": 0.0064,
+      "ci_95": [
+        -0.0428,
+        0.0544
+      ],
+      "p_positive_fraction": 0.5935,
+      "bootstrap_replicates": 10000,
+      "methodology": "paired_sample_resampling",
+      "assumptions_and_limits": "Resampling with replacement over N=300 paired image indices. Assumes conditional sample exchangeability on the probe cohort. Source independence is unverified because So-Fake metadata does not provide parent source IDs. p_positive_fraction is the fraction of bootstrap resamples with positive delta, not a frequentist p-value or Bayesian hypothesis posterior.",
+      "verdict": "INCONCLUSIVE"
+    },
+    "A1_global_minus_visual": {
+      "observed_delta": -0.0085,
+      "ci_95": [
+        -0.0496,
+        0.0308
+      ],
+      "p_positive_fraction": 0.3383,
+      "bootstrap_replicates": 10000,
+      "methodology": "paired_sample_resampling",
+      "assumptions_and_limits": "Resampling with replacement over N=300 paired image indices. Assumes conditional sample exchangeability on the probe cohort. Source independence is unverified because So-Fake metadata does not provide parent source IDs. p_positive_fraction is the fraction of bootstrap resamples with positive delta, not a frequentist p-value or Bayesian hypothesis posterior.",
+      "verdict": "INCONCLUSIVE"
+    },
+    "A1_local_minus_A0_local": {
+      "observed_delta": -0.0432,
+      "ci_95": [
+        -0.0949,
+        0.0079
+      ],
+      "p_positive_fraction": 0.0483,
+      "bootstrap_replicates": 10000,
+      "methodology": "paired_sample_resampling",
+      "assumptions_and_limits": "Resampling with replacement over N=300 paired image indices. Assumes conditional sample exchangeability on the probe cohort. Source independence is unverified because So-Fake metadata does not provide parent source IDs. p_positive_fraction is the fraction of bootstrap resamples with positive delta, not a frequentist p-value or Bayesian hypothesis posterior.",
+      "verdict": "INCONCLUSIVE"
+    },
+    "A1_global_minus_A0_global": {
+      "observed_delta": -0.0321,
+      "ci_95": [
+        -0.0811,
+        0.0163
+      ],
+      "p_positive_fraction": 0.1009,
+      "bootstrap_replicates": 10000,
+      "methodology": "paired_sample_resampling",
+      "assumptions_and_limits": "Resampling with replacement over N=300 paired image indices. Assumes conditional sample exchangeability on the probe cohort. Source independence is unverified because So-Fake metadata does not provide parent source IDs. p_positive_fraction is the fraction of bootstrap resamples with positive delta, not a frequentist p-value or Bayesian hypothesis posterior.",
+      "verdict": "INCONCLUSIVE"
+    }
+  },
+  "generator_breakdown_by_class_n_ge_5": {
+    "flux.1-dev [true: ai_edited]": {
+      "generator": "flux.1-dev",
+      "ground_truth_label": "ai_edited",
+      "sample_count": 44,
+      "model_performance": {
+        "A0-global": {
+          "accuracy": 0.25,
+          "predicted_distribution": {
+            "authentic": 14,
+            "ai_edited": 11,
+            "fully_generated": 19
+          }
+        },
+        "A0-local": {
+          "accuracy": 0.3182,
+          "predicted_distribution": {
+            "authentic": 11,
+            "ai_edited": 14,
+            "fully_generated": 19
+          }
+        },
+        "A1-global": {
+          "accuracy": 0.1591,
+          "predicted_distribution": {
+            "authentic": 20,
+            "ai_edited": 7,
+            "fully_generated": 17
+          }
+        },
+        "A1-local": {
+          "accuracy": 0.1591,
+          "predicted_distribution": {
+            "authentic": 20,
+            "ai_edited": 7,
+            "fully_generated": 17
+          }
+        },
+        "A0-visual": {
+          "accuracy": 0.5227,
+          "predicted_distribution": {
+            "authentic": 17,
+            "ai_edited": 23,
+            "fully_generated": 4
+          }
+        },
+        "A1-visual": {
+          "accuracy": 0.2045,
+          "predicted_distribution": {
+            "authentic": 33,
+            "ai_edited": 9,
+            "fully_generated": 2
+          }
+        }
+      }
+    },
+    "sdxl [true: ai_edited]": {
+      "generator": "sdxl",
+      "ground_truth_label": "ai_edited",
+      "sample_count": 40,
+      "model_performance": {
+        "A0-global": {
+          "accuracy": 0.375,
+          "predicted_distribution": {
+            "authentic": 20,
+            "ai_edited": 15,
+            "fully_generated": 5
+          }
+        },
+        "A0-local": {
+          "accuracy": 0.4,
+          "predicted_distribution": {
+            "authentic": 19,
+            "ai_edited": 16,
+            "fully_generated": 5
+          }
+        },
+        "A1-global": {
+          "accuracy": 0.175,
+          "predicted_distribution": {
+            "authentic": 31,
+            "ai_edited": 7,
+            "fully_generated": 2
+          }
+        },
+        "A1-local": {
+          "accuracy": 0.175,
+          "predicted_distribution": {
+            "authentic": 31,
+            "ai_edited": 7,
+            "fully_generated": 2
+          }
+        },
+        "A0-visual": {
+          "accuracy": 0.35,
+          "predicted_distribution": {
+            "authentic": 23,
+            "ai_edited": 14,
+            "fully_generated": 3
+          }
+        },
+        "A1-visual": {
+          "accuracy": 0.225,
+          "predicted_distribution": {
+            "authentic": 30,
+            "ai_edited": 9,
+            "fully_generated": 1
+          }
+        }
+      }
+    },
+    "latent_diffusion [true: fully_generated]": {
+      "generator": "latent_diffusion",
+      "ground_truth_label": "fully_generated",
+      "sample_count": 20,
+      "model_performance": {
+        "A0-global": {
+          "accuracy": 0.3,
+          "predicted_distribution": {
+            "authentic": 5,
+            "ai_edited": 9,
+            "fully_generated": 6
+          }
+        },
+        "A0-local": {
+          "accuracy": 0.3,
+          "predicted_distribution": {
+            "authentic": 6,
+            "ai_edited": 8,
+            "fully_generated": 6
+          }
+        },
+        "A1-global": {
+          "accuracy": 0.15,
+          "predicted_distribution": {
+            "authentic": 8,
+            "ai_edited": 9,
+            "fully_generated": 3
+          }
+        },
+        "A1-local": {
+          "accuracy": 0.15,
+          "predicted_distribution": {
+            "authentic": 10,
+            "ai_edited": 7,
+            "fully_generated": 3
+          }
+        },
+        "A0-visual": {
+          "accuracy": 0.05,
+          "predicted_distribution": {
+            "authentic": 9,
+            "ai_edited": 10,
+            "fully_generated": 1
+          }
+        },
+        "A1-visual": {
+          "accuracy": 0.05,
+          "predicted_distribution": {
+            "authentic": 11,
+            "ai_edited": 8,
+            "fully_generated": 1
+          }
+        }
+      }
+    },
+    "flux.1-dev [true: fully_generated]": {
+      "generator": "flux.1-dev",
+      "ground_truth_label": "fully_generated",
+      "sample_count": 15,
+      "model_performance": {
+        "A0-global": {
+          "accuracy": 0.2,
+          "predicted_distribution": {
+            "authentic": 7,
+            "ai_edited": 5,
+            "fully_generated": 3
+          }
+        },
+        "A0-local": {
+          "accuracy": 0.2,
+          "predicted_distribution": {
+            "authentic": 8,
+            "ai_edited": 4,
+            "fully_generated": 3
+          }
+        },
+        "A1-global": {
+          "accuracy": 0.2,
+          "predicted_distribution": {
+            "authentic": 8,
+            "ai_edited": 4,
+            "fully_generated": 3
+          }
+        },
+        "A1-local": {
+          "accuracy": 0.2,
+          "predicted_distribution": {
+            "authentic": 9,
+            "ai_edited": 3,
+            "fully_generated": 3
+          }
+        },
+        "A0-visual": {
+          "accuracy": 0.2667,
+          "predicted_distribution": {
+            "authentic": 6,
+            "ai_edited": 5,
+            "fully_generated": 4
+          }
+        },
+        "A1-visual": {
+          "accuracy": 0.2,
+          "predicted_distribution": {
+            "authentic": 7,
+            "ai_edited": 5,
+            "fully_generated": 3
+          }
+        }
+      }
+    },
+    "latent_diffusion [true: ai_edited]": {
+      "generator": "latent_diffusion",
+      "ground_truth_label": "ai_edited",
+      "sample_count": 12,
+      "model_performance": {
+        "A0-global": {
+          "accuracy": 0.75,
+          "predicted_distribution": {
+            "authentic": 3,
+            "ai_edited": 9,
+            "fully_generated": 0
+          }
+        },
+        "A0-local": {
+          "accuracy": 0.6667,
+          "predicted_distribution": {
+            "authentic": 4,
+            "ai_edited": 8,
+            "fully_generated": 0
+          }
+        },
+        "A1-global": {
+          "accuracy": 0.5,
+          "predicted_distribution": {
+            "authentic": 6,
+            "ai_edited": 6,
+            "fully_generated": 0
+          }
+        },
+        "A1-local": {
+          "accuracy": 0.4167,
+          "predicted_distribution": {
+            "authentic": 7,
+            "ai_edited": 5,
+            "fully_generated": 0
+          }
+        },
+        "A0-visual": {
+          "accuracy": 0.75,
+          "predicted_distribution": {
+            "authentic": 2,
+            "ai_edited": 9,
+            "fully_generated": 1
+          }
+        },
+        "A1-visual": {
+          "accuracy": 0.5,
+          "predicted_distribution": {
+            "authentic": 6,
+            "ai_edited": 6,
+            "fully_generated": 0
+          }
+        }
+      }
+    },
+    "OpenForensics_fake [true: fully_generated]": {
+      "generator": "OpenForensics_fake",
+      "ground_truth_label": "fully_generated",
+      "sample_count": 9,
+      "model_performance": {
+        "A0-global": {
+          "accuracy": 0.6667,
+          "predicted_distribution": {
+            "authentic": 1,
+            "ai_edited": 2,
+            "fully_generated": 6
+          }
+        },
+        "A0-local": {
+          "accuracy": 0.5556,
+          "predicted_distribution": {
+            "authentic": 1,
+            "ai_edited": 3,
+            "fully_generated": 5
+          }
+        },
+        "A1-global": {
+          "accuracy": 0.5556,
+          "predicted_distribution": {
+            "authentic": 2,
+            "ai_edited": 2,
+            "fully_generated": 5
+          }
+        },
+        "A1-local": {
+          "accuracy": 0.3333,
+          "predicted_distribution": {
+            "authentic": 2,
+            "ai_edited": 4,
+            "fully_generated": 3
+          }
+        },
+        "A0-visual": {
+          "accuracy": 0.0,
+          "predicted_distribution": {
+            "authentic": 3,
+            "ai_edited": 6,
+            "fully_generated": 0
+          }
+        },
+        "A1-visual": {
+          "accuracy": 0.1111,
+          "predicted_distribution": {
+            "authentic": 4,
+            "ai_edited": 4,
+            "fully_generated": 1
+          }
+        }
+      }
+    },
+    "realistic_vision [true: fully_generated]": {
+      "generator": "realistic_vision",
+      "ground_truth_label": "fully_generated",
+      "sample_count": 8,
+      "model_performance": {
+        "A0-global": {
+          "accuracy": 0.125,
+          "predicted_distribution": {
+            "authentic": 3,
+            "ai_edited": 4,
+            "fully_generated": 1
+          }
+        },
+        "A0-local": {
+          "accuracy": 0.125,
+          "predicted_distribution": {
+            "authentic": 3,
+            "ai_edited": 4,
+            "fully_generated": 1
+          }
+        },
+        "A1-global": {
+          "accuracy": 0.0,
+          "predicted_distribution": {
+            "authentic": 4,
+            "ai_edited": 4,
+            "fully_generated": 0
+          }
+        },
+        "A1-local": {
+          "accuracy": 0.0,
+          "predicted_distribution": {
+            "authentic": 4,
+            "ai_edited": 4,
+            "fully_generated": 0
+          }
+        },
+        "A0-visual": {
+          "accuracy": 0.125,
+          "predicted_distribution": {
+            "authentic": 4,
+            "ai_edited": 3,
+            "fully_generated": 1
+          }
+        },
+        "A1-visual": {
+          "accuracy": 0.125,
+          "predicted_distribution": {
+            "authentic": 3,
+            "ai_edited": 4,
+            "fully_generated": 1
+          }
+        }
+      }
+    },
+    "sdxl_lightning [true: fully_generated]": {
+      "generator": "sdxl_lightning",
+      "ground_truth_label": "fully_generated",
+      "sample_count": 8,
+      "model_performance": {
+        "A0-global": {
+          "accuracy": 0.5,
+          "predicted_distribution": {
+            "authentic": 2,
+            "ai_edited": 2,
+            "fully_generated": 4
+          }
+        },
+        "A0-local": {
+          "accuracy": 0.625,
+          "predicted_distribution": {
+            "authentic": 1,
+            "ai_edited": 2,
+            "fully_generated": 5
+          }
+        },
+        "A1-global": {
+          "accuracy": 0.25,
+          "predicted_distribution": {
+            "authentic": 4,
+            "ai_edited": 2,
+            "fully_generated": 2
+          }
+        },
+        "A1-local": {
+          "accuracy": 0.25,
+          "predicted_distribution": {
+            "authentic": 4,
+            "ai_edited": 2,
+            "fully_generated": 2
+          }
+        },
+        "A0-visual": {
+          "accuracy": 0.625,
+          "predicted_distribution": {
+            "authentic": 1,
+            "ai_edited": 2,
+            "fully_generated": 5
+          }
+        },
+        "A1-visual": {
+          "accuracy": 0.375,
+          "predicted_distribution": {
+            "authentic": 3,
+            "ai_edited": 2,
+            "fully_generated": 3
+          }
+        }
+      }
+    },
+    "StyleGAN3 [true: fully_generated]": {
+      "generator": "StyleGAN3",
+      "ground_truth_label": "fully_generated",
+      "sample_count": 6,
+      "model_performance": {
+        "A0-global": {
+          "accuracy": 0.1667,
+          "predicted_distribution": {
+            "authentic": 3,
+            "ai_edited": 2,
+            "fully_generated": 1
+          }
+        },
+        "A0-local": {
+          "accuracy": 0.1667,
+          "predicted_distribution": {
+            "authentic": 4,
+            "ai_edited": 1,
+            "fully_generated": 1
+          }
+        },
+        "A1-global": {
+          "accuracy": 0.1667,
+          "predicted_distribution": {
+            "authentic": 3,
+            "ai_edited": 2,
+            "fully_generated": 1
+          }
+        },
+        "A1-local": {
+          "accuracy": 0.0,
+          "predicted_distribution": {
+            "authentic": 4,
+            "ai_edited": 2,
+            "fully_generated": 0
+          }
+        },
+        "A0-visual": {
+          "accuracy": 0.0,
+          "predicted_distribution": {
+            "authentic": 3,
+            "ai_edited": 3,
+            "fully_generated": 0
+          }
+        },
+        "A1-visual": {
+          "accuracy": 0.1667,
+          "predicted_distribution": {
+            "authentic": 3,
+            "ai_edited": 2,
+            "fully_generated": 1
+          }
+        }
+      }
+    },
+    "sd-3.5-face [true: fully_generated]": {
+      "generator": "sd-3.5-face",
+      "ground_truth_label": "fully_generated",
+      "sample_count": 5,
+      "model_performance": {
+        "A0-global": {
+          "accuracy": 0.2,
+          "predicted_distribution": {
+            "authentic": 2,
+            "ai_edited": 2,
+            "fully_generated": 1
+          }
+        },
+        "A0-local": {
+          "accuracy": 0.2,
+          "predicted_distribution": {
+            "authentic": 2,
+            "ai_edited": 2,
+            "fully_generated": 1
+          }
+        },
+        "A1-global": {
+          "accuracy": 0.0,
+          "predicted_distribution": {
+            "authentic": 4,
+            "ai_edited": 1,
+            "fully_generated": 0
+          }
+        },
+        "A1-local": {
+          "accuracy": 0.0,
+          "predicted_distribution": {
+            "authentic": 5,
+            "ai_edited": 0,
+            "fully_generated": 0
+          }
+        },
+        "A0-visual": {
+          "accuracy": 0.4,
+          "predicted_distribution": {
+            "authentic": 1,
+            "ai_edited": 2,
+            "fully_generated": 2
+          }
+        },
+        "A1-visual": {
+          "accuracy": 0.2,
+          "predicted_distribution": {
+            "authentic": 4,
+            "ai_edited": 0,
+            "fully_generated": 1
+          }
+        }
+      }
+    },
+    "Absolute_Reality [true: fully_generated]": {
+      "generator": "Absolute_Reality",
+      "ground_truth_label": "fully_generated",
+      "sample_count": 5,
+      "model_performance": {
+        "A0-global": {
+          "accuracy": 0.0,
+          "predicted_distribution": {
+            "authentic": 3,
+            "ai_edited": 2,
+            "fully_generated": 0
+          }
+        },
+        "A0-local": {
+          "accuracy": 0.0,
+          "predicted_distribution": {
+            "authentic": 3,
+            "ai_edited": 2,
+            "fully_generated": 0
+          }
+        },
+        "A1-global": {
+          "accuracy": 0.2,
+          "predicted_distribution": {
+            "authentic": 2,
+            "ai_edited": 2,
+            "fully_generated": 1
+          }
+        },
+        "A1-local": {
+          "accuracy": 0.2,
+          "predicted_distribution": {
+            "authentic": 2,
+            "ai_edited": 2,
+            "fully_generated": 1
+          }
+        },
+        "A0-visual": {
+          "accuracy": 0.0,
+          "predicted_distribution": {
+            "authentic": 2,
+            "ai_edited": 3,
+            "fully_generated": 0
+          }
+        },
+        "A1-visual": {
+          "accuracy": 0.2,
+          "predicted_distribution": {
+            "authentic": 2,
+            "ai_edited": 2,
+            "fully_generated": 1
+          }
+        }
+      }
+    }
+  },
+  "taxonomy_sensitivity_openforensics": {
+    "description": "Sensitivity analysis evaluating the impact of OpenForensics_fake (N=9). OpenForensics consists of multi-face forgeries / face-swap manipulations, which creates a taxonomic ambiguity between localized editing (ai_edited) and whole-canvas synthesis (fully_generated). We compare full N=300 (source labels) with N=291 (excluding OpenForensics_fake).",
+    "excluded_group": "OpenForensics_fake",
+    "excluded_count": 9,
+    "retained_count": 291,
+    "models_comparison": {
+      "A0-global": {
+        "macro_f1_full_n300": 0.3551,
+        "macro_f1_excl_n291": 0.342,
+        "delta_macro_f1": -0.0131,
+        "balanced_accuracy_full_n300": 0.3567,
+        "balanced_accuracy_excl_n291": 0.3442,
+        "multiclass_brier_full_n300": 0.8101,
+        "multiclass_brier_excl_n291": 0.8191
+      },
+      "A0-local": {
+        "macro_f1_full_n300": 0.3459,
+        "macro_f1_excl_n291": 0.337,
+        "delta_macro_f1": -0.0089,
+        "balanced_accuracy_full_n300": 0.3467,
+        "balanced_accuracy_excl_n291": 0.3379,
+        "multiclass_brier_full_n300": 0.8151,
+        "multiclass_brier_excl_n291": 0.8231
+      },
+      "A1-global": {
+        "macro_f1_full_n300": 0.323,
+        "macro_f1_excl_n291": 0.3098,
+        "delta_macro_f1": -0.0132,
+        "balanced_accuracy_full_n300": 0.35,
+        "balanced_accuracy_excl_n291": 0.3383,
+        "multiclass_brier_full_n300": 0.8498,
+        "multiclass_brier_excl_n291": 0.8579
+      },
+      "A1-local": {
+        "macro_f1_full_n300": 0.3027,
+        "macro_f1_excl_n291": 0.298,
+        "delta_macro_f1": -0.0047,
+        "balanced_accuracy_full_n300": 0.33,
+        "balanced_accuracy_excl_n291": 0.3249,
+        "multiclass_brier_full_n300": 0.8579,
+        "multiclass_brier_excl_n291": 0.8633
+      },
+      "A0-visual": {
+        "macro_f1_full_n300": 0.3487,
+        "macro_f1_excl_n291": 0.3599,
+        "delta_macro_f1": 0.0112,
+        "balanced_accuracy_full_n300": 0.3667,
+        "balanced_accuracy_excl_n291": 0.3719,
+        "multiclass_brier_full_n300": 0.762,
+        "multiclass_brier_excl_n291": 0.7497
+      },
+      "A1-visual": {
+        "macro_f1_full_n300": 0.3315,
+        "macro_f1_excl_n291": 0.3371,
+        "delta_macro_f1": 0.0056,
+        "balanced_accuracy_full_n300": 0.3667,
+        "balanced_accuracy_excl_n291": 0.3679,
+        "multiclass_brier_full_n300": 0.8036,
+        "multiclass_brier_excl_n291": 0.7914
+      }
+    }
+  },
+  "status": "SO_FAKE_EVALUATION_V2_SUCCESS"
+}
