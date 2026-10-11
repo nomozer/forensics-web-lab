@@ -80,9 +80,22 @@
 >      * Lỗi nhầm lẫn holdout: Nhầm lẫn authentic $\leftrightarrow$ ai_edited rất cao (46/91 auth nhầm edit; 38-43/91 edit nhầm auth); nhầm lẫn authentic $\to$ fully_generated rất thấp (4-7/91). Inpainting chỉ tác động 1%–50% diện tích, global pooling bị bối cảnh COCO áp đảo.
 >      * Độ dịch chuyển xác suất theo cặp holdout: Độ tăng trung bình $\Delta P(\text{ai\_edited})$ chỉ là $+0.0180$ (Visual, 54/91 pairs tăng) và $+0.0242$ (Fusion, 56/91 pairs tăng); trong ~40% cặp, inpainting không làm tăng xác suất ai_edited.
 >      * Source control: False positive AI rate duy trì ở mức cao trên mọi điều kiện (original: 67.5%/68.0%; Q95: 66.9%/68.3%; Q75: 67.2%/67.2%; resize 0.5: 62.2%/63.1%), chứng minh domain shift (COCO vs ImageNet) là yếu tố gây nhiễu cốt lõi cùng với lịch sử nén. Biên nhận: `robustness/three_class_robustness_audit_receipt.json`.
->    - **Đề Xuất Thực Nghiệm Kế Tiếp**: Xây dựng `NEXT_STEPS_SOURCE_CONFOUNDING_PROPOSAL.md` định nghĩa thiết kế ô vuông nhân tố 2×2 (COCO vs ImageNet $\times$ PNG vs JPEG Recompressed) nhằm phân tách dứt điểm domain semantic bias khỏi compression shortcut.<br>
->    **Phase status**: `THREE_CLASS_PILOT_VERIFIED_AND_ERROR_ANALYSIS_SEALED`<br>
->    **Next approved action**: Commit, push lên `origin/research/independent-cohort-acquisition`.<br>
+>    - **Đề Xuất Thực Nghiệm Kế Tiếp**: Xây dựng `NEXT_STEPS_SOURCE_CONFOUNDING_PROPOSAL.md` định nghĩa thiết kế ô vuông nhân tố 2×2 (COCO vs ImageNet $\times$ PNG vs JPEG Recompressed) nhằm phân tách dứt điểm domain semantic bias khỏi compression shortcut.
+>
+> 10. _Thực Nghiệm Ablation Đa Dạng Hóa Nguồn Ảnh Authentic A0 vs A1 ($writing-plans, $executing-plans, $verification-before-completion)_:
+>    - **Ban hành Protocol Amendment v2.1.0 & Tiếp nhận 250 Ảnh ImageNet Authentic**:
+>      * Ban hành `PROTOCOL_AMENDMENT_V2.1.0.md` quy định 2 điều kiện dữ liệu: A0 (pilot N=750) và A1 (A0 + 250 ảnh ImageNet authentic trích xuất từ parquet có sẵn trên LOCAL).
+>      * Trích xuất 250 ảnh qua `extract_and_audit_imagenet_train_samples.py` lưu tại `data/research/genimage/imagenet_authentic_train/` (manifest: `imagenet_authentic_train_manifest.json`). 0% tải mạng mới, 0 hash collision với 341 controls, 1,023 dev cohort, Locked-Test, TGIF N=400.
+>    - **Cân bằng Trọng số Mẫu & Huấn luyện Probes A1**:
+>      * Sample weights: auth COCO (0.5), auth ImageNet (0.5), edit TGIF (1.0), gen SD1.5 (1.0) -> tổng weight mỗi lớp = 250.0 (tỷ lệ lớp hiệu dụng bảo toàn 1:1:1).
+>      * Grouped inner CV (5-fold, 750 groups gom cặp COCO) với StandardScaler cô lập fold. Nhiệt độ hiệu chuẩn OOF: $T_{v,a1} = 5.1813, T_{f,a1} = 4.9391$.
+>    - **Kết quả Đánh giá 4 Cấu hình (Holdout N=273 & Control N=341)**:
+>      * Báo động giả trên 341 ảnh ImageNet authentic control giảm ngoạn mục: Visual-only từ 67.45% xuống 35.78% ($\Delta = -31.67\%$), Visual+DSP từ 68.04% xuống 31.09% ($\Delta = -36.95\%$). Số mẫu nhận diện đúng authentic tăng từ 109 lên 235/341 mẫu.
+>      * Trade-off trên Holdout ảnh gốc: Macro-F1 giảm từ 0.5086 xuống 0.4721 (Visual) và từ 0.5385 xuống 0.4887 (Fusion) do không gian authentic mở rộng làm tăng false negatives trên SD1.5 (recall SD1.5 giảm từ 62.6% về 42.9%).
+>      * Lợi ích nhất quán của DSP: DSP tiếp tục cải thiện Macro-F1 (+0.0166 trên ảnh gốc, 83.82% bootstrap mass > 0) và giảm thêm báo động giả control (-4.69%). Dưới nén JPEG Q75, A1 Fusion đạt Macro-F1 0.6046 (cao nhất trong cả 4 cấu hình) và duy trì FP control thấp nhất (31.38%).
+>      * Biên nhận: `three_class_ablation_evaluation_receipt.json`, predictions: `three_class_ablation_a1_predictions.json`.<br>
+>    **Phase status**: `AUTHENTIC_IMAGENET_ABLATION_VERIFIED_PASS`<br>
+>    **Next approved action**: Tiếp tục hoàn thiện nghiên cứu đặc trưng cục bộ (patch/frequency) kết hợp mở rộng generator theo thiết kế factorial.<br>
 
 
 

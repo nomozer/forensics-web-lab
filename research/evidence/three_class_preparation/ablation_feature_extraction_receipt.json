@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0.0",
+  "protocol_id": "PROTO-RQ1-RQ2-3CLASS-V2.1-AMENDMENT",
+  "action": "ABLATION_FEATURE_EXTRACTION",
+  "status": "SUCCESS",
+  "train_a0_samples": 750,
+  "supplement_samples": 250,
+  "train_a1_samples": 1000,
+  "holdout_samples": 273,
+  "nature_control_samples": 341,
+  "visual_dim": 576,
+  "dsp_dim": 16,
+  "class_weight_sums_a1": {
+    "authentic": 250.0,
+    "ai_edited": 250.0,
+    "fully_generated": 250.0
+  },
+  "npz_path": "data\\research\\cache\\three_class_ablation_features.npz",
+  "npz_size_bytes": 5660223,
+  "npz_sha256": "66fa95fc4b64298e3ca58286ca28731a52fae2569cb67a5e828e9d795b6c68cc",
+  "backbone_weights_sha256": "047dcff4addef86ea5bc2eff13c9614dc11f47ab1160d0a71a25e7db994f4e1f",
+  "execution_time_seconds": 17.92
+}

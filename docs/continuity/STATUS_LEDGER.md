@@ -1,3 +1,13 @@
+## Authentic ImageNet Training Ablation (A0 vs A1) Executed & Verified (Phase 4C.8 trace, branch research/independent-cohort-acquisition)
+
+- **Authentic Diversification Supplementation ($systematic-debugging, $writing-plans, $executing-plans)**: Trích xuất 250 ảnh ImageNet authentic từ các parquet có sẵn trên LOCAL theo `PROTOCOL_AMENDMENT_V2.1.0.md` (0 byte tải mạng mới; 0 hash collision với 341 controls, 1,023 dev cohort, Locked-Test, TGIF N=400). Manifest: `imagenet_authentic_train_manifest.json`.
+- **Huấn luyện Mô hình A1 có Cân bằng Trọng số Mẫu**: A1 training (N=1,000): auth COCO (w=0.5), auth ImageNet (w=0.5), edit TGIF (w=1.0), gen SD1.5 (w=1.0) -> tổng weight mỗi lớp = 250.0 (tỷ lệ 1:1:1 bảo toàn). 5-fold grouped inner CV (750 groups) với fold-isolated StandardScaler. Nhiệt độ hiệu chuẩn OOF: $T_{v,a1} = 5.1813, T_{f,a1} = 4.9391$.
+- **Giảm Mạnh Báo Động Giả Trên Control Cohort ($verification-before-completion)**: Tỷ lệ False-Positive AI trên 341 ảnh ImageNet authentic control giảm ngoạn mục từ 67.45% xuống 35.78% (Visual, -31.67%) và từ 68.04% xuống 31.09% (Fusion, -36.95%). Số ảnh nhận diện đúng authentic tăng từ 109 lên 235/341 mẫu.
+- **Trade-Off Trên Holdout & Hiệu Ứng DSP**: Do không gian authentic mở rộng, mô hình thận trọng hơn khiến recall SD1.5 giảm (Macro-F1 holdout ảnh gốc giảm -0.0365 visual, -0.0498 fusion, bootstrap CI [-0.0944, -0.0044]). Tuy nhiên, DSP tiếp tục mang lại lợi ích dương (+0.0166 F1 ảnh gốc, 83.82% bootstrap > 0; giảm thêm FP control). Dưới JPEG Q75, A1 Fusion đạt Macro-F1 0.6046 (cao nhất trong các cấu hình) và duy trì FP control thấp nhất (31.38%).
+- **Kiểm Thử Toàn Diện**: 14/14 pytest PASS (`test_three_class_ablation.py` + `test_three_class_pilot.py`), 100% pnpm test PASS. Status: `AUTHENTIC_IMAGENET_ABLATION_VERIFIED_PASS`. Receipt: `three_class_ablation_evaluation_receipt.json`.
+
+---
+
 ## Three-Class Pilot Verification, Fitting Scope Audit & Exploratory Error Analysis Sealed (Phase 4C.8 trace, branch research/independent-cohort-acquisition)
 
 - **Independent Prediction Audit PASS ($systematic-debugging)**: Verified 273 holdout (91:91:91) + 341 source control samples from raw predictions. 100% finite, sum=1, argmax concordant. Recomputed exact metrics: Visual Macro-F1 = 0.5086, BAcc = 0.4982, Brier = 0.5841, ECE = 0.0466; Fusion Macro-F1 = 0.5385, BAcc = 0.5238, Brier = 0.5618, ECE = 0.0780. Paired Delta = +0.0298 (+2.98 pp). Paired cluster bootstrap 10,000 reps: 95% CI [-0.0068, +0.0687], positive fraction 94.35% (replicate fraction, not hypothesis probability/p-value); verdict: strictly INCONCLUSIVE. Receipt: `three_class_predictions_audit_receipt.json`.

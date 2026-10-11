@@ -75,17 +75,21 @@ Tuân thủ nghiêm ngặt **Quy tắc trung thực kỹ thuật và nghiên c�
 
 ## 5. Kết quả Thực nghiệm Thực tế trên Development Holdout ($N=273$)
 
-| Chỉ số Đánh Giá | Baseline 1: Visual-Only (576-D) | Baseline 2: Visual + DSP (592-D) | Chênh Lệch ($\Delta = \text{B2} - \text{B1}$) |
-| :--- | :---: | :---: | :---: |
-| **Macro-F1** | **0.5086** | **0.5385** | **+0.0299** (+2.99%) |
-| **Balanced Accuracy** | 0.4982 | 0.5238 | +0.0256 |
-| **Multiclass Brier Score** | 0.5841 | 0.5618 | -0.0223 (cải thiện) |
-| **Multiclass Top-Class ECE** | 0.0466 | 0.0780 | +0.0314 |
-| - F1 `authentic` ($n=91$) | 0.4108 | 0.4409 | +0.0301 |
-| - F1 `ai_edited` ($n=91$) | 0.4615 | 0.4390 | -0.0225 |
-| - F1 `fully_generated` ($n=91$) | 0.6536 | 0.7355 | +0.0819 |
+### Đối Chiếu Hai Run Đánh Giá: Run Lịch Sử vs. Run Reconciled (Hiện Hành)
+- **Run Lịch Sử** ([`three_class_pilot_evaluation_receipt.json`](./three_class_pilot_evaluation_receipt.json), SHA-256 bound): Inner CV sample-level chưa gom nhóm, scaler toàn cục, nhiệt độ over-smoothed ($T_v = 8.3734, T_f = 8.1321$).
+- **Run Reconciled (Hiện Hành)** ([`three_class_pilot_evaluation_receipt_reconciled.json`](./three_class_pilot_evaluation_receipt_reconciled.json), SHA-256 bound): Inner `StratifiedGroupKFold(5)` gom nhóm theo `source_group_id`, scaler cô lập từng inner fold, nhiệt độ out-of-fold chuẩn tắc ($T_v = 5.9818, T_f = 5.9577$). **Kết luận hiện hành sử dụng số liệu Reconciled**.
 
-### Ma trận Nhầm lẫn (Confusion Matrix 3×3)
+| Chỉ số Đánh Giá | Baseline 1: Visual-Only (576-D) | Baseline 2: Visual + DSP (592-D) | Chênh Lệch ($\Delta = \text{B2} - \text{B1}$) | Ghi chú & Ranh giới |
+| :--- | :---: | :---: | :---: | :--- |
+| **Macro-F1** (Khóa Outer) | **0.5086** | **0.5385** | **+0.0298** | +2.98 điểm phần trăm (đồng nhất 100% giữa hai run) |
+| **Balanced Accuracy** | **0.4982** | **0.5238** | **+0.0256** | +2.56 điểm phần trăm (đồng nhất 100% giữa hai run) |
+| **Multiclass Brier Score (Reconciled)** | **0.6002** | **0.5711** | **-0.0291** | Thấp hơn là tốt hơn (Lịch sử: 0.5841 vs 0.5618) |
+| **Multiclass Top-Class ECE (Reconciled)** | **0.1003** | **0.0865** | **-0.0138** | Thấp hơn là tốt hơn (Lịch sử: 0.0466 vs 0.0780) |
+| - F1 `authentic` ($n=91$) | 0.4108 | 0.4409 | +0.0301 | +3.01 điểm phần trăm |
+| - F1 `ai_edited` ($n=91$) | 0.4615 | 0.4390 | -0.0225 | -2.25 điểm phần trăm |
+| - F1 `fully_generated` ($n=91$) | 0.6536 | 0.7355 | +0.0819 | +8.19 điểm phần trăm |
+
+### Ma trận Nhầm lẫn (Confusion Matrix 3×3) — Đồng nhất Cả Hai Run
 
 - **Baseline 1 (Visual-Only)**:
   ```
@@ -113,20 +117,19 @@ Tuân thủ nghiêm ngặt **Quy tắc trung thực kỹ thuật và nghiên c�
 
 ---
 
-## 6. Đánh giá Chẩn đoán Nguồn (Source Control Cohort, $N=341$)
+## 6. Đánh giá Chẩn đoán Nguồn (ImageNet Authentic Control Cohort, $N=341$)
 
-Đánh giá riêng biệt trên 341 ảnh ImageNet authentic (`nature`), hoàn toàn không tham gia huấn luyện hay chọn ngưỡng:
+Đánh giá riêng biệt trên 341 ảnh ImageNet authentic (`nature_control_pilot`, nhãn 0 từ Tiny-GenImage validation shards; không suy diễn ngữ nghĩa thuần túy từ tên thư mục `nature`), hoàn toàn không tham gia huấn luyện hay chọn ngưỡng:
 
 | Mô hình | Số ảnh Đúng (Authentic) | Nhầm `ai_edited` | Nhầm `fully_generated` | Tổng Nhầm AI | **False Positive AI Rate** |
 | :--- | :---: | :---: | :---: | :---: | :---: |
 | **Visual-Only** | 111 / 341 | 106 | 124 | 230 | **67.45%** |
 | **Visual + DSP** | 109 / 341 | 112 | 120 | 232 | **68.04%** |
 
-### Ý nghĩa Khoa học & Vạch trần Shortcut Phân phối Nguồn
-1. **Source bias nghiêm trọng**: Khi chuyển từ miền dữ liệu huấn luyện (MS-COCO) sang miền dữ liệu khác (ImageNet nature), tỷ lệ báo động giả AI lên tới **~67–68%**.
-2. **Domain Shortcut**: Mô hình phân loại 3 lớp siêu nhẹ dựa trên backbone đông lạnh bị phụ thuộc nặng nề vào các đặc trưng phân phối bối cảnh của dataset gốc (COCO vs ImageNet) hơn là nhận diện thuần túy dấu vết tạo sinh/chỉnh sửa của AI.
-3. **Bất đối xứng nén ảnh**: Ảnh COCO/TGIF được đánh giá ở định dạng PNG không nén, trong khi ảnh ImageNet mang dấu vết nén JPEG ban đầu của máy ảnh số. Dấu vết nén này tạo ra shortcut tần số khiến bộ phân loại nhầm lẫn với AI inpainting/generation.
-4. **Kết luận an toàn ứng dụng**: Tuyệt đối **không đưa mô hình 3 lớp này lên web demo cho người dùng tải ảnh tự do**; việc giữ nguyên bản demo nhị phân FP32 với 4 banner ranh giới nghiên cứu là quyết định kiến trúc chính xác.
+### Các Giả Thuyết Khoa Học Cần Kiểm Tra Về Hiện Tượng Báo Động Giả
+1. **Giả thuyết Shortcut Nguồn / Semantic Domain Shift (Cần kiểm tra thực nghiệm)**: Khi chuyển từ tập huấn luyện (MS-COCO val2017) sang một tập ảnh authentic khác (ImageNet authentic), tỷ lệ báo động giả AI lên tới **~67–68%**. Giả thuyết đặt ra là mô hình phân loại 3 lớp siêu nhẹ dựa trên backbone đông lạnh có thể đã học đặc trưng phân phối bối cảnh của dataset gốc (COCO vs ImageNet) hơn là nhận diện thuần túy dấu vết AI. Đây là giả thuyết nghiên cứu cần được kiểm tra bằng thực nghiệm can thiệp bổ sung dữ liệu (Ablation A0 vs A1), không phải nguyên nhân đã chứng minh.
+2. **Giả thuyết Bất Đối Xứng Nén Ảnh (Cần kiểm tra thực nghiệm)**: Ảnh COCO/TGIF được lưu ở định dạng PNG không nén, trong khi ảnh ImageNet mang dấu vết nén JPEG ban đầu từ cảm biến. Giả thuyết đặt ra là dấu vết nén này tạo ra shortcut tần số khiến bộ phân loại nhầm lẫn với AI inpainting/generation. Cần kiểm tra độ nhạy nén qua tái nén có kiểm soát trước khi đưa ra kết luận khẳng định.
+3. **Kết luận an toàn ứng dụng**: Dù nguyên nhân cơ chế là gì, tỷ lệ báo động giả ~67–68% trên ảnh ImageNet authentic khẳng định tuyệt đối **không đưa mô hình 3 lớp này lên web demo cho người dùng tải ảnh tự do**; việc giữ nguyên bản demo nhị phân FP32 với 4 banner ranh giới nghiên cứu là quyết định kiến trúc chính xác.
 
 ---
 
@@ -211,25 +214,108 @@ Thực hiện phân tích khám phá post-hoc có kiểm soát qua script [`run_
 
 ### 9.2. Phân Tích Cơ Chế Lỗi và Hiện Tượng Nhầm Lẫn
 
-1. **Nhầm lẫn sâu giữa `authentic` và `ai_edited`**:
-   - Trên holdout nguyên bản, có tới **46/91 ảnh authentic** bị phân loại nhầm thành `ai_edited` (cho cả visual và visual+DSP).
+1. **Nhầm lẫn giữa `authentic` và `ai_edited`**:
+   - Trên holdout nguyên bản, có **46/91 ảnh authentic** bị phân loại nhầm thành `ai_edited` (cho cả visual và visual+DSP).
    - Ngược lại, có **38/91 ảnh ai_edited** (visual) và **43/91 ảnh ai_edited** (fusion) bị nhận định nhầm thành `authentic`.
    - Trong khi đó, nhầm lẫn `authentic` $\to$ `fully_generated` là rất thấp: chỉ 7/91 (visual) và 4/91 (fusion).
-   - **Nguyên nhân cốt lõi**: TGIF inpainting chỉ thay thế một vùng cục bộ (1% đến 50% diện tích canvas); phần lớn diện tích còn lại giữ nguyên pixel gốc từ MS-COCO. Do MobileNetV3 áp dụng Global Average Pooling (GAP) trên toàn bộ canvas, các đặc trưng toàn cục bị chi phối áp đảo bởi bối cảnh COCO, khiến vector đặc trưng của ảnh inpainting rất gần với ảnh authentic.
-2. **Đo lường Thay Đổi Xác Suất theo Cặp Nguồn ($\Delta P(\text{ai\_edited})$)**:
-   - Trên 91 cặp holdout (`authentic` và `ai_edited` có cùng `source_group_id` COCO):
-     * Visual-Only: Giá trị trung bình của $[P(\text{ai\_edited} \mid \text{edited}) - P(\text{ai\_edited} \mid \text{auth})]$ chỉ là **$+0.0180$** (chỉ có 54/91 cặp có mức tăng dương, tức 59.34%).
-     * Visual+DSP: Giá trị trung bình chỉ là **$+0.0242$** (56/91 cặp có mức tăng dương, tức 61.54%).
-     * Như vậy, trong gần **40% số cặp holdout**, việc inpainting vùng ảnh bằng SD2 thậm chí không làm tăng xác suất dự đoán `ai_edited` của mô hình.
-3. **Phân Tích Source Control & Bóc Tách Bản Chất Shortcut**:
-   - Tỷ lệ False Positive AI trên 341 ảnh Nature control vẫn duy trì ở mức rất cao trên mọi điều kiện: 67.45% (original), 66.86% (Q95), 67.16% (Q75) và 62.17% (resize 0.5).
-   - **Kết luận khoa học quan trọng**: Việc áp dụng tái nén JPEG Q95 hoặc Q75 đồng nhất cho toàn bộ tập dữ liệu **không xóa bỏ được** tỷ lệ báo động giả cao của Nature control. Điều này chứng minh rằng sự khác biệt về nội dung ngữ nghĩa (semantic domain shift giữa ImageNet thiên nhiên và MS-COCO cảnh sinh hoạt) là yếu tố gây nhiễu chính yếu, hoạt động song song cùng với lịch sử nén.
-   - **Cảnh báo giới hạn**: Việc lưu ảnh dưới dạng PNG hoặc resize kích thước không xóa bỏ được lịch sử nén đã ghi nhận từ cảm biến máy ảnh. Đây là phân tích khám phá post-hoc, không phải kiểm định độc lập mới và tuyệt đối không được dùng để lựa chọn mô hình thắng cuộc.
+   - **Giả thuyết cơ chế (cần kiểm tra)**: TGIF inpainting chỉ thay thế một vùng cục bộ (1% đến 50% diện tích canvas); phần lớn diện tích còn lại giữ nguyên pixel gốc từ MS-COCO. Giả thuyết đặt ra là do MobileNetV3 áp dụng Global Average Pooling (GAP) trên toàn bộ canvas, các đặc trưng toàn cục có thể bị chi phối bởi bối cảnh nền COCO, khiến vector đặc trưng của ảnh inpainting rất gần với ảnh authentic. Đây là giả thuyết nghiên cứu kiến trúc, cần kiểm chứng đối sánh thay vì kết luận đã chứng minh.
+2. **Đo lường Thay Đổi Xác Suất theo Cặp Nguồn ($\Delta P(\text{ai\_edited})$) Từ Predictions Reconciled**:
+   - Tính toán trực tiếp trên 91 cặp holdout (`authentic` và `ai_edited` có cùng `source_group_id` COCO) từ tệp [`three_class_pilot_predictions_reconciled.json`](./three_class_pilot_predictions_reconciled.json) (không trộn lẫn với nhiệt độ over-smoothed cũ):
+     * Visual-Only (Reconciled $T_v = 5.9818$): Giá trị trung bình của $[P(\text{ai\_edited} \mid \text{edited}) - P(\text{ai\_edited} \mid \text{auth})]$ là **$+0.0218$** (trung vị $+0.0119$; 53/91 cặp có mức tăng dương, tức 58.24%). *(Số liệu lịch sử cũ $T=8.37$ là +0.0180, 54/91)*.
+     * Visual+DSP (Reconciled $T_f = 5.9577$): Giá trị trung bình là **$+0.0296$** (trung vị $+0.0190$; 55/91 cặp có mức tăng dương, tức 60.44%). *(Số liệu lịch sử cũ $T=8.13$ là +0.0242, 56/91)*.
+     * Cả hai mô hình đều cho thấy trong gần **40% số cặp holdout**, việc inpainting vùng ảnh bằng SD2 không làm tăng xác suất dự đoán `ai_edited`.
+3. **Phân Tích ImageNet Authentic Control Cohort & Bóc Tách Giả Thuyết Shortcut**:
+   - Tỷ lệ False Positive AI trên 341 ảnh ImageNet authentic control duy trì ở mức rất cao qua mọi điều kiện: 67.45% (original), 66.86% (Q95), 67.16% (Q75) và 62.17% (resize 0.5).
+   - **Quan sát thực nghiệm**: Việc áp dụng tái nén JPEG Q95 hoặc Q75 đồng nhất cho toàn bộ tập dữ liệu không xóa bỏ được tỷ lệ báo động giả cao của ImageNet authentic control.
+   - **Giả thuyết khoa học**: Sự khác biệt về phân phối bối cảnh và đối tượng (ImageNet vs MS-COCO) là một giả thuyết shortcut nguồn chính yếu, song hành cùng giả thuyết lịch sử nén. Tuy nhiên, không kết luận JPEG hay source shortcut là nguyên nhân duy nhất đã chứng minh chỉ từ false-positive rate. Đổi ảnh sang PNG hoặc resize không thể xóa bỏ lịch sử nén trước đó của cảm biến máy ảnh.
+   - **Cảnh báo giới hạn**: Đây là phân tích khám phá post-hoc, không phải kiểm định độc lập mới và tuyệt đối không được dùng để lựa chọn mô hình thắng cuộc.
 4. **Hiện vật kiểm toán robustness**: Thư mục [`research/evidence/three_class_preparation/robustness/`](./robustness/) chứa đầy đủ 4 tệp raw predictions và biên nhận [`three_class_robustness_audit_receipt.json`](./robustness/three_class_robustness_audit_receipt.json).
+
 
 ---
 
-## 10. Đối Chiếu Dung Lượng Tải và Hiện Vật Dữ Liệu (Section E)
+## 10. Thực Nghiệm Ablation Đa Dạng Hóa Nguồn Ảnh Authentic (A0 vs A1)
+
+Thực hiện theo Protocol Amendment v2.1.0 ([`PROTOCOL_AMENDMENT_V2.1.0.md`](./PROTOCOL_AMENDMENT_V2.1.0.md)) nhằm kiểm tra khả năng giảm báo động giả trên tập đối chứng ImageNet authentic thông qua việc bổ sung nguồn ảnh authentic vào tập huấn luyện, giữ nguyên hướng nghiên cứu RQ1–RQ2 lightweight Visual-only vs Visual + DSP.
+
+> **Lưu ý phương pháp luận**: Đây là can thiệp bổ sung dữ liệu nguồn thật cùng cách cân bằng trọng số mẫu. Thực nghiệm này **không chứng minh** đã loại bỏ toàn bộ source confounding. Cả tập holdout và tập đối chứng đã được quan sát trong các lượt trước; đây là thực nghiệm phát triển tiếp nối có kiểm soát, không phải kiểm định độc lập mới.
+
+### 10.1. Thiết Kế & Kiểm Soát Dữ Liệu
+- **Tập bổ sung**: 250 ảnh ImageNet authentic mới trích xuất từ các tệp parquet có sẵn trên LOCAL ([`imagenet_authentic_train_manifest.json`](./imagenet_authentic_train_manifest.json)). 0% tải mạng mới; footprint tăng thêm ~39.2 MB (tổng lưu trữ an toàn trong ngân sách 5 GiB).
+- **Cách ly tuyệt đối**: 0 trùng lặp byte hash (SHA-256) hoặc source ID với 341 ảnh đối chứng ImageNet, 273 ảnh holdout, Locked-Test và TGIF N=400.
+- **Hai điều kiện dữ liệu**:
+  * **A0 (Pilot Baseline)**: 250 auth COCO, 250 edit TGIF, 250 gen SD1.5 (tổng 750 mẫu, weight 1.0).
+  * **A1 (Supplemented)**: A0 + 250 auth ImageNet mới (tổng 1,000 mẫu).
+  * **Trọng số mẫu A1**: auth COCO (0.5), auth ImageNet (0.5), edit TGIF (1.0), gen SD1.5 (1.0). Tổng trọng số mỗi lớp đạt chính xác 250.0 (tỷ lệ lớp hiệu dụng bảo toàn 1:1:1).
+- **Quy trình fitting**: Grouped inner CV (5-fold, 750 groups độc lập) theo `source_group_id`; `StandardScaler` fit riêng trong từng fold; hiệu chuẩn nhiệt độ ($T_{v,a1} = 5.1813, T_{f,a1} = 4.9391$) chỉ dựa trên OOF logits hợp lệ.
+
+### 10.2. Bảng Đối Sánh Tổng Hợp Bốn Cấu Hình (Original & JPEG Q75)
+
+#### Bảng 1: Kết Quả Trên Ảnh Gốc (Original Canvas)
+
+| Tiêu Chí Đánh Giá | A0-Visual (576-D) | A0-Fusion (592-D) | A1-Visual (576-D) | A1-Fusion (592-D) |
+| :--- | :---: | :---: | :---: | :---: |
+| **Dữ liệu huấn luyện** | A0 ($N=750$) | A0 ($N=750$) | A1 ($N=1,000$) | A1 ($N=1,000$) |
+| **Nhiệt độ hiệu chuẩn ($T$)** | 5.9818 | 5.9577 | 5.1813 | 4.9391 |
+| **Holdout Macro-F1** | 0.5086 | **0.5385** | 0.4721 | 0.4887 |
+| **Holdout Balanced Accuracy** | 0.4982 | **0.5238** | 0.4652 | 0.4762 |
+| **Holdout Multiclass Brier** | 0.6002 | **0.5711** | 0.6586 | 0.6444 |
+| **Holdout Top-Class ECE** | 0.1003 | **0.0865** | 0.1613 | 0.1575 |
+| - *Authentic F1 (P / R)* | 0.4108 (0.40 / 0.42) | 0.4409 (0.43 / 0.45) | 0.4444 (0.37 / 0.55) | 0.4384 (0.38 / 0.53) |
+| - *AI-Edited F1 (P / R)* | 0.4615 (0.41 / 0.53) | 0.4390 (0.39 / 0.49) | 0.4526 (0.43 / 0.47) | 0.4456 (0.42 / 0.47) |
+| - *Fully-Generated F1 (P / R)* | 0.6536 (0.81 / 0.55) | **0.7355** (0.89 / 0.63) | 0.5191 (0.85 / 0.37) | 0.5821 (0.91 / 0.43) |
+| **Control False-Positive AI Rate** ($N=341$) | 67.45% (230/341) | 68.04% (232/341) | **35.78%** (122/341) | **31.09%** (106/341) |
+| - *Số lượng gán đúng Authentic* | 111 / 341 | 109 / 341 | 219 / 341 | **235 / 341** |
+| - *Báo động nhầm ai_edited* | 106 | 112 | 71 | 69 |
+| - *Báo động nhầm fully_generated* | 124 | 120 | 51 | 37 |
+| **Paired $\Delta P(\text{ai\_edited})$** ($N=91$) | +0.0218 (53/91 > 0) | +0.0296 (55/91 > 0) | +0.0148 (54/91 > 0) | +0.0168 (53/91 > 0) |
+
+#### Bảng 2: Độ Nhạy Dưới Nén JPEG Q75 (Robustness Canvas)
+
+| Tiêu Chí Đánh Giá | A0-Visual (Q75) | A0-Fusion (Q75) | A1-Visual (Q75) | A1-Fusion (Q75) |
+| :--- | :---: | :---: | :---: | :---: |
+| **Holdout Macro-F1** | 0.5163 | 0.6015 | 0.4806 | **0.6046** |
+| **Holdout Balanced Accuracy** | 0.5055 | 0.6007 | 0.4725 | **0.5934** |
+| **Holdout Multiclass Brier** | 0.5995 | **0.4789** | 0.6577 | 0.5009 |
+| **Holdout Top-Class ECE** | 0.1057 | **0.0582** | 0.1383 | 0.1083 |
+| - *Authentic F1* | 0.4375 | 0.4471 | 0.4474 | **0.4923** |
+| - *AI-Edited F1* | 0.4577 | 0.4796 | 0.4632 | 0.4731 |
+| - *Fully-Generated F1* | 0.6536 | **0.8778** | 0.5313 | 0.8485 |
+| **Control False-Positive AI Rate** ($N=341$) | 67.16% (229/341) | 67.16% (229/341) | 36.36% (124/341) | **31.38%** (107/341) |
+
+### 10.3. Phân Tích Thống Kê & Khoảng Tin Cậy (Bootstrap 10,000 Replicates)
+
+Phân tích Paired Source-Cluster Bootstrap (10,000 lần lấy mẫu theo nhóm nguồn, hạt giống `20261011`):
+1. **Hiệu ứng can thiệp dữ liệu ($A1 - A0$) trên Holdout Macro-F1**:
+   - Visual-only: $\Delta = -0.0365$ ($95\%\text{ CI}: [-0.0816, +0.0080]$, $P(\Delta > 0) = 5.43\%$).
+   - Visual + DSP: $\Delta = -0.0498$ ($95\%\text{ CI}: [-0.0944, -0.0044]$, $P(\Delta > 0) = 1.65\%$).
+   $\to$ Trên tập holdout ban đầu, việc bổ sung nguồn authentic dẫn đến suy giảm Macro-F1 có ý nghĩa thống kê (do mô hình dịch chuyển sang trạng thái bảo thủ, giảm recall trên lớp generation).
+2. **Hiệu ứng đặc trưng DSP ($\text{Fusion} - \text{Visual}$)**:
+   - Trong điều kiện A0: $\Delta = +0.0299$ ($95\%\text{ CI}: [-0.0068, +0.0687]$, $P(\Delta > 0) = 94.35\%$).
+   - Trong điều kiện A1: $\Delta = +0.0166$ ($95\%\text{ CI}: [-0.0168, +0.0514]$, $P(\Delta > 0) = 83.82\%$).
+   $\to$ Đặc trưng DSP tiếp tục duy trì ưu thế dương nhất quán so với Visual-only sau can thiệp dữ liệu.
+3. **Hiệu ứng giảm báo động giả trên ImageNet Authentic Control**:
+   - Visual-only: Báo động giả giảm từ $67.45\%$ xuống $35.78\%$ ($\Delta = -31.67\%$).
+   - Visual + DSP: Báo động giả giảm từ $68.04\%$ xuống $31.09\%$ ($\Delta = -36.95\%$).
+
+### 10.4. Giải Quyết Bốn Câu Hỏi Nghiên Cứu Cốt Lõi
+
+1. **Bổ sung authentic ImageNet có giảm false positives trên control không?**
+   - **Có, giảm rất mạnh và dứt khoát**. Tỷ lệ false-positive AI giảm hơn một nửa (từ ~68% xuống ~31% ở mô hình fusion). Số lượng mẫu ImageNet authentic nhận diện chính xác tăng vọt từ 109 lên 235 trên tổng số 341 mẫu. Điều này xác nhận rằng một phần lớn báo động giả ban đầu xuất phát từ sự thiếu hụt phân phối nguồn ảnh authentic trong pha huấn luyện.
+2. **Có làm giảm khả năng nhận diện ai_edited hoặc fully_generated không?**
+   - **Có sự đánh đổi (trade-off) bất đối xứng**:
+     * Với `fully_generated` (SD1.5): Recall trên holdout giảm từ 62.64% xuống 42.86% (Fusion) và từ 54.95% xuống 37.36% (Visual). Do không gian authentic được mở rộng (bao quát cả ImageNet), mô hình trở nên "thận trọng" hơn và gán nhầm 35/91 ảnh SD1.5 sang nhãn authentic.
+     * Với `ai_edited` (TGIF SD2): Khả năng nhận diện ít bị ảnh hưởng tiêu cực; F1 dao động nhẹ ($0.4615 \to 0.4526$ ở visual, $0.4390 \to 0.4456$ ở fusion), recall đạt 47.25% (so với 49.45% ở A0).
+3. **DSP có lợi thêm sau can thiệp dữ liệu không?**
+   - **Có**. DSP cải thiện Macro-F1 thêm $+0.0166$ trên ảnh gốc ($P(\Delta > 0) = 83.82\%$), giảm thêm báo động giả control từ $35.78\%$ xuống $31.09\%$, và phát huy tác dụng vượt trội dưới điều kiện nén JPEG Q75 (nâng Macro-F1 từ $0.4806$ lên $0.6046$).
+4. **Bước tiếp theo cần cải thiện dữ liệu hay đặc trưng cục bộ?**
+   - **Cần ưu tiên đặc trưng cục bộ (patch-level / local frequency) trước, song hành cùng mở rộng dữ liệu generator**:
+     * Matrix nhầm lẫn cho thấy điểm nghẽn lớn nhất hiện tại của `ai_edited` là đặc trưng toàn cục 576-D (MobileNetV3 GAP) bị chi phối bởi nền thật của ảnh, khiến mô hình khó tách bạch inpainting diện tích nhỏ.
+     * Việc bổ sung dữ liệu authentic đã giải quyết được một nửa bài toán phân phối (giảm báo động giả từ 68% xuống 31%), nhưng muốn giảm tiếp dưới 15% mà không làm sụt giảm recall của generator thì bắt buộc phải có biểu diễn đặc trưng cục bộ hoặc patch forensics.
+
+---
+
+## 11. Đối Chiếu Dung Lượng Tải và Hiện Vật Dữ Liệu (Section E)
 
 Để đảm bảo tính trung thực tuyệt đối giữa các văn bản báo cáo và biên nhận tiếp nhận dữ liệu:
 
@@ -237,7 +323,7 @@ Thực hiện phân tích khám phá post-hoc có kiểm soát qua script [`run_
    - Con số "875.1 MB" trong các tóm tắt ban đầu chỉ phản ánh dung lượng của **Shard 0 và Shard 1** khi thực hiện đợt tải đầu tiên.
    - Sau khi tiếp nhận thêm Shard 2 (`validation-00002-of-00004.parquet`, 435,573,773 bytes) để trích xuất đủ 341 mẫu SD1.5, tổng dung lượng tải mạng thực tế được ghi nhận chính xác trong [`genimage_acquisition_receipt.json`](./genimage_acquisition_receipt.json) là:
      $$\text{Tổng byte tải} = 433,181,356 + 441,983,256 + 435,573,773 = \mathbf{1,310,738,385\text{ bytes}} \approx \mathbf{1.22\text{ GiB}} \le 2\text{ GiB}$$
-   - Tổng footprint lưu trữ mới trên đĩa: **1,513,097,660 bytes** (~1.41 GiB) $\le 5\text{ GiB}$.
+   - Tổng footprint lưu trữ mới trên đĩa: **1,552,278,924 bytes** (~1.45 GiB) $\le 5\text{ GiB}$.
 2. **Bảo toàn và Kế thừa Hiện Vật Lịch Sử**:
    - Toàn bộ các hiện vật lịch sử (`three_class_pilot_predictions.json`, `three_class_pilot_evaluation_receipt.json`, `source_control_evaluation_receipt.json`) được giữ nguyên vẹn 100%, không bị sửa đổi để khớp câu chữ.
    - Các hiện vật chuẩn hóa mới được liên kết minh bạch:
@@ -250,31 +336,40 @@ Thực hiện phân tích khám phá post-hoc có kiểm soát qua script [`run_
 
 ---
 
-## 11. Hiện Vật Xuất Bản & Minh Chứng Hoàn Chỉnh
+## 12. Hiện Vật Xuất Bản & Minh Chứng Hoàn Chỉnh
 
 - **Protocols & Amendments**:
-  * [`PROTOCOL_AMENDMENT_V2.0.0.md`](./PROTOCOL_AMENDMENT_V2.0.0.md)
+  * [`PROTOCOL_AMENDMENT_V2.0.0.md`](./PROTOCOL_AMENDMENT_V2.0.0.md) (Pilot amendment)
+  * [`PROTOCOL_AMENDMENT_V2.1.0.md`](./PROTOCOL_AMENDMENT_V2.1.0.md) (Ablation A0 vs A1 amendment)
   * [`NEXT_STEPS_SOURCE_CONFOUNDING_PROPOSAL.md`](./NEXT_STEPS_SOURCE_CONFOUNDING_PROPOSAL.md)
 - **Manifests & Splits**:
   * [`three_class_pilot_manifest.csv`](./three_class_pilot_manifest.csv) (1,023 records)
   * [`three_class_pilot_splits.json`](./three_class_pilot_splits.json) (Splits lock & audit)
   * [`source_control_cohort_manifest.json`](./source_control_cohort_manifest.json) (341 controls)
+  * [`imagenet_authentic_train_manifest.json`](./imagenet_authentic_train_manifest.json) (250 authentic ImageNet supplement)
 - **Models & Features**:
-  * [`three_class_visual_only_model.json`](./three_class_visual_only_model.json)
-  * [`three_class_visual_dsp_model.json`](./three_class_visual_dsp_model.json)
-  * `data/research/cache/three_class_features.npz` (2.82 MB)
+  * [`three_class_visual_only_model.json`](./three_class_visual_only_model.json) (A0 Visual)
+  * [`three_class_visual_dsp_model.json`](./three_class_visual_dsp_model.json) (A0 Fusion)
+  * [`three_class_visual_only_a1_model.json`](./three_class_visual_only_a1_model.json) (A1 Visual)
+  * [`three_class_visual_dsp_a1_model.json`](./three_class_visual_dsp_a1_model.json) (A1 Fusion)
+  * `data/research/cache/three_class_features.npz` (2.82 MB, A0 features)
+  * `data/research/cache/three_class_ablation_features.npz` (5.40 MB, A1 features & sample weights)
+  * [`ablation_feature_extraction_receipt.json`](./ablation_feature_extraction_receipt.json)
 - **Audited Predictions & Evaluation Receipts**:
-  * [`three_class_pilot_predictions.json`](./three_class_pilot_predictions.json) (Raw holdout + control)
+  * [`three_class_pilot_predictions.json`](./three_class_pilot_predictions.json) (Historical raw holdout + control)
   * [`three_class_pilot_evaluation_receipt.json`](./three_class_pilot_evaluation_receipt.json) (Historical receipt)
   * [`three_class_pilot_evaluation_receipt_reconciled.json`](./three_class_pilot_evaluation_receipt_reconciled.json) (Reconciled CV receipt)
   * [`three_class_pilot_predictions_reconciled.json`](./three_class_pilot_predictions_reconciled.json) (Reconciled predictions)
   * [`three_class_predictions_audit_receipt.json`](./three_class_predictions_audit_receipt.json) (Independent prediction audit)
   * [`source_control_evaluation_receipt.json`](./source_control_evaluation_receipt.json) (Diagnostic findings)
+  * [`three_class_ablation_evaluation_receipt.json`](./three_class_ablation_evaluation_receipt.json) (A0 vs A1 full 4-condition receipt)
+  * [`three_class_ablation_a1_predictions.json`](./three_class_ablation_a1_predictions.json) (A1 standalone predictions)
 - **Robustness Post-Hoc Artifacts**:
   * [`robustness/three_class_robustness_audit_receipt.json`](./robustness/three_class_robustness_audit_receipt.json)
   * [`robustness/three_class_predictions_original.json`](./robustness/three_class_predictions_original.json)
   * [`robustness/three_class_predictions_jpeg_q95.json`](./robustness/three_class_predictions_jpeg_q95.json)
   * [`robustness/three_class_predictions_jpeg_q75.json`](./robustness/three_class_predictions_jpeg_q75.json)
   * [`robustness/three_class_predictions_resize_0.5.json`](./robustness/three_class_predictions_resize_0.5.json)
-- **Test Suite**:
+- **Test Suites**:
   * [`ml/tests/test_three_class_pilot.py`](../../../ml/tests/test_three_class_pilot.py) (8/8 PASS)
+  * [`ml/tests/test_three_class_ablation.py`](../../../ml/tests/test_three_class_ablation.py) (6/6 PASS)
