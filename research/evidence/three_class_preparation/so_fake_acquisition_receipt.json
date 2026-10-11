@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0.0",
+  "action": "ACQUIRE_SO_FAKE_PROBE_SHARD",
+  "timestamp_utc": "2026-10-11T12:26:30Z",
+  "source_repository": "saberzl/So-Fake-Set",
+  "source_url": "https://huggingface.co/datasets/saberzl/So-Fake-Set/resolve/main/data/validation-00000-of-00232.parquet",
+  "license": "CC-BY-NC-4.0 (as specified in So-Fake project / arXiv:2505.18660)",
+  "downloaded_file": {
+    "relative_path": "data/research/so_fake/validation-00000-of-00232.parquet",
+    "file_size_bytes": 496763723,
+    "sha256": "e69523915f809a06a904153a7518060abd5b4c81a0aad48f6ab2fc3d3db0c62a"
+  },
+  "network_budget_accounting": {
+    "historical_cumulative_network_bytes": 1310821762,
+    "bytes_downloaded_this_session": 496763723,
+    "session_network_budget_bytes": 786432000,
+    "session_network_remaining_bytes": 289668277,
+    "cumulative_network_bytes": 1807585485,
+    "total_network_budget_bytes": 2147483648,
+    "cumulative_network_remaining_bytes": 339898163,
+    "cumulative_network_budget_used_fraction": 0.8417
+  },
+  "disk_budget_accounting": {
+    "downloaded_shard_bytes": 496763723,
+    "total_disk_budget_bytes": 5368709120
+  },
+  "status": "ACQUISITION_SUCCESS"
+}

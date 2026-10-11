@@ -492,3 +492,135 @@ Phân tích Paired Source-Cluster Bootstrap (10,000 replicates theo nhóm nguồ
    - Biểu diễn Local Quadrant DSP 48-D **chưa đủ bằng chứng thống kê để khẳng định là giải pháp ưu việt** (cả hai 95% bootstrap CI đều cắt 0; kết luận strictly `INCONCLUSIVE`).
    - Mặc dù có tín hiệu hỗ trợ phát hiện edit diện tích nhỏ, việc chia lưới quadrant cố định không thể giải quyết triệt để sự mất cân xứng phân phối nguồn (domain confounding giữa COCO và ImageNet).
    - **Khuyến nghị**: **Tạm dừng mở rộng đặc trưng cục bộ phức tạp hơn (ví dụ sliding window hoặc fine grid)**. Thay vào đó, **ưu tiên nguồn lực vào thiết kế dữ liệu đối chứng nhân tố (factorial design 2×2)** theo [`NEXT_STEPS_SOURCE_CONFOUNDING_PROPOSAL.md`](./NEXT_STEPS_SOURCE_CONFOUNDING_PROPOSAL.md) để phân tách dứt điểm domain semantic bias khỏi format/compression shortcut trước khi đưa ra bất kỳ kết luận kiến trúc mới nào.
+
+---
+
+## 14. Đánh Giá Khả Năng Tổng Quát Hóa Ngoại Lai (External Exploratory Generalization Probe trên So-Fake-Set)
+
+### 14.1. Mục Tiêu & Giao Thức Đóng Băng Đánh Giá (Zero-Tuning Protocol)
+
+Nhằm kiểm định khả năng tổng quát hóa của các mô hình phân loại ba lớp (`authentic`, `ai_edited`, `fully_generated`) đã phát triển trên phân phối dữ liệu hoàn toàn độc lập bên ngoài phòng thí nghiệm, một cuộc khảo sát thăm dò ngoại lai (*external exploratory probe*) được thực hiện trên dataset cộng đồng chính thức `saberzl/So-Fake-Set` (arXiv:2505.18660).
+
+**Quy tắc bất biến khóa trước**:
+1. **Tuyệt đối không tinh chỉnh**: Không huấn luyện lại (no retraining), không điều chỉnh trọng số (no refitting), không hiệu chuẩn lại nhiệt độ (no recalibration), không quét ngưỡng phân loại (no threshold tuning).
+2. **Không chọn mô hình theo kết quả probe**: Toàn bộ 6 cấu hình mô hình được đăng ký, niêm phong mã băm SHA-256 và đóng băng trước khi thực hiện bất kỳ phép đo dự đoán nào trên tập ngoài.
+3. **Phạm vi khoa học trung thực**: Xác định đây là một cuộc thăm dò thăm dò ngoại lai quy mô nhỏ ($N=300$, cân bằng 100 mẫu/lớp), quan hệ nguồn chưa thể đối chiếu toàn diện (unverified source independence); không tuyên bố đánh giá toàn bộ tập So-Fake hay kết luận tiền đăng ký hồi tố.
+
+---
+
+### 14.2. Tiếp Nhận Dữ Liệu Có Kiểm Soát & Kế Toán Ngân Sách Mạng Thực Dùng
+
+- **Khảo sát ban đầu**: `saberzl/So-Fake-OOD` chứa các shard parquet ~2.77 GiB (> 750 MiB hạn mức phiên) $\to$ quyết định dừng tiếp cận OOD nguyên khối để tuân thủ ngân sách.
+- **Thăm dò footer HTTP Range**: Thăm dò metadata shard validation đầu tiên của `saberzl/So-Fake-Set` (`data/validation-00000-of-00232.parquet`) tiêu tốn 81.4 KiB, xác định kích thước shard là 496,763,723 bytes (473.75 MiB $\le$ 750 MiB ngân sách phiên), chứa 1,016 mẫu với 441 `full_synthetic`, 316 `real`, và 259 `tampered`.
+- **Tải file thực tế**: Thực hiện tải có giám sát qua `scripts/research/acquire_so_fake_probe_shard.py`, lưu tại `data/research/so_fake/validation-00000-of-00232.parquet` (SHA-256: `e69523915f809a06a904153a7518060abd5b4c81a0aad48f6ab2fc3d3db0c62a`).
+- **Kế toán ngân sách mạng** (biên nhận: [`so_fake_acquisition_receipt.json`](./so_fake_acquisition_receipt.json)):
+  * Dung lượng chuyển tải phiên này: **496,763,723 bytes (473.75 MiB)** / hạn mức 786,432,000 bytes (750 MiB) $\to$ **ĐẠT (dư 276.25 MiB)**.
+  * Lũy kế mạng toàn bộ dự án: **1,807,585,485 bytes (1.6834 GiB)** / hạn mức 2,147,483,648 bytes (2.00 GiB) $\to$ **ĐẠT (dư 324.15 MiB / 15.83%)**.
+  * Footprint đĩa bổ sung: Parquet shard (473.8 MB) + 300 ảnh trích xuất (142.1 MB) + feature cache (1.97 MB) $\approx 618$ MB $\le 5$ GiB hạn mức.
+
+---
+
+### 14.3. Đóng Băng Model Registry, Nhiệt Độ Hiệu Chuẩn & Đính Chính Sai Số Lịch Sử
+
+Tạo và niêm phong [`locked_models_registry.json`](./locked_models_registry.json) gồm 6 mô hình:
+1. **A0-global** (592-D, $T = 5.9577$, SHA-256: `0343cb9d...`): Baseline kết hợp Visual 576-D + Global DSP 16-D trên điều kiện A0 ($N=750$).
+2. **A0-local** (640-D, $T = 6.0142$, SHA-256: `27498992...`): Visual 576-D + Global DSP 16-D + Local Quadrant DSP 48-D trên điều kiện A0 ($N=750$).
+3. **A1-global** (592-D, $T = 4.9391$, SHA-256: `77ee17b4...`): Visual 576-D + Global DSP 16-D trên điều kiện A1 (bổ sung 700 ảnh authentic ImageNet, $N=1450$).
+4. **A1-local** (640-D, $T = 5.1689$, SHA-256: `21fd5aa1...`): Visual 576-D + Global DSP 16-D + Local Quadrant DSP 48-D trên điều kiện A1 ($N=1450$).
+5. **A0-visual** (576-D, $T = 5.9818$, SHA-256: `d2c971fb...`): Đối chứng Visual-only trên điều kiện A0 ($N=750$).
+6. **A1-visual** (576-D, $T = 5.1813$, SHA-256: `75658d96...`): Đối chứng Visual-only trên điều kiện A1 ($N=1450$).
+
+**Đính chính các sai sót ghi chép lịch sử (Documentation Reconciliations)**:
+- **Sai số nhiệt độ hiệu chuẩn ($T$) giữa các báo cáo**:
+  * Điều kiện A0-global: Báo cáo Ablation v2.1 ghi $T_{\text{fus}} = 5.8907$ (fit trên OOF đơn scaler), trong khi Model Artifact chính thức `three_class_visual_dsp_model.json` ghi $T = 5.9577$ (fit trên OOF kép scaler CV). Tương tự A1-global: Báo cáo v2.1 ghi $T = 5.1400$, artifact chính thức ghi $T = 4.9391$.
+  * Quyết định: Khóa đúng giá trị nhiệt độ trong artifact JSON vật lý đã lưu trên đĩa ($T_{\text{A0,glob}} = 5.9577$, $T_{\text{A1,glob}} = 4.9391$), bảo tồn nguyên vẹn provenance và không refit hồi tố.
+- **Sai số làm tròn $\Delta(\text{A0-local} - \text{A0-global})$**:
+  * Macro-F1 A0-local là 0.5552, A0-global là 0.5385. Phép trừ làm tròn hiển thị chính xác là $+0.0167$ (+1.67 điểm phần trăm). Ghi nhận trước đây là $+0.0168$ là do phép trừ float thô trước khi định dạng chuỗi.
+
+---
+
+### 14.4. Kiểm Toán Cách Ly Dữ Liệu & Đặc Điểm Cohort Ngoại Lai (N=300)
+
+- **Quy tắc chọn mẫu**: Rút trích cố định theo seed 42 qua `scripts/research/extract_and_audit_so_fake_cohort.py`, thu được đúng 100 mẫu/lớp ($N=300$ tổng cộng):
+  * `real` $\to$ `authentic` ($n=100$)
+  * `tampered` $\to$ `ai_edited` ($n=100$)
+  * `full_synthetic` $\to$ `fully_generated` ($n=100$)
+- Toàn bộ 300 ảnh được giải nén lossless sang định dạng PNG tại `data/research/so_fake/images/`, vượt qua 100% kiểm tra Pillow RGB decode (manifest: [`so_fake_probe_manifest.json`](./so_fake_probe_manifest.json)).
+- **Kiểm toán cách ly độc lập** (receipt: [`so_fake_isolation_audit.json`](./so_fake_isolation_audit.json)):
+  * Đối soát mã băm SHA-256 của 300 mẫu probe với toàn bộ các tập dữ liệu nội bộ: tập huấn luyện ba lớp ($N=1450$), tập holdout phát triển ($N=273$), tập authentic controls (Nature & ImageNet, $N=741$), 343 nguồn niêm phong Locked-Test nhị phân, và 400 nguồn niêm phong TGIF nhị phân.
+  * Kết quả: **`ISOLATION_AUDIT_PASS`** — 0 trường hợp trùng lặp (collision_count = 0).
+
+---
+
+### 14.5. Bảng Kết Quả Đánh Giá Tổng Hợp Trên So-Fake Probe (N=300)
+
+| Mô hình / Cấu hình | Đặc trưng | Macro-F1 | Balanced Acc | Multiclass Brier | Top-Class ECE | Báo động giả trên Authentic ($N=100$) | Ma trận nhầm lẫn $[A, E, G]$ |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **A0-global** (Baseline) | 592-D | **0.3551** | 0.3567 | 0.8101 | 0.2479 | 57.0% (57/100: 41 edit, 16 gen) | $[[43, 41, 16], [37, 35, 28], [36, 35, 29]]$ |
+| **A0-local** (Probe) | 640-D | 0.3459 | 0.3467 | 0.8151 | 0.2590 | 63.0% (63/100: 46 edit, 17 gen) | $[[37, 46, 17], [34, 38, 28], [38, 33, 29]]$ |
+| **A1-global** (Supplem.) | 592-D | 0.3230 | 0.3500 | 0.8498 | 0.3072 | 35.0% (35/100: 25 edit, 10 gen) | $[[65, 25, 10], [57, 20, 23], [48, 32, 20]]$ |
+| **A1-local** (Probe) | 640-D | 0.3027 | 0.3300 | 0.8579 | 0.3139 | 38.0% (38/100: 28 edit, 10 gen) | $[[62, 28, 10], [58, 19, 23], [54, 28, 18]]$ |
+| **A0-visual** (Control) | 576-D | 0.3487 | **0.3667** | **0.7620** | **0.2429** | 53.0% (53/100: 46 edit, 7 gen) | $[[47, 46, 7], [45, 47, 8], [40, 44, 16]]$ |
+| **A1-visual** (Control) | 576-D | 0.3315 | **0.3667** | 0.8036 | 0.2723 | **30.0% (30/100: 27 edit, 3 gen)** | $[[70, 27, 3], [72, 25, 3], [52, 33, 15]]$ |
+
+*Ghi chú chi tiết ma trận nhầm lẫn: Hàng thể hiện Ground Truth $[A=\text{authentic}, E=\text{ai\_edited}, G=\text{fully\_generated}]$, Cột thể hiện nhãn dự đoán tương ứng.*
+
+---
+
+### 14.6. Kiểm Định Ghép Cặp Bootstrap Phân Cụm Nguồn (10,000 Replicates)
+
+Thực hiện kiểm định ghép cặp 10,000 lần lấy mẫu lại có hoàn lại theo phân cụm nguồn (`source_group_id`, seed 20261011):
+- **$\Delta(\text{A0-local} - \text{A0-global})$**: $-0.0092$, 95% CI: $[-0.0375, +0.0200]$, $P(\Delta^* > 0) = 28.12\%$ $\to$ **`INCONCLUSIVE`** (Khoảng tin cậy chứa 0; không có bằng chứng Local DSP cải thiện tổng quát hóa).
+- **$\Delta(\text{A1-local} - \text{A1-global})$**: $-0.0203$, 95% CI: $[-0.0452, +0.0042]$, $P(\Delta^* > 0) = 5.25\%$ $\to$ **`INCONCLUSIVE`** (Khuynh hướng suy giảm nhẹ khi bổ sung local DSP).
+- **$\Delta(\text{A0-global} - \text{A0-visual})$**: $+0.0064$, 95% CI: $[-0.0434, +0.0538]$, $P(\Delta^* > 0) = 59.45\%$ $\to$ **`INCONCLUSIVE`** (Không có sự khác biệt có ý nghĩa thống kê giữa Visual-only và DSP trên miền ngoại lai).
+- **$\Delta(\text{A1-global} - \text{A1-visual})$**: $-0.0085$, 95% CI: $[-0.0499, +0.0322]$, $P(\Delta^* > 0) = 35.18\%$ $\to$ **`INCONCLUSIVE`**.
+- **$\Delta(\text{A1-local} - \text{A0-local})$**: $-0.0432$, 95% CI: $[-0.0942, +0.0071]$, $P(\Delta^* > 0) = 4.84\%$ $\to$ **`INCONCLUSIVE`**.
+- **$\Delta(\text{A1-global} - \text{A0-global})$**: $-0.0321$, 95% CI: $[-0.0798, +0.0156]$, $P(\Delta^* > 0) = 9.22\%$ $\to$ **`INCONCLUSIVE`**.
+
+---
+
+### 14.7. Phân Tích Chi Tiết Theo Bộ Sinh & Công Cụ Can Thiệp (Generator Breakdown, $N \ge 5$)
+
+1. **`flux.1-dev`** ($N=59$, nhãn thực: `ai_edited`):
+   * A0-visual: Độ chính xác 45.8% (27/59), dự đoán 23 authentic, 9 generated.
+   * A0-local: Độ chính xác 28.8% (17/59), dự đoán 19 authentic, 22 generated.
+   * A0-global: Độ chính xác 27.1% (16/59), dự đoán 21 authentic, 22 generated.
+   * A1-global & A1-local: Độ chính xác chỉ đạt **16.9%** (10–11/59), dự đoán tới 48% mẫu là authentic.
+2. **`sdxl`** ($N=40$, nhãn thực: `ai_edited`):
+   * A0-local: Độ chính xác 40.0% (16/40).
+   * A0-global: Độ chính xác 37.5% (15/40).
+   * A0-visual: Độ chính xác 35.0% (14/40).
+   * A1-global & A1-local: Độ chính xác rơi mạnh xuống **17.5%** (7/40), dự đoán sai 31/40 mẫu thành authentic.
+3. **`latent_diffusion`** ($N=32$, nhãn thực: `ai_edited`):
+   * A0-global: Độ chính xác 46.9% (15/32).
+   * A0-local: Độ chính xác 43.8% (14/32).
+   * A1-global: Độ chính xác 28.1% (9/32).
+   * A1-local: Độ chính xác 25.0% (8/32).
+4. **`OpenForensics_fake`** ($N=9$, nhãn thực: `fully_generated`):
+   * A0-global: Độ chính xác 66.7% (6/9).
+   * A0-local & A1-global: Độ chính xác 55.6% (5/9).
+   * A0-visual: Độ chính xác **0.0%** (0/9, dự đoán 6 mẫu thành ai_edited, 3 authentic) $\to$ Trên nhóm này, các đặc trưng DSP đóng vai trò cứu vãn phát hiện cấu trúc tổng hợp mà biểu diễn visual thuần túy bị mất dấu.
+5. **`sdxl_lightning`** ($N=8$, nhãn thực: `fully_generated`):
+   * A0-visual: Độ chính xác 62.5% (5/8).
+   * A0-local: Độ chính xác 62.5% (5/8).
+   * A0-global: Độ chính xác 50.0% (4/8).
+   * A1-global & A1-local: Độ chính xác 25.0% (2/8).
+
+---
+
+### 14.8. Luận Giải Khoa Học, Giới Hạn & Đúng Một Bước Tiếp Theo
+
+1. **Suy giảm hiệu năng nghiêm trọng dưới biến dịch phân phối ngoài miền (Domain Shift Collapse)**:
+   - Trên tập holdout phát triển nội bộ, các mô hình đạt Macro-F1 $\approx 0.49 - 0.55$. Nhưng khi chuyển sang So-Fake probe, Macro-F1 của toàn bộ 6 mô hình sụt giảm mạnh về khoảng **$0.30 - 0.35$**, xấp xỉ mức đoán ngẫu nhiên ba lớp không thông tin ($0.3333$).
+   - Điều này chứng minh thực nghiệm rằng các bộ dò tuyến tính/logistic nhẹ (Lightweight Probes) học trên đặc trưng trích xuất sâu bị trói buộc rất chặt vào miền ngữ nghĩa và nén của dữ liệu huấn luyện (COCO / ImageNet / TGIF).
+2. **Local DSP Không Cứu Được Khả Năng Tổng Quát Hóa Ngoại Lai**:
+   - Cả trên điều kiện A0 ($\Delta = -0.0092$) lẫn A1 ($\Delta = -0.0203$), việc bổ sung đặc trưng 48-D Local Quadrant DSP không mang lại lợi thế tổng quát hóa; các khoảng tin cậy bootstrap đều phủ số 0.
+3. **Bản Chất Đánh Đổi Ranh Giới Quyết Định Của Điều Kiện A1**:
+   - Bổ sung authentic ImageNet vào huấn luyện (A1) tiếp tục phát huy hiệu quả kéo giảm báo động giả trên ảnh authentic ngoại lai: từ 53%–57% (A0) xuống còn **30%–35%** (A1), tức giảm 22–23 điểm phần trăm báo động giả.
+   - Tuy nhiên, sự dịch chuyển ranh giới này khiến mô hình trở nên quá thiên vị về lớp `authentic`, dẫn đến việc bỏ sót nghiêm trọng các can thiệp ngoại lai mới (như FLUX.1 và SDXL), khiến Recall của lớp `ai_edited` và `fully_generated` sụt giảm mạnh về dưới 20%.
+4. **Giới hạn nghiên cứu của đợt probe**:
+   - Quy mô $N=300$ mang tính chất thăm dò ban đầu do ràng buộc ngân sách mạng nghiêm ngặt.
+   - Mối quan hệ nguồn gốc sâu xa của các ảnh trong So-Fake (chẳng hạn metadata nguồn ảnh gốc trước khi can thiệp) chưa thể đối soát toàn diện, vì vậy chưa thể kết luận độc lập nguồn hoàn toàn (unverified source independence).
+5. **Đúng một bước tiếp theo được phê duyệt (Single Approved Next Step)**:
+   - Không mở rộng kiến trúc, không tăng số quadrant, không triển khai browser.
+   - Thực hiện **Thiết kế đối chứng nhân tố 2×2 (Factorial Source-Conditioned Cohort)** nhằm phân lập triệt để giữa *Domain Shift Ngữ Nghĩa* (COCO vs ImageNet) và *Artefact Kỹ Thuật Số/Nén* (JPEG quantization / generator fingerprint) trước khi xem xét bất kỳ phương án huấn luyện lại hoặc tinh chỉnh nào.

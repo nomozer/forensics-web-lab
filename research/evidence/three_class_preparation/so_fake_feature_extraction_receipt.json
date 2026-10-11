@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0.0",
+  "action": "EXTRACT_SO_FAKE_PROBE_FEATURES",
+  "timestamp_utc": "2026-10-11T12:29:06Z",
+  "total_samples": 300,
+  "feature_shapes": {
+    "visual_576": [
+      300,
+      576
+    ],
+    "global_dsp_16": [
+      300,
+      16
+    ],
+    "local_dsp_48": [
+      300,
+      48
+    ],
+    "combined_592": [
+      300,
+      592
+    ],
+    "combined_640": [
+      300,
+      640
+    ]
+  },
+  "finite_checks": {
+    "nans": 0,
+    "infs": 0
+  },
+  "output_cache_file": "data/research/cache/so_fake_probe_features.npz",
+  "extraction_duration_seconds": 44.9,
+  "status": "FEATURE_EXTRACTION_SUCCESS"
+}

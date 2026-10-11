@@ -110,8 +110,40 @@
 >      * Đo lường CPU trên 16 ảnh phát triển: Global DSP 82.97 ms $\to$ Combined DSP 181.89 ms (+98.93 ms, +119.2% overhead).
 >      * Khuyến nghị: Tạm dừng mở rộng đặc trưng cục bộ phức tạp hơn (sliding window); ưu tiên thiết kế dữ liệu đối chứng nhân tố (factorial design 2x2) theo `NEXT_STEPS_SOURCE_CONFOUNDING_PROPOSAL.md`.
 >      * Biên nhận: `three_class_local_dsp_evaluation_receipt.json`, predictions: `three_class_local_dsp_predictions.json`.<br>
->    **Phase status**: `LOCAL_DSP_FEATURE_ABLATION_VERIFIED_PASS`<br>
->    **Next approved action**: Chuẩn bị thiết kế dữ liệu đối chứng nhân tố (factorial design 2x2) theo `NEXT_STEPS_SOURCE_CONFOUNDING_PROPOSAL.md` để phân tách dứt điểm domain semantic bias khỏi format/compression shortcut.<br>
+>
+> 12. _Khảo Sát Thăm Dò Khả Năng Tổng Quát Hóa Ngoài Tập Phân Phối (So-Fake External Exploratory Generalization Probe, N=300) ($systematic-debugging, $writing-plans, $executing-plans, $verification-before-completion)_:
+>    - **Đóng Băng Model Registry & Đính Chính Sai Sót Ghi Chép Lịch Sử**:
+>      * Đăng ký, niêm phong mã băm SHA-256 và đóng băng 6 mô hình tại `locked_models_registry.json`: 4 cấu hình DSP (A0-global 592-D, A0-local 640-D, A1-global 592-D, A1-local 640-D) cùng 2 mô hình đối chứng Visual-only (A0-visual 576-D, A1-visual 576-D).
+>      * Đính chính nhiệt độ hiệu chuẩn: Xác định chênh lệch $T_{\text{fus,A0}} = 5.9577$ (vs 5.8907) và $T_{\text{fus,A1}} = 4.9391$ (vs 5.1400) bắt nguồn từ OOF CV kép scaler vs đơn scaler; bảo tồn nguyên vẹn giá trị đã lưu trong artifact JSON gốc trên đĩa. Đính chính độ lệch $\Delta(\text{A0-local} - \text{A0-global}) \approx +0.0167$ (thay vì làm tròn $+0.0168$).
+>    - **Tiếp Nhận Dữ Liệu Có Kiểm Soát & Tuân Thủ Ngân Sách Mạng Nghiêm Ngặt**:
+>      * Thăm dò metadata HTTP range footer (81.4 KiB) shard `validation-00000-of-00232.parquet` thuộc `saberzl/So-Fake-Set` (496,763,723 bytes / 473.75 MiB $\le$ 750 MiB hạn mức phiên; 1,016 mẫu gồm 441 full_synthetic, 316 real, 259 tampered).
+>      * Tải thành công lưu tại `data/research/so_fake/validation-00000-of-00232.parquet` (SHA-256: `e6952391...`).
+>      * Kế toán ngân sách mạng: Phiên này dùng 496,763,723 bytes (473.75 MiB $\le$ 750 MiB); lũy kế mạng toàn bộ dự án đạt 1,807,585,485 bytes (1.6834 GiB $\le$ 2.0 GiB hạn mức phê duyệt, dư 324.15 MiB). Footprint đĩa bổ sung $\approx 618$ MB $\le 5$ GiB. Receipt: `so_fake_acquisition_receipt.json`.
+>    - **Rút Trích Cohort Khám Phá & Kiểm Toán Cách Ly Độc Lập**:
+>      * Rút trích cố định theo seed 42 đúng 100 ảnh mỗi lớp ($N=300$ tổng cộng: 100 authentic, 100 ai_edited, 100 fully_generated) lưu tại `data/research/so_fake/images/` dưới định dạng PNG lossless (100% Pillow RGB decode pass). Manifest: `so_fake_probe_manifest.json`.
+>      * Kiểm toán cách ly độc lập (`so_fake_isolation_audit.json`): 0 trùng lặp mã băm SHA-256 với train ba lớp (1,450), dev holdout (273), controls (741), Locked-Test (343 sources), và TGIF N=400. Status: `ISOLATION_AUDIT_PASS`.
+>    - **Trích Xuất Đặc Trưng & Đánh Giá Không Tinh Chỉnh (Zero-Tuning Evaluation)**:
+>      * Trích xuất đặc trưng Visual 576-D, Global DSP 16-D, Local DSP 48-D, lưu cache tại `data/research/cache/so_fake_probe_features.npz` (1.97 MB, 0 NaNs).
+>      * Chạy inference nguyên trạng trên 6 mô hình, không refit/recalibrate/threshold tune.
+>      * Kết quả trên So-Fake Probe ($N=300$):
+>        - A0-global: Macro-F1 = **0.3551**, Bal-Acc = 0.3567, Brier = 0.8101, ECE = 0.2479, Authentic FP AI Rate = 57.0% (57/100).
+>        - A0-local: Macro-F1 = 0.3459, Bal-Acc = 0.3467, Brier = 0.8151, ECE = 0.2590, Authentic FP AI Rate = 63.0% (63/100).
+>        - A1-global: Macro-F1 = 0.3230, Bal-Acc = 0.3500, Brier = 0.8498, ECE = 0.3072, Authentic FP AI Rate = 35.0% (35/100).
+>        - A1-local: Macro-F1 = 0.3027, Bal-Acc = 0.3300, Brier = 0.8579, ECE = 0.3139, Authentic FP AI Rate = 38.0% (38/100).
+>        - A0-visual: Macro-F1 = 0.3487, Bal-Acc = 0.3667, Brier = 0.7620, ECE = 0.2429, Authentic FP AI Rate = 53.0% (53/100).
+>        - A1-visual: Macro-F1 = 0.3315, Bal-Acc = 0.3667, Brier = 0.8036, ECE = 0.2723, Authentic FP AI Rate = **30.0%** (30/100).
+>      * Kiểm định Paired Source-Cluster Bootstrap (10,000 reps):
+>        - $\Delta(\text{A0-local} - \text{A0-global}) = -0.0092$ (95% CI: $[-0.0375, +0.0200]$, $P > 0: 28.12\%$) $\to$ `INCONCLUSIVE`.
+>        - $\Delta(\text{A1-local} - \text{A1-global}) = -0.0203$ (95% CI: $[-0.0452, +0.0042]$, $P > 0: 5.25\%$) $\to$ `INCONCLUSIVE`.
+>        - $\Delta(\text{A0-global} - \text{A0-visual}) = +0.0064$ (95% CI: $[-0.0434, +0.0538]$, $P > 0: 59.45\%$) $\to$ `INCONCLUSIVE`.
+>        - $\Delta(\text{A1-global} - \text{A1-visual}) = -0.0085$ (95% CI: $[-0.0499, +0.0322]$, $P > 0: 35.18\%$) $\to$ `INCONCLUSIVE`.
+>    - **Luận Giải Khoa Học & Phân Tích Trade-Off**:
+>      * Sự sụp đổ hiệu năng ngoài miền (Domain Shift Collapse): Toàn bộ mô hình sụt giảm từ Macro-F1 $\sim 0.50 - 0.55$ (holdout nội bộ) xuống $\sim 0.30 - 0.35$ trên So-Fake, chạm mức ngẫu nhiên ($0.3333$).
+>      * Local DSP không mang lại lợi thế tổng quát hóa trước domain shift sâu rộng.
+>      * Điều kiện A1 (thêm authentic ImageNet) chứng minh hiệu quả giảm mạnh báo động giả trên authentic ngoại lai (từ 53%-57% xuống 30%-35%, giảm 22-23 pp), nhưng làm lệch ranh giới quyết định khiến mô hình bỏ sót các can thiệp mới (FLUX.1, SDXL), làm recall của edit và gen rơi về dưới 20%.
+>      * Raw predictions: `so_fake_probe_predictions.json`, receipt: `so_fake_probe_evaluation_receipt.json`.<br>
+>    **Phase status**: `SO_FAKE_EXTERNAL_PROBE_VERIFIED_PASS`<br>
+>    **Next approved action**: Triển khai thiết kế dữ liệu đối chứng nhân tố 2×2 (factorial source-conditioned cohort) theo `NEXT_STEPS_SOURCE_CONFOUNDING_PROPOSAL.md` để phân lập triệt để domain semantic bias khỏi format/compression shortcut trước khi xem xét bất kỳ phương án huấn luyện lại nào.<br>
 
 
 

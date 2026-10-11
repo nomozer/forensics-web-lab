@@ -1,0 +1,946 @@
+{
+  "schema_version": "1.0.0",
+  "action": "EVALUATE_SO_FAKE_EXTERNAL_PROBE",
+  "timestamp_utc": "2026-10-11T12:31:21Z",
+  "probe_cohort": {
+    "name": "saberzl/So-Fake-Set (validation-00000-of-00232.parquet)",
+    "total_samples": 300,
+    "class_counts": {
+      "authentic": 100,
+      "ai_edited": 100,
+      "fully_generated": 100
+    },
+    "source_independence_status": "unverified"
+  },
+  "models_evaluated": {
+    "A0-global": {
+      "config_id": "A0_GLOBAL_DSP_592D",
+      "feature_dim": 592,
+      "calibrated_temperature": 5.9577,
+      "metrics": {
+        "macro_f1": 0.3551,
+        "balanced_accuracy": 0.3567,
+        "multiclass_brier": 0.8101000189781189,
+        "top_class_ece": 0.2479,
+        "confusion_matrix": [
+          [
+            43,
+            41,
+            16
+          ],
+          [
+            37,
+            35,
+            28
+          ],
+          [
+            36,
+            35,
+            29
+          ]
+        ],
+        "per_class": {
+          "authentic": {
+            "tp": 43,
+            "fp": 73,
+            "fn": 57,
+            "precision": 0.3707,
+            "recall": 0.43,
+            "f1": 0.3981
+          },
+          "ai_edited": {
+            "tp": 35,
+            "fp": 76,
+            "fn": 65,
+            "precision": 0.3153,
+            "recall": 0.35,
+            "f1": 0.3318
+          },
+          "fully_generated": {
+            "tp": 29,
+            "fp": 44,
+            "fn": 71,
+            "precision": 0.3973,
+            "recall": 0.29,
+            "f1": 0.3353
+          }
+        },
+        "authentic_control": {
+          "total_authentic": 100,
+          "correct_authentic": 43,
+          "false_positive_ai_edited": 41,
+          "false_positive_fully_generated": 16,
+          "total_false_positive_ai": 57,
+          "false_positive_ai_rate": 0.57,
+          "false_positive_ai_percent": 57.0
+        }
+      }
+    },
+    "A0-local": {
+      "config_id": "A0_LOCAL_DSP_640D",
+      "feature_dim": 640,
+      "calibrated_temperature": 6.014245647309195,
+      "metrics": {
+        "macro_f1": 0.3459,
+        "balanced_accuracy": 0.3467,
+        "multiclass_brier": 0.8151000142097473,
+        "top_class_ece": 0.259,
+        "confusion_matrix": [
+          [
+            37,
+            46,
+            17
+          ],
+          [
+            34,
+            38,
+            28
+          ],
+          [
+            38,
+            33,
+            29
+          ]
+        ],
+        "per_class": {
+          "authentic": {
+            "tp": 37,
+            "fp": 72,
+            "fn": 63,
+            "precision": 0.3394,
+            "recall": 0.37,
+            "f1": 0.3541
+          },
+          "ai_edited": {
+            "tp": 38,
+            "fp": 79,
+            "fn": 62,
+            "precision": 0.3248,
+            "recall": 0.38,
+            "f1": 0.3502
+          },
+          "fully_generated": {
+            "tp": 29,
+            "fp": 45,
+            "fn": 71,
+            "precision": 0.3919,
+            "recall": 0.29,
+            "f1": 0.3333
+          }
+        },
+        "authentic_control": {
+          "total_authentic": 100,
+          "correct_authentic": 37,
+          "false_positive_ai_edited": 46,
+          "false_positive_fully_generated": 17,
+          "total_false_positive_ai": 63,
+          "false_positive_ai_rate": 0.63,
+          "false_positive_ai_percent": 63.0
+        }
+      }
+    },
+    "A1-global": {
+      "config_id": "A1_GLOBAL_DSP_592D",
+      "feature_dim": 592,
+      "calibrated_temperature": 4.9391,
+      "metrics": {
+        "macro_f1": 0.323,
+        "balanced_accuracy": 0.35,
+        "multiclass_brier": 0.8497999906539917,
+        "top_class_ece": 0.3072,
+        "confusion_matrix": [
+          [
+            65,
+            25,
+            10
+          ],
+          [
+            57,
+            20,
+            23
+          ],
+          [
+            48,
+            32,
+            20
+          ]
+        ],
+        "per_class": {
+          "authentic": {
+            "tp": 65,
+            "fp": 105,
+            "fn": 35,
+            "precision": 0.3824,
+            "recall": 0.65,
+            "f1": 0.4815
+          },
+          "ai_edited": {
+            "tp": 20,
+            "fp": 57,
+            "fn": 80,
+            "precision": 0.2597,
+            "recall": 0.2,
+            "f1": 0.226
+          },
+          "fully_generated": {
+            "tp": 20,
+            "fp": 33,
+            "fn": 80,
+            "precision": 0.3774,
+            "recall": 0.2,
+            "f1": 0.2614
+          }
+        },
+        "authentic_control": {
+          "total_authentic": 100,
+          "correct_authentic": 65,
+          "false_positive_ai_edited": 25,
+          "false_positive_fully_generated": 10,
+          "total_false_positive_ai": 35,
+          "false_positive_ai_rate": 0.35,
+          "false_positive_ai_percent": 35.0
+        }
+      }
+    },
+    "A1-local": {
+      "config_id": "A1_LOCAL_DSP_640D",
+      "feature_dim": 640,
+      "calibrated_temperature": 5.168856331386276,
+      "metrics": {
+        "macro_f1": 0.3027,
+        "balanced_accuracy": 0.33,
+        "multiclass_brier": 0.8579000234603882,
+        "top_class_ece": 0.3139,
+        "confusion_matrix": [
+          [
+            62,
+            28,
+            10
+          ],
+          [
+            58,
+            19,
+            23
+          ],
+          [
+            54,
+            28,
+            18
+          ]
+        ],
+        "per_class": {
+          "authentic": {
+            "tp": 62,
+            "fp": 112,
+            "fn": 38,
+            "precision": 0.3563,
+            "recall": 0.62,
+            "f1": 0.4526
+          },
+          "ai_edited": {
+            "tp": 19,
+            "fp": 56,
+            "fn": 81,
+            "precision": 0.2533,
+            "recall": 0.19,
+            "f1": 0.2171
+          },
+          "fully_generated": {
+            "tp": 18,
+            "fp": 33,
+            "fn": 82,
+            "precision": 0.3529,
+            "recall": 0.18,
+            "f1": 0.2384
+          }
+        },
+        "authentic_control": {
+          "total_authentic": 100,
+          "correct_authentic": 62,
+          "false_positive_ai_edited": 28,
+          "false_positive_fully_generated": 10,
+          "total_false_positive_ai": 38,
+          "false_positive_ai_rate": 0.38,
+          "false_positive_ai_percent": 38.0
+        }
+      }
+    },
+    "A0-visual": {
+      "config_id": "A0_VISUAL_ONLY_576D",
+      "feature_dim": 576,
+      "calibrated_temperature": 5.9818,
+      "metrics": {
+        "macro_f1": 0.3487,
+        "balanced_accuracy": 0.3667,
+        "multiclass_brier": 0.7620000243186951,
+        "top_class_ece": 0.2429,
+        "confusion_matrix": [
+          [
+            47,
+            46,
+            7
+          ],
+          [
+            45,
+            47,
+            8
+          ],
+          [
+            40,
+            44,
+            16
+          ]
+        ],
+        "per_class": {
+          "authentic": {
+            "tp": 47,
+            "fp": 85,
+            "fn": 53,
+            "precision": 0.3561,
+            "recall": 0.47,
+            "f1": 0.4052
+          },
+          "ai_edited": {
+            "tp": 47,
+            "fp": 90,
+            "fn": 53,
+            "precision": 0.3431,
+            "recall": 0.47,
+            "f1": 0.3966
+          },
+          "fully_generated": {
+            "tp": 16,
+            "fp": 15,
+            "fn": 84,
+            "precision": 0.5161,
+            "recall": 0.16,
+            "f1": 0.2443
+          }
+        },
+        "authentic_control": {
+          "total_authentic": 100,
+          "correct_authentic": 47,
+          "false_positive_ai_edited": 46,
+          "false_positive_fully_generated": 7,
+          "total_false_positive_ai": 53,
+          "false_positive_ai_rate": 0.53,
+          "false_positive_ai_percent": 53.0
+        }
+      }
+    },
+    "A1-visual": {
+      "config_id": "A1_VISUAL_ONLY_576D",
+      "feature_dim": 576,
+      "calibrated_temperature": 5.1812763222128995,
+      "metrics": {
+        "macro_f1": 0.3315,
+        "balanced_accuracy": 0.3667,
+        "multiclass_brier": 0.803600013256073,
+        "top_class_ece": 0.2723,
+        "confusion_matrix": [
+          [
+            70,
+            27,
+            3
+          ],
+          [
+            72,
+            25,
+            3
+          ],
+          [
+            52,
+            33,
+            15
+          ]
+        ],
+        "per_class": {
+          "authentic": {
+            "tp": 70,
+            "fp": 124,
+            "fn": 30,
+            "precision": 0.3608,
+            "recall": 0.7,
+            "f1": 0.4762
+          },
+          "ai_edited": {
+            "tp": 25,
+            "fp": 60,
+            "fn": 75,
+            "precision": 0.2941,
+            "recall": 0.25,
+            "f1": 0.2703
+          },
+          "fully_generated": {
+            "tp": 15,
+            "fp": 6,
+            "fn": 85,
+            "precision": 0.7143,
+            "recall": 0.15,
+            "f1": 0.2479
+          }
+        },
+        "authentic_control": {
+          "total_authentic": 100,
+          "correct_authentic": 70,
+          "false_positive_ai_edited": 27,
+          "false_positive_fully_generated": 3,
+          "total_false_positive_ai": 30,
+          "false_positive_ai_rate": 0.3,
+          "false_positive_ai_percent": 30.0
+        }
+      }
+    }
+  },
+  "paired_bootstrap_comparisons": {
+    "A0_local_minus_global": {
+      "observed_delta": -0.0092,
+      "ci_95": [
+        -0.0375,
+        0.02
+      ],
+      "p_positive_fraction": 0.2812,
+      "bootstrap_replicates": 10000,
+      "verdict": "INCONCLUSIVE"
+    },
+    "A1_local_minus_global": {
+      "observed_delta": -0.0203,
+      "ci_95": [
+        -0.0452,
+        0.0042
+      ],
+      "p_positive_fraction": 0.0525,
+      "bootstrap_replicates": 10000,
+      "verdict": "INCONCLUSIVE"
+    },
+    "A0_global_minus_visual": {
+      "observed_delta": 0.0064,
+      "ci_95": [
+        -0.0434,
+        0.0538
+      ],
+      "p_positive_fraction": 0.5945,
+      "bootstrap_replicates": 10000,
+      "verdict": "INCONCLUSIVE"
+    },
+    "A1_global_minus_visual": {
+      "observed_delta": -0.0085,
+      "ci_95": [
+        -0.0499,
+        0.0322
+      ],
+      "p_positive_fraction": 0.3518,
+      "bootstrap_replicates": 10000,
+      "verdict": "INCONCLUSIVE"
+    },
+    "A1_local_minus_A0_local": {
+      "observed_delta": -0.0432,
+      "ci_95": [
+        -0.0942,
+        0.0071
+      ],
+      "p_positive_fraction": 0.0484,
+      "bootstrap_replicates": 10000,
+      "verdict": "INCONCLUSIVE"
+    },
+    "A1_global_minus_A0_global": {
+      "observed_delta": -0.0321,
+      "ci_95": [
+        -0.0798,
+        0.0156
+      ],
+      "p_positive_fraction": 0.0922,
+      "bootstrap_replicates": 10000,
+      "verdict": "INCONCLUSIVE"
+    }
+  },
+  "generator_breakdown_n_ge_5": {
+    "Absolute_Reality": {
+      "sample_count": 5,
+      "true_label": "fully_generated",
+      "model_performance": {
+        "A0-global": {
+          "accuracy": 0.0,
+          "predicted_distribution": {
+            "authentic": 3,
+            "ai_edited": 2,
+            "fully_generated": 0
+          }
+        },
+        "A0-local": {
+          "accuracy": 0.0,
+          "predicted_distribution": {
+            "authentic": 3,
+            "ai_edited": 2,
+            "fully_generated": 0
+          }
+        },
+        "A1-global": {
+          "accuracy": 0.2,
+          "predicted_distribution": {
+            "authentic": 2,
+            "ai_edited": 2,
+            "fully_generated": 1
+          }
+        },
+        "A1-local": {
+          "accuracy": 0.2,
+          "predicted_distribution": {
+            "authentic": 2,
+            "ai_edited": 2,
+            "fully_generated": 1
+          }
+        },
+        "A0-visual": {
+          "accuracy": 0.0,
+          "predicted_distribution": {
+            "authentic": 2,
+            "ai_edited": 3,
+            "fully_generated": 0
+          }
+        },
+        "A1-visual": {
+          "accuracy": 0.2,
+          "predicted_distribution": {
+            "authentic": 2,
+            "ai_edited": 2,
+            "fully_generated": 1
+          }
+        }
+      }
+    },
+    "OpenForensics_fake": {
+      "sample_count": 9,
+      "true_label": "fully_generated",
+      "model_performance": {
+        "A0-global": {
+          "accuracy": 0.6667,
+          "predicted_distribution": {
+            "authentic": 1,
+            "ai_edited": 2,
+            "fully_generated": 6
+          }
+        },
+        "A0-local": {
+          "accuracy": 0.5556,
+          "predicted_distribution": {
+            "authentic": 1,
+            "ai_edited": 3,
+            "fully_generated": 5
+          }
+        },
+        "A1-global": {
+          "accuracy": 0.5556,
+          "predicted_distribution": {
+            "authentic": 2,
+            "ai_edited": 2,
+            "fully_generated": 5
+          }
+        },
+        "A1-local": {
+          "accuracy": 0.3333,
+          "predicted_distribution": {
+            "authentic": 2,
+            "ai_edited": 4,
+            "fully_generated": 3
+          }
+        },
+        "A0-visual": {
+          "accuracy": 0.0,
+          "predicted_distribution": {
+            "authentic": 3,
+            "ai_edited": 6,
+            "fully_generated": 0
+          }
+        },
+        "A1-visual": {
+          "accuracy": 0.1111,
+          "predicted_distribution": {
+            "authentic": 4,
+            "ai_edited": 4,
+            "fully_generated": 1
+          }
+        }
+      }
+    },
+    "StyleGAN3": {
+      "sample_count": 6,
+      "true_label": "fully_generated",
+      "model_performance": {
+        "A0-global": {
+          "accuracy": 0.1667,
+          "predicted_distribution": {
+            "authentic": 3,
+            "ai_edited": 2,
+            "fully_generated": 1
+          }
+        },
+        "A0-local": {
+          "accuracy": 0.1667,
+          "predicted_distribution": {
+            "authentic": 4,
+            "ai_edited": 1,
+            "fully_generated": 1
+          }
+        },
+        "A1-global": {
+          "accuracy": 0.1667,
+          "predicted_distribution": {
+            "authentic": 3,
+            "ai_edited": 2,
+            "fully_generated": 1
+          }
+        },
+        "A1-local": {
+          "accuracy": 0.0,
+          "predicted_distribution": {
+            "authentic": 4,
+            "ai_edited": 2,
+            "fully_generated": 0
+          }
+        },
+        "A0-visual": {
+          "accuracy": 0.0,
+          "predicted_distribution": {
+            "authentic": 3,
+            "ai_edited": 3,
+            "fully_generated": 0
+          }
+        },
+        "A1-visual": {
+          "accuracy": 0.1667,
+          "predicted_distribution": {
+            "authentic": 3,
+            "ai_edited": 2,
+            "fully_generated": 1
+          }
+        }
+      }
+    },
+    "flux.1-dev": {
+      "sample_count": 59,
+      "true_label": "ai_edited",
+      "model_performance": {
+        "A0-global": {
+          "accuracy": 0.2373,
+          "predicted_distribution": {
+            "authentic": 21,
+            "ai_edited": 16,
+            "fully_generated": 22
+          }
+        },
+        "A0-local": {
+          "accuracy": 0.2881,
+          "predicted_distribution": {
+            "authentic": 19,
+            "ai_edited": 18,
+            "fully_generated": 22
+          }
+        },
+        "A1-global": {
+          "accuracy": 0.1695,
+          "predicted_distribution": {
+            "authentic": 28,
+            "ai_edited": 11,
+            "fully_generated": 20
+          }
+        },
+        "A1-local": {
+          "accuracy": 0.1695,
+          "predicted_distribution": {
+            "authentic": 29,
+            "ai_edited": 10,
+            "fully_generated": 20
+          }
+        },
+        "A0-visual": {
+          "accuracy": 0.4576,
+          "predicted_distribution": {
+            "authentic": 23,
+            "ai_edited": 28,
+            "fully_generated": 8
+          }
+        },
+        "A1-visual": {
+          "accuracy": 0.2034,
+          "predicted_distribution": {
+            "authentic": 40,
+            "ai_edited": 14,
+            "fully_generated": 5
+          }
+        }
+      }
+    },
+    "latent_diffusion": {
+      "sample_count": 32,
+      "true_label": "ai_edited",
+      "model_performance": {
+        "A0-global": {
+          "accuracy": 0.4688,
+          "predicted_distribution": {
+            "authentic": 8,
+            "ai_edited": 18,
+            "fully_generated": 6
+          }
+        },
+        "A0-local": {
+          "accuracy": 0.4375,
+          "predicted_distribution": {
+            "authentic": 10,
+            "ai_edited": 16,
+            "fully_generated": 6
+          }
+        },
+        "A1-global": {
+          "accuracy": 0.2812,
+          "predicted_distribution": {
+            "authentic": 14,
+            "ai_edited": 15,
+            "fully_generated": 3
+          }
+        },
+        "A1-local": {
+          "accuracy": 0.25,
+          "predicted_distribution": {
+            "authentic": 17,
+            "ai_edited": 12,
+            "fully_generated": 3
+          }
+        },
+        "A0-visual": {
+          "accuracy": 0.3125,
+          "predicted_distribution": {
+            "authentic": 11,
+            "ai_edited": 19,
+            "fully_generated": 2
+          }
+        },
+        "A1-visual": {
+          "accuracy": 0.2188,
+          "predicted_distribution": {
+            "authentic": 17,
+            "ai_edited": 14,
+            "fully_generated": 1
+          }
+        }
+      }
+    },
+    "realistic_vision": {
+      "sample_count": 8,
+      "true_label": "fully_generated",
+      "model_performance": {
+        "A0-global": {
+          "accuracy": 0.125,
+          "predicted_distribution": {
+            "authentic": 3,
+            "ai_edited": 4,
+            "fully_generated": 1
+          }
+        },
+        "A0-local": {
+          "accuracy": 0.125,
+          "predicted_distribution": {
+            "authentic": 3,
+            "ai_edited": 4,
+            "fully_generated": 1
+          }
+        },
+        "A1-global": {
+          "accuracy": 0.0,
+          "predicted_distribution": {
+            "authentic": 4,
+            "ai_edited": 4,
+            "fully_generated": 0
+          }
+        },
+        "A1-local": {
+          "accuracy": 0.0,
+          "predicted_distribution": {
+            "authentic": 4,
+            "ai_edited": 4,
+            "fully_generated": 0
+          }
+        },
+        "A0-visual": {
+          "accuracy": 0.125,
+          "predicted_distribution": {
+            "authentic": 4,
+            "ai_edited": 3,
+            "fully_generated": 1
+          }
+        },
+        "A1-visual": {
+          "accuracy": 0.125,
+          "predicted_distribution": {
+            "authentic": 3,
+            "ai_edited": 4,
+            "fully_generated": 1
+          }
+        }
+      }
+    },
+    "sd-3.5-face": {
+      "sample_count": 5,
+      "true_label": "fully_generated",
+      "model_performance": {
+        "A0-global": {
+          "accuracy": 0.2,
+          "predicted_distribution": {
+            "authentic": 2,
+            "ai_edited": 2,
+            "fully_generated": 1
+          }
+        },
+        "A0-local": {
+          "accuracy": 0.2,
+          "predicted_distribution": {
+            "authentic": 2,
+            "ai_edited": 2,
+            "fully_generated": 1
+          }
+        },
+        "A1-global": {
+          "accuracy": 0.0,
+          "predicted_distribution": {
+            "authentic": 4,
+            "ai_edited": 1,
+            "fully_generated": 0
+          }
+        },
+        "A1-local": {
+          "accuracy": 0.0,
+          "predicted_distribution": {
+            "authentic": 5,
+            "ai_edited": 0,
+            "fully_generated": 0
+          }
+        },
+        "A0-visual": {
+          "accuracy": 0.4,
+          "predicted_distribution": {
+            "authentic": 1,
+            "ai_edited": 2,
+            "fully_generated": 2
+          }
+        },
+        "A1-visual": {
+          "accuracy": 0.2,
+          "predicted_distribution": {
+            "authentic": 4,
+            "ai_edited": 0,
+            "fully_generated": 1
+          }
+        }
+      }
+    },
+    "sdxl": {
+      "sample_count": 40,
+      "true_label": "ai_edited",
+      "model_performance": {
+        "A0-global": {
+          "accuracy": 0.375,
+          "predicted_distribution": {
+            "authentic": 20,
+            "ai_edited": 15,
+            "fully_generated": 5
+          }
+        },
+        "A0-local": {
+          "accuracy": 0.4,
+          "predicted_distribution": {
+            "authentic": 19,
+            "ai_edited": 16,
+            "fully_generated": 5
+          }
+        },
+        "A1-global": {
+          "accuracy": 0.175,
+          "predicted_distribution": {
+            "authentic": 31,
+            "ai_edited": 7,
+            "fully_generated": 2
+          }
+        },
+        "A1-local": {
+          "accuracy": 0.175,
+          "predicted_distribution": {
+            "authentic": 31,
+            "ai_edited": 7,
+            "fully_generated": 2
+          }
+        },
+        "A0-visual": {
+          "accuracy": 0.35,
+          "predicted_distribution": {
+            "authentic": 23,
+            "ai_edited": 14,
+            "fully_generated": 3
+          }
+        },
+        "A1-visual": {
+          "accuracy": 0.225,
+          "predicted_distribution": {
+            "authentic": 30,
+            "ai_edited": 9,
+            "fully_generated": 1
+          }
+        }
+      }
+    },
+    "sdxl_lightning": {
+      "sample_count": 8,
+      "true_label": "fully_generated",
+      "model_performance": {
+        "A0-global": {
+          "accuracy": 0.5,
+          "predicted_distribution": {
+            "authentic": 2,
+            "ai_edited": 2,
+            "fully_generated": 4
+          }
+        },
+        "A0-local": {
+          "accuracy": 0.625,
+          "predicted_distribution": {
+            "authentic": 1,
+            "ai_edited": 2,
+            "fully_generated": 5
+          }
+        },
+        "A1-global": {
+          "accuracy": 0.25,
+          "predicted_distribution": {
+            "authentic": 4,
+            "ai_edited": 2,
+            "fully_generated": 2
+          }
+        },
+        "A1-local": {
+          "accuracy": 0.25,
+          "predicted_distribution": {
+            "authentic": 4,
+            "ai_edited": 2,
+            "fully_generated": 2
+          }
+        },
+        "A0-visual": {
+          "accuracy": 0.625,
+          "predicted_distribution": {
+            "authentic": 1,
+            "ai_edited": 2,
+            "fully_generated": 5
+          }
+        },
+        "A1-visual": {
+          "accuracy": 0.375,
+          "predicted_distribution": {
+            "authentic": 3,
+            "ai_edited": 2,
+            "fully_generated": 3
+          }
+        }
+      }
+    }
+  },
+  "status": "SO_FAKE_EVALUATION_SUCCESS"
+}

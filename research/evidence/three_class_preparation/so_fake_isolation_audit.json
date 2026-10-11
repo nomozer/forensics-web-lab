@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0.0",
+  "action": "AUDIT_SO_FAKE_PROBE_ISOLATION",
+  "total_probe_samples": 300,
+  "distinct_probe_hashes": 300,
+  "cohorts_checked": [
+    "three_class_pilot_train_and_holdout",
+    "imagenet_authentic_train_a1",
+    "source_control_nature_imagenet",
+    "sealed_locked_test_343_sources",
+    "sealed_tgif_n400_sources"
+  ],
+  "collision_count": 0,
+  "collisions": [],
+  "status": "ISOLATION_AUDIT_PASS"
+}
