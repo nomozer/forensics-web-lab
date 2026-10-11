@@ -95,4 +95,5 @@ apps/web/public/wasm/
 apps/web/public/samples/
 research/reference_samples/
 research/evidence/browser_fp32_parity/*.png
-
+# Scratch & temporary workspace
+scratch/

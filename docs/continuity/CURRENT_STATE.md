@@ -43,13 +43,18 @@
 >      **Next approved action**: Commit, push lên `origin/main` và kiểm tra trực tiếp trên live URL `https://nomozer.github.io/forensics-web-lab/`.<br>
 
 > 8. _Chuẩn Bị Thực Nghiệm Ba Lớp RQ1 & RQ2 (Three-Class Preparation, Branch `research/independent-cohort-acquisition`)_:
->    - **Kiểm kê dữ liệu LOCAL**: Quét và xác thực 6,156 ảnh thực tế (Pillow decode + SHA-256). Kết quả: 2 lớp khả dụng (`authentic`: 341 eligible dev, `ai_edited`: 341 eligible dev), lớp `fully_generated`: **0 ảnh trên LOCAL**. Trạng thái chính thức `DATA_BLOCKED: MISSING_FULLY_GENERATED_COHORT`. Niêm phong 343 locked-test sources (3,087 ảnh) và TGIF N=400.
->    - **Kiểm toán Leakage & Confounding**: 341/341 source groups hoàn chỉnh (PASS), 0 exact duplicates (PASS), 0 cross-source near-duplicates dHash Hamming <= 3 (PASS), 0 cross-cohort leakage với sealed cohorts (PASS). Verdict: `LEAKAGE_AUDIT_PASS`.
->    - **Protocol & Preflight**: `ml/configs/three_class_evaluation_protocol.yaml` (3 lớp, 2 baselines, 6 metrics, status `DRAFT_PENDING_ACQUISITION`). Dry-run metrics verified: `VERIFIED_PASS`.
->    - **Acquisition Plan GenImage**: `datasets/acquisition-plans/pilot-c-genimage-fully-generated.v1.json`; approval `pending-user-approval`; disk PASS (65 GB > 24 GB required). Không tải dữ liệu nào.
->    - **Y Văn**: Mở rộng `docs/LITERATURE_RESEARCH_GAP.md` thêm 2 ứng viên khoảng trống mới cho RQ1 và RQ2, nâng tổng lên 5.
->    - **Tests**: 15/15 ML pytest PASS, pnpm test PASS (67 JS + 13 continuity).
->    - **Next approved action**: Commit và push lên `origin/research/independent-cohort-acquisition`.
+>    - **Kiểm kê dữ liệu LOCAL & Khắc phục Mismatch Backbone ($systematic-debugging)**:
+>      * Truy nguyên và sửa dứt điểm mismatch: `ml/configs/three_class_evaluation_protocol.yaml` và `scripts/research/preflight_three_class_protocol.py` (v2.0) đã được hiệu chỉnh từ nháp cũ `mobilenet_v4_small` (1280-d) về đúng kiến trúc thực tế của repo là `mobilenet_v3_small` (576-d visual, 592-d visual+DSP: 576 + 16-d canonical DSP). Kiểm chứng forward pass thực tế bằng PyTorch `MobileNetV3Forensics` và `extract_dsp_features` trên panel phát triển [4, 3, 224, 224] xuất ra đúng tensor feature shape [4, 576], DSP 16-D, fusion 592-D và logits [4, 3].
+>      * Phân tách dứt khoát khu vực mô phỏng số học fixture metrics (Macro-F1=1) khỏi kết quả nghiên cứu (`is_research_evidence: false`), có disclaimer bảo vệ tính trung thực khoa học.
+>      * Sửa toàn bộ bất nhất provenance từ COCO 2014 thành `MS-COCO val2017` theo tài liệu gốc của dự án.
+>    - **Kiểm toán Cách ly Sealed Cohorts Đạt Chuẩn Tuyệt Đối (Section D, PASS)**:
+>      * Nạp và đối chiếu trực tiếp 2 nguồn niêm phong thật: (1) Locked-Test 343 sources (`research/evidence/phase-4b.2/split-lock.json`, 3,087 ảnh disk, 2,970 distinct hashes); (2) TGIF N=400 (`research/evidence/phase-4c.7b/tgif_train_clean_subset_manifest_locked_n400.json`, xác thực SHA-256 package zip `27046ec2...`, 800 ảnh trong zip, 800 distinct hashes).
+>      * Đối chiếu với 341 pairs (682 ảnh) tập phát triển theo source IDs đã chuẩn hóa và SHA-256 hashes: Overlap sources = 0, Overlap hashes = 0. Báo cáo số nguồn, số ảnh, số hashes kiểm tra bằng các trường riêng biệt. Status: `LEAKAGE_AUDIT_PASS`.
+>    - **Tiếp nhận GenImage có kiểm soát & Báo cáo Điểm chặn Chính xác (Sections B, E, F, H)**:
+>      * Tải 2 shards parquet (875.1 MB <= 2 GiB budget, disk footprint an toàn) từ mirror `TheKernel01/Tiny-GenImage` (CC BY-NC-SA 4.0). Trích xuất, decode Pillow và xác thực SHA-256 thành công **341 ảnh authentic Nature control** từ ImageNet (43.5 MB), lưu tại `data/research/genimage/nature_control_pilot/` làm tập đối chứng nguồn độc lập (`source_control_cohort_manifest.json`).
+>      * Báo cáo điểm chặn chính xác của SD1.4: Mirror Tiny-GenImage trên Hugging Face chỉ có 7 generators (ADM, BigGAN, GLIDE, Midjourney, SD1.5, VQDM, Wukong), thiếu hoàn toàn Generator 5 (SD1.4); trong khi archive chính thức SD1.4 multipart zip của tác giả GenImage nặng ~96.5 GiB (> 2 GiB limit). Theo quy tắc trung thực khoa học, không tự ý tráo đổi model và không tạo splits giả. Trạng thái chính thức: **`DATA_BLOCKED: GENIMAGE_SD14_DISTRIBUTION_EXCEEDS_BUDGET_AND_MIRROR_OMITS_SD14`**.
+>    - **Cập nhật Y Văn So-Fake (arXiv:2505.18660) (Section G)**: Bổ sung So-Fake (hzlsaber et al., 2025) vào bảng đối chiếu trong `docs/LITERATURE_RESEARCH_GAP.md`. Khẳng định rõ bài toán 3 lớp không phải là tính mới tự thân. Khoảng trống cần giải quyết là kiến trúc tích chập siêu nhẹ (<5M params) kết hợp 16-D DSP client-side zero-egress trong trình duyệt web. Vector DSP là ứng viên khoảng trống cần xác minh thực nghiệm, không tự coi là bằng chứng tính mới.
+>    - **Next approved action**: Commit, push lên `origin/research/independent-cohort-acquisition`, báo cáo chi tiết theo 7 câu hỏi bàn giao của Section I.
 
 
 ---

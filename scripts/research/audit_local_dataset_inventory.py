@@ -48,7 +48,7 @@ def extract_source_id_from_filename(filename: str) -> Optional[str]:
 
 def verify_image(filepath: Path) -> Tuple[bool, Optional[Tuple[int, int]], Optional[str], Optional[str], Optional[str]]:
     """Verify image decodability using Pillow.
-    
+
     Returns:
         (is_valid, (width, height), format, mode, error_message)
     """
@@ -258,7 +258,7 @@ def audit_inventory() -> Dict[str, Any]:
             "authentic": {
                 "present_on_local": label_counts.get("authentic", 0),
                 "eligible_development_count": eligible_dev_labels.get("authentic", 0),
-                "source": "MS-COCO 2014 via TGIF",
+                "source": "MS-COCO val2017 via TGIF",
                 "status": "AVAILABLE"
             },
             "ai_edited": {
@@ -270,7 +270,7 @@ def audit_inventory() -> Dict[str, Any]:
             "fully_generated": {
                 "present_on_local": 0,
                 "eligible_development_count": 0,
-                "source": "None on LOCAL (GenImage recommended in official literature)",
+                "source": "None on LOCAL (GenImage SD1.4 pilot planned)",
                 "status": "MISSING_ON_LOCAL_BLOCKED"
             }
         },
@@ -285,6 +285,8 @@ def audit_inventory() -> Dict[str, Any]:
         "sealed_cohorts_isolation": {
             "locked_test_sources_isolated": len(locked_test_ids),
             "tgif_n400_independent_sources_isolated": len(tgif_n400_ids),
+            "tgif_n400_package_zip_path": "data/research/local-artifacts/phase-4c.7b/tgif_train_clean_subset_package.zip",
+            "tgif_n400_package_images_count": 800,
             "sealed_images_quarantined_from_development": sum(
                 1 for r in manifest_records if "SEALED" in r["eligibility"]
             ),

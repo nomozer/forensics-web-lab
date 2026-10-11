@@ -7,7 +7,7 @@
     "authentic": {
       "present_on_local": 2052,
       "eligible_development_count": 341,
-      "source": "MS-COCO 2014 via TGIF",
+      "source": "MS-COCO val2017 via TGIF",
       "status": "AVAILABLE"
     },
     "ai_edited": {
@@ -19,7 +19,7 @@
     "fully_generated": {
       "present_on_local": 0,
       "eligible_development_count": 0,
-      "source": "None on LOCAL (GenImage recommended in official literature)",
+      "source": "None on LOCAL (GenImage SD1.4 pilot planned)",
       "status": "MISSING_ON_LOCAL_BLOCKED"
     }
   },
@@ -38,6 +38,8 @@
   "sealed_cohorts_isolation": {
     "locked_test_sources_isolated": 343,
     "tgif_n400_independent_sources_isolated": 400,
+    "tgif_n400_package_zip_path": "data/research/local-artifacts/phase-4c.7b/tgif_train_clean_subset_package.zip",
+    "tgif_n400_package_images_count": 800,
     "sealed_images_quarantined_from_development": 3087
   },
   "scientific_conclusion": "Dữ liệu thực trên LOCAL chỉ có đủ 2 lớp authentic (341 cặp phát triển) và ai_edited (341 cặp phát triển). Lớp fully_generated có đúng 0 ảnh thực trên LOCAL. Tuyệt đối không sử dụng TGIF fr (conditional regeneration) để giả lập fully_generated. Trạng thái phân loại 3 lớp RQ1 chính thức là DATA_BLOCKED cho đến khi tập ảnh sinh toàn phần được nạp hợp lệ."

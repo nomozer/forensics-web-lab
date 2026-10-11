@@ -7,18 +7,27 @@ Implements rigorous checks required by Section D of the research agenda:
 2. Exact duplicate detection (SHA-256).
 3. Near-duplicate detection (64-bit dHash perceptual hashing with configurable Hamming threshold).
 4. Strict cross-cohort isolation: verifies zero leakage between eligible development cohort
-   and sealed cohorts (TGIF N=400 independent evaluation and locked-test 343 sources).
+   and verified sealed cohorts (TGIF N=400 independent evaluation and locked-test 343 sources).
+   - Verifies integrity of reference manifests and archive packages before comparison.
+   - Reports distinct fields for source IDs checked, image files checked, and hashes checked.
+   - Zero-sample or missing manifest checks fail closed with NOT_CHECKED/BLOCKED, never PASS.
 5. Confounding factor analysis across classes (resolution, format, compression, aspect ratio).
 
 Outputs:
 - research/evidence/three_class_preparation/leakage_and_confounding_report.json
 """
 
+from __future__ import annotations
+
+import csv
+import hashlib
 import json
 import logging
 import math
 import os
+import re
 import sys
+import zipfile
 from collections import defaultdict
 from pathlib import Path
 from typing import Any, Dict, List, Set, Tuple
@@ -31,6 +40,22 @@ logger = logging.getLogger(__name__)
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 MANIFEST_PATH = REPO_ROOT / "research" / "evidence" / "three_class_preparation" / "candidate_cohort_manifest.json"
 OUTPUT_REPORT_PATH = REPO_ROOT / "research" / "evidence" / "three_class_preparation" / "leakage_and_confounding_report.json"
+
+SPLIT_LOCK_PATH = REPO_ROOT / "research" / "evidence" / "phase-4b.2" / "split-lock.json"
+TGIF_N400_MANIFEST_PATH = REPO_ROOT / "research" / "evidence" / "phase-4c.7b" / "tgif_train_clean_subset_manifest_locked_n400.json"
+TGIF_N400_PACKAGE_PATH = REPO_ROOT / "data" / "research" / "local-artifacts" / "phase-4c.7b" / "tgif_train_clean_subset_package.zip"
+
+EXPECTED_N400_ZIP_SHA256 = "27046ec2c10b92942cd1ef0acd10e3fdac37d55c7f2fa919ede0242d96b5ff66"
+EXPECTED_N400_MANIFEST_SHA256 = "53a6ee472fe840a42abd97ccb7475932e0720f5788f745f57f7a2bcfbc32cc8c"
+
+
+def compute_sha256(filepath: Path) -> str:
+    """Computes exact SHA-256 hash of a file."""
+    h = hashlib.sha256()
+    with open(filepath, "rb") as f:
+        while chunk := f.read(65536):
+            h.update(chunk)
+    return h.hexdigest()
 
 
 def compute_dhash(image_path: Path, hash_size: int = 8) -> int:
@@ -56,6 +81,102 @@ def hamming_distance(h1: int, h2: int) -> int:
     return bin(h1 ^ h2).count("1")
 
 
+def verify_and_load_locked_test_cohort() -> Dict[str, Any]:
+    """Verifies and loads the Phase 4B/4C.2G locked-test sealed cohort (343 sources)."""
+    logger.info("Auditing sealed locked-test cohort...")
+    if not SPLIT_LOCK_PATH.exists():
+        return {
+            "status": "MISSING_MANIFEST_BLOCKED",
+            "manifest_path": str(SPLIT_LOCK_PATH.relative_to(REPO_ROOT)),
+            "sources_checked_count": 0,
+            "images_checked_count": 0,
+            "distinct_hashes_checked_count": 0,
+            "source_ids": set(),
+            "hashes": set(),
+        }
+
+    with open(SPLIT_LOCK_PATH, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    raw_ids = data.get("lockedTestSourceIds") or data.get("locked_test_source_ids", [])
+    source_ids = set(f"{int(x):012d}" for x in raw_ids)
+
+    # Scan real disk files in testing directories
+    hashes = set()
+    images_checked = 0
+    for folder in ["orig/testing", "sd2-sp/testing"]:
+        dir_p = REPO_ROOT / "data" / "research" / "tgif" / folder
+        if dir_p.exists():
+            for p in dir_p.rglob("*.*"):
+                if p.is_file() and p.suffix.lower() in (".png", ".jpg", ".jpeg"):
+                    hashes.add(compute_sha256(p))
+                    images_checked += 1
+
+    return {
+        "status": "CHECKED_OK" if (len(source_ids) > 0 and images_checked > 0) else "ZERO_SAMPLES_BLOCKED",
+        "manifest_path": str(SPLIT_LOCK_PATH.relative_to(REPO_ROOT)),
+        "sources_checked_count": len(source_ids),
+        "images_checked_count": images_checked,
+        "distinct_hashes_checked_count": len(hashes),
+        "source_ids": source_ids,
+        "hashes": hashes,
+    }
+
+
+def verify_and_load_tgif_n400_cohort() -> Dict[str, Any]:
+    """Verifies and loads the Phase 4C.7B TGIF N=400 sealed cohort."""
+    logger.info("Auditing sealed TGIF N=400 cohort...")
+    if not TGIF_N400_MANIFEST_PATH.exists() or not TGIF_N400_PACKAGE_PATH.exists():
+        return {
+            "status": "MISSING_ARTIFACTS_BLOCKED",
+            "manifest_path": str(TGIF_N400_MANIFEST_PATH.relative_to(REPO_ROOT)),
+            "package_zip_path": str(TGIF_N400_PACKAGE_PATH.relative_to(REPO_ROOT)),
+            "integrity_verified": False,
+            "sources_checked_count": 0,
+            "images_checked_count": 0,
+            "distinct_hashes_checked_count": 0,
+            "source_ids": set(),
+            "hashes": set(),
+        }
+
+    # Verify integrity of reference artifacts against historic receipts
+    actual_zip_sha = compute_sha256(TGIF_N400_PACKAGE_PATH)
+    actual_man_sha = compute_sha256(TGIF_N400_MANIFEST_PATH)
+    integrity_ok = (actual_zip_sha == EXPECTED_N400_ZIP_SHA256 and actual_man_sha == EXPECTED_N400_MANIFEST_SHA256)
+
+    with open(TGIF_N400_MANIFEST_PATH, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    candidates = data.get("selected_candidates", [])
+    source_ids = set()
+    for c in candidates:
+        sid = c.get("source_id") or c.get("raw_id")
+        if sid:
+            source_ids.add(f"{int(sid):012d}")
+
+    # Inspect images within zip package
+    hashes = set()
+    images_checked = 0
+    with zipfile.ZipFile(TGIF_N400_PACKAGE_PATH, "r") as zf:
+        for name in zf.namelist():
+            if name.endswith(".png"):
+                data_bytes = zf.read(name)
+                hashes.add(hashlib.sha256(data_bytes).hexdigest())
+                images_checked += 1
+
+    return {
+        "status": "CHECKED_OK" if (len(source_ids) > 0 and images_checked > 0 and integrity_ok) else "ZERO_SAMPLES_OR_CORRUPT_BLOCKED",
+        "manifest_path": str(TGIF_N400_MANIFEST_PATH.relative_to(REPO_ROOT)),
+        "package_zip_path": str(TGIF_N400_PACKAGE_PATH.relative_to(REPO_ROOT)),
+        "integrity_verified": integrity_ok,
+        "actual_zip_sha256": actual_zip_sha,
+        "actual_manifest_sha256": actual_man_sha,
+        "sources_checked_count": len(source_ids),
+        "images_checked_count": images_checked,
+        "distinct_hashes_checked_count": len(hashes),
+        "source_ids": source_ids,
+        "hashes": hashes,
+    }
+
+
 def audit_leakage_and_confounding(hamming_threshold: int = 3) -> Dict[str, Any]:
     if not MANIFEST_PATH.exists():
         raise FileNotFoundError(f"Candidate cohort manifest not found at {MANIFEST_PATH}. Run audit_local_dataset_inventory.py first.")
@@ -66,15 +187,9 @@ def audit_leakage_and_confounding(hamming_threshold: int = 3) -> Dict[str, Any]:
 
     logger.info(f"Loaded {len(records)} candidate cohort records.")
 
-    # Categorize records by eligibility
+    # Filter strictly eligible development records
     dev_records = [r for r in records if r["eligibility"] == "ELIGIBLE_DEVELOPMENT"]
-    sealed_test_records = [r for r in records if r["eligibility"] == "SEALED_LOCKED_TEST"]
-    sealed_n400_records = [r for r in records if r["eligibility"] == "SEALED_INDEPENDENT_EVALUATION"]
-    other_records = [r for r in records if r["eligibility"] not in ("ELIGIBLE_DEVELOPMENT", "SEALED_LOCKED_TEST", "SEALED_INDEPENDENT_EVALUATION")]
-
     logger.info(f"Eligible development: {len(dev_records)} records")
-    logger.info(f"Sealed locked-test: {len(sealed_test_records)} records")
-    logger.info(f"Sealed TGIF N=400: {len(sealed_n400_records)} records")
 
     # 1. Source Group Integrity within Development Cohort
     source_to_labels = defaultdict(set)
@@ -87,22 +202,37 @@ def audit_leakage_and_confounding(hamming_threshold: int = 3) -> Dict[str, Any]:
     unpaired_sources = [sid for sid, labels in source_to_labels.items() if len(labels) < 2]
     complete_pairs = [sid for sid, labels in source_to_labels.items() if len(labels) == 2 and "authentic" in labels and "ai_edited" in labels]
 
-    # 2. Exact Duplicates (SHA-256) Check
+    # 2. Exact Duplicates (SHA-256) Check within Development
     sha_map = defaultdict(list)
     for r in dev_records:
         sha_map[r["sha256"]].append(r["sample_id"])
 
     exact_duplicates_dev = {sha: sids for sha, sids in sha_map.items() if len(sids) > 1}
 
-    # 3. Cross-Cohort Leakage Check with Sealed Cohorts
-    dev_shas = {r["sha256"]: r["sample_id"] for r in dev_records}
+    # 3. Sealed Cohorts Isolation Verification
+    locked_test_audit = verify_and_load_locked_test_cohort()
+    n400_audit = verify_and_load_tgif_n400_cohort()
+
+    dev_shas = {r["sha256"] for r in dev_records}
     dev_source_ids = set(source_to_records.keys())
 
-    sealed_shas = {r["sha256"]: r["sample_id"] for r in (sealed_test_records + sealed_n400_records)}
-    sealed_source_ids = {r["source_group_id"] for r in (sealed_test_records + sealed_n400_records)}
+    # Isolation overlaps
+    dev_vs_locked_src = dev_source_ids.intersection(locked_test_audit["source_ids"])
+    dev_vs_locked_hash = dev_shas.intersection(locked_test_audit["hashes"])
 
-    cross_leak_shas = set(dev_shas.keys()).intersection(set(sealed_shas.keys()))
-    cross_leak_sources = dev_source_ids.intersection(sealed_source_ids)
+    dev_vs_n400_src = dev_source_ids.intersection(n400_audit["source_ids"])
+    dev_vs_n400_hash = dev_shas.intersection(n400_audit["hashes"])
+
+    # Fail closed rule: Any zero-checked cohort cannot PASS
+    locked_test_ok = (locked_test_audit["sources_checked_count"] > 0 and len(dev_vs_locked_src) == 0 and len(dev_vs_locked_hash) == 0)
+    n400_ok = (n400_audit["sources_checked_count"] > 0 and n400_audit["integrity_verified"] and len(dev_vs_n400_src) == 0 and len(dev_vs_n400_hash) == 0)
+
+    if locked_test_audit["sources_checked_count"] == 0 or n400_audit["sources_checked_count"] == 0:
+        isolation_verdict = "NOT_CHECKED_OR_BLOCKED"
+    elif locked_test_ok and n400_ok:
+        isolation_verdict = "PASS"
+    else:
+        isolation_verdict = "FATAL_LEAKAGE"
 
     # 4. Near-Duplicate & Perceptual Hash Analysis on Development Cohort
     logger.info("Computing perceptual hashes (dHash) for eligible development cohort...")
@@ -113,7 +243,6 @@ def audit_leakage_and_confounding(hamming_threshold: int = 3) -> Dict[str, Any]:
             dh = compute_dhash(img_p)
             dev_dhashes[r["sample_id"]] = (dh, r["label"], r["source_group_id"])
 
-    # Near-duplicates across different sources (risk of cross-source leakage)
     cross_source_near_duplicates = []
     same_source_pairs_compared = 0
     all_sample_ids = list(dev_dhashes.keys())
@@ -171,9 +300,6 @@ def audit_leakage_and_confounding(hamming_threshold: int = 3) -> Dict[str, Any]:
             },
         }
 
-    # 6. Evaluation of Confounding Risk
-    # In TGIF, authentic images are JPEG 512x512 and edited are PNG 512x512 or both JPEG/PNG?
-    # Let's assess format distribution uniformity:
     auth_fmts = confounding_by_label.get("authentic", {}).get("formats", {})
     edit_fmts = confounding_by_label.get("ai_edited", {}).get("formats", {})
     format_discrepancy = (auth_fmts != edit_fmts)
@@ -197,7 +323,8 @@ def audit_leakage_and_confounding(hamming_threshold: int = 3) -> Dict[str, Any]:
     }
 
     report = {
-        "audit_version": "1.0",
+        "audit_version": "2.0",
+        "provenance_standard": "MS-COCO val2017 (authentic) & Stable Diffusion 2 inpainting (ai_edited)",
         "hamming_threshold": hamming_threshold,
         "eligible_development_count": len(dev_records),
         "source_group_audit": {
@@ -212,23 +339,46 @@ def audit_leakage_and_confounding(hamming_threshold: int = 3) -> Dict[str, Any]:
             "status": "PASS" if len(exact_duplicates_dev) == 0 else "WARN_EXACT_DUPLICATES",
         },
         "cross_cohort_leakage": {
-            "sealed_locked_test_sources_checked": len(sealed_test_records),
-            "sealed_n400_sources_checked": len(sealed_n400_records),
-            "overlapping_exact_sha256_count": len(cross_leak_shas),
-            "overlapping_source_ids_count": len(cross_leak_sources),
-            "status": "PASS" if (len(cross_leak_shas) == 0 and len(cross_leak_sources) == 0) else "FATAL_LEAKAGE",
+            "status": isolation_verdict,
+            "overlapping_exact_sha256_count": len(dev_vs_locked_hash) + len(dev_vs_n400_hash),
+            "overlapping_source_ids_count": len(dev_vs_locked_src) + len(dev_vs_n400_src),
+            "locked_test_sources_checked": locked_test_audit["sources_checked_count"],
+            "n400_sources_checked": n400_audit["sources_checked_count"],
+        },
+        "cross_cohort_isolation": {
+            "locked_test_cohort": {
+                "manifest_path": locked_test_audit["manifest_path"],
+                "status": locked_test_audit["status"],
+                "sources_checked_count": locked_test_audit["sources_checked_count"],
+                "images_checked_count": locked_test_audit["images_checked_count"],
+                "distinct_hashes_checked_count": locked_test_audit["distinct_hashes_checked_count"],
+                "overlapping_sources_with_dev": len(dev_vs_locked_src),
+                "overlapping_hashes_with_dev": len(dev_vs_locked_hash),
+            },
+            "tgif_n400_cohort": {
+                "manifest_path": n400_audit["manifest_path"],
+                "package_zip_path": n400_audit.get("package_zip_path"),
+                "integrity_verified": n400_audit.get("integrity_verified", False),
+                "status": n400_audit["status"],
+                "sources_checked_count": n400_audit["sources_checked_count"],
+                "images_checked_count": n400_audit["images_checked_count"],
+                "distinct_hashes_checked_count": n400_audit["distinct_hashes_checked_count"],
+                "overlapping_sources_with_dev": len(dev_vs_n400_src),
+                "overlapping_hashes_with_dev": len(dev_vs_n400_hash),
+            },
+            "isolation_verdict": isolation_verdict,
         },
         "perceptual_near_duplicates": {
             "method": "64_bit_dhash_lanczos",
             "cross_source_near_duplicates_found": len(cross_source_near_duplicates),
-            "details": cross_source_near_duplicates[:20],  # cap at first 20 if any
+            "details": cross_source_near_duplicates[:20],
             "status": "PASS" if len(cross_source_near_duplicates) == 0 else "REVIEW_NEAR_DUPLICATES",
         },
         "confounding_factor_analysis": confounding_by_label,
         "confounding_risk_assessment": confounding_risk_assessment,
         "summary_verdict": (
             "LEAKAGE_AUDIT_PASS"
-            if len(unpaired_sources) == 0 and len(cross_leak_shas) == 0 and len(cross_leak_sources) == 0
+            if len(unpaired_sources) == 0 and isolation_verdict == "PASS"
             else "LEAKAGE_AUDIT_FAIL"
         ),
     }
@@ -247,14 +397,26 @@ def main() -> int:
         print("\n" + "=" * 70)
         print("Forensics Web Lab - Leakage & Confounding Audit Summary")
         print("=" * 70)
-        print(f"Eligible Development Records:  {report['eligible_development_count']}")
-        print(f"Distinct Source Groups:        {report['source_group_audit']['total_distinct_sources']}")
-        print(f"Complete Auth/Edited Pairs:    {report['source_group_audit']['complete_authentic_edited_pairs']}")
-        print(f"Source Group Integrity:        {report['source_group_audit']['status']}")
-        print(f"Exact Duplicates (Dev):        {report['exact_duplicates']['status']}")
-        print(f"Cross-Cohort Leakage (Sealed): {report['cross_cohort_leakage']['status']}")
-        print(f"Near-Duplicates (Cross-Source):{report['perceptual_near_duplicates']['status']} (count={report['perceptual_near_duplicates']['cross_source_near_duplicates_found']})")
-        print(f"Summary Verdict:               {report['summary_verdict']}")
+        print(f"Eligible Development Records:        {report['eligible_development_count']}")
+        print(f"Distinct Source Groups:              {report['source_group_audit']['total_distinct_sources']}")
+        print(f"Complete Auth/Edited Pairs:          {report['source_group_audit']['complete_authentic_edited_pairs']}")
+        print(f"Source Group Integrity:              {report['source_group_audit']['status']}")
+        print(f"Exact Duplicates (Dev):              {report['exact_duplicates']['status']}")
+        print("--- Sealed Cohorts Isolation ---")
+        locked_test = report["cross_cohort_isolation"]["locked_test_cohort"]
+        n400 = report["cross_cohort_isolation"]["tgif_n400_cohort"]
+        print(f"Locked-Test Sources Checked:         {locked_test['sources_checked_count']}")
+        print(f"Locked-Test Images Checked:          {locked_test['images_checked_count']}")
+        print(f"Locked-Test Distinct Hashes Checked: {locked_test['distinct_hashes_checked_count']}")
+        print(f"Locked-Test Overlap with Dev:        {locked_test['overlapping_sources_with_dev']} sources, {locked_test['overlapping_hashes_with_dev']} hashes")
+        print(f"TGIF N=400 Sources Checked:          {n400['sources_checked_count']}")
+        print(f"TGIF N=400 Images Checked:           {n400['images_checked_count']}")
+        print(f"TGIF N=400 Distinct Hashes Checked:  {n400['distinct_hashes_checked_count']}")
+        print(f"TGIF N=400 Integrity Verified:       {n400['integrity_verified']}")
+        print(f"TGIF N=400 Overlap with Dev:         {n400['overlapping_sources_with_dev']} sources, {n400['overlapping_hashes_with_dev']} hashes")
+        print(f"Cross-Cohort Isolation Verdict:      {report['cross_cohort_isolation']['isolation_verdict']}")
+        print(f"Near-Duplicates (Cross-Source):      {report['perceptual_near_duplicates']['status']} (count={report['perceptual_near_duplicates']['cross_source_near_duplicates_found']})")
+        print(f"Summary Verdict:                     {report['summary_verdict']}")
         print("=" * 70)
         return 0 if report["summary_verdict"] == "LEAKAGE_AUDIT_PASS" else 1
     except Exception as e:

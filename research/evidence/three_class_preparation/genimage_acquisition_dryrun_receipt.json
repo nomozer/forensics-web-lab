@@ -6,9 +6,9 @@
   "is_approved_by_user": false,
   "disk_check": {
     "drive": "D:",
-    "free_bytes": 69880717312,
+    "free_bytes": 65267695616,
     "required_bytes": 25769803776,
-    "free_gb": 65.08,
+    "free_gb": 60.79,
     "required_gb": 24.0,
     "sufficient": true
   },

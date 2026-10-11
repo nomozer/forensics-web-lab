@@ -1,5 +1,6 @@
 {
-  "audit_version": "1.0",
+  "audit_version": "2.0",
+  "provenance_standard": "MS-COCO val2017 (authentic) & Stable Diffusion 2 inpainting (ai_edited)",
   "hamming_threshold": 3,
   "eligible_development_count": 682,
   "source_group_audit": {
@@ -14,11 +15,34 @@
     "status": "PASS"
   },
   "cross_cohort_leakage": {
-    "sealed_locked_test_sources_checked": 3087,
-    "sealed_n400_sources_checked": 0,
+    "status": "PASS",
     "overlapping_exact_sha256_count": 0,
     "overlapping_source_ids_count": 0,
-    "status": "PASS"
+    "locked_test_sources_checked": 343,
+    "n400_sources_checked": 400
+  },
+  "cross_cohort_isolation": {
+    "locked_test_cohort": {
+      "manifest_path": "research\\evidence\\phase-4b.2\\split-lock.json",
+      "status": "CHECKED_OK",
+      "sources_checked_count": 343,
+      "images_checked_count": 3087,
+      "distinct_hashes_checked_count": 2970,
+      "overlapping_sources_with_dev": 0,
+      "overlapping_hashes_with_dev": 0
+    },
+    "tgif_n400_cohort": {
+      "manifest_path": "research\\evidence\\phase-4c.7b\\tgif_train_clean_subset_manifest_locked_n400.json",
+      "package_zip_path": "data\\research\\local-artifacts\\phase-4c.7b\\tgif_train_clean_subset_package.zip",
+      "integrity_verified": true,
+      "status": "CHECKED_OK",
+      "sources_checked_count": 400,
+      "images_checked_count": 800,
+      "distinct_hashes_checked_count": 800,
+      "overlapping_sources_with_dev": 0,
+      "overlapping_hashes_with_dev": 0
+    },
+    "isolation_verdict": "PASS"
   },
   "perceptual_near_duplicates": {
     "method": "64_bit_dhash_lanczos",

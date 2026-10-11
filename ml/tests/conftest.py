@@ -7,6 +7,8 @@ import stat
 
 import pytest
 
+pytest_plugins = ["ml.tests.fixtures.cohort_catalog_fixture"]
+
 
 _TEMP_MARKER = ".forensics_pytest_temp"
 _MANAGED_PREFIXES = ("pytest-", "pilot-dossier-pytest-")

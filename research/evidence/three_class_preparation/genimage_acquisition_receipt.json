@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0.0",
+  "timestamp_utc": "2026-10-11T01:26:51Z",
+  "user_authorization": {
+    "authorized_scope": "GenImage pilot intake: max 341 fully_generated (SD1.4), max 341 authentic (nature control)",
+    "download_budget_bytes": 2147483648,
+    "disk_budget_bytes": 5368709120,
+    "sampling_method": "deterministic_pseudo_random_without_replacement",
+    "random_seed": 20261011,
+    "restrictions_enforced": [
+      "No detector-based cherry-picking",
+      "No full dataset download exceeding budget",
+      "No training, refit, or QAFT in this turn",
+      "Quarantined from Git"
+    ]
+  },
+  "provenance_and_downloads": {
+    "source_url": "https://huggingface.co/datasets/TheKernel01/Tiny-GenImage",
+    "shards_downloaded": [
+      {
+        "name": "validation-00000-of-00004.parquet",
+        "bytes": 433181356,
+        "sha256": "9f9d4803045f2bcd4815f4381fef65b80d923d75104775c3435e452c85460558"
+      },
+      {
+        "name": "validation-00001-of-00004.parquet",
+        "bytes": 441983256,
+        "sha256": "24d0169086b7398327383a4c2075d551fc663452602f73b3410483529a1d3bbb"
+      }
+    ],
+    "total_downloaded_bytes": 875164612,
+    "budget_compliance": "PASS_WITHIN_2GIB_BUDGET"
+  },
+  "nature_authentic_control_status": {
+    "candidates_available": 1750,
+    "target_sampled_count": 341,
+    "successfully_extracted": 341,
+    "total_extracted_bytes": 45608063,
+    "status": "ACQUISITION_VERIFIED_PASS"
+  },
+  "sd14_fully_generated_status": {
+    "candidates_available_in_mirror": 0,
+    "target_count": 341,
+    "successfully_extracted": 0,
+    "status": "DATA_BLOCKED_UNAVAILABLE_IN_BUDGETED_SOURCE",
+    "blocker_explanation": "The Tiny-GenImage Hugging Face mirror (TheKernel01) provides 7 generative models (ADM, BigGAN, GLIDE, Midjourney, SD1.5, VQDM, Wukong), but completely omits Generator 5 (SD1.4) (0 samples). The official primary distribution from GenImage authors (ENSTA-U2IS / jzousz) packages SD1.4 as a monolithic 30-part multipart zip (imagenet_ai_0419_sdv4.zip / .z01-.z29) totaling ~96.5 GiB, which strictly exceeds the 2 GiB download budget and 5 GiB disk limit. Per Section B and Scientific Honesty, we refuse to download the 96 GiB archive, refuse to substitute another generator without authorization, and fail-closed with exact blocker determination."
+  },
+  "overall_acquisition_verdict": "DATA_BLOCKED_FOR_SD14_FULLY_GENERATED",
+  "action_taken": "Extracted and verified 341 nature control images; accurately reported exact blocker for SD1.4."
+}

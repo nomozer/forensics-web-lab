@@ -47,13 +47,13 @@ def test_baselines_parity_and_dimensions():
     b1 = proto["baselines"]["baseline_1_visual_only"]
     b2 = proto["baselines"]["baseline_2_visual_dsp"]
 
-    assert b1["backbone"]["feature_dim"] == 1280
-    assert b1["classification_head"]["input_dim"] == 1280
+    assert b1["backbone"]["feature_dim"] == 576
+    assert b1["classification_head"]["input_dim"] == 576
     assert b1["classification_head"]["output_dim"] == 3
 
-    assert b2["backbone"]["feature_dim"] == 1280
+    assert b2["backbone"]["feature_dim"] == 576
     assert b2["dsp_extractor"]["feature_dim"] == 16
-    assert b2["classification_head"]["input_dim"] == 1296
+    assert b2["classification_head"]["input_dim"] == 592
     assert b2["classification_head"]["output_dim"] == 3
 
 

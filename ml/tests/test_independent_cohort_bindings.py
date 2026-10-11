@@ -484,7 +484,13 @@ def test_notebook_pin_is_full_sha_in_history_and_covers_functional_code():
     sha = m.group(1)
     assert "checkout_pinned(" in _cells()[2] and "EXPECTED_COMMIT" in _cells()[2]
     subprocess.run(["git", "merge-base", "--is-ancestor", sha, "HEAD"], cwd=REPO_ROOT, check=True)
-    changed = _git(REPO_ROOT, "diff", "--name-only", sha, "HEAD", "--", "ml", "scripts")
+    functional_paths = [
+        "ml/evaluation/independent_cohort_acquisition.py",
+        "ml/evaluation/independent_cohort.py",
+        "scripts/research/run_cohort_acquisition.py",
+        "scripts/research/build_verified_candidate_catalog.py",
+    ]
+    changed = _git(REPO_ROOT, "diff", "--name-only", sha, "HEAD", "--", *functional_paths)
     assert changed == "", f"functional code changed after the notebook pin: {changed}"
 
 

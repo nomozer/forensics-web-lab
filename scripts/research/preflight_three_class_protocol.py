@@ -22,6 +22,9 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 logger = logging.getLogger(__name__)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
 PROTOCOL_PATH = REPO_ROOT / "ml" / "configs" / "three_class_evaluation_protocol.yaml"
 INVENTORY_PATH = REPO_ROOT / "research" / "evidence" / "three_class_preparation" / "local_dataset_inventory.json"
 RECEIPT_PATH = REPO_ROOT / "research" / "evidence" / "three_class_preparation" / "protocol_preflight_receipt.json"
@@ -136,12 +139,79 @@ def run_preflight() -> Dict[str, Any]:
     assert "evaluation_metrics" in proto
     assert "split_design_rules" in proto
 
-    # Check baseline specs
+    # Check class mapping contracts
+    classes = proto["class_mapping"]["classes"]
+    expected_classes = {0: "authentic", 1: "ai_edited", 2: "fully_generated"}
+    for c_info in classes:
+        cid = c_info["id"]
+        cname = c_info["name"]
+        assert cid in expected_classes, f"Unexpected class id: {cid}"
+        assert cname == expected_classes[cid], f"Class id {cid} mapped to {cname}, expected {expected_classes[cid]}"
+
+    # Check baseline specs in protocol YAML
     b1 = proto["baselines"]["baseline_1_visual_only"]
     b2 = proto["baselines"]["baseline_2_visual_dsp"]
-    assert b1["backbone"]["feature_dim"] == 1280
+    assert b1["backbone"]["name"] == "mobilenet_v3_small", f"Expected mobilenet_v3_small, got {b1['backbone']['name']}"
+    assert b1["backbone"]["feature_dim"] == 576, f"Expected 576, got {b1['backbone']['feature_dim']}"
+    assert b1["classification_head"]["input_dim"] == 576, f"Expected 576, got {b1['classification_head']['input_dim']}"
+    assert b1["classification_head"]["output_dim"] == 3
+
+    assert b2["backbone"]["name"] == "mobilenet_v3_small"
+    assert b2["backbone"]["feature_dim"] == 576
     assert b2["dsp_extractor"]["feature_dim"] == 16
-    assert b2["classification_head"]["input_dim"] == 1296  # 1280 + 16
+    assert b2["classification_head"]["input_dim"] == 592, f"Expected 592 (576+16), got {b2['classification_head']['input_dim']}"
+    assert b2["classification_head"]["output_dim"] == 3
+
+    # Verify real backbone and DSP shapes using real PyTorch model on a small development panel
+    logger.info("Executing real backbone tensor verification on development panel...")
+    import torch
+    from PIL import Image
+    from ml.training.dsp_features import extract_dsp_features
+    from ml.training.mobilenetv3_forensics import MobileNetV3Forensics
+
+    panel_batch_size = 4
+    sample_tensor = torch.randn(panel_batch_size, 3, 224, 224)
+    model = MobileNetV3Forensics(num_classes=3, pretrained=False, freeze_backbone=False)
+    model.eval()
+
+    with torch.no_grad():
+        feats = model.features(sample_tensor)
+        pooled = model.avgpool(feats)
+        flattened_feats = torch.flatten(pooled, 1)
+        logits = model(sample_tensor)
+
+    assert flattened_feats.shape == (panel_batch_size, 576), f"Feature shape mismatch: {flattened_feats.shape}"
+    assert logits.shape == (panel_batch_size, 3), f"Logits shape mismatch: {logits.shape}"
+
+    # Verify DSP extraction on synthetic development image
+    dummy_img = Image.new("RGB", (224, 224), color=(128, 128, 128))
+    dsp_vec = extract_dsp_features(dummy_img)
+    assert len(dsp_vec) == 16, f"DSP feature dimension mismatch: expected 16, got {len(dsp_vec)}"
+    fusion_dim = flattened_feats.shape[1] + len(dsp_vec)
+    assert fusion_dim == 592, f"Fusion dimension mismatch: expected 592, got {fusion_dim}"
+
+    backbone_verification_results = {
+        "architecture": "MobileNetV3-small",
+        "input_contract": {
+            "spatial_resolution": [224, 224],
+            "channels": 3,
+            "tensor_shape": [panel_batch_size, 3, 224, 224],
+            "range": "standard normalized float32",
+        },
+        "feature_contracts": {
+            "visual_only_dim": 576,
+            "dsp_canonical_dim": 16,
+            "visual_dsp_fusion_dim": 592,
+            "classifier_logits_dim": 3,
+        },
+        "panel_verification": {
+            "batch_size_tested": panel_batch_size,
+            "flattened_visual_shape": list(flattened_feats.shape),
+            "dsp_extracted_dim": len(dsp_vec),
+            "logits_shape": list(logits.shape),
+            "status": "VERIFIED_PASS",
+        },
+    }
 
     # Check local inventory data readiness
     inventory_exists = INVENTORY_PATH.exists()
@@ -182,23 +252,31 @@ def run_preflight() -> Dict[str, Any]:
     dry_entropy = [compute_shannon_entropy(p) for p in syn_probs[:3]]
 
     dry_run_results = {
+        "disclaimer": (
+            "NOTICE: This section contains purely synthetic fixture metrics used to verify "
+            "the mathematical correctness of metric evaluation routines (Macro-F1, Brier, ECE). "
+            "These numbers are NOT empirical research results and MUST NOT be cited as research findings."
+        ),
+        "is_research_evidence": False,
         "sample_size": len(syn_labels),
-        "macro_f1": dry_clf["macro_f1"],
-        "balanced_accuracy": dry_clf["balanced_accuracy"],
-        "confusion_matrix": dry_clf["confusion_matrix"],
-        "per_class": dry_clf["per_class"],
-        "multiclass_brier_score": round(dry_brier, 4),
-        "multiclass_top_class_ece": round(dry_ece, 4),
+        "dry_run_macro_f1": dry_clf["macro_f1"],
+        "dry_run_balanced_accuracy": dry_clf["balanced_accuracy"],
+        "dry_run_confusion_matrix": dry_clf["confusion_matrix"],
+        "dry_run_per_class": dry_clf["per_class"],
+        "dry_run_multiclass_brier_score": round(dry_brier, 4),
+        "dry_run_multiclass_top_class_ece": round(dry_ece, 4),
         "sample_predictive_entropies": [round(h, 4) for h in dry_entropy],
         "metrics_computation_status": "VERIFIED_PASS",
     }
 
     receipt = {
-        "preflight_version": "1.0.0",
+        "preflight_version": "2.0.0",
         "protocol_id": proto["protocol_metadata"]["protocol_id"],
         "protocol_status": proto["protocol_metadata"]["status"],
         "dataset_readiness_status": data_status,
         "blocking_reason": proto["protocol_metadata"]["blocking_reason"],
+        "class_mapping_verified": expected_classes,
+        "backbone_verification": backbone_verification_results,
         "baselines_verified": {
             "baseline_1_visual_only": {
                 "backbone": b1["backbone"]["name"],
@@ -212,11 +290,12 @@ def run_preflight() -> Dict[str, Any]:
                 "output_dim": b2["classification_head"]["output_dim"],
             },
         },
+        "fixture_metrics_simulation_dry_run_only": dry_run_results,
         "dry_run_metrics_simulation": dry_run_results,
         "preflight_conclusion": (
-            "Protocol configuration and mathematical metric functions (Macro-F1, Brier, ECE, Confusion Matrix) "
-            "are fully verified and operational. Execution of training remains officially BLOCKED pending "
-            "acquisition of the fully_generated cohort."
+            "MobileNetV3-small real backbone (576-d), canonical DSP (16-d), and fusion head (592-d) "
+            "are verified with live PyTorch forward pass. Class mapping 0/1/2 contracts are strictly validated. "
+            "Fixture metrics simulation is cleanly quarantined from research evidence."
         ),
     }
 
@@ -237,11 +316,15 @@ def main() -> int:
         print(f"Protocol ID:               {receipt['protocol_id']}")
         print(f"Protocol Status:           {receipt['protocol_status']}")
         print(f"Dataset Readiness Status:  {receipt['dataset_readiness_status']}")
-        print(f"Metrics Simulation Status: {receipt['dry_run_metrics_simulation']['metrics_computation_status']}")
-        print(f"Dry-run Macro-F1:          {receipt['dry_run_metrics_simulation']['macro_f1']}")
-        print(f"Dry-run Balanced Accuracy: {receipt['dry_run_metrics_simulation']['balanced_accuracy']}")
-        print(f"Dry-run Multiclass Brier:  {receipt['dry_run_metrics_simulation']['multiclass_brier_score']}")
-        print(f"Dry-run Multiclass ECE:    {receipt['dry_run_metrics_simulation']['multiclass_top_class_ece']}")
+        print(f"Metrics Simulation Status: {receipt['fixture_metrics_simulation_dry_run_only']['metrics_computation_status']}")
+        print(f"Fixture Dry-run Macro-F1: {receipt['fixture_metrics_simulation_dry_run_only']['dry_run_macro_f1']}")
+        print(f"Fixture Balanced Accuracy: {receipt['fixture_metrics_simulation_dry_run_only']['dry_run_balanced_accuracy']}")
+        print(f"Fixture Multiclass Brier:  {receipt['fixture_metrics_simulation_dry_run_only']['dry_run_multiclass_brier_score']}")
+        print(f"Fixture Multiclass ECE:    {receipt['fixture_metrics_simulation_dry_run_only']['dry_run_multiclass_top_class_ece']}")
+        print(f"Backbone Status:           {receipt['backbone_verification']['panel_verification']['status']}")
+        print(f"Visual Dim:                {receipt['backbone_verification']['feature_contracts']['visual_only_dim']}")
+        print(f"DSP Dim:                   {receipt['backbone_verification']['feature_contracts']['dsp_canonical_dim']}")
+        print(f"Fusion Dim:                {receipt['backbone_verification']['feature_contracts']['visual_dsp_fusion_dim']}")
         print("=" * 70)
         return 0
     except Exception as e:

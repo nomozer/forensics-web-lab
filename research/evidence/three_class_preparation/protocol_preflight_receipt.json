@@ -1,27 +1,70 @@
 {
-  "preflight_version": "1.0.0",
+  "preflight_version": "2.0.0",
   "protocol_id": "PROTO-RQ1-RQ2-3CLASS-V1",
   "protocol_status": "DRAFT_PENDING_ACQUISITION",
   "dataset_readiness_status": "DATA_BLOCKED_MISSING_FULLY_GENERATED",
   "blocking_reason": "L\u1edbp fully_generated v\u1eafng m\u1eb7t tr\u00ean LOCAL (0 \u1ea3nh). Kh\u00f4ng t\u1ea1o split gi\u1ea3.",
+  "class_mapping_verified": {
+    "0": "authentic",
+    "1": "ai_edited",
+    "2": "fully_generated"
+  },
+  "backbone_verification": {
+    "architecture": "MobileNetV3-small",
+    "input_contract": {
+      "spatial_resolution": [
+        224,
+        224
+      ],
+      "channels": 3,
+      "tensor_shape": [
+        4,
+        3,
+        224,
+        224
+      ],
+      "range": "standard normalized float32"
+    },
+    "feature_contracts": {
+      "visual_only_dim": 576,
+      "dsp_canonical_dim": 16,
+      "visual_dsp_fusion_dim": 592,
+      "classifier_logits_dim": 3
+    },
+    "panel_verification": {
+      "batch_size_tested": 4,
+      "flattened_visual_shape": [
+        4,
+        576
+      ],
+      "dsp_extracted_dim": 16,
+      "logits_shape": [
+        4,
+        3
+      ],
+      "status": "VERIFIED_PASS"
+    }
+  },
   "baselines_verified": {
     "baseline_1_visual_only": {
-      "backbone": "mobilenet_v4_small",
-      "input_dim": 1280,
+      "backbone": "mobilenet_v3_small",
+      "input_dim": 576,
       "output_dim": 3
     },
     "baseline_2_visual_dsp": {
-      "backbone": "mobilenet_v4_small",
+      "backbone": "mobilenet_v3_small",
       "dsp_features": "canonical_dsp_16d",
-      "input_dim": 1296,
+      "input_dim": 592,
       "output_dim": 3
     }
   },
-  "dry_run_metrics_simulation": {
+  "fixture_metrics_simulation_dry_run_only": {
+    "disclaimer": "NOTICE: This section contains purely synthetic fixture metrics used to verify the mathematical correctness of metric evaluation routines (Macro-F1, Brier, ECE). These numbers are NOT empirical research results and MUST NOT be cited as research findings.",
+    "is_research_evidence": false,
     "sample_size": 30,
-    "macro_f1": 1.0,
-    "balanced_accuracy": 1.0,
-    "confusion_matrix": [
+    "dry_run_macro_f1": 1.0,
+    "dry_run_balanced_accuracy": 1.0,
+    "dry_run_confusion_matrix": [
       [
         10,
         0,
@@ -38,7 +81,7 @@
         10
       ]
     ],
-    "per_class": {
+    "dry_run_per_class": {
       "0": {
         "tp": 10,
         "fp": 0,
@@ -64,8 +107,8 @@
         "f1": 1.0
       }
     },
-    "multiclass_brier_score": 0.0883,
-    "multiclass_top_class_ece": 0.2333,
+    "dry_run_multiclass_brier_score": 0.0883,
+    "dry_run_multiclass_top_class_ece": 0.2333,
     "sample_predictive_entropies": [
       0.6129,
       0.6129,
@@ -73,5 +116,63 @@
     ],
     "metrics_computation_status": "VERIFIED_PASS"
   },
-  "preflight_conclusion": "Protocol configuration and mathematical metric functions (Macro-F1, Brier, ECE, Confusion Matrix) are fully verified and operational. Execution of training remains officially BLOCKED pending acquisition of the fully_generated cohort."
+  "dry_run_metrics_simulation": {
+    "disclaimer": "NOTICE: This section contains purely synthetic fixture metrics used to verify the mathematical correctness of metric evaluation routines (Macro-F1, Brier, ECE). These numbers are NOT empirical research results and MUST NOT be cited as research findings.",
+    "is_research_evidence": false,
+    "sample_size": 30,
+    "dry_run_macro_f1": 1.0,
+    "dry_run_balanced_accuracy": 1.0,
+    "dry_run_confusion_matrix": [
+      [
+        10,
+        0,
+        0
+      ],
+      [
+        0,
+        10,
+        0
+      ],
+      [
+        0,
+        0,
+        10
+      ]
+    ],
+    "dry_run_per_class": {
+      "0": {
+        "tp": 10,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "1": {
+        "tp": 10,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "2": {
+        "tp": 10,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      }
+    },
+    "dry_run_multiclass_brier_score": 0.0883,
+    "dry_run_multiclass_top_class_ece": 0.2333,
+    "sample_predictive_entropies": [
+      0.6129,
+      0.6129,
+      0.6129
+    ],
+    "metrics_computation_status": "VERIFIED_PASS"
+  },
+  "preflight_conclusion": "MobileNetV3-small real backbone (576-d), canonical DSP (16-d), and fusion head (592-d) are verified with live PyTorch forward pass. Class mapping 0/1/2 contracts are strictly validated. Fixture metrics simulation is cleanly quarantined from research evidence."
 }

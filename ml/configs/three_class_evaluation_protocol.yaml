@@ -24,13 +24,13 @@ class_mapping:
   classes:
     - id: 0
       name: "authentic"
-      description: "Ảnh chụp tự nhiên chưa qua can thiệp AI tạo sinh (MS-COCO 2014)."
+      description: "Ảnh chụp tự nhiên chưa qua can thiệp AI tạo sinh (MS-COCO val2017)."
     - id: 1
       name: "ai_edited"
       description: "Ảnh thật bị chỉnh sửa cục bộ qua inpainting tạo sinh (TGIF SD2 inpainting)."
     - id: 2
       name: "fully_generated"
-      description: "Ảnh tạo sinh toàn phần từ văn bản/nhiễu (GenImage SD1.4/SDXL candidate)."
+      description: "Ảnh tạo sinh toàn phần từ văn bản/nhiễu (GenImage SD1.4 candidate)."
 
 prediction_decision_rule:
   rule_type: "softmax_argmax_with_entropy_rejection"
@@ -42,26 +42,26 @@ prediction_decision_rule:
 baselines:
   baseline_1_visual_only:
     name: "Visual-Only Baseline"
-    description: "Trích xuất đặc trưng thị giác từ backbone MobileNetV4 nhẹ, qua đầu phân loại 3 lớp."
+    description: "Trích xuất đặc trưng thị giác từ backbone MobileNetV3-small nhẹ, qua đầu phân loại 3 lớp."
     backbone:
-      name: "mobilenet_v4_small"
+      name: "mobilenet_v3_small"
       frozen: true
-      feature_dim: 1280
+      feature_dim: 576
       pretrained_source: "official_weights_reused"
     classification_head:
       type: "linear_projection"
-      input_dim: 1280
+      input_dim: 576
       output_dim: 3
       dropout: 0.1
       trainable: true
 
   baseline_2_visual_dsp:
     name: "Visual + Canonical DSP 16-D"
-    description: "Kết hợp đặc trưng thị giác MobileNetV4 với vector DSP 16 chiều (tần số DCT + residual statistics)."
+    description: "Kết hợp đặc trưng thị giác MobileNetV3-small với vector DSP 16 chiều (tần số DCT + residual statistics)."
     backbone:
-      name: "mobilenet_v4_small"
+      name: "mobilenet_v3_small"
       frozen: true
-      feature_dim: 1280
+      feature_dim: 576
     dsp_extractor:
       name: "canonical_dsp_16d"
       frozen: true
@@ -75,7 +75,7 @@ baselines:
           dims: 4
     classification_head:
       type: "linear_projection"
-      input_dim: 1296  # 1280 + 16
+      input_dim: 592  # 576 + 16
       output_dim: 3
       dropout: 0.1
       trainable: true
