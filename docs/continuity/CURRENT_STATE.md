@@ -235,8 +235,24 @@
 >    - **Tu Chính Protocol Localization v1.1.0**:
 >      * Ban hành `PROTOCOL_LOCALIZATION_PREPARATION_AMENDMENT_V1.1.0.md`: Khôi phục tên đề tài chính thức "Nghiên cứu và xây dựng công cụ phát hiện ảnh và tài liệu giả mạo sinh bởi AI"; định vị localization là hướng nghiên cứu ứng viên khám phá chưa được xác nhận; đếm lại mask chính xác từ manifests (Development Train chỉ có 250 ảnh edited có mask, Development Holdout chỉ có 91 ảnh edited có mask; không gọi N=750 hay N=273 là số cặp localization); xác nhận holdout là tập phát triển đã xem nhiều lần; ngân sách là mục tiêu thiết kế chưa đo; xóa bỏ hoàn toàn cam kết tự động huấn luyện UNet.
 >    - **Kiểm Thử & Hoàn Thành**: 7/7 pytest PASS (`test_document_pilot_reconciliation.py`, `test_document_observation_pilot.py`), 100% pnpm test PASS.
->    **Phase status**: `DOCUMENT_PILOT_RECONCILED_AND_COMPRESSION_REPLAY_PASS`<br>
->    **Next approved action**: Tiếp cận có kiểm soát nguồn tài liệu AIForge-Doc hoặc tạo sinh inpainting có đối chứng trên hóa đơn SROIE/CORD để xác minh 100% nguồn gốc AI và loại bỏ nhiễu định dạng trước khi đề xuất bất kỳ đợt huấn luyện nào.<br>
+>    **Historical Phase status**: `DOCUMENT_PILOT_RECONCILED_AND_COMPRESSION_REPLAY_PASS`<br>
+>
+> 18. _Đối Soát Báo Cáo Document Pilot Từ Raw Outputs, Chuẩn Hóa SSOT Metrics & Kiểm Toán Gated Access AIForge-Doc ($systematic-debugging, $writing-plans, $executing-plans, $verification-before-completion)_:
+>    - **Truy Nguyên & Sửa Lỗi Bất Nhất Báo Cáo (Root Cause)**:
+>      * Phân tích toán học xác nhận raw predictions trên đĩa (`document_pilot_predictions.json` và `document_pilot_replay_predictions.json`) hoàn toàn nhất quán và chính xác: đối với A0-visual P0 C0, số đếm thực tế là `TP=6, TN=20, FP=0, FN=14` -> $\text{TPR}=0.3000, \text{FPR}=0.0000, \text{Bal-Acc}=0.6500, \text{Macro-F1}=0.6011$.
+>      * Mâu thuẫn với con số $\text{Recall}=0.35, \text{FPR}=0.10$ xuất phát thuần túy từ lỗi sao chép nhầm dòng thủ công khi trợ lý phiên trước tổng hợp bảng tóm tắt chat.
+>      * Xây dựng script Single Source of Truth (SSOT) `scripts/research/reconcile_document_pilot_reporting.py`: đọc trực tiếp raw predictions, tính toán 100% metrics từ các ô số đếm confusion matrix, và tự động tạo báo cáo Markdown `DOCUMENT_PILOT_REPORTING_CORRECTION_V1.1.0.md` cùng receipt `document_pilot_reporting_correction_receipt.json`.
+>      * Cập nhật bảng đối soát trong `DOCUMENT_PILOT_RECONCILIATION_REPORT.md` bổ sung tường minh các cột TP, TN, FP, FN, Precision để loại bỏ hoàn toàn khả năng nhầm lẫn.
+>    - **Khóa Protocol Tiếp Nhận Panel Mới AIForge-Doc & Kiểm Toán Quyền Truy Cập (Provenance & Gated Audit)**:
+>      * Rà soát dataset ứng viên `Scam-AI/AIForge-Doc-v1` (arXiv:2602.20569): Dữ liệu inpainting tài liệu có nguồn gốc Generative AI xác minh 100% (Gemini 2.5 Flash, Ideogram v2, GPT-Image-2) trên 4 miền tài liệu chuẩn (CORD, SROIE, WildReceipt, XFUND); tập `TestingSet/` gồm 812 cặp ghép nguồn authentic-tampered 1:1 kèm mask điểm ảnh PNG lossless.
+>      * Ban hành và khóa `PROTOCOL_AIFORGE_DOC_INTAKE_V1.0.0.md`: Quy định lấy mẫu tất định 40 cặp ghép nguồn (80 ảnh + 40 masks; 20 Gemini 2.5 Flash + 20 Ideogram v2) phân tầng đều trên 4 miền; ngân sách mạng tối đa 150 MB (<= 1 GB session limit); giữ nguyên 6 locked models và so sánh 2 hình học P0 vs P1.
+>      * Kiểm toán quyền truy cập sơ cấp bằng `scripts/research/acquire_aiforge_doc_panel.py`: Cả hai repo `Scam-AI/AIForge-Doc-v1` và `v2` đều được đặt chế độ **gated access** (`gated: auto` / `gated: true`) trên Hugging Face Hub, yêu cầu người dùng đăng nhập và được duyệt access grant. Các request HTTP tải trực tiếp trả về mã lỗi **HTTP 401 Unauthorized** do môi trường local không cấu hình `HF_TOKEN`.
+>      * Thực thi nguyên tắc Scientific Honesty: Hệ thống dừng an toàn (fail-closed), ghi nhận toàn diện blocker vào `research/evidence/document_pilot/aiforge_doc_access_blocker_audit.json`, tuyệt đối không vượt tường lửa, không tải bản sao trái phép, và không tự sinh tài liệu giả để thay thế.
+>    - **Kiểm Thử Tự Động & Hoàn Thành**:
+>      * Viết mới bộ test `ml/tests/test_document_pilot_reporting_reconciliation.py` (4/4 PASS): Kiểm tra tự động tính khớp toán học giữa confusion matrix và Macro-F1/Bal-Acc/Precision/Recall/FPR; kiểm tra tính toàn vẹn của correction receipt; kiểm tra protocol AIForge-Doc v1.0.0; và kiểm tra access blocker audit.
+>      * Toàn bộ 11 tests `ml/tests` PASS; 67/67 tests pnpm PASS.
+>    **Phase status**: `DOCUMENT_PILOT_REPORTING_RECONCILED_AND_AIFORGE_GATE_AUDITED_PASS`<br>
+>    **Next approved action**: Người dùng xin cấp quyền truy cập Hugging Face cho `Scam-AI/AIForge-Doc-v1` và cung cấp `HF_TOKEN` để chạy tiếp nhận panel và thử nghiệm zero-shot trên 6 locked models.<br>
 >
 > ---
 

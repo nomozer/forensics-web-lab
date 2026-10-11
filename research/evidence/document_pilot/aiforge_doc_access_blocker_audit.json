@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0.0",
+  "audit_task": "AIFORGE_DOC_ACCESS_AND_AUTHENTICATION_GATE_AUDIT",
+  "timestamp_utc": "2026-10-11T17:58:08Z",
+  "target_dataset": "Scam-AI/AIForge-Doc-v1",
+  "revision_sha": "b8db5654e9be43b0afcc45f8d570daf8bef96d41",
+  "gated_configuration": "auto",
+  "private_configuration": false,
+  "license": "cc-by-nc-sa-4.0",
+  "total_repository_files": 12187,
+  "tested_probe_file": "TestingSet/authentic/cord_00010.png",
+  "file_access_result": {
+    "authorized": false,
+    "http_status_code": 401,
+    "http_status_reason": "Unauthorized"
+  },
+  "epistemic_determination": "AUTHENTICATION_REQUIRED_GATED_DATASET",
+  "remediation_instructions": [
+    "1. Visit the official Hugging Face dataset page: https://huggingface.co/datasets/Scam-AI/AIForge-Doc-v1",
+    "2. Ensure you are logged into your Hugging Face academic/research account.",
+    "3. Fill out the access request form ('Access Scam.AI Research Dataset') and click 'Agree and access dataset'.",
+    "4. Create a read-access User Access Token at https://huggingface.co/settings/tokens.",
+    "5. Export the token into your shell environment: $env:HF_TOKEN=\"hf_...\" (or run with --token).",
+    "6. Re-run scripts/research/acquire_aiforge_doc_panel.py to execute the pre-registered intake."
+  ]
+}
