@@ -142,3 +142,70 @@ def test_three_class_predictions_integrity():
         assert len(row["visual_dsp"]["probs"]) == 3
         assert abs(sum(row["visual_only"]["probs"]) - 1.0) < 1e-4
         assert abs(sum(row["visual_dsp"]["probs"]) - 1.0) < 1e-4
+
+
+def test_three_class_predictions_audit_receipt():
+    audit_receipt_path = EVIDENCE_DIR / "three_class_predictions_audit_receipt.json"
+    assert audit_receipt_path.exists(), f"Missing {audit_receipt_path}"
+    with open(audit_receipt_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    assert data["integrity_checks"]["holdout_sample_count"] == 273
+    assert data["integrity_checks"]["nature_control_sample_count"] == 341
+    assert data["integrity_checks"]["argmax_concordance"] is True
+
+    # Check verified metrics
+    m1 = data["verified_metrics"]["baseline_1_visual_only"]
+    m2 = data["verified_metrics"]["baseline_2_visual_dsp"]
+    assert m1["macro_f1"] == 0.5086
+    assert m2["macro_f1"] == 0.5385
+    assert data["verified_metrics"]["paired_delta"]["delta_macro_f1_point_estimate"] == 0.0298
+
+    # Check pair shift
+    ps = data["holdout_pair_probability_shift"]
+    assert ps["total_coco_source_pairs"] == 91
+    assert 0 <= ps["visual_only"]["positive_pairs_count"] <= 91
+    assert 0 <= ps["visual_dsp"]["positive_pairs_count"] <= 91
+
+
+def test_three_class_reconciled_evaluation_receipt():
+    rec_path = EVIDENCE_DIR / "three_class_pilot_evaluation_receipt_reconciled.json"
+    assert rec_path.exists(), f"Missing {rec_path}"
+    with open(rec_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    assert data["status"] == "RECONCILED_GROUPED_CV_PASS"
+    audit = data["fitting_scope_audit"]
+    assert audit["inner_cv_folds"] == 5
+    assert audit["split_strategy"] == "StratifiedGroupKFold"
+    assert audit["unique_groups_train"] == 500
+    assert audit["group_leakage_detected"] == 0
+
+    temps = data["calibrated_temperatures"]["reconciled_grouped"]
+    assert 5.0 <= temps["visual_only"] <= 7.0
+    assert 5.0 <= temps["visual_dsp"] <= 7.0
+
+    # Macro F1 unchanged
+    comp = data["holdout_metrics_comparison"]
+    assert comp["macro_f1"]["visual_only"] == 0.5086
+    assert comp["macro_f1"]["visual_dsp"] == 0.5385
+
+
+def test_three_class_robustness_receipt_and_predictions():
+    rob_dir = EVIDENCE_DIR / "robustness"
+    receipt_path = rob_dir / "three_class_robustness_audit_receipt.json"
+    assert receipt_path.exists(), f"Missing {receipt_path}"
+
+    with open(receipt_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    assert data["status"] == "POST_HOC_ROBUSTNESS_AUDIT_COMPLETE"
+    assert data["conditions_evaluated"] == ["original", "jpeg_q95", "jpeg_q75", "resize_0.5"]
+
+    for cond in ["original", "jpeg_q95", "jpeg_q75", "resize_0.5"]:
+        pred_path = rob_dir / f"three_class_predictions_{cond}.json"
+        assert pred_path.exists(), f"Missing predictions file for {cond}: {pred_path}"
+        with open(pred_path, "r", encoding="utf-8") as pf:
+            pdata = json.load(pf)
+        assert len(pdata["holdout_predictions"]) == 273
+        assert len(pdata["nature_control_predictions"]) == 341

@@ -1,0 +1,144 @@
+{
+  "schema_version": "1.0.0",
+  "receipt_id": "PILOT-3CLASS-EVAL-RECEIPT-RECONCILED-20261011",
+  "protocol_id": "PROTO-RQ1-RQ2-3CLASS-V2",
+  "timestamp": "2026-10-11T09:58:37Z",
+  "status": "RECONCILED_GROUPED_CV_PASS",
+  "historical_binding": {
+    "historical_receipt_path": "research/evidence/three_class_preparation/three_class_pilot_evaluation_receipt.json",
+    "historical_receipt_sha256": "0318592155e2fe7441f62e0a217b73d199e38f903f912248a4fe1180bca67ee9",
+    "reconciliation_reason": "Reconciles inner 5-fold cross-validation from sample-level StratifiedKFold to StratifiedGroupKFold(source_group_id) and enforces inner fold StandardScaler isolation. Hard classification decisions and Macro-F1 are strictly preserved bit-identical."
+  },
+  "fitting_scope_audit": {
+    "development_train_size": 750,
+    "development_holdout_size": 273,
+    "nature_control_size": 341,
+    "inner_cv_folds": 5,
+    "split_strategy": "StratifiedGroupKFold",
+    "grouping_key": "source_group_id",
+    "unique_groups_train": 500,
+    "group_leakage_detected": 0,
+    "inner_fold_scaler_isolation": "STRICT_PER_FOLD_FIT",
+    "holdout_leakage_into_fitting": 0,
+    "control_leakage_into_fitting": 0,
+    "fold_details": [
+      {
+        "fold_index": 0,
+        "train_samples": 600,
+        "val_samples": 150,
+        "train_groups": 400,
+        "val_groups": 100,
+        "group_overlap": 0,
+        "scaler_isolated": true
+      },
+      {
+        "fold_index": 1,
+        "train_samples": 600,
+        "val_samples": 150,
+        "train_groups": 400,
+        "val_groups": 100,
+        "group_overlap": 0,
+        "scaler_isolated": true
+      },
+      {
+        "fold_index": 2,
+        "train_samples": 600,
+        "val_samples": 150,
+        "train_groups": 400,
+        "val_groups": 100,
+        "group_overlap": 0,
+        "scaler_isolated": true
+      },
+      {
+        "fold_index": 3,
+        "train_samples": 600,
+        "val_samples": 150,
+        "train_groups": 400,
+        "val_groups": 100,
+        "group_overlap": 0,
+        "scaler_isolated": true
+      },
+      {
+        "fold_index": 4,
+        "train_samples": 600,
+        "val_samples": 150,
+        "train_groups": 400,
+        "val_groups": 100,
+        "group_overlap": 0,
+        "scaler_isolated": true
+      }
+    ]
+  },
+  "calibrated_temperatures": {
+    "historical_un_grouped": {
+      "visual_only": 8.3734,
+      "visual_dsp": 8.1321
+    },
+    "reconciled_grouped": {
+      "visual_only": 5.9818,
+      "visual_dsp": 5.9577
+    }
+  },
+  "holdout_metrics_comparison": {
+    "macro_f1": {
+      "visual_only": 0.5086,
+      "visual_dsp": 0.5385,
+      "point_delta": 0.0298,
+      "status": "BIT_IDENTICAL_UNCHANGED"
+    },
+    "balanced_accuracy": {
+      "visual_only": 0.4982,
+      "visual_dsp": 0.5238,
+      "point_delta": 0.0256,
+      "status": "BIT_IDENTICAL_UNCHANGED"
+    },
+    "multiclass_brier_score": {
+      "historical": {
+        "visual_only": 0.5841,
+        "visual_dsp": 0.5618,
+        "delta": -0.0223
+      },
+      "reconciled": {
+        "visual_only": 0.6002,
+        "visual_dsp": 0.5711,
+        "delta": -0.0291
+      }
+    },
+    "multiclass_top_class_ece": {
+      "historical": {
+        "visual_only": 0.0466,
+        "visual_dsp": 0.078,
+        "delta": 0.0314
+      },
+      "reconciled": {
+        "visual_only": 0.1003,
+        "visual_dsp": 0.0865,
+        "delta": -0.0138
+      }
+    }
+  },
+  "preprocessing_audit_vs_protocol": {
+    "three_class_pipeline": {
+      "step_1": "Center-crop to square min(W, H)",
+      "step_2": "Lanczos interpolation to 512x512 RGB",
+      "step_3_dsp": "Extract 16-D canonical DSP from 512x512 RGB image",
+      "step_4_visual": "Bicubic resize from 512x512 to 224x224 RGB -> ImageNet normalize [0.485, 0.456, 0.406], [0.229, 0.224, 0.225]",
+      "step_5_backbone": "MobileNetV3-small frozen ImageNet features (576-D)"
+    },
+    "historical_binary_pipeline_difference": {
+      "binary_preprocessing": "Direct bicubic resize to 224x224 RGB from arbitrary input aspect without intermediate 512x512 square crop",
+      "dsp_preprocessing": "Direct DSP extraction on raw canvas or fixed canvas depending on stage",
+      "parity_inheritance_rule": "Non-identical preprocessing: Parity conclusions of the historical binary pipeline CANNOT be inherited by the 3-class pipeline."
+    },
+    "cryptographic_hash_disambiguation": {
+      "pytorch_checkpoint_weights": {
+        "file": "models/research/pretrained/mobilenet_v3_small-047dcff4.pth",
+        "sha256": "047dcff4e5553e6ddb028605d1662708b53e34b9d40a02efcb8e9f54817a01dd"
+      },
+      "onnx_exported_model": {
+        "file": "models/research/onnx/mobilenet_v3_small_backbone_fp32.onnx",
+        "sha256": "b4b35d3a022c1a6b7921facb159650eb7e8804ec6d7cb1bf296e07bd2135680a"
+      }
+    }
+  }
+}

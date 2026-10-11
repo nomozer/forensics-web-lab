@@ -54,13 +54,35 @@
 >    - **Kết quả Thực nghiệm Thực tế trên Development Holdout ($N=273$) ($verification-before-completion)**:
 >      * Baseline 1 (`visual_only_multiclass`, 576-D): Macro-F1 = **0.5086** (Auth 0.4108, Edit 0.4615, Gen 0.6536), Balanced Accuracy = 0.4982, Multiclass Brier = 0.5841, ECE = 0.0466.
 >      * Baseline 2 (`visual_dsp_multiclass`, 592-D feature concatenation): Macro-F1 = **0.5385** (Auth 0.4409, Edit 0.4390, Gen 0.7355), Balanced Accuracy = 0.5238, Multiclass Brier = 0.5618, ECE = 0.0780.
->      * Paired Delta: $\Delta \text{Macro-F1} = \mathbf{+0.0299}$ (+2.99%). Stratified Source Cluster Bootstrap (10,000 reps, seed 20261011): 95% Percentile CI = **[-0.0068, +0.0686]**, $P(\Delta^* > 0) = 94.32\%$.
->      * Kết luận khoa học chính thức: **`INCONCLUSIVE`** (xu hướng cải thiện dương +2.99% với 94.32% bootstrap mass > 0, nhưng khoảng tin cậy 95% CI cắt 0 ở cận dưới -0.0068).
+>      * Paired Delta: $\Delta \text{Macro-F1} = \mathbf{+0.0298}$ (khoảng +2.98 điểm phần trăm, không phải tỷ lệ phần trăm tương đối). Stratified Source Cluster Bootstrap (10,000 reps, seed 20261011): 95% Percentile CI = **[-0.0068, +0.0687]**, $P(\Delta^* > 0) = 94.35\%$ (tỷ lệ replicate mẫu có delta dương, không phải xác suất giả thuyết đúng hay p-value).
+>      * Kết luận khoa học chính thức: **`INCONCLUSIVE`** (xu hướng cải thiện dương +2.98 điểm phần trăm với 94.35% bootstrap mass > 0, nhưng khoảng tin cậy 95% CI cắt 0 ở cận dưới -0.0068).
 >    - **Đánh giá Chẩn đoán Nguồn (Source Control Cohort, $N=341$)**:
->      * Đánh giá riêng 341 ảnh ImageNet authentic nature: Visual-only False Positive AI Rate = **67.45%** (230/341 nhầm AI), Visual+DSP = **68.04%** (232/341 nhầm AI).
->      * Phân tích khoa học: Vạch trần domain shortcut rõ rệt (mô hình học đặc trưng phân phối bối cảnh COCO vs ImageNet và lịch sử nén JPEG/PNG thay vì thuần túy dấu vết AI). Khẳng định tính đúng đắn khi không đưa mô hình 3 lớp lên web demo người dùng tự do tải ảnh; bảo toàn nguyên vẹn demo nhị phân FP32 với 4 banner ranh giới.<br>
->      **Phase status**: `THREE_CLASS_PILOT_EXECUTED_EMPIRICAL_PASS`<br>
->      **Next approved action**: Commit, push lên `origin/research/independent-cohort-acquisition`, bàn giao đầy đủ 7 nội dung theo Section I.
+>      * Đánh giá riêng 341 ảnh ImageNet authentic nature: Visual-only False Positive AI Rate = **67.45%** (230/341 nhầm AI: 106 edit, 124 gen), Visual+DSP = **68.04%** (232/341 nhầm AI: 112 edit, 120 gen).
+>      * Phân tích khoa học: Vạch trần domain shortcut rõ rệt (mô hình học đặc trưng phân phối bối cảnh COCO vs ImageNet và lịch sử nén JPEG/PNG thay vì thuần túy dấu vết AI). Khẳng định tính đúng đắn khi không đưa mô hình 3 lớp lên web demo người dùng tự do tải ảnh; bảo toàn nguyên vẹn demo nhị phân FP32 với 4 banner ranh giới.
+>
+> 9. _Kiểm Toán Độc Lập Raw Predictions, Chuẩn Hóa Phạm Vi Fitting & Phân Tích Lỗi Post-Hoc ($systematic-debugging, $executing-plans, $verification-before-completion)_:
+>    - **Kiểm toán Độc lập Raw Predictions (Section B)**:
+>      * Đọc trực tiếp `three_class_pilot_predictions.json` qua `reproduce_three_class_pilot_results.py`: Xác nhận đủ 273 holdout và 341 source control samples, sample IDs và thứ tự khớp 100% giữa 2 baselines, xác suất hữu hạn, tổng xác suất bằng 1 trong dung sai $\le 1.0 \times 10^{-6}$, 100% khớp quy tắc argmax đã khóa.
+>      * Tái tính toán xác thực: Baseline 1 Macro-F1 = 0.5086, BAcc = 0.4982, Brier = 0.5841, ECE = 0.0466; Baseline 2 Macro-F1 = 0.5385, BAcc = 0.5238, Brier = 0.5618, ECE = 0.0780. Point delta = $+0.0298$ (+2.98 điểm phần trăm; relative gain $+5.86\%$).
+>      * Paired cluster bootstrap 10,000 reps tái tính: Pooled 95% CI = $[-0.0068, +0.0687]$ ($P > 0: 94.35\%$); Stratified 95% CI = $[-0.0065, +0.0676]$ ($P > 0: 94.53\%$). Kết luận giữ nguyên: `INCONCLUSIVE`.
+>      * Biên nhận kiểm toán: `research/evidence/three_class_preparation/three_class_predictions_audit_receipt.json`.
+>    - **Kiểm toán Phạm vi Fitting & Chuẩn Hóa Inner CV (Section C)**:
+>      * Phát hiện: Inner 5-fold CV lịch sử chia ngẫu nhiên và dùng global scaler trên `development_train`, gây rò rỉ source group COCO giữa inner train/val khiến nhiệt độ hiệu chuẩn bị phóng đại ($T_v = 8.3734, T_f = 8.1321$).
+>      * Khắc phục qua `run_reconciled_three_class_cv.py`: Áp dụng `StratifiedGroupKFold(n_splits=5)` theo `source_group_id` (750 mẫu, 500 groups, group overlap = 0) và cô lập `StandardScaler` trên từng inner training fold.
+>      * Nhiệt độ hiệu chuẩn reconciled trên true OOF logits: $T_v = 5.9818$, $T_f = 5.9577$.
+>      * Outer models và quyết định argmax holdout được bảo toàn 100% bit-identical (Macro-F1 0.5086 vs 0.5385; 0 decision flips). Brier/ECE reconciled: Visual Brier = 0.6002, ECE = 0.1003; Fusion Brier = 0.5711, ECE = 0.0865.
+>      * Biên nhận reconciled: `three_class_pilot_evaluation_receipt_reconciled.json` và `three_class_pilot_predictions_reconciled.json`. Biên nhận lịch sử được liên kết và bảo toàn nguyên vẹn.
+>    - **Đối chiếu Preprocessing Protocol**:
+>      * Protocol 3 lớp: Canvas 512×512 (Lanczos) trích xuất 16-D canonical DSP; sau đó resize bicubic 224×224 chuẩn hóa ImageNet cấp cho MobileNetV3-small frozen backbone.
+>      * Khác biệt với pipeline nhị phân: Pipeline nhị phân lịch sử dùng letterbox padding, trong khi pipeline 3 lớp dùng direct resize canvas. Parity pipeline nhị phân không tự động kế thừa cho pipeline 3 lớp. Trọng số checkpoint PyTorch (`047dcff4...`) tách biệt với hash ONNX proto (`models/research/onnx/mobilenet_v3_small_backbone_fp32.onnx`).
+>    - **Phân Tích Lỗi Có Kiểm Soát & Robustness Post-Hoc (Section D)**:
+>      * Chạy đánh giá khám phá post-hoc qua `run_three_class_error_analysis.py` trên 614 mẫu (273 holdout + 341 control) dưới 4 điều kiện: `original`, `jpeg_q95`, `jpeg_q75`, `resize_0.5`.
+>      * Lỗi nhầm lẫn holdout: Nhầm lẫn authentic $\leftrightarrow$ ai_edited rất cao (46/91 auth nhầm edit; 38-43/91 edit nhầm auth); nhầm lẫn authentic $\to$ fully_generated rất thấp (4-7/91). Inpainting chỉ tác động 1%–50% diện tích, global pooling bị bối cảnh COCO áp đảo.
+>      * Độ dịch chuyển xác suất theo cặp holdout: Độ tăng trung bình $\Delta P(\text{ai\_edited})$ chỉ là $+0.0180$ (Visual, 54/91 pairs tăng) và $+0.0242$ (Fusion, 56/91 pairs tăng); trong ~40% cặp, inpainting không làm tăng xác suất ai_edited.
+>      * Source control: False positive AI rate duy trì ở mức cao trên mọi điều kiện (original: 67.5%/68.0%; Q95: 66.9%/68.3%; Q75: 67.2%/67.2%; resize 0.5: 62.2%/63.1%), chứng minh domain shift (COCO vs ImageNet) là yếu tố gây nhiễu cốt lõi cùng với lịch sử nén. Biên nhận: `robustness/three_class_robustness_audit_receipt.json`.
+>    - **Đề Xuất Thực Nghiệm Kế Tiếp**: Xây dựng `NEXT_STEPS_SOURCE_CONFOUNDING_PROPOSAL.md` định nghĩa thiết kế ô vuông nhân tố 2×2 (COCO vs ImageNet $\times$ PNG vs JPEG Recompressed) nhằm phân tách dứt điểm domain semantic bias khỏi compression shortcut.<br>
+>    **Phase status**: `THREE_CLASS_PILOT_VERIFIED_AND_ERROR_ANALYSIS_SEALED`<br>
+>    **Next approved action**: Commit, push lên `origin/research/independent-cohort-acquisition`.<br>
 
 
 

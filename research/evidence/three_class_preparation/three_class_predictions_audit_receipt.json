@@ -1,0 +1,211 @@
+{
+  "schema_version": "1.0.0",
+  "receipt_id": "PREDICTIONS-AUDIT-RECEIPT-20261011",
+  "protocol_id": "PROTO-RQ1-RQ2-3CLASS-V2",
+  "timestamp": "2026-10-11T09:55:54Z",
+  "integrity_checks": {
+    "holdout_sample_count": 273,
+    "nature_control_sample_count": 341,
+    "sample_ids_match_order": true,
+    "probabilities_finite": true,
+    "probabilities_in_unit_interval": true,
+    "max_probability_row_sum_deviation": 1.000000000139778e-06,
+    "argmax_concordance": true,
+    "class_mapping": [
+      "0: authentic",
+      "1: ai_edited",
+      "2: fully_generated"
+    ],
+    "holdout_class_balance": [
+      91,
+      91,
+      91
+    ]
+  },
+  "verified_metrics": {
+    "baseline_1_visual_only": {
+      "name": "Visual-Only MobileNetV3-small 576-D",
+      "macro_f1": 0.5086,
+      "balanced_accuracy": 0.4982,
+      "multiclass_brier_score": 0.5841,
+      "multiclass_top_class_ece": 0.0466,
+      "per_class": {
+        "authentic": {
+          "tp": 38,
+          "fp": 56,
+          "fn": 53,
+          "precision": 0.4043,
+          "recall": 0.4176,
+          "f1": 0.4108,
+          "support": 91
+        },
+        "ai_edited": {
+          "tp": 48,
+          "fp": 69,
+          "fn": 43,
+          "precision": 0.4103,
+          "recall": 0.5275,
+          "f1": 0.4615,
+          "support": 91
+        },
+        "fully_generated": {
+          "tp": 50,
+          "fp": 12,
+          "fn": 41,
+          "precision": 0.8065,
+          "recall": 0.5495,
+          "f1": 0.6536,
+          "support": 91
+        }
+      },
+      "confusion_matrix": [
+        [
+          38,
+          46,
+          7
+        ],
+        [
+          38,
+          48,
+          5
+        ],
+        [
+          18,
+          23,
+          50
+        ]
+      ]
+    },
+    "baseline_2_visual_dsp": {
+      "name": "Visual + Canonical DSP 16-D (592-D)",
+      "macro_f1": 0.5385,
+      "balanced_accuracy": 0.5238,
+      "multiclass_brier_score": 0.5618,
+      "multiclass_top_class_ece": 0.078,
+      "per_class": {
+        "authentic": {
+          "tp": 41,
+          "fp": 54,
+          "fn": 50,
+          "precision": 0.4316,
+          "recall": 0.4505,
+          "f1": 0.4409,
+          "support": 91
+        },
+        "ai_edited": {
+          "tp": 45,
+          "fp": 69,
+          "fn": 46,
+          "precision": 0.3947,
+          "recall": 0.4945,
+          "f1": 0.439,
+          "support": 91
+        },
+        "fully_generated": {
+          "tp": 57,
+          "fp": 7,
+          "fn": 34,
+          "precision": 0.8906,
+          "recall": 0.6264,
+          "f1": 0.7355,
+          "support": 91
+        }
+      },
+      "confusion_matrix": [
+        [
+          41,
+          46,
+          4
+        ],
+        [
+          43,
+          45,
+          3
+        ],
+        [
+          11,
+          23,
+          57
+        ]
+      ]
+    },
+    "paired_delta": {
+      "delta_macro_f1_point_estimate": 0.0298,
+      "delta_percentage_points": 2.98,
+      "relative_percent_change": 5.86,
+      "bootstrap_published_pooled": {
+        "clusters": 182,
+        "replicates": 10000,
+        "seed": 20261011,
+        "mean_delta": 0.0299,
+        "median_delta": 0.0296,
+        "ci_95_percentile": [
+          -0.0068,
+          0.0687
+        ],
+        "fraction_replicates_positive_delta": 0.9435,
+        "ci_crosses_zero": true
+      },
+      "bootstrap_stratified": {
+        "coco_clusters": 91,
+        "sd15_clusters": 91,
+        "replicates": 10000,
+        "seed": 20261011,
+        "mean_delta": 0.0299,
+        "median_delta": 0.0297,
+        "ci_95_percentile": [
+          -0.0065,
+          0.0676
+        ],
+        "fraction_replicates_positive_delta": 0.9453,
+        "ci_crosses_zero": true
+      },
+      "scientific_verdict": "INCONCLUSIVE"
+    }
+  },
+  "holdout_pair_probability_shift": {
+    "total_coco_source_pairs": 91,
+    "metric": "Delta P(ai_edited) = P(ai_edited | edit) - P(ai_edited | auth)",
+    "visual_only": {
+      "mean_delta_p": 0.018,
+      "median_delta_p": 0.0103,
+      "std_delta_p": 0.08,
+      "min_delta_p": -0.2132,
+      "max_delta_p": 0.3405,
+      "positive_pairs_count": 54,
+      "positive_pairs_fraction": 0.5934
+    },
+    "visual_dsp": {
+      "mean_delta_p": 0.0242,
+      "median_delta_p": 0.0179,
+      "std_delta_p": 0.0824,
+      "min_delta_p": -0.2642,
+      "max_delta_p": 0.3555,
+      "positive_pairs_count": 56,
+      "positive_pairs_fraction": 0.6154
+    }
+  },
+  "nature_control_breakdown": {
+    "total_samples": 341,
+    "true_label": "authentic",
+    "visual_only": {
+      "correct_authentic": 111,
+      "misclassified_ai_edited": 106,
+      "misclassified_fully_generated": 124,
+      "total_false_positive_ai": 230,
+      "false_positive_ai_rate": 0.6745
+    },
+    "visual_dsp": {
+      "correct_authentic": 109,
+      "misclassified_ai_edited": 112,
+      "misclassified_fully_generated": 120,
+      "total_false_positive_ai": 232,
+      "false_positive_ai_rate": 0.6804
+    }
+  },
+  "methodological_caveats": [
+    "Point delta +0.0299 represents approximately 2.99 percentage points Macro-F1 improvement, not relative percentage increase (+5.88%).",
+    "Bootstrap positive fraction (94.32%) is strictly the empirical replicate fraction, not a Bayesian posterior probability of hypothesis truth or a p-value.",
+    "Both published pooled and stratified bootstrap 95% CIs cross 0 at lower bound (-0.0068 and -0.0065 <= 0), requiring an official verdict of INCONCLUSIVE."
+  ]
+}

@@ -104,10 +104,12 @@ Tuân thủ nghiêm ngặt **Quy tắc trung thực kỹ thuật và nghiên c�
 
 ### Kiểm định Thống kê Ghép cặp (Paired Cluster Bootstrap)
 - Phương pháp: Stratified Source Cluster Bootstrap (10,000 replicates, PCG64 seed `20261011`, tái lấy mẫu theo `source_group_id`).
-- Điểm ước lượng $\Delta \text{Macro-F1}$: **+0.0299**
-- Khoảng tin cậy 95% Percentile CI: **[-0.0068, +0.0686]**
-- Tỷ lệ replicate có cải thiện $P(\Delta^* > 0)$: **94.32%**
-- **Kết luận khoa học chính thức**: **`INCONCLUSIVE`**. Việc bổ sung 16-D canonical DSP cho thấy xu hướng cải thiện dương (+2.99%, với 94.32% bootstrap mass > 0), nhưng khoảng tin cậy 95% CI cắt 0 ở cận dưới (-0.0068 $\le 0$). Do đó, chưa đủ bằng chứng để khẳng định sự cải thiện có ý nghĩa thống kê ở mức ý nghĩa $\alpha = 0.05$.
+- Điểm ước lượng $\Delta \text{Macro-F1}$: **+0.0298** (tương đương **+2.98 đến +2.99 điểm phần trăm** (percentage points), tuyệt đối không nhập nhằng với mức tăng tương đối $+5.86\%$).
+- Khoảng tin cậy 95% Percentile CI:
+  * Cấu hình công bố (Pooled 182 clusters): **[-0.0068, +0.0687]**, $P(\Delta^* > 0) = \mathbf{94.35\%}$
+  * Cấu hình phân tầng (Stratified 91 COCO + 91 SD1.5): **[-0.0065, +0.0676]**, $P(\Delta^* > 0) = \mathbf{94.53\%}$
+- Giới hạn diễn giải: Tỷ lệ bootstrap replicates có $\Delta^* > 0$ (~$94.35\%$) là **tần suất thực nghiệm của các mẫu tái rút**, tuyệt đối không phải là xác suất giả thuyết đúng (posterior probability) hoặc p-value của kiểm định giả thuyết vô hiệu.
+- **Kết luận khoa học chính thức**: **`INCONCLUSIVE`**. Việc bổ sung 16-D canonical DSP cho thấy xu hướng cải thiện dương (+2.98 điểm phần trăm), nhưng khoảng tin cậy 95% CI cắt 0 ở cận dưới (-0.0068 $\le 0$). Do đó, chưa đủ bằng chứng để khẳng định sự cải thiện có ý nghĩa thống kê ở mức ý nghĩa $\alpha = 0.05$.
 
 ---
 
@@ -128,13 +130,151 @@ Tuân thủ nghiêm ngặt **Quy tắc trung thực kỹ thuật và nghiên c�
 
 ---
 
-## 7. Hiện vật Xuất bản & Minh chứng
-- [`PROTOCOL_AMENDMENT_V2.0.0.md`](./PROTOCOL_AMENDMENT_V2.0.0.md)
-- [`three_class_pilot_manifest.csv`](./three_class_pilot_manifest.csv) (1,023 records)
-- [`three_class_pilot_splits.json`](./three_class_pilot_splits.json) (Splits lock & audit)
-- [`three_class_visual_only_model.json`](./three_class_visual_only_model.json)
-- [`three_class_visual_dsp_model.json`](./three_class_visual_dsp_model.json)
-- [`three_class_pilot_predictions.json`](./three_class_pilot_predictions.json) (Chi tiết 273 holdout + 341 nature predictions)
-- [`three_class_pilot_evaluation_receipt.json`](./three_class_pilot_evaluation_receipt.json) (Metrics & bootstrap)
-- [`source_control_evaluation_receipt.json`](./source_control_evaluation_receipt.json) (Diagnostic findings)
-- [`ml/tests/test_three_class_pilot.py`](../../../ml/tests/test_three_class_pilot.py) (5/5 PASS)
+## 7. Kiểm Toán Độc Lập Raw Predictions ($systematic-debugging)
+
+Đọc trực tiếp từ tệp raw predictions `three_class_pilot_predictions.json` và biên nhận `three_class_pilot_evaluation_receipt.json` qua harness độc lập [`reproduce_three_class_pilot_results.py`](../../../scripts/research/reproduce_three_class_pilot_results.py):
+
+1. **Xác thực mẫu và tính toàn vẹn**:
+   - Đúng **273 holdout samples** (91 authentic, 91 ai_edited, 91 fully_generated) và **341 source-control samples** (100% authentic nature).
+   - Sample IDs và thứ tự giữa 2 baselines hoàn toàn trùng khớp 100%.
+   - 100% xác suất hữu hạn, không có NaN/Inf.
+   - Tổng xác suất mỗi hàng bằng 1 trong dung sai $\le 1.0 \times 10^{-6}$ (max deviation $= 2.22 \times 10^{-16}$).
+   - 100% nhãn dự đoán khớp quy tắc quyết định đã khóa: `predicted_label == argmax(calibrated_probs)`.
+2. **Chi tiết Per-Class Metrics trên Holdout ($N=273$)**:
+   - **Visual-Only (576-D)**:
+     * `authentic`: TP=38, FP=56, FN=53 | Precision=0.4043, Recall=0.4176, F1=0.4108
+     * `ai_edited`: TP=48, FP=69, FN=43 | Precision=0.4103, Recall=0.5275, F1=0.4615
+     * `fully_generated`: TP=50, FP=12, FN=41 | Precision=0.8065, Recall=0.5495, F1=0.6536
+     * Tổng hợp: Macro-F1 = 0.5086, BAcc = 0.4982, Brier = 0.5841, ECE = 0.0466
+   - **Visual + DSP (592-D Concatenation)**:
+     * `authentic`: TP=41, FP=54, FN=50 | Precision=0.4316, Recall=0.4505, F1=0.4409
+     * `ai_edited`: TP=45, FP=69, FN=46 | Precision=0.3947, Recall=0.4945, F1=0.4390
+     * `fully_generated`: TP=57, FP=7, FN=34 | Precision=0.8906, Recall=0.6264, F1=0.7355
+     * Tổng hợp: Macro-F1 = 0.5385, BAcc = 0.5238, Brier = 0.5618, ECE = 0.0780
+3. **Biên nhận kiểm toán độc lập**: [`three_class_predictions_audit_receipt.json`](./three_class_predictions_audit_receipt.json).
+
+---
+
+## 8. Kiểm Tra Phạm Vi Fitting & Chuẩn Hóa Inner CV (Section C)
+
+Thực hiện kiểm tra nghiêm ngặt ranh giới fitting theo Rule 3 (AGENTS.md):
+
+1. **Phát hiện Mismatch trong Inner CV Lịch Sử**:
+   - Khi kiểm tra mã nguồn `train_and_evaluate_three_class_baselines.py`, inner 5-fold cross-validation được thực hiện bằng `StratifiedKFold` (sample-level) và sử dụng một `StandardScaler` toàn cục fit trên toàn bộ `development_train`.
+   - Vì các cặp `authentic` (COCO) và `ai_edited` (TGIF) chia sẻ cùng `source_group_id`, việc chia sample-level đã làm rò rỉ bối cảnh nguồn giữa inner training và inner validation folds. Điều này dẫn đến sự tự tin thái quá trong OOF logits, khiến bộ tối ưu Temperature Scaling gán nhiệt độ rất cao ($T_v = 8.3734, T_f = 8.1321$) để làm phẳng xác suất.
+2. **Khắc phục Chuẩn Hóa (Reconciled Grouped CV)**:
+   - Triển khai script chuẩn hóa [`run_reconciled_three_class_cv.py`](../../../scripts/research/run_reconciled_three_class_cv.py):
+     * Sử dụng `StratifiedGroupKFold(n_splits=5, shuffle=True, random_state=20261011)` theo đúng `source_group_id` trên `development_train` (750 mẫu, 500 groups). Group overlap giữa inner train và val folds = **0**.
+     * Cô lập `StandardScaler` riêng cho từng inner fold, fit strictly trên inner training partition của fold đó trước khi transform inner val.
+     * Fit Temperature Scaling trên true out-of-fold logits không rò rỉ:
+       - Visual-only: $T_v = \mathbf{5.9818}$ (giảm từ 8.3734)
+       - Visual+DSP: $T_f = \mathbf{5.9577}$ (giảm từ 8.1321)
+3. **Bảo Toàn Outer Models & Kết Quả Holdout**:
+   - Vì mô hình chính (outer linear probes) được fit trên toàn bộ 750 mẫu `development_train` với hyperparameters giữ nguyên (`C=1.0`, multinomial cross-entropy), trọng số outer models và các quyết định argmax trên holdout **hoàn toàn đồng nhất bit-exact** (0 quyết định bị lật).
+   - Macro-F1 và Balanced Accuracy giữ nguyên tuyệt đối: Visual Macro-F1 = 0.5086, Fusion Macro-F1 = 0.5385.
+   - Các chỉ số hiệu chuẩn xác suất OOF và holdout được cập nhật chính xác:
+     * Visual Holdout Brier: 0.6002 (trước: 0.5841); Holdout ECE: 0.1003 (trước: 0.0466)
+     * Fusion Holdout Brier: 0.5711 (trước: 0.5618); Holdout ECE: 0.0865 (trước: 0.0780)
+   - Lưu trữ song song: Tạo biên nhận reconciled [`three_class_pilot_evaluation_receipt_reconciled.json`](./three_class_pilot_evaluation_receipt_reconciled.json) và bảng dự đoán reconciled [`three_class_pilot_predictions_reconciled.json`](./three_class_pilot_predictions_reconciled.json). Biên nhận lịch sử `three_class_pilot_evaluation_receipt.json` được bảo toàn nguyên vẹn và liên kết đối chiếu rõ ràng.
+4. **Đối chiếu Preprocessing Thực Tế với Protocol**:
+   - **Pipeline 3 lớp**:
+     * Mọi ảnh nạp qua Pillow RGBA/RGB, chuyển đổi thành canvas 512×512 (bộ lọc Lanczos).
+     * Nhánh DSP nhận trực tiếp canvas 512×512 để trích xuất 16 đặc trưng canonical (FFT 128×128, DCT 8×8, Noise Residual 3×3, JPEG grid 8×8, Laplacian variance).
+     * Nhánh Visual resize canvas 512×512 về tensor bicubic [3, 224, 224] và chuẩn hóa ImageNet cấp cho MobileNetV3-small frozen backbone.
+   - **Khác biệt cốt lõi với Pipeline Nhị phân Lịch sử**:
+     * Pipeline nhị phân lịch sử sử dụng kỹ thuật *letterbox padding* (giữ nguyên aspect ratio và chèn đệm đen) để đưa về 512×512. Pipeline 3 lớp sử dụng trực tiếp *direct resize* 512×512 (Lanczos/Bicubic).
+     * Do tiền xử lý khác biệt, **tuyệt đối không kế thừa kết luận numerical parity** của pipeline nhị phân cho pipeline ba lớp.
+     * Phân biệt rõ ràng: Checkpoint PyTorch có hash trọng số `047dcff4...` (`mobilenet_v3_small-047dcff4.pth`), trong khi file ONNX proto `models/research/onnx/mobilenet_v3_small_backbone_fp32.onnx` là artifact đồ thị tính toán opset 17 với hash SHA-256 hoàn toàn riêng biệt.
+
+---
+
+## 9. Phân Tích Lỗi Có Kiểm Soát & Robustness Post-Hoc (Section D)
+
+Thực hiện phân tích khám phá post-hoc có kiểm soát qua script [`run_three_class_error_analysis.py`](../../../scripts/research/run_three_class_error_analysis.py) trên toàn bộ 614 mẫu (273 development holdout + 341 source control) dưới 4 điều kiện biến đổi đồng nhất:
+- `original`: Ảnh đầu vào nguyên bản (PNG không nén cho COCO/TGIF, JPEG nguyên bản cho ImageNet).
+- `jpeg_q95`: Tái nén JPEG mức chất lượng cao Q=95.
+- `jpeg_q75`: Tái nén JPEG mức chất lượng trung bình Q=75.
+- `resize_0.5`: Thu nhỏ kích thước ảnh xuống 50% bằng bộ lọc bilinear rồi phóng to lại kích thước ban đầu.
+
+### 9.1. Bảng Tổng Hợp Robustness Post-Hoc (4 Điều Kiện)
+
+| Điều Kiện Biến Đổi | Baseline | Macro-F1 Holdout | Balanced Acc | Brier Holdout | ECE Holdout | Control FP AI Rate | Control Nhầm Edit | Control Nhầm Gen |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **original** | Visual (576-D) | 0.5086 | 0.4982 | 0.6002 | 0.1003 | 67.45% (230/341) | 106 | 124 |
+| | Visual+DSP (592-D) | 0.5385 | 0.5238 | 0.5711 | 0.0865 | 68.04% (232/341) | 112 | 120 |
+| **jpeg_q95** | Visual (576-D) | 0.5087 | 0.4982 | 0.6008 | 0.1018 | 66.86% (228/341) | 106 | 122 |
+| | Visual+DSP (592-D) | 0.5358 | 0.5201 | 0.5739 | 0.0886 | 68.33% (233/341) | 114 | 119 |
+| **jpeg_q75** | Visual (576-D) | 0.5087 | 0.4982 | 0.6033 | 0.1044 | 67.16% (229/341) | 106 | 123 |
+| | Visual+DSP (592-D) | 0.5235 | 0.5092 | 0.5844 | 0.0931 | 67.16% (229/341) | 113 | 116 |
+| **resize_0.5** | Visual (576-D) | 0.5074 | 0.4945 | 0.6015 | 0.1030 | 62.17% (212/341) | 107 | 105 |
+| | Visual+DSP (592-D) | 0.5204 | 0.5055 | 0.5826 | 0.0927 | 63.05% (215/341) | 111 | 104 |
+
+### 9.2. Phân Tích Cơ Chế Lỗi và Hiện Tượng Nhầm Lẫn
+
+1. **Nhầm lẫn sâu giữa `authentic` và `ai_edited`**:
+   - Trên holdout nguyên bản, có tới **46/91 ảnh authentic** bị phân loại nhầm thành `ai_edited` (cho cả visual và visual+DSP).
+   - Ngược lại, có **38/91 ảnh ai_edited** (visual) và **43/91 ảnh ai_edited** (fusion) bị nhận định nhầm thành `authentic`.
+   - Trong khi đó, nhầm lẫn `authentic` $\to$ `fully_generated` là rất thấp: chỉ 7/91 (visual) và 4/91 (fusion).
+   - **Nguyên nhân cốt lõi**: TGIF inpainting chỉ thay thế một vùng cục bộ (1% đến 50% diện tích canvas); phần lớn diện tích còn lại giữ nguyên pixel gốc từ MS-COCO. Do MobileNetV3 áp dụng Global Average Pooling (GAP) trên toàn bộ canvas, các đặc trưng toàn cục bị chi phối áp đảo bởi bối cảnh COCO, khiến vector đặc trưng của ảnh inpainting rất gần với ảnh authentic.
+2. **Đo lường Thay Đổi Xác Suất theo Cặp Nguồn ($\Delta P(\text{ai\_edited})$)**:
+   - Trên 91 cặp holdout (`authentic` và `ai_edited` có cùng `source_group_id` COCO):
+     * Visual-Only: Giá trị trung bình của $[P(\text{ai\_edited} \mid \text{edited}) - P(\text{ai\_edited} \mid \text{auth})]$ chỉ là **$+0.0180$** (chỉ có 54/91 cặp có mức tăng dương, tức 59.34%).
+     * Visual+DSP: Giá trị trung bình chỉ là **$+0.0242$** (56/91 cặp có mức tăng dương, tức 61.54%).
+     * Như vậy, trong gần **40% số cặp holdout**, việc inpainting vùng ảnh bằng SD2 thậm chí không làm tăng xác suất dự đoán `ai_edited` của mô hình.
+3. **Phân Tích Source Control & Bóc Tách Bản Chất Shortcut**:
+   - Tỷ lệ False Positive AI trên 341 ảnh Nature control vẫn duy trì ở mức rất cao trên mọi điều kiện: 67.45% (original), 66.86% (Q95), 67.16% (Q75) và 62.17% (resize 0.5).
+   - **Kết luận khoa học quan trọng**: Việc áp dụng tái nén JPEG Q95 hoặc Q75 đồng nhất cho toàn bộ tập dữ liệu **không xóa bỏ được** tỷ lệ báo động giả cao của Nature control. Điều này chứng minh rằng sự khác biệt về nội dung ngữ nghĩa (semantic domain shift giữa ImageNet thiên nhiên và MS-COCO cảnh sinh hoạt) là yếu tố gây nhiễu chính yếu, hoạt động song song cùng với lịch sử nén.
+   - **Cảnh báo giới hạn**: Việc lưu ảnh dưới dạng PNG hoặc resize kích thước không xóa bỏ được lịch sử nén đã ghi nhận từ cảm biến máy ảnh. Đây là phân tích khám phá post-hoc, không phải kiểm định độc lập mới và tuyệt đối không được dùng để lựa chọn mô hình thắng cuộc.
+4. **Hiện vật kiểm toán robustness**: Thư mục [`research/evidence/three_class_preparation/robustness/`](./robustness/) chứa đầy đủ 4 tệp raw predictions và biên nhận [`three_class_robustness_audit_receipt.json`](./robustness/three_class_robustness_audit_receipt.json).
+
+---
+
+## 10. Đối Chiếu Dung Lượng Tải và Hiện Vật Dữ Liệu (Section E)
+
+Để đảm bảo tính trung thực tuyệt đối giữa các văn bản báo cáo và biên nhận tiếp nhận dữ liệu:
+
+1. **Đối Chiếu Dung Lượng Tải Mạng**:
+   - Con số "875.1 MB" trong các tóm tắt ban đầu chỉ phản ánh dung lượng của **Shard 0 và Shard 1** khi thực hiện đợt tải đầu tiên.
+   - Sau khi tiếp nhận thêm Shard 2 (`validation-00002-of-00004.parquet`, 435,573,773 bytes) để trích xuất đủ 341 mẫu SD1.5, tổng dung lượng tải mạng thực tế được ghi nhận chính xác trong [`genimage_acquisition_receipt.json`](./genimage_acquisition_receipt.json) là:
+     $$\text{Tổng byte tải} = 433,181,356 + 441,983,256 + 435,573,773 = \mathbf{1,310,738,385\text{ bytes}} \approx \mathbf{1.22\text{ GiB}} \le 2\text{ GiB}$$
+   - Tổng footprint lưu trữ mới trên đĩa: **1,513,097,660 bytes** (~1.41 GiB) $\le 5\text{ GiB}$.
+2. **Bảo toàn và Kế thừa Hiện Vật Lịch Sử**:
+   - Toàn bộ các hiện vật lịch sử (`three_class_pilot_predictions.json`, `three_class_pilot_evaluation_receipt.json`, `source_control_evaluation_receipt.json`) được giữ nguyên vẹn 100%, không bị sửa đổi để khớp câu chữ.
+   - Các hiện vật chuẩn hóa mới được liên kết minh bạch:
+     * [`three_class_pilot_evaluation_receipt_reconciled.json`](./three_class_pilot_evaluation_receipt_reconciled.json) (thay thế cho việc diễn giải temperature & calibration)
+     * [`three_class_pilot_predictions_reconciled.json`](./three_class_pilot_predictions_reconciled.json)
+     * [`three_class_predictions_audit_receipt.json`](./three_class_predictions_audit_receipt.json)
+3. **Đề Xuất Thực Nghiệm Kế Tiếp**:
+   - Ban hành tài liệu đề xuất hoàn chỉnh: [`NEXT_STEPS_SOURCE_CONFOUNDING_PROPOSAL.md`](./NEXT_STEPS_SOURCE_CONFOUNDING_PROPOSAL.md).
+   - Thiết kế nghiên cứu factorial 2×2 phân tách dứt điểm Source Bias (COCO vs ImageNet) và Compression History (PNG vs JPEG Recompression), đồng thời kiểm soát phân phối diện tích inpainting.
+
+---
+
+## 11. Hiện Vật Xuất Bản & Minh Chứng Hoàn Chỉnh
+
+- **Protocols & Amendments**:
+  * [`PROTOCOL_AMENDMENT_V2.0.0.md`](./PROTOCOL_AMENDMENT_V2.0.0.md)
+  * [`NEXT_STEPS_SOURCE_CONFOUNDING_PROPOSAL.md`](./NEXT_STEPS_SOURCE_CONFOUNDING_PROPOSAL.md)
+- **Manifests & Splits**:
+  * [`three_class_pilot_manifest.csv`](./three_class_pilot_manifest.csv) (1,023 records)
+  * [`three_class_pilot_splits.json`](./three_class_pilot_splits.json) (Splits lock & audit)
+  * [`source_control_cohort_manifest.json`](./source_control_cohort_manifest.json) (341 controls)
+- **Models & Features**:
+  * [`three_class_visual_only_model.json`](./three_class_visual_only_model.json)
+  * [`three_class_visual_dsp_model.json`](./three_class_visual_dsp_model.json)
+  * `data/research/cache/three_class_features.npz` (2.82 MB)
+- **Audited Predictions & Evaluation Receipts**:
+  * [`three_class_pilot_predictions.json`](./three_class_pilot_predictions.json) (Raw holdout + control)
+  * [`three_class_pilot_evaluation_receipt.json`](./three_class_pilot_evaluation_receipt.json) (Historical receipt)
+  * [`three_class_pilot_evaluation_receipt_reconciled.json`](./three_class_pilot_evaluation_receipt_reconciled.json) (Reconciled CV receipt)
+  * [`three_class_pilot_predictions_reconciled.json`](./three_class_pilot_predictions_reconciled.json) (Reconciled predictions)
+  * [`three_class_predictions_audit_receipt.json`](./three_class_predictions_audit_receipt.json) (Independent prediction audit)
+  * [`source_control_evaluation_receipt.json`](./source_control_evaluation_receipt.json) (Diagnostic findings)
+- **Robustness Post-Hoc Artifacts**:
+  * [`robustness/three_class_robustness_audit_receipt.json`](./robustness/three_class_robustness_audit_receipt.json)
+  * [`robustness/three_class_predictions_original.json`](./robustness/three_class_predictions_original.json)
+  * [`robustness/three_class_predictions_jpeg_q95.json`](./robustness/three_class_predictions_jpeg_q95.json)
+  * [`robustness/three_class_predictions_jpeg_q75.json`](./robustness/three_class_predictions_jpeg_q75.json)
+  * [`robustness/three_class_predictions_resize_0.5.json`](./robustness/three_class_predictions_resize_0.5.json)
+- **Test Suite**:
+  * [`ml/tests/test_three_class_pilot.py`](../../../ml/tests/test_three_class_pilot.py) (8/8 PASS)
