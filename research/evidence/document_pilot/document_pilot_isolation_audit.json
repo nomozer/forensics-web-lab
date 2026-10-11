@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0.0",
+  "timestamp_utc": "2026-10-11T16:41:58Z",
+  "status": "ISOLATION_AUDIT_PASS",
+  "sample_count": 40,
+  "collision_count": 0,
+  "collisions": []
+}

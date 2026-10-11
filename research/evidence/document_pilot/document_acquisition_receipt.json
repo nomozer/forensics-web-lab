@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0.0",
+  "task": "DOCUMENT_AI_TAMPERING_PILOT_ACQUISITION",
+  "status": "DOCUMENT_ACQUISITION_SUCCESS",
+  "timestamp_utc": "2026-10-11T16:41:58Z",
+  "elapsed_seconds": 31.43,
+  "total_samples": 40,
+  "authentic_count": 20,
+  "edited_count": 20,
+  "current_run_network_transfer_bytes": 23049764,
+  "current_run_network_transfer_mb": 21.98,
+  "current_run_budget_limit_mb": 25.0,
+  "historical_initial_transfer_bytes": 52706921,
+  "total_session_network_transfer_bytes": 75756685,
+  "total_session_network_transfer_mb": 72.25,
+  "user_authorization": "Option 1 approved 2026-10-11: additional <= 25 MB for N=40 balanced panel",
+  "budget_compliance": true,
+  "source_license": "CC-BY-NC-4.0",
+  "manifest_path": "data/research/document_pilot/document_pilot_manifest.json",
+  "manifest_sha256": "ed0a17c873db4b5dd47653aa9ab8098d55386c5c39e3eb82a8379daab9b6508a",
+  "isolation_audit_path": "research/evidence/document_pilot/document_pilot_isolation_audit.json",
+  "isolation_audit_sha256": "ced1506c55d811d116840b92ab2762b2beb32813ba8619773a91fc5b9070545a"
+}

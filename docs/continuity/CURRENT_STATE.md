@@ -205,11 +205,29 @@
 >    **Phase status**: `CLASSIFICATION_TRADEOFF_AND_LOCALIZATION_PREPARATION_PASS`<br>
 >    **Next approved action**: Huấn luyện segmentation baseline trên **COLAB GPU** theo đúng protocol v1.0.0 và kiểm chứng trên **LOCAL CPU**.<br>
 >
+> 16. _Kiểm Toán Khả Năng Tiếp Cận Dữ Liệu Tài Liệu AI & Đánh Đổi Hình Học Quan Sát P0 vs P1 vs P2 ($systematic-debugging, $writing-plans, $executing-plans, $verification-before-completion)_:
+>    - **Kiểm Toán Tiếp Nhận Dữ Liệu Tài Liệu RealText-V2 & Phê Duyệt Ngân Sách Mạng**:
+>      * Rà soát 5 bộ dữ liệu y văn (DocTamper, OSTF, AIForge-Doc, Fake or JPEG?, GADNet). Tiếp nhận panel cân bằng N=40 (20 AI-edited + 20 authentic) từ RealText-V2 (ACM MM 2026, CC-BY-NC-4.0).
+>      * Được người dùng phê duyệt phương án Option 1 (bổ sung ngân sách mạng để hoàn thành panel cân bằng N=40). Tổng chuyển giao mạng phiên là 72.25 MB (<= 1 GB).
+>      * Kiểm toán cách ly độc lập đối soát 40 mẫu với toàn bộ tập dữ liệu nội bộ đạt `ISOLATION_AUDIT_PASS` (0 collisions). Receipt: `document_acquisition_receipt.json`, manifest: `document_pilot_manifest.json`, audit: `document_pilot_isolation_audit.json`.
+>    - **Kiểm Toán Hình Học Center-Crop Trên Tài Liệu**:
+>      * P0 Center-Crop min(w, h) chỉ giữ lại trung bình **72.95%** diện tích can thiệp (Min 23.36%); 85.0% (17/20) mẫu tài liệu bị mất một phần vùng can thiệp do văn bản nằm ở lề/tiêu đề/chân trang.
+>      * P1 Letterbox (đệm 128) bảo toàn trọn vẹn **100.0%** (20/20) diện tích và cấu trúc tài liệu.
+>    - **Đánh Giá Đánh Đổi 3 Hình Học P0 vs P1 vs P2 Trên 6 Frozen Models**:
+>      * A0-visual: P1 Letterbox đạt Macro-F1 cao nhất toàn bộ thực nghiệm (**0.6931**, Bal-Acc **0.7000**, TPR **0.5500**, TNR **0.8500**, AUROC **0.6900**, AP **0.7215**), vượt trội P0 Center-Crop (+0.0920 hay +9.20 pp; 85.31% bootstrap positive mass).
+>      * A0-global: P1 Letterbox (Macro-F1 0.6050) vượt P0 (+0.1178 hay +11.78 pp; 94.06% bootstrap positive). P2 Multi-Tile tăng F1 lên 0.6229 nhưng gây bùng nổ báo động giả (FPR vọt lên 45.0% do mép cắt kích hoạt tần số cao giả tạo trên DSP).
+>      * A0-local: P2 Multi-Tile nâng F1 lên 0.6248 (+19.46 pp vs P1, 95% CI [+0.0047, +0.3794] hoàn toàn dương), nhưng FPR cũng tăng lên 40.0%.
+>      * Dòng A1: Bổ sung ImageNet authentic giúp đạt FPR = 0.0% (0 báo động giả), nhưng triệt tiêu độ nhạy trên tài liệu (Recall <= 5%, Macro-F1 0.33 - 0.38).
+>      * Đánh đổi CPU latency: P1 Letterbox nhanh nhất (Median 223.7 ms, Mean 231.5 ms), nhanh hơn P0 (247.3 ms), và nhanh gấp 3.7x - 6.0x so với P2 Multi-Tile (Median 836.2 ms, Mean 1,395.7 ms).
+>    - **Kiểm Thử & Trạng Thái Hoàn Thành**: 3/3 unit tests `test_document_observation_pilot.py` PASS, 100% pnpm test PASS.
+>    **Phase status**: `DOCUMENT_AI_TAMPERING_PILOT_AND_OBSERVATION_GEOMETRY_EVALUATED_PASS`<br>
+>    **Next approved action**: Huấn luyện segmentation baseline trên **COLAB GPU** theo đúng `PROTOCOL_LOCALIZATION_PREPARATION_V1.0.0.md` với hình học P1 Letterbox Canvas và kiểm chứng trên **LOCAL CPU**.<br>
+>
 > ---
 
 ## 1. Định vị Đề tài & Mục tiêu Nghiên cứu
 
-- **Tên đề tài**: _Nghiên cứu và xây dựng công cụ nhẹ phát hiện và định vị hình ảnh do AI tạo sinh và chỉnh sửa trên nền tảng web_
+- **Tên đề tài**: _Nghiên cứu và xây dựng công cụ phát hiện ảnh và tài liệu giả mạo sinh bởi AI_ (tên làm việc chính thức; phạm vi tài liệu trong pilot là ảnh chụp/scan tài liệu có can thiệp AI, không mở rộng sang text LLM)
 - **Tên ứng dụng web minh chứng**: `Forensics Web Lab`
 - **Mục tiêu nghiên cứu**:
   - Phát triển công cụ nhẹ chạy trực tiếp trên trình duyệt (Zero-Egress), phát hiện ảnh AI tạo sinh toàn phần (`fully_generated`), ảnh chỉnh sửa cục bộ (`ai_edited`), và ảnh thông thường (`authentic`).
