@@ -220,8 +220,23 @@
 >      * Dòng A1: Bổ sung ImageNet authentic giúp đạt FPR = 0.0% (0 báo động giả), nhưng triệt tiêu độ nhạy trên tài liệu (Recall <= 5%, Macro-F1 0.33 - 0.38).
 >      * Đánh đổi CPU latency: P1 Letterbox nhanh nhất (Median 223.7 ms, Mean 231.5 ms), nhanh hơn P0 (247.3 ms), và nhanh gấp 3.7x - 6.0x so với P2 Multi-Tile (Median 836.2 ms, Mean 1,395.7 ms).
 >    - **Kiểm Thử & Trạng Thái Hoàn Thành**: 3/3 unit tests `test_document_observation_pilot.py` PASS, 100% pnpm test PASS.
->    **Phase status**: `DOCUMENT_AI_TAMPERING_PILOT_AND_OBSERVATION_GEOMETRY_EVALUATED_PASS`<br>
->    **Next approved action**: Huấn luyện segmentation baseline trên **COLAB GPU** theo đúng `PROTOCOL_LOCALIZATION_PREPARATION_V1.0.0.md` với hình học P1 Letterbox Canvas và kiểm chứng trên **LOCAL CPU**.<br>
+>    **Historical Phase status**: `DOCUMENT_AI_TAMPERING_PILOT_AND_OBSERVATION_GEOMETRY_EVALUATED_PASS`<br>
+>
+> 17. _Đối Soát Toàn Diện Document Pilot, Kiểm Toán Taxonomy / Gây Nhiễu Nén & Replay Ghép Cặp C0 vs C1 ($systematic-debugging, $executing-plans, $verification-before-completion)_:
+>    - **Sổ Cái Đính Chính Sáu Phát Biểu Vượt Bằng Chứng & Kiểm Toán Taxonomy N=40**:
+>      * Đính chính khoa học toàn diện: P1 Letterbox tăng Macro-F1 tại ngưỡng 0.5 trên panel này nhưng tăng FPR (0.0% lên 15.0% trên A0-visual) và giảm nhẹ AUROC/AP (P0 AUROC 0.7150 > P1 0.6900), không dùng từ "tối ưu vượt trội"; P1 bảo toàn 100% diện tích hình học nhưng resize co nhỏ ~5x-6.5x làm mất chi tiết vi mô văn bản (không "bảo toàn 100% forensic"); P2 spectral leakage là giả thuyết giải thích chưa cô lập hoàn toàn; A1 triệt tiêu độ nhạy trên tài liệu (Recall <= 5%) chứ không phải thành tựu loại bỏ báo động giả; tự nhiên backbone MobileNetV3 (A0-visual) vẫn đạt F1 0.6931 cao nhất bảng; chưa đo lường trên trình duyệt (CPU latency không đại diện browser Web Worker).
+>      * Kiểm toán taxonomy 40 mẫu (`document_sample_taxonomy_audit.json`): 0/40 mẫu có bằng chứng Generative AI (diffusion/inpainting). 20 mẫu forged thuộc nhóm `manipulation provenance unverified` (can thiệp văn bản số: che mosaic, sửa ngày tháng, đổi từ ngữ pháp lý, vi chỉnh phông chữ). 20 mẫu authentic là tài liệu độc lập, 0 stem overlap (0 cặp nguồn). Đề tài chỉ đánh giá phân loại forgery/pristine theo nhãn nguồn, tuyệt đối không tuyên bố đo năng lực phát hiện AI-edited.
+>    - **Kiểm Toán Định Dạng × Nhãn Nguồn & Đính Chính Kiểm Toán Cách Ly**:
+>      * Xác nhận 100% tương quan gây nhiễu định dạng: 20/20 forged là JPEG lossy 4:2:0 với bảng lượng tử hóa Q0 mean đồng nhất 5.77; 20/20 authentic là PNG lossless RGB (`document_format_compression_audit.json`).
+>      * Đính chính kiểm toán cách ly: Script chỉ kiểm tra trùng lặp byte SHA-256 với các manifest nội bộ; kết quả 0 collision chỉ chứng minh không tái sử dụng byte dữ liệu, không chứng minh tính độc lập nguồn.
+>    - **Replay Ghép Cặp C0 vs C1 & Bóc Tách Độ Trễ CPU Thực Tế**:
+>      * Replay 6 locked models x 3 geometries dưới C0 (Original) và C1 (Symmetric JPEG Q75, subsampling 2). C1 không làm thay đổi quyết định phân loại (0 label flips trên 5/6 models, 1 flip trên A0-local P2). Ưu thế Macro-F1 của P1 duy trì vững chắc (+0.0920 visual, +0.1178 global) ở cả C0 và C1; P2 tiếp tục bùng nổ báo động giả (FPR 35%-45%).
+>      * Bóc tách độ trễ CPU trên panel chuẩn có warm-up: Thời gian tính điểm thực tế của từng mô hình chỉ là 0.13 - 0.21 ms; hơn 99.8% độ trễ nằm ở tiền xử lý và trích xuất đặc trưng dùng chung (P1: 226 ms, P0: 433 ms, P2: 826 ms). Đính chính việc sao chép số đo shared extraction sang từng dòng mô hình trong báo cáo cũ.
+>    - **Tu Chính Protocol Localization v1.1.0**:
+>      * Ban hành `PROTOCOL_LOCALIZATION_PREPARATION_AMENDMENT_V1.1.0.md`: Khôi phục tên đề tài chính thức "Nghiên cứu và xây dựng công cụ phát hiện ảnh và tài liệu giả mạo sinh bởi AI"; định vị localization là hướng nghiên cứu ứng viên khám phá chưa được xác nhận; đếm lại mask chính xác từ manifests (Development Train chỉ có 250 ảnh edited có mask, Development Holdout chỉ có 91 ảnh edited có mask; không gọi N=750 hay N=273 là số cặp localization); xác nhận holdout là tập phát triển đã xem nhiều lần; ngân sách là mục tiêu thiết kế chưa đo; xóa bỏ hoàn toàn cam kết tự động huấn luyện UNet.
+>    - **Kiểm Thử & Hoàn Thành**: 7/7 pytest PASS (`test_document_pilot_reconciliation.py`, `test_document_observation_pilot.py`), 100% pnpm test PASS.
+>    **Phase status**: `DOCUMENT_PILOT_RECONCILED_AND_COMPRESSION_REPLAY_PASS`<br>
+>    **Next approved action**: Tiếp cận có kiểm soát nguồn tài liệu AIForge-Doc hoặc tạo sinh inpainting có đối chứng trên hóa đơn SROIE/CORD để xác minh 100% nguồn gốc AI và loại bỏ nhiễu định dạng trước khi đề xuất bất kỳ đợt huấn luyện nào.<br>
 >
 > ---
 

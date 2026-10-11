@@ -10,7 +10,6 @@ import json
 from pathlib import Path
 import numpy as np
 from PIL import Image
-import pytest
 
 
 def test_protocol_document_pilot_invariants():
@@ -113,3 +112,10 @@ def test_five_view_probability_aggregation():
     # binary score = 0.49 + 0.11 = 0.60 >= 0.50
     assert b_score2 >= 0.50
     assert dec2 == "ai_edited"
+
+
+if __name__ == "__main__":
+    test_protocol_document_pilot_invariants()
+    test_observation_transforms_geometry()
+    test_multiview_probability_aggregation()
+    print("ALL 3 DOCUMENT OBSERVATION PILOT TESTS PASSED.")
