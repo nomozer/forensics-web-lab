@@ -1,0 +1,147 @@
+{
+  "schema_version": "1.0.0",
+  "receipt_id": "PILOT-3CLASS-EVAL-RECEIPT-20261011",
+  "protocol_id": "PROTO-RQ1-RQ2-3CLASS-V2",
+  "amendment": "PROTOCOL_AMENDMENT_V2.0.0.md",
+  "timestamp": "2026-10-11T03:11:23Z",
+  "splits": {
+    "development_train_size": 750,
+    "development_holdout_size": 273,
+    "class_proportions_train": [
+      250,
+      250,
+      250
+    ],
+    "class_proportions_holdout": [
+      91,
+      91,
+      91
+    ]
+  },
+  "baselines_evaluated": {
+    "baseline_1_visual_only": {
+      "name": "Visual-Only MobileNetV3-small 576-D Linear Probe",
+      "feature_dim": 576,
+      "temperature": 8.3734,
+      "metrics": {
+        "macro_f1": 0.5086,
+        "balanced_accuracy": 0.4982,
+        "multiclass_brier_score": 0.5841,
+        "multiclass_top_class_ece": 0.0466,
+        "per_class": {
+          "authentic": {
+            "tp": 38,
+            "fp": 56,
+            "fn": 53,
+            "precision": 0.4043,
+            "recall": 0.4176,
+            "f1": 0.4108,
+            "support": 91
+          },
+          "ai_edited": {
+            "tp": 48,
+            "fp": 69,
+            "fn": 43,
+            "precision": 0.4103,
+            "recall": 0.5275,
+            "f1": 0.4615,
+            "support": 91
+          },
+          "fully_generated": {
+            "tp": 50,
+            "fp": 12,
+            "fn": 41,
+            "precision": 0.8065,
+            "recall": 0.5495,
+            "f1": 0.6536,
+            "support": 91
+          }
+        },
+        "confusion_matrix": [
+          [
+            38,
+            46,
+            7
+          ],
+          [
+            38,
+            48,
+            5
+          ],
+          [
+            18,
+            23,
+            50
+          ]
+        ]
+      }
+    },
+    "baseline_2_visual_dsp": {
+      "name": "Visual + Canonical DSP 16-D Feature Concatenation Probe (592-D)",
+      "feature_dim": 592,
+      "temperature": 8.1321,
+      "metrics": {
+        "macro_f1": 0.5385,
+        "balanced_accuracy": 0.5238,
+        "multiclass_brier_score": 0.5618,
+        "multiclass_top_class_ece": 0.078,
+        "per_class": {
+          "authentic": {
+            "tp": 41,
+            "fp": 54,
+            "fn": 50,
+            "precision": 0.4316,
+            "recall": 0.4505,
+            "f1": 0.4409,
+            "support": 91
+          },
+          "ai_edited": {
+            "tp": 45,
+            "fp": 69,
+            "fn": 46,
+            "precision": 0.3947,
+            "recall": 0.4945,
+            "f1": 0.439,
+            "support": 91
+          },
+          "fully_generated": {
+            "tp": 57,
+            "fp": 7,
+            "fn": 34,
+            "precision": 0.8906,
+            "recall": 0.6264,
+            "f1": 0.7355,
+            "support": 91
+          }
+        },
+        "confusion_matrix": [
+          [
+            41,
+            46,
+            4
+          ],
+          [
+            43,
+            45,
+            3
+          ],
+          [
+            11,
+            23,
+            57
+          ]
+        ]
+      }
+    }
+  },
+  "paired_comparison": {
+    "delta_macro_f1_point_estimate": 0.0299,
+    "bootstrap_method": "Stratified Source Cluster Bootstrap (10,000 replicates, PCG64 seed 20261011)",
+    "ci_95_percentile": [
+      -0.0068,
+      0.0686
+    ],
+    "probability_positive_delta": 0.9432,
+    "scientific_conclusion": "INCONCLUSIVE"
+  }
+}

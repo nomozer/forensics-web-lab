@@ -42,19 +42,26 @@
 >      **Phase 4C.8 status**: `USER_UPLOAD_BINARY_FP32_VERIFIED_PASS`<br>
 >      **Next approved action**: Commit, push lên `origin/main` và kiểm tra trực tiếp trên live URL `https://nomozer.github.io/forensics-web-lab/`.<br>
 
-> 8. _Chuẩn Bị Thực Nghiệm Ba Lớp RQ1 & RQ2 (Three-Class Preparation, Branch `research/independent-cohort-acquisition`)_:
->    - **Kiểm kê dữ liệu LOCAL & Khắc phục Mismatch Backbone ($systematic-debugging)**:
->      * Truy nguyên và sửa dứt điểm mismatch: `ml/configs/three_class_evaluation_protocol.yaml` và `scripts/research/preflight_three_class_protocol.py` (v2.0) đã được hiệu chỉnh từ nháp cũ `mobilenet_v4_small` (1280-d) về đúng kiến trúc thực tế của repo là `mobilenet_v3_small` (576-d visual, 592-d visual+DSP: 576 + 16-d canonical DSP). Kiểm chứng forward pass thực tế bằng PyTorch `MobileNetV3Forensics` và `extract_dsp_features` trên panel phát triển [4, 3, 224, 224] xuất ra đúng tensor feature shape [4, 576], DSP 16-D, fusion 592-D và logits [4, 3].
->      * Phân tách dứt khoát khu vực mô phỏng số học fixture metrics (Macro-F1=1) khỏi kết quả nghiên cứu (`is_research_evidence: false`), có disclaimer bảo vệ tính trung thực khoa học.
->      * Sửa toàn bộ bất nhất provenance từ COCO 2014 thành `MS-COCO val2017` theo tài liệu gốc của dự án.
->    - **Kiểm toán Cách ly Sealed Cohorts Đạt Chuẩn Tuyệt Đối (Section D, PASS)**:
->      * Nạp và đối chiếu trực tiếp 2 nguồn niêm phong thật: (1) Locked-Test 343 sources (`research/evidence/phase-4b.2/split-lock.json`, 3,087 ảnh disk, 2,970 distinct hashes); (2) TGIF N=400 (`research/evidence/phase-4c.7b/tgif_train_clean_subset_manifest_locked_n400.json`, xác thực SHA-256 package zip `27046ec2...`, 800 ảnh trong zip, 800 distinct hashes).
->      * Đối chiếu với 341 pairs (682 ảnh) tập phát triển theo source IDs đã chuẩn hóa và SHA-256 hashes: Overlap sources = 0, Overlap hashes = 0. Báo cáo số nguồn, số ảnh, số hashes kiểm tra bằng các trường riêng biệt. Status: `LEAKAGE_AUDIT_PASS`.
->    - **Tiếp nhận GenImage có kiểm soát & Báo cáo Điểm chặn Chính xác (Sections B, E, F, H)**:
->      * Tải 2 shards parquet (875.1 MB <= 2 GiB budget, disk footprint an toàn) từ mirror `TheKernel01/Tiny-GenImage` (CC BY-NC-SA 4.0). Trích xuất, decode Pillow và xác thực SHA-256 thành công **341 ảnh authentic Nature control** từ ImageNet (43.5 MB), lưu tại `data/research/genimage/nature_control_pilot/` làm tập đối chứng nguồn độc lập (`source_control_cohort_manifest.json`).
->      * Báo cáo điểm chặn chính xác của SD1.4: Mirror Tiny-GenImage trên Hugging Face chỉ có 7 generators (ADM, BigGAN, GLIDE, Midjourney, SD1.5, VQDM, Wukong), thiếu hoàn toàn Generator 5 (SD1.4); trong khi archive chính thức SD1.4 multipart zip của tác giả GenImage nặng ~96.5 GiB (> 2 GiB limit). Theo quy tắc trung thực khoa học, không tự ý tráo đổi model và không tạo splits giả. Trạng thái chính thức: **`DATA_BLOCKED: GENIMAGE_SD14_DISTRIBUTION_EXCEEDS_BUDGET_AND_MIRROR_OMITS_SD14`**.
->    - **Cập nhật Y Văn So-Fake (arXiv:2505.18660) (Section G)**: Bổ sung So-Fake (hzlsaber et al., 2025) vào bảng đối chiếu trong `docs/LITERATURE_RESEARCH_GAP.md`. Khẳng định rõ bài toán 3 lớp không phải là tính mới tự thân. Khoảng trống cần giải quyết là kiến trúc tích chập siêu nhẹ (<5M params) kết hợp 16-D DSP client-side zero-egress trong trình duyệt web. Vector DSP là ứng viên khoảng trống cần xác minh thực nghiệm, không tự coi là bằng chứng tính mới.
->    - **Next approved action**: Commit, push lên `origin/research/independent-cohort-acquisition`, báo cáo chi tiết theo 7 câu hỏi bàn giao của Section I.
+> 8. _Thực Thi Thực Nghiệm Ba Lớp RQ1 & RQ2 (Three-Class Empirical Pilot, Branch `research/independent-cohort-acquisition`)_:
+>    - **Ban hành Protocol Amendment v2.0.0 & Tiếp nhận SD1.5 trong Ngân sách ($executing-plans)**:
+>      * Ban hành `PROTOCOL_AMENDMENT_V2.0.0.md` chuyển generator fully_generated từ SD1.4 sang SD1.5 do archive SD1.4 gốc 96.5 GiB và mirror thiếu SD1.4. Tải thêm shard 2 (435.5 MB), tổng mạng cộng dồn 1,310,738,385 bytes (~1.22 GiB) $\le 2\text{ GiB}$ ngân sách mạng; tổng footprint ổ đĩa ~1.40 GiB $\le 5\text{ GiB}$.
+>      * Trích xuất thành công 341 ảnh SD1.5 tại `data/research/genimage/sd15_pilot/` (100% Pillow RGB pass, 341 distinct hashes).
+>      * Khóa tập phát triển 1,023 ảnh: `development_train` 750 ảnh (250 COCO auth, 250 TGIF SD2 edit, 250 SD1.5 gen) và `development_holdout` 273 ảnh (91 auth, 91 edit, 91 gen); cân bằng chính xác 1:1:1; bảo toàn 100% ghép cặp COCO source.
+>      * Kiểm toán cách ly sealed cohorts đạt chuẩn tuyệt đối: 0 source overlap, 0 hash overlap với Locked-Test (343 sources / 3,087 disk images / 2,970 distinct hashes) và TGIF N=400 (400 sources / 800 zip images / 800 distinct hashes). Status: `LEAKAGE_AUDIT_PASS`.
+>    - **Trích xuất Đặc trưng & Huấn luyện Baselines ($systematic-debugging)**:
+>      * Trích xuất đặc trưng MobileNetV3-small đóng băng weights ImageNet (SHA-256 `047dcff4...`) và canonical 16-D DSP cho 1,364 ảnh (0 NaNs).
+>      * Huấn luyện 2 linear probes trên `development_train` (750 mẫu), fit scalers và temperature scaling trên inner cross-validation: Visual-only ($T_v = 8.3734$), Visual+DSP ($T_f = 8.1321$).
+>    - **Kết quả Thực nghiệm Thực tế trên Development Holdout ($N=273$) ($verification-before-completion)**:
+>      * Baseline 1 (`visual_only_multiclass`, 576-D): Macro-F1 = **0.5086** (Auth 0.4108, Edit 0.4615, Gen 0.6536), Balanced Accuracy = 0.4982, Multiclass Brier = 0.5841, ECE = 0.0466.
+>      * Baseline 2 (`visual_dsp_multiclass`, 592-D feature concatenation): Macro-F1 = **0.5385** (Auth 0.4409, Edit 0.4390, Gen 0.7355), Balanced Accuracy = 0.5238, Multiclass Brier = 0.5618, ECE = 0.0780.
+>      * Paired Delta: $\Delta \text{Macro-F1} = \mathbf{+0.0299}$ (+2.99%). Stratified Source Cluster Bootstrap (10,000 reps, seed 20261011): 95% Percentile CI = **[-0.0068, +0.0686]**, $P(\Delta^* > 0) = 94.32\%$.
+>      * Kết luận khoa học chính thức: **`INCONCLUSIVE`** (xu hướng cải thiện dương +2.99% với 94.32% bootstrap mass > 0, nhưng khoảng tin cậy 95% CI cắt 0 ở cận dưới -0.0068).
+>    - **Đánh giá Chẩn đoán Nguồn (Source Control Cohort, $N=341$)**:
+>      * Đánh giá riêng 341 ảnh ImageNet authentic nature: Visual-only False Positive AI Rate = **67.45%** (230/341 nhầm AI), Visual+DSP = **68.04%** (232/341 nhầm AI).
+>      * Phân tích khoa học: Vạch trần domain shortcut rõ rệt (mô hình học đặc trưng phân phối bối cảnh COCO vs ImageNet và lịch sử nén JPEG/PNG thay vì thuần túy dấu vết AI). Khẳng định tính đúng đắn khi không đưa mô hình 3 lớp lên web demo người dùng tự do tải ảnh; bảo toàn nguyên vẹn demo nhị phân FP32 với 4 banner ranh giới.<br>
+>      **Phase status**: `THREE_CLASS_PILOT_EXECUTED_EMPIRICAL_PASS`<br>
+>      **Next approved action**: Commit, push lên `origin/research/independent-cohort-acquisition`, bàn giao đầy đủ 7 nội dung theo Section I.
+
 
 
 ---

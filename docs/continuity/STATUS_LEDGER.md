@@ -1,3 +1,12 @@
+## Three-Class RQ1 & RQ2 Empirical Pilot Completed (Phase 4C.8 trace, branch research/independent-cohort-acquisition)
+
+- **Protocol Amendment v2.0.0 & Controlled Acquisition ($executing-plans)**: Ban hành PROTOCOL_AMENDMENT_V2.0.0.md chuyển generator fully_generated sang SD1.5 do archive SD1.4 gốc 96.5 GiB và mirror thiếu SD1.4. Tải thêm shard 2 (435.5 MB), tổng mạng 1.22 GiB <= 2 GiB budget, trích xuất 341 ảnh SD1.5 thật. Khóa tập 1,023 ảnh (750 train, 273 holdout; 1:1:1 balance). Cách ly tuyệt đối Locked-Test (343/3,087/2,970) và N=400 (400/800/800) với 0 leakage (PASS).
+- **Trích xuất Đặc trưng & Huấn luyện Baselines ($systematic-debugging)**: Backbone MobileNetV3-small đóng băng (047dcff4...) và 16-D DSP trích xuất 1,364 ảnh (0 NaNs). Huấn luyện 2 linear probes trên development_train (750 mẫu), fit scalers và temperature scaling trên inner cross-validation.
+- **Kết quả Holdout RQ1 & RQ2 ($verification-before-completion)**: Trên 273 holdout: Baseline 1 (Visual-only 576-D) đạt Macro-F1 = 0.5086, Brier = 0.5841, ECE = 0.0466; Baseline 2 (Visual+DSP 592-D feature concatenation) đạt Macro-F1 = 0.5385, Brier = 0.5618, ECE = 0.0780. Paired Delta Macro-F1 = +0.0299 (Stratified Paired Cluster Bootstrap 10,000 reps: 95% CI [-0.0068, +0.0686], P(Delta > 0) = 94.32%). Kết luận khoa học: INCONCLUSIVE (xu hướng cải thiện +2.99% nhưng 95% CI cắt 0).
+- **Đánh giá Chẩn đoán Nguồn (Source Control Cohort)**: Trên 341 ảnh ImageNet authentic nature: Visual-only False Positive AI Rate = 67.45%, Visual+DSP = 68.04%. Vạch trần domain shortcut (COCO vs ImageNet) và bất đối xứng nén ảnh; chứng minh lý do không đưa mô hình 3 lớp lên web demo người dùng tự do tải ảnh. Bảo toàn demo nhị phân FP32.
+
+---
+
 ## Three-Class Backbone Contract Reconciled, Sealed Cohort Isolation Audited, and GenImage Pilot Controlled (Phase 4C.8 trace, branch research/independent-cohort-acquisition)
 
 - **Backbone & Protocol Contract Reconciled ($systematic-debugging)**: Sửa dứt điểm mismatch kiến trúc: file protocol YAML và preflight validator đã được hiệu chỉnh từ nháp `mobilenet_v4_small` (1280-d) về đúng `mobilenet_v3_small` (576-d visual, 592-d visual+DSP) tương thích 100% với implementation PyTorch `MobileNetV3Forensics` và `extract_dsp_features`. Kiểm chứng forward pass thực tế trên panel tensor [4, 3, 224, 224] cho kết quả tensor shape [4, 576] và logits [4, 3] chuẩn xác. Tách biệt hoàn toàn mô phỏng fixture metrics (Macro-F1=1) khỏi kết quả nghiên cứu. Sửa bất nhất provenance thành `MS-COCO val2017`.

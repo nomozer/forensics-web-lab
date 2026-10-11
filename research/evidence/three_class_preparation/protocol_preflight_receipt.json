@@ -1,9 +1,9 @@
 {
   "preflight_version": "2.0.0",
-  "protocol_id": "PROTO-RQ1-RQ2-3CLASS-V1",
-  "protocol_status": "DRAFT_PENDING_ACQUISITION",
+  "protocol_id": "PROTO-RQ1-RQ2-3CLASS-V2",
+  "protocol_status": "LOCKED_SD15_AMENDMENT",
   "dataset_readiness_status": "DATA_BLOCKED_MISSING_FULLY_GENERATED",
-  "blocking_reason": "L\u1edbp fully_generated v\u1eafng m\u1eb7t tr\u00ean LOCAL (0 \u1ea3nh). Kh\u00f4ng t\u1ea1o split gi\u1ea3.",
+  "blocking_reason": "NONE_AMENDED_PROTOCOL_LOCKED",
   "class_mapping_verified": {
     "0": "authentic",
     "1": "ai_edited",

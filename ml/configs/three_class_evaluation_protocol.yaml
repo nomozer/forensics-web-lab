@@ -1,23 +1,23 @@
 # Forensics Web Lab - RQ1 & RQ2 Evaluation Protocol Specification
 # ==============================================================================
-# Protocol Version: 1.0.0-draft
+# Protocol Version: 2.0.0 (Amended from 1.0.0 via PROTOCOL_AMENDMENT_V2.0.0.md)
 # Research Questions:
 #   - RQ1: Phân loại ba lớp authentic / ai_edited / fully_generated
-#   - RQ2: Đối chứng visual-only vs visual + canonical DSP 16-D
+#   - RQ2: Đối chứng visual-only (576-D) vs visual + canonical DSP 16-D feature concatenation (592-D)
 #
-# Status: DRAFT_PENDING_ACQUISITION
-# Training Readiness: DATA_BLOCKED_FOR_3CLASS
-# Note: Lớp fully_generated hiện chưa có trên LOCAL (0 ảnh). Không tạo splits giả.
-#       Sau khi hoàn thành acquisition từ GenImage, protocol này sẽ được khóa (LOCKED).
+# Status: LOCKED_SD15_AMENDMENT
+# Training Readiness: READY_FOR_PILOT_EXECUTION
+# Protocol Amendment: research/evidence/three_class_preparation/PROTOCOL_AMENDMENT_V2.0.0.md
+# Generator 2: GenImage Stable Diffusion v1.5 (TheKernel01/Tiny-GenImage, CC BY-NC-SA 4.0)
 # ==============================================================================
 
 protocol_metadata:
-  protocol_id: "PROTO-RQ1-RQ2-3CLASS-V1"
-  version: "1.0.0-draft"
-  status: "DRAFT_PENDING_ACQUISITION"
-  training_readiness: "DATA_BLOCKED_FOR_3CLASS"
-  blocking_reason: "Lớp fully_generated vắng mặt trên LOCAL (0 ảnh). Không tạo split giả."
-  frozen_baseline_lock: false
+  protocol_id: "PROTO-RQ1-RQ2-3CLASS-V2"
+  version: "2.0.0"
+  status: "LOCKED_SD15_AMENDMENT"
+  training_readiness: "READY_FOR_PILOT_EXECUTION"
+  amendment_reference: "research/evidence/three_class_preparation/PROTOCOL_AMENDMENT_V2.0.0.md"
+  frozen_baseline_lock: true
 
 class_mapping:
   num_classes: 3
@@ -30,7 +30,7 @@ class_mapping:
       description: "Ảnh thật bị chỉnh sửa cục bộ qua inpainting tạo sinh (TGIF SD2 inpainting)."
     - id: 2
       name: "fully_generated"
-      description: "Ảnh tạo sinh toàn phần từ văn bản/nhiễu (GenImage SD1.4 candidate)."
+      description: "Ảnh tạo sinh toàn phần từ văn bản/nhiễu (GenImage SD1.5 via Protocol Amendment v2.0.0)."
 
 prediction_decision_rule:
   rule_type: "softmax_argmax_with_entropy_rejection"

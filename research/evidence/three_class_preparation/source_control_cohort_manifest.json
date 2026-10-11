@@ -3,7 +3,7 @@
   "manifest_type": "SOURCE_CONTROL_COHORT",
   "total_images": 341,
   "source_dataset": "GenImage (Tiny-GenImage ImageNet validation)",
-  "purpose": "Diagnostic source-control benchmark for ImageNet distribution; strictly quarantined from primary pairs",
+  "purpose": "Diagnostic source-control benchmark for ImageNet distribution; strictly quarantined from primary pairs; partition fixed to source_control_diagnostic",
   "records": [
     {
       "sample_id": "genimage_nature_00_000014",
@@ -18,7 +18,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000030",
@@ -33,7 +33,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000034",
@@ -48,7 +48,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000042",
@@ -63,7 +63,7 @@
       "height": 314,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000044",
@@ -78,7 +78,7 @@
       "height": 461,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000058",
@@ -93,7 +93,7 @@
       "height": 332,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000062",
@@ -108,7 +108,7 @@
       "height": 361,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000064",
@@ -123,7 +123,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000066",
@@ -138,7 +138,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000070",
@@ -153,7 +153,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000086",
@@ -168,7 +168,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000090",
@@ -183,7 +183,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000106",
@@ -198,7 +198,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000118",
@@ -213,7 +213,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000122",
@@ -228,7 +228,7 @@
       "height": 409,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000126",
@@ -243,7 +243,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000132",
@@ -258,7 +258,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000140",
@@ -273,7 +273,7 @@
       "height": 768,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000150",
@@ -288,7 +288,7 @@
       "height": 335,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000152",
@@ -303,7 +303,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000162",
@@ -318,7 +318,7 @@
       "height": 1505,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000170",
@@ -333,7 +333,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000194",
@@ -348,7 +348,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000210",
@@ -363,7 +363,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000224",
@@ -378,7 +378,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000232",
@@ -393,7 +393,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000280",
@@ -408,7 +408,7 @@
       "height": 335,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000300",
@@ -423,7 +423,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000304",
@@ -438,7 +438,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000306",
@@ -453,7 +453,7 @@
       "height": 333,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000338",
@@ -468,7 +468,7 @@
       "height": 334,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000340",
@@ -483,7 +483,7 @@
       "height": 420,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000344",
@@ -498,7 +498,7 @@
       "height": 136,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000366",
@@ -513,7 +513,7 @@
       "height": 333,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000380",
@@ -528,7 +528,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000388",
@@ -543,7 +543,7 @@
       "height": 135,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000414",
@@ -558,7 +558,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000418",
@@ -573,7 +573,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000428",
@@ -588,7 +588,7 @@
       "height": 357,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000440",
@@ -603,7 +603,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000480",
@@ -618,7 +618,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000488",
@@ -633,7 +633,7 @@
       "height": 349,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000524",
@@ -648,7 +648,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000536",
@@ -663,7 +663,7 @@
       "height": 431,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000548",
@@ -678,7 +678,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000574",
@@ -693,7 +693,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000616",
@@ -708,7 +708,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000618",
@@ -723,7 +723,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000624",
@@ -738,7 +738,7 @@
       "height": 331,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000630",
@@ -753,7 +753,7 @@
       "height": 813,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000636",
@@ -768,7 +768,7 @@
       "height": 768,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000658",
@@ -783,7 +783,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000664",
@@ -798,7 +798,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000698",
@@ -813,7 +813,7 @@
       "height": 300,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000706",
@@ -828,7 +828,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000712",
@@ -843,7 +843,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000734",
@@ -858,7 +858,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000736",
@@ -873,7 +873,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000738",
@@ -888,7 +888,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000740",
@@ -903,7 +903,7 @@
       "height": 333,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000778",
@@ -918,7 +918,7 @@
       "height": 295,
       "format": "JPEG",
       "mode": "L",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000794",
@@ -933,7 +933,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000798",
@@ -948,7 +948,7 @@
       "height": 401,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000800",
@@ -963,7 +963,7 @@
       "height": 357,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000802",
@@ -978,7 +978,7 @@
       "height": 333,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000826",
@@ -993,7 +993,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000842",
@@ -1008,7 +1008,7 @@
       "height": 405,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000856",
@@ -1023,7 +1023,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000860",
@@ -1038,7 +1038,7 @@
       "height": 374,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000870",
@@ -1053,7 +1053,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000872",
@@ -1068,7 +1068,7 @@
       "height": 399,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000878",
@@ -1083,7 +1083,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000882",
@@ -1098,7 +1098,7 @@
       "height": 281,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000886",
@@ -1113,7 +1113,7 @@
       "height": 400,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000888",
@@ -1128,7 +1128,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000896",
@@ -1143,7 +1143,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000904",
@@ -1158,7 +1158,7 @@
       "height": 307,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000908",
@@ -1173,7 +1173,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000926",
@@ -1188,7 +1188,7 @@
       "height": 185,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000942",
@@ -1203,7 +1203,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000944",
@@ -1218,7 +1218,7 @@
       "height": 359,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000972",
@@ -1233,7 +1233,7 @@
       "height": 207,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000986",
@@ -1248,7 +1248,7 @@
       "height": 400,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_000990",
@@ -1263,7 +1263,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001002",
@@ -1278,7 +1278,7 @@
       "height": 351,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001026",
@@ -1293,7 +1293,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001046",
@@ -1308,7 +1308,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001054",
@@ -1323,7 +1323,7 @@
       "height": 334,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001060",
@@ -1338,7 +1338,7 @@
       "height": 393,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001066",
@@ -1353,7 +1353,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001072",
@@ -1368,7 +1368,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001084",
@@ -1383,7 +1383,7 @@
       "height": 445,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001102",
@@ -1398,7 +1398,7 @@
       "height": 333,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001104",
@@ -1413,7 +1413,7 @@
       "height": 447,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001108",
@@ -1428,7 +1428,7 @@
       "height": 395,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001128",
@@ -1443,7 +1443,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001138",
@@ -1458,7 +1458,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001142",
@@ -1473,7 +1473,7 @@
       "height": 437,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001162",
@@ -1488,7 +1488,7 @@
       "height": 437,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001178",
@@ -1503,7 +1503,7 @@
       "height": 333,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001180",
@@ -1518,7 +1518,7 @@
       "height": 872,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001198",
@@ -1533,7 +1533,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001202",
@@ -1548,7 +1548,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001206",
@@ -1563,7 +1563,7 @@
       "height": 460,
       "format": "JPEG",
       "mode": "L",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001220",
@@ -1578,7 +1578,7 @@
       "height": 320,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001228",
@@ -1593,7 +1593,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001236",
@@ -1608,7 +1608,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001246",
@@ -1623,7 +1623,7 @@
       "height": 400,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001268",
@@ -1638,7 +1638,7 @@
       "height": 333,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001270",
@@ -1653,7 +1653,7 @@
       "height": 458,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001272",
@@ -1668,7 +1668,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001282",
@@ -1683,7 +1683,7 @@
       "height": 469,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001286",
@@ -1698,7 +1698,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001306",
@@ -1713,7 +1713,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001310",
@@ -1728,7 +1728,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001324",
@@ -1743,7 +1743,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001340",
@@ -1758,7 +1758,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001342",
@@ -1773,7 +1773,7 @@
       "height": 469,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001348",
@@ -1788,7 +1788,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001354",
@@ -1803,7 +1803,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001358",
@@ -1818,7 +1818,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001362",
@@ -1833,7 +1833,7 @@
       "height": 398,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001374",
@@ -1848,7 +1848,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001384",
@@ -1863,7 +1863,7 @@
       "height": 333,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001386",
@@ -1878,7 +1878,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001396",
@@ -1893,7 +1893,7 @@
       "height": 346,
       "format": "JPEG",
       "mode": "L",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001400",
@@ -1908,7 +1908,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001408",
@@ -1923,7 +1923,7 @@
       "height": 361,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001414",
@@ -1938,7 +1938,7 @@
       "height": 333,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001418",
@@ -1953,7 +1953,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001422",
@@ -1968,7 +1968,7 @@
       "height": 176,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001434",
@@ -1983,7 +1983,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001446",
@@ -1998,7 +1998,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001448",
@@ -2013,7 +2013,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001458",
@@ -2028,7 +2028,7 @@
       "height": 413,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001466",
@@ -2043,7 +2043,7 @@
       "height": 337,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001470",
@@ -2058,7 +2058,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001480",
@@ -2073,7 +2073,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001494",
@@ -2088,7 +2088,7 @@
       "height": 550,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001502",
@@ -2103,7 +2103,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001508",
@@ -2118,7 +2118,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001518",
@@ -2133,7 +2133,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001556",
@@ -2148,7 +2148,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001564",
@@ -2163,7 +2163,7 @@
       "height": 489,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001574",
@@ -2178,7 +2178,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001614",
@@ -2193,7 +2193,7 @@
       "height": 393,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001628",
@@ -2208,7 +2208,7 @@
       "height": 352,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001630",
@@ -2223,7 +2223,7 @@
       "height": 401,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001632",
@@ -2238,7 +2238,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001644",
@@ -2253,7 +2253,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001648",
@@ -2268,7 +2268,7 @@
       "height": 433,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001668",
@@ -2283,7 +2283,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001672",
@@ -2298,7 +2298,7 @@
       "height": 333,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001710",
@@ -2313,7 +2313,7 @@
       "height": 333,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001716",
@@ -2328,7 +2328,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001718",
@@ -2343,7 +2343,7 @@
       "height": 492,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001722",
@@ -2358,7 +2358,7 @@
       "height": 368,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001724",
@@ -2373,7 +2373,7 @@
       "height": 374,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_00_001738",
@@ -2388,7 +2388,7 @@
       "height": 467,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000018",
@@ -2403,7 +2403,7 @@
       "height": 416,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000050",
@@ -2418,7 +2418,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000060",
@@ -2433,7 +2433,7 @@
       "height": 439,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000062",
@@ -2448,7 +2448,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000078",
@@ -2463,7 +2463,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000082",
@@ -2478,7 +2478,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000088",
@@ -2493,7 +2493,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000096",
@@ -2508,7 +2508,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000098",
@@ -2523,7 +2523,7 @@
       "height": 454,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000102",
@@ -2538,7 +2538,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000112",
@@ -2553,7 +2553,7 @@
       "height": 277,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000116",
@@ -2568,7 +2568,7 @@
       "height": 332,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000120",
@@ -2583,7 +2583,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000146",
@@ -2598,7 +2598,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000156",
@@ -2613,7 +2613,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000160",
@@ -2628,7 +2628,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000166",
@@ -2643,7 +2643,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000182",
@@ -2658,7 +2658,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000188",
@@ -2673,7 +2673,7 @@
       "height": 428,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000202",
@@ -2688,7 +2688,7 @@
       "height": 394,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000206",
@@ -2703,7 +2703,7 @@
       "height": 400,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000214",
@@ -2718,7 +2718,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000222",
@@ -2733,7 +2733,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000230",
@@ -2748,7 +2748,7 @@
       "height": 335,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000248",
@@ -2763,7 +2763,7 @@
       "height": 379,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000262",
@@ -2778,7 +2778,7 @@
       "height": 471,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000264",
@@ -2793,7 +2793,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000268",
@@ -2808,7 +2808,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000280",
@@ -2823,7 +2823,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000284",
@@ -2838,7 +2838,7 @@
       "height": 412,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000292",
@@ -2853,7 +2853,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000300",
@@ -2868,7 +2868,7 @@
       "height": 333,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000302",
@@ -2883,7 +2883,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000304",
@@ -2898,7 +2898,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000312",
@@ -2913,7 +2913,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000314",
@@ -2928,7 +2928,7 @@
       "height": 400,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000324",
@@ -2943,7 +2943,7 @@
       "height": 380,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000334",
@@ -2958,7 +2958,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000338",
@@ -2973,7 +2973,7 @@
       "height": 420,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000356",
@@ -2988,7 +2988,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000358",
@@ -3003,7 +3003,7 @@
       "height": 357,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000370",
@@ -3018,7 +3018,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000384",
@@ -3033,7 +3033,7 @@
       "height": 341,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000402",
@@ -3048,7 +3048,7 @@
       "height": 400,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000414",
@@ -3063,7 +3063,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000422",
@@ -3078,7 +3078,7 @@
       "height": 400,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000432",
@@ -3093,7 +3093,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000436",
@@ -3108,7 +3108,7 @@
       "height": 489,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000440",
@@ -3123,7 +3123,7 @@
       "height": 333,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000462",
@@ -3138,7 +3138,7 @@
       "height": 333,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000466",
@@ -3153,7 +3153,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000470",
@@ -3168,7 +3168,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000474",
@@ -3183,7 +3183,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000480",
@@ -3198,7 +3198,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000484",
@@ -3213,7 +3213,7 @@
       "height": 412,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000526",
@@ -3228,7 +3228,7 @@
       "height": 200,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000534",
@@ -3243,7 +3243,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000542",
@@ -3258,7 +3258,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000548",
@@ -3273,7 +3273,7 @@
       "height": 400,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000552",
@@ -3288,7 +3288,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000562",
@@ -3303,7 +3303,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000568",
@@ -3318,7 +3318,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000584",
@@ -3333,7 +3333,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000608",
@@ -3348,7 +3348,7 @@
       "height": 377,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000614",
@@ -3363,7 +3363,7 @@
       "height": 488,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000618",
@@ -3378,7 +3378,7 @@
       "height": 597,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000632",
@@ -3393,7 +3393,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000640",
@@ -3408,7 +3408,7 @@
       "height": 484,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000642",
@@ -3423,7 +3423,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000670",
@@ -3438,7 +3438,7 @@
       "height": 333,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000678",
@@ -3453,7 +3453,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000684",
@@ -3468,7 +3468,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000690",
@@ -3483,7 +3483,7 @@
       "height": 333,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000694",
@@ -3498,7 +3498,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000698",
@@ -3513,7 +3513,7 @@
       "height": 274,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000700",
@@ -3528,7 +3528,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000706",
@@ -3543,7 +3543,7 @@
       "height": 333,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000708",
@@ -3558,7 +3558,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000712",
@@ -3573,7 +3573,7 @@
       "height": 645,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000716",
@@ -3588,7 +3588,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000720",
@@ -3603,7 +3603,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000726",
@@ -3618,7 +3618,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000734",
@@ -3633,7 +3633,7 @@
       "height": 485,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000740",
@@ -3648,7 +3648,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000748",
@@ -3663,7 +3663,7 @@
       "height": 512,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000764",
@@ -3678,7 +3678,7 @@
       "height": 333,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000768",
@@ -3693,7 +3693,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000774",
@@ -3708,7 +3708,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000776",
@@ -3723,7 +3723,7 @@
       "height": 300,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000782",
@@ -3738,7 +3738,7 @@
       "height": 333,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000788",
@@ -3753,7 +3753,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "dev_train"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000792",
@@ -3768,7 +3768,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000796",
@@ -3783,7 +3783,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000808",
@@ -3798,7 +3798,7 @@
       "height": 333,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000830",
@@ -3813,7 +3813,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000844",
@@ -3828,7 +3828,7 @@
       "height": 333,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000848",
@@ -3843,7 +3843,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000864",
@@ -3858,7 +3858,7 @@
       "height": 437,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000878",
@@ -3873,7 +3873,7 @@
       "height": 450,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000882",
@@ -3888,7 +3888,7 @@
       "height": 357,
       "format": "JPEG",
       "mode": "L",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000886",
@@ -3903,7 +3903,7 @@
       "height": 434,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000908",
@@ -3918,7 +3918,7 @@
       "height": 381,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000912",
@@ -3933,7 +3933,7 @@
       "height": 773,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000914",
@@ -3948,7 +3948,7 @@
       "height": 475,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000934",
@@ -3963,7 +3963,7 @@
       "height": 1536,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000938",
@@ -3978,7 +3978,7 @@
       "height": 383,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000946",
@@ -3993,7 +3993,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000948",
@@ -4008,7 +4008,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000986",
@@ -4023,7 +4023,7 @@
       "height": 1024,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_000998",
@@ -4038,7 +4038,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001034",
@@ -4053,7 +4053,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "L",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001066",
@@ -4068,7 +4068,7 @@
       "height": 484,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001068",
@@ -4083,7 +4083,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001070",
@@ -4098,7 +4098,7 @@
       "height": 411,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001072",
@@ -4113,7 +4113,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001076",
@@ -4128,7 +4128,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001086",
@@ -4143,7 +4143,7 @@
       "height": 341,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001138",
@@ -4158,7 +4158,7 @@
       "height": 376,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001140",
@@ -4173,7 +4173,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001144",
@@ -4188,7 +4188,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001152",
@@ -4203,7 +4203,7 @@
       "height": 412,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001160",
@@ -4218,7 +4218,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001166",
@@ -4233,7 +4233,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001180",
@@ -4248,7 +4248,7 @@
       "height": 333,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001204",
@@ -4263,7 +4263,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001208",
@@ -4278,7 +4278,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001220",
@@ -4293,7 +4293,7 @@
       "height": 776,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001224",
@@ -4308,7 +4308,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001228",
@@ -4323,7 +4323,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001232",
@@ -4338,7 +4338,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001238",
@@ -4353,7 +4353,7 @@
       "height": 453,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001242",
@@ -4368,7 +4368,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001252",
@@ -4383,7 +4383,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001256",
@@ -4398,7 +4398,7 @@
       "height": 377,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001272",
@@ -4413,7 +4413,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001282",
@@ -4428,7 +4428,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001290",
@@ -4443,7 +4443,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001302",
@@ -4458,7 +4458,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001308",
@@ -4473,7 +4473,7 @@
       "height": 480,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001312",
@@ -4488,7 +4488,7 @@
       "height": 334,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001324",
@@ -4503,7 +4503,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001364",
@@ -4518,7 +4518,7 @@
       "height": 480,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001366",
@@ -4533,7 +4533,7 @@
       "height": 389,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001370",
@@ -4548,7 +4548,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001372",
@@ -4563,7 +4563,7 @@
       "height": 334,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001386",
@@ -4578,7 +4578,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001388",
@@ -4593,7 +4593,7 @@
       "height": 346,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001394",
@@ -4608,7 +4608,7 @@
       "height": 334,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001396",
@@ -4623,7 +4623,7 @@
       "height": 134,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001400",
@@ -4638,7 +4638,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001410",
@@ -4653,7 +4653,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001412",
@@ -4668,7 +4668,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001414",
@@ -4683,7 +4683,7 @@
       "height": 426,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001436",
@@ -4698,7 +4698,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001446",
@@ -4713,7 +4713,7 @@
       "height": 400,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001448",
@@ -4728,7 +4728,7 @@
       "height": 334,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001480",
@@ -4743,7 +4743,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001532",
@@ -4758,7 +4758,7 @@
       "height": 333,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001540",
@@ -4773,7 +4773,7 @@
       "height": 263,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001552",
@@ -4788,7 +4788,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001556",
@@ -4803,7 +4803,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001558",
@@ -4818,7 +4818,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001560",
@@ -4833,7 +4833,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001570",
@@ -4848,7 +4848,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001576",
@@ -4863,7 +4863,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001600",
@@ -4878,7 +4878,7 @@
       "height": 481,
       "format": "JPEG",
       "mode": "L",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001610",
@@ -4893,7 +4893,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001624",
@@ -4908,7 +4908,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001628",
@@ -4923,7 +4923,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001636",
@@ -4938,7 +4938,7 @@
       "height": 500,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001656",
@@ -4953,7 +4953,7 @@
       "height": 382,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001672",
@@ -4968,7 +4968,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001676",
@@ -4983,7 +4983,7 @@
       "height": 402,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001680",
@@ -4998,7 +4998,7 @@
       "height": 333,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001694",
@@ -5013,7 +5013,7 @@
       "height": 333,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001696",
@@ -5028,7 +5028,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001710",
@@ -5043,7 +5043,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001728",
@@ -5058,7 +5058,7 @@
       "height": 333,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001732",
@@ -5073,7 +5073,7 @@
       "height": 449,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001740",
@@ -5088,7 +5088,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001742",
@@ -5103,7 +5103,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     },
     {
       "sample_id": "genimage_nature_01_001748",
@@ -5118,7 +5118,7 @@
       "height": 375,
       "format": "JPEG",
       "mode": "RGB",
-      "partition": "inner_val"
+      "partition": "source_control_diagnostic"
     }
   ]
 }

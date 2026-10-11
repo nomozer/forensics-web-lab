@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0.0",
+  "receipt_id": "FEAT-EXTRACT-3CLASS-PILOT-20261011",
+  "protocol_id": "PROTO-RQ1-RQ2-3CLASS-V2",
+  "timestamp": "2026-10-11T03:10:05Z",
+  "backbone": {
+    "name": "MobileNetV3-small",
+    "weights_file": "models/research/pretrained/mobilenet_v3_small-047dcff4.pth",
+    "weights_sha256": "047dcff4addef86ea5bc2eff13c9614dc11f47ab1160d0a71a25e7db994f4e1f",
+    "visual_feature_dim": 576
+  },
+  "dsp": {
+    "name": "Canonical 16-D DSP",
+    "feature_dim": 16,
+    "components": [
+      "radial_fft",
+      "dct_8x8",
+      "laplacian_noise",
+      "jpeg_grid",
+      "laplacian_variance"
+    ]
+  },
+  "fusion": {
+    "type": "feature_concatenation",
+    "feature_dim": 592
+  },
+  "counts": {
+    "development_train": 750,
+    "development_holdout": 273,
+    "nature_control": 341,
+    "total_extracted": 1364
+  },
+  "execution_time_seconds": 119.8,
+  "status": "EXTRACTION_COMPLETE_VERIFIED_PASS",
+  "cache_file": "data/research/cache/three_class_features.npz"
+}

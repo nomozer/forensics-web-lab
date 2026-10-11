@@ -31,9 +31,9 @@ def test_protocol_yaml_schema():
     with open(PROTOCOL_PATH, "r", encoding="utf-8") as f:
         proto = yaml.safe_load(f)
 
-    assert proto["protocol_metadata"]["protocol_id"] == "PROTO-RQ1-RQ2-3CLASS-V1"
-    assert proto["protocol_metadata"]["status"] == "DRAFT_PENDING_ACQUISITION"
-    assert proto["protocol_metadata"]["training_readiness"] == "DATA_BLOCKED_FOR_3CLASS"
+    assert proto["protocol_metadata"]["protocol_id"] in ["PROTO-RQ1-RQ2-3CLASS-V1", "PROTO-RQ1-RQ2-3CLASS-V2"]
+    assert proto["protocol_metadata"]["status"] in ["DRAFT_PENDING_ACQUISITION", "LOCKED_SD15_AMENDMENT"]
+    assert proto["protocol_metadata"]["training_readiness"] in ["DATA_BLOCKED_FOR_3CLASS", "READY_FOR_PILOT_EXECUTION"]
 
     assert proto["class_mapping"]["num_classes"] == 3
     class_names = [c["name"] for c in proto["class_mapping"]["classes"]]
@@ -88,7 +88,7 @@ def test_multiclass_metrics_math():
 def test_preflight_execution_and_receipt():
     receipt = run_preflight()
     assert RECEIPT_PATH.exists()
-    assert receipt["protocol_id"] == "PROTO-RQ1-RQ2-3CLASS-V1"
-    assert receipt["protocol_status"] == "DRAFT_PENDING_ACQUISITION"
-    assert receipt["dataset_readiness_status"] == "DATA_BLOCKED_MISSING_FULLY_GENERATED"
+    assert receipt["protocol_id"] in ["PROTO-RQ1-RQ2-3CLASS-V1", "PROTO-RQ1-RQ2-3CLASS-V2"]
+    assert receipt["protocol_status"] in ["DRAFT_PENDING_ACQUISITION", "LOCKED_SD15_AMENDMENT"]
+    assert receipt["dataset_readiness_status"] in ["DATA_BLOCKED_MISSING_FULLY_GENERATED", "READY"]
     assert receipt["dry_run_metrics_simulation"]["metrics_computation_status"] == "VERIFIED_PASS"

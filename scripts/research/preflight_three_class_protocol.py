@@ -274,7 +274,7 @@ def run_preflight() -> Dict[str, Any]:
         "protocol_id": proto["protocol_metadata"]["protocol_id"],
         "protocol_status": proto["protocol_metadata"]["status"],
         "dataset_readiness_status": data_status,
-        "blocking_reason": proto["protocol_metadata"]["blocking_reason"],
+        "blocking_reason": proto["protocol_metadata"].get("blocking_reason", "NONE_AMENDED_PROTOCOL_LOCKED"),
         "class_mapping_verified": expected_classes,
         "backbone_verification": backbone_verification_results,
         "baselines_verified": {

@@ -1,54 +1,54 @@
 #!/usr/bin/env python3
 """
-Forensics Web Lab - Lock Three-Class Pilot Cohort & Splits
-=========================================================
-Implements Sections F & H of the research agenda:
-1. Constructs Primary 3-Class Pilot Cohort (balanced N=341 per class, total 1023 images):
-   - authentic (0): 341 TGIF development authentic images (MS-COCO val2017)
-   - ai_edited (1): 341 TGIF development edited images (Stable Diffusion 2 inpainting)
-   - fully_generated (2): 341 GenImage SD1.4 images
-2. Constructs Source-Control Cohort (N=341 nature images from ImageNet) kept strictly distinct:
-   - Preserves source-control cohort for post-hoc confounder diagnostics without polluting primary pairs.
-3. Partitions splits strictly disjoint by source group (Seed 42):
-   - dev_train: 250 per class (750 images primary, 250 source control)
-   - inner_val: 91 per class (273 images primary, 91 source control)
-   - Holdout testing: strictly quarantined (TGIF N=400 sealed cohort and 343 locked-test sources).
-4. Verifies all images, hashes, and isolation.
-5. Emits split locks and readiness determinations:
-   - Emits TRAINING_READY_PILOT only when data, backbone contract, isolation, and split checks PASS.
-
-Outputs:
-- research/evidence/three_class_preparation/primary_three_class_pilot_manifest.json
-- research/evidence/three_class_preparation/source_control_cohort_manifest.json
-- research/evidence/three_class_preparation/three_class_split_lock.json
+Forensics Web Lab - Lock Three-Class Pilot Splits and Cross-Cohort Isolation Audit
+==================================================================================
+Executes Task 3 under Protocol Amendment v2.0.0 (SD1.5):
+1. Loads 341 pairs from data/research/tgif/manifests/manifest_pilot_a_option_p.csv:
+   - 250 source pairs (500 images) -> development_train
+   - 91 source pairs (182 images) -> development_holdout
+2. Loads 341 SD1.5 images from research/evidence/three_class_preparation/sd15_pilot_manifest.json:
+   - First 250 images -> development_train
+   - Remaining 91 images -> development_holdout
+3. Total cohort: 1,023 images:
+   - development_train: 250 authentic, 250 ai_edited, 250 fully_generated (750 total)
+   - development_holdout: 91 authentic, 91 ai_edited, 91 fully_generated (273 total)
+4. Audits cross-cohort isolation:
+   - Locked-Test (343 sources, 3,087 disk images, 2,970 distinct SHA-256 hashes)
+   - TGIF N=400 (400 sources, 800 package zip images, 800 distinct SHA-256 hashes)
+   - Verifies strictly ZERO overlap in sources and hashes.
+5. Exports:
+   - research/evidence/three_class_preparation/three_class_pilot_splits.json
+   - research/evidence/three_class_preparation/three_class_pilot_manifest.csv
+   - Updates research/evidence/three_class_preparation/leakage_and_confounding_report.json
 """
 
 import csv
-import hashlib
+import io
 import json
 import logging
-import random
+import os
+import time
+import zipfile
+import hashlib
 from pathlib import Path
 from typing import Any, Dict, List, Set
-from PIL import Image
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
-TGIF_MANIFEST_PATH = REPO_ROOT / "data" / "research" / "tgif" / "manifests" / "manifest_pilot_a_option_p.csv"
-GENIMAGE_RECEIPT_PATH = REPO_ROOT / "research" / "evidence" / "three_class_preparation" / "genimage_acquisition_receipt.json"
+OPTION_P_MANIFEST_PATH = REPO_ROOT / "data" / "research" / "tgif" / "manifests" / "manifest_pilot_a_option_p.csv"
+SD15_MANIFEST_PATH = REPO_ROOT / "research" / "evidence" / "three_class_preparation" / "sd15_pilot_manifest.json"
+LOCKED_TEST_SPLIT_LOCK = REPO_ROOT / "research" / "evidence" / "phase-4b.2" / "split-lock.json"
+TGIF_N400_MANIFEST = REPO_ROOT / "research" / "evidence" / "phase-4c.7b" / "tgif_train_clean_subset_manifest_locked_n400.json"
+TGIF_N400_PACKAGE = REPO_ROOT / "data" / "research" / "local-artifacts" / "phase-4c.7b" / "tgif_train_clean_subset_package.zip"
 
-SPLIT_LOCK_OUTPUT_PATH = REPO_ROOT / "research" / "evidence" / "three_class_preparation" / "three_class_split_lock.json"
-PRIMARY_MANIFEST_OUTPUT_PATH = REPO_ROOT / "research" / "evidence" / "three_class_preparation" / "primary_three_class_pilot_manifest.json"
-CONTROL_MANIFEST_OUTPUT_PATH = REPO_ROOT / "research" / "evidence" / "three_class_preparation" / "source_control_cohort_manifest.json"
-
-SPLIT_SEED = 42
-TARGET_TRAIN = 250
-TARGET_VAL = 91
+OUTPUT_SPLITS_JSON = REPO_ROOT / "research" / "evidence" / "three_class_preparation" / "three_class_pilot_splits.json"
+OUTPUT_MANIFEST_CSV = REPO_ROOT / "research" / "evidence" / "three_class_preparation" / "three_class_pilot_manifest.csv"
+LEAKAGE_REPORT_PATH = REPO_ROOT / "research" / "evidence" / "three_class_preparation" / "leakage_and_confounding_report.json"
 
 
-def compute_sha256(filepath: Path) -> str:
+def compute_file_sha256(filepath: Path) -> str:
     h = hashlib.sha256()
     with open(filepath, "rb") as f:
         while chunk := f.read(65536):
@@ -56,254 +56,266 @@ def compute_sha256(filepath: Path) -> str:
     return h.hexdigest()
 
 
-def lock_cohort_and_splits() -> Dict[str, Any]:
-    logger.info("=== Locking Three-Class Pilot Cohort and Disjoint Splits ===")
+def main():
+    logger.info("=== Starting Three-Class Pilot Split Locking & Isolation Audit ===")
 
-    if not GENIMAGE_RECEIPT_PATH.exists():
-        raise FileNotFoundError(f"GenImage acquisition receipt not found at {GENIMAGE_RECEIPT_PATH}. Run acquisition first.")
-    if not TGIF_MANIFEST_PATH.exists():
-        raise FileNotFoundError(f"TGIF Option P manifest not found at {TGIF_MANIFEST_PATH}.")
+    # 1. Load Option P manifest
+    with open(OPTION_P_MANIFEST_PATH, "r", encoding="utf-8") as f:
+        option_p_rows = list(csv.DictReader(f))
 
-    with open(GENIMAGE_RECEIPT_PATH, "r", encoding="utf-8") as f:
-        genimage_receipt = json.load(f)
+    dev_train_rows = [r for r in option_p_rows if r["partition"] == "development_train"]
+    dev_holdout_rows = [r for r in option_p_rows if r["partition"] == "inner_validation"]
 
-    # 1. Load TGIF canonical pairs (Authentic & Edited)
-    tgif_records = []
-    with open(TGIF_MANIFEST_PATH, "r", encoding="utf-8") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            if row.get("partition") in ("development_train", "inner_validation"):
-                tgif_records.append(row)
+    logger.info(f"Loaded Option P pairs: dev_train={len(dev_train_rows)}, dev_holdout={len(dev_holdout_rows)}")
+    assert len(dev_train_rows) == 250, f"Expected 250 dev_train pairs, got {len(dev_train_rows)}"
+    assert len(dev_holdout_rows) == 91, f"Expected 91 dev_holdout pairs, got {len(dev_holdout_rows)}"
 
-    if len(tgif_records) != 341:
-        raise ValueError(f"Expected 341 TGIF development sources, found {len(tgif_records)}")
+    # 2. Load SD1.5 manifest
+    with open(SD15_MANIFEST_PATH, "r", encoding="utf-8") as f:
+        sd15_manifest = json.load(f)
+    sd15_records = sd15_manifest["records"]
+    logger.info(f"Loaded SD1.5 records: {len(sd15_records)}")
+    assert len(sd15_records) == 341, f"Expected 341 SD1.5 records, got {len(sd15_records)}"
 
-    # 2. Extract primary records
-    primary_records: List[Dict[str, Any]] = []
+    sd15_train = sd15_records[:250]
+    sd15_holdout = sd15_records[250:]
+    assert len(sd15_train) == 250
+    assert len(sd15_holdout) == 91
 
-    # Authentic class (0) & AI Edited class (1) from TGIF
-    for row in tgif_records:
-        sid = f"{int(row['source_id']):012d}"
-        partition = "dev_train" if row["partition"] == "development_train" else "inner_val"
+    # 3. Construct Unified Records
+    all_records = []
 
+    # Authentic and Edited from Option P
+    for row in dev_train_rows:
+        src_id = row["source_id"]
         # Authentic
-        auth_rel = row["authentic_path"].replace("\\", "/")
-        auth_p = REPO_ROOT / auth_rel
-        auth_sha = compute_sha256(auth_p)
-        with Image.open(auth_p) as img:
-            w, h = img.size
-            fmt = img.format
-
-        primary_records.append({
-            "sample_id": f"pilot_auth_tgif_{sid}",
-            "source_group_id": sid,
-            "label_id": 0,
-            "label_name": "authentic",
-            "source_dataset": "TGIF (MS-COCO val2017)",
-            "relative_path": auth_rel,
-            "sha256": auth_sha,
-            "width": w,
-            "height": h,
-            "format": fmt,
-            "partition": partition,
+        all_records.append({
+            "sample_id": f"coco_auth_{src_id}",
+            "source_id": src_id,
+            "source_group_id": f"coco_group_{src_id}",
+            "relative_path": row["authentic_path"].replace("\\", "/"),
+            "sha256": row["authentic_sha256"],
+            "class_name": "authentic",
+            "numeric_label": 0,
+            "partition": "development_train",
+            "provenance": "MS-COCO val2017",
+            "generator": "nature_camera",
         })
-
         # AI Edited
-        edit_rel = row["canonical_edit_path"].replace("\\", "/")
-        edit_p = REPO_ROOT / edit_rel
-        edit_sha = compute_sha256(edit_p)
-        with Image.open(edit_p) as img:
-            w, h = img.size
-            fmt = img.format
-
-        primary_records.append({
-            "sample_id": f"pilot_edit_tgif_{sid}",
-            "source_group_id": sid,
-            "label_id": 1,
-            "label_name": "ai_edited",
-            "source_dataset": "TGIF (SD2 inpainting)",
-            "relative_path": edit_rel,
-            "sha256": edit_sha,
-            "width": w,
-            "height": h,
-            "format": fmt,
-            "partition": partition,
+        all_records.append({
+            "sample_id": f"tgif_sd2_edit_{src_id}",
+            "source_id": src_id,
+            "source_group_id": f"coco_group_{src_id}",
+            "relative_path": row["canonical_edit_path"].replace("\\", "/"),
+            "sha256": row["canonical_edit_sha256"],
+            "class_name": "ai_edited",
+            "numeric_label": 1,
+            "partition": "development_train",
+            "provenance": "TGIF SD2 inpainting (spliced)",
+            "generator": "stable_diffusion_2_inpainting",
         })
 
-    # 3. Partition GenImage SD1.4 (Fully Generated, class 2)
-    sd14_items = genimage_receipt["extracted_cohort_records"]["sd14_fully_generated"]
-    if len(sd14_items) != 341:
-        raise ValueError(f"Expected 341 SD1.4 samples, found {len(sd14_items)}")
-
-    # Deterministic split partition
-    rng = random.Random(SPLIT_SEED)
-    sd14_indices = list(range(len(sd14_items)))
-    rng.shuffle(sd14_indices)
-    sd14_train_indices = set(sd14_indices[:TARGET_TRAIN])
-
-    for i, item in enumerate(sd14_items):
-        partition = "dev_train" if i in sd14_train_indices else "inner_val"
-        rel_p = item["relative_path"]
-        abs_p = REPO_ROOT / rel_p
-        sha = compute_sha256(abs_p)
-        with Image.open(abs_p) as img:
-            w, h = img.size
-            fmt = img.format
-
-        primary_records.append({
-            "sample_id": item["sample_id"],
-            "source_group_id": f"genimage_sd14_src_{item['parquet_row_index']:07d}",
-            "label_id": 2,
-            "label_name": "fully_generated",
-            "source_dataset": "GenImage (SD1.4)",
-            "relative_path": rel_p,
-            "sha256": sha,
-            "width": w,
-            "height": h,
-            "format": fmt,
-            "partition": partition,
+    for row in dev_holdout_rows:
+        src_id = row["source_id"]
+        # Authentic
+        all_records.append({
+            "sample_id": f"coco_auth_{src_id}",
+            "source_id": src_id,
+            "source_group_id": f"coco_group_{src_id}",
+            "relative_path": row["authentic_path"].replace("\\", "/"),
+            "sha256": row["authentic_sha256"],
+            "class_name": "authentic",
+            "numeric_label": 0,
+            "partition": "development_holdout",
+            "provenance": "MS-COCO val2017",
+            "generator": "nature_camera",
+        })
+        # AI Edited
+        all_records.append({
+            "sample_id": f"tgif_sd2_edit_{src_id}",
+            "source_id": src_id,
+            "source_group_id": f"coco_group_{src_id}",
+            "relative_path": row["canonical_edit_path"].replace("\\", "/"),
+            "sha256": row["canonical_edit_sha256"],
+            "class_name": "ai_edited",
+            "numeric_label": 1,
+            "partition": "development_holdout",
+            "provenance": "TGIF SD2 inpainting (spliced)",
+            "generator": "stable_diffusion_2_inpainting",
         })
 
-    # 4. Partition Source Control Cohort (Nature ImageNet)
-    nature_items = genimage_receipt["extracted_cohort_records"]["nature_control_authentic"]
-    if len(nature_items) != 341:
-        raise ValueError(f"Expected 341 Nature samples, found {len(nature_items)}")
-
-    rng_nature = random.Random(SPLIT_SEED)
-    nature_indices = list(range(len(nature_items)))
-    rng_nature.shuffle(nature_indices)
-    nature_train_indices = set(nature_indices[:TARGET_TRAIN])
-
-    control_records = []
-    for i, item in enumerate(nature_items):
-        partition = "dev_train" if i in nature_train_indices else "inner_val"
-        rel_p = item["relative_path"]
-        abs_p = REPO_ROOT / rel_p
-        sha = compute_sha256(abs_p)
-        with Image.open(abs_p) as img:
-            w, h = img.size
-            fmt = img.format
-
-        control_records.append({
-            "sample_id": item["sample_id"],
-            "source_group_id": f"genimage_nature_src_{item['parquet_row_index']:07d}",
-            "label_id": 0,
-            "label_name": "authentic_nature_control",
-            "source_dataset": "GenImage (Nature ImageNet control)",
-            "relative_path": rel_p,
-            "sha256": sha,
-            "width": w,
-            "height": h,
-            "format": fmt,
-            "partition": partition,
+    # Fully Generated SD1.5
+    for r in sd15_train:
+        sample_id = r["sample_id"]
+        all_records.append({
+            "sample_id": sample_id,
+            "source_id": sample_id,
+            "source_group_id": f"genimage_group_{sample_id}",
+            "relative_path": r["relative_path"],
+            "sha256": r["sha256"],
+            "class_name": "fully_generated",
+            "numeric_label": 2,
+            "partition": "development_train",
+            "provenance": "Tiny-GenImage SD1.5",
+            "generator": "stable_diffusion_v1_5",
         })
 
-    # Summary counts
-    primary_train = [r for r in primary_records if r["partition"] == "dev_train"]
-    primary_val = [r for r in primary_records if r["partition"] == "inner_val"]
+    for r in sd15_holdout:
+        sample_id = r["sample_id"]
+        all_records.append({
+            "sample_id": sample_id,
+            "source_id": sample_id,
+            "source_group_id": f"genimage_group_{sample_id}",
+            "relative_path": r["relative_path"],
+            "sha256": r["sha256"],
+            "class_name": "fully_generated",
+            "numeric_label": 2,
+            "partition": "development_holdout",
+            "provenance": "Tiny-GenImage SD1.5",
+            "generator": "stable_diffusion_v1_5",
+        })
 
-    train_by_class = {0: sum(1 for r in primary_train if r["label_id"] == 0),
-                      1: sum(1 for r in primary_train if r["label_id"] == 1),
-                      2: sum(1 for r in primary_train if r["label_id"] == 2)}
-    val_by_class = {0: sum(1 for r in primary_val if r["label_id"] == 0),
-                    1: sum(1 for r in primary_val if r["label_id"] == 1),
-                    2: sum(1 for r in primary_val if r["label_id"] == 2)}
+    logger.info(f"Total unified records constructed: {len(all_records)}")
+    assert len(all_records) == 1023, f"Expected 1,023 records, got {len(all_records)}"
 
-    # Save Primary Manifest
-    PRIMARY_MANIFEST_OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with open(PRIMARY_MANIFEST_OUTPUT_PATH, "w", encoding="utf-8") as f:
-        json.dump({
-            "schema_version": "1.0.0",
-            "manifest_type": "PRIMARY_THREE_CLASS_PILOT_COHORT",
-            "total_images": len(primary_records),
-            "classes": {0: "authentic", 1: "ai_edited", 2: "fully_generated"},
-            "class_distribution": {"authentic": 341, "ai_edited": 341, "fully_generated": 341},
-            "split_summary": {
-                "dev_train": {"total": len(primary_train), "per_class": train_by_class},
-                "inner_val": {"total": len(primary_val), "per_class": val_by_class},
-            },
-            "confounding_notice": (
-                "MIXED_SOURCE_PILOT: authentic and ai_edited derive from TGIF/MS-COCO val2017, "
-                "while fully_generated derives from GenImage/SD1.4. This cohort is an empirical pilot "
-                "and does not claim to measure pure cross-manipulation generalization independent of source distribution."
-            ),
-            "records": primary_records,
-        }, f, indent=2)
+    train_recs = [r for r in all_records if r["partition"] == "development_train"]
+    holdout_recs = [r for r in all_records if r["partition"] == "development_holdout"]
+    logger.info(f"development_train count: {len(train_recs)} (auth: {sum(1 for r in train_recs if r['numeric_label']==0)}, edit: {sum(1 for r in train_recs if r['numeric_label']==1)}, gen: {sum(1 for r in train_recs if r['numeric_label']==2)})")
+    logger.info(f"development_holdout count: {len(holdout_recs)} (auth: {sum(1 for r in holdout_recs if r['numeric_label']==0)}, edit: {sum(1 for r in holdout_recs if r['numeric_label']==1)}, gen: {sum(1 for r in holdout_recs if r['numeric_label']==2)})")
 
-    # Save Control Manifest
-    with open(CONTROL_MANIFEST_OUTPUT_PATH, "w", encoding="utf-8") as f:
-        json.dump({
-            "schema_version": "1.0.0",
-            "manifest_type": "SOURCE_CONTROL_COHORT",
-            "total_images": len(control_records),
-            "role": "Diagnostic source-control benchmark (ImageNet nature distribution). Strictly kept unmerged from primary pairs.",
-            "records": control_records,
-        }, f, indent=2)
+    # Verify partition isolation: train and holdout must share 0 sources and 0 hashes
+    train_sources = set(r["source_group_id"] for r in train_recs)
+    holdout_sources = set(r["source_group_id"] for r in holdout_recs)
+    assert len(train_sources.intersection(holdout_sources)) == 0, "Source leakage between dev_train and dev_holdout!"
+    train_hashes = set(r["sha256"] for r in train_recs)
+    holdout_hashes = set(r["sha256"] for r in holdout_recs)
+    assert len(train_hashes.intersection(holdout_hashes)) == 0, "Hash leakage between dev_train and dev_holdout!"
+    logger.info("Internal train/holdout source and hash isolation: PASS")
 
-    # Save Split Lock
-    split_lock = {
+    # 4. Cross-Cohort Isolation Audit against Sealed Cohorts
+    all_dev_sources = set(r["source_id"] for r in all_records)
+    all_dev_hashes = set(r["sha256"] for r in all_records)
+
+    # 4.1. Audit against Locked-Test
+    with open(LOCKED_TEST_SPLIT_LOCK, "r", encoding="utf-8") as f:
+        locked_test_data = json.load(f)
+    raw_lt_ids = locked_test_data.get("lockedTestSourceIds") or locked_test_data.get("locked_test_source_ids", [])
+    locked_test_sources = set(f"{int(x):012d}" for x in raw_lt_ids)
+    logger.info(f"Loaded Locked-Test source IDs: {len(locked_test_sources)}")
+
+    # Scan real disk files in testing directories
+    locked_test_hashes: Set[str] = set()
+    locked_test_images_count = 0
+    for folder in ["orig/testing", "sd2-sp/testing"]:
+        dir_p = REPO_ROOT / "data" / "research" / "tgif" / folder
+        if dir_p.exists():
+            for p in dir_p.rglob("*.*"):
+                if p.is_file() and p.suffix.lower() in (".png", ".jpg", ".jpeg"):
+                    locked_test_hashes.add(compute_file_sha256(p))
+                    locked_test_images_count += 1
+    logger.info(f"Locked-Test images scanned: {locked_test_images_count}, distinct hashes: {len(locked_test_hashes)}")
+
+    overlap_lt_sources = all_dev_sources.intersection(locked_test_sources)
+    overlap_lt_hashes = all_dev_hashes.intersection(locked_test_hashes)
+    logger.info(f"Locked-Test Overlap: sources={len(overlap_lt_sources)}, hashes={len(overlap_lt_hashes)}")
+    assert len(overlap_lt_sources) == 0, f"Leakage detected: {overlap_lt_sources}"
+    assert len(overlap_lt_hashes) == 0, f"Hash leakage detected with Locked-Test!"
+
+    # 4.2. Audit against TGIF N=400
+    with open(TGIF_N400_MANIFEST, "r", encoding="utf-8") as f:
+        tgif_n400_manifest = json.load(f)
+    candidates = tgif_n400_manifest.get("selected_candidates", [])
+    tgif_n400_sources = set()
+    for c in candidates:
+        sid = c.get("source_id") or c.get("raw_id")
+        if sid:
+            tgif_n400_sources.add(f"{int(sid):012d}")
+    logger.info(f"Loaded TGIF N=400 source IDs: {len(tgif_n400_sources)}")
+
+    tgif_n400_hashes: Set[str] = set()
+    with zipfile.ZipFile(TGIF_N400_PACKAGE, "r") as zf:
+        for member in zf.infolist():
+            if not member.is_dir() and member.filename.lower().endswith((".png", ".jpg", ".jpeg")):
+                data = zf.read(member)
+                tgif_n400_hashes.add(hashlib.sha256(data).hexdigest())
+    logger.info(f"TGIF N=400 zip images read: {len(tgif_n400_hashes)} distinct hashes")
+
+    overlap_n400_sources = all_dev_sources.intersection(tgif_n400_sources)
+    overlap_n400_hashes = all_dev_hashes.intersection(tgif_n400_hashes)
+    logger.info(f"TGIF N=400 Overlap: sources={len(overlap_n400_sources)}, hashes={len(overlap_n400_hashes)}")
+    assert len(overlap_n400_sources) == 0, f"Leakage detected with TGIF N=400: {overlap_n400_sources}"
+    assert len(overlap_n400_hashes) == 0, f"Hash leakage detected with TGIF N=400!"
+
+    logger.info("Cross-cohort isolation audit: STRICT ZERO LEAKAGE PASS")
+
+    # 5. Export Manifest CSV and Splits JSON
+    fieldnames = [
+        "sample_id", "source_id", "source_group_id", "relative_path", "sha256",
+        "class_name", "numeric_label", "partition", "provenance", "generator"
+    ]
+    with open(OUTPUT_MANIFEST_CSV, "w", encoding="utf-8", newline="\n") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(all_records)
+    logger.info(f"Manifest CSV written: {OUTPUT_MANIFEST_CSV}")
+
+    splits_data = {
         "schema_version": "1.0.0",
-        "lock_id": "SPLIT-LOCK-3CLASS-PILOT-V1",
-        "status": "LOCKED",
-        "readiness": "TRAINING_READY_PILOT",
-        "readiness_scope": "Mixed-source pilot (TGIF COCO authentic/edited + GenImage SD1.4 fully_generated). Ready for pilot development training.",
-        "random_seed": SPLIT_SEED,
-        "cohorts": {
-            "primary_cohort": {
-                "total_images": len(primary_records),
-                "dev_train_count": len(primary_train),
-                "inner_val_count": len(primary_val),
-                "per_class_total": 341,
-                "per_class_train": 250,
-                "per_class_val": 91,
-            },
-            "source_control_cohort": {
-                "total_images": len(control_records),
-                "dev_train_count": sum(1 for r in control_records if r["partition"] == "dev_train"),
-                "inner_val_count": sum(1 for r in control_records if r["partition"] == "inner_val"),
-            },
-            "quarantined_sealed_cohorts": {
-                "locked_test_sources": 343,
-                "tgif_n400_independent_sources": 400,
-                "status": "STRICTLY_ISOLATED_PASS",
-            },
+        "split_id": "SPLIT-3CLASS-PILOT-SD15-V2",
+        "protocol_id": "PROTO-RQ1-RQ2-3CLASS-V2",
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "total_samples": len(all_records),
+        "development_train": {
+            "total_samples": len(train_recs),
+            "authentic_samples": sum(1 for r in train_recs if r["numeric_label"] == 0),
+            "ai_edited_samples": sum(1 for r in train_recs if r["numeric_label"] == 1),
+            "fully_generated_samples": sum(1 for r in train_recs if r["numeric_label"] == 2),
+            "source_groups_count": len(train_sources),
         },
-        "baseline_parity_commitment": (
-            "Visual-only baseline (MobileNetV3-small 576-d) and Visual+DSP baseline (592-d) "
-            "must be trained and evaluated on strictly identical splits, optimizer settings, and budget."
-        ),
+        "development_holdout": {
+            "total_samples": len(holdout_recs),
+            "authentic_samples": sum(1 for r in holdout_recs if r["numeric_label"] == 0),
+            "ai_edited_samples": sum(1 for r in holdout_recs if r["numeric_label"] == 1),
+            "fully_generated_samples": sum(1 for r in holdout_recs if r["numeric_label"] == 2),
+            "source_groups_count": len(holdout_sources),
+        },
+        "isolation_audit": {
+            "locked_test_sources_checked": len(locked_test_sources),
+            "locked_test_hashes_checked": len(locked_test_hashes),
+            "locked_test_overlap": 0,
+            "tgif_n400_sources_checked": len(tgif_n400_sources),
+            "tgif_n400_hashes_checked": len(tgif_n400_hashes),
+            "tgif_n400_overlap": 0,
+            "status": "LEAKAGE_AUDIT_PASS",
+        },
+        "records": all_records,
     }
 
-    with open(SPLIT_LOCK_OUTPUT_PATH, "w", encoding="utf-8") as f:
-        json.dump(split_lock, f, indent=2)
+    with open(OUTPUT_SPLITS_JSON, "w", encoding="utf-8", newline="\n") as f:
+        json.dump(splits_data, f, indent=2)
+    logger.info(f"Splits JSON written: {OUTPUT_SPLITS_JSON}")
 
-    logger.info(f"Primary manifest saved to {PRIMARY_MANIFEST_OUTPUT_PATH}")
-    logger.info(f"Source control manifest saved to {CONTROL_MANIFEST_OUTPUT_PATH}")
-    logger.info(f"Three-class split lock saved to {SPLIT_LOCK_OUTPUT_PATH}")
-    return split_lock
+    # 6. Update leakage report
+    with open(LEAKAGE_REPORT_PATH, "r", encoding="utf-8") as f:
+        leakage_report = json.load(f)
 
+    leakage_report["audit_version"] = "2.1"
+    leakage_report["three_class_pilot_status"] = "LOCKED_SD15_AMENDMENT_ZERO_LEAKAGE_PASS"
+    leakage_report["cross_cohort_isolation"]["three_class_pilot_audit"] = {
+        "total_3class_samples": len(all_records),
+        "sd15_samples_checked": 341,
+        "dev_train_samples": len(train_recs),
+        "dev_holdout_samples": len(holdout_recs),
+        "overlap_with_locked_test": 0,
+        "overlap_with_tgif_n400": 0,
+        "verdict": "PASS",
+    }
 
-def main() -> int:
-    try:
-        lock = lock_cohort_and_splits()
-        print("\n" + "=" * 70)
-        print("Forensics Web Lab - Three-Class Pilot Cohort & Split Lock Summary")
-        print("=" * 70)
-        print(f"Lock ID:               {lock['lock_id']}")
-        print(f"Status:                {lock['status']}")
-        print(f"Readiness:             {lock['readiness']}")
-        print(f"Primary Total Images:  {lock['cohorts']['primary_cohort']['total_images']} (341 per class)")
-        print(f"Primary Train Images:  {lock['cohorts']['primary_cohort']['dev_train_count']} (250 per class)")
-        print(f"Primary Val Images:    {lock['cohorts']['primary_cohort']['inner_val_count']} (91 per class)")
-        print(f"Source Control Images: {lock['cohorts']['source_control_cohort']['total_images']}")
-        print(f"Quarantined Sealed:    {lock['cohorts']['quarantined_sealed_cohorts']['status']}")
-        print("=" * 70)
-        return 0
-    except Exception as e:
-        logger.exception(f"Lock failed: {e}")
-        return 1
+    with open(LEAKAGE_REPORT_PATH, "w", encoding="utf-8", newline="\n") as f:
+        json.dump(leakage_report, f, indent=2)
+    logger.info(f"Updated leakage report: {LEAKAGE_REPORT_PATH}")
+    logger.info("=== Three-Class Pilot Split Locking & Isolation Audit COMPLETE (PASS) ===")
 
 
 if __name__ == "__main__":
-    import sys
-    sys.exit(main())
+    main()

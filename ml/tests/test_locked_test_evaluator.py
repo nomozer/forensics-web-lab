@@ -97,7 +97,7 @@ class TestCandidateCheckpointResolution:
         orig_registry = lte.CHECKPOINT_SHA256_REGISTRY
         try:
             lte.CHECKPOINT_SHA256_REGISTRY = custom_registry
-            resolved = LockedTestEvaluator.resolve_and_verify_checkpoints(cp_dir)
+            resolved = lte.LockedTestEvaluator.resolve_and_verify_checkpoints(cp_dir)
             assert len(resolved) == 5
             for seed in AUTHORIZED_SEEDS:
                 assert resolved[seed]["sha256"] == custom_registry[seed]

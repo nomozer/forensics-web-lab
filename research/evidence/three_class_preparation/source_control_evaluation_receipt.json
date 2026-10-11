@@ -1,0 +1,45 @@
+{
+  "schema_version": "1.0.0",
+  "receipt_id": "SOURCE-CONTROL-DIAGNOSTIC-RECEIPT-20261011",
+  "protocol_id": "PROTO-RQ1-RQ2-3CLASS-V2",
+  "timestamp": "2026-10-11T03:11:23Z",
+  "cohort": {
+    "source_dataset": "GenImage Tiny-GenImage ImageNet Nature Control",
+    "sample_count": 341,
+    "true_label": "authentic",
+    "format": "JPEG (original ImageNet distribution)"
+  },
+  "diagnostic_results": {
+    "visual_only": {
+      "total_samples": 341,
+      "correct_authentic": 111,
+      "false_positive_ai_edited": 106,
+      "false_positive_fully_generated": 124,
+      "false_positive_ai_total": 230,
+      "false_positive_ai_rate": 0.6745,
+      "mean_predicted_probabilities": [
+        0.3261,
+        0.3153,
+        0.3585
+      ]
+    },
+    "visual_dsp": {
+      "total_samples": 341,
+      "correct_authentic": 109,
+      "false_positive_ai_edited": 112,
+      "false_positive_fully_generated": 120,
+      "false_positive_ai_total": 232,
+      "false_positive_ai_rate": 0.6804,
+      "mean_predicted_probabilities": [
+        0.3275,
+        0.3261,
+        0.3464
+      ]
+    }
+  },
+  "scientific_caveats": [
+    "Source bias diagnosis: COCO (training authentic) vs ImageNet (nature control) exhibit distinct visual and semantic distributions.",
+    "Compression pipeline asymmetry: COCO/TGIF samples were evaluated as lossless PNG whereas ImageNet samples originate from camera JPEG.",
+    "This diagnostic evaluation demonstrates domain shift sensitivity, not proof of confounding elimination."
+  ]
+}
