@@ -957,6 +957,175 @@ Thực hiện rà soát y văn có mục tiêu (ngày tra cứu: 2026-10-11) tr�
 2. Phép so sánh giữa COCO và ImageNet vẫn tồn tại các yếu tố gây nhiễu chưa thể tách biệt triệt để 100% (ví dụ: bối cảnh ngữ nghĩa đa đối tượng vs vật thể đơn lẻ, thiết bị chụp ảnh ban đầu).
 3. Bootstrap positive fraction được báo cáo là tỷ lệ các mẫu lấy lại có hiệu ứng dương, tuyệt đối không được coi là trị số p (frequentist p-value).
 
-#### Đúng Một Bước Tiếp Theo Được Phê Duyệt (Single Approved Next Step):
-- **Môi trường**: **LOCAL CPU**.
-- **Hành động**: Đóng phase nghiên cứu chẩn đoán hiện tại, bảo toàn các locked checkpoints và artifacts receipt v2; cập nhật continuity ledger và tài liệu GAP analysis trước khi mở bất kỳ đề xuất thu nhận cohort mới nào. Tuyệt đối không tự ý tải dataset lớn hay huấn luyện lại mô hình trong môi trường chưa kiểm soát.
+#### Đúng Một Bước Tiếp Theo Được Phê Duyệt Của Lượt Trước:
+- Chốt phần chẩn đoán phân loại bằng đánh giá đánh đổi đầy đủ, kiểm toán hình học center-crop, và chuẩn bị bước localization. Đã hoàn thành tại Section 17 và Section 18 bên dưới.
+
+---
+
+## 17. Đánh Giá Đánh Đổi Phân Loại Đầy Đủ & Kiểm Toán Hình Học Center-Crop
+
+> **Biên nhận máy đọc đối soát**:
+> - Đánh đổi phân loại 3 lớp: [`classification_tradeoff_analysis_receipt.json`](./classification_tradeoff_analysis_receipt.json)
+> - Kiểm toán hình học mask coverage: [`center_crop_mask_coverage_manifest.json`](./center_crop_mask_coverage_manifest.json), [`center_crop_mask_coverage_receipt.json`](./center_crop_mask_coverage_receipt.json)
+
+### 17.1. Bảng Tổng Hợp Đánh Đổi Phân Loại 6 Locked Models × 3 Cohorts
+
+Toàn bộ 6 locked models (`A0-global`, `A0-local`, `A0-visual`, `A1-global`, `A1-local`, `A1-visual`) được đánh giá ngang hàng trên cùng quy trình Canonical Preprocessing qua 3 cohorts chuẩn mực:
+1. **Development Holdout ($N=273$)**: 91 authentic (COCO), 91 ai_edited (TGIF SD2), 91 fully_generated (GenImage SD 1.4). (Tập phát triển/thăm dò nội bộ).
+2. **Nature Control ($N=341$)**: 100% authentic thiên nhiên (Tiny-GenImage nature). (Tập kiểm soát domain shift).
+3. **So-Fake Probe ($N=300$)**: 100 authentic, 100 edited, 100 generated từ 20 generator ngoại lai. (Tập thăm dò khái quát hóa ngoại lai).
+
+#### Bảng 17.1: Hiệu Năng Phân Loại 3 Lớp & Báo Động Giả Trên 3 Cohorts
+
+| Mô hình | Chi phí CPU (ms) | Holdout Macro-F1 | Holdout Bal-Acc | Holdout Auth FPR | Holdout Edit Rec | Holdout Gen Rec | Control Auth FPR | So-Fake Macro-F1 | So-Fake Auth FPR | So-Fake Edit Rec |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **A0-visual** | **33.7** | 0.5086 | 0.4982 | 0.5824 | 0.5275 | 0.5495 | 0.6745 | 0.3487 | 0.5300 | **0.4700** |
+| **A0-global** | 84.3 | 0.5385 | 0.5238 | 0.5495 | 0.4945 | 0.6264 | 0.6804 | **0.3551** | 0.5700 | 0.3500 |
+| **A0-local** | 183.4 | **0.5552** | **0.5421** | 0.5714 | **0.5604** | **0.6374** | 0.7038 | 0.3459 | 0.6300 | 0.3800 |
+| **A1-visual** | **49.5** | 0.4721 | 0.4652 | **0.4505** | 0.4725 | 0.3736 | 0.3578 | 0.3315 | **0.3000** | 0.2500 |
+| **A1-global** | 100.1 | 0.4887 | 0.4762 | 0.4725 | 0.4725 | 0.4286 | 0.3109 | 0.3230 | 0.3500 | 0.2000 |
+| **A1-local** | 199.2 | 0.4702 | 0.4579 | 0.5275 | 0.4835 | 0.4176 | **0.2757** | 0.3027 | 0.3800 | 0.1900 |
+
+*Ghi chú*: Chi phí CPU đo trên CPU máy cục bộ Intel Core i5-11400H (single thread). Authentic FPR là tỷ lệ ảnh authentic bị dự đoán sai thành AI (`ai_edited` hoặc `fully_generated`).
+
+#### Bảng 17.2: Chênh Lệch Ghép Cặp (Paired Deltas) & 95% Bootstrap CIs (10,000 Replicates)
+
+| Cặp so sánh | Cohort | Chỉ số (Metric) | Điểm ước lượng ($\Delta$) | 95% Bootstrap CI | Tỷ lệ dương $P(\Delta^* > 0)$ |
+| :--- | :--- | :--- | :---: | :---: | :---: |
+| **A0 (Local − Global)** | Holdout $N=273$ | Macro-F1 | **+0.0167** | [-0.0155, +0.0492] | 84.61% |
+| | Holdout $N=273$ | Authentic FPR | **+0.0220** | [-0.0366, +0.0841] | 69.88% |
+| | Nature Control $N=341$ | Authentic FPR | **+0.0235** | [+0.0000, +0.0469] | 96.68% |
+| | So-Fake $N=300$ | Macro-F1 | **-0.0092** | [-0.0378, +0.0204] | 27.12% |
+| | So-Fake $N=300$ | Authentic FPR | **+0.0600** | [-0.0095, +0.1290] | 94.58% |
+| **A0 (Local − Visual)** | Holdout $N=273$ | Macro-F1 | **+0.0465** | [+0.0043, +0.0904] | 98.48% |
+| | Nature Control $N=341$ | Authentic FPR | **+0.0293** | [+0.0000, +0.0587] | 97.11% |
+| | So-Fake $N=300$ | Authentic FPR | **+0.1000** | [+0.0233, +0.1789] | 99.35% |
+| **A1 (Local − Global)** | Holdout $N=273$ | Macro-F1 | **-0.0185** | [-0.0514, +0.0129] | 12.95% |
+| | Nature Control $N=341$ | Authentic FPR | **-0.0352** | [-0.0674, -0.0059] | 0.82% |
+| | So-Fake $N=300$ | Macro-F1 | **-0.0203** | [-0.0460, +0.0041] | 5.42% |
+| **A1 (Local − Visual)** | Nature Control $N=341$ | Authentic FPR | **-0.0821** | [-0.1232, -0.0411] | 0.01% |
+| | So-Fake $N=300$ | Macro-F1 | **-0.0288** | [-0.0704, +0.0117] | 8.17% |
+| **Local (A1 − A0)** | Nature Control $N=341$ | Authentic FPR | **-0.4282** | [-0.4839, -0.3724] | 0.00% |
+| | Holdout $N=273$ | Macro-F1 | **-0.0850** | [-0.1327, -0.0363] | 0.01% |
+
+*Quy ước báo cáo*: $P(\Delta^* > 0)$ là tỷ lệ các mẫu bootstrap có delta lớn hơn 0 (Bootstrap Positive Fraction), tuyệt đối KHÔNG phải p-value kiểm định giả thuyết.
+
+---
+
+### 17.2. Trả Lời Câu Hỏi Trung Tâm Về Đánh Đổi Của Local DSP
+
+> **Câu hỏi**: *"Local DSP giảm báo động giả bằng cách cải thiện phân biệt, hay đổi lại bằng việc bỏ sót thêm ảnh edited/generated?"*
+
+**KẾT LUẬN THỰC NGHIỆM DỰA TRÊN DỮ LIỆU ĐỐI SOÁT**:
+1. **Local DSP KHÔNG giảm báo động giả trên backbone MobileNetV3 (A0)**:
+   - Trên A0, Local DSP không làm giảm FPR authentic mà thậm chí làm tăng nhẹ FPR: trên Holdout tăng $+0.0220$, trên Nature Control tăng $+0.0235$ (từ $68.04\%$ lên $70.38\%$), và trên So-Fake tăng $+0.0600$ (từ $57\%$ lên $63\%$).
+   - Tuy nhiên, Local DSP trên A0 **không làm bỏ sót ảnh edited/generated trên miền holdout**: Recall của `ai_edited` tăng từ $0.4945$ lên $0.5604$, và Recall của `fully_generated` tăng từ $0.6264$ lên $0.6374$, giúp Macro-F1 tăng từ $0.5385$ lên $0.5552$.
+2. **Local DSP giảm báo động giả trên A1 nhưng đánh đổi bằng suy giảm Macro-F1**:
+   - Trên backbone EfficientNet-B0 (A1), Local DSP giúp giảm đáng kể báo động giả trên Nature Control (FPR giảm từ $31.09\%$ của Global và $35.78\%$ của Visual xuống còn **$27.57\%$**, $\Delta = -0.0821$).
+   - Nhưng cái giá phải trả là: Recall của cả `ai_edited` ($0.4835$) và `fully_generated` ($0.4176$) đều thấp hơn, khiến Macro-F1 trên Holdout sụt giảm xuống $0.4702$ (so với $0.4887$ của Global).
+3. **Cả 6 mô hình đều sụp đổ trên phân phối ngoại lai (So-Fake Probe $N=300$)**:
+   - Khi gặp generator mới và các thao tác chỉnh sửa đa dạng, Macro-F1 của toàn bộ 6 mô hình đều rơi về mức ngẫu nhiên ($0.30 - 0.35$), điểm Brier tăng vọt lên $> 0.76 - 0.85$, và sai số hiệu chuẩn ECE tăng lên $> 0.24 - 0.31$.
+   - Local DSP hoàn toàn không mang lại ưu thế tổng quát hóa (A0-local F1 $0.3459$ vs A0-global $0.3551$; A1-local F1 $0.3027$ vs A1-global $0.3230$).
+4. **Đánh đổi chi phí tính toán CPU quá lớn**:
+   - Chi phí tính toán của Local DSP (48-D) tăng gấp **~2.2x** so với Global DSP (16-D) và gấp **~5.4x** so với Visual thuần túy ($183.4\text{ ms}$ vs $84.3\text{ ms}$ vs $33.7\text{ ms}$).
+   - **Tổng kết**: Việc giảm báo động giả không đồng đều giữa các backbone, kết hợp với chi phí độ trễ tăng vọt và sự thất bại trong việc khái quát hóa ngoại lai cho thấy **hướng tiếp cận phân loại ảnh dựa trên đặc trưng ô phần tư (quadrant features) đã chạm trần hiệu quả** và không thể giải quyết được mục tiêu định vị ranh giới giả mạo của đề tài.
+
+---
+
+### 17.3. Kiểm Toán Hình Học Center-Crop Trên 91 Mẫu Holdout Edited
+
+Để kiểm tra nguyên nhân khiến Recall của lớp `ai_edited` bị chặn trần quanh mức $50\% - 56\%$, chúng tôi tiến hành kiểm toán pixel-level giữa mặt nạ nhị phân ground-truth TGIF và cửa sổ cắt canonical square center-crop $\min(w, h)$:
+
+#### Bảng 17.3: Phân Bố Mức Độ Giữ Lại Vùng Sửa Sau Center-Crop (N=91)
+
+| Nhóm Coverage (Predefined Bins) | Tiêu chí tỷ lệ giữ lại ($R$) | Số lượng mẫu (Support) | Tỷ lệ (%) | Các hiện tượng điển hình |
+| :--- | :---: | :---: | :---: | :--- |
+| **Full Retention** | $R = 100\%$ | **58** | **63.74%** | Vùng sửa nằm trọn vẹn trong tâm canvas vuông. |
+| **Minor Loss** | $75\% \le R < 100\%$ | **14** | **15.38%** | Vùng sửa bị cắt phạm rìa ngoài (mất $1\% - 25\%$). |
+| **Major Loss** | $0\% < R < 75\%$ | **18** | **19.78%** | Vùng sửa nằm lệch biên, bị cắt mất phần lớn diện tích ($> 25\%$). |
+| **Complete Loss** | $R = 0\%$ | **1** | **1.10%** | Vùng sửa bị cắt bỏ **hoàn toàn 100%**, không còn pixel nào trong canvas. |
+| **Tổng cộng** | | **91** | **100.0%** | **33/91 ảnh (36.26%) bị mất một phần hoặc toàn bộ vùng sửa.** |
+
+*Mẫu mất hoàn toàn điển hình*: `tgif_sd2_edit_000000415990` (nguồn MS-COCO val2017 `000000415990`):
+- Kích thước ảnh gốc: $640 \times 427$ (ảnh chữ nhật ngang). Cửa sổ center-crop là $[106, 0, 533, 427]$.
+- Vùng inpainting nằm hoàn toàn ở dải biên trái ($x < 106$).
+- Sau khi center-crop, số pixel sửa lọt vào canvas là **$0$ pixel**.
+
+#### Bảng 17.4: Hiệu Năng Dự Đoán Của 6 Mô Hình Theo Nhóm Coverage
+
+| Nhóm Coverage | Số mẫu | A0-visual Recall (Nhầm Auth) | A0-global Recall (Nhầm Auth) | A0-local Recall (Nhầm Auth) | A1-visual Recall (Nhầm Auth) | A1-global Recall (Nhầm Auth) | A1-local Recall (Nhầm Auth) |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Full Retention** | 58 | 62.07% (36.2%) | 56.90% (41.4%) | **65.52%** (31.0%) | 55.17% (43.1%) | 56.90% (41.4%) | 56.90% (41.4%) |
+| **Minor Loss** | 14 | 14.29% (71.4%) | 14.29% (78.6%) | **21.43%** (78.6%) | 14.29% (71.4%) | 14.29% (71.4%) | 14.29% (71.4%) |
+| **Major Loss** | 18 | 55.56% (33.3%) | 55.56% (38.9%) | 55.56% (38.9%) | 50.00% (44.4%) | 44.44% (55.6%) | **50.00%** (50.0%) |
+| **Complete Loss** | 1 | **0.00% (100.0%)** | **0.00% (100.0%)** | **0.00% (100.0%)** | **0.00% (100.0%)** | **0.00% (100.0%)** | **0.00% (100.0%)** |
+
+---
+
+### 17.4. Phân Biệt Nghiêm Ngặt Giữa Quan Sát Hình Học & Giả Thuyết Nhân Quả
+
+1. **Quan sát trực tiếp (Direct Observation)**:
+   - Phép cắt center-crop loại bỏ $100\%$ vùng sửa ở mẫu `415990` và loại bỏ một phần vùng sửa ở $32$ mẫu khác. Đây là sự thật hình học đo đếm được trực tiếp không thể chối cãi.
+   - Khi vùng sửa bị cắt sạch ra ngoài canvas quan sát, các tensor và đặc trưng đầu vào chỉ phản ánh điểm ảnh authentic nguyên bản. Việc gán nhãn `ai_edited` ở cấp độ toàn ảnh tạo ra **sự phân kỳ giữa nhãn danh nghĩa và nội dung thực tế mô hình quan sát được (ground-truth label divergence)**.
+2. **Ranh giới nhân quả (Correlation vs. Causation Guard)**:
+   - Việc crop làm mất vùng sửa là **nguyên nhân trực tiếp dẫn đến việc mô hình không thể phát hiện** ở mẫu mất hoàn toàn ($100\%$ mô hình nhầm sang authentic).
+   - Tuy nhiên, chúng tôi KHÔNG kết luận việc crop là nguyên nhân duy nhất gây ra mọi sai số phân loại: ngay cả ở nhóm `Full Retention` ($58$ ảnh giữ trọn vẹn $100\%$ vùng sửa), tỷ lệ nhầm sang authentic vẫn chiếm từ $31.0\%$ đến $43.1\%$. Điều này chứng minh rằng hạn chế năng lực phân biệt nội tại của mô hình và tính chất tinh vi của vết inpainting là nhân tố then chốt tồn tại độc lập với việc cắt ảnh.
+   - Do đó, giải pháp triệt để là chuyển từ bộ phân loại toàn ảnh sang **mô hình phân đoạn định vị điểm ảnh (pixel-level localization segmentation)** kết hợp với quy trình tiền xử lý bảo toàn kích thước không cắt bỏ (aspect-preserving letterbox).
+
+---
+
+## 18. Chuẩn Bị Bước Localization Đúng Trọng Tâm Đề Tài & Tổng Quan Y Văn Sơ Cấp
+
+### 18.1. Tổng Quan Y Văn Sơ Cấp Về Lightweight Tampering Localization
+
+Thực hiện rà soát có mục tiêu các công trình sơ cấp về phát hiện và định vị giả mạo ảnh (tampering localization):
+1. **Kiến Trúc Định Vị Điểm Ảnh Chuyên Biệt**:
+   - *TruFor (Guillaro et al., CVPR 2023)*: Kết hợp đặc trưng học máy với dấu vết Noiseprint thông qua kiến trúc Transformer đa tầng. Mặc dù đạt SOTA về IoU/F1, mô hình có kích thước lớn (>100MB) và độ trễ cao (>500ms trên CPU), không phù hợp chạy trực tiếp trên trình duyệt web.
+   - *ManTra-Net (Wu et al., CVPR 2019)* & *PSCC-Net (Liu et al., CVPR 2021)*: Áp dụng cơ chế trích xuất đặc trưng đa tỉ lệ kết hợp nhận diện ranh giới can thiệp (boundary artifacts). Các công trình này chỉ ra rằng ranh giới chuyển tiếp giữa vùng inpainting và ảnh nền gốc là tín hiệu phân biệt mạnh nhất.
+   - *FOCAL (Barni et al., 2021)*: Khảo sát việc phân đoạn giả mạo dựa trên tần số và kết cấu cục bộ; nhấn mạnh nguy cơ các đặc trưng tần số toàn cục bị triệt tiêu khi kích thước vùng giả mạo $< 10\%$ diện tích ảnh.
+2. **Confounding & Bias Trong Định Vị Pháp Chứng**:
+   - Các công trình *Cozzolino et al. (IEEE TIFS 2020)* và *Verdoliva (IEEE SPM 2020)* khẳng định rằng: Việc nén JPEG và thu phóng (resampling) phá hủy cấu trúc ma trận nhiễu PRNU/Noiseprint. Do đó, quy trình tiền xử lý cho mô hình định vị bắt buộc phải tôn trọng tỷ lệ khung hình và không được tạo ra vết nội suy không đồng nhất.
+
+---
+
+### 18.2. Kiểm Kê Tài Nguyên Sẵn Có & Triển Khai Công Cụ Đánh Giá Chuẩn Mực
+
+#### Kiểm kê tài nguyên:
+- **Dữ liệu Masks**: Đã xác minh tồn tại đầy đủ $91/91$ mặt nạ nhị phân ground-truth của tập holdout edited trong `data/research/tgif/masks/validation/`, cùng toàn bộ masks của tập `development_train` (750 mẫu).
+- **Rào chắn bảo vệ Sealed**: Tuyệt đối cấm sử dụng TGIF Sealed Test N=400 và Locked-Test cohorts.
+- **Thư viện đánh giá mới hoàn thiện**: Đã triển khai module [`ml/evaluation/localization_evaluator.py`](../../ml/evaluation/localization_evaluator.py) và bộ kiểm thử [`ml/tests/test_localization_evaluator.py`](../../ml/tests/test_localization_evaluator.py) (7/7 unit tests PASS), cung cấp:
+  * Kiểm tra tính đồng bộ hình học (`check_mask_alignment`).
+  * Tính toán chuẩn xác pixel-level IoU và Dice Score theo ngưỡng kích hoạt $\tau$.
+  * Xử lý chặt chẽ trường hợp ground-truth mask rỗng (ảnh authentic): Nếu mô hình dự đoán sạch $\to$ IoU = 1.0, Dice = 1.0, False Alarm Area = 0; nếu có pixel báo động $\to$ IoU = 0.0, đo tỷ lệ diện tích báo động giả $FPR_{\text{pixel}} = \text{FP} / \text{Total Pixels}$.
+
+---
+
+### 18.3. Khóa Protocol Localization v1.0.0 (Preregistered Protocol)
+
+Toàn bộ quy cách kỹ thuật đã được khóa chính thức tại văn bản:
+[`research/evidence/three_class_preparation/PROTOCOL_LOCALIZATION_PREPARATION_V1.0.0.md`](./PROTOCOL_LOCALIZATION_PREPARATION_V1.0.0.md)
+
+1. **Trạng thái mô hình hiện tại (Model Status)**:
+   - `MODEL_STATUS: NOT_RUN / NOT_MEASURED`.
+   - Trong lượt này, chúng tôi tuyệt đối KHÔNG tự ý tải checkpoint bên ngoài và KHÔNG giả lập huấn luyện trên LOCAL CPU.
+2. **Kiến trúc baseline đề xuất**:
+   - MobileNetV3-small Encoder kết hợp Lightweight Depthwise Separable Decoder (kích thước $< 10\text{ MB}$ ONNX FP32, $< 2.5\text{M}$ tham số, inference CPU $< 50\text{ ms}$).
+3. **Geometry Contract**:
+   - Sử dụng Letterbox bảo toàn tỷ lệ khung hình (Aspect-preserving resize + symmetric padding), cam kết giữ lại $100\%$ vùng sửa.
+   - Hợp đồng ánh xạ ngược tọa độ từ heatmap canvas về ảnh gốc $w \times h$.
+4. **Leakage Guards & Tối ưu hóa ngưỡng**:
+   - Huấn luyện trên $750$ cặp `development_train`.
+   - Ngưỡng $\tau$ chỉ được tối ưu hóa trên tập internal validation của `development_train`.
+
+---
+
+### 18.4. Giới Hạn Khoa Học & Đúng Một Bước Triển Khai Tiếp Theo
+
+#### Giới Hạn Khoa Học Hiện Tại:
+1. Đánh giá đánh đổi phân loại tại Section 17 được thực hiện trên các tập holdout/control có sẵn; các số liệu này là chẩn đoán thăm dò phát triển (exploratory development diagnostics), không đại diện cho kiểm định độc lập trên dữ liệu unseen.
+2. Kiểm toán center-crop chỉ ra mối liên hệ chặt chẽ giữa việc mất vùng sửa và việc mô hình nhầm sang authentic, nhưng không thể dùng để giải thích toàn bộ sai số phân loại.
+3. Hệ thống chưa có mô hình định vị (localization) hoạt động thực tế; toàn bộ phần định vị hiện tại chỉ dừng ở mức công cụ đánh giá đã kiểm thử và protocol đã khóa cứng.
+
+#### Đúng Một Bước Triển Khai Tiếp Theo Được Phê Duyệt:
+- **Môi trường**: **COLAB GPU** (để huấn luyện mô hình segmentation baseline) kết hợp **LOCAL CPU** (để chạy inference kiểm chứng và kiểm thử).
+- **Hành động**: Khởi tạo và huấn luyện kiến trúc Lightweight MobileNetV3-UNet trên tập $N=750$ `development_train` theo đúng hợp đồng hình học Letterbox và các rào chắn đã khóa tại `PROTOCOL_LOCALIZATION_PREPARATION_V1.0.0.md`. Sau khi huấn luyện, xuất sang ONNX và đo đạc IoU/Dice thật bằng `localization_evaluator.py`. Tuyệt đối không chạm vào các tập sealed cohorts.

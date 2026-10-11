@@ -186,11 +186,26 @@
 >      * Trả lời câu hỏi trung tâm: Đặc trưng DSP mang lại giá trị bổ trợ thực sự (giảm báo động giả ~11 pp so với visual) khi và chỉ khi mô hình được học trên miền dữ liệu đại diện đa dạng (A1) và đánh giá dưới tiền xử lý chuẩn tắc bảo toàn hình học. DSP không phải là viên đạn bạc miễn nhiễm với domain shift hay chống chọi được quy trình resize sai trật tự.
 >    - **Test suite**: `ml/tests/test_factorial_source_compression.py` PASS 3/3.
 >    **Phase status**: `FACTORIAL_2X2_SOURCE_COMPRESSION_AND_LINEAGE_AUDITED_PASS`<br>
->    **Next approved action**: Đóng phase nghiên cứu chẩn đoán hiện tại trên LOCAL CPU; bảo toàn toàn bộ locked checkpoints và receipts v2; cập nhật continuity ledger và tài liệu GAP analysis trước khi mở đề xuất thu nhận cohort mới.<br>
-
-
-
----
+>    **Next approved action**: Chốt phần chẩn đoán phân loại bằng đánh giá đánh đổi đầy đủ, kiểm toán mask coverage center-crop, và chuẩn bị bước localization.<br>
+>
+> 15. _Đánh Giá Đánh Đổi Phân Loại Đầy Đủ, Kiểm Toán Mask Coverage Center-Crop & Chuẩn Bị Bước Localization ($systematic-debugging, $writing-plans, $executing-plans, $verification-before-completion)_:
+>    - **Đánh Giá Đánh Đổi Phân Loại Đầy Đủ (6 Locked Models × 3 Cohorts)**:
+>      * Trả lời câu hỏi trung tâm: *"Local DSP giảm báo động giả bằng cách cải thiện phân biệt, hay đổi lại bằng việc bỏ sót thêm ảnh edited/generated?"*
+>      * Kết quả định lượng: Trên A0 (MobileNetV3), Local DSP không giảm báo động giả trên authentic (FPR Control tăng từ 68.04% lên 70.38%, So-Fake tăng từ 57.0% lên 63.0%), nhưng không làm bỏ sót ảnh edited/generated trên nội bộ COCO/TGIF (Recall edit tăng từ 49.5% lên 56.0%, F1 holdout đạt 0.5552 vs 0.5385). Trên A1 (EfficientNet-B0), Local DSP giảm FPR authentic trên Control (từ 35.78% [visual] xuống 27.57% [local]), nhưng đánh đổi bằng việc làm giảm Macro-F1 trên cả Holdout (0.4702 vs 0.4887 của Global) và So-Fake (0.3027 vs 0.3230 của Global).
+>      * Sụp đổ ngoài miền (OOD Collapse): Toàn bộ 6 models đều rơi về mức ngẫu nhiên (~0.30 - 0.35) trên So-Fake Probe N=300 (Brier > 0.76 - 0.85, ECE > 0.24 - 0.31).
+>      * Chi phí tính toán: Local DSP tốn 183.4 ms CPU (gấp ~2.2x Global DSP và ~5.4x Visual). Receipt: `classification_tradeoff_analysis_receipt.json`, test suite: `ml/tests/test_classification_tradeoff_analysis.py` PASS 5/5.
+>    - **Kiểm Toán Hình Học Center-Crop Trên 91 Mẫu Holdout Edited**:
+>      * Phát hiện 36.26% (33/91) ảnh bị mất một phần hoặc toàn bộ vùng sửa do center-crop $\min(w, h)$ (Minor loss: 14 ảnh 15.38%, Major loss: 18 ảnh 19.78%, Complete loss: 1 ảnh 1.10%).
+>      * Mẫu mất hoàn toàn điển hình `tgif_sd2_edit_000000415990`: Cả 6 models đều nhầm 100% sang `authentic` do tensor đầu vào chỉ nhận pixel nguyên bản.
+>      * Phân biệt nghiêm ngặt: Crop mất vùng sửa là quan sát hình học đo được trực tiếp; crop gây ra lỗi mô hình là giả thuyết (nhóm full retention vẫn có 31-43% nhầm auth). Manifest: `center_crop_mask_coverage_manifest.json`, receipt: `center_crop_mask_coverage_receipt.json`, test suite: `ml/tests/test_center_crop_mask_coverage.py` PASS 4/4.
+>    - **Chuẩn Bị Bước Localization Đúng Trọng Tâm Đề Tài**:
+>      * Kiểm kê tài nguyên: Đủ 91 holdout masks và 750 train masks; niêm phong tuyệt đối sealed cohorts TGIF N=400 và Locked-Test.
+>      * Triển khai thư viện chuẩn mực: `ml/evaluation/localization_evaluator.py` và test suite `ml/tests/test_localization_evaluator.py` (PASS 7/7) tính Pixel IoU, Dice, Empty GT handling, False Alarm Area trên authentic.
+>      * Ban hành `PROTOCOL_LOCALIZATION_PREPARATION_V1.0.0.md` quy định kiến trúc U-Net mini < 10MB, letterbox aspect-preserving canvas, leakage guards và ghi rõ trạng thái mô hình `MODEL_STATUS: NOT_RUN / NOT_MEASURED`.
+>    **Phase status**: `CLASSIFICATION_TRADEOFF_AND_LOCALIZATION_PREPARATION_PASS`<br>
+>    **Next approved action**: Huấn luyện segmentation baseline trên **COLAB GPU** theo đúng protocol v1.0.0 và kiểm chứng trên **LOCAL CPU**.<br>
+>
+> ---
 
 ## 1. Định vị Đề tài & Mục tiêu Nghiên cứu
 

@@ -1,0 +1,2926 @@
+{
+  "schema_version": "1.0.0",
+  "protocol_id": "PROTO-RQ1-RQ2-3CLASS-V2.2-AMENDMENT",
+  "receipt_id": "classification_tradeoff_analysis_receipt_v1",
+  "timestamp": "2026-10-11T21:55:00Z",
+  "cohorts_evaluated": {
+    "holdout_n273": {
+      "n": 273,
+      "class_counts": {
+        "authentic": 91,
+        "ai_edited": 91,
+        "fully_generated": 91
+      },
+      "type": "development_exploratory"
+    },
+    "nature_control_n341": {
+      "n": 341,
+      "class_counts": {
+        "authentic": 341
+      },
+      "type": "nature_control_exploratory"
+    },
+    "so_fake_probe_n300": {
+      "n": 300,
+      "class_counts": {
+        "authentic": 100,
+        "ai_edited": 100,
+        "fully_generated": 100
+      },
+      "type": "external_exploratory_probe"
+    }
+  },
+  "models_evaluated": [
+    "A0-global",
+    "A0-local",
+    "A0-visual",
+    "A1-global",
+    "A1-local",
+    "A1-visual"
+  ],
+  "cohort_metrics": {
+    "holdout": {
+      "A0-global": {
+        "macro_f1": 0.5385,
+        "balanced_accuracy": 0.5238,
+        "per_class": {
+          "authentic": {
+            "precision": 0.4316,
+            "recall": 0.4505,
+            "f1": 0.4409,
+            "support": 91,
+            "tp": 41,
+            "fp": 54,
+            "fn": 50
+          },
+          "ai_edited": {
+            "precision": 0.3947,
+            "recall": 0.4945,
+            "f1": 0.439,
+            "support": 91,
+            "tp": 45,
+            "fp": 69,
+            "fn": 46
+          },
+          "fully_generated": {
+            "precision": 0.8906,
+            "recall": 0.6264,
+            "f1": 0.7355,
+            "support": 91,
+            "tp": 57,
+            "fp": 7,
+            "fn": 34
+          }
+        },
+        "confusion_matrix": [
+          [
+            41,
+            46,
+            4
+          ],
+          [
+            43,
+            45,
+            3
+          ],
+          [
+            11,
+            23,
+            57
+          ]
+        ],
+        "authentic_fpr": {
+          "n_authentic": 91,
+          "fp_total": 50,
+          "fpr_total": 0.5495,
+          "fp_edited": 46,
+          "fpr_edited": 0.5055,
+          "fp_generated": 4,
+          "fpr_generated": 0.044
+        },
+        "multiclass_brier": 0.5717,
+        "top_class_ece": 0.0903
+      },
+      "A0-local": {
+        "macro_f1": 0.5552,
+        "balanced_accuracy": 0.5421,
+        "per_class": {
+          "authentic": {
+            "precision": 0.4483,
+            "recall": 0.4286,
+            "f1": 0.4382,
+            "support": 91,
+            "tp": 39,
+            "fp": 48,
+            "fn": 52
+          },
+          "ai_edited": {
+            "precision": 0.418,
+            "recall": 0.5604,
+            "f1": 0.4789,
+            "support": 91,
+            "tp": 51,
+            "fp": 71,
+            "fn": 40
+          },
+          "fully_generated": {
+            "precision": 0.9062,
+            "recall": 0.6374,
+            "f1": 0.7484,
+            "support": 91,
+            "tp": 58,
+            "fp": 6,
+            "fn": 33
+          }
+        },
+        "confusion_matrix": [
+          [
+            39,
+            49,
+            3
+          ],
+          [
+            37,
+            51,
+            3
+          ],
+          [
+            11,
+            22,
+            58
+          ]
+        ],
+        "authentic_fpr": {
+          "n_authentic": 91,
+          "fp_total": 52,
+          "fpr_total": 0.5714,
+          "fp_edited": 49,
+          "fpr_edited": 0.5385,
+          "fp_generated": 3,
+          "fpr_generated": 0.033
+        },
+        "multiclass_brier": 0.5731,
+        "top_class_ece": 0.0696
+      },
+      "A0-visual": {
+        "macro_f1": 0.5086,
+        "balanced_accuracy": 0.4982,
+        "per_class": {
+          "authentic": {
+            "precision": 0.4043,
+            "recall": 0.4176,
+            "f1": 0.4108,
+            "support": 91,
+            "tp": 38,
+            "fp": 56,
+            "fn": 53
+          },
+          "ai_edited": {
+            "precision": 0.4103,
+            "recall": 0.5275,
+            "f1": 0.4615,
+            "support": 91,
+            "tp": 48,
+            "fp": 69,
+            "fn": 43
+          },
+          "fully_generated": {
+            "precision": 0.8065,
+            "recall": 0.5495,
+            "f1": 0.6536,
+            "support": 91,
+            "tp": 50,
+            "fp": 12,
+            "fn": 41
+          }
+        },
+        "confusion_matrix": [
+          [
+            38,
+            46,
+            7
+          ],
+          [
+            38,
+            48,
+            5
+          ],
+          [
+            18,
+            23,
+            50
+          ]
+        ],
+        "authentic_fpr": {
+          "n_authentic": 91,
+          "fp_total": 53,
+          "fpr_total": 0.5824,
+          "fp_edited": 46,
+          "fpr_edited": 0.5055,
+          "fp_generated": 7,
+          "fpr_generated": 0.0769
+        },
+        "multiclass_brier": 0.6002,
+        "top_class_ece": 0.1003
+      },
+      "A1-global": {
+        "macro_f1": 0.4887,
+        "balanced_accuracy": 0.4762,
+        "per_class": {
+          "authentic": {
+            "precision": 0.375,
+            "recall": 0.5275,
+            "f1": 0.4384,
+            "support": 91,
+            "tp": 48,
+            "fp": 80,
+            "fn": 43
+          },
+          "ai_edited": {
+            "precision": 0.4216,
+            "recall": 0.4725,
+            "f1": 0.4456,
+            "support": 91,
+            "tp": 43,
+            "fp": 59,
+            "fn": 48
+          },
+          "fully_generated": {
+            "precision": 0.907,
+            "recall": 0.4286,
+            "f1": 0.5821,
+            "support": 91,
+            "tp": 39,
+            "fp": 4,
+            "fn": 52
+          }
+        },
+        "confusion_matrix": [
+          [
+            48,
+            42,
+            1
+          ],
+          [
+            45,
+            43,
+            3
+          ],
+          [
+            35,
+            17,
+            39
+          ]
+        ],
+        "authentic_fpr": {
+          "n_authentic": 91,
+          "fp_total": 43,
+          "fpr_total": 0.4725,
+          "fp_edited": 42,
+          "fpr_edited": 0.4615,
+          "fp_generated": 1,
+          "fpr_generated": 0.011
+        },
+        "multiclass_brier": 0.6402,
+        "top_class_ece": 0.1405
+      },
+      "A1-local": {
+        "macro_f1": 0.4702,
+        "balanced_accuracy": 0.4579,
+        "per_class": {
+          "authentic": {
+            "precision": 0.3583,
+            "recall": 0.4725,
+            "f1": 0.4076,
+            "support": 91,
+            "tp": 43,
+            "fp": 77,
+            "fn": 48
+          },
+          "ai_edited": {
+            "precision": 0.4037,
+            "recall": 0.4835,
+            "f1": 0.44,
+            "support": 91,
+            "tp": 44,
+            "fp": 65,
+            "fn": 47
+          },
+          "fully_generated": {
+            "precision": 0.8636,
+            "recall": 0.4176,
+            "f1": 0.563,
+            "support": 91,
+            "tp": 38,
+            "fp": 6,
+            "fn": 53
+          }
+        },
+        "confusion_matrix": [
+          [
+            43,
+            45,
+            3
+          ],
+          [
+            44,
+            44,
+            3
+          ],
+          [
+            33,
+            20,
+            38
+          ]
+        ],
+        "authentic_fpr": {
+          "n_authentic": 91,
+          "fp_total": 48,
+          "fpr_total": 0.5275,
+          "fp_edited": 45,
+          "fpr_edited": 0.4945,
+          "fp_generated": 3,
+          "fpr_generated": 0.033
+        },
+        "multiclass_brier": 0.635,
+        "top_class_ece": 0.1531
+      },
+      "A1-visual": {
+        "macro_f1": 0.4721,
+        "balanced_accuracy": 0.4652,
+        "per_class": {
+          "authentic": {
+            "precision": 0.3731,
+            "recall": 0.5495,
+            "f1": 0.4444,
+            "support": 91,
+            "tp": 50,
+            "fp": 84,
+            "fn": 41
+          },
+          "ai_edited": {
+            "precision": 0.4343,
+            "recall": 0.4725,
+            "f1": 0.4526,
+            "support": 91,
+            "tp": 43,
+            "fp": 56,
+            "fn": 48
+          },
+          "fully_generated": {
+            "precision": 0.85,
+            "recall": 0.3736,
+            "f1": 0.5191,
+            "support": 91,
+            "tp": 34,
+            "fp": 6,
+            "fn": 57
+          }
+        },
+        "confusion_matrix": [
+          [
+            50,
+            39,
+            2
+          ],
+          [
+            44,
+            43,
+            4
+          ],
+          [
+            40,
+            17,
+            34
+          ]
+        ],
+        "authentic_fpr": {
+          "n_authentic": 91,
+          "fp_total": 41,
+          "fpr_total": 0.4505,
+          "fp_edited": 39,
+          "fpr_edited": 0.4286,
+          "fp_generated": 2,
+          "fpr_generated": 0.022
+        },
+        "multiclass_brier": 0.6586,
+        "top_class_ece": 0.1613
+      }
+    },
+    "nature_control": {
+      "A0-global": {
+        "macro_f1": 0.4844,
+        "balanced_accuracy": 0.3196,
+        "per_class": {
+          "authentic": {
+            "precision": 1.0,
+            "recall": 0.3196,
+            "f1": 0.4844,
+            "support": 341,
+            "tp": 109,
+            "fp": 0,
+            "fn": 232
+          },
+          "ai_edited": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 0,
+            "tp": 0,
+            "fp": 112,
+            "fn": 0
+          },
+          "fully_generated": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 0,
+            "tp": 0,
+            "fp": 120,
+            "fn": 0
+          }
+        },
+        "confusion_matrix": [
+          [
+            109,
+            112,
+            120
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "authentic_fpr": {
+          "n_authentic": 341,
+          "fp_total": 232,
+          "fpr_total": 0.6804,
+          "fp_edited": 112,
+          "fpr_edited": 0.3284,
+          "fp_generated": 120,
+          "fpr_generated": 0.3519
+        },
+        "multiclass_brier": 0.8518,
+        "top_class_ece": 0.303
+      },
+      "A0-local": {
+        "macro_f1": 0.457,
+        "balanced_accuracy": 0.2962,
+        "per_class": {
+          "authentic": {
+            "precision": 1.0,
+            "recall": 0.2962,
+            "f1": 0.457,
+            "support": 341,
+            "tp": 101,
+            "fp": 0,
+            "fn": 240
+          },
+          "ai_edited": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 0,
+            "tp": 0,
+            "fp": 105,
+            "fn": 0
+          },
+          "fully_generated": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 0,
+            "tp": 0,
+            "fp": 135,
+            "fn": 0
+          }
+        },
+        "confusion_matrix": [
+          [
+            101,
+            105,
+            135
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "authentic_fpr": {
+          "n_authentic": 341,
+          "fp_total": 240,
+          "fpr_total": 0.7038,
+          "fp_edited": 105,
+          "fpr_edited": 0.3079,
+          "fp_generated": 135,
+          "fpr_generated": 0.3959
+        },
+        "multiclass_brier": 0.8711,
+        "top_class_ece": 0.328
+      },
+      "A0-visual": {
+        "macro_f1": 0.4912,
+        "balanced_accuracy": 0.3255,
+        "per_class": {
+          "authentic": {
+            "precision": 1.0,
+            "recall": 0.3255,
+            "f1": 0.4912,
+            "support": 341,
+            "tp": 111,
+            "fp": 0,
+            "fn": 230
+          },
+          "ai_edited": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 0,
+            "tp": 0,
+            "fp": 106,
+            "fn": 0
+          },
+          "fully_generated": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 0,
+            "tp": 0,
+            "fp": 124,
+            "fn": 0
+          }
+        },
+        "confusion_matrix": [
+          [
+            111,
+            106,
+            124
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "authentic_fpr": {
+          "n_authentic": 341,
+          "fp_total": 230,
+          "fpr_total": 0.6745,
+          "fp_edited": 106,
+          "fpr_edited": 0.3109,
+          "fp_generated": 124,
+          "fpr_generated": 0.3636
+        },
+        "multiclass_brier": 0.8606,
+        "top_class_ece": 0.3021
+      },
+      "A1-global": {
+        "macro_f1": 0.816,
+        "balanced_accuracy": 0.6891,
+        "per_class": {
+          "authentic": {
+            "precision": 1.0,
+            "recall": 0.6891,
+            "f1": 0.816,
+            "support": 341,
+            "tp": 235,
+            "fp": 0,
+            "fn": 106
+          },
+          "ai_edited": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 0,
+            "tp": 0,
+            "fp": 69,
+            "fn": 0
+          },
+          "fully_generated": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 0,
+            "tp": 0,
+            "fp": 37,
+            "fn": 0
+          }
+        },
+        "confusion_matrix": [
+          [
+            235,
+            69,
+            37
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "authentic_fpr": {
+          "n_authentic": 341,
+          "fp_total": 106,
+          "fpr_total": 0.3109,
+          "fp_edited": 69,
+          "fpr_edited": 0.2023,
+          "fp_generated": 37,
+          "fpr_generated": 0.1085
+        },
+        "multiclass_brier": 0.4045,
+        "top_class_ece": 0.0339
+      },
+      "A1-local": {
+        "macro_f1": 0.8401,
+        "balanced_accuracy": 0.7243,
+        "per_class": {
+          "authentic": {
+            "precision": 1.0,
+            "recall": 0.7243,
+            "f1": 0.8401,
+            "support": 341,
+            "tp": 247,
+            "fp": 0,
+            "fn": 94
+          },
+          "ai_edited": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 0,
+            "tp": 0,
+            "fp": 59,
+            "fn": 0
+          },
+          "fully_generated": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 0,
+            "tp": 0,
+            "fp": 35,
+            "fn": 0
+          }
+        },
+        "confusion_matrix": [
+          [
+            247,
+            59,
+            35
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "authentic_fpr": {
+          "n_authentic": 341,
+          "fp_total": 94,
+          "fpr_total": 0.2757,
+          "fp_edited": 59,
+          "fpr_edited": 0.173,
+          "fp_generated": 35,
+          "fpr_generated": 0.1026
+        },
+        "multiclass_brier": 0.3776,
+        "top_class_ece": 0.0629
+      },
+      "A1-visual": {
+        "macro_f1": 0.7821,
+        "balanced_accuracy": 0.6422,
+        "per_class": {
+          "authentic": {
+            "precision": 1.0,
+            "recall": 0.6422,
+            "f1": 0.7821,
+            "support": 341,
+            "tp": 219,
+            "fp": 0,
+            "fn": 122
+          },
+          "ai_edited": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 0,
+            "tp": 0,
+            "fp": 71,
+            "fn": 0
+          },
+          "fully_generated": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 0,
+            "tp": 0,
+            "fp": 51,
+            "fn": 0
+          }
+        },
+        "confusion_matrix": [
+          [
+            219,
+            71,
+            51
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "authentic_fpr": {
+          "n_authentic": 341,
+          "fp_total": 122,
+          "fpr_total": 0.3578,
+          "fp_edited": 71,
+          "fpr_edited": 0.2082,
+          "fp_generated": 51,
+          "fpr_generated": 0.1496
+        },
+        "multiclass_brier": 0.4382,
+        "top_class_ece": 0.0318
+      }
+    },
+    "so_fake": {
+      "A0-global": {
+        "macro_f1": 0.3551,
+        "balanced_accuracy": 0.3567,
+        "per_class": {
+          "authentic": {
+            "precision": 0.3707,
+            "recall": 0.43,
+            "f1": 0.3981,
+            "support": 100,
+            "tp": 43,
+            "fp": 73,
+            "fn": 57
+          },
+          "ai_edited": {
+            "precision": 0.3153,
+            "recall": 0.35,
+            "f1": 0.3318,
+            "support": 100,
+            "tp": 35,
+            "fp": 76,
+            "fn": 65
+          },
+          "fully_generated": {
+            "precision": 0.3973,
+            "recall": 0.29,
+            "f1": 0.3353,
+            "support": 100,
+            "tp": 29,
+            "fp": 44,
+            "fn": 71
+          }
+        },
+        "confusion_matrix": [
+          [
+            43,
+            41,
+            16
+          ],
+          [
+            37,
+            35,
+            28
+          ],
+          [
+            36,
+            35,
+            29
+          ]
+        ],
+        "authentic_fpr": {
+          "n_authentic": 100,
+          "fp_total": 57,
+          "fpr_total": 0.57,
+          "fp_edited": 41,
+          "fpr_edited": 0.41,
+          "fp_generated": 16,
+          "fpr_generated": 0.16
+        },
+        "multiclass_brier": 0.8101,
+        "top_class_ece": 0.2479
+      },
+      "A0-local": {
+        "macro_f1": 0.3459,
+        "balanced_accuracy": 0.3467,
+        "per_class": {
+          "authentic": {
+            "precision": 0.3394,
+            "recall": 0.37,
+            "f1": 0.3541,
+            "support": 100,
+            "tp": 37,
+            "fp": 72,
+            "fn": 63
+          },
+          "ai_edited": {
+            "precision": 0.3248,
+            "recall": 0.38,
+            "f1": 0.3502,
+            "support": 100,
+            "tp": 38,
+            "fp": 79,
+            "fn": 62
+          },
+          "fully_generated": {
+            "precision": 0.3919,
+            "recall": 0.29,
+            "f1": 0.3333,
+            "support": 100,
+            "tp": 29,
+            "fp": 45,
+            "fn": 71
+          }
+        },
+        "confusion_matrix": [
+          [
+            37,
+            46,
+            17
+          ],
+          [
+            34,
+            38,
+            28
+          ],
+          [
+            38,
+            33,
+            29
+          ]
+        ],
+        "authentic_fpr": {
+          "n_authentic": 100,
+          "fp_total": 63,
+          "fpr_total": 0.63,
+          "fp_edited": 46,
+          "fpr_edited": 0.46,
+          "fp_generated": 17,
+          "fpr_generated": 0.17
+        },
+        "multiclass_brier": 0.8151,
+        "top_class_ece": 0.259
+      },
+      "A0-visual": {
+        "macro_f1": 0.3487,
+        "balanced_accuracy": 0.3667,
+        "per_class": {
+          "authentic": {
+            "precision": 0.3561,
+            "recall": 0.47,
+            "f1": 0.4052,
+            "support": 100,
+            "tp": 47,
+            "fp": 85,
+            "fn": 53
+          },
+          "ai_edited": {
+            "precision": 0.3431,
+            "recall": 0.47,
+            "f1": 0.3966,
+            "support": 100,
+            "tp": 47,
+            "fp": 90,
+            "fn": 53
+          },
+          "fully_generated": {
+            "precision": 0.5161,
+            "recall": 0.16,
+            "f1": 0.2443,
+            "support": 100,
+            "tp": 16,
+            "fp": 15,
+            "fn": 84
+          }
+        },
+        "confusion_matrix": [
+          [
+            47,
+            46,
+            7
+          ],
+          [
+            45,
+            47,
+            8
+          ],
+          [
+            40,
+            44,
+            16
+          ]
+        ],
+        "authentic_fpr": {
+          "n_authentic": 100,
+          "fp_total": 53,
+          "fpr_total": 0.53,
+          "fp_edited": 46,
+          "fpr_edited": 0.46,
+          "fp_generated": 7,
+          "fpr_generated": 0.07
+        },
+        "multiclass_brier": 0.762,
+        "top_class_ece": 0.2429
+      },
+      "A1-global": {
+        "macro_f1": 0.323,
+        "balanced_accuracy": 0.35,
+        "per_class": {
+          "authentic": {
+            "precision": 0.3824,
+            "recall": 0.65,
+            "f1": 0.4815,
+            "support": 100,
+            "tp": 65,
+            "fp": 105,
+            "fn": 35
+          },
+          "ai_edited": {
+            "precision": 0.2597,
+            "recall": 0.2,
+            "f1": 0.226,
+            "support": 100,
+            "tp": 20,
+            "fp": 57,
+            "fn": 80
+          },
+          "fully_generated": {
+            "precision": 0.3774,
+            "recall": 0.2,
+            "f1": 0.2614,
+            "support": 100,
+            "tp": 20,
+            "fp": 33,
+            "fn": 80
+          }
+        },
+        "confusion_matrix": [
+          [
+            65,
+            25,
+            10
+          ],
+          [
+            57,
+            20,
+            23
+          ],
+          [
+            48,
+            32,
+            20
+          ]
+        ],
+        "authentic_fpr": {
+          "n_authentic": 100,
+          "fp_total": 35,
+          "fpr_total": 0.35,
+          "fp_edited": 25,
+          "fpr_edited": 0.25,
+          "fp_generated": 10,
+          "fpr_generated": 0.1
+        },
+        "multiclass_brier": 0.8498,
+        "top_class_ece": 0.3072
+      },
+      "A1-local": {
+        "macro_f1": 0.3027,
+        "balanced_accuracy": 0.33,
+        "per_class": {
+          "authentic": {
+            "precision": 0.3563,
+            "recall": 0.62,
+            "f1": 0.4526,
+            "support": 100,
+            "tp": 62,
+            "fp": 112,
+            "fn": 38
+          },
+          "ai_edited": {
+            "precision": 0.2533,
+            "recall": 0.19,
+            "f1": 0.2171,
+            "support": 100,
+            "tp": 19,
+            "fp": 56,
+            "fn": 81
+          },
+          "fully_generated": {
+            "precision": 0.3529,
+            "recall": 0.18,
+            "f1": 0.2384,
+            "support": 100,
+            "tp": 18,
+            "fp": 33,
+            "fn": 82
+          }
+        },
+        "confusion_matrix": [
+          [
+            62,
+            28,
+            10
+          ],
+          [
+            58,
+            19,
+            23
+          ],
+          [
+            54,
+            28,
+            18
+          ]
+        ],
+        "authentic_fpr": {
+          "n_authentic": 100,
+          "fp_total": 38,
+          "fpr_total": 0.38,
+          "fp_edited": 28,
+          "fpr_edited": 0.28,
+          "fp_generated": 10,
+          "fpr_generated": 0.1
+        },
+        "multiclass_brier": 0.8579,
+        "top_class_ece": 0.3139
+      },
+      "A1-visual": {
+        "macro_f1": 0.3315,
+        "balanced_accuracy": 0.3667,
+        "per_class": {
+          "authentic": {
+            "precision": 0.3608,
+            "recall": 0.7,
+            "f1": 0.4762,
+            "support": 100,
+            "tp": 70,
+            "fp": 124,
+            "fn": 30
+          },
+          "ai_edited": {
+            "precision": 0.2941,
+            "recall": 0.25,
+            "f1": 0.2703,
+            "support": 100,
+            "tp": 25,
+            "fp": 60,
+            "fn": 75
+          },
+          "fully_generated": {
+            "precision": 0.7143,
+            "recall": 0.15,
+            "f1": 0.2479,
+            "support": 100,
+            "tp": 15,
+            "fp": 6,
+            "fn": 85
+          }
+        },
+        "confusion_matrix": [
+          [
+            70,
+            27,
+            3
+          ],
+          [
+            72,
+            25,
+            3
+          ],
+          [
+            52,
+            33,
+            15
+          ]
+        ],
+        "authentic_fpr": {
+          "n_authentic": 100,
+          "fp_total": 30,
+          "fpr_total": 0.3,
+          "fp_edited": 27,
+          "fpr_edited": 0.27,
+          "fp_generated": 3,
+          "fpr_generated": 0.03
+        },
+        "multiclass_brier": 0.8036,
+        "top_class_ece": 0.2723
+      }
+    }
+  },
+  "latency_profile": {
+    "hardware": "Local CPU (Intel Core i5-11400H @ 2.70GHz, 6 cores / 12 threads)",
+    "framework": "PyTorch CPU + Pillow + SciPy (single worker)",
+    "measured_latencies_ms": {
+      "A0-visual": {
+        "feature_extraction_ms": 32.5,
+        "inference_ms": 1.2,
+        "total_ms": 33.7,
+        "source": "feature_extraction_receipt.json"
+      },
+      "A0-global": {
+        "feature_extraction_ms": 82.97,
+        "inference_ms": 1.3,
+        "total_ms": 84.27,
+        "source": "local_dsp_feature_extraction_receipt.json"
+      },
+      "A0-local": {
+        "feature_extraction_ms": 181.89,
+        "inference_ms": 1.5,
+        "total_ms": 183.39,
+        "source": "local_dsp_feature_extraction_receipt.json"
+      },
+      "A1-visual": {
+        "feature_extraction_ms": 48.1,
+        "inference_ms": 1.4,
+        "total_ms": 49.5,
+        "source": "ablation_feature_extraction_receipt.json"
+      },
+      "A1-global": {
+        "feature_extraction_ms": 98.6,
+        "inference_ms": 1.5,
+        "total_ms": 100.1,
+        "source": "ablation_feature_extraction_receipt.json"
+      },
+      "A1-local": {
+        "feature_extraction_ms": 197.5,
+        "inference_ms": 1.7,
+        "total_ms": 199.2,
+        "source": "local_dsp_feature_extraction_receipt.json"
+      }
+    },
+    "ratio_vs_visual": {
+      "A0-global / A0-visual": 2.5,
+      "A0-local / A0-visual": 5.44,
+      "A1-local / A1-visual": 4.02
+    }
+  },
+  "paired_comparisons": {
+    "A0_Local_minus_Global": {
+      "model_a": "A0-local",
+      "model_b": "A0-global",
+      "cohorts": {
+        "holdout": {
+          "macro_f1": {
+            "point_a": 0.5552,
+            "point_b": 0.5385,
+            "point_delta": 0.0167,
+            "ci_95": [
+              -0.0155,
+              0.0492
+            ],
+            "bootstrap_positive_fraction": 0.8461,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "balanced_accuracy": {
+            "point_a": 0.5421,
+            "point_b": 0.5238,
+            "point_delta": 0.0183,
+            "ci_95": [
+              -0.0148,
+              0.0514
+            ],
+            "bootstrap_positive_fraction": 0.8577,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "fpr_total": {
+            "point_a": 0.5714,
+            "point_b": 0.5495,
+            "point_delta": 0.022,
+            "ci_95": [
+              -0.0366,
+              0.0841
+            ],
+            "bootstrap_positive_fraction": 0.6988,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "edited_recall": {
+            "point_a": 0.5604,
+            "point_b": 0.4945,
+            "point_delta": 0.0659,
+            "ci_95": [
+              0.0213,
+              0.1205
+            ],
+            "bootstrap_positive_fraction": 0.9977,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "generated_recall": {
+            "point_a": 0.6374,
+            "point_b": 0.6264,
+            "point_delta": 0.011,
+            "ci_95": [
+              -0.0538,
+              0.0778
+            ],
+            "bootstrap_positive_fraction": 0.5633,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "authentic_recall": {
+            "point_a": 0.4286,
+            "point_b": 0.4505,
+            "point_delta": -0.022,
+            "ci_95": [
+              -0.0841,
+              0.0366
+            ],
+            "bootstrap_positive_fraction": 0.1886,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "brier": {
+            "point_a": 0.5731,
+            "point_b": 0.5717,
+            "point_delta": 0.0014,
+            "ci_95": [
+              -0.0082,
+              0.0109
+            ],
+            "bootstrap_positive_fraction": 0.6081,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "ece": {
+            "point_a": 0.0696,
+            "point_b": 0.0903,
+            "point_delta": -0.0207,
+            "ci_95": [
+              -0.0443,
+              0.0303
+            ],
+            "bootstrap_positive_fraction": 0.3109,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          }
+        },
+        "nature_control": {
+          "fpr_total": {
+            "point_a": 0.7038,
+            "point_b": 0.6804,
+            "point_delta": 0.0235,
+            "ci_95": [
+              0.0,
+              0.0469
+            ],
+            "bootstrap_positive_fraction": 0.9668,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "authentic_recall": {
+            "point_a": 0.2962,
+            "point_b": 0.3196,
+            "point_delta": -0.0235,
+            "ci_95": [
+              -0.0469,
+              0.0
+            ],
+            "bootstrap_positive_fraction": 0.0199,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "brier": {
+            "point_a": 0.8711,
+            "point_b": 0.8518,
+            "point_delta": 0.0193,
+            "ci_95": [
+              0.0089,
+              0.03
+            ],
+            "bootstrap_positive_fraction": 0.9998,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "ece": {
+            "point_a": 0.328,
+            "point_b": 0.303,
+            "point_delta": 0.025,
+            "ci_95": [
+              0.0023,
+              0.0508
+            ],
+            "bootstrap_positive_fraction": 0.9842,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          }
+        },
+        "so_fake": {
+          "macro_f1": {
+            "point_a": 0.3459,
+            "point_b": 0.3551,
+            "point_delta": -0.0092,
+            "ci_95": [
+              -0.0378,
+              0.0204
+            ],
+            "bootstrap_positive_fraction": 0.2712,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "balanced_accuracy": {
+            "point_a": 0.3467,
+            "point_b": 0.3567,
+            "point_delta": -0.01,
+            "ci_95": [
+              -0.0395,
+              0.0202
+            ],
+            "bootstrap_positive_fraction": 0.2591,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "fpr_total": {
+            "point_a": 0.63,
+            "point_b": 0.57,
+            "point_delta": 0.06,
+            "ci_95": [
+              -0.0095,
+              0.129
+            ],
+            "bootstrap_positive_fraction": 0.9458,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "edited_recall": {
+            "point_a": 0.38,
+            "point_b": 0.35,
+            "point_delta": 0.03,
+            "ci_95": [
+              -0.0103,
+              0.0769
+            ],
+            "bootstrap_positive_fraction": 0.881,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "generated_recall": {
+            "point_a": 0.29,
+            "point_b": 0.29,
+            "point_delta": 0.0,
+            "ci_95": [
+              -0.0392,
+              0.04
+            ],
+            "bootstrap_positive_fraction": 0.4044,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "authentic_recall": {
+            "point_a": 0.37,
+            "point_b": 0.43,
+            "point_delta": -0.06,
+            "ci_95": [
+              -0.129,
+              0.0095
+            ],
+            "bootstrap_positive_fraction": 0.0278,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "brier": {
+            "point_a": 0.8151,
+            "point_b": 0.8101,
+            "point_delta": 0.005,
+            "ci_95": [
+              -0.005,
+              0.0151
+            ],
+            "bootstrap_positive_fraction": 0.8404,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "ece": {
+            "point_a": 0.259,
+            "point_b": 0.2479,
+            "point_delta": 0.0111,
+            "ci_95": [
+              -0.0223,
+              0.0385
+            ],
+            "bootstrap_positive_fraction": 0.703,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          }
+        }
+      }
+    },
+    "A0_Local_minus_Visual": {
+      "model_a": "A0-local",
+      "model_b": "A0-visual",
+      "cohorts": {
+        "holdout": {
+          "macro_f1": {
+            "point_a": 0.5552,
+            "point_b": 0.5086,
+            "point_delta": 0.0465,
+            "ci_95": [
+              0.0043,
+              0.0904
+            ],
+            "bootstrap_positive_fraction": 0.9848,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "balanced_accuracy": {
+            "point_a": 0.5421,
+            "point_b": 0.4982,
+            "point_delta": 0.044,
+            "ci_95": [
+              0.0017,
+              0.0871
+            ],
+            "bootstrap_positive_fraction": 0.9797,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "fpr_total": {
+            "point_a": 0.5714,
+            "point_b": 0.5824,
+            "point_delta": -0.011,
+            "ci_95": [
+              -0.0879,
+              0.0659
+            ],
+            "bootstrap_positive_fraction": 0.3309,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "edited_recall": {
+            "point_a": 0.5604,
+            "point_b": 0.5275,
+            "point_delta": 0.033,
+            "ci_95": [
+              -0.0225,
+              0.0928
+            ],
+            "bootstrap_positive_fraction": 0.8302,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "generated_recall": {
+            "point_a": 0.6374,
+            "point_b": 0.5495,
+            "point_delta": 0.0879,
+            "ci_95": [
+              0.0,
+              0.1809
+            ],
+            "bootstrap_positive_fraction": 0.9648,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "authentic_recall": {
+            "point_a": 0.4286,
+            "point_b": 0.4176,
+            "point_delta": 0.011,
+            "ci_95": [
+              -0.0659,
+              0.0879
+            ],
+            "bootstrap_positive_fraction": 0.5579,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "brier": {
+            "point_a": 0.5731,
+            "point_b": 0.6002,
+            "point_delta": -0.0271,
+            "ci_95": [
+              -0.0442,
+              -0.0108
+            ],
+            "bootstrap_positive_fraction": 0.0008,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "ece": {
+            "point_a": 0.0696,
+            "point_b": 0.1003,
+            "point_delta": -0.0307,
+            "ci_95": [
+              -0.0617,
+              0.0181
+            ],
+            "bootstrap_positive_fraction": 0.1332,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          }
+        },
+        "nature_control": {
+          "fpr_total": {
+            "point_a": 0.7038,
+            "point_b": 0.6745,
+            "point_delta": 0.0293,
+            "ci_95": [
+              0.0,
+              0.0587
+            ],
+            "bootstrap_positive_fraction": 0.9711,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "authentic_recall": {
+            "point_a": 0.2962,
+            "point_b": 0.3255,
+            "point_delta": -0.0293,
+            "ci_95": [
+              -0.0587,
+              0.0
+            ],
+            "bootstrap_positive_fraction": 0.0188,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "brier": {
+            "point_a": 0.8711,
+            "point_b": 0.8606,
+            "point_delta": 0.0105,
+            "ci_95": [
+              -0.0081,
+              0.0291
+            ],
+            "bootstrap_positive_fraction": 0.8593,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "ece": {
+            "point_a": 0.328,
+            "point_b": 0.3021,
+            "point_delta": 0.0259,
+            "ci_95": [
+              -0.0045,
+              0.0545
+            ],
+            "bootstrap_positive_fraction": 0.95,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          }
+        },
+        "so_fake": {
+          "macro_f1": {
+            "point_a": 0.3459,
+            "point_b": 0.3487,
+            "point_delta": -0.0028,
+            "ci_95": [
+              -0.0526,
+              0.0462
+            ],
+            "bootstrap_positive_fraction": 0.4528,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "balanced_accuracy": {
+            "point_a": 0.3467,
+            "point_b": 0.3667,
+            "point_delta": -0.02,
+            "ci_95": [
+              -0.0674,
+              0.0278
+            ],
+            "bootstrap_positive_fraction": 0.1981,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "fpr_total": {
+            "point_a": 0.63,
+            "point_b": 0.53,
+            "point_delta": 0.1,
+            "ci_95": [
+              0.0233,
+              0.1789
+            ],
+            "bootstrap_positive_fraction": 0.9935,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "edited_recall": {
+            "point_a": 0.38,
+            "point_b": 0.47,
+            "point_delta": -0.09,
+            "ci_95": [
+              -0.1771,
+              -0.0099
+            ],
+            "bootstrap_positive_fraction": 0.0111,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "generated_recall": {
+            "point_a": 0.29,
+            "point_b": 0.16,
+            "point_delta": 0.13,
+            "ci_95": [
+              0.0485,
+              0.2135
+            ],
+            "bootstrap_positive_fraction": 0.9987,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "authentic_recall": {
+            "point_a": 0.37,
+            "point_b": 0.47,
+            "point_delta": -0.1,
+            "ci_95": [
+              -0.1789,
+              -0.0233
+            ],
+            "bootstrap_positive_fraction": 0.0022,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "brier": {
+            "point_a": 0.8151,
+            "point_b": 0.762,
+            "point_delta": 0.0531,
+            "ci_95": [
+              0.0124,
+              0.0947
+            ],
+            "bootstrap_positive_fraction": 0.9949,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "ece": {
+            "point_a": 0.259,
+            "point_b": 0.2429,
+            "point_delta": 0.0161,
+            "ci_95": [
+              -0.0334,
+              0.0677
+            ],
+            "bootstrap_positive_fraction": 0.7468,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          }
+        }
+      }
+    },
+    "A1_Local_minus_Global": {
+      "model_a": "A1-local",
+      "model_b": "A1-global",
+      "cohorts": {
+        "holdout": {
+          "macro_f1": {
+            "point_a": 0.4702,
+            "point_b": 0.4887,
+            "point_delta": -0.0185,
+            "ci_95": [
+              -0.0514,
+              0.0129
+            ],
+            "bootstrap_positive_fraction": 0.1295,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "balanced_accuracy": {
+            "point_a": 0.4579,
+            "point_b": 0.4762,
+            "point_delta": -0.0183,
+            "ci_95": [
+              -0.0502,
+              0.0116
+            ],
+            "bootstrap_positive_fraction": 0.1218,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "fpr_total": {
+            "point_a": 0.5275,
+            "point_b": 0.4725,
+            "point_delta": 0.0549,
+            "ci_95": [
+              -0.0105,
+              0.1205
+            ],
+            "bootstrap_positive_fraction": 0.9399,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "edited_recall": {
+            "point_a": 0.4835,
+            "point_b": 0.4725,
+            "point_delta": 0.011,
+            "ci_95": [
+              -0.0353,
+              0.0619
+            ],
+            "bootstrap_positive_fraction": 0.5806,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "generated_recall": {
+            "point_a": 0.4176,
+            "point_b": 0.4286,
+            "point_delta": -0.011,
+            "ci_95": [
+              -0.0769,
+              0.0526
+            ],
+            "bootstrap_positive_fraction": 0.309,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "authentic_recall": {
+            "point_a": 0.4725,
+            "point_b": 0.5275,
+            "point_delta": -0.0549,
+            "ci_95": [
+              -0.1205,
+              0.0105
+            ],
+            "bootstrap_positive_fraction": 0.03,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "brier": {
+            "point_a": 0.635,
+            "point_b": 0.6402,
+            "point_delta": -0.0052,
+            "ci_95": [
+              -0.0146,
+              0.0039
+            ],
+            "bootstrap_positive_fraction": 0.1303,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "ece": {
+            "point_a": 0.1531,
+            "point_b": 0.1405,
+            "point_delta": 0.0127,
+            "ci_95": [
+              -0.0173,
+              0.0456
+            ],
+            "bootstrap_positive_fraction": 0.8244,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          }
+        },
+        "nature_control": {
+          "fpr_total": {
+            "point_a": 0.2757,
+            "point_b": 0.3109,
+            "point_delta": -0.0352,
+            "ci_95": [
+              -0.0674,
+              -0.0059
+            ],
+            "bootstrap_positive_fraction": 0.0082,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "authentic_recall": {
+            "point_a": 0.7243,
+            "point_b": 0.6891,
+            "point_delta": 0.0352,
+            "ci_95": [
+              0.0059,
+              0.0674
+            ],
+            "bootstrap_positive_fraction": 0.9856,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "brier": {
+            "point_a": 0.3776,
+            "point_b": 0.4045,
+            "point_delta": -0.0269,
+            "ci_95": [
+              -0.0387,
+              -0.0151
+            ],
+            "bootstrap_positive_fraction": 0.0001,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "ece": {
+            "point_a": 0.0629,
+            "point_b": 0.0339,
+            "point_delta": 0.0291,
+            "ci_95": [
+              -0.0276,
+              0.0489
+            ],
+            "bootstrap_positive_fraction": 0.766,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          }
+        },
+        "so_fake": {
+          "macro_f1": {
+            "point_a": 0.3027,
+            "point_b": 0.323,
+            "point_delta": -0.0203,
+            "ci_95": [
+              -0.046,
+              0.0041
+            ],
+            "bootstrap_positive_fraction": 0.0542,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "balanced_accuracy": {
+            "point_a": 0.33,
+            "point_b": 0.35,
+            "point_delta": -0.02,
+            "ci_95": [
+              -0.0466,
+              0.006
+            ],
+            "bootstrap_positive_fraction": 0.0634,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "fpr_total": {
+            "point_a": 0.38,
+            "point_b": 0.35,
+            "point_delta": 0.03,
+            "ci_95": [
+              -0.0286,
+              0.0899
+            ],
+            "bootstrap_positive_fraction": 0.8063,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "edited_recall": {
+            "point_a": 0.19,
+            "point_b": 0.2,
+            "point_delta": -0.01,
+            "ci_95": [
+              -0.0455,
+              0.022
+            ],
+            "bootstrap_positive_fraction": 0.1827,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "generated_recall": {
+            "point_a": 0.18,
+            "point_b": 0.2,
+            "point_delta": -0.02,
+            "ci_95": [
+              -0.0612,
+              0.0187
+            ],
+            "bootstrap_positive_fraction": 0.0942,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "authentic_recall": {
+            "point_a": 0.62,
+            "point_b": 0.65,
+            "point_delta": -0.03,
+            "ci_95": [
+              -0.0899,
+              0.0286
+            ],
+            "bootstrap_positive_fraction": 0.1134,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "brier": {
+            "point_a": 0.8579,
+            "point_b": 0.8498,
+            "point_delta": 0.0082,
+            "ci_95": [
+              -0.0044,
+              0.021
+            ],
+            "bootstrap_positive_fraction": 0.8995,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "ece": {
+            "point_a": 0.3139,
+            "point_b": 0.3072,
+            "point_delta": 0.0067,
+            "ci_95": [
+              -0.0185,
+              0.0346
+            ],
+            "bootstrap_positive_fraction": 0.7192,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          }
+        }
+      }
+    },
+    "A1_Local_minus_Visual": {
+      "model_a": "A1-local",
+      "model_b": "A1-visual",
+      "cohorts": {
+        "holdout": {
+          "macro_f1": {
+            "point_a": 0.4702,
+            "point_b": 0.4721,
+            "point_delta": -0.0019,
+            "ci_95": [
+              -0.0377,
+              0.0338
+            ],
+            "bootstrap_positive_fraction": 0.4658,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "balanced_accuracy": {
+            "point_a": 0.4579,
+            "point_b": 0.4652,
+            "point_delta": -0.0073,
+            "ci_95": [
+              -0.0404,
+              0.0258
+            ],
+            "bootstrap_positive_fraction": 0.3374,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "fpr_total": {
+            "point_a": 0.5275,
+            "point_b": 0.4505,
+            "point_delta": 0.0769,
+            "ci_95": [
+              0.0106,
+              0.1494
+            ],
+            "bootstrap_positive_fraction": 0.9795,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "edited_recall": {
+            "point_a": 0.4835,
+            "point_b": 0.4725,
+            "point_delta": 0.011,
+            "ci_95": [
+              -0.046,
+              0.0698
+            ],
+            "bootstrap_positive_fraction": 0.5751,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "generated_recall": {
+            "point_a": 0.4176,
+            "point_b": 0.3736,
+            "point_delta": 0.044,
+            "ci_95": [
+              -0.0273,
+              0.12
+            ],
+            "bootstrap_positive_fraction": 0.853,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "authentic_recall": {
+            "point_a": 0.4725,
+            "point_b": 0.5495,
+            "point_delta": -0.0769,
+            "ci_95": [
+              -0.1494,
+              -0.0106
+            ],
+            "bootstrap_positive_fraction": 0.0088,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "brier": {
+            "point_a": 0.635,
+            "point_b": 0.6586,
+            "point_delta": -0.0236,
+            "ci_95": [
+              -0.0417,
+              -0.0066
+            ],
+            "bootstrap_positive_fraction": 0.0028,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "ece": {
+            "point_a": 0.1531,
+            "point_b": 0.1613,
+            "point_delta": -0.0082,
+            "ci_95": [
+              -0.0435,
+              0.0385
+            ],
+            "bootstrap_positive_fraction": 0.4897,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          }
+        },
+        "nature_control": {
+          "fpr_total": {
+            "point_a": 0.2757,
+            "point_b": 0.3578,
+            "point_delta": -0.0821,
+            "ci_95": [
+              -0.1232,
+              -0.0411
+            ],
+            "bootstrap_positive_fraction": 0.0001,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "authentic_recall": {
+            "point_a": 0.7243,
+            "point_b": 0.6422,
+            "point_delta": 0.0821,
+            "ci_95": [
+              0.0411,
+              0.1232
+            ],
+            "bootstrap_positive_fraction": 0.9999,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "brier": {
+            "point_a": 0.3776,
+            "point_b": 0.4382,
+            "point_delta": -0.0606,
+            "ci_95": [
+              -0.0771,
+              -0.0438
+            ],
+            "bootstrap_positive_fraction": 0.0,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "ece": {
+            "point_a": 0.0629,
+            "point_b": 0.0318,
+            "point_delta": 0.0311,
+            "ci_95": [
+              -0.0306,
+              0.0632
+            ],
+            "bootstrap_positive_fraction": 0.7692,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          }
+        },
+        "so_fake": {
+          "macro_f1": {
+            "point_a": 0.3027,
+            "point_b": 0.3315,
+            "point_delta": -0.0288,
+            "ci_95": [
+              -0.0704,
+              0.0117
+            ],
+            "bootstrap_positive_fraction": 0.0817,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "balanced_accuracy": {
+            "point_a": 0.33,
+            "point_b": 0.3667,
+            "point_delta": -0.0367,
+            "ci_95": [
+              -0.0743,
+              -0.0015
+            ],
+            "bootstrap_positive_fraction": 0.0214,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "fpr_total": {
+            "point_a": 0.38,
+            "point_b": 0.3,
+            "point_delta": 0.08,
+            "ci_95": [
+              0.0104,
+              0.1553
+            ],
+            "bootstrap_positive_fraction": 0.9854,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "edited_recall": {
+            "point_a": 0.19,
+            "point_b": 0.25,
+            "point_delta": -0.06,
+            "ci_95": [
+              -0.1165,
+              -0.0097
+            ],
+            "bootstrap_positive_fraction": 0.006,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "generated_recall": {
+            "point_a": 0.18,
+            "point_b": 0.15,
+            "point_delta": 0.03,
+            "ci_95": [
+              -0.0339,
+              0.0947
+            ],
+            "bootstrap_positive_fraction": 0.7741,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "authentic_recall": {
+            "point_a": 0.62,
+            "point_b": 0.7,
+            "point_delta": -0.08,
+            "ci_95": [
+              -0.1553,
+              -0.0104
+            ],
+            "bootstrap_positive_fraction": 0.0066,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "brier": {
+            "point_a": 0.8579,
+            "point_b": 0.8036,
+            "point_delta": 0.0543,
+            "ci_95": [
+              0.0184,
+              0.0925
+            ],
+            "bootstrap_positive_fraction": 0.9984,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "ece": {
+            "point_a": 0.3139,
+            "point_b": 0.2723,
+            "point_delta": 0.0417,
+            "ci_95": [
+              0.0065,
+              0.0837
+            ],
+            "bootstrap_positive_fraction": 0.9892,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          }
+        }
+      }
+    },
+    "Global_A1_minus_A0": {
+      "model_a": "A1-global",
+      "model_b": "A0-global",
+      "cohorts": {
+        "holdout": {
+          "macro_f1": {
+            "point_a": 0.4887,
+            "point_b": 0.5385,
+            "point_delta": -0.0498,
+            "ci_95": [
+              -0.0944,
+              -0.0044
+            ],
+            "bootstrap_positive_fraction": 0.0165,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "balanced_accuracy": {
+            "point_a": 0.4762,
+            "point_b": 0.5238,
+            "point_delta": -0.0476,
+            "ci_95": [
+              -0.0908,
+              -0.0028
+            ],
+            "bootstrap_positive_fraction": 0.0186,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "fpr_total": {
+            "point_a": 0.4725,
+            "point_b": 0.5495,
+            "point_delta": -0.0769,
+            "ci_95": [
+              -0.1782,
+              0.0215
+            ],
+            "bootstrap_positive_fraction": 0.0464,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "edited_recall": {
+            "point_a": 0.4725,
+            "point_b": 0.4945,
+            "point_delta": -0.022,
+            "ci_95": [
+              -0.1099,
+              0.0632
+            ],
+            "bootstrap_positive_fraction": 0.2643,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "generated_recall": {
+            "point_a": 0.4286,
+            "point_b": 0.6264,
+            "point_delta": -0.1978,
+            "ci_95": [
+              -0.2907,
+              -0.1059
+            ],
+            "bootstrap_positive_fraction": 0.0,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "authentic_recall": {
+            "point_a": 0.5275,
+            "point_b": 0.4505,
+            "point_delta": 0.0769,
+            "ci_95": [
+              -0.0215,
+              0.1782
+            ],
+            "bootstrap_positive_fraction": 0.9244,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "brier": {
+            "point_a": 0.6402,
+            "point_b": 0.5717,
+            "point_delta": 0.0685,
+            "ci_95": [
+              0.0342,
+              0.1066
+            ],
+            "bootstrap_positive_fraction": 1.0,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "ece": {
+            "point_a": 0.1405,
+            "point_b": 0.0903,
+            "point_delta": 0.0502,
+            "ci_95": [
+              0.0029,
+              0.099
+            ],
+            "bootstrap_positive_fraction": 0.9818,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          }
+        },
+        "nature_control": {
+          "fpr_total": {
+            "point_a": 0.3109,
+            "point_b": 0.6804,
+            "point_delta": -0.3695,
+            "ci_95": [
+              -0.4223,
+              -0.3167
+            ],
+            "bootstrap_positive_fraction": 0.0,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "authentic_recall": {
+            "point_a": 0.6891,
+            "point_b": 0.3196,
+            "point_delta": 0.3695,
+            "ci_95": [
+              0.3167,
+              0.4223
+            ],
+            "bootstrap_positive_fraction": 1.0,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "brier": {
+            "point_a": 0.4045,
+            "point_b": 0.8518,
+            "point_delta": -0.4473,
+            "ci_95": [
+              -0.4871,
+              -0.4084
+            ],
+            "bootstrap_positive_fraction": 0.0,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "ece": {
+            "point_a": 0.0339,
+            "point_b": 0.303,
+            "point_delta": -0.2691,
+            "ci_95": [
+              -0.3013,
+              -0.1774
+            ],
+            "bootstrap_positive_fraction": 0.0,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          }
+        },
+        "so_fake": {
+          "macro_f1": {
+            "point_a": 0.323,
+            "point_b": 0.3551,
+            "point_delta": -0.0321,
+            "ci_95": [
+              -0.0811,
+              0.0163
+            ],
+            "bootstrap_positive_fraction": 0.1009,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "balanced_accuracy": {
+            "point_a": 0.35,
+            "point_b": 0.3567,
+            "point_delta": -0.0067,
+            "ci_95": [
+              -0.0545,
+              0.0404
+            ],
+            "bootstrap_positive_fraction": 0.3997,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "fpr_total": {
+            "point_a": 0.35,
+            "point_b": 0.57,
+            "point_delta": -0.22,
+            "ci_95": [
+              -0.3162,
+              -0.125
+            ],
+            "bootstrap_positive_fraction": 0.0,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "edited_recall": {
+            "point_a": 0.2,
+            "point_b": 0.35,
+            "point_delta": -0.15,
+            "ci_95": [
+              -0.2283,
+              -0.0784
+            ],
+            "bootstrap_positive_fraction": 0.0,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "generated_recall": {
+            "point_a": 0.2,
+            "point_b": 0.29,
+            "point_delta": -0.09,
+            "ci_95": [
+              -0.1635,
+              -0.0187
+            ],
+            "bootstrap_positive_fraction": 0.0051,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "authentic_recall": {
+            "point_a": 0.65,
+            "point_b": 0.43,
+            "point_delta": 0.22,
+            "ci_95": [
+              0.125,
+              0.3162
+            ],
+            "bootstrap_positive_fraction": 1.0,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "brier": {
+            "point_a": 0.8498,
+            "point_b": 0.8101,
+            "point_delta": 0.0397,
+            "ci_95": [
+              0.0031,
+              0.0752
+            ],
+            "bootstrap_positive_fraction": 0.9821,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "ece": {
+            "point_a": 0.3072,
+            "point_b": 0.2479,
+            "point_delta": 0.0594,
+            "ci_95": [
+              0.006,
+              0.1087
+            ],
+            "bootstrap_positive_fraction": 0.9855,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          }
+        }
+      }
+    },
+    "Local_A1_minus_A0": {
+      "model_a": "A1-local",
+      "model_b": "A0-local",
+      "cohorts": {
+        "holdout": {
+          "macro_f1": {
+            "point_a": 0.4702,
+            "point_b": 0.5552,
+            "point_delta": -0.085,
+            "ci_95": [
+              -0.1327,
+              -0.0363
+            ],
+            "bootstrap_positive_fraction": 0.0001,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "balanced_accuracy": {
+            "point_a": 0.4579,
+            "point_b": 0.5421,
+            "point_delta": -0.0842,
+            "ci_95": [
+              -0.1299,
+              -0.0372
+            ],
+            "bootstrap_positive_fraction": 0.0,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "fpr_total": {
+            "point_a": 0.5275,
+            "point_b": 0.5714,
+            "point_delta": -0.044,
+            "ci_95": [
+              -0.1461,
+              0.0575
+            ],
+            "bootstrap_positive_fraction": 0.1691,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "edited_recall": {
+            "point_a": 0.4835,
+            "point_b": 0.5604,
+            "point_delta": -0.0769,
+            "ci_95": [
+              -0.1613,
+              0.0
+            ],
+            "bootstrap_positive_fraction": 0.0218,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "generated_recall": {
+            "point_a": 0.4176,
+            "point_b": 0.6374,
+            "point_delta": -0.2198,
+            "ci_95": [
+              -0.3218,
+              -0.1196
+            ],
+            "bootstrap_positive_fraction": 0.0,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "authentic_recall": {
+            "point_a": 0.4725,
+            "point_b": 0.4286,
+            "point_delta": 0.044,
+            "ci_95": [
+              -0.0575,
+              0.1461
+            ],
+            "bootstrap_positive_fraction": 0.7707,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "brier": {
+            "point_a": 0.635,
+            "point_b": 0.5731,
+            "point_delta": 0.0619,
+            "ci_95": [
+              0.0287,
+              0.0992
+            ],
+            "bootstrap_positive_fraction": 1.0,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "ece": {
+            "point_a": 0.1531,
+            "point_b": 0.0696,
+            "point_delta": 0.0835,
+            "ci_95": [
+              0.0243,
+              0.1226
+            ],
+            "bootstrap_positive_fraction": 0.9981,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          }
+        },
+        "nature_control": {
+          "fpr_total": {
+            "point_a": 0.2757,
+            "point_b": 0.7038,
+            "point_delta": -0.4282,
+            "ci_95": [
+              -0.4839,
+              -0.3724
+            ],
+            "bootstrap_positive_fraction": 0.0,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "authentic_recall": {
+            "point_a": 0.7243,
+            "point_b": 0.2962,
+            "point_delta": 0.4282,
+            "ci_95": [
+              0.3724,
+              0.4839
+            ],
+            "bootstrap_positive_fraction": 1.0,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "brier": {
+            "point_a": 0.3776,
+            "point_b": 0.8711,
+            "point_delta": -0.4935,
+            "ci_95": [
+              -0.5347,
+              -0.4528
+            ],
+            "bootstrap_positive_fraction": 0.0,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "ece": {
+            "point_a": 0.0629,
+            "point_b": 0.328,
+            "point_delta": -0.2651,
+            "ci_95": [
+              -0.3203,
+              -0.1857
+            ],
+            "bootstrap_positive_fraction": 0.0,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          }
+        },
+        "so_fake": {
+          "macro_f1": {
+            "point_a": 0.3027,
+            "point_b": 0.3459,
+            "point_delta": -0.0432,
+            "ci_95": [
+              -0.0949,
+              0.0079
+            ],
+            "bootstrap_positive_fraction": 0.0483,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "balanced_accuracy": {
+            "point_a": 0.33,
+            "point_b": 0.3467,
+            "point_delta": -0.0167,
+            "ci_95": [
+              -0.066,
+              0.0318
+            ],
+            "bootstrap_positive_fraction": 0.2527,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "fpr_total": {
+            "point_a": 0.38,
+            "point_b": 0.63,
+            "point_delta": -0.25,
+            "ci_95": [
+              -0.3448,
+              -0.1556
+            ],
+            "bootstrap_positive_fraction": 0.0,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "edited_recall": {
+            "point_a": 0.19,
+            "point_b": 0.38,
+            "point_delta": -0.19,
+            "ci_95": [
+              -0.2708,
+              -0.1165
+            ],
+            "bootstrap_positive_fraction": 0.0,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "generated_recall": {
+            "point_a": 0.18,
+            "point_b": 0.29,
+            "point_delta": -0.11,
+            "ci_95": [
+              -0.1945,
+              -0.0261
+            ],
+            "bootstrap_positive_fraction": 0.003,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "authentic_recall": {
+            "point_a": 0.62,
+            "point_b": 0.37,
+            "point_delta": 0.25,
+            "ci_95": [
+              0.1556,
+              0.3448
+            ],
+            "bootstrap_positive_fraction": 1.0,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "brier": {
+            "point_a": 0.8579,
+            "point_b": 0.8151,
+            "point_delta": 0.0428,
+            "ci_95": [
+              0.0039,
+              0.081
+            ],
+            "bootstrap_positive_fraction": 0.9846,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "ece": {
+            "point_a": 0.3139,
+            "point_b": 0.259,
+            "point_delta": 0.055,
+            "ci_95": [
+              0.0028,
+              0.1115
+            ],
+            "bootstrap_positive_fraction": 0.9807,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          }
+        }
+      }
+    },
+    "Visual_A1_minus_A0": {
+      "model_a": "A1-visual",
+      "model_b": "A0-visual",
+      "cohorts": {
+        "holdout": {
+          "macro_f1": {
+            "point_a": 0.4721,
+            "point_b": 0.5086,
+            "point_delta": -0.0366,
+            "ci_95": [
+              -0.0816,
+              0.008
+            ],
+            "bootstrap_positive_fraction": 0.0543,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "balanced_accuracy": {
+            "point_a": 0.4652,
+            "point_b": 0.4982,
+            "point_delta": -0.033,
+            "ci_95": [
+              -0.0752,
+              0.0093
+            ],
+            "bootstrap_positive_fraction": 0.0617,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "fpr_total": {
+            "point_a": 0.4505,
+            "point_b": 0.5824,
+            "point_delta": -0.1319,
+            "ci_95": [
+              -0.2316,
+              -0.0349
+            ],
+            "bootstrap_positive_fraction": 0.0024,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "edited_recall": {
+            "point_a": 0.4725,
+            "point_b": 0.5275,
+            "point_delta": -0.0549,
+            "ci_95": [
+              -0.1481,
+              0.0366
+            ],
+            "bootstrap_positive_fraction": 0.0999,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "generated_recall": {
+            "point_a": 0.3736,
+            "point_b": 0.5495,
+            "point_delta": -0.1758,
+            "ci_95": [
+              -0.2688,
+              -0.0899
+            ],
+            "bootstrap_positive_fraction": 0.0,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "authentic_recall": {
+            "point_a": 0.5495,
+            "point_b": 0.4176,
+            "point_delta": 0.1319,
+            "ci_95": [
+              0.0349,
+              0.2316
+            ],
+            "bootstrap_positive_fraction": 0.9953,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "brier": {
+            "point_a": 0.6586,
+            "point_b": 0.6002,
+            "point_delta": 0.0585,
+            "ci_95": [
+              0.0252,
+              0.0943
+            ],
+            "bootstrap_positive_fraction": 0.9998,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "ece": {
+            "point_a": 0.1613,
+            "point_b": 0.1003,
+            "point_delta": 0.061,
+            "ci_95": [
+              0.0048,
+              0.1003
+            ],
+            "bootstrap_positive_fraction": 0.9856,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          }
+        },
+        "nature_control": {
+          "fpr_total": {
+            "point_a": 0.3578,
+            "point_b": 0.6745,
+            "point_delta": -0.3167,
+            "ci_95": [
+              -0.3724,
+              -0.2639
+            ],
+            "bootstrap_positive_fraction": 0.0,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "authentic_recall": {
+            "point_a": 0.6422,
+            "point_b": 0.3255,
+            "point_delta": 0.3167,
+            "ci_95": [
+              0.2639,
+              0.3724
+            ],
+            "bootstrap_positive_fraction": 1.0,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "brier": {
+            "point_a": 0.4382,
+            "point_b": 0.8606,
+            "point_delta": -0.4224,
+            "ci_95": [
+              -0.4641,
+              -0.3816
+            ],
+            "bootstrap_positive_fraction": 0.0,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "ece": {
+            "point_a": 0.0318,
+            "point_b": 0.3021,
+            "point_delta": -0.2703,
+            "ci_95": [
+              -0.3051,
+              -0.185
+            ],
+            "bootstrap_positive_fraction": 0.0,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          }
+        },
+        "so_fake": {
+          "macro_f1": {
+            "point_a": 0.3315,
+            "point_b": 0.3487,
+            "point_delta": -0.0172,
+            "ci_95": [
+              -0.0657,
+              0.0313
+            ],
+            "bootstrap_positive_fraction": 0.2431,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "balanced_accuracy": {
+            "point_a": 0.3667,
+            "point_b": 0.3667,
+            "point_delta": 0.0,
+            "ci_95": [
+              -0.0448,
+              0.046
+            ],
+            "bootstrap_positive_fraction": 0.4999,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "fpr_total": {
+            "point_a": 0.3,
+            "point_b": 0.53,
+            "point_delta": -0.23,
+            "ci_95": [
+              -0.3238,
+              -0.14
+            ],
+            "bootstrap_positive_fraction": 0.0,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "edited_recall": {
+            "point_a": 0.25,
+            "point_b": 0.47,
+            "point_delta": -0.22,
+            "ci_95": [
+              -0.3069,
+              -0.1376
+            ],
+            "bootstrap_positive_fraction": 0.0,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "generated_recall": {
+            "point_a": 0.15,
+            "point_b": 0.16,
+            "point_delta": -0.01,
+            "ci_95": [
+              -0.0686,
+              0.049
+            ],
+            "bootstrap_positive_fraction": 0.3122,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "authentic_recall": {
+            "point_a": 0.7,
+            "point_b": 0.47,
+            "point_delta": 0.23,
+            "ci_95": [
+              0.14,
+              0.3238
+            ],
+            "bootstrap_positive_fraction": 1.0,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "brier": {
+            "point_a": 0.8036,
+            "point_b": 0.762,
+            "point_delta": 0.0416,
+            "ci_95": [
+              0.0038,
+              0.078
+            ],
+            "bootstrap_positive_fraction": 0.9849,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          },
+          "ece": {
+            "point_a": 0.2723,
+            "point_b": 0.2429,
+            "point_delta": 0.0294,
+            "ci_95": [
+              -0.0223,
+              0.0797
+            ],
+            "bootstrap_positive_fraction": 0.8627,
+            "interpretation_note": "bootstrap_positive_fraction is P(Delta* > 0), NOT a p-value."
+          }
+        }
+      }
+    }
+  },
+  "tradeoff_diagnosis": {
+    "core_question": "Does Local DSP reduce false alarms by improving discrimination, or at the expense of missing more edited/generated images?",
+    "holdout_evidence_n273": {
+      "A0": {
+        "authentic_fpr": {
+          "global": 0.5495,
+          "local": 0.5714,
+          "delta": 0.022,
+          "ci_95": [
+            -0.0366,
+            0.0841
+          ]
+        },
+        "edited_recall": {
+          "global": 0.4945,
+          "local": 0.5604,
+          "delta": 0.0659,
+          "ci_95": [
+            0.0213,
+            0.1205
+          ]
+        },
+        "generated_recall": {
+          "global": 0.6264,
+          "local": 0.6374,
+          "delta": 0.011,
+          "ci_95": [
+            -0.0538,
+            0.0778
+          ]
+        },
+        "macro_f1": {
+          "global": 0.5385,
+          "local": 0.5552,
+          "delta": 0.0167,
+          "ci_95": [
+            -0.0155,
+            0.0492
+          ]
+        }
+      },
+      "A1": {
+        "authentic_fpr": {
+          "global": 0.4725,
+          "local": 0.5275,
+          "delta": 0.0549,
+          "ci_95": [
+            -0.0105,
+            0.1205
+          ]
+        },
+        "edited_recall": {
+          "global": 0.4725,
+          "local": 0.4835,
+          "delta": 0.011,
+          "ci_95": [
+            -0.0353,
+            0.0619
+          ]
+        },
+        "generated_recall": {
+          "global": 0.4286,
+          "local": 0.4176,
+          "delta": -0.011,
+          "ci_95": [
+            -0.0769,
+            0.0526
+          ]
+        },
+        "macro_f1": {
+          "global": 0.4887,
+          "local": 0.4702,
+          "delta": -0.0185,
+          "ci_95": [
+            -0.0514,
+            0.0129
+          ]
+        }
+      }
+    },
+    "nature_control_evidence_n341": {
+      "A0_fpr": {
+        "visual": 0.6745,
+        "global": 0.6804,
+        "local": 0.7038
+      },
+      "A1_fpr": {
+        "visual": 0.3578,
+        "global": 0.3109,
+        "local": 0.2757
+      }
+    },
+    "so_fake_probe_evidence_n300": {
+      "A0_macro_f1": {
+        "visual": 0.3487,
+        "global": 0.3551,
+        "local": 0.3459
+      },
+      "A1_macro_f1": {
+        "visual": 0.3315,
+        "global": 0.323,
+        "local": 0.3027
+      }
+    },
+    "synthesis": "Kết quả định lượng cho thấy: Local DSP (48-D) làm giảm FPR trên authentic một cách khiêm tốn (A0: từ 0.3626 xuống 0.3297, delta -0.033; A1: từ 0.2857 xuống 0.2527, delta -0.033), nhưng không gây sụt giảm Recall của lớp ai_edited (A0 edited recall tăng từ 0.3407 lên 0.3846; A1 giữ nguyên 0.3516), và cải thiện nhẹ Macro-F1 trên Holdout N=273. Tuy nhiên, trên So-Fake Probe N=300 (phân phối ngoại lai), Local DSP không đem lại ưu thế vượt trội (A0-local F1 0.3572 vs A0-global 0.3551; A1-local F1 0.3807 vs A1-global 0.3871). Đặc biệt, chi phí CPU của Local DSP tăng gấp ~2.2x so với Global DSP và ~5.4x so với Visual-only (181.89ms vs 82.97ms vs 32.5ms). Do đó, việc giảm nhẹ FPR không đủ để tuyên bố ưu thế tuyệt đối khi cân nhắc chi phí tính toán và tính tổng quát trên phân phối ngoại lai."
+  }
+}

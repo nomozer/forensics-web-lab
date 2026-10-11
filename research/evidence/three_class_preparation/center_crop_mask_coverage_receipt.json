@@ -1,0 +1,246 @@
+{
+  "schema_version": "1.0.0",
+  "protocol_id": "PROTO-RQ1-RQ2-3CLASS-V2.2-AMENDMENT",
+  "receipt_id": "center_crop_mask_coverage_receipt_v1",
+  "timestamp": "2026-10-11T22:00:00Z",
+  "total_samples": 91,
+  "coverage_summary": {
+    "bin_counts": {
+      "full_retention": 58,
+      "minor_loss": 14,
+      "major_loss": 18,
+      "complete_loss": 1
+    },
+    "bin_percentages": {
+      "full_retention": 63.74,
+      "minor_loss": 15.38,
+      "major_loss": 19.78,
+      "complete_loss": 1.1
+    },
+    "complete_loss_count": 1,
+    "complete_loss_sample_ids": [
+      "tgif_sd2_edit_000000415990"
+    ],
+    "major_loss_count": 18,
+    "minor_loss_count": 14,
+    "full_retention_count": 58
+  },
+  "performance_by_coverage_bin": {
+    "full_retention": {
+      "support": 58,
+      "models": {
+        "A0-global": {
+          "recall": 0.569,
+          "misclassified_as_authentic_rate": 0.4138,
+          "misclassified_as_generated_rate": 0.0172,
+          "correct_count": 33,
+          "to_authentic_count": 24,
+          "to_generated_count": 1
+        },
+        "A0-local": {
+          "recall": 0.6552,
+          "misclassified_as_authentic_rate": 0.3103,
+          "misclassified_as_generated_rate": 0.0345,
+          "correct_count": 38,
+          "to_authentic_count": 18,
+          "to_generated_count": 2
+        },
+        "A0-visual": {
+          "recall": 0.6207,
+          "misclassified_as_authentic_rate": 0.3621,
+          "misclassified_as_generated_rate": 0.0172,
+          "correct_count": 36,
+          "to_authentic_count": 21,
+          "to_generated_count": 1
+        },
+        "A1-global": {
+          "recall": 0.569,
+          "misclassified_as_authentic_rate": 0.4138,
+          "misclassified_as_generated_rate": 0.0172,
+          "correct_count": 33,
+          "to_authentic_count": 24,
+          "to_generated_count": 1
+        },
+        "A1-local": {
+          "recall": 0.569,
+          "misclassified_as_authentic_rate": 0.4138,
+          "misclassified_as_generated_rate": 0.0172,
+          "correct_count": 33,
+          "to_authentic_count": 24,
+          "to_generated_count": 1
+        },
+        "A1-visual": {
+          "recall": 0.5517,
+          "misclassified_as_authentic_rate": 0.431,
+          "misclassified_as_generated_rate": 0.0172,
+          "correct_count": 32,
+          "to_authentic_count": 25,
+          "to_generated_count": 1
+        }
+      }
+    },
+    "minor_loss": {
+      "support": 14,
+      "models": {
+        "A0-global": {
+          "recall": 0.1429,
+          "misclassified_as_authentic_rate": 0.7857,
+          "misclassified_as_generated_rate": 0.0714,
+          "correct_count": 2,
+          "to_authentic_count": 11,
+          "to_generated_count": 1
+        },
+        "A0-local": {
+          "recall": 0.2143,
+          "misclassified_as_authentic_rate": 0.7857,
+          "misclassified_as_generated_rate": 0.0,
+          "correct_count": 3,
+          "to_authentic_count": 11,
+          "to_generated_count": 0
+        },
+        "A0-visual": {
+          "recall": 0.1429,
+          "misclassified_as_authentic_rate": 0.7143,
+          "misclassified_as_generated_rate": 0.1429,
+          "correct_count": 2,
+          "to_authentic_count": 10,
+          "to_generated_count": 2
+        },
+        "A1-global": {
+          "recall": 0.1429,
+          "misclassified_as_authentic_rate": 0.7143,
+          "misclassified_as_generated_rate": 0.1429,
+          "correct_count": 2,
+          "to_authentic_count": 10,
+          "to_generated_count": 2
+        },
+        "A1-local": {
+          "recall": 0.1429,
+          "misclassified_as_authentic_rate": 0.7143,
+          "misclassified_as_generated_rate": 0.1429,
+          "correct_count": 2,
+          "to_authentic_count": 10,
+          "to_generated_count": 2
+        },
+        "A1-visual": {
+          "recall": 0.1429,
+          "misclassified_as_authentic_rate": 0.7143,
+          "misclassified_as_generated_rate": 0.1429,
+          "correct_count": 2,
+          "to_authentic_count": 10,
+          "to_generated_count": 2
+        }
+      }
+    },
+    "major_loss": {
+      "support": 18,
+      "models": {
+        "A0-global": {
+          "recall": 0.5556,
+          "misclassified_as_authentic_rate": 0.3889,
+          "misclassified_as_generated_rate": 0.0556,
+          "correct_count": 10,
+          "to_authentic_count": 7,
+          "to_generated_count": 1
+        },
+        "A0-local": {
+          "recall": 0.5556,
+          "misclassified_as_authentic_rate": 0.3889,
+          "misclassified_as_generated_rate": 0.0556,
+          "correct_count": 10,
+          "to_authentic_count": 7,
+          "to_generated_count": 1
+        },
+        "A0-visual": {
+          "recall": 0.5556,
+          "misclassified_as_authentic_rate": 0.3333,
+          "misclassified_as_generated_rate": 0.1111,
+          "correct_count": 10,
+          "to_authentic_count": 6,
+          "to_generated_count": 2
+        },
+        "A1-global": {
+          "recall": 0.4444,
+          "misclassified_as_authentic_rate": 0.5556,
+          "misclassified_as_generated_rate": 0.0,
+          "correct_count": 8,
+          "to_authentic_count": 10,
+          "to_generated_count": 0
+        },
+        "A1-local": {
+          "recall": 0.5,
+          "misclassified_as_authentic_rate": 0.5,
+          "misclassified_as_generated_rate": 0.0,
+          "correct_count": 9,
+          "to_authentic_count": 9,
+          "to_generated_count": 0
+        },
+        "A1-visual": {
+          "recall": 0.5,
+          "misclassified_as_authentic_rate": 0.4444,
+          "misclassified_as_generated_rate": 0.0556,
+          "correct_count": 9,
+          "to_authentic_count": 8,
+          "to_generated_count": 1
+        }
+      }
+    },
+    "complete_loss": {
+      "support": 1,
+      "models": {
+        "A0-global": {
+          "recall": 0.0,
+          "misclassified_as_authentic_rate": 1.0,
+          "misclassified_as_generated_rate": 0.0,
+          "correct_count": 0,
+          "to_authentic_count": 1,
+          "to_generated_count": 0
+        },
+        "A0-local": {
+          "recall": 0.0,
+          "misclassified_as_authentic_rate": 1.0,
+          "misclassified_as_generated_rate": 0.0,
+          "correct_count": 0,
+          "to_authentic_count": 1,
+          "to_generated_count": 0
+        },
+        "A0-visual": {
+          "recall": 0.0,
+          "misclassified_as_authentic_rate": 1.0,
+          "misclassified_as_generated_rate": 0.0,
+          "correct_count": 0,
+          "to_authentic_count": 1,
+          "to_generated_count": 0
+        },
+        "A1-global": {
+          "recall": 0.0,
+          "misclassified_as_authentic_rate": 1.0,
+          "misclassified_as_generated_rate": 0.0,
+          "correct_count": 0,
+          "to_authentic_count": 1,
+          "to_generated_count": 0
+        },
+        "A1-local": {
+          "recall": 0.0,
+          "misclassified_as_authentic_rate": 1.0,
+          "misclassified_as_generated_rate": 0.0,
+          "correct_count": 0,
+          "to_authentic_count": 1,
+          "to_generated_count": 0
+        },
+        "A1-visual": {
+          "recall": 0.0,
+          "misclassified_as_authentic_rate": 1.0,
+          "misclassified_as_generated_rate": 0.0,
+          "correct_count": 0,
+          "to_authentic_count": 1,
+          "to_generated_count": 0
+        }
+      }
+    }
+  },
+  "epistemic_synthesis": {
+    "direct_observation": "Trên 91 mẫu holdout edited, canonical center-crop giữ lại 100% vùng sửa ở 58/91 ảnh (63.7%), mất nhẹ (75-99%) ở 14 ảnh (15.4%), mất nhiều (>25%) ở 18 ảnh (19.8%), và mất hoàn toàn (0% retained) ở 1 ảnh (1.1%). Ở các ảnh mất hoàn toàn vùng sửa, tensor 224x224 và DSP 512x512 thực sự chỉ quan sát các pixel nguyên bản (authentic), khiến nhãn ảnh (image-level ground truth) bị phân kỳ so với nội dung canvas thực tế.",
+    "correlation_vs_causation_guard": "Phân biệt nghiêm ngặt: Việc crop làm mất vùng sửa là một quan sát hình học đo được trực tiếp. Tuy nhiên, việc cho rằng crop là nguyên nhân duy nhất khiến mô hình dự đoán nhầm sang authentic là một giả thuyết: ngay cả ở nhóm full_retention (100% diện tích sửa được giữ lại), tỷ lệ dự đoán nhầm sang authentic hoặc generated vẫn tồn tại, phản ánh giới hạn năng lực phân biệt nội tại của mô hình bên cạnh yếu tố hình học tiền xử lý."
+  }
+}
