@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0.0",
+  "receipt_id": "BASELINE-LINEAGE-AUDIT-20261011",
+  "audit_timestamp": "2026-10-11T13:59:51.979937+00:00",
+  "status": "LINEAGE_AUDIT_EXPLAINED_AND_VERIFIED",
+  "executive_summary": "All four reported baseline discrepancies are conclusively resolved and proven to stem from documented, reproducible differences in preprocessing geometry (aspect-ratio preserving center-crop vs direct anisotropic resize) and softmax calibration temperature, rather than unexplained noise.",
+  "discrepancies": [
+    {
+      "id": "DISC-01",
+      "target": "A0-global So-Fake Probe Macro-F1",
+      "value_historical": 0.3551,
+      "value_c0": 0.3427,
+      "reproduced_canonical_p1": 0.3551,
+      "reproduced_anisotropic_p2": 0.3427,
+      "decisions_flipped": 15,
+      "total_samples": 300,
+      "fraction_flipped": 0.05,
+      "root_cause": "Pipeline geometry difference. Canonical pipeline (extract_so_fake_features.py) applies square center-crop min(w, h) before 512x512 Lanczos resize and derives 224x224 bicubic from 512x512 canvas. Sensitivity harness (run_paired_compression_sensitivity.py C0) directly resized raw images anisotropically to 512x512 and 224x224 without center-crop, flipping 15 decisions.",
+      "status": "REPRODUCED_AND_PROVEN"
+    },
+    {
+      "id": "DISC-02",
+      "target": "A0-global Development Holdout Macro-F1",
+      "value_historical": 0.5385,
+      "value_c0": 0.5592,
+      "reproduced_canonical_p1": 0.5385,
+      "reproduced_anisotropic_p2": 0.5592,
+      "decisions_flipped": 33,
+      "total_samples": 273,
+      "fraction_flipped": 0.1209,
+      "root_cause": "Pipeline geometry difference. Canonical pipeline (extract_three_class_features.py) applies square center-crop min(w, h) before 512x512 Lanczos resize and derives 224x224 bicubic from 512x512 canvas. Sensitivity harness (run_paired_compression_sensitivity.py C0) directly resized raw rectangular images anisotropically, flipping 33 decisions.",
+      "status": "REPRODUCED_AND_PROVEN"
+    },
+    {
+      "id": "DISC-03",
+      "target": "A0-global JPEG Q75 Development Holdout Macro-F1",
+      "value_historical": 0.6015,
+      "value_c1": 0.6187,
+      "reproduced_canonical_p1": 0.6015,
+      "reproduced_anisotropic_p2": 0.6187,
+      "decisions_flipped": 39,
+      "total_samples": 273,
+      "fraction_flipped": 0.1429,
+      "root_cause": "Pipeline geometry difference under JPEG Q75. Historical error analysis harness (run_three_class_error_analysis.py) encoded full-res to JPEG Q75 then applied square center-crop before 512x512. Sensitivity harness (run_paired_compression_sensitivity.py C1) encoded full-res to JPEG Q75 then directly resized anisotropically to 512x512 and 224x224.",
+      "status": "REPRODUCED_AND_PROVEN"
+    },
+    {
+      "id": "DISC-04",
+      "target": "Brier Score & ECE Calibration Variance",
+      "historical_temp_fus": 8.1321,
+      "historical_brier_fus": 0.5618,
+      "historical_ece_fus": 0.078,
+      "reconciled_temp_fus": 5.9577,
+      "reconciled_brier_fus": 0.5711,
+      "reconciled_ece_fus": 0.0865,
+      "outer_model_macro_f1_change": 0.0,
+      "outer_model_decisions_flipped": 0,
+      "root_cause": "Calibration temperature math. Historical inner CV had scaler leakage across folds, inflating temperature to 8.1321 (flatter softmax, lower penalty for wrong predictions). Reconciled inner CV with fold-isolated scalers yields true OOF temperature 5.9577. Sharper probabilities with ~52% holdout accuracy increase Brier penalty from 0.5618 to 0.5711. Argmax predictions and Macro-F1 are 100% bit-identical.",
+      "status": "REPRODUCED_AND_PROVEN"
+    }
+  ],
+  "methodological_recommendation": "In all future experiments, the repository must explicitly distinguish between CANONICAL_PREPROCESSING (square center-crop, aspect-ratio preserving) and ANISOTROPIC_PREPROCESSING (direct squash). Neither condition should be silently renamed or merged into the baseline without declaring its condition ID."
+}

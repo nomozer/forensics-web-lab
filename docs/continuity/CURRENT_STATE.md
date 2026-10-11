@@ -151,18 +151,42 @@
 >      * Bảng Generator Breakdown chuẩn xác theo `(generator, ground_truth_label)`: FLUX.1 (44 edit + 15 gen), latent_diffusion (12 edit + 20 gen), OpenForensics_fake (9 gen), midjourney (36 gen), sd2_inpainting (22 edit), v.v.
 >      * Phân tích phân loại học (Taxonomy) nhóm `OpenForensics_fake` ($N=9$, multi-face forgery): Đánh giá độ nhạy trên $N=291$ (loại trừ OpenForensics) so với baseline $N=300$. Macro-F1 giữ nguyên ở mức $0.30 - 0.35$; các mô hình DSP giảm nhẹ (-0.005 đến -0.013) do mất 5-6 mẫu phát hiện vết nén, Visual-only tăng nhẹ (+0.006 đến +0.011) do 0% recall trên nhóm này. Kết luận OOD collapse giữ nguyên.
 >      * Đính chính tài liệu: Khẳng định A1 train là $N=1,000$ (250 COCO auth, 250 ImageNet auth, 250 TGIF edit, 250 SD1.5 gen). Giấy phép của `saberzl/So-Fake-Set` là `unspecified` trong HuggingFace cardData (không tự gán CC-BY-NC-4.0 từ `So-Fake-OOD`).
->      * Kiểm chứng kỹ thuật panel tất định (16 mẫu): Max pixel diff = 0, orientation diff = 0, shape diff = 0, max DSP diff = 0. Chuyển sang PNG lossless giữ đúng 100% input của pipeline.
+>      * Kiểm chứng kỹ thuật panel tất định (16 mẫu): Max pixel diff = 0, orientation diff = 0, shape diff = 0, max DSP diff = 0. Chuyển sang PNG lossless giữ đúng 100% input của pipeline. Ranh giới nhận thức: Panel 16 ảnh bit-exact chỉ xác nhận độ toàn vẹn của các bước và mẫu cụ thể được kiểm tra; không suy rộng pixel parity thành model-quality parity.
 >    - **Thí Nghiệm Ghép Cặp Độ Nhạy Nén JPEG và Thứ Tự Resize (C0 vs C1 vs C2)**:
 >      * Khóa 3 điều kiện trước khi đánh giá: C0 (Baseline uncompressed canvas), C1 (Full-resolution JPEG Q75 -> Lanczos 512x512 DSP + bicubic 224x224 Visual), C2 (Lanczos 512x512 canvas -> JPEG Q75 -> decode trực tiếp vào DSP, không resize lại; bicubic 224x224 Visual).
->      * Đánh giá 36 cấu hình thực nghiệm (6 models × 3 conditions × 2 cohorts: So-Fake probe $N=300$ và Development holdout $N=273$).
+>      * Đánh giá 36 cấu hình thực nghiệm (6 models × 3 conditions × 2 cohorts: So-Fake probe $N=300$ và Development holdout $N=273$ — ghi nhận rõ holdout là tập phát triển/thăm dò, không phải kiểm định độc lập mới).
 >      * Kết quả then chốt:
->        1. Visual-only MobileNetV3 gần như miễn nhiễm với nén JPEG và thứ tự resize (flip rate chỉ 2.2% - 6.0%).
->        2. DSP cực kỳ nhạy với thứ tự resize và nén: C2 (nén sau resize canvas 512×512) tạo đường biên khối DCT 8×8 đồng bộ hoàn hảo với lưới FFT DSP, kích hoạt báo động giả authentic bùng nổ lên **75% - 95%** trên So-Fake và **70% - 86%** trên Holdout (flip rate 32% - 56%). C1 (nén ảnh gốc rồi mới resize Lanczos) làm mịn biên khối, hài hòa dấu vết nén giúp nâng F1 holdout lên **0.59 - 0.62** (giải thích con số 0.6015 trong thí nghiệm trước), nhưng trên So-Fake chỉ nâng nhẹ lên 0.34 - 0.37.
->        3. Multiclass Brier trên So-Fake probe ($0.7710 - 0.9340$) đều tệ hơn mốc xác suất đều ngẫu nhiên $B_{\text{uniform}} = 2/3 \approx 0.6667$, chứng minh mô hình bị lệch nghiêm trọng (miscalibrated).
->        4. Trả lời 4 câu hỏi trọng tâm: Không có lỗi pipeline tính toán; DSP nhạy mạnh với JPEG/resize trong khi visual miễn nhiễm; OOD collapse trên So-Fake vẫn tồn tại vững chắc sau mọi phép biến đổi; dữ liệu hiện tại chưa đủ phân biệt quan hệ nhân quả độc lập giữa context ngữ nghĩa, generator và lịch sử nén.
+>        1. Visual-only MobileNetV3 ít nhạy hơn trong các điều kiện đã thử so với DSP (flip rate chỉ 2.2% - 6.0%; không dùng từ "miễn nhiễm").
+>        2. DSP cực kỳ nhạy với thứ tự resize và nén: C2 (nén sau resize canvas 512×512) tạo đường biên khối DCT 8×8 đồng bộ hoàn hảo với lưới FFT DSP, quan sát thực nghiệm ghi nhận báo động giả authentic tăng vọt lên **75% - 95%** trên So-Fake và **70% - 86%** trên Holdout (flip rate 32% - 56%). Cơ chế khối DCT 8×8 tương tác FFT phổ 2D là giả thuyết giải thích hợp lý, chưa phải kết luận nhân quả cô lập hoàn toàn. C1 (nén ảnh gốc rồi mới resize Lanczos) làm mịn biên khối, hài hòa dấu vết nén giúp nâng F1 holdout lên **0.59 - 0.62** (giải thích con số 0.6015 trong thí nghiệm trước), nhưng trên So-Fake chỉ nâng nhẹ lên 0.34 - 0.37.
+>        3. Multiclass Brier trên So-Fake probe ($0.7710 - 0.9340$) đều tệ hơn mốc xác suất đều ngẫu nhiên $B_{\text{uniform}} = 2/3 \approx 0.6667$, phản ánh chất lượng dự đoán xác suất kém (riêng Brier chưa đủ chứng minh mọi sai số đến từ miscalibration).
+>        4. Trả lời 4 câu hỏi trọng tâm: Không có lỗi pipeline tính toán; DSP nhạy mạnh với JPEG/resize trong khi visual ít nhạy hơn; OOD collapse trên So-Fake vẫn tồn tại vững chắc sau mọi phép biến đổi; dữ liệu hiện tại chưa đủ phân biệt quan hệ nhân quả độc lập giữa context ngữ nghĩa, generator và lịch sử nén.
 >      * Receipts & Predictions: `so_fake_probe_manifest_v2.json`, `so_fake_isolation_audit_v2.json`, `so_fake_probe_evaluation_receipt_v2.json`, `compression_sensitivity_receipt.json`, `compression_sensitivity_predictions.json`.<br>
->    **Phase status**: `SO_FAKE_EVIDENCE_RECTIFIED_AND_COMPRESSION_SENSITIVITY_DIAGNOSED_PASS`<br>
->    **Next approved action**: Triển khai thiết kế đối chứng nhân tố 2×2 (COCO vs ImageNet $\times$ PNG vs JPEG Q75) theo `NEXT_STEPS_SOURCE_CONFOUNDING_PROPOSAL.md`. Không tự ý huấn luyện lại mô hình trong phiên này, không sửa demo production.<br>
+>
+> 14. _Đối Soát Baseline Lineage, Đính Chính Kết Luận Vượt Bằng Chứng & Chẩn Đoán Nhân Tố 2×2 Nguồn × Nén ($systematic-debugging, $writing-plans, $executing-plans, $verification-before-completion)_:
+>    - **Đối Soát Baseline Lineage (4 Chênh Lệch Lịch Sử)**:
+>      * Truy nguyên nguồn gốc kỹ thuật qua script `scripts/research/audit_baseline_lineage.py` và xuất receipt `baseline_lineage_audit_receipt.json`:
+>        1. DISC-01 (So-Fake F1 0.3551 vs 0.3427): Canonical crop vuông ($\min(w,h)$) $\to$ Lanczos 512 $\to$ bicubic 224 từ 512 vs Direct anisotropic resize ép méo hình học sang 512 và 224. Đổi 15/300 quyết định (5.0%).
+>        2. DISC-02 (Dev holdout F1 0.5385 vs 0.5592): Canonical crop vuông vs Direct anisotropic resize từ ảnh gốc chữ nhật. Đổi 33/273 quyết định (12.1%).
+>        3. DISC-03 (JPEG Q75 holdout 0.6015 vs 0.6187): Canonical JPEG Q75 + crop vuông vs Direct anisotropic resize. Đổi 39/273 quyết định (14.3%).
+>        4. DISC-04 (Hiệu chuẩn nhiệt độ OOF & Brier/ECE): Rò rỉ scaler giữa inner CV folds phóng đại nhiệt độ lên $T_{\text{fus}}=8.1321$ (softmax quá phẳng) vs Reconciled fold-isolated scaler True OOF $T_{\text{fus}}=5.9577$. Trọng số outer folds, argmax predictions và Macro-F1 **100% bit-identical (0 flips)**. Brier/ECE tăng nhẹ do phân phối nhọn hơn trên tập holdout có accuracy ~52%.
+>      * Test suite `ml/tests/test_baseline_lineage_audit.py` PASS 5/5.
+>    - **Sổ Cái Đính Chính 8 Kết Luận Vượt Bằng Chứng (Epistemic Rectification Ledger)**:
+>      * Đính chính rõ ràng 8 điểm: Panel 16 ảnh bit-exact chỉ xác nhận dữ liệu trong phạm vi kiểm tra (không suy rộng thành model-quality parity); Visual feature "ít nhạy hơn trong các điều kiện đã thử" (không dùng từ "miễn nhiễm"); Cơ chế C2 là giả thuyết giải thích chưa có đối chứng cô lập; Brier kém phản ánh chất lượng dự đoán xác suất kém (không khẳng định 100% do miscalibration); Mốc F1 $1/3$ chỉ áp dụng cho phân bố 3 lớp cân bằng ngẫu nhiên đều; SHA-256 0 xung đột chỉ chứng minh không trùng byte trong phạm vi audit; Holdout là tập phát triển/thăm dò; DSP quadrant summaries là đặc trưng phân loại cấp vùng, chưa phải bản đồ định vị can thiệp (localization map).
+>    - **Chẩn Đoán Đối Chứng Nhân Tố 2×2 (Nguồn: COCO vs ImageNet $\times$ Nén: Original vs JPEG Q75 pre-resize)**:
+>      * Manifest đã khóa (`factorial_2x2_cohort_manifest.json`): Balanced cohort $N=182$ (91 COCO authentic + 91 ImageNet authentic) và Full pool $N=432$ (91 COCO + 341 ImageNet). Độc quyền sử dụng Canonical Preprocessing trên 6 locked models.
+>      * Chạy inference qua `run_factorial_source_compression_diagnosis.py` và xuất receipts `factorial_source_compression_receipt.json` và predictions `factorial_source_compression_predictions.json` (5,184 records).
+>      * Kết quả trên Balanced Cohort ($N=182$):
+>        * Thiên vị nguồn A0: Trên ảnh gốc uncompressed, A0 báo động giả 54.95% (COCO) vọt lên **72.53%** (ImageNet).
+>        * Tái cân bằng A1: Đưa ImageNet authentic vào huấn luyện (A1) kéo giảm báo động giả ImageNet xuống **30.77%–38.46%** (giảm >35 điểm phần trăm).
+>        * Tác động JPEG within-source: Dưới tiền xử lý chuẩn tắc, nén JPEG Q75 chỉ tạo dao động nhỏ (-5.5% đến +3.3%), xác nhận việc báo động giả bùng nổ trước đây là do quy trình C2 sai trật tự resize.
+>        * Tương tác Diff-in-Diff: $[\Delta \text{FP}_{\text{ImgNet}} - \Delta \text{FP}_{\text{COCO}}]$ trên A0-global là $-2.20\%$ (95% CI: $[-6.59\%, +2.20\%]$, $P>0: 11.82\%$). Trên A1-local là $+3.30\%$ (95% CI: $[-3.30\%, +9.89\%]$, $P>0: 80.02\%$).
+>      * Kết quả trên Full Pool ($N=432$): ImageNet FPR trên A1-local đạt mức thấp nhất (**25.51%–27.57%**), vượt trội rõ rệt so với Visual thuần túy (**35.78%–36.36%**).
+>    - **Rà Soát Y Văn Sơ Cấp & Trả Lời Câu Hỏi Trung Tâm**:
+>      * Rà soát Frank et al. (2020), Durall et al. (2020), Wang et al. (2020), Corvi et al. (2023/2025), Ojha et al. (2023).
+>      * Trả lời câu hỏi trung tâm: Đặc trưng DSP mang lại giá trị bổ trợ thực sự (giảm báo động giả ~11 pp so với visual) khi và chỉ khi mô hình được học trên miền dữ liệu đại diện đa dạng (A1) và đánh giá dưới tiền xử lý chuẩn tắc bảo toàn hình học. DSP không phải là viên đạn bạc miễn nhiễm với domain shift hay chống chọi được quy trình resize sai trật tự.
+>    - **Test suite**: `ml/tests/test_factorial_source_compression.py` PASS 3/3.
+>    **Phase status**: `FACTORIAL_2X2_SOURCE_COMPRESSION_AND_LINEAGE_AUDITED_PASS`<br>
+>    **Next approved action**: Đóng phase nghiên cứu chẩn đoán hiện tại trên LOCAL CPU; bảo toàn toàn bộ locked checkpoints và receipts v2; cập nhật continuity ledger và tài liệu GAP analysis trước khi mở đề xuất thu nhận cohort mới.<br>
 
 
 

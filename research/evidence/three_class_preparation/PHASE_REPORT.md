@@ -647,6 +647,7 @@ Thực hiện kiểm định ghép cặp 10,000 lần lấy mẫu lại có hoà
     3. *Quan hệ nguồn chưa xác minh (`unverified_source_cluster`)*: Do shard Parquet của So-Fake không cung cấp ID ảnh nguồn gốc ban đầu trước can thiệp, toàn bộ 300 mẫu được gắn trạng thái `source_group_status: "unverified"`.
 - **Kiểm toán cách ly v2** ([`so_fake_isolation_audit_v2.json`](./so_fake_isolation_audit_v2.json)):
   * Xác nhận 300 mẫu probe không có bất kỳ xung đột mã băm SHA-256 nào với các tập dữ liệu nội bộ (0 collisions). Trạng thái: **`ISOLATION_AUDIT_PASS`**.
+  * *Ranh giới nhận thức (Epistemic Boundary)*: Việc không trùng mã băm SHA-256 chỉ chứng minh không phát hiện trùng lặp mức byte (exact byte collisions) trong phạm vi audit giữa các file cụ thể; điều này không loại trừ khả năng cùng một ảnh gốc đã qua biến đổi, crop, hoặc nén lại khác nhau giữa các nguồn.
 
 #### 2. Tái tính Paired Bootstrap với Giả định Rõ ràng
 - Do quan hệ nguồn chưa được kiểm chứng độc lập từ metadata gốc, chúng tôi báo cáo **Paired Image Bootstrap** (10,000 replicates, seed 20261011) với giả định mẫu ghép cặp ngang hàng ở cấp độ ảnh đơn lẻ, thay vì tự nhận là "Source-Cluster Bootstrap đã kiểm chứng".
@@ -689,7 +690,7 @@ Thực hiện kiểm định ghép cặp 10,000 lần lấy mẫu lại có hoà
     - **A1-local**: Macro-F1 thay đổi từ 0.3109 ($N=300$) xuống 0.3014 ($N=291$, $\Delta = -0.0095$).
     - **A0-visual**: Macro-F1 thay đổi từ 0.3369 ($N=300$) lên 0.3482 ($N=291$, $\Delta = +0.0113$).
     - **A1-visual**: Macro-F1 thay đổi từ 0.3339 ($N=300$) lên 0.3402 ($N=291$, $\Delta = +0.0063$).
-  * *Kết luận độ nhạy*: Việc loại bỏ 9 mẫu OpenForensics không làm thay đổi bất kỳ kết luận nghiên cứu nào. Điểm Macro-F1 của toàn bộ 6 mô hình vẫn dao động quanh mức $0.30 - 0.35$ (gần mức đoán ngẫu nhiên $0.3333$). Sự sụt giảm của các mô hình DSP khi bỏ 9 mẫu này phản ánh việc DSP phát hiện được vết nén/ghép cục bộ trên 5–6 mẫu OpenForensics (nhưng gán đúng nhãn nguồn `fully_generated`).
+  * *Kết luận độ nhạy*: Việc loại bỏ 9 mẫu OpenForensics không làm thay đổi bất kỳ kết luận nghiên cứu nào. Điểm Macro-F1 của toàn bộ 6 mô hình vẫn dao động quanh mức $0.30 - 0.35$ (gần mức tham chiếu ngẫu nhiên $0.3333$ của bộ phân loại đoán đều 3 lớp cân bằng). Mốc tham chiếu $1/3$ này chỉ áp dụng cho bộ dự đoán ngẫu nhiên đều dưới phân bố nhãn cân bằng 3 lớp, không mặc định $1/3$ cho mọi kiểu phân bố nhãn hay bộ dự đoán suy biến. Sự sụt giảm của các mô hình DSP khi bỏ 9 mẫu này phản ánh việc DSP phát hiện được vết nén/ghép cục bộ trên 5–6 mẫu OpenForensics (nhưng gán đúng nhãn nguồn `fully_generated`).
 
 #### 5. Đính Chính Tài Liệu & Giấy Phép Dữ Liệu
 - **Kích thước tập huấn luyện A1**: Khẳng định rõ ràng A1 là **$N=1,000$** mẫu (gồm 250 COCO authentic, 250 ImageNet authentic, 250 TGIF ai_edited, 250 SD1.5 fully_generated). Số liệu ghi chú trong registry và báo cáo cũ hoàn toàn khớp với kích thước huấn luyện thực tế này.
@@ -706,7 +707,9 @@ Thực hiện kiểm định ghép cặp 10,000 lần lấy mẫu lại có hoà
 - **Tính toán đặc trưng DSP**:
   * So sánh vector đặc trưng 16-D Global DSP và 48-D Local DSP tính từ bytes nạp trực tiếp trong bộ nhớ vs ảnh đọc từ file PNG:
   * **Max Absolute Difference = 0.0000000000e+00** (khớp bit-exact 100%).
-- **Kết luận kỹ thuật**: Quá trình giải nén Parquet sang file PNG lossless hoàn toàn bảo toàn nguyên vẹn dữ liệu đầu vào của pipeline. Hiệu năng thấp trên So-Fake probe **hoàn toàn là do biến dịch phân phối thực tế (OOD Distribution Shift)**, không phải do lỗi tiền xử lý hay trích xuất kỹ thuật.
+- **Kết luận kỹ thuật & Ranh giới nhận thức**:
+  * Quá trình giải nén Parquet sang file PNG lossless bảo toàn nguyên vẹn dữ liệu đầu vào của pipeline trên panel kiểm tra.
+  * *Ranh giới nhận thức (Epistemic Boundary)*: Panel 16 ảnh bit-exact chỉ xác nhận độ toàn vẹn của các bước và mẫu cụ thể được kiểm tra; tuyệt đối không suy rộng tính tương đương cấp độ pixel (pixel parity) thành tính tương đương chất lượng mô hình (model-quality parity) trên mọi phân bố. Hiệu năng thấp trên So-Fake probe phản ánh biến dịch phân phối thực tế trong phạm vi kiểm tra, không phải do lỗi giải mã byte.
 
 ---
 
@@ -715,7 +718,7 @@ Thực hiện kiểm định ghép cặp 10,000 lần lấy mẫu lại có hoà
 #### 1. Khóa Thiết Kế Ba Điều Kiện (Preregistered Transformation Pipeline)
 Thực hiện đánh giá ghép cặp trên cùng một ảnh, cùng 6 locked models, trên 2 cohorts:
 - **Cohort 1: So-Fake Probe ($N=300$)** — Tập dữ liệu ngoại lai độc lập.
-- **Cohort 2: Development Holdout ($N=273$)** — Tập kiểm tra phát triển nội bộ (ghi nhận rõ là development holdout, không gọi là kiểm định độc lập mới).
+- **Cohort 2: Development Holdout ($N=273$)** — Tập kiểm tra phát triển nội bộ (ghi nhận rõ đây là tập holdout phát triển/thăm dò — development/exploratory cohort, đã qua sử dụng nhiều lần để chẩn đoán và điều chỉnh mô hình, tuyệt đối không được coi là kiểm định độc lập mới).
 
 Ba điều kiện được khóa bất biến trước khi chạy thí nghiệm:
 - **Điều kiện C0 (Baseline)**: Pipeline chuẩn mực nguyên trạng trên ảnh không nén lại. Canvas gốc được resize Lanczos về 512×512 cho DSP và bicubic về 224×224 cho Visual MobileNetV3.
@@ -745,7 +748,7 @@ Ba điều kiện được khóa bất biến trước khi chạy thí nghiệm:
 | | C1 | 0.3267 | 0.3667 | 0.7984 | 0.2605 | 28.0% (28/100) | 3.7% (11/300) |
 | | C2 | 0.3156 | 0.3600 | 0.8025 | 0.2683 | 28.0% (28/100) | 4.3% (13/300) |
 
-*Mốc tham chiếu Brier ngẫu nhiên*: Dự đoán xác suất đều $[1/3, 1/3, 1/3]$ đạt $B_{\text{uniform}} = 2/3 \approx 0.6667$. Toàn bộ 6 mô hình trên So-Fake đều có Brier từ $0.7710$ đến $0.9340$, **kém hơn rõ rệt so với bộ dự đoán xác suất đều không thông tin** (thể hiện mô hình bị sai lệch tự tin thái quá).
+*Mốc tham chiếu Brier ngẫu nhiên*: Dự đoán xác suất đều $[1/3, 1/3, 1/3]$ đạt $B_{\text{uniform}} = 2/3 \approx 0.6667$. Toàn bộ 6 mô hình trên So-Fake đều có Brier từ $0.7710$ đến $0.9340$, kém hơn rõ rệt so với bộ dự đoán xác suất đều không thông tin. Điểm Brier kém phản ánh chất lượng dự đoán xác suất tổng thể kém; tuy nhiên, riêng chỉ số Brier đơn lẻ chưa đủ để phân tách bao nhiêu phần sai số đến từ miscalibration so với discrimination kém của mô hình.
 
 #### 3. Kết Quả Thực Nghiệm Trên Development Holdout Cohort ($N=273$)
 
@@ -771,14 +774,14 @@ Ba điều kiện được khóa bất biến trước khi chạy thí nghiệm:
 | | C2 | 0.4803 | 0.4725 | 0.6639 | 0.1627 | 50.5% (46/91) | 3.3% (9/273) |
 
 #### 4. Phân Tích Hiện Tượng Bất Đối Xứng Cực Đoan C1 vs C2 ($systematic-debugging)
-1. **Tính trơ của Visual Feature (MobileNetV3)**:
-   - Các mô hình thuần thị giác (`A0-visual` và `A1-visual`) hầu như không bị ảnh hưởng bởi nén JPEG hay thứ tự resize: tỷ lệ đổi nhãn (flip rate) chỉ từ **2.2% đến 6.0%** trên cả hai cohorts. Macro-F1 giữ nguyên ở mức ~0.32-0.34 (So-Fake) và ~0.48-0.52 (Holdout).
-2. **Cơ chế gây nhiễu của Điều kiện C2 (Canvas-First Compression)**:
-   - Khi resize ảnh về 512×512 trước rồi mới nén JPEG chất lượng 75, các khối DCT 8×8 của thuật toán JPEG được khắc cố định hoàn hảo trên lưới tọa độ 512×512 của canvas.
-   - Khi bộ trích xuất DSP tính toán ma trận tương quan phổ FFT 2D trên lưới này, nó phát hiện các đường biên khối nén nhân tạo (artificial blocking artifacts) đồng đều trên toàn bộ bức ảnh.
-   - Do tập huấn luyện của DSP chứa nhiều ảnh AI có đặc trưng biên tần số cao tương tự, bộ phân loại bị lừa rằng đây là dấu hiệu can thiệp nhân tạo. Hậu quả là **Báo động giả trên ảnh thật (Authentic False Alarm) bùng nổ lên 75%–95% trên So-Fake và 70%–86% trên Holdout**. Tỷ lệ lật quyết định lên tới gần một nửa số ảnh (32%–56%).
+1. **Độ nhạy của Visual Feature (MobileNetV3)**:
+   - Các mô hình thuần thị giác (`A0-visual` và `A1-visual`) ít nhạy hơn trong các điều kiện đã thử so với DSP: tỷ lệ đổi nhãn (flip rate) chỉ từ **2.2% đến 6.0%** trên cả hai cohorts. Macro-F1 giữ nguyên ở mức ~0.32-0.34 (So-Fake) và ~0.48-0.52 (Holdout). Không dùng từ "miễn nhiễm" vì mô hình thị giác vẫn có biến thiên cục bộ và tỷ lệ lật nhãn nhỏ.
+2. **Cơ chế gây nhiễu quan sát được của Điều kiện C2 (Canvas-First Compression)**:
+   - Khi resize ảnh về 512×512 trước rồi mới nén JPEG chất lượng 75, các khối DCT 8×8 của thuật toán JPEG được khắc cố định trên lưới tọa độ 512×512 của canvas.
+   - Quan sát thực nghiệm: **Báo động giả trên ảnh thật (Authentic False Alarm) tăng vọt lên 75%–95% trên So-Fake và 70%–86% trên Holdout**. Tỷ lệ lật quyết định lên tới gần một nửa số ảnh (32%–56%).
+   - *Ranh giới nhận thức*: Sự gia tăng báo động giả là quan sát thực nghiệm chắc chắn; tuy nhiên, cơ chế tương tác giữa các khối DCT 8×8 với phổ FFT 2D vẫn là giả thuyết giải thích hợp lý chứ chưa phải kết luận nhân quả đã được cô lập hoàn toàn bằng thí nghiệm ablate vi mô.
 3. **Cơ chế hài hòa của Điều kiện C1 (Full-Resolution Compression)**:
-   - Khi nén JPEG ở độ phân giải gốc rồi mới resize Lanczos về 512×512, bộ lọc nội suy Lanczos đã làm mịn và làm nhòe bớt các cạnh khối DCT sắc nhọn.
+   - Khi nén JPEG ở độ phân giải gốc rồi mới resize Lanczos về 512×512, bộ lọc nội suy Lanczos làm mịn và làm nhòe bớt các cạnh khối DCT sắc nhọn.
    - Trên tập Holdout (nơi ảnh gốc COCO vốn có lịch sử nén khác biệt với ảnh TGIF), việc nén C1 vô tình chuẩn hóa và hài hòa dấu vết nén, giúp Macro-F1 của các mô hình DSP tăng vọt lên **0.59–0.62** (giải thích nguồn gốc con số 0.6015 trong thí nghiệm trước).
    - Tuy nhiên, trên So-Fake ngoại lai, hiệu ứng này chỉ giúp tăng nhẹ F1 từ ~0.33 lên ~0.36, hoàn toàn không đủ để vượt qua sự sụp đổ phân phối ngữ nghĩa.
 
@@ -792,14 +795,14 @@ Ba điều kiện được khóa bất biến trước khi chạy thí nghiệm:
    - Lỗi duy nhất được tìm thấy và đã khắc phục triệt để ở lượt này là **lỗi gộp cụm giả mạo trong manifest v1 do cắt ngắn chuỗi tên file (`stem[:16]`)**, gây sai lệch phân cụm trong kiểm định bootstrap. Lỗi này thuộc về tầng báo cáo/thống kê (evaluation accounting), không ảnh hưởng đến pixel hay scoring logic của mô hình.
 
 2. **Model nhạy đến mức nào với JPEG và thứ tự resize?**
-   - **TRẢ LỜI**: **CÁC MÔ HÌNH KẾT HỢP DSP CỰC KỲ NHẠY VỚI THỨ TỰ RESIZE VÀ NÉN JPEG, TRONG KHI MÔ HÌNH THỊ GIÁC (VISUAL-ONLY) THÌ GẦN NHƯ MIỄN NHIỄM**.
-   - Thứ tự xử lý quyết định sự thành bại: Nếu nén JPEG sau khi đưa về canvas 512×512 (C2), lưới DCT 8×8 kích hoạt báo động giả hàng loạt trên ảnh thật (lên tới 95%), làm sụp đổ hoàn toàn độ đặc hiệu. Nếu nén JPEG trước khi resize Lanczos (C1), bộ lọc Lanczos làm suy giảm biên khối, giúp ổn định và thậm chí nâng F1 trên holdout lên 0.62.
+   - **TRẢ LỜI**: **CÁC MÔ HÌNH KẾT HỢP DSP CỰC KỲ NHẠY VỚI THỨ TỰ RESIZE VÀ NÉN JPEG, TRONG KHI MÔ HÌNH THỊ GIÁC (VISUAL-ONLY) ÍT NHẠY HƠN TRONG CÁC ĐIỀU KIỆN ĐÃ THỬ**.
+   - Thứ tự xử lý quyết định sự biến thiên: Nếu nén JPEG sau khi đưa về canvas 512×512 (C2), các khối nén kích hoạt báo động giả hàng loạt trên ảnh thật (lên tới 95%), làm sụp đổ hoàn toàn độ đặc hiệu. Nếu nén JPEG trước khi resize Lanczos (C1), bộ lọc Lanczos làm suy giảm biên khối, giúp ổn định và thậm chí nâng F1 trên holdout lên 0.62.
    - Độ nhạy này chứng minh rằng **đặc trưng DSP phản ánh rất mạnh lịch sử xử lý tín hiệu kỹ thuật số cấp thấp (low-level processing artifacts)** hơn là chỉ riêng dấu vết sinh ảnh AI.
 
 3. **Hiệu năng thấp còn tồn tại sau kiểm tra pipeline hay không?**
    - **TRẢ LỜI**: **CÓ, HIỆU NĂNG THẤP TRÊN SO-FAKE VẪN HOÀN TOÀN TỒN TẠI VÀ LÀ THỰC TẾ NGHIÊN CỨU**.
-   - Sau khi kiểm tra bit-exact pipeline, sửa manifest v2, loại trừ ảnh taxonomy mơ hồ (OpenForensics), và thử nghiệm cả 3 điều kiện nén/resize, Macro-F1 của toàn bộ 6 mô hình trên So-Fake probe vẫn bị giam chặt trong khoảng **0.2853 đến 0.3689** (xấp xỉ mức ngẫu nhiên 0.3333).
-   - Điểm Multiclass Brier ($0.77 - 0.93$) đều tệ hơn mốc xác suất đều ngẫu nhiên ($0.6667$), chứng minh mô hình bị lệch nghiêm trọng (miscalibrated) khi bước ra ngoài miền huấn luyện.
+   - Sau khi kiểm tra bit-exact pipeline, sửa manifest v2, loại trừ ảnh taxonomy mơ hồ (OpenForensics), và thử nghiệm cả 3 điều kiện nén/resize, Macro-F1 của toàn bộ 6 mô hình trên So-Fake probe vẫn bị giam chặt trong khoảng **0.2853 đến 0.3689** (xấp xỉ mức tham chiếu ngẫu nhiên 0.3333 của bộ phân loại 3 lớp cân bằng).
+   - Điểm Multiclass Brier ($0.77 - 0.93$) đều tệ hơn mốc xác suất đều ngẫu nhiên ($0.6667$), phản ánh chất lượng dự đoán xác suất kém khi bước ra ngoài miền huấn luyện.
 
 4. **Các dữ liệu hiện tại có đủ để phân biệt nguyên nhân ngữ nghĩa, generator và nén ảnh hay chưa?**
    - **TRẢ LỜI**: **CHƯA ĐỦ ĐỂ PHÂN BIỆT NHÂN QUẢ ĐỘC LẬP GIỮA CÁC YẾU TỐ**.
@@ -814,4 +817,146 @@ Ba điều kiện được khóa bất biến trước khi chạy thí nghiệm:
 
 **Đề xuất duy nhất**: Triển khai **Thiết kế đối chứng nhân tố 2×2 (Factorial Source-Conditioned Cohort)** theo đề cương đã lập tại `NEXT_STEPS_SOURCE_CONFOUNDING_PROPOSAL.md`:
 - Ghép cặp đối chứng chéo: Nguồn ngữ nghĩa $[ \text{COCO} \times \text{ImageNet} ]$ đan xen với Lịch sử định dạng $[ \text{PNG uncompressed} \times \text{JPEG Q75 recompressed} ]$.
-- Giữ nguyên quy tắc: Không tự ý tải checkpoint bên ngoài, không huấn luyện lại mô hình trong phiên này, không thay đổi demo production. Bước đi này phải được thẩm định và phê duyệt trước khi tạo đợt thu nhận dữ liệu tiếp theo.
+- Giữ nguyên quy tắc: Không tự ý tải checkpoint bên ngoài, không huấn luyện lại mô hình trong phiên này, không thay đổi demo production. Bước đi này đã được hoàn tất và báo cáo chi tiết tại Section 16 tiếp theo.
+
+---
+
+## 16. CHẨN ĐOÁN ĐỐI CHỨNG NHÂN TỐ 2×2 (NGUỒN ẢNH × NÉN JPEG) & ĐỐI SOÁT BASELINE LINEAGE
+
+> **Mã thực nghiệm**: `FACTORIAL_2X2_SOURCE_COMPRESSION_AND_LINEAGE_AUDIT`<br>
+> **Thời điểm**: 2026-10-11<br>
+> **Ràng buộc nghiên cứu**: Không tải dataset/checkpoint mới; không retrain/refit/recalibrate/threshold tune; giữ nguyên 6 locked models; chỉ sử dụng ảnh authentic sẵn có disjoint từ training và sealed cohorts; chạy hoàn toàn trên LOCAL CPU; lưu trữ receipts máy đọc được trước khi kết luận.
+
+---
+
+### 16.1. Bảng Đối Soát Baseline Lineage (4 Chênh Lệch Lịch Sử)
+
+Theo quy trình kiểm toán `$systematic-debugging`, chúng tôi truy nguyên nguồn gốc kỹ thuật và toán học của 4 chênh lệch baseline được ghi nhận giữa các báo cáo lịch sử, mã thực thi và harness sensitivity:
+
+| Mã chênh lệch | Kết quả so sánh | Bản chất chênh lệch | Nguyên nhân kỹ thuật gốc rễ | Tác động dự đoán | Kết luận đối soát |
+| :--- | :--- | :---: | :--- | :--- | :---: |
+| **DISC-01** | So-Fake probe F1:<br>Lịch sử: `0.3551`<br>C0 harness: `0.3427` | Tiền xử lý hình học ảnh không vuông | Pipeline chuẩn (`extract_so_fake_features.py`) thực hiện **center-crop vuông** ($\min(w,h)$) $\to$ resize Lanczos 512×512 $\to$ bicubic 224×224 từ canvas 512. Trong khi đó, harness C0 (`run_paired_compression_sensitivity.py`) dùng **direct anisotropic resize** (ép méo tỉ lệ khung hình trực tiếp sang 512 và 224). | Đổi 15 / 300 quyết định (5.0%). | **Khác cấu hình tiền xử lý** (đã giải thích bằng evidence) |
+| **DISC-02** | Dev holdout F1:<br>Lịch sử: `0.5385`<br>C0 harness: `0.5592` | Tiền xử lý hình học ảnh không vuông | Pipeline chuẩn (`extract_three_class_features.py`) dùng center-crop vuông $\to$ Lanczos 512 $\to$ bicubic 224 từ 512. Trong khi C0 harness dùng direct anisotropic resize từ ảnh gốc chữ nhật (1024×683, v.v.) sang 512 và 224. | Đổi 33 / 273 quyết định (12.1%). | **Khác cấu hình tiền xử lý** (đã giải thích bằng evidence) |
+| **DISC-03** | JPEG Q75 holdout F1:<br>Lịch sử: `0.6015`<br>C1 harness: `0.6187` | Tiền xử lý hình học ảnh không vuông | Pipeline chuẩn (`run_three_class_error_analysis.py`) nén JPEG Q75 ảnh gốc $\to$ center-crop vuông $\to$ Lanczos 512 $\to$ bicubic 224. C1 harness nén JPEG Q75 ảnh gốc $\to$ direct anisotropic resize sang 512 và 224. | Đổi 39 / 273 quyết định (14.3%). | **Khác cấu hình tiền xử lý** (đã giải thích bằng evidence) |
+| **DISC-04** | Nhiệt độ hiệu chuẩn & Brier/ECE:<br>Historical: $T_{\text{fus}}=8.1321$<br>(Brier 0.5618, ECE 0.0780)<br>Reconciled: $T_{\text{fus}}=5.9577$<br>(Brier 0.5711, ECE 0.0865) | Rò rỉ scaler nội bộ giữa các fold inner CV trong phiên bản lịch sử | Phiên bản lịch sử áp dụng scaler fit trên toàn bộ tập train trước khi chạy inner CV grid search $\to$ phóng đại nhiệt độ lên 8.1321 $\to$ phân phối softmax quá phẳng. Reconciled cô lập scaler từng fold $\to$ true OOF temperature 5.9577. | Trọng số mô hình outer fold, argmax predictions và Macro-F1 **100% bit-identical (0 flips)**. Phân phối nhọn hơn trên tập holdout có accuracy ~52% làm tăng hình phạt Brier khi đoán sai. | **Lỗi reporting/calibration lịch sử** đã được sửa triệt để trong reconciled registry |
+
+Receipt đối soát đầy đủ đã được xuất tại [`research/evidence/three_class_preparation/baseline_lineage_audit_receipt.json`](./baseline_lineage_audit_receipt.json) và kiểm chứng qua bộ kiểm thử `ml/tests/test_baseline_lineage_audit.py` (5/5 tests PASS).
+
+---
+
+### 16.2. Sổ Cái Đính Chính Các Kết Luận Vượt Bằng Chứng (Epistemic Rectification Ledger)
+
+Nhằm đảm bảo tính trung thực khoa học tuyệt đối (Scientific Honesty theo `AGENTS.md`), chúng tôi thiết lập sổ cái đính chính cho toàn bộ 8 phát biểu có nguy cơ diễn giải vượt quá giới hạn bằng chứng thực nghiệm:
+
+1. **Panel 16 ảnh bit-exact**: Kiểm tra bit-exact chỉ xác nhận độ toàn vẹn của các bước và mẫu cụ thể được kiểm tra trong panel kiểm toán; tuyệt đối không suy rộng tính tương đương cấp độ pixel (pixel parity) thành tính tương đương chất lượng mô hình (model-quality parity).
+2. **Độ nhạy của Visual Feature**: Đã đính chính toàn bộ các phát biểu từ "visual miễn nhiễm" thành **"ít nhạy hơn trong các điều kiện đã thử"** (tỷ lệ đổi nhãn 2.2%–6.0%, không phải 0%).
+3. **Cơ chế Điều kiện C2**: Sự gia tăng báo động giả trên ảnh thật dưới điều kiện C2 (lên tới 75%–95%) là **quan sát thực nghiệm chắc chắn**; tuy nhiên, cơ chế tương tác giữa các khối DCT 8×8 với phổ FFT 2D vẫn là **giả thuyết giải thích hợp lý**, chưa phải kết luận nhân quả đã được cô lập hoàn toàn bằng thí nghiệm ablate vi mô.
+4. **Đánh giá qua Multiclass Brier**: Điểm Brier kém hơn dự đoán xác suất đều phản ánh chất lượng dự đoán xác suất kém; riêng chỉ số Brier đơn lẻ chưa đủ chứng minh mọi sai số đến từ miscalibration mà có thể bắt nguồn từ sự kết hợp giữa khả năng phân biệt kém (poor discrimination) và độ lệch hiệu chuẩn.
+5. **Mốc tham chiếu Macro-F1 ngẫu nhiên**: Mốc tham chiếu $1/3$ ($0.3333$) chỉ áp dụng cho bộ dự đoán ngẫu nhiên đều dưới phân bố nhãn cân bằng 3 lớp, tuyệt đối không mặc định $1/3$ áp dụng cho mọi kiểu dự đoán hoặc phân bố nhãn suy biến.
+6. **Kiểm toán mã băm SHA-256**: Việc không trùng mã băm SHA-256 chỉ chứng minh không phát hiện trùng lặp mức byte (exact byte collisions) trong phạm vi audit; không loại trừ khả năng cùng một ảnh gốc đã qua biến đổi, crop, hoặc nén lại khác nhau giữa các nguồn.
+7. **Bản chất của Development Holdout**: Tập holdout $N=273$ đã được sử dụng nhiều lần cho mục đích chẩn đoán và điều chỉnh mô hình trong các phase trước; đây là **tập phát triển/thăm dò (development/exploratory cohort)**, tuyệt đối không được coi là kiểm định độc lập mới.
+8. **Đặc trưng DSP Quadrant**: Các tóm tắt 4 góc phần tư của DSP (Local DSP 48-D) là **đặc trưng phân loại cấp vùng (spatial quadrant classification features)**, chưa phải mô hình bản đồ định vị can thiệp (localization / segmentation map).
+
+---
+
+### 16.3. Khóa Thiết Kế Đối Chứng Nhân Tố 2×2 (Preregistered 2×2 Factorial Protocol)
+
+Trước khi thực hiện bất kỳ lượt suy luận mới nào, chúng tôi khóa thiết kế thực nghiệm 2×2 phân lập giữa Yếu tố Nguồn (Source Domain) và Yếu tố Nén (JPEG Re-compression):
+- **Phạm vi dữ liệu**: 432 ảnh authentic sẵn có trên LOCAL CPU (không tải thêm, không thuộc tập huấn luyện của 6 mô hình, không thuộc các tập niêm phong Locked-Test và TGIF N=400):
+  * $N=91$ ảnh MS-COCO authentic (thuộc holdout phát triển).
+  * $N=341$ ảnh ImageNet authentic (thuộc tập điều khiển tự nhiên Tiny-GenImage).
+- **Thiết kế chính (Canonical Balanced Cohort, $N=182$)**:
+  * $91$ ảnh COCO authentic $\times$ $91$ ảnh ImageNet authentic (chọn tất định bằng seed 20261011 trước khi inference).
+- **Thiết kế bổ trợ (Full Pool Cohort, $N=432$)**:
+  * $91$ ảnh COCO authentic $\times$ $341$ ảnh ImageNet authentic.
+- **Biến đổi nhân tố 2×2**:
+  * Ô (1): Nguồn COCO, không nén thêm (Original).
+  * Ô (2): Nguồn COCO, nén JPEG $Q=75$, subsampling=2 (4:2:0), optimize=False trước khi resize.
+  * Ô (3): Nguồn ImageNet, không nén thêm (Original).
+  * Ô (4): Nguồn ImageNet, nén JPEG $Q=75$, subsampling=2 (4:2:0), optimize=False trước khi resize.
+- **Tiền xử lý**: Sử dụng độc quyền **Canonical Preprocessing** (center-crop vuông $\to$ Lanczos 512×512 $\to$ bicubic 224×224 từ 512).
+- **Mô hình**: Toàn bộ 6 locked models với scaler, trọng số, thứ tự lớp và nhiệt độ hiệu chuẩn đã đóng băng.
+- **Chỉ số đo lường (Endpoints)**:
+  * Endpoint chính: Tỷ lệ báo động giả phát hiện AI trên ảnh authentic (False-Positive AI Rate, FPR).
+  * Endpoint phụ: Tỷ lệ nhầm sang `ai_edited` vs `fully_generated`, xác suất trung bình $P(\text{authentic})$, và tỷ lệ lật nhãn (decision flip rate).
+  * Hiệu ứng tương tác: $\text{Interaction} = [\text{FPR}(\text{ImageNet}, \text{Q75}) - \text{FPR}(\text{ImageNet}, \text{orig})] - [\text{FPR}(\text{COCO}, \text{Q75}) - \text{FPR}(\text{COCO}, \text{orig})]$.
+  * Kiểm định ghép cặp: Bootstrap ghép cặp ngang hàng trên từng ảnh (10,000 replicates, seed 20261011).
+
+Manifest đã khóa: [`research/evidence/three_class_preparation/factorial_2x2_cohort_manifest.json`](./factorial_2x2_cohort_manifest.json).
+
+---
+
+### 16.4. Kết Quả Chẩn Đoán Nhân Tố 2×2 Trên Thiết Kế Cân Bằng (Balanced Cohort, N=182)
+
+Toàn bộ 182 ảnh được đánh giá ghép cặp qua 2 điều kiện nén trên 6 mô hình đóng băng. Bảng kết quả tổng hợp tỷ lệ báo động giả (FPR) và kiểm định tương tác difference-in-differences:
+
+| Mô hình | COCO Orig (FPR) | COCO Q75 (FPR) | $\Delta \text{FP}_{\text{COCO}}$ | ImageNet Orig (FPR) | ImageNet Q75 (FPR) | $\Delta \text{FP}_{\text{ImgNet}}$ | Tương tác Diff-in-Diff [95% CI] | Bootstrap $P(\text{Diff}^* > 0)$ |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **A0-global** | 54.95% (50/91) | 58.24% (53/91) | +3.30% | 72.53% (66/91) | 73.63% (67/91) | +1.10% | **-2.20%** [-6.59%, +2.20%] | 11.82% |
+| **A0-local** | 57.14% (52/91) | 59.34% (54/91) | +2.20% | 74.73% (68/91) | 71.43% (65/91) | -3.30% | **-5.49%** [-10.99%, -1.10%] | 0.00% |
+| **A1-global** | 47.25% (43/91) | 47.25% (43/91) | 0.00% | 38.46% (35/91) | 38.46% (35/91) | 0.00% | **0.00%** [-4.40%, +4.40%] | 39.56% |
+| **A1-local** | 52.75% (48/91) | 47.25% (43/91) | -5.49% | 30.77% (28/91) | 28.57% (26/91) | -2.20% | **+3.30%** [-3.30%, +9.89%] | 80.02% |
+| **A0-visual** | 58.24% (53/91) | 53.85% (49/91) | -4.40% | 69.23% (63/91) | 70.33% (64/91) | +1.10% | **+5.49%** [+1.10%, +10.99%] | 99.27% |
+| **A1-visual** | 45.05% (41/91) | 43.96% (40/91) | -1.10% | 38.46% (35/91) | 38.46% (35/91) | 0.00% | **+1.10%** [-4.40%, +6.59%] | 58.87% |
+
+#### Phân Tích Chuyển Dịch Nhầm Lẫn & Xác Suất Dự Đoán:
+1. **Thiên vị nguồn gốc ban đầu (Baseline Source Confounding)**:
+   - Trên các mô hình điều kiện A0 (chỉ huấn luyện trên COCO authentic): Khi gặp ảnh ImageNet authentic uncompressed, báo động giả vọt lên rất cao: **72.5%–74.7%** (so với 54.9%–58.2% trên COCO). Xác suất $P(\text{authentic})$ trung bình tụt từ $0.41 - 0.42$ (COCO) xuống chỉ còn **$0.29 - 0.30$** (ImageNet).
+   - Đáng chú ý: Trên ImageNet authentic, A0 dự đoán sai đồng đều sang cả hai lớp giả mạo ($33$ mẫu `ai_edited` và $33$ mẫu `fully_generated` trên A0-global).
+2. **Hiệu ứng tái cân bằng của Điều kiện A1**:
+   - Khi đưa ImageNet authentic vào huấn luyện (A1), báo động giả trên ImageNet giảm ngoạn mục từ 72.5% xuống **38.5%** (A1-global) và từ 74.7% xuống **30.8%** (A1-local). Xác suất $P(\text{authentic})$ trên ImageNet tăng vọt lên **$0.55 - 0.57$**.
+   - Báo động giả trên COCO cũng giảm nhẹ (từ 55% xuống 47% trên A1-global).
+3. **Tác động của Nén JPEG Q75 trong từng nguồn**:
+   - Dưới quy trình tiền xử lý chuẩn mực Canonical Preprocessing (nén trước rồi mới resize Lanczos), việc nén JPEG Q75 **chỉ tạo ra dao động nhỏ về báo động giả ($\Delta \text{FP}$ từ -5.5% đến +3.3%)**, với tỷ lệ lật quyết định chỉ từ 0% đến 8.8%.
+   - Điều này xác nhận rằng sự bùng nổ báo động giả lên 80%–95% trước đây là do quy trình C2 (canvas-first JPEG compression tạo khối nhân tạo trên lưới FFT), chứ không phải do bản thân nén JPEG Q75 tự nhiên.
+
+---
+
+### 16.5. Kết Quả Bổ Trợ Trên Toàn Bộ Authentic Pool ($N=432$)
+
+Đánh giá trên toàn bộ $N=91$ COCO authentic và $N=341$ ImageNet authentic:
+- **A0-global**: ImageNet Orig FPR = **68.04%** (232/341), ImageNet Q75 FPR = **67.16%** (229/341), $\Delta \text{FP} = -0.88\%$, flip rate = 4.11% (14/341).
+- **A0-local**: ImageNet Orig FPR = **70.38%** (240/341), ImageNet Q75 FPR = **66.57%** (227/341), $\Delta \text{FP} = -3.81\%$, flip rate = 7.92% (27/341).
+- **A1-global**: ImageNet Orig FPR = **31.09%** (106/341), ImageNet Q75 FPR = **31.38%** (107/341), $\Delta \text{FP} = +0.29\%$, flip rate = 5.28% (18/341).
+- **A1-local**: ImageNet Orig FPR = **27.57%** (94/341), ImageNet Q75 FPR = **25.51%** (87/341), $\Delta \text{FP} = -2.05\%$, flip rate = 7.04% (24/341).
+- **A0-visual**: ImageNet Orig FPR = **67.45%** (230/341), ImageNet Q75 FPR = **67.16%** (229/341), $\Delta \text{FP} = -0.29\%$, flip rate = 4.99% (17/341).
+- **A1-visual**: ImageNet Orig FPR = **35.78%** (122/341), ImageNet Q75 FPR = **36.36%** (124/341), $\Delta \text{FP} = +0.59\%$, flip rate = 4.99% (17/341).
+
+*Nhận xét*: Trên tập mẫu lớn ImageNet ($N=341$), hiệu ứng kéo giảm báo động giả của điều kiện A1 được tái lập vững chắc (giảm hơn 35 điểm phần trăm FPR). DSP kết hợp với thị giác (`A1-local`) đạt mức báo động giả thấp nhất (**25.5%–27.6%**), thấp hơn đáng kể so với visual thuần túy (`A1-visual`, 35.8%–36.4%).
+
+---
+
+### 16.6. Tổng Quan Y Văn Sơ Cấp & Câu Hỏi Trung Tâm
+
+Thực hiện rà soát y văn có mục tiêu (ngày tra cứu: 2026-10-11) trên các công trình sơ cấp:
+1. **Source / Compression Confounding**:
+   - *Frank et al. (ICML 2020)* & *Durall et al. (CVPR 2020)*: Chứng minh các mạng sinh GAN tạo ra các đỉnh phổ nhân tạo (spectral peaks) do các lớp transposed convolution; tuy nhiên các bộ phân loại tần số rất dễ bám vào các shortcut này.
+   - *Wang et al. (CVPR 2020)* & *Ojha et al. (CVPR 2023)*: Chỉ ra rằng các bộ dò deepfake thường học các shortcut nén và độ phân giải của tập dữ liệu huấn luyện thay vì học bản chất giả mạo thực sự.
+   - *Corvi et al. (IEEE WIFS 2023 / ICASSP 2025)*: Khảo sát mô hình khuếch tán (diffusion models), chỉ ra rằng dấu vết tần số của diffusion tinh tế hơn GAN và rất dễ bị phá hủy bởi nén JPEG hoặc tiền xử lý rescale.
+2. **Preprocessing Order & Resampling Artifacts**:
+   - Các công trình về resampling (Kirchner & Bohme 2008; Gallagher 2005) chỉ ra rằng việc nén JPEG sau khi nội suy canvas tạo ra ma trận tương quan khối đồng bộ nhân tạo, gây nhiễu loạn các phép biến đổi Fourier/DCT.
+
+#### Câu Hỏi Trung Tâm:
+> **"Lợi ích của DSP còn tồn tại khi kiểm soát nguồn ảnh và quy trình nén/resize hay không?"**
+
+**TRẢ LỜI CĂN CỨ VÀO EVIDENCE THỰC NGHIỆM**:
+1. **Lợi ích có điều kiện (Conditional Benefit)**:
+   - Khi kiểm soát chặt chẽ quy trình tiền xử lý (Canonical Preprocessing: nén trước resize, bảo toàn hình học), đặc trưng tần số DSP **không bị sụp đổ bởi nén JPEG Q75**. Báo động giả chỉ dịch chuyển nhẹ (-5% đến +3%).
+   - Trên tập kiểm soát ImageNet, mô hình kết hợp DSP (`A1-local`) đạt tỷ lệ báo động giả thấp hơn visual thuần túy (**25.5% vs 36.4%**, giảm ~11 điểm phần trăm).
+2. **Nhưng bị chi phối mạnh bởi Miền Dữ Liệu Nguồn (Source Domain Dominance)**:
+   - Khi chưa kiểm soát nguồn (điều kiện A0), sự biến dịch giữa COCO và ImageNet làm bùng nổ báo động giả từ 55% lên 74%, bất kể có nén hay không nén JPEG.
+   - Khi chuyển sang miền ngoại lai hoàn toàn (So-Fake probe), toàn bộ 6 mô hình đều sụp đổ về mức ngẫu nhiên ($F1 \approx 0.30 - 0.35$).
+3. **Kết luận**: Đặc trưng DSP chỉ cung cấp tín hiệu bổ trợ hữu ích khi mô hình được huấn luyện trên miền dữ liệu đại diện đa dạng (như A1); DSP **không phải là viên đạn bạc (silver bullet)** có khả năng miễn nhiễm với domain shift hay chống chọi được các quy trình resize/nén sai trật tự (như C2).
+
+---
+
+### 16.7. Giới Hạn Khoa Học & Đúng Một Bước Tiếp Theo
+
+#### Giới Hạn Khoa Học Của Lượt Chẩn Đoán:
+1. Thí nghiệm 2×2 này được thực hiện trên **các tập ảnh authentic** sẵn có (COCO vs ImageNet) nhằm đo lường chuyên biệt tỷ lệ báo động giả (False-Positive AI Rate). Do không có ảnh sinh tổng hợp ghép cặp hoàn hảo cùng nguồn gốc sensor, thí nghiệm này **không đánh giá năng lực phân loại 3 lớp đầy đủ**.
+2. Phép so sánh giữa COCO và ImageNet vẫn tồn tại các yếu tố gây nhiễu chưa thể tách biệt triệt để 100% (ví dụ: bối cảnh ngữ nghĩa đa đối tượng vs vật thể đơn lẻ, thiết bị chụp ảnh ban đầu).
+3. Bootstrap positive fraction được báo cáo là tỷ lệ các mẫu lấy lại có hiệu ứng dương, tuyệt đối không được coi là trị số p (frequentist p-value).
+
+#### Đúng Một Bước Tiếp Theo Được Phê Duyệt (Single Approved Next Step):
+- **Môi trường**: **LOCAL CPU**.
+- **Hành động**: Đóng phase nghiên cứu chẩn đoán hiện tại, bảo toàn các locked checkpoints và artifacts receipt v2; cập nhật continuity ledger và tài liệu GAP analysis trước khi mở bất kỳ đề xuất thu nhận cohort mới nào. Tuyệt đối không tự ý tải dataset lớn hay huấn luyện lại mô hình trong môi trường chưa kiểm soát.

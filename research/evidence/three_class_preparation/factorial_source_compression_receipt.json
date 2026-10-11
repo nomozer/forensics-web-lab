@@ -1,0 +1,894 @@
+{
+  "schema_version": "1.0.0",
+  "receipt_id": "FACTORIAL-SOURCE-COMPRESSION-RECEIPT-20261011",
+  "execution_timestamp": "2026-10-11T14:04:50.853175+00:00",
+  "status": "FACTORIAL_DIAGNOSIS_SUCCESS",
+  "scope": "Preregistered 2x2 Factorial Diagnosis of Source Domain (COCO vs ImageNet) and JPEG Re-compression (original vs Q75 pre-resize) on authentic cohorts. Evaluated strictly with Canonical Preprocessing (square center-crop, 512 Lanczos, 224 bicubic from 512).",
+  "models_evaluated": [
+    "A0-global",
+    "A0-local",
+    "A1-global",
+    "A1-local",
+    "A0-visual",
+    "A1-visual"
+  ],
+  "cohort_sizes": {
+    "coco_authentic": 91,
+    "imagenet_authentic_balanced": 91,
+    "imagenet_authentic_full": 341,
+    "total_images": 432
+  },
+  "results_by_model": {
+    "A0-global": {
+      "model_name": "A0-global",
+      "config_id": "A0_GLOBAL_DSP_592D",
+      "feature_dim": 592,
+      "calibrated_temperature": 5.9577,
+      "balanced_2x2_design": {
+        "n_per_cell": 91,
+        "cells": {
+          "coco_original": {
+            "n_samples": 91,
+            "false_positive_ai_count": 50,
+            "false_positive_ai_rate": 0.5495,
+            "false_positive_ai_percent": 54.95,
+            "misclassified_as_edited": 46,
+            "misclassified_as_generated": 4,
+            "mean_p_authentic": 0.4227,
+            "mean_p_edited": 0.4287,
+            "mean_p_generated": 0.1486
+          },
+          "coco_jpeg_q75": {
+            "n_samples": 91,
+            "false_positive_ai_count": 53,
+            "false_positive_ai_rate": 0.5824,
+            "false_positive_ai_percent": 58.24,
+            "misclassified_as_edited": 47,
+            "misclassified_as_generated": 6,
+            "mean_p_authentic": 0.4231,
+            "mean_p_edited": 0.4209,
+            "mean_p_generated": 0.1559
+          },
+          "imagenet_original": {
+            "n_samples": 91,
+            "false_positive_ai_count": 66,
+            "false_positive_ai_rate": 0.7253,
+            "false_positive_ai_percent": 72.53,
+            "misclassified_as_edited": 33,
+            "misclassified_as_generated": 33,
+            "mean_p_authentic": 0.3004,
+            "mean_p_edited": 0.3465,
+            "mean_p_generated": 0.3531
+          },
+          "imagenet_jpeg_q75": {
+            "n_samples": 91,
+            "false_positive_ai_count": 67,
+            "false_positive_ai_rate": 0.7363,
+            "false_positive_ai_percent": 73.63,
+            "misclassified_as_edited": 34,
+            "misclassified_as_generated": 33,
+            "mean_p_authentic": 0.303,
+            "mean_p_edited": 0.3462,
+            "mean_p_generated": 0.3508
+          }
+        },
+        "within_source_jpeg_effect": {
+          "coco_delta_fp": {
+            "observed_delta": 0.033,
+            "ci_95": [
+              0.0,
+              0.0769
+            ],
+            "p_positive_fraction": 0.9532,
+            "bootstrap_replicates": 10000
+          },
+          "coco_flips": 4,
+          "coco_flip_rate": 0.044,
+          "imagenet_delta_fp": {
+            "observed_delta": 0.011,
+            "ci_95": [
+              0.0,
+              0.033
+            ],
+            "p_positive_fraction": 0.6303,
+            "bootstrap_replicates": 10000
+          },
+          "imagenet_flips": 2,
+          "imagenet_flip_rate": 0.022
+        },
+        "interaction_effect": {
+          "formula": "[FP(ImageNet, Q75) - FP(ImageNet, orig)] - [FP(COCO, Q75) - FP(COCO, orig)]",
+          "bootstrap_result": {
+            "observed_interaction": -0.022,
+            "ci_95": [
+              -0.0659,
+              0.022
+            ],
+            "p_positive_fraction": 0.1182,
+            "bootstrap_replicates": 10000
+          }
+        }
+      },
+      "full_sensitivity_design": {
+        "n_coco": 91,
+        "n_imagenet": 341,
+        "cells": {
+          "imagenet_full_original": {
+            "n_samples": 341,
+            "false_positive_ai_count": 232,
+            "false_positive_ai_rate": 0.6804,
+            "false_positive_ai_percent": 68.04,
+            "misclassified_as_edited": 112,
+            "misclassified_as_generated": 120,
+            "mean_p_authentic": 0.3273,
+            "mean_p_edited": 0.3245,
+            "mean_p_generated": 0.3481
+          },
+          "imagenet_full_jpeg_q75": {
+            "n_samples": 341,
+            "false_positive_ai_count": 229,
+            "false_positive_ai_rate": 0.6716,
+            "false_positive_ai_percent": 67.16,
+            "misclassified_as_edited": 112,
+            "misclassified_as_generated": 117,
+            "mean_p_authentic": 0.3297,
+            "mean_p_edited": 0.3252,
+            "mean_p_generated": 0.3451
+          }
+        },
+        "within_source_jpeg_effect": {
+          "imagenet_delta_fp": {
+            "observed_delta": -0.0088,
+            "ci_95": [
+              -0.0264,
+              0.0088
+            ],
+            "p_positive_fraction": 0.1225,
+            "bootstrap_replicates": 10000
+          },
+          "imagenet_flips": 14,
+          "imagenet_flip_rate": 0.0411
+        },
+        "interaction_effect": {
+          "bootstrap_result": {
+            "observed_interaction": -0.0418,
+            "ci_95": [
+              -0.0857,
+              -0.0059
+            ],
+            "p_positive_fraction": 0.0072,
+            "bootstrap_replicates": 10000
+          }
+        }
+      }
+    },
+    "A0-local": {
+      "model_name": "A0-local",
+      "config_id": "A0_LOCAL_DSP_640D",
+      "feature_dim": 640,
+      "calibrated_temperature": 6.014245647309195,
+      "balanced_2x2_design": {
+        "n_per_cell": 91,
+        "cells": {
+          "coco_original": {
+            "n_samples": 91,
+            "false_positive_ai_count": 52,
+            "false_positive_ai_rate": 0.5714,
+            "false_positive_ai_percent": 57.14,
+            "misclassified_as_edited": 49,
+            "misclassified_as_generated": 3,
+            "mean_p_authentic": 0.4133,
+            "mean_p_edited": 0.4366,
+            "mean_p_generated": 0.1501
+          },
+          "coco_jpeg_q75": {
+            "n_samples": 91,
+            "false_positive_ai_count": 54,
+            "false_positive_ai_rate": 0.5934,
+            "false_positive_ai_percent": 59.34,
+            "misclassified_as_edited": 50,
+            "misclassified_as_generated": 4,
+            "mean_p_authentic": 0.4153,
+            "mean_p_edited": 0.4266,
+            "mean_p_generated": 0.1582
+          },
+          "imagenet_original": {
+            "n_samples": 91,
+            "false_positive_ai_count": 68,
+            "false_positive_ai_rate": 0.7473,
+            "false_positive_ai_percent": 74.73,
+            "misclassified_as_edited": 31,
+            "misclassified_as_generated": 37,
+            "mean_p_authentic": 0.2938,
+            "mean_p_edited": 0.3347,
+            "mean_p_generated": 0.3715
+          },
+          "imagenet_jpeg_q75": {
+            "n_samples": 91,
+            "false_positive_ai_count": 65,
+            "false_positive_ai_rate": 0.7143,
+            "false_positive_ai_percent": 71.43,
+            "misclassified_as_edited": 32,
+            "misclassified_as_generated": 33,
+            "mean_p_authentic": 0.302,
+            "mean_p_edited": 0.3375,
+            "mean_p_generated": 0.3605
+          }
+        },
+        "within_source_jpeg_effect": {
+          "coco_delta_fp": {
+            "observed_delta": 0.022,
+            "ci_95": [
+              0.0,
+              0.0549
+            ],
+            "p_positive_fraction": 0.868,
+            "bootstrap_replicates": 10000
+          },
+          "coco_flips": 2,
+          "coco_flip_rate": 0.022,
+          "imagenet_delta_fp": {
+            "observed_delta": -0.033,
+            "ci_95": [
+              -0.0769,
+              0.0
+            ],
+            "p_positive_fraction": 0.0,
+            "bootstrap_replicates": 10000
+          },
+          "imagenet_flips": 6,
+          "imagenet_flip_rate": 0.0659
+        },
+        "interaction_effect": {
+          "formula": "[FP(ImageNet, Q75) - FP(ImageNet, orig)] - [FP(COCO, Q75) - FP(COCO, orig)]",
+          "bootstrap_result": {
+            "observed_interaction": -0.0549,
+            "ci_95": [
+              -0.1099,
+              -0.011
+            ],
+            "p_positive_fraction": 0.0,
+            "bootstrap_replicates": 10000
+          }
+        }
+      },
+      "full_sensitivity_design": {
+        "n_coco": 91,
+        "n_imagenet": 341,
+        "cells": {
+          "imagenet_full_original": {
+            "n_samples": 341,
+            "false_positive_ai_count": 240,
+            "false_positive_ai_rate": 0.7038,
+            "false_positive_ai_percent": 70.38,
+            "misclassified_as_edited": 105,
+            "misclassified_as_generated": 135,
+            "mean_p_authentic": 0.3193,
+            "mean_p_edited": 0.3171,
+            "mean_p_generated": 0.3636
+          },
+          "imagenet_full_jpeg_q75": {
+            "n_samples": 341,
+            "false_positive_ai_count": 227,
+            "false_positive_ai_rate": 0.6657,
+            "false_positive_ai_percent": 66.57,
+            "misclassified_as_edited": 105,
+            "misclassified_as_generated": 122,
+            "mean_p_authentic": 0.3273,
+            "mean_p_edited": 0.3204,
+            "mean_p_generated": 0.3523
+          }
+        },
+        "within_source_jpeg_effect": {
+          "imagenet_delta_fp": {
+            "observed_delta": -0.0381,
+            "ci_95": [
+              -0.0616,
+              -0.0147
+            ],
+            "p_positive_fraction": 0.0002,
+            "bootstrap_replicates": 10000
+          },
+          "imagenet_flips": 27,
+          "imagenet_flip_rate": 0.0792
+        },
+        "interaction_effect": {
+          "bootstrap_result": {
+            "observed_interaction": -0.0601,
+            "ci_95": [
+              -0.1011,
+              -0.0257
+            ],
+            "p_positive_fraction": 0.0,
+            "bootstrap_replicates": 10000
+          }
+        }
+      }
+    },
+    "A1-global": {
+      "model_name": "A1-global",
+      "config_id": "A1_GLOBAL_DSP_592D",
+      "feature_dim": 592,
+      "calibrated_temperature": 4.9391,
+      "balanced_2x2_design": {
+        "n_per_cell": 91,
+        "cells": {
+          "coco_original": {
+            "n_samples": 91,
+            "false_positive_ai_count": 43,
+            "false_positive_ai_rate": 0.4725,
+            "false_positive_ai_percent": 47.25,
+            "misclassified_as_edited": 42,
+            "misclassified_as_generated": 1,
+            "mean_p_authentic": 0.4717,
+            "mean_p_edited": 0.4184,
+            "mean_p_generated": 0.1099
+          },
+          "coco_jpeg_q75": {
+            "n_samples": 91,
+            "false_positive_ai_count": 43,
+            "false_positive_ai_rate": 0.4725,
+            "false_positive_ai_percent": 47.25,
+            "misclassified_as_edited": 42,
+            "misclassified_as_generated": 1,
+            "mean_p_authentic": 0.4756,
+            "mean_p_edited": 0.4088,
+            "mean_p_generated": 0.1155
+          },
+          "imagenet_original": {
+            "n_samples": 91,
+            "false_positive_ai_count": 35,
+            "false_positive_ai_rate": 0.3846,
+            "false_positive_ai_percent": 38.46,
+            "misclassified_as_edited": 22,
+            "misclassified_as_generated": 13,
+            "mean_p_authentic": 0.5558,
+            "mean_p_edited": 0.2554,
+            "mean_p_generated": 0.1888
+          },
+          "imagenet_jpeg_q75": {
+            "n_samples": 91,
+            "false_positive_ai_count": 35,
+            "false_positive_ai_rate": 0.3846,
+            "false_positive_ai_percent": 38.46,
+            "misclassified_as_edited": 22,
+            "misclassified_as_generated": 13,
+            "mean_p_authentic": 0.5527,
+            "mean_p_edited": 0.2581,
+            "mean_p_generated": 0.1893
+          }
+        },
+        "within_source_jpeg_effect": {
+          "coco_delta_fp": {
+            "observed_delta": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ],
+            "p_positive_fraction": 0.0,
+            "bootstrap_replicates": 10000
+          },
+          "coco_flips": 0,
+          "coco_flip_rate": 0.0,
+          "imagenet_delta_fp": {
+            "observed_delta": 0.0,
+            "ci_95": [
+              -0.044,
+              0.044
+            ],
+            "p_positive_fraction": 0.3986,
+            "bootstrap_replicates": 10000
+          },
+          "imagenet_flips": 4,
+          "imagenet_flip_rate": 0.044
+        },
+        "interaction_effect": {
+          "formula": "[FP(ImageNet, Q75) - FP(ImageNet, orig)] - [FP(COCO, Q75) - FP(COCO, orig)]",
+          "bootstrap_result": {
+            "observed_interaction": 0.0,
+            "ci_95": [
+              -0.044,
+              0.044
+            ],
+            "p_positive_fraction": 0.3956,
+            "bootstrap_replicates": 10000
+          }
+        }
+      },
+      "full_sensitivity_design": {
+        "n_coco": 91,
+        "n_imagenet": 341,
+        "cells": {
+          "imagenet_full_original": {
+            "n_samples": 341,
+            "false_positive_ai_count": 106,
+            "false_positive_ai_rate": 0.3109,
+            "false_positive_ai_percent": 31.09,
+            "misclassified_as_edited": 69,
+            "misclassified_as_generated": 37,
+            "mean_p_authentic": 0.5788,
+            "mean_p_edited": 0.2354,
+            "mean_p_generated": 0.1858
+          },
+          "imagenet_full_jpeg_q75": {
+            "n_samples": 341,
+            "false_positive_ai_count": 107,
+            "false_positive_ai_rate": 0.3138,
+            "false_positive_ai_percent": 31.38,
+            "misclassified_as_edited": 69,
+            "misclassified_as_generated": 38,
+            "mean_p_authentic": 0.5778,
+            "mean_p_edited": 0.2375,
+            "mean_p_generated": 0.1847
+          }
+        },
+        "within_source_jpeg_effect": {
+          "imagenet_delta_fp": {
+            "observed_delta": 0.0029,
+            "ci_95": [
+              -0.0205,
+              0.0264
+            ],
+            "p_positive_fraction": 0.5452,
+            "bootstrap_replicates": 10000
+          },
+          "imagenet_flips": 18,
+          "imagenet_flip_rate": 0.0528
+        },
+        "interaction_effect": {
+          "bootstrap_result": {
+            "observed_interaction": 0.0029,
+            "ci_95": [
+              -0.0205,
+              0.0264
+            ],
+            "p_positive_fraction": 0.546,
+            "bootstrap_replicates": 10000
+          }
+        }
+      }
+    },
+    "A1-local": {
+      "model_name": "A1-local",
+      "config_id": "A1_LOCAL_DSP_640D",
+      "feature_dim": 640,
+      "calibrated_temperature": 5.168856331386276,
+      "balanced_2x2_design": {
+        "n_per_cell": 91,
+        "cells": {
+          "coco_original": {
+            "n_samples": 91,
+            "false_positive_ai_count": 48,
+            "false_positive_ai_rate": 0.5275,
+            "false_positive_ai_percent": 52.75,
+            "misclassified_as_edited": 45,
+            "misclassified_as_generated": 3,
+            "mean_p_authentic": 0.46,
+            "mean_p_edited": 0.4265,
+            "mean_p_generated": 0.1136
+          },
+          "coco_jpeg_q75": {
+            "n_samples": 91,
+            "false_positive_ai_count": 43,
+            "false_positive_ai_rate": 0.4725,
+            "false_positive_ai_percent": 47.25,
+            "misclassified_as_edited": 40,
+            "misclassified_as_generated": 3,
+            "mean_p_authentic": 0.4702,
+            "mean_p_edited": 0.4108,
+            "mean_p_generated": 0.1191
+          },
+          "imagenet_original": {
+            "n_samples": 91,
+            "false_positive_ai_count": 28,
+            "false_positive_ai_rate": 0.3077,
+            "false_positive_ai_percent": 30.77,
+            "misclassified_as_edited": 17,
+            "misclassified_as_generated": 11,
+            "mean_p_authentic": 0.5657,
+            "mean_p_edited": 0.2451,
+            "mean_p_generated": 0.1893
+          },
+          "imagenet_jpeg_q75": {
+            "n_samples": 91,
+            "false_positive_ai_count": 26,
+            "false_positive_ai_rate": 0.2857,
+            "false_positive_ai_percent": 28.57,
+            "misclassified_as_edited": 18,
+            "misclassified_as_generated": 8,
+            "mean_p_authentic": 0.573,
+            "mean_p_edited": 0.2478,
+            "mean_p_generated": 0.1792
+          }
+        },
+        "within_source_jpeg_effect": {
+          "coco_delta_fp": {
+            "observed_delta": -0.0549,
+            "ci_95": [
+              -0.1099,
+              -0.011
+            ],
+            "p_positive_fraction": 0.0,
+            "bootstrap_replicates": 10000
+          },
+          "coco_flips": 7,
+          "coco_flip_rate": 0.0769,
+          "imagenet_delta_fp": {
+            "observed_delta": -0.022,
+            "ci_95": [
+              -0.0769,
+              0.033
+            ],
+            "p_positive_fraction": 0.1481,
+            "bootstrap_replicates": 10000
+          },
+          "imagenet_flips": 8,
+          "imagenet_flip_rate": 0.0879
+        },
+        "interaction_effect": {
+          "formula": "[FP(ImageNet, Q75) - FP(ImageNet, orig)] - [FP(COCO, Q75) - FP(COCO, orig)]",
+          "bootstrap_result": {
+            "observed_interaction": 0.033,
+            "ci_95": [
+              -0.033,
+              0.0989
+            ],
+            "p_positive_fraction": 0.8002,
+            "bootstrap_replicates": 10000
+          }
+        }
+      },
+      "full_sensitivity_design": {
+        "n_coco": 91,
+        "n_imagenet": 341,
+        "cells": {
+          "imagenet_full_original": {
+            "n_samples": 341,
+            "false_positive_ai_count": 94,
+            "false_positive_ai_rate": 0.2757,
+            "false_positive_ai_percent": 27.57,
+            "misclassified_as_edited": 59,
+            "misclassified_as_generated": 35,
+            "mean_p_authentic": 0.5906,
+            "mean_p_edited": 0.2267,
+            "mean_p_generated": 0.1827
+          },
+          "imagenet_full_jpeg_q75": {
+            "n_samples": 341,
+            "false_positive_ai_count": 87,
+            "false_positive_ai_rate": 0.2551,
+            "false_positive_ai_percent": 25.51,
+            "misclassified_as_edited": 59,
+            "misclassified_as_generated": 28,
+            "mean_p_authentic": 0.6013,
+            "mean_p_edited": 0.2282,
+            "mean_p_generated": 0.1705
+          }
+        },
+        "within_source_jpeg_effect": {
+          "imagenet_delta_fp": {
+            "observed_delta": -0.0205,
+            "ci_95": [
+              -0.0469,
+              0.0029
+            ],
+            "p_positive_fraction": 0.0386,
+            "bootstrap_replicates": 10000
+          },
+          "imagenet_flips": 24,
+          "imagenet_flip_rate": 0.0704
+        },
+        "interaction_effect": {
+          "bootstrap_result": {
+            "observed_interaction": 0.0344,
+            "ci_95": [
+              -0.0154,
+              0.0923
+            ],
+            "p_positive_fraction": 0.9023,
+            "bootstrap_replicates": 10000
+          }
+        }
+      }
+    },
+    "A0-visual": {
+      "model_name": "A0-visual",
+      "config_id": "A0_VISUAL_ONLY_576D",
+      "feature_dim": 576,
+      "calibrated_temperature": 5.9818,
+      "balanced_2x2_design": {
+        "n_per_cell": 91,
+        "cells": {
+          "coco_original": {
+            "n_samples": 91,
+            "false_positive_ai_count": 53,
+            "false_positive_ai_rate": 0.5824,
+            "false_positive_ai_percent": 58.24,
+            "misclassified_as_edited": 46,
+            "misclassified_as_generated": 7,
+            "mean_p_authentic": 0.4114,
+            "mean_p_edited": 0.4285,
+            "mean_p_generated": 0.1601
+          },
+          "coco_jpeg_q75": {
+            "n_samples": 91,
+            "false_positive_ai_count": 49,
+            "false_positive_ai_rate": 0.5385,
+            "false_positive_ai_percent": 53.85,
+            "misclassified_as_edited": 42,
+            "misclassified_as_generated": 7,
+            "mean_p_authentic": 0.4169,
+            "mean_p_edited": 0.4215,
+            "mean_p_generated": 0.1616
+          },
+          "imagenet_original": {
+            "n_samples": 91,
+            "false_positive_ai_count": 63,
+            "false_positive_ai_rate": 0.6923,
+            "false_positive_ai_percent": 69.23,
+            "misclassified_as_edited": 32,
+            "misclassified_as_generated": 31,
+            "mean_p_authentic": 0.3078,
+            "mean_p_edited": 0.3327,
+            "mean_p_generated": 0.3595
+          },
+          "imagenet_jpeg_q75": {
+            "n_samples": 91,
+            "false_positive_ai_count": 64,
+            "false_positive_ai_rate": 0.7033,
+            "false_positive_ai_percent": 70.33,
+            "misclassified_as_edited": 32,
+            "misclassified_as_generated": 32,
+            "mean_p_authentic": 0.3069,
+            "mean_p_edited": 0.3267,
+            "mean_p_generated": 0.3664
+          }
+        },
+        "within_source_jpeg_effect": {
+          "coco_delta_fp": {
+            "observed_delta": -0.044,
+            "ci_95": [
+              -0.0879,
+              -0.011
+            ],
+            "p_positive_fraction": 0.0,
+            "bootstrap_replicates": 10000
+          },
+          "coco_flips": 4,
+          "coco_flip_rate": 0.044,
+          "imagenet_delta_fp": {
+            "observed_delta": 0.011,
+            "ci_95": [
+              0.0,
+              0.033
+            ],
+            "p_positive_fraction": 0.6364,
+            "bootstrap_replicates": 10000
+          },
+          "imagenet_flips": 4,
+          "imagenet_flip_rate": 0.044
+        },
+        "interaction_effect": {
+          "formula": "[FP(ImageNet, Q75) - FP(ImageNet, orig)] - [FP(COCO, Q75) - FP(COCO, orig)]",
+          "bootstrap_result": {
+            "observed_interaction": 0.0549,
+            "ci_95": [
+              0.011,
+              0.1099
+            ],
+            "p_positive_fraction": 0.9927,
+            "bootstrap_replicates": 10000
+          }
+        }
+      },
+      "full_sensitivity_design": {
+        "n_coco": 91,
+        "n_imagenet": 341,
+        "cells": {
+          "imagenet_full_original": {
+            "n_samples": 341,
+            "false_positive_ai_count": 230,
+            "false_positive_ai_rate": 0.6745,
+            "false_positive_ai_percent": 67.45,
+            "misclassified_as_edited": 106,
+            "misclassified_as_generated": 124,
+            "mean_p_authentic": 0.3255,
+            "mean_p_edited": 0.3111,
+            "mean_p_generated": 0.3634
+          },
+          "imagenet_full_jpeg_q75": {
+            "n_samples": 341,
+            "false_positive_ai_count": 229,
+            "false_positive_ai_rate": 0.6716,
+            "false_positive_ai_percent": 67.16,
+            "misclassified_as_edited": 104,
+            "misclassified_as_generated": 125,
+            "mean_p_authentic": 0.3244,
+            "mean_p_edited": 0.3057,
+            "mean_p_generated": 0.3699
+          }
+        },
+        "within_source_jpeg_effect": {
+          "imagenet_delta_fp": {
+            "observed_delta": -0.0029,
+            "ci_95": [
+              -0.0235,
+              0.0147
+            ],
+            "p_positive_fraction": 0.3217,
+            "bootstrap_replicates": 10000
+          },
+          "imagenet_flips": 17,
+          "imagenet_flip_rate": 0.0499
+        },
+        "interaction_effect": {
+          "bootstrap_result": {
+            "observed_interaction": 0.041,
+            "ci_95": [
+              -0.0015,
+              0.0908
+            ],
+            "p_positive_fraction": 0.9661,
+            "bootstrap_replicates": 10000
+          }
+        }
+      }
+    },
+    "A1-visual": {
+      "model_name": "A1-visual",
+      "config_id": "A1_VISUAL_ONLY_576D",
+      "feature_dim": 576,
+      "calibrated_temperature": 5.1812763222128995,
+      "balanced_2x2_design": {
+        "n_per_cell": 91,
+        "cells": {
+          "coco_original": {
+            "n_samples": 91,
+            "false_positive_ai_count": 41,
+            "false_positive_ai_rate": 0.4505,
+            "false_positive_ai_percent": 45.05,
+            "misclassified_as_edited": 39,
+            "misclassified_as_generated": 2,
+            "mean_p_authentic": 0.4611,
+            "mean_p_edited": 0.4176,
+            "mean_p_generated": 0.1214
+          },
+          "coco_jpeg_q75": {
+            "n_samples": 91,
+            "false_positive_ai_count": 40,
+            "false_positive_ai_rate": 0.4396,
+            "false_positive_ai_percent": 43.96,
+            "misclassified_as_edited": 39,
+            "misclassified_as_generated": 1,
+            "mean_p_authentic": 0.4657,
+            "mean_p_edited": 0.4122,
+            "mean_p_generated": 0.1221
+          },
+          "imagenet_original": {
+            "n_samples": 91,
+            "false_positive_ai_count": 35,
+            "false_positive_ai_rate": 0.3846,
+            "false_positive_ai_percent": 38.46,
+            "misclassified_as_edited": 20,
+            "misclassified_as_generated": 15,
+            "mean_p_authentic": 0.5329,
+            "mean_p_edited": 0.2591,
+            "mean_p_generated": 0.208
+          },
+          "imagenet_jpeg_q75": {
+            "n_samples": 91,
+            "false_positive_ai_count": 35,
+            "false_positive_ai_rate": 0.3846,
+            "false_positive_ai_percent": 38.46,
+            "misclassified_as_edited": 18,
+            "misclassified_as_generated": 17,
+            "mean_p_authentic": 0.5216,
+            "mean_p_edited": 0.2603,
+            "mean_p_generated": 0.2181
+          }
+        },
+        "within_source_jpeg_effect": {
+          "coco_delta_fp": {
+            "observed_delta": -0.011,
+            "ci_95": [
+              -0.044,
+              0.022
+            ],
+            "p_positive_fraction": 0.1804,
+            "bootstrap_replicates": 10000
+          },
+          "coco_flips": 4,
+          "coco_flip_rate": 0.044,
+          "imagenet_delta_fp": {
+            "observed_delta": 0.0,
+            "ci_95": [
+              -0.044,
+              0.044
+            ],
+            "p_positive_fraction": 0.3887,
+            "bootstrap_replicates": 10000
+          },
+          "imagenet_flips": 4,
+          "imagenet_flip_rate": 0.044
+        },
+        "interaction_effect": {
+          "formula": "[FP(ImageNet, Q75) - FP(ImageNet, orig)] - [FP(COCO, Q75) - FP(COCO, orig)]",
+          "bootstrap_result": {
+            "observed_interaction": 0.011,
+            "ci_95": [
+              -0.044,
+              0.0659
+            ],
+            "p_positive_fraction": 0.5887,
+            "bootstrap_replicates": 10000
+          }
+        }
+      },
+      "full_sensitivity_design": {
+        "n_coco": 91,
+        "n_imagenet": 341,
+        "cells": {
+          "imagenet_full_original": {
+            "n_samples": 341,
+            "false_positive_ai_count": 122,
+            "false_positive_ai_rate": 0.3578,
+            "false_positive_ai_percent": 35.78,
+            "misclassified_as_edited": 71,
+            "misclassified_as_generated": 51,
+            "mean_p_authentic": 0.5525,
+            "mean_p_edited": 0.2406,
+            "mean_p_generated": 0.2068
+          },
+          "imagenet_full_jpeg_q75": {
+            "n_samples": 341,
+            "false_positive_ai_count": 124,
+            "false_positive_ai_rate": 0.3636,
+            "false_positive_ai_percent": 36.36,
+            "misclassified_as_edited": 67,
+            "misclassified_as_generated": 57,
+            "mean_p_authentic": 0.5418,
+            "mean_p_edited": 0.2419,
+            "mean_p_generated": 0.2162
+          }
+        },
+        "within_source_jpeg_effect": {
+          "imagenet_delta_fp": {
+            "observed_delta": 0.0059,
+            "ci_95": [
+              -0.0176,
+              0.0293
+            ],
+            "p_positive_fraction": 0.6484,
+            "bootstrap_replicates": 10000
+          },
+          "imagenet_flips": 17,
+          "imagenet_flip_rate": 0.0499
+        },
+        "interaction_effect": {
+          "bootstrap_result": {
+            "observed_interaction": 0.0169,
+            "ci_95": [
+              -0.0249,
+              0.0623
+            ],
+            "p_positive_fraction": 0.7686,
+            "bootstrap_replicates": 10000
+          }
+        }
+      }
+    }
+  },
+  "scientific_conclusions": {
+    "core_findings": [
+      "1. Baseline Domain Confounding: On original uncompressed images, all models show massive discrepancy between COCO authentic and ImageNet authentic.",
+      "2. A1 Training Effect: Supplementing authentic ImageNet in training (A1) dramatically lowers ImageNet false positives, but shifts false alarm rates on COCO.",
+      "3. JPEG Re-compression Effect: Evaluated under Canonical Preprocessing (Lanczos 512x512 with square center-crop), JPEG Q75 re-compression shows modest, source-dependent shifts.",
+      "4. Interaction Effect: Quantified via 2x2 difference-in-differences interaction with 10,000 paired bootstrap replicates."
+    ],
+    "methodological_caveats": [
+      "This experiment measures false-positive AI rates on authentic images across two source distributions and two compression states.",
+      "It does not claim full 3-class generative detection evaluation, nor does it isolate 100% of causal camera sensor provenance.",
+      "Bootstrap positive fractions indicate the proportion of resamples with positive difference, NOT frequentist p-values."
+    ]
+  }
+}
