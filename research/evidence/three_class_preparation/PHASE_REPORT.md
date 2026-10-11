@@ -207,10 +207,15 @@ Thực hiện phân tích khám phá post-hoc có kiểm soát qua script [`run_
 | | Visual+DSP (592-D) | 0.5385 | 0.5238 | 0.5711 | 0.0865 | 68.04% (232/341) | 112 | 120 |
 | **jpeg_q95** | Visual (576-D) | 0.5087 | 0.4982 | 0.6008 | 0.1018 | 66.86% (228/341) | 106 | 122 |
 | | Visual+DSP (592-D) | 0.5358 | 0.5201 | 0.5739 | 0.0886 | 68.33% (233/341) | 114 | 119 |
-| **jpeg_q75** | Visual (576-D) | 0.5087 | 0.4982 | 0.6033 | 0.1044 | 67.16% (229/341) | 106 | 123 |
-| | Visual+DSP (592-D) | 0.5235 | 0.5092 | 0.5844 | 0.0931 | 67.16% (229/341) | 113 | 116 |
+| **jpeg_q75** *(Khám phá)* | Visual (576-D) | 0.5163 | 0.5055 | 0.5995 | 0.1057 | 67.16% (229/341) | 106 | 123 |
+| *(Canonical Pre-Resize)* | Visual+DSP (592-D) | **0.6015** | 0.6007 | 0.4789 | 0.0582 | 67.16% (229/341) | 113 | 116 |
 | **resize_0.5** | Visual (576-D) | 0.5074 | 0.4945 | 0.6015 | 0.1030 | 62.17% (212/341) | 107 | 105 |
 | | Visual+DSP (592-D) | 0.5204 | 0.5055 | 0.5826 | 0.0927 | 63.05% (215/341) | 111 | 104 |
+
+> **Ghi chú đối soát mâu thuẫn số liệu Q75 ($systematic-debugging)**:
+> - Trong bản thảo trước, dòng `jpeg_q75` từng ghi Macro-F1 là `0.5235` (Visual `0.5087`). Đối chiếu trực tiếp với tệp predictions thô [`three_class_predictions_jpeg_q75.json`](./robustness/three_class_predictions_jpeg_q75.json) và biên nhận gốc [`three_class_robustness_audit_receipt.json`](./robustness/three_class_robustness_audit_receipt.json) (SHA-256 đã niêm phong tại commit `0f1b22d`) xác nhận số liệu thực tế đo được của Fusion là **`0.6015`** (Visual: **`0.5163`**). Con số `0.5235` là lỗi chép văn bản thủ công (transcription erratum) trong bản nháp cũ.
+> - Cả hai harness (robustness và ablation) đều áp dụng chuẩn `JPEG_Q75_CANONICAL_PRE_RESIZE` (nén JPEG Q75 trước khi đưa về canvas 512×512 Lanczos). Nếu nén sau khi resize (`JPEG_Q75_POST_RESIZE`), Macro-F1 giảm về `0.4588`.
+> - Do sự nhạy cảm cao của đặc trưng tần số với quy trình nén và sự tồn tại của lỗi ghi nhận lịch sử, endpoint Q75 được đánh dấu là **chỉ số phụ khám phá (exploratory secondary endpoint)**; toàn bộ kết luận khoa học chính thức của nghiên cứu được neo trên **ảnh gốc (original canvas)**.
 
 ### 9.2. Phân Tích Cơ Chế Lỗi và Hiện Tượng Nhầm Lẫn
 
@@ -293,25 +298,27 @@ Phân tích Paired Source-Cluster Bootstrap (10,000 lần lấy mẫu theo nhóm
 2. **Hiệu ứng đặc trưng DSP ($\text{Fusion} - \text{Visual}$)**:
    - Trong điều kiện A0: $\Delta = +0.0299$ ($95\%\text{ CI}: [-0.0068, +0.0687]$, $P(\Delta > 0) = 94.35\%$).
    - Trong điều kiện A1: $\Delta = +0.0166$ ($95\%\text{ CI}: [-0.0168, +0.0514]$, $P(\Delta > 0) = 83.82\%$).
-   $\to$ Đặc trưng DSP tiếp tục duy trì ưu thế dương nhất quán so với Visual-only sau can thiệp dữ liệu.
+   $\to$ Mặc dù point estimate có xu hướng dương trong cả hai điều kiện dữ liệu và phần lớn khối lượng bootstrap là dương ($94.35\%$ và $83.82\%$), khoảng tin cậy 95% CI trong cả hai điều kiện đều cắt 0 ở cận dưới. Theo nguyên tắc trung thực khoa học, kết luận chính thức về lợi ích phân loại của DSP trên ảnh gốc là **`INCONCLUSIVE`** (chưa đủ bằng chứng để khẳng định vượt trội có ý nghĩa thống kê).
 3. **Hiệu ứng giảm báo động giả trên ImageNet Authentic Control**:
-   - Visual-only: Báo động giả giảm từ $67.45\%$ xuống $35.78\%$ ($\Delta = -31.67\%$).
-   - Visual + DSP: Báo động giả giảm từ $68.04\%$ xuống $31.09\%$ ($\Delta = -36.95\%$).
+   - Visual-only: Báo động giả giảm từ $67.45\%$ xuống $35.78\%$ ($\Delta = -31.67\text{ điểm phần trăm}$).
+   - Visual + DSP: Báo động giả giảm từ $68.04\%$ xuống $31.09\%$ ($\Delta = -36.95\text{ điểm phần trăm}$).
+   $\to$ **Cảnh báo diễn giải khoa học**:
+   - Việc giảm báo động giả từ 68.04% xuống 31.09% (giảm 36.95 điểm phần trăm) **không chứng minh riêng semantic bias là nguyên nhân duy nhất**, vì can thiệp bổ sung ảnh ImageNet đồng thời mang lại cả phân phối đối tượng tự nhiên và lịch sử nén JPEG nguyên bản của camera.
+   - Việc bổ sung 250 ảnh authentic và huấn luyện lại probe làm thay đổi **toàn bộ ranh giới quyết định đa lớp (multiclass decision boundaries)** trong không gian xác suất 3 chiều, không phải là cơ chế tự động tịnh tiến một ngưỡng nhị phân 0.5.
 
 ### 10.4. Giải Quyết Bốn Câu Hỏi Nghiên Cứu Cốt Lõi
 
 1. **Bổ sung authentic ImageNet có giảm false positives trên control không?**
-   - **Có, giảm rất mạnh và dứt khoát**. Tỷ lệ false-positive AI giảm hơn một nửa (từ ~68% xuống ~31% ở mô hình fusion). Số lượng mẫu ImageNet authentic nhận diện chính xác tăng vọt từ 109 lên 235 trên tổng số 341 mẫu. Điều này xác nhận rằng một phần lớn báo động giả ban đầu xuất phát từ sự thiếu hụt phân phối nguồn ảnh authentic trong pha huấn luyện.
+   - **Có, giảm 36.95 điểm phần trăm** (từ $68.04\%$ xuống $31.09\%$ ở mô hình fusion; visual giảm $31.67$ điểm phần trăm). Số lượng mẫu ImageNet authentic nhận diện chính xác tăng từ 109 lên 235 trên tổng số 341 mẫu. Tuy nhiên, việc giảm báo động giả không chứng minh riêng semantic bias là nguyên nhân độc nhất, mà phản ánh tác động đồng thời của phân phối đối tượng và đặc trưng nén.
 2. **Có làm giảm khả năng nhận diện ai_edited hoặc fully_generated không?**
    - **Có sự đánh đổi (trade-off) bất đối xứng**:
-     * Với `fully_generated` (SD1.5): Recall trên holdout giảm từ 62.64% xuống 42.86% (Fusion) và từ 54.95% xuống 37.36% (Visual). Do không gian authentic được mở rộng (bao quát cả ImageNet), mô hình trở nên "thận trọng" hơn và gán nhầm 35/91 ảnh SD1.5 sang nhãn authentic.
+     * Với `fully_generated` (SD1.5): Recall trên holdout giảm từ 62.64% xuống 42.86% (Fusion) và từ 54.95% xuống 37.36% (Visual). Do không gian authentic mở rộng sang ImageNet, mô hình trở nên thận trọng hơn và gán nhầm 35/91 ảnh SD1.5 sang nhãn authentic.
      * Với `ai_edited` (TGIF SD2): Khả năng nhận diện ít bị ảnh hưởng tiêu cực; F1 dao động nhẹ ($0.4615 \to 0.4526$ ở visual, $0.4390 \to 0.4456$ ở fusion), recall đạt 47.25% (so với 49.45% ở A0).
 3. **DSP có lợi thêm sau can thiệp dữ liệu không?**
-   - **Có**. DSP cải thiện Macro-F1 thêm $+0.0166$ trên ảnh gốc ($P(\Delta > 0) = 83.82\%$), giảm thêm báo động giả control từ $35.78\%$ xuống $31.09\%$, và phát huy tác dụng vượt trội dưới điều kiện nén JPEG Q75 (nâng Macro-F1 từ $0.4806$ lên $0.6046$).
+   - **Point estimate tăng nhẹ nhưng kết luận thống kê là INCONCLUSIVE**. DSP cải thiện Macro-F1 thêm $+0.0166$ trên ảnh gốc ($83.82\%$ bootstrap mass $> 0$), nhưng khoảng tin cậy 95% CI cắt 0 ($[-0.0168, +0.0514]$). Dưới điều kiện nén JPEG Q75, DSP nâng Macro-F1 từ $0.4806$ lên $0.6046$, song endpoint Q75 chỉ là chỉ số phụ khám phá.
 4. **Bước tiếp theo cần cải thiện dữ liệu hay đặc trưng cục bộ?**
-   - **Cần ưu tiên đặc trưng cục bộ (patch-level / local frequency) trước, song hành cùng mở rộng dữ liệu generator**:
-     * Matrix nhầm lẫn cho thấy điểm nghẽn lớn nhất hiện tại của `ai_edited` là đặc trưng toàn cục 576-D (MobileNetV3 GAP) bị chi phối bởi nền thật của ảnh, khiến mô hình khó tách bạch inpainting diện tích nhỏ.
-     * Việc bổ sung dữ liệu authentic đã giải quyết được một nửa bài toán phân phối (giảm báo động giả từ 68% xuống 31%), nhưng muốn giảm tiếp dưới 15% mà không làm sụt giảm recall của generator thì bắt buộc phải có biểu diễn đặc trưng cục bộ hoặc patch forensics.
+   - **Cần đánh giá thực nghiệm đặc trưng cục bộ (patch / quadrant DSP) trên dữ liệu hiện có để kiểm tra giả thuyết GAP làm loãng tín hiệu, song hành cùng việc chuẩn bị thiết kế dữ liệu đối chứng nhân tố (factorial design)**.
+
 
 ---
 
@@ -352,9 +359,13 @@ Phân tích Paired Source-Cluster Bootstrap (10,000 lần lấy mẫu theo nhóm
   * [`three_class_visual_dsp_model.json`](./three_class_visual_dsp_model.json) (A0 Fusion)
   * [`three_class_visual_only_a1_model.json`](./three_class_visual_only_a1_model.json) (A1 Visual)
   * [`three_class_visual_dsp_a1_model.json`](./three_class_visual_dsp_a1_model.json) (A1 Fusion)
+  * [`three_class_local_dsp_a0_model.json`](./three_class_local_dsp_a0_model.json) (A0 Local 640-D)
+  * [`three_class_local_dsp_a1_model.json`](./three_class_local_dsp_a1_model.json) (A1 Local 640-D)
   * `data/research/cache/three_class_features.npz` (2.82 MB, A0 features)
   * `data/research/cache/three_class_ablation_features.npz` (5.40 MB, A1 features & sample weights)
+  * `data/research/cache/three_class_local_dsp_features.npz` (8.04 MB, 640-D features & local summaries)
   * [`ablation_feature_extraction_receipt.json`](./ablation_feature_extraction_receipt.json)
+  * [`local_dsp_feature_extraction_receipt.json`](./local_dsp_feature_extraction_receipt.json)
 - **Audited Predictions & Evaluation Receipts**:
   * [`three_class_pilot_predictions.json`](./three_class_pilot_predictions.json) (Historical raw holdout + control)
   * [`three_class_pilot_evaluation_receipt.json`](./three_class_pilot_evaluation_receipt.json) (Historical receipt)
@@ -364,12 +375,120 @@ Phân tích Paired Source-Cluster Bootstrap (10,000 lần lấy mẫu theo nhóm
   * [`source_control_evaluation_receipt.json`](./source_control_evaluation_receipt.json) (Diagnostic findings)
   * [`three_class_ablation_evaluation_receipt.json`](./three_class_ablation_evaluation_receipt.json) (A0 vs A1 full 4-condition receipt)
   * [`three_class_ablation_a1_predictions.json`](./three_class_ablation_a1_predictions.json) (A1 standalone predictions)
+  * [`three_class_local_dsp_evaluation_receipt.json`](./three_class_local_dsp_evaluation_receipt.json) (Local DSP 4-configuration receipt)
+  * [`three_class_local_dsp_predictions.json`](./three_class_local_dsp_predictions.json) (Local DSP raw predictions)
 - **Robustness Post-Hoc Artifacts**:
   * [`robustness/three_class_robustness_audit_receipt.json`](./robustness/three_class_robustness_audit_receipt.json)
   * [`robustness/three_class_predictions_original.json`](./robustness/three_class_predictions_original.json)
   * [`robustness/three_class_predictions_jpeg_q95.json`](./robustness/three_class_predictions_jpeg_q95.json)
   * [`robustness/three_class_predictions_jpeg_q75.json`](./robustness/three_class_predictions_jpeg_q75.json)
   * [`robustness/three_class_predictions_resize_0.5.json`](./robustness/three_class_predictions_resize_0.5.json)
+- **Protocols & Amendments**:
+  * [`PROTOCOL_AMENDMENT_V2.0.0.md`](./PROTOCOL_AMENDMENT_V2.0.0.md) (Pilot amendment)
+  * [`PROTOCOL_AMENDMENT_V2.1.0.md`](./PROTOCOL_AMENDMENT_V2.1.0.md) (A0 vs A1 amendment)
+  * [`PROTOCOL_AMENDMENT_V2.2.0.md`](./PROTOCOL_AMENDMENT_V2.2.0.md) (Local Quadrant DSP amendment)
+  * [`NEXT_STEPS_SOURCE_CONFOUNDING_PROPOSAL.md`](./NEXT_STEPS_SOURCE_CONFOUNDING_PROPOSAL.md)
 - **Test Suites**:
   * [`ml/tests/test_three_class_pilot.py`](../../../ml/tests/test_three_class_pilot.py) (8/8 PASS)
   * [`ml/tests/test_three_class_ablation.py`](../../../ml/tests/test_three_class_ablation.py) (6/6 PASS)
+  * [`ml/tests/test_three_class_local_dsp.py`](../../../ml/tests/test_three_class_local_dsp.py) (6/6 PASS)
+
+---
+
+## 13. Thực Nghiệm Ablation Đặc Trưng DSP Cục Bộ (Local Quadrant DSP Ablation)
+
+Thực thi theo **Protocol Amendment v2.2.0** ([`PROTOCOL_AMENDMENT_V2.2.0.md`](./PROTOCOL_AMENDMENT_V2.2.0.md)) nhằm kiểm tra thực nghiệm giả thuyết: *"Biểu diễn DSP cục bộ tổng hợp có giúp cải thiện khả năng phân biệt authentic / ai_edited mà không làm tăng báo động giả trên control hoặc làm suy giảm nghiêm trọng khả năng phát hiện fully_generated hay không?"*
+
+### 13.1. Thiết Kế Bốn Cấu Hình & Ranh Giới Kỹ Thuật
+1. **Không gian biểu diễn**:
+   - **Baseline Global (592-D)**: Visual embedding MobileNetV3 (576-D) + Global Canonical DSP (16-D).
+   - **Thử nghiệm Local (640-D)**: Visual embedding (576-D) + Global DSP (16-D) + Local Quadrant DSP Summaries (48-D).
+   - Local DSP 48-D được trích xuất từ 4 quadrant 256×256 không chồng lấn trên canvas 512×512, tổng hợp theo từng chiều 16-D bằng: Mean (16-D), Population Std ddof=0 (16-D), và Max (16-D).
+2. **Bốn cấu hình đối sánh**:
+   - **A0-global**: Baseline 592-D trên tập A0 pilot ($N=750$, weight 1.0).
+   - **A0-local**: Probe mới 640-D trên tập A0 pilot ($N=750$, weight 1.0).
+   - **A1-global**: Baseline 592-D trên tập A1 supplemented ($N=1,000$, weight balanced).
+   - **A1-local**: Probe mới 640-D trên tập A1 supplemented ($N=1,000$, weight balanced).
+3. **Ranh giới bất biến**: Giữ nguyên toàn bộ splits, seed `20261011`, $C=1.0$, solver `lbfgs`, 5-fold grouped inner CV với `StandardScaler` cô lập fold, và hiệu chuẩn nhiệt độ OOF ($T_{\text{A0,glob}}=5.8907, T_{\text{A0,loc}}=6.0142, T_{\text{A1,glob}}=5.1400, T_{\text{A1,loc}}=5.1689$).
+
+---
+
+### 13.2. Bảng Kết Quả Đối Sánh Bốn Cấu Hình (Original Canvas)
+
+Đánh giá thực nghiệm trên **273 development holdout** và **341 ImageNet authentic controls** nguyên bản (original canvas):
+
+| Tiêu Chí Đánh Giá | A0-Global (592-D) | A0-Local (640-D) | A1-Global (592-D) | A1-Local (640-D) |
+| :--- | :---: | :---: | :---: | :---: |
+| **Dữ liệu huấn luyện** | A0 ($N=750$) | A0 ($N=750$) | A1 ($N=1,000$) | A1 ($N=1,000$) |
+| **Nhiệt độ hiệu chuẩn ($T$)** | 5.8907 | 6.0142 | 5.1400 | 5.1689 |
+| **Holdout Macro-F1** | 0.5385 | **0.5552** | 0.4887 | 0.4702 |
+| **Holdout Balanced Accuracy** | 0.5238 | **0.5421** | 0.4762 | 0.4579 |
+| **Holdout Multiclass Brier** | **0.5717** | 0.5731 | 0.6402 | 0.6350 |
+| **Holdout Top-Class ECE** | 0.0903 | **0.0696** | 0.1405 | 0.1531 |
+| **Confusion Matrix (A / E / G)** | `[[41, 46, 4],` <br> `[43, 45, 3],` <br> `[11, 23, 57]]` | `[[39, 49, 3],` <br> `[37, 51, 3],` <br> `[11, 22, 58]]` | `[[48, 42, 1],` <br> `[45, 43, 3],` <br> `[35, 17, 39]]` | `[[43, 45, 3],` <br> `[44, 44, 3],` <br> `[33, 20, 38]]` |
+| - *Authentic F1 (P / R)* | 0.4409 (0.43 / 0.45) | 0.4382 (0.45 / 0.43) | **0.4384** (0.38 / 0.53) | 0.4076 (0.36 / 0.47) |
+| - *AI-Edited F1 (P / R)* | 0.4390 (0.39 / 0.49) | **0.4789** (0.42 / 0.56) | 0.4456 (0.42 / 0.47) | 0.4400 (0.40 / 0.48) |
+| - *Fully-Generated F1 (P / R)* | 0.7355 (0.89 / 0.63) | **0.7484** (0.91 / 0.64) | 0.5821 (0.91 / 0.43) | 0.5630 (0.86 / 0.42) |
+| **Control False-Positive AI Rate** ($N=341$) | 68.04% (232/341) | 70.38% (240/341) | 31.09% (106/341) | **27.57%** (94/341) |
+| - *Số lượng gán đúng Authentic* | 109 / 341 | 101 / 341 | 235 / 341 | **247 / 341** |
+| - *Báo động nhầm ai_edited* | 112 | 105 | 69 | 59 |
+| - *Báo động nhầm fully_generated* | 120 | 135 | 37 | 35 |
+| **Paired Shift $\Delta P(\text{ai\_edited})$** ($N=91$) | +0.0297 (55/91 > 0) | +0.0300 (58/91 > 0) | +0.0164 (53/91 > 0) | +0.0166 (55/91 > 0) |
+
+---
+
+### 13.3. Phân Tích Thống Kê & Khoảng Tin Cậy (Bootstrap 10,000 Replicates)
+
+Phân tích Paired Source-Cluster Bootstrap (10,000 replicates theo nhóm nguồn COCO, seed `20261011`):
+1. **Chênh lệch Local − Global trong điều kiện A0**:
+   $$\Delta \text{Macro-F1} = +0.0168, \quad 95\%\text{ CI} = [-0.0155, +0.0492], \quad P(\Delta^* > 0) = 84.61\%$$
+   $\to$ Point estimate tăng nhẹ (+1.68 điểm phần trăm), F1 của lớp `ai_edited` tăng từ 0.4390 lên 0.4789 và recall tăng từ 49.45% lên 56.04% (+6 mẫu edit được phát hiện đúng). Tuy nhiên, **95% CI cắt 0 ở cận dưới (-0.0155)**, do đó kết luận thống kê chính thức là **`INCONCLUSIVE`**.
+2. **Chênh lệch Local − Global trong điều kiện A1**:
+   $$\Delta \text{Macro-F1} = -0.0185, \quad 95\%\text{ CI} = [-0.0514, +0.0129], \quad P(\Delta^* > 0) = 12.95\%$$
+   $\to$ Trong điều kiện dữ liệu đa dạng nguồn authentic, đặc trưng Local DSP làm giảm Macro-F1 (-1.85 điểm phần trăm), chủ yếu do recall của lớp authentic giảm từ 52.75% xuống 47.25% (F1 authentic giảm từ 0.4384 xuống 0.4076). **95% CI cắt 0 (-0.0514 đến +0.0129)**, kết luận là **`INCONCLUSIVE`**.
+
+---
+
+### 13.4. Phân Tích Chẩn Đoán Theo Phân Vị Diện Tích Chỉnh Sửa TGIF Masks (Post-Hoc Diagnosis)
+
+Đối soát 100% (91/91) ảnh holdout `ai_edited` với ground-truth segmentation masks TGIF resident cục bộ tại `data/research/tgif/masks/` (manifest: `masks-manifest.jsonl`). Diện tích can thiệp được chia thành 4 khoảng phân vị:
+- **Q1 (<2.85% diện tích, diện tích trung bình 1.62%, N=23)**:
+  * A0-global: Recall `ai_edited` = 39.13% (9/23), $\bar{P}(\text{edit}) = 0.3924$.
+  * A0-local: Recall `ai_edited` = **52.17%** (12/23), $\bar{P}(\text{edit}) = 0.4107$ (**+3 mẫu edit được phát hiện đúng**).
+  * A1-global: Recall `ai_edited` = 43.48% (10/23), $\bar{P}(\text{edit}) = 0.3849$.
+  * A1-local: Recall `ai_edited` = 43.48% (10/23), $\bar{P}(\text{edit}) = 0.4072$.
+  $\to$ Trong điều kiện A0, đặc trưng quadrant cục bộ giải phóng tín hiệu pháp chứng khỏi bị bối cảnh toàn cục làm loãng đối với các vùng chỉnh sửa siêu nhỏ (<2.85%).
+- **Q2 (2.85%–6.58% diện tích, diện tích trung bình 4.92%, N=23)**:
+  * A0-global: Recall 47.83% (11/23) $\to$ A0-local: Recall **56.52%** (13/23) (**+2 mẫu edit được phát hiện đúng**).
+  * A1-global: Recall 52.17% (12/23) $\to$ A1-local: Recall 43.48% (10/23).
+- **Q3 (6.58%–14.88% diện tích, diện tích trung bình 10.75%, N=22)**:
+  * A0-global: Recall 63.64% (14/22) $\to$ A0-local: Recall 68.18% (15/22).
+  * A1-global: Recall 45.45% (10/22) $\to$ A1-local: Recall **54.55%** (12/22) (**+2 mẫu edit được phát hiện đúng**).
+- **Q4 (>14.88% diện tích, diện tích trung bình 28.14%, N=23)**:
+  * A0-global: 47.83% (11/23) $\to$ A0-local: 47.83% (11/23) (không đổi).
+  * A1-global: 47.83% (11/23) $\to$ A1-local: **52.17%** (12/23).
+
+---
+
+### 13.5. Đo Lường Chi Phí Tính Toán CPU (Extraction Overhead)
+
+Đo lường thời gian thực thi trích xuất trên panel phát triển 16 mẫu cố định trên CPU nội bộ:
+- **Global DSP 16-D**: Mean = 82.97 ms, Median = 84.11 ms, Min = 70.52 ms, Max = 94.59 ms.
+- **Local Quadrant DSP 48-D**: Mean = 98.93 ms, Median = 98.38 ms, Min = 89.67 ms, Max = 113.28 ms.
+- **Combined DSP 64-D**: Mean = 181.89 ms, Median = 183.52 ms, Min = 163.16 ms, Max = 199.59 ms.
+- **Đánh giá overhead**: Chi phí trích xuất DSP tăng thêm **+98.93 ms (+119.2% overhead)**, nâng tổng thời gian trích xuất tín hiệu số lên ~182 ms. Lưu ý: Độ trễ và tính tương đương browser parity của pipeline nhị phân lịch sử (đã đo 80.8 ms warm latency trên Chromium) **không tự động kế thừa** cho pipeline 640-D mới.
+
+---
+
+### 13.6. Đánh Giá Trade-Off & Kết Luận Chiến Lược Nghiên Cứu
+
+1. **Trade-off trong điều kiện A0 (Thiếu đa dạng authentic)**:
+   - Local DSP giúp tăng khả năng phát hiện `ai_edited` diện tích nhỏ (<6.58% diện tích canvas) từ 39% lên 52%, nâng F1 của lớp edit từ 0.4390 lên 0.4789.
+   - Nhưng đổi lại, nó làm tăng thêm báo động giả trên ImageNet authentic control từ 68.04% lên **70.38%** (+2.34 điểm phần trăm).
+2. **Trade-off trong điều kiện A1 (Đã bổ sung authentic ImageNet)**:
+   - Local DSP giúp giảm thêm báo động giả control từ 31.09% xuống **27.57%** (-3.52 điểm phần trăm, nhận diện đúng 247/341 ảnh authentic).
+   - Nhưng đổi lại, nó làm giảm Macro-F1 holdout từ 0.4887 xuống **0.4702** (-1.85 điểm phần trăm) do suy giảm recall của lớp authentic COCO (từ 52.75% xuống 47.25%).
+3. **Kết luận khoa học & Khuyến nghị chiến lược**:
+   - Biểu diễn Local Quadrant DSP 48-D **chưa đủ bằng chứng thống kê để khẳng định là giải pháp ưu việt** (cả hai 95% bootstrap CI đều cắt 0; kết luận strictly `INCONCLUSIVE`).
+   - Mặc dù có tín hiệu hỗ trợ phát hiện edit diện tích nhỏ, việc chia lưới quadrant cố định không thể giải quyết triệt để sự mất cân xứng phân phối nguồn (domain confounding giữa COCO và ImageNet).
+   - **Khuyến nghị**: **Tạm dừng mở rộng đặc trưng cục bộ phức tạp hơn (ví dụ sliding window hoặc fine grid)**. Thay vào đó, **ưu tiên nguồn lực vào thiết kế dữ liệu đối chứng nhân tố (factorial design 2×2)** theo [`NEXT_STEPS_SOURCE_CONFOUNDING_PROPOSAL.md`](./NEXT_STEPS_SOURCE_CONFOUNDING_PROPOSAL.md) để phân tách dứt điểm domain semantic bias khỏi format/compression shortcut trước khi đưa ra bất kỳ kết luận kiến trúc mới nào.

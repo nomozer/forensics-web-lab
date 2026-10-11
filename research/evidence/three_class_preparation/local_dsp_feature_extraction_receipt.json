@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0.0",
+  "protocol_id": "PROTO-RQ1-RQ2-3CLASS-V2.2-AMENDMENT",
+  "action": "LOCAL_DSP_FEATURE_EXTRACTION",
+  "status": "SUCCESS",
+  "total_images_processed": 1614,
+  "feature_dimensions": {
+    "visual_dim": 576,
+    "global_dsp_dim": 16,
+    "local_dsp_summary_dim": 48,
+    "total_combined_dim": 640
+  },
+  "sample_counts": {
+    "train_a0": 750,
+    "supplement_a1": 250,
+    "train_a1": 1000,
+    "holdout": 273,
+    "nature_control": 341
+  },
+  "output_npz_path": "data\\research\\cache\\three_class_local_dsp_features.npz",
+  "output_npz_size_bytes": 5887116,
+  "output_npz_sha256": "10ab707b67e53106cebbfbee8a0e4f7d458aa1058ef830abfca8787613cb8508",
+  "execution_time_seconds": 80.32
+}

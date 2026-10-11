@@ -90,12 +90,28 @@
 >      * Sample weights: auth COCO (0.5), auth ImageNet (0.5), edit TGIF (1.0), gen SD1.5 (1.0) -> tổng weight mỗi lớp = 250.0 (tỷ lệ lớp hiệu dụng bảo toàn 1:1:1).
 >      * Grouped inner CV (5-fold, 750 groups gom cặp COCO) với StandardScaler cô lập fold. Nhiệt độ hiệu chuẩn OOF: $T_{v,a1} = 5.1813, T_{f,a1} = 4.9391$.
 >    - **Kết quả Đánh giá 4 Cấu hình (Holdout N=273 & Control N=341)**:
->      * Báo động giả trên 341 ảnh ImageNet authentic control giảm ngoạn mục: Visual-only từ 67.45% xuống 35.78% ($\Delta = -31.67\%$), Visual+DSP từ 68.04% xuống 31.09% ($\Delta = -36.95\%$). Số mẫu nhận diện đúng authentic tăng từ 109 lên 235/341 mẫu.
->      * Trade-off trên Holdout ảnh gốc: Macro-F1 giảm từ 0.5086 xuống 0.4721 (Visual) và từ 0.5385 xuống 0.4887 (Fusion) do không gian authentic mở rộng làm tăng false negatives trên SD1.5 (recall SD1.5 giảm từ 62.6% về 42.9%).
->      * Lợi ích nhất quán của DSP: DSP tiếp tục cải thiện Macro-F1 (+0.0166 trên ảnh gốc, 83.82% bootstrap mass > 0) và giảm thêm báo động giả control (-4.69%). Dưới nén JPEG Q75, A1 Fusion đạt Macro-F1 0.6046 (cao nhất trong cả 4 cấu hình) và duy trì FP control thấp nhất (31.38%).
+>      * Báo động giả trên 341 ảnh ImageNet authentic control giảm ngoạn mục: Visual-only từ 67.45% xuống 35.78% ($\Delta = -31.67\text{ điểm phần trăm}$), Visual+DSP từ 68.04% xuống 31.09% ($\Delta = -36.95\text{ điểm phần trăm}$). Số mẫu nhận diện đúng authentic tăng từ 109 lên 235/341 mẫu. Giảm false positives không chứng minh riêng semantic bias là nguyên nhân độc nhất.
+>      * Trade-off trên Holdout ảnh gốc: Macro-F1 giảm từ 0.5086 xuống 0.4721 (Visual) và từ 0.5385 xuống 0.4887 (Fusion) do ranh giới quyết định đa lớp thay đổi làm tăng false negatives trên SD1.5 (recall SD1.5 giảm từ 62.6% về 42.9%).
+>      * Lợi ích nhất quán của DSP: DSP tiếp tục cải thiện point estimate Macro-F1 (+0.0166 trên ảnh gốc, 83.82% bootstrap mass > 0, 95% CI $[-0.0168, +0.0514]$ cắt 0 -> INCONCLUSIVE) và giảm thêm báo động giả control (-4.69 điểm phần trăm). Dưới nén JPEG Q75 (endpoint khám phá), A1 Fusion đạt Macro-F1 0.6046 (cao nhất trong cả 4 cấu hình) và duy trì FP control thấp nhất (31.38%).
 >      * Biên nhận: `three_class_ablation_evaluation_receipt.json`, predictions: `three_class_ablation_a1_predictions.json`.<br>
->    **Phase status**: `AUTHENTIC_IMAGENET_ABLATION_VERIFIED_PASS`<br>
->    **Next approved action**: Tiếp tục hoàn thiện nghiên cứu đặc trưng cục bộ (patch/frequency) kết hợp mở rộng generator theo thiết kế factorial.<br>
+>
+> 11. _Thực Nghiệm Ablation Đặc Trưng DSP Cục Bộ (Local Quadrant DSP, Branch `research/independent-cohort-acquisition`) ($systematic-debugging, $writing-plans, $executing-plans, $verification-before-completion)_:
+>    - **Truy nguyên Mâu thuẫn Q75 & Ban hành Protocol Amendment v2.2.0**:
+>      * Xác định con số Macro-F1 Q75 `0.5235` trong bản nháp cũ là lỗi sao chép văn bản (transcription erratum); máy đọc raw predictions và biên nhận đã niêm phong bit-exact là `0.6015` (`JPEG_Q75_CANONICAL_PRE_RESIZE`). Đánh dấu Q75 là chỉ số phụ khám phá.
+>      * Ban hành `PROTOCOL_AMENDMENT_V2.2.0.md` quy định trích xuất 4 quadrant 256×256 không chồng lấn trên canvas 512×512, tổng hợp theo từng chiều 16-D bằng mean, population std (ddof=0) và max (48-D); ghép nối thành vector 640-D (`visual_576 + global_dsp_16 + local_dsp_48`).
+>    - **Huấn luyện Probes 640-D & Đánh giá 4 Cấu hình (Holdout N=273 & Control N=341)**:
+>      * Huấn luyện 2 probes mới (A0-local và A1-local) với $C=1.0$, solver `lbfgs`, 5-fold grouped inner CV theo `source_group_id` và `StandardScaler` cô lập fold. Nhiệt độ hiệu chuẩn OOF: $T_{\text{A0,loc}} = 6.0142, T_{\text{A1,loc}} = 5.1689$.
+>      * Kết quả trên Holdout: A0-global (0.5385) $\to$ A0-local (**0.5552**, $\Delta = +0.0168$); A1-global (0.4887) $\to$ A1-local (0.4702, $\Delta = -0.0185$).
+>      * Paired source-cluster bootstrap (10,000 reps): 95% CI cho $\Delta(\text{Local} - \text{Global})$ đều cắt 0 (A0: $[-0.0155, +0.0492]$, $P > 0: 84.61\%$; A1: $[-0.0514, +0.0129]$, $P > 0: 12.95\%$). Kết luận khoa học chính thức: **`INCONCLUSIVE`**.
+>    - **Phân Tích Chẩn Đoán Diện Tích TGIF Masks (100% Coverage)**:
+>      * Đối soát 91/91 ảnh holdout `ai_edited`: Ở nhóm diện tích siêu nhỏ Q1 (<2.85%), A0-local nâng recall phát hiện edit từ 39.13% lên **52.17%** (+3 ảnh phát hiện đúng), hỗ trợ giả thuyết GAP làm loãng tín hiệu cục bộ.
+>      * Tuy nhiên xuất hiện trade-off: Ở A0, local DSP làm tăng nhẹ báo động giả control từ 68.04% lên 70.38% (+2.34 pp). Ở A1, local DSP giảm tiếp FP control xuống 27.57% (-3.52 pp) nhưng làm giảm F1 holdout chung (0.4887 xuống 0.4702) do giảm recall authentic COCO (52.75% về 47.25%).
+>    - **Chi phí CPU & Khuyến nghị Chiến lược**:
+>      * Đo lường CPU trên 16 ảnh phát triển: Global DSP 82.97 ms $\to$ Combined DSP 181.89 ms (+98.93 ms, +119.2% overhead).
+>      * Khuyến nghị: Tạm dừng mở rộng đặc trưng cục bộ phức tạp hơn (sliding window); ưu tiên thiết kế dữ liệu đối chứng nhân tố (factorial design 2x2) theo `NEXT_STEPS_SOURCE_CONFOUNDING_PROPOSAL.md`.
+>      * Biên nhận: `three_class_local_dsp_evaluation_receipt.json`, predictions: `three_class_local_dsp_predictions.json`.<br>
+>    **Phase status**: `LOCAL_DSP_FEATURE_ABLATION_VERIFIED_PASS`<br>
+>    **Next approved action**: Chuẩn bị thiết kế dữ liệu đối chứng nhân tố (factorial design 2x2) theo `NEXT_STEPS_SOURCE_CONFOUNDING_PROPOSAL.md` để phân tách dứt điểm domain semantic bias khỏi format/compression shortcut.<br>
 
 
 
