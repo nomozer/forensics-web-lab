@@ -49,7 +49,7 @@ Preflight được thực hiện độc lập qua `scripts/research/preflight_co
 - **Mã băm SHA-256 Shard**: `0d0f6dac11fdcc549de2746aa9f53136a3bc22a2a1aff2b0b847f7622ad60c15`.
 - **Lưu cache**: Đã tải và lưu tại `data/research/cord_v2/` (được cách ly bởi `.gitignore`).
 
-### Kết Quả Đối Soát 4 Tài Liệu Nguồn CORD-v2 Thật
+### Kết Quả Đối Soát 4 Tài Liệu Nguồn CORD-v2 Thật & Độ Lệch Quad Envelope
 
 1. **Attempt #0 (`attempt_0_replacement_price`)**:
    - `source_row_index`: 22 | `source_image_id`: 22 | `source_doc_identifier`: `cord_v2_valid_row22_img22`
@@ -57,7 +57,8 @@ Preflight được thực hiện độc lập qua `scripts/research/preflight_co
    - Encoded Bytes SHA-256: `d27f10eeadc2f3a4f1b7e277f07fd2a2c4c06ed24378b5ec949786ec39949c7b`
    - Decoded RGB SHA-256: `faeb6395bae43b219bb2c8699fbf1c1023503e59b0372bd6bfd96b17d2f562fe`
    - Văn bản gốc: `"280,000"` | Danh mục GT: `menu.price` | Thao tác: `replacement` $\to$ `"350,000"`
-   - Bounding Box: `[442, 406, 468, 488]` | Khớp 100% hình học và bao phủ trọn vẹn văn bản.
+   - Bounding Box kế hoạch: `[442, 406, 468, 488]` | Ground Truth Quad Envelope: `[442, 406, 468, 488]`
+   - BBox vs Quad Delta: `[0, 0, 0, 0]` (trùng khớp hoàn hảo).
 
 2. **Attempt #1 (`attempt_1_replacement_item_name`)**:
    - `source_row_index`: 61 | `source_image_id`: 61 | `source_doc_identifier`: `cord_v2_valid_row61_img61`
@@ -65,7 +66,8 @@ Preflight được thực hiện độc lập qua `scripts/research/preflight_co
    - Encoded Bytes SHA-256: `aa2de89a0a51024f43ed5a0579453354447fba47b7714f4a19605fd96a0a67c4`
    - Decoded RGB SHA-256: `0cb678f7671dbe3dd1ac1257ea7d5ddd1d6c29667644cb86a811c495b19dd933`
    - Văn bản gốc: `"Populaire Chocolate"` | Danh mục GT: `menu.nm` | Thao tác: `replacement` $\to$ `"Classic Tiramisu"`
-   - Bounding Box: `[1085, 128, 1156, 749]` | Khớp envelope tọa độ.
+   - Bounding Box kế hoạch: `[1085, 128, 1156, 749]` | Ground Truth Quad Envelope: `[1084, 128, 1156, 750]`
+   - BBox vs Quad Delta: `[+1, 0, 0, -1]` (chênh lệch 1 pixel tại `ymin` và `xmax` do làm tròn đa giác tọa độ số thực trong ground truth annotation sang bounding box số nguyên; ghi nhận mức chênh lệch trung thực khoa học, không tuyên bố "khớp 100%").
 
 3. **Attempt #2 (`attempt_2_removal_discount_line`)**:
    - `source_row_index`: 7 | `source_image_id`: 7 | `source_doc_identifier`: `cord_v2_valid_row7_img7`
@@ -73,7 +75,8 @@ Preflight được thực hiện độc lập qua `scripts/research/preflight_co
    - Encoded Bytes SHA-256: `52adf3336878fbd558951660d6ce52268dd3e636563ca1d7d7e004ccab96bff7`
    - Decoded RGB SHA-256: `a8af9134a268ee619e857843e79628d19e7f5a02d748e1f89706ee4d206cee40`
    - Văn bản gốc: `"Discount: -9,545"` | Danh mục GT: `sub_total.discount_price` | Thao tác: `removal` $\to$ `""`
-   - Bounding Box: `[524, 208, 556, 492]` | Khớp 100% hình học.
+   - Bounding Box kế hoạch: `[524, 208, 556, 492]` | Ground Truth Quad Envelope: `[524, 208, 556, 492]`
+   - BBox vs Quad Delta: `[0, 0, 0, 0]` (trùng khớp hoàn hảo).
 
 4. **Attempt #3 (`attempt_3_removal_tax_line`)**:
    - `source_row_index`: 93 | `source_image_id`: 93 | `source_doc_identifier`: `cord_v2_valid_row93_img93`
@@ -81,7 +84,8 @@ Preflight được thực hiện độc lập qua `scripts/research/preflight_co
    - Encoded Bytes SHA-256: `d7f3fb8f44ff9368d1469e354ae2ae05d7616688741369ef4f85e4ea7efc1e13`
    - Decoded RGB SHA-256: `87ea589178ee79a02fb4208a3854897e9eeea9583b6e828453ae660c159828e8`
    - Văn bản gốc: `"TAX 15,636"` | Danh mục GT: `sub_total.tax_price` | Thao tác: `removal` $\to$ `""`
-   - Bounding Box: `[939, 383, 975, 605]` | Khớp 100% hình học.
+   - Bounding Box kế hoạch: `[939, 383, 975, 605]` | Ground Truth Quad Envelope: `[939, 383, 975, 605]`
+   - BBox vs Quad Delta: `[0, 0, 0, 0]` (trùng khớp hoàn hảo).
 
 - **Biên nhận preflight**: `research/evidence/document_pilot/cord_source_preflight_receipt.json`.
 - **Contact sheet kiểm chứng hình học**: `research/evidence/document_pilot/preflight_inspections/cord_preflight_contact_sheet.png`.
@@ -90,7 +94,19 @@ Preflight được thực hiện độc lập qua `scripts/research/preflight_co
 
 ## 4. Kiểm Thử Hệ Thống (Verification Evidence)
 
-Toàn bộ 13 unit tests trong `ml/tests/test_document_feasibility_geometry.py` đạt **13/13 PASS**:
+### 4.1 Bảng Mã Băm Cấu Kiện Chuẩn Tắc (Canonical Hashes)
+
+| Cấu kiện | Đường dẫn tệp | SHA-256 Hash |
+| :--- | :--- | :--- |
+| **Kế hoạch máy** | `research/evidence/document_pilot/document_feasibility_plan.json` | `4320eb1e85149323afeed51b18296bb44823d5c86267c4464e7c3d996077256f` |
+| **Runner script** | `scripts/research/run_document_feasibility_colab.py` | `bfa19eb9379c6b36e76e77941d4a1f71080ec5dc7f1b597063b2a89ed5ac3c5f` |
+| **Notebook turnkey** | `notebooks/independent_document_feasibility_colab.ipynb` | `aad7edf61b43f8e3493bddf1cd26aa5a32d3c1a2b5846277efcbf8dbb7c23771` |
+
+Mã băm trong Cell 2 của notebook khớp bit-exact 100% với tệp canonical trên repository.
+
+### 4.2 Kết Quả 16 Unit Tests
+
+Toàn bộ 16 unit tests trong `ml/tests/test_document_feasibility_geometry.py` đạt **16/16 PASS**:
 1. `test_pilot_design_amendments`: PASS (Xác minh Amendment v1.1.0 và v1.2.0).
 2. `test_geometry_roundtrip_module`: PASS (Bảo toàn 100% bitwise ngoài mask).
 3. `test_out_of_bounds_bbox_rejected`: PASS (Chặn đứng bounding box ngoài khung hoặc thoái hóa).
@@ -103,7 +119,10 @@ Toàn bộ 13 unit tests trong `ml/tests/test_document_feasibility_geometry.py` 
 10. `test_resume_preserves_completed_attempts_and_human_verdicts`: PASS (Không mất hàng, không ghi đè verdict cũ).
 11. `test_failure_handling_and_partial_archive`: PASS (Cô lập lỗi attempt, sinh failure receipt và zip partial).
 12. `test_budget_and_schema_fail_closed_checks`: PASS (Dừng fail-closed khi vượt ngưỡng tải).
-13. `test_verification_harness_fail_closed`: PASS (Bắt rò rỉ pixel ngoài mask 1 đơn vị L1).
+13. `test_checkpoint_budget_inventory_and_limit`: PASS (Xác minh 18 files FP16, dự kiến 6.94 GB $\le 12.0$ GiB trần ngân sách).
+14. `test_preflight_and_extract_all_sources_real_and_fail_closed`: PASS (Preflight 4 sources trước model load, theo dõi quad delta, fail-closed khi sai image_id/dimension).
+15. `test_idempotency_guard_and_fault_injection`: PASS (Từ chối ghi đè output dir đã có kết quả; xuất run failure receipt và partial zip khi lỗi).
+16. `test_verification_harness_fail_closed`: PASS (Bắt rò rỉ pixel ngoài mask 1 đơn vị L1).
 
 Bộ kiểm thử hồi quy:
 - `test_document_pilot_reporting_reconciliation.py`: 6/6 PASS.

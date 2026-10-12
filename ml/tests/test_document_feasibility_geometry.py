@@ -516,6 +516,107 @@ def test_budget_and_schema_fail_closed_checks(tmp_path: Path):
         )
 
 
+def test_checkpoint_budget_inventory_and_limit():
+    """Verify FP16 pipeline file inventory (18 files, 6.94 GB) and budget ceiling enforcement."""
+    import sys
+    sys.path.insert(0, str(REPO_ROOT))
+    from scripts.research.run_document_feasibility_colab import (
+        CHECKPOINT_FP16_FILES,
+        TOTAL_PROJECTED_FP16_BYTES,
+        preflight_checkpoint_budget_and_access,
+    )
+
+    # 1. Exactly 18 files in FP16 pipeline inventory
+    assert len(CHECKPOINT_FP16_FILES) == 18
+    assert TOTAL_PROJECTED_FP16_BYTES == 6941218469  # 6.4645 GiB
+    assert TOTAL_PROJECTED_FP16_BYTES <= 12884901888  # 12.0 GiB ceiling
+
+    # 2. Budget limit violation must raise ValueError before downloading
+    with pytest.raises(ValueError, match="exceeds budget ceiling"):
+        preflight_checkpoint_budget_and_access(
+            repo_id="diffusers/stable-diffusion-xl-1.0-inpainting-0.1",
+            revision="115134f363124c53c7d878647567d04daf26e41e",
+            budget_max_bytes=5000000000,  # 5 GB < 6.94 GB
+        )
+
+
+def test_preflight_and_extract_all_sources_real_and_fail_closed():
+    """Verify that source preflight verifies all 4 real CORD-v2 sources, tracks quad deltas, and fails closed on mismatch."""
+    cached_shard = REPO_ROOT / "data" / "research" / "cord_v2" / "validation-00000-of-00001-cc3c5779fe22e8ca.parquet"
+    if not cached_shard.exists():
+        pytest.skip("CORD-v2 cached parquet shard not present locally.")
+
+    import sys
+    sys.path.insert(0, str(REPO_ROOT))
+    from scripts.research.run_document_feasibility_colab import preflight_and_extract_all_sources
+
+    plan_path = REPO_ROOT / "research" / "evidence" / "document_pilot" / "document_feasibility_plan.json"
+    with open(plan_path, "r", encoding="utf-8") as f:
+        plan = json.load(f)
+
+    attempts = plan["attempts"]
+
+    # 1. Successful preflight of all 4 sources
+    verified_sources, receipt = preflight_and_extract_all_sources(cached_shard, attempts)
+    assert receipt["status"] == "ALL_SOURCES_PREFLIGHT_VERIFIED"
+    assert receipt["source_count"] == 4
+    assert len(verified_sources) == 4
+
+    # Check quad deltas: Attempt 0, 2, 3 have [0,0,0,0]; Attempt 1 has [+1, 0, 0, -1] due to integer rounding
+    sources_info = {s["attempt_id"]: s for s in receipt["sources"]}
+    assert sources_info["attempt_0_replacement_price"]["bbox_quad_delta"] == [0, 0, 0, 0]
+    assert sources_info["attempt_1_replacement_item_name"]["bbox_quad_delta"] == [1, 0, 0, -1]
+    assert sources_info["attempt_2_removal_discount_line"]["bbox_quad_delta"] == [0, 0, 0, 0]
+    assert sources_info["attempt_3_removal_tax_line"]["bbox_quad_delta"] == [0, 0, 0, 0]
+
+    # 2. Tampered attempt with wrong source_image_id must FAIL CLOSED with RuntimeError before model load
+    tampered_attempts = [dict(att) for att in attempts]
+    tampered_attempts[0]["source_image_id"] = "TAMPERED_WRONG_IMAGE_ID"
+    with pytest.raises(RuntimeError, match="Source image ID mismatch"):
+        preflight_and_extract_all_sources(cached_shard, tampered_attempts)
+
+    # 3. Tampered attempt with wrong dimensions must FAIL CLOSED
+    tampered_attempts2 = [dict(att) for att in attempts]
+    tampered_attempts2[0]["native_size"] = {"width": 9999, "height": 9999}
+    with pytest.raises(RuntimeError, match="Dimension mismatch"):
+        preflight_and_extract_all_sources(cached_shard, tampered_attempts2)
+
+
+def test_idempotency_guard_and_fault_injection(tmp_path: Path):
+    """Verify that runner refuses to overwrite existing run and handles fault injection with run_failure_receipt and partial zip."""
+    import sys
+    sys.path.insert(0, str(REPO_ROOT))
+    from scripts.research.run_document_feasibility_colab import run_feasibility_pipeline
+
+    plan_path = REPO_ROOT / "research" / "evidence" / "document_pilot" / "document_feasibility_plan.json"
+
+    # 1. Idempotency guard test: if output directory has feasibility_manifest.json, abort
+    run_dir = tmp_path / "completed_run"
+    run_dir.mkdir()
+    (run_dir / "feasibility_manifest.json").write_text("{}", encoding="utf-8")
+
+    with pytest.raises(RuntimeError, match="already contains completed run artifacts"):
+        run_feasibility_pipeline(plan_path=plan_path, output_dir=run_dir, dry_run=True)
+
+    # 2. Fault injection test: run with device='cuda' on non-cuda machine or trigger deliberate failure
+    fail_dir = tmp_path / "fault_injected_run"
+    with pytest.raises(Exception):
+        # Requesting cuda on cpu-only local machine without dry_run triggers RuntimeError
+        run_feasibility_pipeline(plan_path=plan_path, output_dir=fail_dir, dry_run=False, device="cuda")
+
+    # Verify that run_failure_receipt.json was created
+    fail_receipt_path = fail_dir / "run_failure_receipt.json"
+    assert fail_receipt_path.exists(), "run_failure_receipt.json must be generated on failure!"
+    with open(fail_receipt_path, "r", encoding="utf-8") as f:
+        fail_rec = json.load(f)
+    assert "error_type" in fail_rec
+    assert "error_message" in fail_rec
+
+    # Verify partial zip was generated
+    partial_zip = fail_dir / "document_feasibility_results_partial.zip"
+    assert partial_zip.exists(), "document_feasibility_results_partial.zip must be generated on failure!"
+
+
 def test_verification_harness_fail_closed(tmp_path: Path):
     """Verify that verification harness passes valid artifacts and fails closed on 1-pixel leakage."""
     import sys
@@ -575,3 +676,4 @@ def test_verification_harness_fail_closed(tmp_path: Path):
     assert res_fail["status"] == "FAIL_OUTSIDE_MASK_LEAKAGE"
     assert res_fail["is_outside_equal"] is False
     assert res_fail["max_outside_diff"] == 1
+

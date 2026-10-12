@@ -2,7 +2,7 @@
 
 > **Tài liệu đọc đầu tiên bắt buộc cho mọi phiên làm việc AI mới.**<br>
 > **Base main commit**: `7fd7b8851819154dee849a440a5e0dfb69f46c0d` (main with Phase 4C.7A finalized; CI success)<br>
-> **Phase gần nhất**: Phase 4C.8 trace — Controlled Document Generation Feasibility Study Repaired & Real CORD-v2 Sources Preflight Verified (Protocol v1.2.0, 4 CORD-v2 attempts verified, Turnkey Colab Notebook ready)<br>
+> **Phase gần nhất**: Phase 4C.8 trace — Controlled Document Generation Feasibility Study Hardened & Turnkey Colab Notebook Released (Protocol v1.2.0, 4 CORD-v2 attempts verified, 18 FP16 files budget locked, 16/16 tests PASS)<br>
 > **Branch**: `research/independent-cohort-acquisition` (no PR)<br>
 > **Current TGIF intake execution commit**: `9d98a2d5c6afea16f9b3a71a03f0c2d6f43204e4` (archive-layout-resolving TGIF N=400 Colab worker snapshot; canonical notebook pins this full SHA by detached checkout, while the local auditor remains on the handoff branch; historical pilot/diagnostic/calibration bindings remain unchanged)<br>
 > **Repository naming status**: `FUNCTIONAL_NAMES_NORMALIZED` — 46 active, unsealed files now use work-oriented names; the complete migration table is in `docs/REPOSITORY_NAMING_MAP.md`. Twenty-one sealed config/notebook/operator/package/confirmatory paths and all historical evidence/raw artifact paths retain their exact names and bindings.<br>
@@ -324,8 +324,27 @@
 >      * Mở rộng test suite `ml/tests/test_document_feasibility_geometry.py` lên 13 unit tests phủ kín 8 lỗi đã khắc phục (13/13 PASS).
 >      * Kiểm chứng 100% các code cell trong notebook biên dịch cú pháp sạch; đối soát SHA-256 payload staging khớp bit-exact với runner và plan trên đĩa.
 >      * Toàn bộ 77 tests hệ thống PASS (64 vitest + 13 continuity tests).
+>    **Historical Phase status**: `DOCUMENT_FEASIBILITY_NOTEBOOK_REPAIRED_PASS`<br>
+>
+> 22. _Đóng Các Lỗi Thực Thi Trực Tiếp, Khóa Runner Hardening & Xuất Bản Turnkey Colab Notebook (Feasibility Runner Hardening & Preflight Locked, Branch `research/independent-cohort-acquisition`) ($systematic-debugging, $writing-plans, $executing-plans, $verification-before-completion)_:
+>    - **Đưa Source Preflight Lên Trước Checkpoint Download (Fail-Closed Early Verification)**:
+>      * Đưa toàn bộ bước nạp và xác minh 4 tài liệu CORD-v2 lên trước `from_pretrained()` checkpoint download, ngăn chặn hoàn toàn rủi ro tải 6.46 GiB khi dữ liệu nguồn hoặc annotation có lỗi.
+>      * Kiểm tra đối soát sha256 encoded bytes, decoded RGB, dimensions, EXIF=1, và nhãn ground truth.
+>      * Tính toán độ lệch giữa bounding box kế hoạch và ground truth quad envelope: Attempt 0, 2, 3 có delta `[0, 0, 0, 0]`; Attempt 1 có delta `[+1, 0, 0, -1]` do làm tròn đa giác tọa độ số thực trong ground truth sang bounding box số nguyên. Ghi nhận delta trung thực khoa học, không tuyên bố "khớp 100%".
+>      * Cơ chế fail-closed lập tức nếu sai source ID hoặc dimension mismatch trước khi chạm vào model pipeline.
+>    - **Khóa Ngân Sách Checkpoint Thật & Ungated Access Check**:
+>      * Lập danh mục 18 files FP16 pipeline (`CHECKPOINT_FP16_FILES`, tổng dung lượng dự kiến 6,941,218,469 bytes = 6.4645 GiB $\le 12.0$ GiB trần ngân sách).
+>      * Kiểm tra truy cập công khai ungated qua Hugging Face API trước khi download, cấm tự động tải FP32 hoặc toàn repo.
+>    - **Khóa Cứng Dependencies & Idempotency Guard**:
+>      * Notebook khóa cứng exact pinned dependencies bằng `==` (`diffusers==0.32.2`, `transformers==4.49.0`, `accelerate==1.4.0`, `safetensors==0.5.3`, `pyarrow==19.0.1`), cấm triệt để dùng `>=`.
+>      * Sinh `run_id` mới gắn `plan_hash[:8]`. Thiết lập idempotency guard: từ chối ghi đè fail-closed nếu thư mục kết quả đã chứa `feasibility_manifest.json` hoặc zip archive.
+>    - **Quản Lý Lỗi Toàn Cục & Xuất Partial Archive**:
+>      * Try-except toàn cục sinh `run_failure_receipt.json` và tự động đóng gói `document_feasibility_results_partial.zip` nếu gặp lỗi unhandled.
+>    - **Tái Xuất Bản Turnkey Notebook & Kiểm Thử Hệ Thống**:
+>      * Generator `build_document_feasibility_colab_notebook.py` tái xuất notebook sạch 5 cells; đối soát mã băm staging khớp bit-exact với runner (`bfa19eb9...`) và plan (`4320eb1e...`).
+>      * Mở rộng `ml/tests/test_document_feasibility_geometry.py` lên 16 unit tests (16/16 PASS); toàn bộ 25 document pilot tests PASS; 77 tests hệ thống PASS.
 >    **Phase status**: `PREPARED_SOURCE_PREFLIGHT_VERIFIED`<br>
->    **Next approved action**: Người dùng mở notebook `notebooks/independent_document_feasibility_colab.ipynb` trên Google Colab GPU (T4), chạy thực thi 4 attempts đã được tiền kiểm chứng nguồn, và tải `document_feasibility_results.zip` về LOCAL để đối soát và thẩm định nội dung.<br>
+>    **Next approved action**: Người dùng tải notebook `notebooks/independent_document_feasibility_colab.ipynb` lên Google Colab GPU (T4), chạy thực thi 4 attempts đã được tiền kiểm chứng nguồn, và tải `document_feasibility_results.zip` về LOCAL để đối soát và thẩm định nội dung.<br>
 >
 > ---
 

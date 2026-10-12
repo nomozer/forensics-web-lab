@@ -1,3 +1,11 @@
+## Feasibility Runner Hardening & Preflight Locked (Phase 4C.8 trace, branch research/independent-cohort-acquisition)
+
+- **Source Preflight Trước Model Download & Khóa Ngân Sách Checkpoint Thật ($systematic-debugging, $executing-plans)**: Đưa bước nạp và xác minh 4 tài liệu CORD-v2 lên trước `from_pretrained()` checkpoint download; tính toán độ lệch quad envelope (Attempt 1 lệch 1 px `[+1, 0, 0, -1]` do làm tròn toạ độ; Attempt 0, 2, 3 trùng khớp `[0, 0, 0, 0]`); cơ chế fail-closed chặn đứng download khi sai source ID hoặc dimensions. Lập danh mục 18 files FP16 pipeline (6,941,218,469 bytes = 6.4645 GiB $\le 12.0$ GiB) và kiểm tra truy cập ungated qua HTTP API trước download.
+- **Khóa Cứng Dependencies, Idempotency Guard & Xử Lý Lỗi Toàn Cục ($verification-before-completion)**: Khóa cứng exact pinned dependencies bằng `==` trong notebook; gán `run_id` mới với `plan_hash[:8]`; thêm idempotency guard fail-closed chống ghi đè thư mục kết quả cũ; try-except toàn cục xuất `run_failure_receipt.json` và partial zip archive.
+- **Tái Xuất Bản Turnkey Notebook & 16 Unit Tests PASS ($verification-before-completion)**: Tái xuất `notebooks/independent_document_feasibility_colab.ipynb` sạch 5 cells; đối soát SHA-256 bit-exact giữa staging, runner (`bfa19eb9...`) và plan (`4320eb1e...`); 16/16 unit tests `test_document_feasibility_geometry.py` PASS; 25/25 document tests PASS. Trạng thái: `PREPARED_SOURCE_PREFLIGHT_VERIFIED`.
+
+---
+
 ## Controlled Document Feasibility Notebook Repair & Real CORD-v2 Preflight (Phase 4C.8 trace, branch research/independent-cohort-acquisition)
 
 - **Sửa Triệt Để 8 Khiếm Khuyết Colab Notebook & Trình Sinh Tự Động ($systematic-debugging, $executing-plans)**: Khắc phục IndentationError Cell 2 qua script sinh tự động `build_document_feasibility_colab_notebook.py` (loại bỏ hoàn toàn code nhúng chép tay); sửa Parquet loader theo đúng logical PyArrow struct `image.bytes` và `ground_truth`; đồng bộ 100% hạt giống canonical `[20261012, 20261013, 20261014, 20261015]`; chuẩn hóa CSV qua `csv.DictWriter` (QUOTE_MINIMAL); sửa resume logic khởi tạo đủ 4 attempts và bảo toàn human review đã có; tích hợp tạo contact sheet 5 cột trực tiếp trong runner; bổ sung try-except per attempt, xuất `attempt_failure_receipt.json`, luôn đóng gói partial zip; thực thi trần ngân sách fail-closed.
