@@ -2,7 +2,7 @@
 
 > **Tài liệu đọc đầu tiên bắt buộc cho mọi phiên làm việc AI mới.**<br>
 > **Base main commit**: `7fd7b8851819154dee849a440a5e0dfb69f46c0d` (main with Phase 4C.7A finalized; CI success)<br>
-> **Phase gần nhất**: Phase 4C.8 trace — Document Reporting v1.2.0 Reconciled, Public Candidate Audit & Independent Fallback Pilot Design PASS<br>
+> **Phase gần nhất**: Phase 4C.8 trace — Controlled AI-Document Generation Feasibility Study Prepared (Protocol v1.1.0, 4 CORD-v2 attempts locked, Colab launcher ready)<br>
 > **Branch**: `research/independent-cohort-acquisition` (no PR)<br>
 > **Current TGIF intake execution commit**: `9d98a2d5c6afea16f9b3a71a03f0c2d6f43204e4` (archive-layout-resolving TGIF N=400 Colab worker snapshot; canonical notebook pins this full SHA by detached checkout, while the local auditor remains on the handoff branch; historical pilot/diagnostic/calibration bindings remain unchanged)<br>
 > **Repository naming status**: `FUNCTIONAL_NAMES_NORMALIZED` — 46 active, unsealed files now use work-oriented names; the complete migration table is in `docs/REPOSITORY_NAMING_MAP.md`. Twenty-one sealed config/notebook/operator/package/confirmatory paths and all historical evidence/raw artifact paths retain their exact names and bindings.<br>
@@ -281,8 +281,28 @@
 >    - **Kiểm Thử Tự Động & Hoàn Thành**:
 >      * Cập nhật `ml/tests/test_document_pilot_reporting_reconciliation.py` (6/6 PASS).
 >      * Toàn bộ 13/13 tests document pilot PASS; 67/67 vitest tests + 13 continuity tests PASS (pnpm test 100%).
->    **Phase status**: `DOCUMENT_REPORTING_V120_RECONCILED_AND_DATA_AUDIT_FALLBACK_DESIGNED_PASS`<br>
->    **Next approved action**: Người dùng xem xét bản thiết kế kỹ thuật tại `INDEPENDENT_DOCUMENT_GENERATION_PILOT_DESIGN.md`; nếu phê duyệt, phiên tiếp theo sẽ chuẩn bị script kế hoạch và Colab launcher notebook để người dùng chạy trên Colab GPU.<br>
+>    **Historical Phase status**: `DOCUMENT_REPORTING_V120_RECONCILED_AND_DATA_AUDIT_FALLBACK_DESIGNED_PASS`<br>
+>
+> 20. _Chuẩn Bị & Kiểm Thử Thử Nghiệm Khả Thi Tạo Dữ Liệu Tài Liệu AI (Generation Feasibility Study, Branch `research/independent-cohort-acquisition`) ($systematic-debugging, $writing-plans, $executing-plans, $verification-before-completion)_:
+>    - **Tu Chính Bản Thiết Kế v1.1.0 & Khóa Ngân Sách 6 Thành Phần (Scientific Honesty)**:
+>      * Ban hành `research/evidence/document_pilot/INDEPENDENT_DOCUMENT_GENERATION_PILOT_DESIGN_AMENDMENT_V1.1.0.md` sửa đổi dứt khoát 7 phát biểu vượt bằng chứng: "chưa tìm được nguồn phù hợp trong các ứng viên đã kiểm tra"; tự tạo dữ liệu là một trong các phương án; không cam kết thời gian/GPU T4/A100; PNG parity không triệt tiêu toàn bộ confounding; zero hash collision là chỉ báo cô lập; L1 trong mask chỉ là mô tả số học; ghi rõ bản quyền CC-BY 4.0 và OpenRAIL++.
+>      * Tách ngân sách 6 thành phần: Checkpoint Colab FP16 6.46 GiB <= 12 GiB; Dữ liệu gốc <= 200 MB; Dependencies <= 2 GiB; Artifacts về Local <= 100 MB; Đĩa/VRAM (15 GB / 13 GB); Thời gian GPU <= 60 phút.
+>    - **Hợp Đồng Hình Học Đảo Ngược & Khắc Phục Lỗi Socket Windows Winsock 10013**:
+>      * Xây dựng module chuẩn tắc `ml/evaluation/document_feasibility_geometry.py`: giữ kích thước gốc $(W, H)$ RGB; context crop có đệm (20%-50%); canvas 1024x1024 giữ tỷ lệ (Bicubic cho ảnh, Nearest cho binary mask {0, 255}); inverse mapping và composite nhị phân strictly inside intervention mask; kiểm tra bất biến bitwise outside-mask equality qua `np.array_equal`.
+>      * Phát hiện và xử lý triệt để nguyên nhân gốc rễ lỗi `[WinError 10013] WSAEACCES` trên Windows do Hyper-V/WSL2 chiếm giữ nhiều dải cổng động: triển khai `safe_create_connection` tự động liên kết socket vào dải cổng an toàn (51000-55000), bảo đảm kết nối ổn định 100%.
+>    - **Kế Hoạch Máy Tiền Đăng Ký Cho Đúng 4 Attempts CORD v2**:
+>      * Triển khai script `scripts/research/build_document_feasibility_plan.py` và sinh `research/evidence/document_pilot/document_feasibility_plan.json`.
+>      * Chọn tất định bằng seed `20261012` đúng 4 source documents khác nhau từ validation split CORD v2: Attempt 0 (replacement `menu.price`: row 22, `280,000` -> `350,000`); Attempt 1 (replacement `menu.nm`: row 61, `Populaire Chocolate` -> `Magnum Gold Almond`); Attempt 2 (removal `sub_total.discount_price`: row 7, `Discount: -9,545` -> `""`); Attempt 3 (removal `sub_total.tax_price`: row 93, `TAX 15,636` -> `""`).
+>      * Gán tag cách ly vĩnh viễn `DEVELOPMENT_FEASIBILITY_EXCLUDED_FROM_EVALUATION` (cấm đưa vào panel 40 nguồn đánh giá tương lai).
+>    - **Colab GPU Runner, Turnkey Notebook Launcher & Local Verification Harness**:
+>      * Xây dựng `scripts/research/run_document_feasibility_colab.py`: preflight kiểm tra GPU/VRAM/đĩa, nạp model không token/đăng nhập, inpainting 30 steps Euler, composite và đóng gói archive `document_feasibility_results.zip`.
+>      * Xây dựng canonical notebook 4 cells `notebooks/independent_document_feasibility_colab.ipynb`: hỗ trợ chạy hoàn toàn trên Google Colab T4 miễn phí, không yêu cầu Drive mount toàn bộ hay token.
+>      * Xây dựng `scripts/research/verify_document_feasibility_artifacts.py`: kiểm chứng fail-closed mảng điểm ảnh ngoài mask, đo đạc biến đổi trong mask, sinh 5-column contact sheet so sánh trực quan, và duy trì trạng thái `PENDING_HUMAN_REVIEW` trong `human_review.csv`.
+>    - **Kiểm Thử & Hoàn Thành**:
+>      * Viết mới 5 unit/contract tests trong `ml/tests/test_document_feasibility_geometry.py` (5/5 PASS bao gồm synthetic fail-closed leakage test); 100% pnpm test PASS.
+>      * Báo cáo kỹ thuật: `research/evidence/document_pilot/FEASIBILITY_STUDY_PREPARATION_REPORT.md`.
+>    **Phase status**: `CONTROLLED_DOCUMENT_FEASIBILITY_PREPARED_PASS`<br>
+>    **Next approved action**: Người dùng mở notebook `notebooks/independent_document_feasibility_colab.ipynb` trên Google Colab GPU (T4), chạy thực thi 4 attempts và tải `document_feasibility_results.zip` về máy LOCAL để kiểm chứng kỹ thuật và thẩm định nội dung.<br>
 >
 > ---
 

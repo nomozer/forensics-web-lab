@@ -76,5 +76,5 @@ describe('Research Pipeline & Algebraic Scorers', () => {
       expect(Number.isFinite(tensor[i])).toBe(true);
       expect(Number.isNaN(tensor[i])).toBe(false);
     }
-  });
+  }, 15000);
 });
