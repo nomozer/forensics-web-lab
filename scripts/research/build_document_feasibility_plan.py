@@ -16,7 +16,7 @@ OUTPUT_PLAN_PATH = REPO_ROOT / "research" / "evidence" / "document_pilot" / "doc
 
 PLAN_METADATA: Dict[str, Any] = {
     "study_name": "Controlled AI-Document Generation Feasibility Study",
-    "protocol_version": "1.1.0",
+    "protocol_version": "1.2.0",
     "official_project_title": "Nghiên cứu và xây dựng công cụ phát hiện ảnh và tài liệu giả mạo sinh bởi AI.",
     "execution_target": "GOOGLE_COLAB_GPU_EPHEMERAL",
     "local_role": "PLAN_PREPARATION_AND_INDEPENDENT_VERIFICATION",
@@ -43,7 +43,7 @@ PLAN_METADATA: Dict[str, Any] = {
     "quarantine_policy": "DEVELOPMENT_FEASIBILITY_EXCLUDED_FROM_EVALUATION",
     "budget_limits": {
         "checkpoint_colab_max_bytes": 12884901888,  # 12 GiB
-        "original_data_colab_max_bytes": 209715200,  # 200 MB
+        "original_data_colab_max_bytes": 272629760,  # 260 MB (covers 242.08 MB CORD-v2 validation shard)
         "artifacts_transfer_max_bytes": 104857600,   # 100 MB
         "max_gpu_minutes": 60,
     },
@@ -153,8 +153,9 @@ def build_plan() -> Dict[str, Any]:
 def main() -> None:
     plan = build_plan()
     OUTPUT_PLAN_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with open(OUTPUT_PLAN_PATH, "w", encoding="utf-8") as f:
+    with open(OUTPUT_PLAN_PATH, "w", encoding="utf-8", newline="\n") as f:
         json.dump(plan, f, indent=2, ensure_ascii=False)
+        f.write("\n")
     print(f"Successfully generated pre-registered plan: {OUTPUT_PLAN_PATH}")
     print(f"Attempts: {len(plan['attempts'])} ({[a['attempt_id'] for a in plan['attempts']]})")
 

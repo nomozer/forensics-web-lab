@@ -1,0 +1,126 @@
+{
+  "timestamp_utc": "2026-10-12T07:31:58.224193+00:00",
+  "study_name": "Controlled AI-Document Generation Feasibility Study",
+  "protocol_version": "1.2.0",
+  "official_project_title": "Nghiên cứu và xây dựng công cụ phát hiện ảnh và tài liệu giả mạo sinh bởi AI.",
+  "dataset_repository": "naver-clova-ix/cord-v2",
+  "dataset_revision": "7f0115a4b758a71d6473b8d085751692da2fef98",
+  "parquet_shard_file": "data/validation-00000-of-00001-cc3c5779fe22e8ca.parquet",
+  "parquet_shard_size_bytes": 242080800,
+  "parquet_shard_sha256": "0d0f6dac11fdcc549de2746aa9f53136a3bc22a2a1aff2b0b847f7622ad60c15",
+  "budget_ceiling_bytes": 272629760,
+  "network_bytes_downloaded": 0,
+  "num_sources_verified": 4,
+  "source_preflight_receipts": [
+    {
+      "attempt_index": 0,
+      "attempt_id": "attempt_0_replacement_price",
+      "source_row_index": 22,
+      "source_doc_identifier": "cord_v2_valid_row22_img22",
+      "native_size": {
+        "width": 576,
+        "height": 864
+      },
+      "encoded_bytes_length": 795154,
+      "encoded_bytes_sha256": "d27f10eeadc2f3a4f1b7e277f07fd2a2c4c06ed24378b5ec949786ec39949c7b",
+      "decoded_rgb_sha256": "faeb6395bae43b219bb2c8699fbf1c1023503e59b0372bd6bfd96b17d2f562fe",
+      "exif_orientation": 1,
+      "original_text": "280,000",
+      "operation": "replacement",
+      "target_bbox": [
+        442,
+        406,
+        468,
+        488
+      ],
+      "ground_truth_category": "menu.price",
+      "ground_truth_text_verified": true,
+      "bbox_geometry_valid": true,
+      "roi_image_path": "research/evidence/document_pilot/preflight_inspections/roi_authentic_attempt_0_replacement_price.png",
+      "inspection_image_path": "research/evidence/document_pilot/preflight_inspections/bbox_inspection_attempt_0_replacement_price.png"
+    },
+    {
+      "attempt_index": 1,
+      "attempt_id": "attempt_1_replacement_item_name",
+      "source_row_index": 61,
+      "source_doc_identifier": "cord_v2_valid_row61_img61",
+      "native_size": {
+        "width": 1356,
+        "height": 2315
+      },
+      "encoded_bytes_length": 1516590,
+      "encoded_bytes_sha256": "aa2de89a0a51024f43ed5a0579453354447fba47b7714f4a19605fd96a0a67c4",
+      "decoded_rgb_sha256": "0cb678f7671dbe3dd1ac1257ea7d5ddd1d6c29667644cb86a811c495b19dd933",
+      "exif_orientation": 1,
+      "original_text": "Populaire Chocolate",
+      "operation": "replacement",
+      "target_bbox": [
+        1085,
+        128,
+        1156,
+        749
+      ],
+      "ground_truth_category": "menu.nm",
+      "ground_truth_text_verified": true,
+      "bbox_geometry_valid": true,
+      "roi_image_path": "research/evidence/document_pilot/preflight_inspections/roi_authentic_attempt_1_replacement_item_name.png",
+      "inspection_image_path": "research/evidence/document_pilot/preflight_inspections/bbox_inspection_attempt_1_replacement_item_name.png"
+    },
+    {
+      "attempt_index": 2,
+      "attempt_id": "attempt_2_removal_discount_line",
+      "source_row_index": 7,
+      "source_doc_identifier": "cord_v2_valid_row7_img7",
+      "native_size": {
+        "width": 576,
+        "height": 864
+      },
+      "encoded_bytes_length": 786559,
+      "encoded_bytes_sha256": "52adf3336878fbd558951660d6ce52268dd3e636563ca1d7d7e004ccab96bff7",
+      "decoded_rgb_sha256": "a8af9134a268ee619e857843e79628d19e7f5a02d748e1f89706ee4d206cee40",
+      "exif_orientation": 1,
+      "original_text": "Discount: -9,545",
+      "operation": "removal",
+      "target_bbox": [
+        524,
+        208,
+        556,
+        492
+      ],
+      "ground_truth_category": "sub_total.discount_price",
+      "ground_truth_text_verified": true,
+      "bbox_geometry_valid": true,
+      "roi_image_path": "research/evidence/document_pilot/preflight_inspections/roi_authentic_attempt_2_removal_discount_line.png",
+      "inspection_image_path": "research/evidence/document_pilot/preflight_inspections/bbox_inspection_attempt_2_removal_discount_line.png"
+    },
+    {
+      "attempt_index": 3,
+      "attempt_id": "attempt_3_removal_tax_line",
+      "source_row_index": 93,
+      "source_doc_identifier": "cord_v2_valid_row93_img93",
+      "native_size": {
+        "width": 864,
+        "height": 1296
+      },
+      "encoded_bytes_length": 2140745,
+      "encoded_bytes_sha256": "b32ba204e0cbdc7541e4e316ebc9f5efde8ed85948987030d463a071702e1e6c",
+      "decoded_rgb_sha256": "7c9aea377341b7d6289ba5be20b191a59358878eaddbd487f4cb489548dd52b7",
+      "exif_orientation": 1,
+      "original_text": "TAX 15,636",
+      "operation": "removal",
+      "target_bbox": [
+        939,
+        383,
+        975,
+        605
+      ],
+      "ground_truth_category": "sub_total.tax_price",
+      "ground_truth_text_verified": true,
+      "bbox_geometry_valid": true,
+      "roi_image_path": "research/evidence/document_pilot/preflight_inspections/roi_authentic_attempt_3_removal_tax_line.png",
+      "inspection_image_path": "research/evidence/document_pilot/preflight_inspections/bbox_inspection_attempt_3_removal_tax_line.png"
+    }
+  ],
+  "contact_sheet_path": "research/evidence/document_pilot/preflight_inspections/cord_preflight_contact_sheet.png",
+  "status": "PREPARED_SOURCE_PREFLIGHT_VERIFIED"
+}

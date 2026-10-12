@@ -2,7 +2,7 @@
 
 > **Tài liệu đọc đầu tiên bắt buộc cho mọi phiên làm việc AI mới.**<br>
 > **Base main commit**: `7fd7b8851819154dee849a440a5e0dfb69f46c0d` (main with Phase 4C.7A finalized; CI success)<br>
-> **Phase gần nhất**: Phase 4C.8 trace — Controlled AI-Document Generation Feasibility Study Prepared (Protocol v1.1.0, 4 CORD-v2 attempts locked, Colab launcher ready)<br>
+> **Phase gần nhất**: Phase 4C.8 trace — Controlled Document Generation Feasibility Study Repaired & Real CORD-v2 Sources Preflight Verified (Protocol v1.2.0, 4 CORD-v2 attempts verified, Turnkey Colab Notebook ready)<br>
 > **Branch**: `research/independent-cohort-acquisition` (no PR)<br>
 > **Current TGIF intake execution commit**: `9d98a2d5c6afea16f9b3a71a03f0c2d6f43204e4` (archive-layout-resolving TGIF N=400 Colab worker snapshot; canonical notebook pins this full SHA by detached checkout, while the local auditor remains on the handoff branch; historical pilot/diagnostic/calibration bindings remain unchanged)<br>
 > **Repository naming status**: `FUNCTIONAL_NAMES_NORMALIZED` — 46 active, unsealed files now use work-oriented names; the complete migration table is in `docs/REPOSITORY_NAMING_MAP.md`. Twenty-one sealed config/notebook/operator/package/confirmatory paths and all historical evidence/raw artifact paths retain their exact names and bindings.<br>
@@ -301,8 +301,31 @@
 >    - **Kiểm Thử & Hoàn Thành**:
 >      * Viết mới 5 unit/contract tests trong `ml/tests/test_document_feasibility_geometry.py` (5/5 PASS bao gồm synthetic fail-closed leakage test); 100% pnpm test PASS.
 >      * Báo cáo kỹ thuật: `research/evidence/document_pilot/FEASIBILITY_STUDY_PREPARATION_REPORT.md`.
->    **Phase status**: `CONTROLLED_DOCUMENT_FEASIBILITY_PREPARED_PASS`<br>
->    **Next approved action**: Người dùng mở notebook `notebooks/independent_document_feasibility_colab.ipynb` trên Google Colab GPU (T4), chạy thực thi 4 attempts và tải `document_feasibility_results.zip` về máy LOCAL để kiểm chứng kỹ thuật và thẩm định nội dung.<br>
+>    **Historical Phase status**: `CONTROLLED_DOCUMENT_FEASIBILITY_PREPARED_PASS`<br>
+>
+> 21. _Khắc Phục Toàn Diện 8 Khiếm Khuyết Colab Notebook, Xác Minh 4 Nguồn CORD-v2 Thật Trên Local & Tu Chính Protocol v1.2.0 (Phase 4C.8 trace, branch research/independent-cohort-acquisition) ($systematic-debugging, $writing-plans, $executing-plans, $verification-before-completion)_:
+>    - **Tu Chính Thiết Kế v1.2.0 & Điều Chỉnh Ngân Sách Shard CORD-v2 (Scientific Honesty)**:
+>      * Ban hành `research/evidence/document_pilot/INDEPENDENT_DOCUMENT_GENERATION_PILOT_DESIGN_AMENDMENT_V1.2.0.md` làm rõ cấu trúc kỹ thuật của Parquet CORD-v2 validation split (1 shard duy nhất 242.08 MB do Snappy dictionary page bao phủ 100 ảnh ở offset 4). Nâng trần ngân sách dữ liệu gốc từ 200 MB lên 260 MB (272,629,760 bytes) để tiếp nhận hợp lệ shard CORD-v2, giữ nguyên toàn bộ các trần ngân sách khác (checkpoint <= 12 GiB, dependencies <= 2 GiB, transfer về Local <= 100 MB, GPU execution <= 60 phút).
+>      * Khóa đồng bộ 100% hạt giống canonical `[20261012, 20261013, 20261014, 20261015]` trên plan, runner, notebook, receipts và tests.
+>    - **Khắc Phục Triệt Để 8 Khiếm Khuyết Notebook, Runner & Trình Sinh Tự Động**:
+>      * (1) Sửa lỗi IndentationError Cell 2 bằng script sinh notebook tự động `scripts/research/build_document_feasibility_colab_notebook.py`, loại bỏ hoàn toàn việc chép tay code.
+>      * (2) Sửa loader đọc Parquet schema logic của PyArrow struct: truy cập `table["image"][row_idx]["bytes"].as_py()` và `table["ground_truth"][row_idx]`.
+>      * (3) Đồng bộ seeds canonical thống nhất giữa báo cáo, plan, runner và notebook.
+>      * (4) Thay thế chuỗi CSV nối thủ công bằng `csv.DictWriter` với `quoting=csv.QUOTE_MINIMAL`, bảo đảm chuẩn RFC 4180 và hỗ trợ Unicode tiếng Việt.
+>      * (5) Khắc phục resume logic: khởi tạo đủ 4 attempts trong review CSV, bảo toàn `human_verdict` và `human_notes` đã có, không ghi đè thành PENDING.
+>      * (6) Tích hợp hàm `generate_contact_sheet()` tạo `feasibility_contact_sheet.png` (5 cột: Authentic, ROI Before, ROI After, Final Edited, Intervention Mask) trực tiếp trong runner.
+>      * (7) Thêm try-except cô lập lỗi theo từng attempt, xuất `attempt_failure_receipt.json`, luôn đóng gói partial zip archive.
+>      * (8) Áp dụng kiểm tra ngân sách fail-closed cho shard, checkpoint, thời gian GPU và kích thước archive.
+>    - **Kiểm Chứng Dữ Liệu Thật CORD-v2 Trên LOCAL (Preflight Verified)**:
+>      * Tạo `scripts/research/preflight_cord_sources.py`, tải 1 lần shard validation (242,080,800 bytes / 230.87 MiB, SHA-256 `0d0f6dac...`) lưu tại `data/research/cord_v2/` (được `.gitignore` cách ly).
+>      * Xác minh 100% 4 nguồn thật (Rows 22, 61, 7, 93) khớp kích thước ảnh, EXIF orientation = 1, category, text trong ground truth và bbox bao phủ đúng vùng mục tiêu. Cấm silent clamping: thêm kiểm tra nghiêm ngặt `validate_bounding_box_within_bounds()` trong `ml/evaluation/document_feasibility_geometry.py`.
+>      * Xuất biên nhận `research/evidence/document_pilot/cord_source_preflight_receipt.json` và ảnh kiểm tra `research/evidence/document_pilot/preflight_inspections/cord_preflight_contact_sheet.png`.
+>    - **Kiểm Thử Tự Động & Xuất Bản Turnkey Notebook**:
+>      * Mở rộng test suite `ml/tests/test_document_feasibility_geometry.py` lên 13 unit tests phủ kín 8 lỗi đã khắc phục (13/13 PASS).
+>      * Kiểm chứng 100% các code cell trong notebook biên dịch cú pháp sạch; đối soát SHA-256 payload staging khớp bit-exact với runner và plan trên đĩa.
+>      * Toàn bộ 77 tests hệ thống PASS (64 vitest + 13 continuity tests).
+>    **Phase status**: `PREPARED_SOURCE_PREFLIGHT_VERIFIED`<br>
+>    **Next approved action**: Người dùng mở notebook `notebooks/independent_document_feasibility_colab.ipynb` trên Google Colab GPU (T4), chạy thực thi 4 attempts đã được tiền kiểm chứng nguồn, và tải `document_feasibility_results.zip` về LOCAL để đối soát và thẩm định nội dung.<br>
 >
 > ---
 
@@ -571,6 +594,7 @@
 
 ## 9. Công việc Đang thực hiện & Công việc Tiếp theo
 
+- **Đang chờ thực thi Colab (Phase 4C.8 trace — Document Feasibility Study)**: Toàn bộ 8 khiếm khuyết notebook/runner đã khắc phục triệt để; Protocol Amendment v1.2.0 đã phê chuẩn trần 260 MB; dữ liệu thật 4 nguồn CORD-v2 đã được tải một lần và preflight kiểm chứng 100% trên LOCAL (SHA-256, RGB, EXIF=1, category, text, bboxes, zero silent clamping); turnkey notebook `notebooks/independent_document_feasibility_colab.ipynb` sạch lỗi cú pháp, tự chứa và sẵn sàng chạy trên Google Colab T4. Trạng thái: `PREPARED_SOURCE_PREFLIGHT_VERIFIED`. **Bước tiếp theo duy nhất**: Người dùng chạy notebook trên Colab GPU để thực hiện 4 attempts và tải `document_feasibility_results.zip` về LOCAL để đối soát và thẩm định nội dung.
 - **Đang chờ thực thi thật (Phase 4C.6A controlled DSP augmentation)**: Protocol, code, tests, package and notebook ready on `claude/elegant-edison-uentky`. **Blockers**: manifest/bundle, ablation fits + caches, 4C.3B late-fusion fold artifacts and 4C.4B robustness `full/` outputs are outside Git (absent in cloud). **Bước tiếp theo**: local agent follows `EXECUTION_GUIDE.md` (460 fits, pilot 92) on the same machine/OpenBLAS build that produced 4C.3B/4C.4B (float32 BLAS kernels differ by ~1e-7 in probability across CPUs/builds, enough to fail the 1e-9 gates; do not loosen), writes Phase 4C.6B (primary verdict from the locked vocabulary, original trade-off and every stress condition reported), passes gates and branch CI, then merges.
 - **Đang chờ thực thi thật (Phase 4C.5A fusion shift diagnostics)**: Tool, tests and handoff ready on `claude/elegant-edison-uentky`. **Blockers**: the 4C.4B robustness `full/` outputs, the 4C.3B late-fusion fold artifacts and the ablation fits/receipt are outside Git (absent in cloud). **Bước tiếp theo**: local agent runs `research/evidence/phase-4c.5a/HANDOFF.md` (preflight → analyze → verify, Macro-F1 cross-check vs 4C.4B), writes Phase 4C.5B (post-hoc exploratory; decomposition algebraic, not causal), passes gates and branch CI, then merge-commits into `main`.
 - **Đang chờ thực thi thật (Phase 4C.4A development robustness)**: Code/tests/notebook ready on `claude/keen-knuth-4esvaw`. **Blockers**: development bundle, ablation `fits/visual_dsp_fusion` + `shared/` caches, 4C.3B late-fusion fold artifacts and MobileNetV3-Small weights are outside Git (absent in cloud). **Bước tiếp theo**: local agent runs `HANDOFF.md` (preflight → technical pilot → full → analysis); pilot never changes the protocol; report Phase 4C.4B as development/exploratory; do not use the retired locked test.

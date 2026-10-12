@@ -1,11 +1,12 @@
-# Báo Cáo Kỹ Thuật: Chuẩn Bị & Kiểm Thử Thử Nghiệm Khả Thi Tạo Dữ Liệu Tài Liệu AI
-(Controlled AI-Document Generation Feasibility Study Preparation Report)
+# Báo Cáo Kỹ Thuật: Chuẩn Bị, Sửa Lỗi Toàn Diện & Kiểm Chứng Dữ Liệu Thật CORD-v2 Cho Thử Nghiệm Khả Thi Tạo Dữ Liệu Tài Liệu AI
+(Controlled AI-Document Generation Feasibility Study Repair & CORD Preflight Report)
 
-> **Mã văn bản**: `REPORT-2026-10-12-FEASIBILITY-STUDY-PREPARATION-V1.0.0`<br>
+> **Mã văn bản**: `REPORT-2026-10-12-FEASIBILITY-STUDY-REPAIR-AND-CORD-PREFLIGHT-V1.2.0`<br>
 > **Tên đề tài chính thức**: “Nghiên cứu và xây dựng công cụ phát hiện ảnh và tài liệu giả mạo sinh bởi AI.”<br>
 > **Branch**: `research/independent-cohort-acquisition`<br>
-> **Trạng thái thực hiện**: `PREPARED_NOT_EXECUTED`<br>
-> **Môi trường**: LOCAL CPU (Windows pwsh) chuẩn bị & kiểm thử; sẵn sàng thực thi trên GOOGLE COLAB GPU.
+> **Trạng thái thực hiện**: `PREPARED_SOURCE_PREFLIGHT_VERIFIED`<br>
+> **Protocol**: Version 1.2.0 (theo [INDEPENDENT_DOCUMENT_GENERATION_PILOT_DESIGN_AMENDMENT_V1.2.0.md](./INDEPENDENT_DOCUMENT_GENERATION_PILOT_DESIGN_AMENDMENT_V1.2.0.md))<br>
+> **Môi trường**: LOCAL CPU (Windows pwsh) hoàn thành toàn diện sửa code, preflight dữ liệu CORD thật và kiểm thử 13 unit tests; sẵn sàng chuyển giao notebook thực thi trên GOOGLE COLAB GPU.
 
 ---
 
@@ -21,86 +22,114 @@ Thử nghiệm khả thi tạo dữ liệu (Generation Feasibility Study) đư�
 3. **Không phải Cohort Đánh Giá Độc Lập Hoàn Tất**: Bốn tài liệu này là mẫu phát triển kỹ thuật (`development feasibility sources`), được đánh dấu cách ly (`DEVELOPMENT_FEASIBILITY_EXCLUDED_FROM_EVALUATION`) và loại trừ vĩnh viễn khỏi bất kỳ panel đánh giá 40 nguồn nào trong tương lai.
 4. **Không Thay Đổi Research Questions (RQs)**: Các câu hỏi nghiên cứu và 6 frozen detectors được bảo toàn nguyên vẹn.
 5. **Không Dùng Detector Scores Để Chọn Ảnh**: Không chạy 6 detectors trên các mẫu sinh ra để lọc, xếp hạng hoặc chọn attempt thành công.
+6. **Không Tuyên Bố Đã Generation Trên Colab**: LOCAL chưa có GPU tương thích SDXL FP16 (~10 GB VRAM), chưa chạy checkpoint weights; trạng thái chính thức được niêm phong là `PREPARED_SOURCE_PREFLIGHT_VERIFIED`.
 
 ---
 
-## 2. Giải Đáp Tám Câu Hỏi Trọng Tâm
+## 2. Kết Quả Khắc Phục Tám Khiếm Khuyết Đã Phát Hiện
 
-### Câu hỏi 1: Checkpoint có tải không xác thực được thật không?
-- **Kết quả xác minh thực tế**: **CÓ, 100% TẢI ĐƯỢC KHÔNG CẦN TOKEN HOẶC ĐĂNG NHẬP**.
-- **Chi tiết kiểm toán**:
-  * Repository: `diffusers/stable-diffusion-xl-1.0-inpainting-0.1`
-  * Model Card API: `gated: False`, `private: False`.
-  * Revision Git SHA đã khóa: `115134f363124c53c7d878647567d04daf26e41e`.
-  * Toàn bộ 4 file safetensors của variant FP16 (`text_encoder`, `text_encoder_2`, `unet`, `vae`) và các file cấu hình json tải được hoàn toàn mở mà không cần Hugging Face token, `hf login`, hay tài khoản authenticated.
-
-### Câu hỏi 2: Tổng bytes tải từng thành phần?
-Bảng ngân sách 6 thành phần được đối soát độc lập:
-
-| Thành phần | Trần ngân sách | Kích thước đo đạc thực tế | Trạng thái ngân sách |
+| # | Khiếm khuyết đã phát hiện | Nguyên nhân gốc rễ (Root Cause) | Giải pháp kỹ thuật đã kiểm chứng |
 | :--- | :--- | :--- | :--- |
-| **1. Checkpoint Colab (FP16)** | $\le 12.0$ GiB | **6,941,218,469 bytes (6.46 GiB)** | ĐẠT (trong trần 12 GB) |
-| **2. Dữ liệu gốc CORD-v2** | $\le 200$ MB | **$\approx 5 - 10$ MB** (đọc trực tiếp 4 ảnh) | ĐẠT (tiết kiệm $\approx 95\%$) |
-| **3. Dependencies Colab** | $\le 2.0$ GiB | **$\approx 1.2$ GiB** | ĐẠT |
-| **4. Artifacts chuyển về LOCAL** | $\le 100$ MB | **$\approx 15 - 30$ MB** | ĐẠT |
-| **5. Dung lượng đĩa & Peak VRAM** | 15 GB đĩa / 13 GB VRAM | **$\approx 9$ GB đĩa / $\approx 10.5$ GB VRAM** | ĐẠT (vừa khít T4 16GB VRAM) |
-| **6. Thời gian thực thi GPU** | $\le 60$ phút | **$\approx 10 - 15$ phút** | ĐẠT |
-
-### Câu hỏi 3: GPU thực tế, initialization/inference time và peak VRAM?
-- **Trên LOCAL**: Local GPU được nhận diện là `NVIDIA GeForce GTX 1650 (4.00 GB VRAM)`. Với VRAM 4.00 GB, SDXL FP16 (~10 GB VRAM) không thể chạy trên máy local mà không tràn bộ nhớ (OOM). Đây là bằng chứng thực nghiệm rõ ràng xác nhận chỉ có thể chạy inference trên Google Colab GPU.
-- **Trên COLAB GPU (Mục tiêu đo đạc)**:
-  * Khi người dùng chạy notebook trên Colab T4 (16 GB VRAM), initialization time ước tính $\approx 60$s, inference time ước tính $\approx 40-50$s/attempt (30 steps Euler), peak VRAM $\approx 10.5$ GB.
-  * Hiện tại trạng thái là `PREPARED_NOT_EXECUTED`; số đo chính xác sẽ được ghi nhận trực tiếp từ `preflight_receipt.json` và `attempt_receipt.json` khi chạy trên Colab.
-
-### Câu hỏi 4: Bao nhiêu attempts kỹ thuật hợp lệ?
-- Kế hoạch máy đã khóa cứng đúng **4 attempts** (2 replacement, 2 removal) từ 4 tài liệu CORD-v2 khác nhau:
-  1. `attempt_0_replacement_price`: row 22 (`img_id=22`), `menu.price` (`280,000` $\to$ `350,000`).
-  2. `attempt_1_replacement_item_name`: row 61 (`img_id=61`), `menu.nm` (`Populaire Chocolate` $\to$ `Magnum Gold Almond`).
-  3. `attempt_2_removal_discount_line`: row 7 (`img_id=7`), `sub_total.discount_price` (`Discount: -9,545` $\to$ `""`).
-  4. `attempt_3_removal_tax_line`: row 93 (`img_id=93`), `sub_total.tax_price` (`TAX 15,636` $\to$ `""`).
-- Cả 4 attempts đều có đầy đủ ground truth quad, tọa độ envelope `[ymin, xmin, ymax, xmax]`, prompt và seed tất định. Khi chạy, harness kỹ thuật kiểm tra fail-closed `np.array_equal` trên mảng pixel ngoài mask.
-
-### Câu hỏi 5: Bao nhiêu replacement/removal đạt nội dung?
-- **Trạng thái hiện tại**: `PREPARED_NOT_EXECUTED` (chưa chạy trên GPU Colab).
-- **Quy tắc QC nội dung**:
-  * Khi có artifacts, hệ thống chỉ xuất `preliminary_assessment` (ví dụ: `FEASIBLE_REPLACEMENT`, `POTENTIAL_UNMODIFIED`).
-  * Trạng thái chính thức trong `human_review.csv` bắt buộc là `PENDING_HUMAN_REVIEW`.
-  * Tuyệt đối không tự ý gán `HUMAN_PASS` khi chưa có người thẩm tra thật xác nhận.
-
-### Câu hỏi 6: Geometry có bảo toàn tài liệu gốc không?
-- **KẾT QUẢ ĐÃ KIỂM CHỨNG KỸ THUẬT**: **CÓ, BẢO TOÀN 100% BITWISE NGOÀI MASK**.
-- Module `ml/evaluation/document_feasibility_geometry.py` thiết lập quy trình:
-  1. Giữ nguyên kích thước gốc $(W_{orig}, H_{orig})$ của tài liệu RGB.
-  2. Context crop có đệm (20%-50%) đưa lên canvas $1024 \times 1024$ (Bicubic cho ảnh, Nearest cho mask nhị phân).
-  3. Sau inpainting, patch được unpad, resize ngược về kích thước crop ban đầu.
-  4. Composite chỉ áp dụng bên trong Final Intervention Mask $M_{final} == 255$.
-  5. Hàm `verify_outside_equality` kiểm tra `np.array_equal(edited[M == 0], authentic[M == 0]) == True`.
-  6. Unit test `test_verification_harness_fail_closed` đã chứng minh: chỉ cần 1 pixel ngoài mask lệch 1 đơn vị L1, hệ thống lập tức báo `FAIL_OUTSIDE_MASK_LEAKAGE`.
-
-### Câu hỏi 7: Lỗi hoặc seam nào còn ảnh hưởng thiết kế?
-- **Khám phá lỗi socket Windows & Cách xử lý ($systematic-debugging)**:
-  * Trong quá trình kiểm tra đọc HTTP Range trên Windows, phát hiện lỗi `[WinError 10013] WSAEACCES` do Windows Hyper-V/WSL2 chiếm giữ nhiều dải cổng động (dynamic excluded port ranges: 49152-49651, 59470-60392).
-  * Đã khắc phục triệt để bằng bộ vá cổng an toàn (`safe_create_connection`), chủ động liên kết socket vào dải cổng tự do (51000-55000), loại bỏ hoàn toàn lỗi kết nối socket trên máy LOCAL Windows.
-- **Ranh giới mép vá (Seam diagnostics)**:
-  * Do thực hiện composite nhị phân (hard binary composite) tại biên mask, mô hình diffusion có thể để lại sự chuyển tiếp nhẹ giữa nền giấy gốc và vùng được sinh. Harness kiểm chứng tự động tính toán pixel diff heatmap trên 5-column contact sheet để người thẩm tra dễ dàng phát hiện seam artifacts.
-
-### Câu hỏi 8: Đã đủ căn cứ mở rộng panel chưa?
-- **KẾT LUẬN KHOA HỌC**: **CHƯA ĐỦ CĂN CỨ ĐỂ MỞ RỘNG PANEL**.
-- **Căn cứ**:
-  * Đợt này chỉ là feasibility study trên đúng 4 attempts để kiểm chứng công nghệ.
-  * Việc mở rộng sang 40 nguồn chỉ được phép xem xét sau khi:
-    1. Người dùng chạy Colab notebook và tải về gói kết quả `document_feasibility_results.zip`.
-    2. Local harness xác nhận `TECHNICAL_QC_PASS` cho cả 4 attempts (outside array equality = True).
-    3. Người thẩm tra con người (Human Reviewer) hoàn thành thẩm định nội dung trên `human_review.csv` và xác nhận chất lượng văn bản/nền giấy đạt yêu cầu.
+| **1** | Cell 2 IndentationError | Chép tay thiếu lệnh `print(f"...")` tại dòng 57-58. | Chuyển sang generator tự động `build_document_feasibility_colab_notebook.py` với `compile()` kiểm toán 100% code cells. |
+| **2** | Loader CORD Parquet struct | Schema vật lý leaf chứa `bytes`, nhưng schema logic Arrow là `image: struct<bytes, path>`. | Đọc trực tiếp `table["image"][row]["bytes"].as_py()` và `table["ground_truth"][row]`, hỗ trợ cache cục bộ. |
+| **3** | Lệch Hạt Giống (Seeds) | Báo cáo cũ gõ nhầm seeds; máy lưu `[20261012..20261015]`. | Khóa hạt giống canonical `[20261012, 20261013, 20261014, 20261015]` đồng bộ 100% giữa plan, runner, notebook và receipt. |
+| **4** | CSV Ghép Chuỗi Lỗi `"" )` | Ghép chuỗi thủ công làm hỏng cú pháp strict CSV khi có dấu nháy/phẩy. | Dùng `csv.DictWriter` với `quoting=csv.QUOTE_MINIMAL`, kiểm thử strict round-trip Unicode. |
+| **5** | Resume Bỏ Sót Review Rows | Câu lệnh `continue` bỏ qua bước thêm attempt đã hoàn thành vào danh sách review. | Cấu trúc lại luồng ghi review: nạp toàn bộ 4 attempts, giữ nguyên phán quyết con người cũ nếu file đã tồn tại. |
+| **6** | Thiếu Contact Sheet trong Runner | Runner cũ chỉ ghi ảnh riêng lẻ, phụ thuộc verifier local để ghép ảnh. | Runner Colab tự sinh `feasibility_contact_sheet.png` (5 cột) và đóng gói trực tiếp vào archive zip. |
+| **7** | Thiếu Failure Receipts & Partial Archive | Lỗi uncaught làm sập script, mất toàn bộ dữ liệu của các attempts trước. | Bổ sung `try...except` per attempt, sinh `attempt_failure_receipt.json`, luôn đóng gói partial zip archive. |
+| **8** | Chưa Thực Thi Budget Limits | Ngân sách chỉ ghi trong markdown, không có assert trong mã nguồn. | Bổ sung kiểm tra fail-closed: shard size $\le 260$ MB, checkpoint $\le 12$ GiB, disk free $\ge 10$ GB, GPU time $\le 60$ phút, archive $\le 100$ MB. |
 
 ---
 
-## 3. Đúng Một Đề Xuất Tiếp Theo Được Phê Duyệt
+## 3. Kết Quả Preflight Dữ Liệu CORD-v2 Thật Trên LOCAL
 
-Người dùng mở notebook `notebooks/independent_document_feasibility_colab.ipynb` trên Google Colab GPU (runtime T4 miễn phí, không cần đăng nhập HF hay token) và chạy tuần tự 4 cells để tải checkpoint FP16, thực thi 4 attempts và tải file archive kết quả `document_feasibility_results.zip` về máy LOCAL.
+Preflight được thực hiện độc lập qua `scripts/research/preflight_cord_sources.py` trên shard chính thức `naver-clova-ix/cord-v2` (`data/validation-00000-of-00001-cc3c5779fe22e8ca.parquet`):
+- **Trần ngân sách phê duyệt**: 260 MB (272,629,760 bytes) theo Protocol Amendment v1.2.0.
+- **Kích thước file thực tế**: **242,080,800 bytes** ($230.87\text{ MiB}$ / $242.08\text{ MB}$) $\le 260\text{ MB}$.
+- **Mã băm SHA-256 Shard**: `0d0f6dac11fdcc549de2746aa9f53136a3bc22a2a1aff2b0b847f7622ad60c15`.
+- **Lưu cache**: Đã tải và lưu tại `data/research/cord_v2/` (được cách ly bởi `.gitignore`).
 
-Sau khi người dùng tải archive về máy LOCAL, agent phiên tiếp theo sẽ chạy lệnh:
-```bash
-python scripts/research/verify_document_feasibility_artifacts.py --zip document_feasibility_results.zip
-```
-để đối soát kỹ thuật, sinh contact sheet trực quan và chuyển giao cho người thẩm định đánh giá nội dung.
+### Kết Quả Đối Soát 4 Tài Liệu Nguồn CORD-v2 Thật
+
+1. **Attempt #0 (`attempt_0_replacement_price`)**:
+   - `source_row_index`: 22 | `source_image_id`: 22 | `source_doc_identifier`: `cord_v2_valid_row22_img22`
+   - Kích thước gốc: $576 \times 864$ | EXIF Orientation: 1 (Normal)
+   - Encoded Bytes SHA-256: `d27f10eeadc2f3a4f1b7e277f07fd2a2c4c06ed24378b5ec949786ec39949c7b`
+   - Decoded RGB SHA-256: `faeb6395bae43b219bb2c8699fbf1c1023503e59b0372bd6bfd96b17d2f562fe`
+   - Văn bản gốc: `"280,000"` | Danh mục GT: `menu.price` | Thao tác: `replacement` $\to$ `"350,000"`
+   - Bounding Box: `[442, 406, 468, 488]` | Khớp 100% hình học và bao phủ trọn vẹn văn bản.
+
+2. **Attempt #1 (`attempt_1_replacement_item_name`)**:
+   - `source_row_index`: 61 | `source_image_id`: 61 | `source_doc_identifier`: `cord_v2_valid_row61_img61`
+   - Kích thước gốc: $1356 \times 2315$ | EXIF Orientation: 1 (Normal)
+   - Encoded Bytes SHA-256: `aa2de89a0a51024f43ed5a0579453354447fba47b7714f4a19605fd96a0a67c4`
+   - Decoded RGB SHA-256: `0cb678f7671dbe3dd1ac1257ea7d5ddd1d6c29667644cb86a811c495b19dd933`
+   - Văn bản gốc: `"Populaire Chocolate"` | Danh mục GT: `menu.nm` | Thao tác: `replacement` $\to$ `"Classic Tiramisu"`
+   - Bounding Box: `[1085, 128, 1156, 749]` | Khớp envelope tọa độ.
+
+3. **Attempt #2 (`attempt_2_removal_discount_line`)**:
+   - `source_row_index`: 7 | `source_image_id`: 7 | `source_doc_identifier`: `cord_v2_valid_row7_img7`
+   - Kích thước gốc: $576 \times 864$ | EXIF Orientation: 1 (Normal)
+   - Encoded Bytes SHA-256: `52adf3336878fbd558951660d6ce52268dd3e636563ca1d7d7e004ccab96bff7`
+   - Decoded RGB SHA-256: `a8af9134a268ee619e857843e79628d19e7f5a02d748e1f89706ee4d206cee40`
+   - Văn bản gốc: `"Discount: -9,545"` | Danh mục GT: `sub_total.discount_price` | Thao tác: `removal` $\to$ `""`
+   - Bounding Box: `[524, 208, 556, 492]` | Khớp 100% hình học.
+
+4. **Attempt #3 (`attempt_3_removal_tax_line`)**:
+   - `source_row_index`: 93 | `source_image_id`: 93 | `source_doc_identifier`: `cord_v2_valid_row93_img93`
+   - Kích thước gốc: $864 \times 1296$ | EXIF Orientation: 1 (Normal)
+   - Encoded Bytes SHA-256: `d7f3fb8f44ff9368d1469e354ae2ae05d7616688741369ef4f85e4ea7efc1e13`
+   - Decoded RGB SHA-256: `87ea589178ee79a02fb4208a3854897e9eeea9583b6e828453ae660c159828e8`
+   - Văn bản gốc: `"TAX 15,636"` | Danh mục GT: `sub_total.tax_price` | Thao tác: `removal` $\to$ `""`
+   - Bounding Box: `[939, 383, 975, 605]` | Khớp 100% hình học.
+
+- **Biên nhận preflight**: `research/evidence/document_pilot/cord_source_preflight_receipt.json`.
+- **Contact sheet kiểm chứng hình học**: `research/evidence/document_pilot/preflight_inspections/cord_preflight_contact_sheet.png`.
+
+---
+
+## 4. Kiểm Thử Hệ Thống (Verification Evidence)
+
+Toàn bộ 13 unit tests trong `ml/tests/test_document_feasibility_geometry.py` đạt **13/13 PASS**:
+1. `test_pilot_design_amendments`: PASS (Xác minh Amendment v1.1.0 và v1.2.0).
+2. `test_geometry_roundtrip_module`: PASS (Bảo toàn 100% bitwise ngoài mask).
+3. `test_out_of_bounds_bbox_rejected`: PASS (Chặn đứng bounding box ngoài khung hoặc thoái hóa).
+4. `test_document_feasibility_plan_schema`: PASS (Khớp Protocol v1.2.0, 260 MB ceiling, 4 seeds).
+5. `test_notebook_compiles_all_cells`: PASS (Biên dịch toàn bộ code cells notebook và runner).
+6. `test_notebook_payload_hash_parity`: PASS (Đối soát SHA-256 bit-exact giữa plan, runner và staging).
+7. `test_real_cord_parquet_loader_and_sources`: PASS (Nạp đúng 4 tài liệu CORD thật từ cache).
+8. `test_cord_source_preflight_receipt_verification`: PASS (Xác thực biên nhận preflight và ảnh kiểm tra).
+9. `test_csv_strict_roundtrip`: PASS (Bảo toàn dấu ngoặc kép, dấu phẩy và Unicode tiếng Việt).
+10. `test_resume_preserves_completed_attempts_and_human_verdicts`: PASS (Không mất hàng, không ghi đè verdict cũ).
+11. `test_failure_handling_and_partial_archive`: PASS (Cô lập lỗi attempt, sinh failure receipt và zip partial).
+12. `test_budget_and_schema_fail_closed_checks`: PASS (Dừng fail-closed khi vượt ngưỡng tải).
+13. `test_verification_harness_fail_closed`: PASS (Bắt rò rỉ pixel ngoài mask 1 đơn vị L1).
+
+Bộ kiểm thử hồi quy:
+- `test_document_pilot_reporting_reconciliation.py`: 6/6 PASS.
+- `test_document_observation_pilot.py`: 3/3 PASS.
+- `pnpm test`: 64 vitest + 13 continuity tests = 77/77 PASS (100% pass).
+
+---
+
+## 5. Hướng Dẫn Thực Hiện Trên Google Colab GPU (T4)
+
+1. Mở trình duyệt và truy cập [Google Colab](https://colab.research.google.com/).
+2. Chọn **Upload** và tải tệp `notebooks/independent_document_feasibility_colab.ipynb`.
+3. Vào **Runtime** $\to$ **Change runtime type** $\to$ Chọn **T4 GPU** (miễn phí, không cần đăng ký tài khoản trả phí).
+4. Thực thi tuần tự 4 cells:
+   - **Cell 1**: Xác nhận GPU T4 sẵn sàng và cài đặt dependencies.
+   - **Cell 2**: Staging tự động kế hoạch máy và runner script (đối soát SHA-256 bit-exact).
+   - **Cell 3**: Thực thi chạy 4 attempts tạo dữ liệu khả thi (tự động tải checkpoint FP16, nạp CORD shard, suy luận inpainting và composite).
+   - **Cell 4**: Tải tệp `document_feasibility_results.zip` về máy LOCAL.
+5. Sau khi tải xong về máy LOCAL, đặt tệp vào thư mục dự án và chạy:
+   ```bash
+   python scripts/research/verify_document_feasibility_artifacts.py --zip document_feasibility_results.zip
+   ```
+   để tiến hành kiểm chứng kỹ thuật fail-closed và thẩm định nội dung.
+
+---
+
+## 6. Đúng Một Đề Xuất Tiếp Theo Được Phê Duyệt
+
+Sau khi preflight dữ liệu CORD thật đạt chuẩn `PREPARED_SOURCE_PREFLIGHT_VERIFIED`, đề xuất duy nhất là người dùng mở và chạy notebook đã sửa trên Google Colab GPU (T4) để thực hiện bốn attempts tạo sinh.

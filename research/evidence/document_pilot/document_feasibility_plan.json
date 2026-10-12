@@ -1,7 +1,7 @@
 {
   "metadata": {
     "study_name": "Controlled AI-Document Generation Feasibility Study",
-    "protocol_version": "1.1.0",
+    "protocol_version": "1.2.0",
     "official_project_title": "Nghiên cứu và xây dựng công cụ phát hiện ảnh và tài liệu giả mạo sinh bởi AI.",
     "execution_target": "GOOGLE_COLAB_GPU_EPHEMERAL",
     "local_role": "PLAN_PREPARATION_AND_INDEPENDENT_VERIFICATION",
@@ -28,7 +28,7 @@
     "quarantine_policy": "DEVELOPMENT_FEASIBILITY_EXCLUDED_FROM_EVALUATION",
     "budget_limits": {
       "checkpoint_colab_max_bytes": 12884901888,
-      "original_data_colab_max_bytes": 209715200,
+      "original_data_colab_max_bytes": 272629760,
       "artifacts_transfer_max_bytes": 104857600,
       "max_gpu_minutes": 60
     }

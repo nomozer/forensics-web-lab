@@ -40,11 +40,17 @@ def extract_roi_and_build_canvas(
     orig_w, orig_h = image.size
     ymin, xmin, ymax, xmax = [int(v) for v in target_bbox]
 
-    # Validate bounding box
-    ymin = max(0, min(orig_h - 1, ymin))
-    ymax = max(ymin + 1, min(orig_h, ymax))
-    xmin = max(0, min(orig_w - 1, xmin))
-    xmax = max(xmin + 1, min(orig_w, xmax))
+    # Validate bounding box strictly: silent clamping is forbidden
+    if ymin < 0 or xmin < 0 or ymax > orig_h or xmax > orig_w:
+        raise ValueError(
+            f"Bounding box {target_bbox} is out of bounds for image dimensions ({orig_w}, {orig_h}). "
+            f"Silent clamping is forbidden by protocol."
+        )
+    if ymin >= ymax or xmin >= xmax:
+        raise ValueError(
+            f"Degenerate bounding box {target_bbox}: ymin ({ymin}) >= ymax ({ymax}) "
+            f"or xmin ({xmin}) >= xmax ({xmax})."
+        )
 
     bbox_w = xmax - xmin
     bbox_h = ymax - ymin
