@@ -2,7 +2,7 @@
 
 > **Tài liệu đọc đầu tiên bắt buộc cho mọi phiên làm việc AI mới.**<br>
 > **Base main commit**: `7fd7b8851819154dee849a440a5e0dfb69f46c0d` (main with Phase 4C.7A finalized; CI success)<br>
-> **Phase gần nhất**: Phase 4C.7B trace — Independent Cohort Acquisition (real-pilot diagnosis and content-grounded corrective preparation)<br>
+> **Phase gần nhất**: Phase 4C.8 trace — Document Reporting v1.2.0 Reconciled, Public Candidate Audit & Independent Fallback Pilot Design PASS<br>
 > **Branch**: `research/independent-cohort-acquisition` (no PR)<br>
 > **Current TGIF intake execution commit**: `9d98a2d5c6afea16f9b3a71a03f0c2d6f43204e4` (archive-layout-resolving TGIF N=400 Colab worker snapshot; canonical notebook pins this full SHA by detached checkout, while the local auditor remains on the handoff branch; historical pilot/diagnostic/calibration bindings remain unchanged)<br>
 > **Repository naming status**: `FUNCTIONAL_NAMES_NORMALIZED` — 46 active, unsealed files now use work-oriented names; the complete migration table is in `docs/REPOSITORY_NAMING_MAP.md`. Twenty-one sealed config/notebook/operator/package/confirmatory paths and all historical evidence/raw artifact paths retain their exact names and bindings.<br>
@@ -253,6 +253,36 @@
 >      * Toàn bộ 11 tests `ml/tests` PASS; 67/67 tests pnpm PASS.
 >    **Phase status**: `DOCUMENT_PILOT_REPORTING_RECONCILED_AND_AIFORGE_GATE_AUDITED_PASS`<br>
 >    **Next approved action**: Người dùng xin cấp quyền truy cập Hugging Face cho `Scam-AI/AIForge-Doc-v1` và cung cấp `HF_TOKEN` để chạy tiếp nhận panel và thử nghiệm zero-shot trên 6 locked models.<br>
+>
+> 19. _Khắc Phục Toàn Diện Báo Cáo Document Pilot v1.2.0, Kiểm Toán 5 Ứng Viên Công Khai & Thiết Kế Fallback Tự Xây Dựng ($systematic-debugging, $writing-plans, $executing-plans, $verification-before-completion)_:
+>    - **Chuẩn Hóa Toán Học Reconciler v1.2.0 & Sửa Sổ Cái Chênh Lệch (SSOT)**:
+>      * Khắc phục dứt điểm sai lệch trong Discrepancy Ledger cũ bằng hàm `compute_confusion_metrics()`: tính toán tự động 100% từ confusion matrix counts, loại bỏ hoàn toàn việc gõ tay số liệu làm tròn.
+>      * Xác định các giá trị ngụ ý chính xác: DISC-TXT-01 (7, 18, 2, 13) $\implies F_{1,\text{macro}} = 293/493 = 0.594320$ (làm tròn 0.5943); DISC-TXT-02 (7, 17, 3, 13) $\implies F_{1,\text{macro}} = 43/75 = 0.573333$ (làm tròn 0.5733); DISC-TXT-03 (5, 16, 4, 15) $\implies F_{1,\text{macro}} = 719/1479 = 0.486139$ (làm tròn 0.4861); DISC-TXT-04 (10, 11, 9, 10) $\implies F_{1,\text{macro}} = 839/1599 = 0.524703$ (làm tròn 0.5247).
+>      * Sinh tự động receipt `document_pilot_reporting_correction_receipt_v1.2.0.json` (schema 1.2.0) và báo cáo Markdown `DOCUMENT_PILOT_REPORTING_CORRECTION_V1.2.0.md`.
+>      * Thiết lập 5 ranh giới nhận thức (epistemic boundaries): confusion counts tự nhất quán không suy ra pipeline đúng; số làm tròn không gọi là bit-exact; paired bootstrap không phải source-cluster bootstrap khi chưa xác minh nguồn; positive fraction không phải p-value; multiclass Brier trên nhãn forged chỉ là tham khảo.
+>    - **Kiểm Toán 5 Ứng Viên Dữ Liệu Tài Liệu Công Khai Không Cần Đăng Nhập**:
+>      * Triển khai công cụ kiểm toán độc lập `scripts/research/audit_public_document_candidates.py` và xuất receipt `public_document_candidates_audit.json`:
+>        1. `Scam-AI/AIForge-Doc-v1`: GenAI inpainting (Gemini 2.5 Flash / Ideogram v2) $\implies$ `YEU_CAU_DANG_NHAP` (gated: auto, HTTP 401).
+>        2. `Scam-AI/gpt4o-receipt`: GenAI fully generated (GPT-4o) $\implies$ `YEU_CAU_DANG_NHAP` (gated: auto, HTTP 401).
+>        3. `MohamedDhouib1/TDoc-2.8M`: Chỉnh sửa truyền thống copy-move/splicing (arXiv:2602.17322) $\implies$ `KHONG_DUNG_PHAM_VI` (non-AI).
+>        4. `Jason37437/RealText-V2-Syn25k`: Chỉnh sửa truyền thống copy-move/splicing $\implies$ `KHONG_DUNG_PHAM_VI` (non-AI).
+>        5. `Zegkim/FSTS`: Mô hình hóa Fourier cho vết Photoshop/PSD (NeurIPS 2025) $\implies$ `KHONG_DUNG_PHAM_VI` (non-AI).
+>      * Kết luận thực tiễn: Toàn bộ dataset GenAI tài liệu hiện có đều bị gated hoặc yêu cầu token; các dataset ungated đều là non-AI manipulation.
+>    - **Bản Thiết Kế Kỹ Thuật Fallback: Pilot Tự Xây Dựng Có Kiểm Soát (10 Điểm Bắt Buộc)**:
+>      * Ban hành `research/evidence/document_pilot/INDEPENDENT_DOCUMENT_GENERATION_PILOT_DESIGN.md`:
+>        * Nguồn tài liệu gốc mở CORD v2 (CC-BY 4.0, Park et al., NeurIPS 2019) hoặc SROIE 2019.
+>        * Checkpoint nguồn mở: `sd2-community/stable-diffusion-2-inpainting` hoặc SDXL inpainting.
+>        * Quy mô panel: đúng 40 cặp nguồn (80 ảnh PNG 512x512 + 40 masks nhị phân), phân tầng 20 text replacement + 20 text erasure, 20 minor (<5%) + 20 medium (5-20%).
+>        * Môi trường thực thi: Google Colab GPU (ngân sách mạng ~85 MB, GPU < 5 phút, footprint đĩa local ~50 MB).
+>        * Tiêu chuẩn QC kỹ thuật: pixel ngoài mask có `outside_mean_l1 = 0.000000`, trong mask `inside_mean_l1 >= 3.0`.
+>        * Format parity: cả authentic và edited đều là PNG lossless 24-bit RGB, loại trừ 100% format shortcut.
+>        * QC nội dung độc lập: tuyệt đối cấm dùng 6 frozen models để chọn lọc mẫu (loại trừ survivorship bias).
+>        * Giữ nguyên trạng thái: `PENDING_HUMAN_REVIEW_AND_DECISION`, chưa tải weights hay tạo ảnh.
+>    - **Kiểm Thử Tự Động & Hoàn Thành**:
+>      * Cập nhật `ml/tests/test_document_pilot_reporting_reconciliation.py` (6/6 PASS).
+>      * Toàn bộ 13/13 tests document pilot PASS; 67/67 vitest tests + 13 continuity tests PASS (pnpm test 100%).
+>    **Phase status**: `DOCUMENT_REPORTING_V120_RECONCILED_AND_DATA_AUDIT_FALLBACK_DESIGNED_PASS`<br>
+>    **Next approved action**: Người dùng xem xét bản thiết kế kỹ thuật tại `INDEPENDENT_DOCUMENT_GENERATION_PILOT_DESIGN.md`; nếu phê duyệt, phiên tiếp theo sẽ chuẩn bị script kế hoạch và Colab launcher notebook để người dùng chạy trên Colab GPU.<br>
 >
 > ---
 
