@@ -2,7 +2,7 @@
 
 > **Tài liệu đọc đầu tiên bắt buộc cho mọi phiên làm việc AI mới.**<br>
 > **Base main commit**: `7fd7b8851819154dee849a440a5e0dfb69f46c0d` (main with Phase 4C.7A finalized; CI success)<br>
-> **Phase gần nhất**: Phase 4C.8 trace — Controlled Document Generation Feasibility Study Hardened & Turnkey Colab Notebook Released (Protocol v1.2.0, 4 CORD-v2 attempts verified, 18 FP16 files budget locked, 16/16 tests PASS)<br>
+> **Phase gần nhất**: Phase 4C.8 trace — Controlled Document Generation Feasibility Study Intake & Verification (Protocol v1.2.0, 4 CORD-v2 attempts verified, 4/4 Technical QC PASS, Human Content QC PENDING, 29/29 document tests PASS)<br>
 > **Branch**: `research/independent-cohort-acquisition` (no PR)<br>
 > **Current TGIF intake execution commit**: `9d98a2d5c6afea16f9b3a71a03f0c2d6f43204e4` (archive-layout-resolving TGIF N=400 Colab worker snapshot; canonical notebook pins this full SHA by detached checkout, while the local auditor remains on the handoff branch; historical pilot/diagnostic/calibration bindings remain unchanged)<br>
 > **Repository naming status**: `FUNCTIONAL_NAMES_NORMALIZED` — 46 active, unsealed files now use work-oriented names; the complete migration table is in `docs/REPOSITORY_NAMING_MAP.md`. Twenty-one sealed config/notebook/operator/package/confirmatory paths and all historical evidence/raw artifact paths retain their exact names and bindings.<br>
@@ -342,9 +342,26 @@
 >      * Try-except toàn cục sinh `run_failure_receipt.json` và tự động đóng gói `document_feasibility_results_partial.zip` nếu gặp lỗi unhandled.
 >    - **Tái Xuất Bản Turnkey Notebook & Kiểm Thử Hệ Thống**:
 >      * Generator `build_document_feasibility_colab_notebook.py` tái xuất notebook sạch 5 cells; đối soát mã băm staging khớp bit-exact với runner (`bfa19eb9...`) và plan (`4320eb1e...`).
->      * Mở rộng `ml/tests/test_document_feasibility_geometry.py` lên 16 unit tests (16/16 PASS); toàn bộ 25 document pilot tests PASS; 77 tests hệ thống PASS.
->    **Phase status**: `PREPARED_SOURCE_PREFLIGHT_VERIFIED`<br>
->    **Next approved action**: Người dùng tải notebook `notebooks/independent_document_feasibility_colab.ipynb` lên Google Colab GPU (T4), chạy thực thi 4 attempts đã được tiền kiểm chứng nguồn, và tải `document_feasibility_results.zip` về LOCAL để đối soát và thẩm định nội dung.<br>
+>    **Historical Phase status**: `PREPARED_SOURCE_PREFLIGHT_VERIFIED`<br>
+>
+> 23. _Tiếp Nhận Gói Dữ Liệu Colab, Kiểm Chứng Kỹ Thuật Pixel Thật & Thẩm Định Nội Dung 4 Attempts Tạo Sinh Tài Liệu Khả Thi (Controlled Document Generation Feasibility Study Intake & Verification, Branch `research/independent-cohort-acquisition`) ($systematic-debugging, $verification-before-completion)_:
+>    - **Tiếp Nhận Gói Dữ Liệu Colab & Đối Soát Khóa Kế Hoạch Chuẩn Tắc**:
+>      * Tiếp nhận `document_feasibility_results.zip` (10,592,936 bytes, SHA-256 `deadd9205207eaaa296a8d9eeb493ee48eeea76ee7afd210684187e4026ed684`), giải nén an toàn chống path traversal vào `data/research/local-artifacts/document-feasibility/runs/run_20261013_051727_4320eb1e/` (ngoài Git qua `.gitignore`).
+>      * Đối soát 100% khớp bit-exact với kế hoạch chuẩn tắc `document_feasibility_plan.json` (SHA-256 `4320eb1e85149323afeed51b18296bb44823d5c86267c4464e7c3d996077256f` khớp bit-exact, protocol v1.2.0, model SDXL inpainting revision `115134f3...` FP16, seeds `[20261012, 20261013, 20261014, 20261015]`, 4 nguồn CORD-v2 rows `[22, 61, 7, 93]`, prompts và parameters).
+>      * Ghi nhận trung thực thiếu sót cục bộ: per-attempt `attempt_receipt.json` thiếu `seed`, `prompt`, `source_row_index` trực tiếp (`null`), nhưng được bảo toàn và lưu đầy đủ tại `feasibility_manifest.json` và `source_preflight_receipt.json`.
+>    - **Kiểm Chứng Kỹ Thuật Pixel Thật & Làm Cứng Verifier**:
+>      * Nâng cấp `verify_document_feasibility_artifacts.py` kiểm tra mã băm SHA-256 từng file ảnh, bind manifest metadata (run_id, plan_sha256, protocol v1.2.0, hardware observations), và bảo toàn tỷ lệ khung hình panel contact sheet qua thumbnail centering.
+>      * 4/4 attempts đạt `TECHNICAL_QC_PASS`: 100% outside-mask bitwise equality (`np.array_equal == True`, `max_outside_diff == 0` tuyệt đối), binary mask valid `{0, 255}`, kích thước gốc bảo toàn đối xứng.
+>      * Quan sát phần cứng & timing thực nghiệm trên Tesla T4 GPU (14.56 GB VRAM): Model load 140.35s, 4 inference runs (Attempt 0: 32.93s, Attempt 1: 30.81s, Attempt 2: 32.95s, Attempt 3: 33.22s, tổng inference 129.91s), Peak VRAM 9,178.50 MB (~8.96 GiB <= 12 GiB). Tổng thời gian GPU ~4.5 phút (an toàn so với hạn mức 60 phút).
+>      * 16/16 unit tests `test_document_feasibility_geometry.py` PASS, 29/29 document pilot tests PASS.
+>    - **Thẩm Định Nội Dung Trực Quan (Human Content QC Preparation)**:
+>      * Sinh contact sheet 5 cột tại `research/evidence/document_pilot/feasibility_contact_sheet.png` và 4 ảnh ROI phóng đại 2x không can thiệp nội dung tại `research/evidence/document_pilot/qc_inspection/`.
+>      * Đánh giá sơ bộ từ agent:
+>        * *Replacement*: Attempt 0 ("280,000" -> "350,000") thất bại in chữ (mô hình sinh mảng xám trơn nhẵn, xóa số cũ nhưng không render được số mới); Attempt 1 ("Populaire Chocolate" -> "Magnum Gold Almond") sai chính tả ("MAGNU ALONLD", bỏ "Gold", thiếu 'm', font sans-serif phẳng lệch phong cách in nhiệt).
+>        * *Removal*: Attempt 2 (xóa "Discount: -9,545") và Attempt 3 (xóa "TAX 15,636") xóa sạch chữ, nhưng Attempt 2 lộ mảng sáng đè lên dải bóng đổ chéo, Attempt 3 làm phẳng nếp nhăn giấy và ám xanh lam.
+>      * Trạng thái đánh giá con người: Giữ nguyên `human_verdict = PENDING_HUMAN_REVIEW` trong `human_review.csv` và receipt, tuyệt đối không tự gán `HUMAN_PASS`.
+>    **Phase status**: `DOCUMENT_FEASIBILITY_INTAKE_AND_TECHNICAL_QC_VERIFIED_PASS`<br>
+>    **Next approved action**: Người dùng mở các ảnh kiểm tra trực quan tại `research/evidence/document_pilot/qc_inspection/` để thực hiện thẩm định con người (Human Content QC) và quyết định định hướng bước tiếp theo.<br>
 >
 > ---
 

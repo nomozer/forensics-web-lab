@@ -124,6 +124,23 @@ def verify_attempt_artifacts(attempt_dir: Path) -> Dict[str, Any]:
     total_inside_pixels = int(np.sum(inside))
     changed_ratio = float(changed_pixels / total_inside_pixels) if total_inside_pixels > 0 else 0.0
 
+    # 5. File hashes verification if present in attempt_receipt
+    file_hashes = att_receipt.get("file_hashes")
+    if file_hashes:
+        for key, expected_hash in file_hashes.items():
+            fname = key.replace("_sha256", ".png")
+            fpath = attempt_dir / fname
+            if fpath.exists():
+                actual_hash = compute_sha256(fpath)
+                if actual_hash != expected_hash:
+                    return {
+                        "attempt_id": attempt_dir.name,
+                        "status": "FAIL_HASH_MISMATCH",
+                        "file": fname,
+                        "expected_hash": expected_hash,
+                        "actual_hash": actual_hash,
+                    }
+
     return {
         "attempt_id": attempt_dir.name,
         "status": "TECHNICAL_QC_PASS",
@@ -142,6 +159,17 @@ def verify_attempt_artifacts(attempt_dir: Path) -> Dict[str, Any]:
     }
 
 
+def fit_image_to_panel(img: Image.Image, target_w: int, target_h: int, resample=Image.Resampling.BICUBIC) -> Image.Image:
+    """Center-fit image inside target box preserving aspect ratio."""
+    canvas = Image.new("RGB", (target_w, target_h), (255, 255, 255))
+    copied = img.copy()
+    copied.thumbnail((target_w, target_h), resample)
+    offset_x = (target_w - copied.width) // 2
+    offset_y = (target_h - copied.height) // 2
+    canvas.paste(copied, (offset_x, offset_y))
+    return canvas
+
+
 def generate_contact_sheet(
     attempts_dirs: List[Path],
     output_path: Path,
@@ -152,7 +180,6 @@ def generate_contact_sheet(
     num_cols = 5
     num_rows = len(attempts_dirs)
     header_h = 50
-    row_header_w = 0
     margin = 15
 
     total_w = margin + num_cols * (panel_w + margin)
@@ -192,7 +219,6 @@ def generate_contact_sheet(
             geo = json.load(f)
 
         crop_ymin, crop_xmin, crop_ymax, crop_xmax = geo["crop_bbox"]
-        target_ymin, target_xmin, target_ymax, target_xmax = geo["target_bbox"]
 
         # Text banner
         banner_text = f"Attempt {row_idx}: {att_dir.name}"
@@ -203,22 +229,22 @@ def generate_contact_sheet(
         auth_thumb = auth_img.copy()
         draw_thumb = ImageDraw.Draw(auth_thumb)
         draw_thumb.rectangle([crop_xmin, crop_ymin, crop_xmax, crop_ymax], outline=(255, 0, 0), width=4)
-        auth_thumb_fitted = auth_thumb.resize((panel_w, panel_h), Image.Resampling.BICUBIC)
+        auth_thumb_fitted = fit_image_to_panel(auth_thumb, panel_w, panel_h)
         sheet.paste(auth_thumb_fitted, (margin, img_y))
 
         # Col 2: ROI before edit
         roi_before = auth_img.crop((crop_xmin, crop_ymin, crop_xmax, crop_ymax))
-        roi_before_fitted = roi_before.resize((panel_w, panel_h), Image.Resampling.BICUBIC)
+        roi_before_fitted = fit_image_to_panel(roi_before, panel_w, panel_h)
         sheet.paste(roi_before_fitted, (margin + (panel_w + margin), img_y))
 
         # Col 3: Intervention Mask
         mask_roi = mask_img.crop((crop_xmin, crop_ymin, crop_xmax, crop_ymax))
-        mask_roi_fitted = mask_roi.resize((panel_w, panel_h), Image.Resampling.NEAREST)
-        sheet.paste(mask_roi_fitted.convert("RGB"), (margin + 2 * (panel_w + margin), img_y))
+        mask_roi_fitted = fit_image_to_panel(mask_roi.convert("RGB"), panel_w, panel_h, Image.Resampling.NEAREST)
+        sheet.paste(mask_roi_fitted, (margin + 2 * (panel_w + margin), img_y))
 
         # Col 4: ROI after edit
         roi_after = edit_img.crop((crop_xmin, crop_ymin, crop_xmax, crop_ymax))
-        roi_after_fitted = roi_after.resize((panel_w, panel_h), Image.Resampling.BICUBIC)
+        roi_after_fitted = fit_image_to_panel(roi_after, panel_w, panel_h)
         sheet.paste(roi_after_fitted, (margin + 3 * (panel_w + margin), img_y))
 
         # Col 5: Pixel difference heatmap
@@ -226,7 +252,7 @@ def generate_contact_sheet(
         after_arr = np.array(roi_after, dtype=np.int32)
         diff_arr = np.clip(np.abs(before_arr - after_arr) * 5, 0, 255).astype(np.uint8)
         diff_img = Image.fromarray(diff_arr, mode="RGB")
-        diff_fitted = diff_img.resize((panel_w, panel_h), Image.Resampling.BICUBIC)
+        diff_fitted = fit_image_to_panel(diff_img, panel_w, panel_h)
         sheet.paste(diff_fitted, (margin + 4 * (panel_w + margin), img_y))
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -275,14 +301,47 @@ def verify_feasibility_results(
         if "HUMAN_PASS" in csv_content:
             human_qc_status = "EXECUTED_HUMAN_QC_COMPLETED"
 
+    # Check manifest and preflight receipts if present
+    manifest_path = work_dir / "feasibility_manifest.json"
+    manifest_data = {}
+    if manifest_path.exists():
+        try:
+            with open(manifest_path, "r", encoding="utf-8") as mf:
+                manifest_data = json.load(mf)
+        except Exception:
+            pass
+
+    preflight_path = work_dir / "preflight_receipt.json"
+    preflight_data = {}
+    if preflight_path.exists():
+        try:
+            with open(preflight_path, "r", encoding="utf-8") as pf:
+                preflight_data = json.load(pf)
+        except Exception:
+            pass
+
+    protocol_ver = (
+        manifest_data.get("metadata", {}).get("protocol_version")
+        or "1.2.0"
+    )
+    run_id = manifest_data.get("run_id") or preflight_data.get("run_id") or "UNKNOWN"
+    plan_sha256 = manifest_data.get("plan_sha256") or preflight_data.get("plan_sha256") or "UNKNOWN"
+
     summary_receipt = {
         "status": "TECHNICAL_QC_PASS" if all_passed else "TECHNICAL_QC_FAIL",
         "official_project_title": "Nghiên cứu và xây dựng công cụ phát hiện ảnh và tài liệu giả mạo sinh bởi AI.",
-        "protocol_version": "1.1.0",
+        "protocol_version": protocol_ver,
+        "run_id": run_id,
+        "plan_sha256": plan_sha256,
         "verified_attempts_count": len(results),
         "all_outside_bitwise_equal": all_passed,
         "human_qc_status": human_qc_status,
         "contact_sheet_path": str(contact_sheet_path),
+        "hardware_observations": {
+            "device": preflight_data.get("cuda_device_name") or manifest_data.get("preflight", {}).get("cuda_device_name", "UNKNOWN"),
+            "total_vram_gb": preflight_data.get("total_vram_gb") or manifest_data.get("preflight", {}).get("total_vram_gb", "UNKNOWN"),
+            "model_load_duration_sec": manifest_data.get("model_load_duration_sec", "UNKNOWN"),
+        },
         "attempts": results,
     }
 

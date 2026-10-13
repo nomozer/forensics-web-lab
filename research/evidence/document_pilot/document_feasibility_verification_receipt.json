@@ -1,0 +1,94 @@
+{
+  "status": "TECHNICAL_QC_PASS",
+  "official_project_title": "Nghi\u00ean c\u1ee9u v\u00e0 x\u00e2y d\u1ef1ng c\u00f4ng c\u1ee5 ph\u00e1t hi\u1ec7n \u1ea3nh v\u00e0 t\u00e0i li\u1ec7u gi\u1ea3 m\u1ea1o sinh b\u1edfi AI.",
+  "protocol_version": "1.2.0",
+  "run_id": "run_20261013_051727_4320eb1e",
+  "plan_sha256": "4320eb1e85149323afeed51b18296bb44823d5c86267c4464e7c3d996077256f",
+  "verified_attempts_count": 4,
+  "all_outside_bitwise_equal": true,
+  "human_qc_status": "PENDING_HUMAN_REVIEW",
+  "contact_sheet_path": "research\\evidence\\document_pilot\\feasibility_contact_sheet.png",
+  "hardware_observations": {
+    "device": "Tesla T4",
+    "total_vram_gb": 14.56317138671875,
+    "model_load_duration_sec": 140.34771609306335
+  },
+  "attempts": [
+    {
+      "attempt_id": "attempt_0_replacement_price",
+      "status": "TECHNICAL_QC_PASS",
+      "operation": "replacement",
+      "original_text": "280,000",
+      "target_text": "350,000",
+      "dimensions": [
+        576,
+        864
+      ],
+      "is_outside_bitwise_equal": true,
+      "max_outside_diff": 0,
+      "inside_mask_pixels": 2132,
+      "inside_mean_l1": 8.934333958724203,
+      "inside_max_l1": 68,
+      "changed_pixels": 2131,
+      "changed_pixel_ratio": 0.9995309568480301,
+      "preliminary_assessment": "FEASIBLE_REPLACEMENT"
+    },
+    {
+      "attempt_id": "attempt_1_replacement_item_name",
+      "status": "TECHNICAL_QC_PASS",
+      "operation": "replacement",
+      "original_text": "Populaire Chocolate",
+      "target_text": "Magnum Gold Almond",
+      "dimensions": [
+        1356,
+        2315
+      ],
+      "is_outside_bitwise_equal": true,
+      "max_outside_diff": 0,
+      "inside_mask_pixels": 44091,
+      "inside_mean_l1": 65.64128733755189,
+      "inside_max_l1": 255,
+      "changed_pixels": 33567,
+      "changed_pixel_ratio": 0.7613118323467374,
+      "preliminary_assessment": "FEASIBLE_REPLACEMENT"
+    },
+    {
+      "attempt_id": "attempt_2_removal_discount_line",
+      "status": "TECHNICAL_QC_PASS",
+      "operation": "removal",
+      "original_text": "Discount: -9,545",
+      "target_text": "",
+      "dimensions": [
+        576,
+        864
+      ],
+      "is_outside_bitwise_equal": true,
+      "max_outside_diff": 0,
+      "inside_mask_pixels": 9088,
+      "inside_mean_l1": 10.8581279342723,
+      "inside_max_l1": 82,
+      "changed_pixels": 9088,
+      "changed_pixel_ratio": 1.0,
+      "preliminary_assessment": "FEASIBLE_REMOVAL"
+    },
+    {
+      "attempt_id": "attempt_3_removal_tax_line",
+      "status": "TECHNICAL_QC_PASS",
+      "operation": "removal",
+      "original_text": "TAX 15,636",
+      "target_text": "",
+      "dimensions": [
+        864,
+        1296
+      ],
+      "is_outside_bitwise_equal": true,
+      "max_outside_diff": 0,
+      "inside_mask_pixels": 7992,
+      "inside_mean_l1": 16.752961294627962,
+      "inside_max_l1": 128,
+      "changed_pixels": 7992,
+      "changed_pixel_ratio": 1.0,
+      "preliminary_assessment": "FEASIBLE_REMOVAL"
+    }
+  ]
+}
