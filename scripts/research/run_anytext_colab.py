@@ -531,6 +531,13 @@ def package_results_zip(
 
 
 def main() -> int:
+    # Ensure script directory and current working directory are in sys.path
+    script_dir = Path(__file__).resolve().parent
+    if str(script_dir) not in sys.path:
+        sys.path.insert(0, str(script_dir))
+    if str(Path.cwd()) not in sys.path:
+        sys.path.insert(0, str(Path.cwd()))
+
     parser = argparse.ArgumentParser(description="Run AnyText Feasibility Runner")
     parser.add_argument("--plan-path", type=str, required=True, help="Path to anytext_feasibility_plan.json")
     parser.add_argument("--inputs-zip", type=str, default=None, help="Path to document_feasibility_results.zip")

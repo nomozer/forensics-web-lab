@@ -168,9 +168,15 @@ def test_anytext_notebook_compilation_and_constraints():
     assert "document_feasibility_results.zip" in all_code
     assert "deadd9205207eaaa296a8d9eeb493ee48eeea76ee7afd210684187e4026ed684" in all_code
     assert "anytext_feasibility_plan.json" in all_code
+    assert "/content/anytext_env" in all_code
+    assert "python3.10" in all_code
+    assert "pip" in all_code and "check" in all_code
+    assert "smoke_script" in all_code or "smoke test" in all_code.lower()
+    assert "torch==2.0.1" in all_code
+    assert "pytorch-lightning==1.5.0" in all_code
 
 
-def test_anytext_runner_preflight_on_local():
+def test_anytext_runner_preflight_on_local(tmp_path):
     """Verify run_anytext_colab.py executes cleanly in --preflight-only mode with inputs-zip on LOCAL."""
     runner_path = REPO_ROOT / "scripts" / "research" / "run_anytext_colab.py"
     assert runner_path.exists()
@@ -190,7 +196,7 @@ def test_anytext_runner_preflight_on_local():
         "--inputs-zip",
         str(archive_path),
         "--output-root",
-        str(REPO_ROOT / "outputs"),
+        str(tmp_path / "outputs"),
         "--custom-font",
         "C:\\Windows\\Fonts\\arial.ttf",
         "--preflight-only",

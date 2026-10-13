@@ -2,7 +2,7 @@
 
 > **Tài liệu đọc đầu tiên bắt buộc cho mọi phiên làm việc AI mới.**<br>
 > **Base main commit**: `7fd7b8851819154dee849a440a5e0dfb69f46c0d` (main with Phase 4C.7A finalized; CI success)<br>
-> **Phase gần nhất**: Phase 4C.8 trace — AnyText Feasibility Launcher Execution Repair & Safe Archive Integration (SDXL archive input resolution, ModelScope snapshot_download excluding translator weights, cache isolation outside artifacts, exact git revision 3d4a260c... checkout, zoomed ROI contact sheet, dual-criteria review CSV, whitelisted packaging <= 100 MiB, Local Preflight Verified PASS, Execution Status: PREPARED_NOT_EXECUTED, 7/7 anytext tests PASS)<br>
+> **Phase gần nhất**: Phase 4C.8 trace — AnyText Feasibility Launcher Python 3.10 Isolation & Pre-Download Smoke Test (Dedicated Python 3.10 venv /content/anytext_env resolving Colab 3.13 pip failures, exact upstream environment.yaml pinning, full install logs, pip check with 0 broken reqs, inference module import smoke test before model download, SDXL archive input resolution, Local Preflight Verified PASS, Execution Status: PREPARED_NOT_EXECUTED, 7/7 anytext tests PASS)<br>
 > **Branch**: `research/independent-cohort-acquisition` (no PR)<br>
 > **Current TGIF intake execution commit**: `9d98a2d5c6afea16f9b3a71a03f0c2d6f43204e4` (archive-layout-resolving TGIF N=400 Colab worker snapshot; canonical notebook pins this full SHA by detached checkout, while the local auditor remains on the handoff branch; historical pilot/diagnostic/calibration bindings remain unchanged)<br>
 > **Repository naming status**: `FUNCTIONAL_NAMES_NORMALIZED` — 46 active, unsealed files now use work-oriented names; the complete migration table is in `docs/REPOSITORY_NAMING_MAP.md`. Twenty-one sealed config/notebook/operator/package/confirmatory paths and all historical evidence/raw artifact paths retain their exact names and bindings.<br>
@@ -411,12 +411,18 @@
 >      * (3) **Kiểm soát tải ModelScope**: Sử dụng `snapshot_download` với `ignore_file_pattern=['nlp_csanmt_translation_zh2en/*']` loại bỏ translator model (7.34 GiB) khỏi danh mục tải thực tế; đối soát checkpoint `anytext_v1.1.ckpt` (`09c88d14...`).
 >      * (4) **Cô lập Cache & Đóng gói Whitelist**: Đặt `MODELSCOPE_CACHE` tại thư mục riêng (`/content/modelscope_cache` trên Colab hoặc `.cache_modelscope` ngoài `outputs/`). Đóng gói ZIP bằng whitelist nghiêm ngặt (`.png`, `.json`, `.csv`), loại bỏ weights/cache, thực thi trần 100 MiB.
 >      * (5) **Bàn giao đánh giá**: Sinh contact sheet 6 cột có zoomed ROI (Authentic ROI, SDXL ROI, AnyText Raw ROI, AnyText Final ROI, AnyText Final Full Document, Mask ROI); xuất `human_review.csv` với 2 tiêu chí tách biệt `exact_text_success` và `visual_realism` (khóa `PENDING_HUMAN_REVIEW`).
+>    - **Cô Lập Môi Trường Python 3.10 & Khắc Phục Lỗi Cài Đặt Trên Colab (Python 3.13 Host)**:
+>      * Truy nguyên nguyên nhân: Colab nâng cấp runtime lên Python 3.13 làm gãy cài đặt các dependency đã khóa của AnyText (`pytorch-lightning==1.5.0` bị thiếu distutils và `torch==2.0.1` thiếu wheel tương thích). `python3 -m venv` mặc định trên Colab vẫn giữ Python 3.13.
+>      * Thiết lập môi trường Python 3.10 riêng biệt tại `/content/anytext_env` qua deadsnakes PPA hoặc standalone `uv` bootstrap, bảo toàn tuyệt đối Python hệ thống của Colab và không nâng cấp bừa bãi các gói lên latest.
+>      * Cài đặt dependencies chuẩn xác theo `environment.yaml` của AnyText (`torch==2.0.1+cu118`, `torchvision==0.15.2+cu118`, `modelscope==1.10.0`, `pytorch-lightning==1.5.0`, `transformers==4.30.2`, `omegaconf==2.2.3`, `open_clip_torch==2.7.0`, v.v.) với đầy đủ log cài đặt.
+>      * Bổ sung kiểm tra bắt buộc `pip check` (xác nhận 0 broken requirements) và kịch bản import smoke test các module inference thực tế (`torch`, `cldm.model`, `cldm.ddim_hacked`, `t3_dataset`, `util`, `modelscope.pipelines`) trước khi tải weights lớn.
+>      * Cell 5 gọi runner trực tiếp bằng interpreter `/content/anytext_env/bin/python`.
 >    - **Turnkey Colab Notebook & Runner Đã Tiền Kiểm Chứng**:
 >      * Script sinh tự động `build_anytext_colab_notebook.py` xuất `notebooks/independent_anytext_feasibility_colab.ipynb` 6 cells sạch với đối soát SHA-256 bit-exact khi staging.
 >      * Runner `scripts/research/run_anytext_colab.py` hỗ trợ `--preflight-only` đã chạy thành công trên LOCAL (xác minh 2/2 nguồn thật, phần cứng, font và plan với exit code 0).
->      * Trạng thái thực thi trung thực: **`PREPARED_NOT_EXECUTED`** (không tự giả lập kết quả GPU trên máy local).
+>      * Trạng thái thực thi trung thực: **`PREPARED_NOT_EXECUTED`** (không tự giả lập kết quả GPU trên máy local; compile/tests trên LOCAL không được coi là Colab runtime PASS).
 >    - **Kiểm Thử & Đính Chính Báo Cáo Chốt SDXL**:
->      * Bộ test `ml/tests/test_anytext_feasibility.py` mở rộng đạt 7/7 PASS (thêm kiểm thử safe extraction security, package whitelist, LF parity).
+>      * Bộ test `ml/tests/test_anytext_feasibility.py` mở rộng đạt 7/7 PASS (thêm kiểm thử safe extraction security, package whitelist, LF parity, và cấu hình môi trường Python 3.10 kèm smoke test).
 >    **Phase status**: `ANYTEXT_FEASIBILITY_PREPARED_NOT_EXECUTED`<br>
 >    **Next approved action**: Người dùng chạy `notebooks/independent_anytext_feasibility_colab.ipynb` trên Google Colab GPU (T4), tải kết quả về LOCAL để đối soát kỹ thuật và thẩm định nội dung.<br>
 >
