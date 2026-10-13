@@ -183,6 +183,8 @@ def test_anytext_notebook_compilation_and_constraints():
     assert "wheel==0.42.0" in all_code
     assert "scikit-image==0.20.0" in all_code
     assert "draw_glyph" in all_code and "draw_glyph2" in all_code
+    assert "(80, 512, 1)" in all_code
+    assert "(512, 512, 1)" in all_code
     assert "350,000" in all_code and "Magnum Gold Almond" in all_code
     assert "DejaVuSans.ttf" in all_code
 
@@ -359,30 +361,51 @@ def test_download_inventory_and_network_accounting_contract(monkeypatch, tmp_pat
     assert receipt["checkpoint_sha256"] == dummy_ckpt_sha
     assert receipt["download_ceiling_gib"] == 12.0
     assert receipt["cache_pre_existing_bytes"] == 1024
-    assert receipt["actual_network_downloaded_bytes"] == len(dummy_ckpt)
-    assert receipt["network_accounting_type"] == "MEASURED_NEW_TRANSFERS_ONLY"
+    assert receipt["observed_cache_growth_bytes"] == len(dummy_ckpt)
+    assert receipt["network_traffic_bytes"] == "NOT_MEASURED"
+    assert receipt["network_accounting_status"] == "NOT_MEASURED"
+    assert receipt["pre_download_inventory_verified"] is True
     assert receipt["within_budget_ceiling"] is True
 
-    # Test ceiling violation with clean cache directory
+    # Test pre-download inventory check ceiling violation
     cache_dir2 = tmp_path / "modelscope_cache_low"
     cache_dir2.mkdir()
-    model_dir2 = cache_dir2 / "damo" / "cv_anytext_text_generation_editing"
-    model_dir2.mkdir(parents=True)
-    ckpt_file2 = model_dir2 / "anytext_v1.1.ckpt"
-
-    def mock_snapshot_download_low(repo_id, revision, cache_dir, ignore_file_pattern):
-        ckpt_file2.write_bytes(dummy_ckpt)
-        return str(model_dir2)
-
-    fake_snapshot.snapshot_download = mock_snapshot_download_low
-
     plan_low_budget = {
         "model_specification": plan["model_specification"],
         "resource_budget": {
             "max_colab_download_gib": 0.0000000001,  # ~0.1 byte ceiling
         }
     }
-    with pytest.raises(RuntimeError, match="Actual network download exceeded budget ceiling"):
+    with pytest.raises(RuntimeError, match="Pre-download inventory check failed"):
         download_and_verify_modelscope_anytext(plan_low_budget, cache_dir2)
+
+    # Test supplementary post-download check violation
+    cache_dir3 = tmp_path / "modelscope_cache_supp"
+    cache_dir3.mkdir()
+    model_dir3 = cache_dir3 / "damo" / "cv_anytext_text_generation_editing"
+    model_dir3.mkdir(parents=True)
+    ckpt_file3 = model_dir3 / "anytext_v1.1.ckpt"
+
+    def mock_snapshot_download_supp(repo_id, revision, cache_dir, ignore_file_pattern):
+        # Writes 1000 bytes during download (exceeds 500 bytes ceiling)
+        ckpt_file3.write_bytes(b"A" * 1000)
+        return str(model_dir3)
+
+    fake_snapshot.snapshot_download = mock_snapshot_download_supp
+
+    plan_supp_budget = {
+        "model_specification": {
+            "modelscope_repo_id": "damo/cv_anytext_text_generation_editing",
+            "model_revision": "v1.1.3",
+            "checkpoint_file": "anytext_v1.1.ckpt",
+            "checkpoint_sha256": compute_sha256(ckpt_file),
+            "total_required_weights_bytes": 100,  # passes pre-check (< 500 bytes)
+        },
+        "resource_budget": {
+            "max_colab_download_gib": 0.000000465,  # ~500 bytes ceiling
+        }
+    }
+    with pytest.raises(RuntimeError, match="Supplementary post-download check failed"):
+        download_and_verify_modelscope_anytext(plan_supp_budget, cache_dir3)
 
 

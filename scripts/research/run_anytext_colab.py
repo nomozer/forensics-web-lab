@@ -266,6 +266,19 @@ def download_and_verify_modelscope_anytext(
     max_download_gib = float(resource_budget.get("max_colab_download_gib", 12.0))
     download_ceiling_bytes = int(max_download_gib * (1024**3))
 
+    planned_required_bytes = model_spec.get("total_required_weights_bytes", planned_bytes)
+    planned_required_gib = round(planned_required_bytes / (1024**3), 4)
+
+    # 1. Pre-download inventory verification against locked budget ceiling
+    print(f"[INFO] Pre-download inventory verification: planned required weights {planned_required_gib} GiB ({planned_required_bytes} bytes).")
+    print(f"[INFO] Locked budget ceiling: {max_download_gib} GiB ({download_ceiling_bytes} bytes).")
+
+    if planned_required_bytes > download_ceiling_bytes:
+        raise RuntimeError(
+            f"Pre-download inventory check failed: planned required weights ({planned_required_gib} GiB) "
+            f"exceed locked budget ceiling ({max_download_gib} GiB)."
+        )
+
     cache_dir.mkdir(parents=True, exist_ok=True)
     os.environ["MODELSCOPE_CACHE"] = str(cache_dir.resolve())
 
@@ -283,8 +296,7 @@ def download_and_verify_modelscope_anytext(
     from modelscope.hub.snapshot_download import snapshot_download
 
     print(f"[INFO] Initiating ModelScope snapshot download for {repo_id} ({revision})...")
-    print(f"[INFO] Download ceiling: {max_download_gib} GiB ({download_ceiling_bytes} bytes).")
-    print("[INFO] Excluding 'nlp_csanmt_translation_zh2en/*' to preserve budget...")
+    print(f"[INFO] Excluding 'nlp_csanmt_translation_zh2en/*' to preserve budget...")
 
     t0 = time.time()
     model_dir = snapshot_download(
@@ -303,7 +315,7 @@ def download_and_verify_modelscope_anytext(
     if has_translator:
         raise RuntimeError("Translator directory was unexpectedly downloaded! Exceeds budget constraints.")
 
-    # Post-inventory of cache_dir to distinguish cache content from actual network transfer
+    # Post-inventory of cache_dir to measure on-disk cache growth
     post_inventory: Dict[str, int] = {}
     for f in cache_dir.rglob("*"):
         if f.is_file():
@@ -315,19 +327,21 @@ def download_and_verify_modelscope_anytext(
     cache_total_files_bytes = sum(f.stat().st_size for f in model_dir_path.rglob("*") if f.is_file())
     cache_total_files_gib = round(cache_total_files_bytes / (1024**3), 4)
 
-    # Net network traffic transferred during this snapshot_download call
-    net_bytes = 0
+    # Observed cache growth on disk during snapshot_download (filesystem delta, not direct network traffic)
+    growth_bytes = 0
     for p, sz in post_inventory.items():
         if p not in pre_inventory:
-            net_bytes += sz
+            growth_bytes += sz
         elif sz > pre_inventory[p]:
-            net_bytes += (sz - pre_inventory[p])
-    actual_network_downloaded_bytes = net_bytes
-    actual_network_downloaded_gib = round(actual_network_downloaded_bytes / (1024**3), 4)
+            growth_bytes += (sz - pre_inventory[p])
+    observed_cache_growth_bytes = growth_bytes
+    observed_cache_growth_gib = round(observed_cache_growth_bytes / (1024**3), 4)
 
-    if actual_network_downloaded_bytes > download_ceiling_bytes:
+    # Supplementary post-download check
+    if observed_cache_growth_bytes > download_ceiling_bytes:
         raise RuntimeError(
-            f"Actual network download exceeded budget ceiling! Transferred {actual_network_downloaded_gib} GiB > ceiling {max_download_gib} GiB."
+            f"Supplementary post-download check failed: observed cache growth {observed_cache_growth_gib} GiB "
+            f"exceeded budget ceiling {max_download_gib} GiB."
         )
 
     # Checkpoint hash verification
@@ -347,20 +361,25 @@ def download_and_verify_modelscope_anytext(
         "revision": revision,
         "download_duration_sec": round(download_duration, 2),
         "planned_weights_bytes": planned_bytes,
+        "planned_weights_gib": planned_required_gib,
         "download_ceiling_gib": max_download_gib,
         "download_ceiling_bytes": download_ceiling_bytes,
+        "pre_download_inventory_verified": True,
         "cache_pre_existing_bytes": pre_existing_cache_bytes,
         "cache_total_files_bytes": cache_total_files_bytes,
         "cache_total_files_gib": cache_total_files_gib,
-        "actual_network_downloaded_bytes": actual_network_downloaded_bytes,
-        "actual_network_downloaded_gib": actual_network_downloaded_gib,
-        "network_accounting_type": "MEASURED_NEW_TRANSFERS_ONLY",
-        "within_budget_ceiling": actual_network_downloaded_bytes <= download_ceiling_bytes,
+        "observed_cache_growth_bytes": observed_cache_growth_bytes,
+        "observed_cache_growth_gib": observed_cache_growth_gib,
+        "network_traffic_bytes": "NOT_MEASURED",
+        "network_accounting_status": "NOT_MEASURED",
+        "network_accounting_description": "Cache growth observed via pre/post directory inventory diff, not direct socket network measurement.",
+        "within_budget_ceiling": observed_cache_growth_bytes <= download_ceiling_bytes,
         "translator_excluded": True,
         "checkpoint_sha256": observed_ckpt_sha,
         "checkpoint_status": "VERIFIED_MATCH",
     }
-    print(f"[PASS] Model cache verified: {cache_total_files_gib} GiB on disk, actual network traffic: {actual_network_downloaded_gib} GiB (within {max_download_gib} GiB ceiling).")
+    print(f"[PASS] Model cache verified: {cache_total_files_gib} GiB on disk, observed cache growth: {observed_cache_growth_gib} GiB (within {max_download_gib} GiB ceiling).")
+    print(f"[PASS] Network traffic note: Direct network socket traffic NOT_MEASURED (cache growth is reported as on-disk filesystem delta).")
     print(f"[PASS] Checkpoint verified: {observed_ckpt_sha[:16]}...")
     return model_dir, receipt
 
