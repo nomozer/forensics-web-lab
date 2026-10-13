@@ -2,7 +2,7 @@
 
 > **Tài liệu đọc đầu tiên bắt buộc cho mọi phiên làm việc AI mới.**<br>
 > **Base main commit**: `7fd7b8851819154dee849a440a5e0dfb69f46c0d` (main with Phase 4C.7A finalized; CI success)<br>
-> **Phase gần nhất**: Phase 4C.8 trace — AnyText Feasibility Preparation for Document Text Editing (Official tyxsspa/AnyText ModelScope v1.1.3 Pinned, Translation Engine Disabled to respect 12 GiB Budget, Canonical 2-Attempt Plan Locked, Geometry Adapter Implemented, Local Preflight Verified PASS, Execution Status: PREPARED_NOT_EXECUTED, 5/5 anytext tests PASS, 35/35 document tests PASS)<br>
+> **Phase gần nhất**: Phase 4C.8 trace — AnyText Feasibility Launcher Execution Repair & Safe Archive Integration (SDXL archive input resolution, ModelScope snapshot_download excluding translator weights, cache isolation outside artifacts, exact git revision 3d4a260c... checkout, zoomed ROI contact sheet, dual-criteria review CSV, whitelisted packaging <= 100 MiB, Local Preflight Verified PASS, Execution Status: PREPARED_NOT_EXECUTED, 7/7 anytext tests PASS)<br>
 > **Branch**: `research/independent-cohort-acquisition` (no PR)<br>
 > **Current TGIF intake execution commit**: `9d98a2d5c6afea16f9b3a71a03f0c2d6f43204e4` (archive-layout-resolving TGIF N=400 Colab worker snapshot; canonical notebook pins this full SHA by detached checkout, while the local auditor remains on the handoff branch; historical pilot/diagnostic/calibration bindings remain unchanged)<br>
 > **Repository naming status**: `FUNCTIONAL_NAMES_NORMALIZED` — 46 active, unsealed files now use work-oriented names; the complete migration table is in `docs/REPOSITORY_NAMING_MAP.md`. Twenty-one sealed config/notebook/operator/package/confirmatory paths and all historical evidence/raw artifact paths retain their exact names and bindings.<br>
@@ -401,18 +401,22 @@
 >        - Attempt A: CORD row 22, original "280,000", target "350,000", native bbox `[442, 406, 468, 488]`, seed 20261012, authentic SHA-256 `b335696aaeb1ba1a607e87cd7acf76798dbc65a188b2f38e347473a762aba087`.
 >        - Attempt B: CORD row 61, original "Populaire Chocolate", target "Magnum Gold Almond", native bbox `[1085, 128, 1156, 749]`, seed 20261013, authentic SHA-256 `77d047b9791ff4667bf85b0b86448daf154af15660686cf72047d9db407b5ed0`.
 >      * Khóa tham số tạo sinh: Text editing mode, DDIM 20 steps, CFG scale 9.0, canvas 512x512, context margin 0.5. Đúng 1 attempt cho mỗi source, không retry chọn lọc ảnh.
->      * Plan chuẩn tắc: `research/evidence/document_pilot/anytext_feasibility_plan.json` (SHA-256 `143cecdf...`).
+>      * Plan chuẩn tắc: `research/evidence/document_pilot/anytext_feasibility_plan.json` (SHA-256 `88f7e32873ff4c4e96dc60aae33a50aee677a550291e3316a027e1584e69b3ad`, chuẩn hóa strict LF line endings, bổ sung `input_source_specification` trích xuất an toàn từ archive `document_feasibility_results.zip`).
 >    - **Xây Dựng Adapter Hình Học `anytext_document_adapter.py`**:
 >      * Tạo `ori_image_canvas` (512x512) và `draw_pos_canvas` (512x512, vùng can thiệp màu trắng 255 trên nền đen 0).
 >      * Hàm composite khép kín ánh xạ ngược (unpad $\to$ bicubic restore) và dán strictly vào vùng mask; kiểm chứng bitwise outside-mask equality (`np.array_equal == True`, `max_outside_diff == 0`).
+>    - **Sửa Toàn Diện 5 Lỗi Thực Thi Trong Launcher & Colab Notebook**:
+>      * (1) **Đầu vào từ archive SDXL**: Thay thế hoàn toàn đường tải Parquet CORD-v2 ngoài luồng bằng upload archive đã có `document_feasibility_results.zip` (SHA-256 `deadd920...`). Trích xuất an toàn, kiểm tra SHA-256 hai authentic controls (Attempt A: `b335696a...`, Attempt B: `77d047b9...`) và lấy `final_edited_document.png` (SDXL pilot) đối chiếu.
+>      * (2) **Khóa mã nguồn & Revision**: Khóa commit `3d4a260c67d92c0e27d6e18ed69990e19a40de6d`, thêm `git checkout` và kiểm tra HEAD trong notebook trước khi nạp model.
+>      * (3) **Kiểm soát tải ModelScope**: Sử dụng `snapshot_download` với `ignore_file_pattern=['nlp_csanmt_translation_zh2en/*']` loại bỏ translator model (7.34 GiB) khỏi danh mục tải thực tế; đối soát checkpoint `anytext_v1.1.ckpt` (`09c88d14...`).
+>      * (4) **Cô lập Cache & Đóng gói Whitelist**: Đặt `MODELSCOPE_CACHE` tại thư mục riêng (`/content/modelscope_cache` trên Colab hoặc `.cache_modelscope` ngoài `outputs/`). Đóng gói ZIP bằng whitelist nghiêm ngặt (`.png`, `.json`, `.csv`), loại bỏ weights/cache, thực thi trần 100 MiB.
+>      * (5) **Bàn giao đánh giá**: Sinh contact sheet 6 cột có zoomed ROI (Authentic ROI, SDXL ROI, AnyText Raw ROI, AnyText Final ROI, AnyText Final Full Document, Mask ROI); xuất `human_review.csv` với 2 tiêu chí tách biệt `exact_text_success` và `visual_realism` (khóa `PENDING_HUMAN_REVIEW`).
 >    - **Turnkey Colab Notebook & Runner Đã Tiền Kiểm Chứng**:
->      * Script sinh tự động `build_anytext_colab_notebook.py` xuất `notebooks/independent_anytext_feasibility_colab.ipynb` 5 cells sạch (zero-token, zero-HF login, không mount toàn bộ Drive).
->      * Runner `scripts/research/run_anytext_colab.py` hỗ trợ `--preflight-only` đã chạy thành công trên LOCAL CPU (xác minh 2/2 nguồn thật, phần cứng, font và plan với exit code 0).
+>      * Script sinh tự động `build_anytext_colab_notebook.py` xuất `notebooks/independent_anytext_feasibility_colab.ipynb` 6 cells sạch với đối soát SHA-256 bit-exact khi staging.
+>      * Runner `scripts/research/run_anytext_colab.py` hỗ trợ `--preflight-only` đã chạy thành công trên LOCAL (xác minh 2/2 nguồn thật, phần cứng, font và plan với exit code 0).
 >      * Trạng thái thực thi trung thực: **`PREPARED_NOT_EXECUTED`** (không tự giả lập kết quả GPU trên máy local).
->    - **Đính Chính Báo Cáo Chốt SDXL & Múi Giờ**:
->      * Bổ sung 3 giới hạn khoa học vào `DOCUMENT_FEASIBILITY_PILOT_CLOSURE_REPORT.md` ($I_1$ không chứng minh hình học hoàn toàn không có lỗi, chưa cô lập VAE reconstruction, P1 bảo toàn trường nhìn không đồng nghĩa tối ưu detection).
->      * Ghi nhận Erratum múi giờ receipt timestamp `2026-10-13T19:00:00Z` là giờ ICT `+07:00` thay vì UTC.
->      * Bộ test `ml/tests/test_anytext_feasibility.py` đạt 5/5 PASS, toàn bộ 35/35 document tests PASS.
+>    - **Kiểm Thử & Đính Chính Báo Cáo Chốt SDXL**:
+>      * Bộ test `ml/tests/test_anytext_feasibility.py` mở rộng đạt 7/7 PASS (thêm kiểm thử safe extraction security, package whitelist, LF parity).
 >    **Phase status**: `ANYTEXT_FEASIBILITY_PREPARED_NOT_EXECUTED`<br>
 >    **Next approved action**: Người dùng chạy `notebooks/independent_anytext_feasibility_colab.ipynb` trên Google Colab GPU (T4), tải kết quả về LOCAL để đối soát kỹ thuật và thẩm định nội dung.<br>
 >

@@ -62,8 +62,27 @@ ANYTEXT_PLAN: Dict[str, Any] = {
         "planned_colab_download_gib": 6.93,
         "max_local_transfer_mib": 100.0,
         "max_gpu_execution_minutes": 60.0,
-        "target_gpu": "Tesla T4 (15 GB VRAM, Google Colab free tier)",
         "authentication_required": False
+    },
+    "input_source_specification": {
+        "archive_path": "data/research/local-artifacts/document-feasibility/document_feasibility_results.zip",
+        "archive_sha256": "deadd9205207eaaa296a8d9eeb493ee48eeea76ee7afd210684187e4026ed684",
+        "archive_size_bytes": 10592936,
+        "extraction_policy": "SAFE_EXTRACT_NO_PARENT_DIR_NO_ABSOLUTE_PATH",
+        "authentic_controls": {
+            "attempt_A": {
+                "source_path_in_zip": "attempt_0_replacement_price/authentic_control.png",
+                "sha256": "b335696aaeb1ba1a607e87cd7acf76798dbc65a188b2f38e347473a762aba087"
+            },
+            "attempt_B": {
+                "source_path_in_zip": "attempt_1_replacement_item_name/authentic_control.png",
+                "sha256": "77d047b9791ff4667bf85b0b86448daf154af15660686cf72047d9db407b5ed0"
+            }
+        },
+        "sdxl_pilot_outputs": {
+            "attempt_A": "attempt_0_replacement_price/final_edited_document.png",
+            "attempt_B": "attempt_1_replacement_item_name/final_edited_document.png"
+        }
     },
     "geometry_contract": {
         "native_document_dimensions_preserved": True,
@@ -137,10 +156,11 @@ ANYTEXT_PLAN: Dict[str, Any] = {
 
 
 def build_and_save_plan() -> Dict[str, Any]:
-    """Serializes the plan, computes SHA-256 and writes to target file."""
+    """Serializes the plan, computes SHA-256 and writes to target file with strict LF."""
     PLAN_OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    plan_json = json.dumps(ANYTEXT_PLAN, indent=2, ensure_ascii=False)
-    PLAN_OUTPUT_PATH.write_text(plan_json, encoding="utf-8")
+    plan_json = json.dumps(ANYTEXT_PLAN, indent=2, ensure_ascii=False) + "\n"
+    # Explicitly write UTF-8 bytes with LF only
+    PLAN_OUTPUT_PATH.write_bytes(plan_json.encode("utf-8"))
     plan_sha256 = hashlib.sha256(PLAN_OUTPUT_PATH.read_bytes()).hexdigest()
     print(f"[OK] AnyText plan written to: {PLAN_OUTPUT_PATH}")
     print(f"     SHA-256: {plan_sha256}")

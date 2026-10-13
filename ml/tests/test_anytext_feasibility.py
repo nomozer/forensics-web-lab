@@ -7,6 +7,8 @@ from pathlib import Path
 import py_compile
 import subprocess
 import sys
+import tempfile
+import zipfile
 
 import numpy as np
 from PIL import Image
@@ -28,7 +30,11 @@ def test_anytext_feasibility_plan_schema_and_integrity():
     plan_path = REPO_ROOT / "research" / "evidence" / "document_pilot" / "anytext_feasibility_plan.json"
     assert plan_path.exists(), f"Missing plan file: {plan_path}"
 
-    plan = json.loads(plan_path.read_text(encoding="utf-8"))
+    # Check strict LF line endings (no CR bytes)
+    raw_plan_bytes = plan_path.read_bytes()
+    assert b"\r" not in raw_plan_bytes, "Plan file must use strict LF line endings"
+
+    plan = json.loads(raw_plan_bytes.decode("utf-8"))
     assert plan["plan_id"] == "anytext_feasibility_plan_v1.0.0"
 
     # Check model specification
@@ -37,9 +43,15 @@ def test_anytext_feasibility_plan_schema_and_integrity():
     assert "tyxsspa/AnyText" in model_spec["official_repo_url"]
     assert model_spec["modelscope_repo_id"] == "damo/cv_anytext_text_generation_editing"
     assert model_spec["model_revision"] == "v1.1.3"
+    assert model_spec["code_commit_sha"] == "3d4a260c67d92c0e27d6e18ed69990e19a40de6d"
     assert "nlp_csanmt_translation_zh2en" in model_spec["translator_subfolder_excluded"]
     assert "DISABLED" in model_spec["translator_policy"]
     assert model_spec["total_required_weights_bytes"] <= 12 * (1024**3)
+
+    # Check input source specification
+    input_spec = plan["input_source_specification"]
+    assert "document_feasibility_results.zip" in input_spec["archive_path"]
+    assert input_spec["archive_sha256"] == "deadd9205207eaaa296a8d9eeb493ee48eeea76ee7afd210684187e4026ed684"
 
     # Check attempts
     attempts = plan["attempts"]
@@ -105,7 +117,6 @@ def test_anytext_document_adapter_roundtrip():
     assert pos_mask_arr.min() == 0
 
     # Simulate model generating a modified canvas
-    # Modify pixels inside the position mask
     modified_canvas_arr = np.array(prep_res["ori_image_canvas"]).copy()
     mask_in_canvas = pos_mask_arr > 128
     modified_canvas_arr[mask_in_canvas] = 10  # inpaint with dark pixels
@@ -135,14 +146,13 @@ def test_anytext_notebook_compilation_and_constraints():
 
     cells = nb_data["cells"]
     code_cells = [c for c in cells if c.get("cell_type") == "code"]
-    assert len(code_cells) >= 5, "Expected at least 5 code cells"
+    assert len(code_cells) >= 6, "Expected at least 6 code cells"
 
     all_code = ""
     for i, cell in enumerate(code_cells):
         src = "".join(cell.get("source", []))
         all_code += "\n" + src
         # Ensure code compiles without syntax error
-        # Exclude shell commands (lines starting with !)
         py_lines = [line for line in src.splitlines() if not line.strip().startswith("!")]
         py_src = "\n".join(py_lines)
         try:
@@ -154,28 +164,31 @@ def test_anytext_notebook_compilation_and_constraints():
     assert "use_translator=False" in all_code or "use_translator" in all_code
     assert "HUGGINGFACE_TOKEN" not in all_code
     assert "hf_" not in all_code
+    assert "3d4a260c67d92c0e27d6e18ed69990e19a40de6d" in all_code
+    assert "document_feasibility_results.zip" in all_code
+    assert "deadd9205207eaaa296a8d9eeb493ee48eeea76ee7afd210684187e4026ed684" in all_code
     assert "anytext_feasibility_plan.json" in all_code
 
 
 def test_anytext_runner_preflight_on_local():
-    """Verify run_anytext_colab.py executes cleanly in --preflight-only mode on LOCAL."""
+    """Verify run_anytext_colab.py executes cleanly in --preflight-only mode with inputs-zip on LOCAL."""
     runner_path = REPO_ROOT / "scripts" / "research" / "run_anytext_colab.py"
     assert runner_path.exists()
 
     # Compile check
     py_compile.compile(str(runner_path), doraise=True)
 
-    # Run preflight
+    # Run preflight with inputs-zip
     plan_path = REPO_ROOT / "research" / "evidence" / "document_pilot" / "anytext_feasibility_plan.json"
-    inputs_dir = REPO_ROOT / "data" / "research" / "local-artifacts" / "document-feasibility" / "runs" / "run_20261013_051727_4320eb1e"
+    archive_path = REPO_ROOT / "data" / "research" / "local-artifacts" / "document-feasibility" / "document_feasibility_results.zip"
 
     cmd = [
         sys.executable,
         str(runner_path),
         "--plan-path",
         str(plan_path),
-        "--inputs-dir",
-        str(inputs_dir),
+        "--inputs-zip",
+        str(archive_path),
         "--output-root",
         str(REPO_ROOT / "outputs"),
         "--custom-font",
@@ -184,9 +197,71 @@ def test_anytext_runner_preflight_on_local():
     ]
     res = subprocess.run(cmd, capture_output=True, text=True, cwd=str(REPO_ROOT))
     assert res.returncode == 0, f"Runner failed:\nSTDOUT: {res.stdout}\nSTDERR: {res.stderr}"
-    assert "[PASS] Verified input attempt_A_replacement_price" in res.stdout
-    assert "[PASS] Verified input attempt_B_replacement_item_name" in res.stdout
+    assert "[PASS] Archive SHA-256 verified: deadd9205207eaaa" in res.stdout
+    assert "[PASS] Extracted and verified authentic input for attempt_A_replacement_price: b335696aaeb1ba1a" in res.stdout
+    assert "[PASS] Extracted and verified authentic input for attempt_B_replacement_item_name: 77d047b9791ff466" in res.stdout
     assert "[OK] Preflight completed successfully." in res.stdout
+
+
+def test_anytext_safe_extract_security_and_hashing():
+    """Verify safe_extract_archive_inputs rejects directory traversal attacks."""
+    from scripts.research.run_anytext_colab import safe_extract_archive_inputs
+
+    plan_path = REPO_ROOT / "research" / "evidence" / "document_pilot" / "anytext_feasibility_plan.json"
+    plan = json.loads(plan_path.read_text(encoding="utf-8"))
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp_p = Path(tmpdir)
+        malicious_zip = tmp_p / "malicious.zip"
+        with zipfile.ZipFile(malicious_zip, "w") as zf:
+            zf.writestr("../evil.txt", b"evil content")
+
+        with pytest.raises(Exception):
+            safe_extract_archive_inputs(
+                archive_path=malicious_zip,
+                target_extract_dir=tmp_p / "extracted",
+                plan=plan,
+            )
+
+
+def test_anytext_package_results_zip_whitelist_and_ceiling():
+    """Verify package_results_zip enforces whitelist (.png, .json, .csv) and rejects weight files or size violations."""
+    from scripts.research.run_anytext_colab import package_results_zip
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp_p = Path(tmpdir)
+        run_dir = tmp_p / "run_test_01"
+        run_dir.mkdir()
+
+        # Add whitelisted files
+        (run_dir / "test.png").write_bytes(b"\x89PNG\r\n\x1a\n" + b"0" * 100)
+        (run_dir / "receipt.json").write_text('{"status": "OK"}', encoding="utf-8")
+        (run_dir / "review.csv").write_text("id,status\n1,PENDING\n", encoding="utf-8")
+
+        # Add forbidden files
+        (run_dir / "weights.ckpt").write_bytes(b"model checkpoint")
+        (run_dir / "code.py").write_text("import os", encoding="utf-8")
+        (run_dir / ".cache_file").write_bytes(b"cache")
+
+        out_zip = tmp_p / "results.zip"
+        package_results_zip(run_dir=run_dir, output_zip_path=out_zip, max_size_bytes=100 * 1024 * 1024)
+
+        assert out_zip.is_file()
+        with zipfile.ZipFile(out_zip, "r") as zf:
+            names = zf.namelist()
+            # Check whitelisted files exist
+            assert any("test.png" in n for n in names)
+            assert any("receipt.json" in n for n in names)
+            assert any("review.csv" in n for n in names)
+            # Check disallowed files are excluded
+            assert not any("weights.ckpt" in n for n in names)
+            assert not any("code.py" in n for n in names)
+            assert not any(".cache_file" in n for n in names)
+
+        # Check ceiling enforcement: if size > max_size_bytes, raises ValueError and removes zip
+        with pytest.raises(ValueError):
+            package_results_zip(run_dir=run_dir, output_zip_path=out_zip, max_size_bytes=10)
+        assert not out_zip.exists(), "Exceeded zip should be deleted upon violation"
 
 
 def test_sdxl_closure_report_scientific_corrections():
