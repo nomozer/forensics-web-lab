@@ -261,12 +261,29 @@ def download_and_verify_modelscope_anytext(
     expected_ckpt_sha = model_spec["checkpoint_sha256"]
     planned_bytes = model_spec["total_required_weights_bytes"]
 
+    # Read download ceiling from resource budget
+    resource_budget = plan.get("resource_budget", {})
+    max_download_gib = float(resource_budget.get("max_colab_download_gib", 12.0))
+    download_ceiling_bytes = int(max_download_gib * (1024**3))
+
     cache_dir.mkdir(parents=True, exist_ok=True)
     os.environ["MODELSCOPE_CACHE"] = str(cache_dir.resolve())
+
+    # Pre-inventory of cache_dir before network download
+    pre_inventory: Dict[str, int] = {}
+    for f in cache_dir.rglob("*"):
+        if f.is_file():
+            try:
+                pre_inventory[str(f.resolve())] = f.stat().st_size
+            except OSError:
+                pass
+    pre_existing_cache_bytes = sum(pre_inventory.values())
+    print(f"[INFO] Pre-download cache inventory: {len(pre_inventory)} files, {pre_existing_cache_bytes / (1024**3):.4f} GiB already present.")
 
     from modelscope.hub.snapshot_download import snapshot_download
 
     print(f"[INFO] Initiating ModelScope snapshot download for {repo_id} ({revision})...")
+    print(f"[INFO] Download ceiling: {max_download_gib} GiB ({download_ceiling_bytes} bytes).")
     print("[INFO] Excluding 'nlp_csanmt_translation_zh2en/*' to preserve budget...")
 
     t0 = time.time()
@@ -286,9 +303,32 @@ def download_and_verify_modelscope_anytext(
     if has_translator:
         raise RuntimeError("Translator directory was unexpectedly downloaded! Exceeds budget constraints.")
 
-    # Calculate actual downloaded bytes in model_dir
-    actual_downloaded_bytes = sum(f.stat().st_size for f in model_dir_path.rglob("*") if f.is_file())
-    actual_downloaded_gib = round(actual_downloaded_bytes / (1024**3), 4)
+    # Post-inventory of cache_dir to distinguish cache content from actual network transfer
+    post_inventory: Dict[str, int] = {}
+    for f in cache_dir.rglob("*"):
+        if f.is_file():
+            try:
+                post_inventory[str(f.resolve())] = f.stat().st_size
+            except OSError:
+                pass
+
+    cache_total_files_bytes = sum(f.stat().st_size for f in model_dir_path.rglob("*") if f.is_file())
+    cache_total_files_gib = round(cache_total_files_bytes / (1024**3), 4)
+
+    # Net network traffic transferred during this snapshot_download call
+    net_bytes = 0
+    for p, sz in post_inventory.items():
+        if p not in pre_inventory:
+            net_bytes += sz
+        elif sz > pre_inventory[p]:
+            net_bytes += (sz - pre_inventory[p])
+    actual_network_downloaded_bytes = net_bytes
+    actual_network_downloaded_gib = round(actual_network_downloaded_bytes / (1024**3), 4)
+
+    if actual_network_downloaded_bytes > download_ceiling_bytes:
+        raise RuntimeError(
+            f"Actual network download exceeded budget ceiling! Transferred {actual_network_downloaded_gib} GiB > ceiling {max_download_gib} GiB."
+        )
 
     # Checkpoint hash verification
     ckpt_path = model_dir_path / checkpoint_file
@@ -307,13 +347,21 @@ def download_and_verify_modelscope_anytext(
         "revision": revision,
         "download_duration_sec": round(download_duration, 2),
         "planned_weights_bytes": planned_bytes,
-        "actual_downloaded_bytes": actual_downloaded_bytes,
-        "actual_downloaded_gib": actual_downloaded_gib,
+        "download_ceiling_gib": max_download_gib,
+        "download_ceiling_bytes": download_ceiling_bytes,
+        "cache_pre_existing_bytes": pre_existing_cache_bytes,
+        "cache_total_files_bytes": cache_total_files_bytes,
+        "cache_total_files_gib": cache_total_files_gib,
+        "actual_network_downloaded_bytes": actual_network_downloaded_bytes,
+        "actual_network_downloaded_gib": actual_network_downloaded_gib,
+        "network_accounting_type": "MEASURED_NEW_TRANSFERS_ONLY",
+        "within_budget_ceiling": actual_network_downloaded_bytes <= download_ceiling_bytes,
         "translator_excluded": True,
         "checkpoint_sha256": observed_ckpt_sha,
         "checkpoint_status": "VERIFIED_MATCH",
     }
-    print(f"[PASS] Model downloaded ({actual_downloaded_gib} GiB) and verified: {observed_ckpt_sha[:16]}...")
+    print(f"[PASS] Model cache verified: {cache_total_files_gib} GiB on disk, actual network traffic: {actual_network_downloaded_gib} GiB (within {max_download_gib} GiB ceiling).")
+    print(f"[PASS] Checkpoint verified: {observed_ckpt_sha[:16]}...")
     return model_dir, receipt
 
 

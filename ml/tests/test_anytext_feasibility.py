@@ -170,10 +170,21 @@ def test_anytext_notebook_compilation_and_constraints():
     assert "anytext_feasibility_plan.json" in all_code
     assert "/content/anytext_env" in all_code
     assert "python3.10" in all_code
+    assert "/content/AnyText" in all_code
     assert "pip" in all_code and "check" in all_code
-    assert "smoke_script" in all_code or "smoke test" in all_code.lower()
     assert "torch==2.0.1" in all_code
+    assert "torchvision==0.15.2" in all_code
+    assert "numpy==1.23.3" in all_code
+    assert "Pillow==9.5.0" in all_code
+    assert "torchmetrics==0.11.4" in all_code
     assert "pytorch-lightning==1.5.0" in all_code
+    assert "pip==23.3.2" in all_code
+    assert "setuptools==68.2.2" in all_code
+    assert "wheel==0.42.0" in all_code
+    assert "scikit-image==0.20.0" in all_code
+    assert "draw_glyph" in all_code and "draw_glyph2" in all_code
+    assert "350,000" in all_code and "Magnum Gold Almond" in all_code
+    assert "DejaVuSans.ttf" in all_code
 
 
 def test_anytext_runner_preflight_on_local(tmp_path):
@@ -289,3 +300,89 @@ def test_sdxl_closure_report_scientific_corrections():
     # Timestamp correction / erratum note
     assert "2026-10-13T19:00:00Z" in content
     assert "UTC" in content or "+07:00" in content
+
+
+def test_download_inventory_and_network_accounting_contract(monkeypatch, tmp_path):
+    """Verify download_and_verify_modelscope_anytext distinguishes cache from network and obeys budget."""
+    from scripts.research.run_anytext_colab import download_and_verify_modelscope_anytext, compute_sha256
+
+    cache_dir = tmp_path / "modelscope_cache"
+    cache_dir.mkdir()
+
+    # Pre-populate cache with an unrelated existing file (1024 bytes)
+    pre_file = cache_dir / "pre_existing_data.bin"
+    pre_file.write_bytes(b"X" * 1024)
+
+    # Prepare dummy checkpoint
+    dummy_ckpt = b"DUMMY_CKPT_BYTES"
+    dummy_ckpt_sha = hashlib.sha256(dummy_ckpt).hexdigest()
+
+    model_dir = cache_dir / "damo" / "cv_anytext_text_generation_editing"
+    model_dir.mkdir(parents=True)
+    ckpt_file = model_dir / "anytext_v1.1.ckpt"
+
+    # Plan with 12 GiB ceiling
+    plan = {
+        "model_specification": {
+            "modelscope_repo_id": "damo/cv_anytext_text_generation_editing",
+            "model_revision": "v1.1.3",
+            "checkpoint_file": "anytext_v1.1.ckpt",
+            "checkpoint_sha256": dummy_ckpt_sha,
+            "total_required_weights_bytes": len(dummy_ckpt),
+        },
+        "resource_budget": {
+            "max_colab_download_gib": 12.0,
+        }
+    }
+
+    # Mock snapshot_download
+    def mock_snapshot_download(repo_id, revision, cache_dir, ignore_file_pattern):
+        # Simulate writing checkpoint during download
+        ckpt_file.write_bytes(dummy_ckpt)
+        return str(model_dir)
+
+    import sys
+    import types
+    fake_modelscope = types.ModuleType("modelscope")
+    fake_hub = types.ModuleType("modelscope.hub")
+    fake_snapshot = types.ModuleType("modelscope.hub.snapshot_download")
+    fake_snapshot.snapshot_download = mock_snapshot_download
+    fake_hub.snapshot_download = fake_snapshot
+    fake_modelscope.hub = fake_hub
+
+    monkeypatch.setitem(sys.modules, "modelscope", fake_modelscope)
+    monkeypatch.setitem(sys.modules, "modelscope.hub", fake_hub)
+    monkeypatch.setitem(sys.modules, "modelscope.hub.snapshot_download", fake_snapshot)
+
+    ret_dir, receipt = download_and_verify_modelscope_anytext(plan, cache_dir)
+    assert ret_dir == str(model_dir)
+    assert receipt["checkpoint_sha256"] == dummy_ckpt_sha
+    assert receipt["download_ceiling_gib"] == 12.0
+    assert receipt["cache_pre_existing_bytes"] == 1024
+    assert receipt["actual_network_downloaded_bytes"] == len(dummy_ckpt)
+    assert receipt["network_accounting_type"] == "MEASURED_NEW_TRANSFERS_ONLY"
+    assert receipt["within_budget_ceiling"] is True
+
+    # Test ceiling violation with clean cache directory
+    cache_dir2 = tmp_path / "modelscope_cache_low"
+    cache_dir2.mkdir()
+    model_dir2 = cache_dir2 / "damo" / "cv_anytext_text_generation_editing"
+    model_dir2.mkdir(parents=True)
+    ckpt_file2 = model_dir2 / "anytext_v1.1.ckpt"
+
+    def mock_snapshot_download_low(repo_id, revision, cache_dir, ignore_file_pattern):
+        ckpt_file2.write_bytes(dummy_ckpt)
+        return str(model_dir2)
+
+    fake_snapshot.snapshot_download = mock_snapshot_download_low
+
+    plan_low_budget = {
+        "model_specification": plan["model_specification"],
+        "resource_budget": {
+            "max_colab_download_gib": 0.0000000001,  # ~0.1 byte ceiling
+        }
+    }
+    with pytest.raises(RuntimeError, match="Actual network download exceeded budget ceiling"):
+        download_and_verify_modelscope_anytext(plan_low_budget, cache_dir2)
+
+
