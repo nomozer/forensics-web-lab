@@ -713,3 +713,15 @@ pnpm continuity:check -- --base <PR_BASE_SHA> --head <PR_HEAD_SHA>
 | `research/evidence/document_pilot/feasibility_contact_sheet.png` | Bảng contact sheet 5 cột (Authentic Control, Target Mask, Raw Output, Final Edited, ROI Zoom) được sinh cục bộ từ harness verifier với tỷ lệ khung hình chuẩn xác. | 5-column contact sheet, local verification artifact. |
 | `research/evidence/document_pilot/qc_inspection/` | Thư mục chứa 24 ảnh phóng đại chuẩn bị cho Human Content QC: crop ROI trước/sau 1x và 2x, ảnh so sánh side-by-side 2x nhãn trực quan cho cả 4 attempts; không chỉnh sửa hay filter nội dung ảnh gốc. | Visual inspection crops & side-by-side comparisons, unadulterated pixels. |
 
+---
+
+## 24. Chẩn Đoán Hình Học Đối Chứng I1, Đối Soát Sổ Cái Mâu Thuẫn Báo Cáo & Chốt Pilot SDXL (Phase 4C.8 trace, branch `research/independent-cohort-acquisition`)
+
+| File / Module | Vai trò và Trách Nhiệm Kỹ Thuật | Contracts / Guards |
+| :--- | :--- | :--- |
+| `scripts/research/diagnose_document_feasibility_geometry.py` | Script chẩn đoán hình học độc lập và đối soát số liệu: tạo I1 geometry-only control (bỏ qua mô hình AI), kiểm tra bitwise outside equality, tính pixel difference trong mask bằng signed int32, đo dải mép mask (2px boundary band), render contact sheet 4 hàng x 4 cột độ phân giải cao, và đối soát 5 mâu thuẫn báo cáo từ raw artifacts. | Standalone Geometry Diagnostics, I1 control generator, signed int32 delta, 2px boundary band, SSOT reconciliation. |
+| `research/evidence/document_pilot/document_feasibility_geometry_diagnostic_receipt.json` | Biên nhận máy đọc kết quả chẩn đoán hình học và đối soát: lưu mã băm I0, I1, I2, mảng thống kê biến đổi hình học I1-I0 và I2-I0, kiểm tra dải mép mask, kiểm toán outside equality, và sổ cái đối soát 5 mâu thuẫn báo cáo. | Schema v1.0.0, 4/4 attempts verified, status: `GEOMETRY_CONTROL_AND_RECONCILIATION_VERIFIED`. |
+| `research/evidence/document_pilot/qc_inspection/geometry_control_contact_sheet.png` | Ảnh bảng kiểm tra 4 hàng x 4 cột (Authentic I0, Geometry Control I1, Generated I2, Signed Diff Map) hiển thị chi tiết sắc nét để đọc chữ và soi bóng đổ/nếp nhăn vi mô. | 4-row high-res comparison contact sheet (289 KB, 1400x1400). |
+| `research/evidence/document_pilot/DOCUMENT_FEASIBILITY_PILOT_CLOSURE_REPORT.md` | Báo cáo kỹ thuật chốt pilot SDXL: tổng kết định lượng I1 vs I2, giải đáp 5 câu hỏi thẩm định trực quan sơ bộ (human review tiếp tục PENDING), phân tích sổ cái 5 mâu thuẫn báo cáo, kết luận có giới hạn và đề xuất đúng 1 bước tiếp theo hướng về detection. | Comprehensive Pilot Closure Report, Phase 4C.8 trace. |
+| `ml/tests/test_document_feasibility_geometry.py` | Bộ test tự động mở rộng lên 17 unit tests: bổ sung `test_geometry_control_i1_diagnosis_receipt` kiểm tra cấu trúc receipt chẩn đoán, outside equality 100%, tính toán signed int32, và đối soát sổ cái mâu thuẫn. | 17 unit/contract tests, 100% PASS trên LOCAL CPU. |
+

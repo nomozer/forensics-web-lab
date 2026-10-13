@@ -677,3 +677,56 @@ def test_verification_harness_fail_closed(tmp_path: Path):
     assert res_fail["is_outside_equal"] is False
     assert res_fail["max_outside_diff"] == 1
 
+
+def test_geometry_control_i1_diagnosis_receipt():
+    """Verify geometry-only control I1 diagnostic receipt and reconciliation ledger."""
+    receipt_path = REPO_ROOT / "research" / "evidence" / "document_pilot" / "document_feasibility_geometry_diagnostic_receipt.json"
+    assert receipt_path.exists(), f"Missing diagnostic receipt: {receipt_path}"
+
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    assert receipt["status"] == "GEOMETRY_CONTROL_AND_RECONCILIATION_VERIFIED"
+    assert receipt["protocol_version"] == "1.2.0"
+
+    attempts = receipt["attempts"]
+    assert len(attempts) == 4
+
+    for att in attempts:
+        # I1 outside mask equality
+        assert att["i1_outside_mask_bitwise_equal"] is True
+        assert att["i1_max_outside_diff"] == 0
+
+        # Boundary outer 1px must have 0 changed pixels and 0 max diff (strict composite)
+        outer_i1 = att["i1_vs_i0_geometry_distortion"]["boundary_outer_1px"]
+        assert outer_i1["changed_pixels_count"] == 0
+        assert outer_i1["max_absolute_channel_diff"] == 0
+
+        outer_i2 = att["i2_vs_i0_generated_delta"]["boundary_outer_1px"]
+        assert outer_i2["changed_pixels_count"] == 0
+        assert outer_i2["max_absolute_channel_diff"] == 0
+
+        # Inside mask stats present
+        in_i1 = att["i1_vs_i0_geometry_distortion"]["inside_mask"]
+        in_i2 = att["i2_vs_i0_generated_delta"]["inside_mask"]
+        assert in_i1["total_pixels"] == in_i2["total_pixels"]
+        assert in_i1["mean_l1_rgb"] >= 0
+        assert in_i2["mean_l1_rgb"] >= 0
+
+        # Hashes present
+        for h_key in ["i0_sha256", "i1_sha256", "i2_sha256", "mask_sha256"]:
+            assert len(att["hashes"][h_key]) == 64
+
+    # Reconciliation ledger checks
+    ledger = receipt["reconciliation_ledger"]
+    assert ledger["discrepancy_01_model_revision"]["reconciled_ground_truth"] == "115134f363124c53c7d878647567d04daf26e41e"
+    assert ledger["discrepancy_02_max_pixel_difference"]["reconciled_ground_truth"] == [68, 255, 82, 128]
+    assert ledger["discrepancy_03_driver_pytorch_cuda"]["nvidia_driver_version"] == "NOT_RECORDED"
+    assert ledger["discrepancy_04_model_loading_and_inference"]["sum_load_and_inference_sec"] > 270.0
+    assert "PINNED" in ledger["discrepancy_05_default_unpinned"]["reconciled_ground_truth"]
+
+    # Contact sheet exists
+    contact_sheet = REPO_ROOT / "research" / "evidence" / "document_pilot" / "qc_inspection" / "geometry_control_contact_sheet.png"
+    assert contact_sheet.exists()
+    img = Image.open(contact_sheet)
+    assert img.size[0] > 1000 and img.size[1] > 500
+
+

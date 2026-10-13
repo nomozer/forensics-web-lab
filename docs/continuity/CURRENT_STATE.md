@@ -2,7 +2,7 @@
 
 > **Tài liệu đọc đầu tiên bắt buộc cho mọi phiên làm việc AI mới.**<br>
 > **Base main commit**: `7fd7b8851819154dee849a440a5e0dfb69f46c0d` (main with Phase 4C.7A finalized; CI success)<br>
-> **Phase gần nhất**: Phase 4C.8 trace — Controlled Document Generation Feasibility Study Intake & Verification (Protocol v1.2.0, 4 CORD-v2 attempts verified, 4/4 Technical QC PASS, Human Content QC PENDING, 29/29 document tests PASS)<br>
+> **Phase gần nhất**: Phase 4C.8 trace — Document Feasibility Geometry Diagnosis, Reporting Reconciliation & Pilot Closure (I1 Geometry Control Verified, 5 Discrepancies Reconciled, 4-Row Contact Sheet Rendered, Pilot Closure Concluded, 17/17 geometry tests PASS, 30/30 document tests PASS)<br>
 > **Branch**: `research/independent-cohort-acquisition` (no PR)<br>
 > **Current TGIF intake execution commit**: `9d98a2d5c6afea16f9b3a71a03f0c2d6f43204e4` (archive-layout-resolving TGIF N=400 Colab worker snapshot; canonical notebook pins this full SHA by detached checkout, while the local auditor remains on the handoff branch; historical pilot/diagnostic/calibration bindings remain unchanged)<br>
 > **Repository naming status**: `FUNCTIONAL_NAMES_NORMALIZED` — 46 active, unsealed files now use work-oriented names; the complete migration table is in `docs/REPOSITORY_NAMING_MAP.md`. Twenty-one sealed config/notebook/operator/package/confirmatory paths and all historical evidence/raw artifact paths retain their exact names and bindings.<br>
@@ -360,8 +360,37 @@
 >        * *Replacement*: Attempt 0 ("280,000" -> "350,000") thất bại in chữ (mô hình sinh mảng xám trơn nhẵn, xóa số cũ nhưng không render được số mới); Attempt 1 ("Populaire Chocolate" -> "Magnum Gold Almond") sai chính tả ("MAGNU ALONLD", bỏ "Gold", thiếu 'm', font sans-serif phẳng lệch phong cách in nhiệt).
 >        * *Removal*: Attempt 2 (xóa "Discount: -9,545") và Attempt 3 (xóa "TAX 15,636") xóa sạch chữ, nhưng Attempt 2 lộ mảng sáng đè lên dải bóng đổ chéo, Attempt 3 làm phẳng nếp nhăn giấy và ám xanh lam.
 >      * Trạng thái đánh giá con người: Giữ nguyên `human_verdict = PENDING_HUMAN_REVIEW` trong `human_review.csv` và receipt, tuyệt đối không tự gán `HUMAN_PASS`.
->    **Phase status**: `DOCUMENT_FEASIBILITY_INTAKE_AND_TECHNICAL_QC_VERIFIED_PASS`<br>
->    **Next approved action**: Người dùng mở các ảnh kiểm tra trực quan tại `research/evidence/document_pilot/qc_inspection/` để thực hiện thẩm định con người (Human Content QC) và quyết định định hướng bước tiếp theo.<br>
+>    **Historical Phase status**: `DOCUMENT_FEASIBILITY_INTAKE_AND_TECHNICAL_QC_VERIFIED_PASS`<br>
+>
+> 24. _Chẩn Đoán Hình Học Đối Chứng I1, Đối Soát Sổ Cái Mâu Thuẫn Báo Cáo & Chốt Pilot SDXL (Phase 4C.8 trace, branch `research/independent-cohort-acquisition`) ($systematic-debugging, $writing-plans, $executing-plans, $verification-before-completion)_:
+>    - **Khóa 3 Điều Kiện Thử Nghiệm Đối Chứng (I0 vs I1 vs I2)**:
+>      * I0 (Authentic Control): Ảnh RGB gốc từ archive CORD-v2.
+>      * I1 (Geometry-Only Control): Roundtrip hình học (crop context $\to$ bicubic resize $\to$ padding canvas 1024 $\to$ unpad $\to$ bicubic restore $\to$ composite vào vùng mask), bỏ qua mô hình AI bằng cách dùng chính canvas đầu vào làm canvas đầu ra; đối chứng xử lý ảnh thông thường, không phải ảnh AI.
+>      * I2 (Generated Output): Final edited document đã tạo trong run Colab (`run_20261013_051727_4320eb1e`), giữ nguyên trạng.
+>    - **Kiểm Chứng Thực Nghiệm I1 & Tính Toán Signed Int32 Pixel Delta**:
+>      * Tạo I1 cho đúng 4 sources, native dimensions bảo toàn. 100% ngoài mask bằng nhau bit-exact (`np.array_equal == True`, `max_outside_diff == 0`, outer 1px boundary band diff = 0).
+>      * Biến đổi hình học I1-I0 trong mask: Attempt 0 (82.83% px đổi, Mean L1 = 1.1879, Max ch diff = 11); Attempt 1 (50.01% px đổi, Mean L1 = 2.9626, Max ch diff = 74); Attempt 2 (78.62% px đổi, Mean L1 = 0.9817, Max ch diff = 14); Attempt 3 (91.00% px đổi, Mean L1 = 1.8865, Max ch diff = 13).
+>      * Biến đổi I2-I0 trong mask: Attempt 0 (Mean L1 = 8.9343, Max diff = 68); Attempt 1 (Mean L1 = 65.6413, Max diff = 255); Attempt 2 (Mean L1 = 10.8581, Max diff = 82); Attempt 3 (Mean L1 = 16.7530, Max diff = 128).
+>      * Kiểm tra dải mép mask (Boundary Band 2px): I1 có mean L1 = 0.70 - 1.55, max diff = 9 - 43; I2 có mean L1 = 4.88 - 36.31, max diff = 45 - 255.
+>    - **Đánh Giá Sơ Bộ Trực Quan & Render Contact Sheet 4 Hàng**:
+>      * Sinh `research/evidence/document_pilot/qc_inspection/geometry_control_contact_sheet.png` (4 hàng × 4 cột: Authentic I0, Geometry I1, Generated I2, Signed Diff Map ×3).
+>      * I1 không làm mờ mắt thường và không tạo vết vá; các đường bóng đổ và nếp nhăn giấy cắt ngang ranh giới mask liền mạch.
+>      * Dị thường vĩ mô chỉ xuất hiện ở I2: Attempt 0 mất số (hộp xám trơn), Attempt 1 sai chính tả "MAGNU ALONLD" sai font, Attempt 2 lộ mảng vá sáng cắt ngang bóng đổ chéo, Attempt 3 làm phẳng nếp nhăn và đổi tông màu.
+>      * Target text replacement: 0/2 đạt; removal: 2/2 xóa chữ nhưng thất bại độ chân thực nền.
+>      * Trạng thái thẩm định con người tiếp tục giữ nguyên: `PENDING_HUMAN_REVIEW`.
+>    - **Đối Soát & Hiệu Chỉnh 5 Mâu Thuẫn Báo Cáo (Single Source of Truth)**:
+>      * (1) Model Revision: Plan và receipts xác nhận `115134f363124c53c7d878647567d04daf26e41e`; chuỗi `115134f3c051...` trong TXT là lỗi chép tay.
+>      * (2) Max pixel difference: Mảng điểm ảnh thô xác nhận `68 / 255 / 82 / 128` (Markdown đúng, TXT sai `66 / 247 / 100 / 106`).
+>      * (3) Driver / PyTorch / CUDA: PyTorch `2.11.0+cu130`, GPU Tesla T4; host driver `NOT_RECORDED`; không đánh đồng CUDA version của driver với runtime PyTorch.
+>      * (4) Model loading và inference: 140.35s + 129.91s = 270.26s; notebook runtime và GPU active time là `NOT_RECORDED`.
+>      * (5) Pinning policy: Plan đã pin `115134f36312...`; ghi chú "Default unpinned" là lỗi soạn thảo.
+>    - **Chốt Pilot SDXL & Đề Xuất Một Bước Tiếp Theo Hướng Về Detection**:
+>      * Chốt pilot SDXL: Runner hình học hoàn toàn chính xác (outside L1 = 0, boundary band sạch, I1 không méo mó trực quan). Giới hạn nằm ở khả năng tạo sinh văn bản chi tiết của SDXL inpainting nguyên bản (không render được số nhỏ, sai font/spelling, không bảo toàn bóng đổ/nếp nhăn vi mô).
+>      * Đề xuất bước tiếp theo duy nhất: Không tiếp tục fine-tune hay prompt-engineering SDXL cho document generation; thay vào đó, chuyển hướng sang xây dựng panel phát hiện giả mạo tài liệu thực tế dựa trên các nguồn dữ liệu có sẵn (như RealText-V2 N=40 đã tiếp nhận và kiểm toán cách ly dưới hình học P1 Letterbox) hoặc kết hợp kỹ thuật chèn ghép quang học (optical typesetting / compositing) kết hợp diffusion blending cho giai đoạn tổng hợp dữ liệu sau này khi cần thiết.
+>      * Biên nhận: `research/evidence/document_pilot/document_feasibility_geometry_diagnostic_receipt.json`, báo cáo: `DOCUMENT_FEASIBILITY_PILOT_CLOSURE_REPORT.md`.
+>      * 17/17 unit tests `ml/tests/test_document_feasibility_geometry.py` PASS, 30/30 document tests PASS.
+>    **Phase status**: `DOCUMENT_FEASIBILITY_GEOMETRY_DIAGNOSED_AND_PILOT_CLOSED_PASS`<br>
+>    **Next approved action**: Đóng branch hoặc chuyển giao kết luận pilot sang nhiệm vụ xây dựng phương pháp phát hiện (detection pipeline) cho tài liệu số dưới hình học quan sát P1 Letterbox.<br>
 >
 > ---
 

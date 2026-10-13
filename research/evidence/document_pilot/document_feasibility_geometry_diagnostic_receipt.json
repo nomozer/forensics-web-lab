@@ -1,0 +1,518 @@
+{
+  "status": "GEOMETRY_CONTROL_AND_RECONCILIATION_VERIFIED",
+  "timestamp": "2026-10-13T19:00:00Z",
+  "protocol_version": "1.2.0",
+  "official_project_title": "Nghi\u00ean c\u1ee9u v\u00e0 x\u00e2y d\u1ef1ng c\u00f4ng c\u1ee5 ph\u00e1t hi\u1ec7n \u1ea3nh v\u00e0 t\u00e0i li\u1ec7u gi\u1ea3 m\u1ea1o sinh b\u1edfi AI.",
+  "plan_sha256": "4320eb1e85149323afeed51b18296bb44823d5c86267c4464e7c3d996077256f",
+  "script_sha256": "7b615bf3ca8f2bbc16cb9c06939f2f977c0d56e4f0f5fca8680ead354f7cc0a5",
+  "run_id": "run_20261013_051727_4320eb1e",
+  "geometry_control_specification": {
+    "i0_condition": "Authentic CORD-v2 control image (RGB, native dimensions)",
+    "i1_condition": "Geometry-only control (I0 through crop -> resize -> canvas -> unpad -> restore -> composite inside mask; no AI model)",
+    "i2_condition": "Existing Colab generated output (SDXL inpainting, frozen)",
+    "interpolation_image": "BICUBIC",
+    "interpolation_mask": "NEAREST (binarized strictly {0, 255})",
+    "outside_mask_equality_contract": "np.array_equal == True, max_outside_diff == 0",
+    "boundary_band_definition": "2px ribbon (1px inner band M \\ erode(M), 1px outer band dilate(M) \\ M)"
+  },
+  "attempts": [
+    {
+      "attempt_id": "attempt_0_replacement_price",
+      "source_image_id": 22,
+      "source_row_index": 22,
+      "operation": "replacement",
+      "original_text": "280,000",
+      "target_text": "350,000",
+      "target_bbox": [
+        442,
+        406,
+        468,
+        488
+      ],
+      "crop_bbox": [
+        429,
+        365,
+        481,
+        529
+      ],
+      "native_dimensions": [
+        576,
+        864
+      ],
+      "scale_factor": 6.2439024390243905,
+      "scaled_size": [
+        1024,
+        325
+      ],
+      "padding": [
+        349,
+        0
+      ],
+      "i1_outside_mask_bitwise_equal": true,
+      "i1_max_outside_diff": 0,
+      "i1_vs_i0_geometry_distortion": {
+        "inside_mask": {
+          "total_pixels": 2132,
+          "changed_pixels_count": 1766,
+          "changed_pixel_ratio": 0.8283302063789869,
+          "mean_l1_rgb": 1.187929956222639,
+          "max_absolute_channel_diff": 11
+        },
+        "boundary_inner_1px": {
+          "total_pixels": 212,
+          "changed_pixels_count": 168,
+          "mean_l1_rgb": 0.9544025157232704,
+          "max_absolute_channel_diff": 4
+        },
+        "boundary_outer_1px": {
+          "total_pixels": 220,
+          "changed_pixels_count": 0,
+          "mean_l1_rgb": 0.0,
+          "max_absolute_channel_diff": 0
+        }
+      },
+      "i2_vs_i0_generated_delta": {
+        "inside_mask": {
+          "total_pixels": 2132,
+          "changed_pixels_count": 2131,
+          "changed_pixel_ratio": 0.9995309568480301,
+          "mean_l1_rgb": 8.934333958724203,
+          "max_absolute_channel_diff": 68
+        },
+        "boundary_inner_1px": {
+          "total_pixels": 212,
+          "changed_pixels_count": 212,
+          "mean_l1_rgb": 5.55503144654088,
+          "max_absolute_channel_diff": 17
+        },
+        "boundary_outer_1px": {
+          "total_pixels": 220,
+          "changed_pixels_count": 0,
+          "mean_l1_rgb": 0.0,
+          "max_absolute_channel_diff": 0
+        }
+      },
+      "i2_vs_i1_ai_over_geometry": {
+        "inside_mask": {
+          "total_pixels": 2132,
+          "changed_pixels_count": 2132,
+          "changed_pixel_ratio": 1.0,
+          "mean_l1_rgb": 8.662288930581614,
+          "max_absolute_channel_diff": 63
+        },
+        "boundary_inner_1px": {
+          "total_pixels": 212,
+          "changed_pixels_count": 212,
+          "mean_l1_rgb": 5.465408805031447,
+          "max_absolute_channel_diff": 15
+        },
+        "boundary_outer_1px": {
+          "total_pixels": 220,
+          "changed_pixels_count": 0,
+          "mean_l1_rgb": 0.0,
+          "max_absolute_channel_diff": 0
+        }
+      },
+      "hashes": {
+        "i0_sha256": "b335696aaeb1ba1a607e87cd7acf76798dbc65a188b2f38e347473a762aba087",
+        "i1_sha256": "3b1ac6534050c2e9bbbbac2d2cfad159c604da053e3db65948871861c46dac10",
+        "i2_sha256": "f343cbc9c481370b3d97c343af8c3cb00b31aeb47b993c46f924072c80891851",
+        "mask_sha256": "629738c582b1028a91f25ae82cb1ec742e7d3d9a125d2374f42376cef7ac5486",
+        "geometry_receipt_sha256": "45918c92301f6026d47f59fee7de60c5b58192bceb211d17e1587b9dd80c2706"
+      }
+    },
+    {
+      "attempt_id": "attempt_1_replacement_item_name",
+      "source_image_id": 61,
+      "source_row_index": 61,
+      "operation": "replacement",
+      "original_text": "Populaire Chocolate",
+      "target_text": "Magnum Gold Almond",
+      "target_bbox": [
+        1085,
+        128,
+        1156,
+        749
+      ],
+      "crop_bbox": [
+        1057,
+        0,
+        1184,
+        997
+      ],
+      "native_dimensions": [
+        1356,
+        2315
+      ],
+      "scale_factor": 1.0270812437311936,
+      "scaled_size": [
+        1024,
+        130
+      ],
+      "padding": [
+        447,
+        0
+      ],
+      "i1_outside_mask_bitwise_equal": true,
+      "i1_max_outside_diff": 0,
+      "i1_vs_i0_geometry_distortion": {
+        "inside_mask": {
+          "total_pixels": 44091,
+          "changed_pixels_count": 22049,
+          "changed_pixel_ratio": 0.5000793812796263,
+          "mean_l1_rgb": 2.962600077113243,
+          "max_absolute_channel_diff": 74
+        },
+        "boundary_inner_1px": {
+          "total_pixels": 1380,
+          "changed_pixels_count": 72,
+          "mean_l1_rgb": 0.12198067632850242,
+          "max_absolute_channel_diff": 12
+        },
+        "boundary_outer_1px": {
+          "total_pixels": 1388,
+          "changed_pixels_count": 0,
+          "mean_l1_rgb": 0.0,
+          "max_absolute_channel_diff": 0
+        }
+      },
+      "i2_vs_i0_generated_delta": {
+        "inside_mask": {
+          "total_pixels": 44091,
+          "changed_pixels_count": 33567,
+          "changed_pixel_ratio": 0.7613118323467374,
+          "mean_l1_rgb": 65.64128733755189,
+          "max_absolute_channel_diff": 255
+        },
+        "boundary_inner_1px": {
+          "total_pixels": 1380,
+          "changed_pixels_count": 289,
+          "mean_l1_rgb": 0.8669082125603865,
+          "max_absolute_channel_diff": 202
+        },
+        "boundary_outer_1px": {
+          "total_pixels": 1388,
+          "changed_pixels_count": 0,
+          "mean_l1_rgb": 0.0,
+          "max_absolute_channel_diff": 0
+        }
+      },
+      "i2_vs_i1_ai_over_geometry": {
+        "inside_mask": {
+          "total_pixels": 44091,
+          "changed_pixels_count": 33647,
+          "changed_pixel_ratio": 0.7631262615953369,
+          "mean_l1_rgb": 65.56688061811556,
+          "max_absolute_channel_diff": 255
+        },
+        "boundary_inner_1px": {
+          "total_pixels": 1380,
+          "changed_pixels_count": 289,
+          "mean_l1_rgb": 0.8449275362318841,
+          "max_absolute_channel_diff": 192
+        },
+        "boundary_outer_1px": {
+          "total_pixels": 1388,
+          "changed_pixels_count": 0,
+          "mean_l1_rgb": 0.0,
+          "max_absolute_channel_diff": 0
+        }
+      },
+      "hashes": {
+        "i0_sha256": "77d047b9791ff4667bf85b0b86448daf154af15660686cf72047d9db407b5ed0",
+        "i1_sha256": "55b2506c792efb49758a0bdbca49947e9a0a67c9d484330e1f454d68140cf4dd",
+        "i2_sha256": "313fd40d9cf6602932c9ae8886b1a0f0c607e44143262d0c088236c13dece8c4",
+        "mask_sha256": "f22c3d00bf5111e8c99d2b11277209fe1fb070e73600e2107f7817ca97396247",
+        "geometry_receipt_sha256": "29778cf9f2cec36972acbe84a995a587bbffbbd47f85472dc8736f4768224790"
+      }
+    },
+    {
+      "attempt_id": "attempt_2_removal_discount_line",
+      "source_image_id": 7,
+      "source_row_index": 7,
+      "operation": "removal",
+      "original_text": "Discount: -9,545",
+      "target_text": "",
+      "target_bbox": [
+        524,
+        208,
+        556,
+        492
+      ],
+      "crop_bbox": [
+        508,
+        66,
+        572,
+        576
+      ],
+      "native_dimensions": [
+        576,
+        864
+      ],
+      "scale_factor": 2.007843137254902,
+      "scaled_size": [
+        1024,
+        129
+      ],
+      "padding": [
+        447,
+        0
+      ],
+      "i1_outside_mask_bitwise_equal": true,
+      "i1_max_outside_diff": 0,
+      "i1_vs_i0_geometry_distortion": {
+        "inside_mask": {
+          "total_pixels": 9088,
+          "changed_pixels_count": 7145,
+          "changed_pixel_ratio": 0.7862015845070423,
+          "mean_l1_rgb": 0.9817341549295775,
+          "max_absolute_channel_diff": 14
+        },
+        "boundary_inner_1px": {
+          "total_pixels": 628,
+          "changed_pixels_count": 478,
+          "mean_l1_rgb": 0.6778131634819533,
+          "max_absolute_channel_diff": 3
+        },
+        "boundary_outer_1px": {
+          "total_pixels": 636,
+          "changed_pixels_count": 0,
+          "mean_l1_rgb": 0.0,
+          "max_absolute_channel_diff": 0
+        }
+      },
+      "i2_vs_i0_generated_delta": {
+        "inside_mask": {
+          "total_pixels": 9088,
+          "changed_pixels_count": 9088,
+          "changed_pixel_ratio": 1.0,
+          "mean_l1_rgb": 10.8581279342723,
+          "max_absolute_channel_diff": 82
+        },
+        "boundary_inner_1px": {
+          "total_pixels": 628,
+          "changed_pixels_count": 628,
+          "mean_l1_rgb": 8.209129511677283,
+          "max_absolute_channel_diff": 22
+        },
+        "boundary_outer_1px": {
+          "total_pixels": 636,
+          "changed_pixels_count": 0,
+          "mean_l1_rgb": 0.0,
+          "max_absolute_channel_diff": 0
+        }
+      },
+      "i2_vs_i1_ai_over_geometry": {
+        "inside_mask": {
+          "total_pixels": 9088,
+          "changed_pixels_count": 9087,
+          "changed_pixel_ratio": 0.9998899647887324,
+          "mean_l1_rgb": 10.80655809859155,
+          "max_absolute_channel_diff": 74
+        },
+        "boundary_inner_1px": {
+          "total_pixels": 628,
+          "changed_pixels_count": 628,
+          "mean_l1_rgb": 8.166135881104035,
+          "max_absolute_channel_diff": 22
+        },
+        "boundary_outer_1px": {
+          "total_pixels": 636,
+          "changed_pixels_count": 0,
+          "mean_l1_rgb": 0.0,
+          "max_absolute_channel_diff": 0
+        }
+      },
+      "hashes": {
+        "i0_sha256": "bd6a0a501d15b44e0fc8bf27da872cc9122e8388c129b33ef0c9db756501632b",
+        "i1_sha256": "4583b1de5bb296e696cf4e59cf4444da13e01dfa4651cc96458f41f20964e1de",
+        "i2_sha256": "15c804196d02e6f1a63a21e1bfa680e581683ead8752881406172603bc7634a3",
+        "mask_sha256": "b39282f191ee10d426be88fcfb134fc8c17927c7dee0129f1ef68d83220d6b7e",
+        "geometry_receipt_sha256": "ceb030d5304cda38eafa653aec752ba682a5b841f1c00b3a60d9244fdb93da8c"
+      }
+    },
+    {
+      "attempt_id": "attempt_3_removal_tax_line",
+      "source_image_id": 93,
+      "source_row_index": 93,
+      "operation": "removal",
+      "original_text": "TAX 15,636",
+      "target_text": "",
+      "target_bbox": [
+        939,
+        383,
+        975,
+        605
+      ],
+      "crop_bbox": [
+        921,
+        272,
+        993,
+        716
+      ],
+      "native_dimensions": [
+        864,
+        1296
+      ],
+      "scale_factor": 2.3063063063063063,
+      "scaled_size": [
+        1024,
+        166
+      ],
+      "padding": [
+        429,
+        0
+      ],
+      "i1_outside_mask_bitwise_equal": true,
+      "i1_max_outside_diff": 0,
+      "i1_vs_i0_geometry_distortion": {
+        "inside_mask": {
+          "total_pixels": 7992,
+          "changed_pixels_count": 7273,
+          "changed_pixel_ratio": 0.910035035035035,
+          "mean_l1_rgb": 1.8865115115115114,
+          "max_absolute_channel_diff": 13
+        },
+        "boundary_inner_1px": {
+          "total_pixels": 512,
+          "changed_pixels_count": 462,
+          "mean_l1_rgb": 1.73828125,
+          "max_absolute_channel_diff": 8
+        },
+        "boundary_outer_1px": {
+          "total_pixels": 520,
+          "changed_pixels_count": 0,
+          "mean_l1_rgb": 0.0,
+          "max_absolute_channel_diff": 0
+        }
+      },
+      "i2_vs_i0_generated_delta": {
+        "inside_mask": {
+          "total_pixels": 7992,
+          "changed_pixels_count": 7992,
+          "changed_pixel_ratio": 1.0,
+          "mean_l1_rgb": 16.752961294627962,
+          "max_absolute_channel_diff": 128
+        },
+        "boundary_inner_1px": {
+          "total_pixels": 512,
+          "changed_pixels_count": 512,
+          "mean_l1_rgb": 7.553385416666667,
+          "max_absolute_channel_diff": 40
+        },
+        "boundary_outer_1px": {
+          "total_pixels": 520,
+          "changed_pixels_count": 0,
+          "mean_l1_rgb": 0.0,
+          "max_absolute_channel_diff": 0
+        }
+      },
+      "i2_vs_i1_ai_over_geometry": {
+        "inside_mask": {
+          "total_pixels": 7992,
+          "changed_pixels_count": 7992,
+          "changed_pixel_ratio": 1.0,
+          "mean_l1_rgb": 16.395895895895897,
+          "max_absolute_channel_diff": 121
+        },
+        "boundary_inner_1px": {
+          "total_pixels": 512,
+          "changed_pixels_count": 512,
+          "mean_l1_rgb": 6.842447916666667,
+          "max_absolute_channel_diff": 36
+        },
+        "boundary_outer_1px": {
+          "total_pixels": 520,
+          "changed_pixels_count": 0,
+          "mean_l1_rgb": 0.0,
+          "max_absolute_channel_diff": 0
+        }
+      },
+      "hashes": {
+        "i0_sha256": "fbe4059934fc2c88a3c87d5d99f5d1a24487524764432b681532a391a72e933a",
+        "i1_sha256": "069eedb38fb5089318e969476c14da6a3559b64db667b14cf3f2521791b8503b",
+        "i2_sha256": "edb16b118fa7ec5410a5b59ff5fbfd49b05043b5e4b82b4b56dc622f4cab0f5f",
+        "mask_sha256": "a2fe3b506a713ca7967bc11c8302e5b69712f645ecc4df38a3fba5e163d957d1",
+        "geometry_receipt_sha256": "2f47c02493d39a6f3f53ebba74c6d8509dd2d3daa2dae05403a5c0386232405f"
+      }
+    }
+  ],
+  "reconciliation_ledger": {
+    "discrepancy_01_model_revision": {
+      "field": "model_revision",
+      "txt_reported_value": "115134f3c051a82da171358b5a0429f4ff896e08",
+      "canonical_plan_value": "115134f363124c53c7d878647567d04daf26e41e",
+      "raw_checkpoint_preflight_value": "115134f363124c53c7d878647567d04daf26e41e",
+      "raw_manifest_value": "115134f363124c53c7d878647567d04daf26e41e",
+      "reconciled_ground_truth": "115134f363124c53c7d878647567d04daf26e41e",
+      "verdict": "RECONCILED_MATCH",
+      "analysis": "Both plan and raw Colab receipts confirm full revision 115134f363124c53c7d878647567d04daf26e41e. The alternate string '115134f3c051...' in the TXT summary was a manual transcription erratum."
+    },
+    "discrepancy_02_max_pixel_difference": {
+      "field": "max_absolute_channel_diff",
+      "txt_reported_values": [
+        66,
+        247,
+        100,
+        106
+      ],
+      "markdown_reported_values": [
+        68,
+        255,
+        82,
+        128
+      ],
+      "recomputed_from_pixel_arrays": [
+        68,
+        255,
+        82,
+        128
+      ],
+      "reconciled_ground_truth": [
+        68,
+        255,
+        82,
+        128
+      ],
+      "verdict": "MARKDOWN_MATCHES_RAW_PIXELS",
+      "analysis": "Recomputing directly on exact uint8 arrays (I2 - I0 with signed int32) confirms max channel diffs are exactly 68, 255, 82, 128. TXT values 66, 247, 100, 106 are incorrect."
+    },
+    "discrepancy_03_driver_pytorch_cuda": {
+      "field": "driver_pytorch_cuda_provenance",
+      "pytorch_version": "2.11.0+cu130",
+      "pytorch_cuda_runtime": "cu130 (from torch 2.11.0+cu130)",
+      "cuda_available": true,
+      "cuda_device_name": "Tesla T4",
+      "total_vram_gb": 14.56317138671875,
+      "nvidia_driver_version": "NOT_RECORDED",
+      "cuda_driver_supported_version": "NOT_RECORDED",
+      "verdict": "SEPARATED_AND_BOUND_TO_RECEIPTS",
+      "analysis": "Preflight JSON receipt captures torch version (2.11.0+cu130) and device name (Tesla T4). Host nvidia-smi driver version was not recorded in structured JSON receipts. Per protocol, CUDA driver version must not be conflated with PyTorch CUDA runtime."
+    },
+    "discrepancy_04_model_loading_and_inference": {
+      "field": "timing_breakdown",
+      "model_load_duration_sec": 140.34771609306335,
+      "inference_durations_sec": [
+        32.9317946434021,
+        30.8087215423584,
+        32.95003080368042,
+        33.21589946746826
+      ],
+      "sum_inference_duration_sec": 129.90644645690918,
+      "sum_load_and_inference_sec": 270.25416254997253,
+      "total_notebook_runtime_sec": "NOT_RECORDED",
+      "total_gpu_active_time_sec": "NOT_RECORDED",
+      "verdict": "EXACT_CATEGORIES_DISAMBIGUATED",
+      "analysis": "140.35s + 129.91s = 270.26s represents the sum of model load (download + init) and the 4 inference runs. Total notebook execution time and GPU active time were not recorded separately."
+    },
+    "discrepancy_05_default_unpinned": {
+      "field": "model_pinning_policy",
+      "table_wording": "Default unpinned tr\u00ean HF",
+      "canonical_plan_binding": "115134f363124c53c7d878647567d04daf26e41e",
+      "executed_manifest_binding": "115134f363124c53c7d878647567d04daf26e41e",
+      "reconciled_ground_truth": "EXACT_PINNED_REVISION_115134f363124c53c7d878647567d04daf26e41e",
+      "verdict": "RECONCILED_ERRATUM",
+      "analysis": "The canonical plan pinned revision 115134f363124c53c7d878647567d04daf26e41e prior to execution. Stating 'Default unpinned tr\u00ean HF' in the verification report table was inaccurate."
+    }
+  }
+}
