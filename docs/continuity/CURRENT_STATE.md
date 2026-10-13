@@ -2,7 +2,7 @@
 
 > **Tài liệu đọc đầu tiên bắt buộc cho mọi phiên làm việc AI mới.**<br>
 > **Base main commit**: `7fd7b8851819154dee849a440a5e0dfb69f46c0d` (main with Phase 4C.7A finalized; CI success)<br>
-> **Phase gần nhất**: Phase 4C.8 trace — Document Feasibility Geometry Diagnosis, Reporting Reconciliation & Pilot Closure (I1 Geometry Control Verified, 5 Discrepancies Reconciled, 4-Row Contact Sheet Rendered, Pilot Closure Concluded, 17/17 geometry tests PASS, 30/30 document tests PASS)<br>
+> **Phase gần nhất**: Phase 4C.8 trace — AnyText Feasibility Preparation for Document Text Editing (Official tyxsspa/AnyText ModelScope v1.1.3 Pinned, Translation Engine Disabled to respect 12 GiB Budget, Canonical 2-Attempt Plan Locked, Geometry Adapter Implemented, Local Preflight Verified PASS, Execution Status: PREPARED_NOT_EXECUTED, 5/5 anytext tests PASS, 35/35 document tests PASS)<br>
 > **Branch**: `research/independent-cohort-acquisition` (no PR)<br>
 > **Current TGIF intake execution commit**: `9d98a2d5c6afea16f9b3a71a03f0c2d6f43204e4` (archive-layout-resolving TGIF N=400 Colab worker snapshot; canonical notebook pins this full SHA by detached checkout, while the local auditor remains on the handoff branch; historical pilot/diagnostic/calibration bindings remain unchanged)<br>
 > **Repository naming status**: `FUNCTIONAL_NAMES_NORMALIZED` — 46 active, unsealed files now use work-oriented names; the complete migration table is in `docs/REPOSITORY_NAMING_MAP.md`. Twenty-one sealed config/notebook/operator/package/confirmatory paths and all historical evidence/raw artifact paths retain their exact names and bindings.<br>
@@ -389,8 +389,32 @@
 >      * Đề xuất bước tiếp theo duy nhất: Không tiếp tục fine-tune hay prompt-engineering SDXL cho document generation; thay vào đó, chuyển hướng sang xây dựng panel phát hiện giả mạo tài liệu thực tế dựa trên các nguồn dữ liệu có sẵn (như RealText-V2 N=40 đã tiếp nhận và kiểm toán cách ly dưới hình học P1 Letterbox) hoặc kết hợp kỹ thuật chèn ghép quang học (optical typesetting / compositing) kết hợp diffusion blending cho giai đoạn tổng hợp dữ liệu sau này khi cần thiết.
 >      * Biên nhận: `research/evidence/document_pilot/document_feasibility_geometry_diagnostic_receipt.json`, báo cáo: `DOCUMENT_FEASIBILITY_PILOT_CLOSURE_REPORT.md`.
 >      * 17/17 unit tests `ml/tests/test_document_feasibility_geometry.py` PASS, 30/30 document tests PASS.
->    **Phase status**: `DOCUMENT_FEASIBILITY_GEOMETRY_DIAGNOSED_AND_PILOT_CLOSED_PASS`<br>
->    **Next approved action**: Đóng branch hoặc chuyển giao kết luận pilot sang nhiệm vụ xây dựng phương pháp phát hiện (detection pipeline) cho tài liệu số dưới hình học quan sát P1 Letterbox.<br>
+>    **Historical Phase status**: `DOCUMENT_FEASIBILITY_GEOMETRY_DIAGNOSED_AND_PILOT_CLOSED_PASS`<br>
+>
+> 25. _Chuẩn Bị & Tiền Kiểm Chứng Độc Lập AnyText Feasibility Cho Hai Nguồn Replacement (Phase 4C.8 trace, branch `research/independent-cohort-acquisition`) ($systematic-debugging, $writing-plans, $executing-plans, $verification-before-completion)_:
+>    - **Lựa Chọn Checkpoint & Phân Bổ Ngân Sách Checkpoint AnyText**:
+>      * Lựa chọn editor chuyên về chữ: AnyText (`tyxsspa/AnyText`, ICLR 2024 Spotlight), repository ModelScope `damo/cv_anytext_text_generation_editing` (revision `v1.1.3`, Apache 2.0).
+>      * Khóa weights: `anytext_v1.1.ckpt` (5,730,281,759 bytes, SHA-256 `09c88d14...`), `clip-vit-large-patch14` (1,710,671,599 bytes). Tắt translator model tiếng Trung (`nlp_csanmt_translation_zh2en`, 7.34 GiB) qua `use_translator=False` để tiết kiệm băng thông và tôn trọng trần ngân sách: tổng tải mới là **6.93 GiB** ($\le 12.0$ GiB).
+>      * Khóa font mã nguồn mở: `DejaVuSans.ttf` (`fonts-dejavu-core`, Debian/Ubuntu package, Giấy phép Bitstream Vera / SIL OFL).
+>    - **Khóa Kế Hoạch Hai Attempts Replacement & Đối Soát SHA-256 Controls**:
+>      * Tái sử dụng đúng hai authentic controls từ SDXL pilot run `run_20261013_051727_4320eb1e`:
+>        - Attempt A: CORD row 22, original "280,000", target "350,000", native bbox `[442, 406, 468, 488]`, seed 20261012, authentic SHA-256 `b335696aaeb1ba1a607e87cd7acf76798dbc65a188b2f38e347473a762aba087`.
+>        - Attempt B: CORD row 61, original "Populaire Chocolate", target "Magnum Gold Almond", native bbox `[1085, 128, 1156, 749]`, seed 20261013, authentic SHA-256 `77d047b9791ff4667bf85b0b86448daf154af15660686cf72047d9db407b5ed0`.
+>      * Khóa tham số tạo sinh: Text editing mode, DDIM 20 steps, CFG scale 9.0, canvas 512x512, context margin 0.5. Đúng 1 attempt cho mỗi source, không retry chọn lọc ảnh.
+>      * Plan chuẩn tắc: `research/evidence/document_pilot/anytext_feasibility_plan.json` (SHA-256 `143cecdf...`).
+>    - **Xây Dựng Adapter Hình Học `anytext_document_adapter.py`**:
+>      * Tạo `ori_image_canvas` (512x512) và `draw_pos_canvas` (512x512, vùng can thiệp màu trắng 255 trên nền đen 0).
+>      * Hàm composite khép kín ánh xạ ngược (unpad $\to$ bicubic restore) và dán strictly vào vùng mask; kiểm chứng bitwise outside-mask equality (`np.array_equal == True`, `max_outside_diff == 0`).
+>    - **Turnkey Colab Notebook & Runner Đã Tiền Kiểm Chứng**:
+>      * Script sinh tự động `build_anytext_colab_notebook.py` xuất `notebooks/independent_anytext_feasibility_colab.ipynb` 5 cells sạch (zero-token, zero-HF login, không mount toàn bộ Drive).
+>      * Runner `scripts/research/run_anytext_colab.py` hỗ trợ `--preflight-only` đã chạy thành công trên LOCAL CPU (xác minh 2/2 nguồn thật, phần cứng, font và plan với exit code 0).
+>      * Trạng thái thực thi trung thực: **`PREPARED_NOT_EXECUTED`** (không tự giả lập kết quả GPU trên máy local).
+>    - **Đính Chính Báo Cáo Chốt SDXL & Múi Giờ**:
+>      * Bổ sung 3 giới hạn khoa học vào `DOCUMENT_FEASIBILITY_PILOT_CLOSURE_REPORT.md` ($I_1$ không chứng minh hình học hoàn toàn không có lỗi, chưa cô lập VAE reconstruction, P1 bảo toàn trường nhìn không đồng nghĩa tối ưu detection).
+>      * Ghi nhận Erratum múi giờ receipt timestamp `2026-10-13T19:00:00Z` là giờ ICT `+07:00` thay vì UTC.
+>      * Bộ test `ml/tests/test_anytext_feasibility.py` đạt 5/5 PASS, toàn bộ 35/35 document tests PASS.
+>    **Phase status**: `ANYTEXT_FEASIBILITY_PREPARED_NOT_EXECUTED`<br>
+>    **Next approved action**: Người dùng chạy `notebooks/independent_anytext_feasibility_colab.ipynb` trên Google Colab GPU (T4), tải kết quả về LOCAL để đối soát kỹ thuật và thẩm định nội dung.<br>
 >
 > ---
 

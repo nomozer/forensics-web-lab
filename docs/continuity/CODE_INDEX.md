@@ -725,3 +725,18 @@ pnpm continuity:check -- --base <PR_BASE_SHA> --head <PR_HEAD_SHA>
 | `research/evidence/document_pilot/DOCUMENT_FEASIBILITY_PILOT_CLOSURE_REPORT.md` | Báo cáo kỹ thuật chốt pilot SDXL: tổng kết định lượng I1 vs I2, giải đáp 5 câu hỏi thẩm định trực quan sơ bộ (human review tiếp tục PENDING), phân tích sổ cái 5 mâu thuẫn báo cáo, kết luận có giới hạn và đề xuất đúng 1 bước tiếp theo hướng về detection. | Comprehensive Pilot Closure Report, Phase 4C.8 trace. |
 | `ml/tests/test_document_feasibility_geometry.py` | Bộ test tự động mở rộng lên 17 unit tests: bổ sung `test_geometry_control_i1_diagnosis_receipt` kiểm tra cấu trúc receipt chẩn đoán, outside equality 100%, tính toán signed int32, và đối soát sổ cái mâu thuẫn. | 17 unit/contract tests, 100% PASS trên LOCAL CPU. |
 
+---
+
+## 25. Chuẩn Bị & Tiền Kiểm Chứng Độc Lập AnyText Feasibility Cho Hai Nguồn Replacement (AnyText Feasibility Preparation, Phase 4C.8 trace)
+
+| File / Module | Vai trò và Trách Nhiệm Kỹ Thuật | Contracts / Guards |
+| :--- | :--- | :--- |
+| `research/evidence/document_pilot/anytext_feasibility_plan.json` | Kế hoạch máy tiền đăng ký cho đúng hai attempts replacement (CORD rows 22 và 61): khóa checkpoint AnyText v1.1 (`09c88d14...`), clip encoder, font `DejaVuSans.ttf`, tắt translator model để tuân thủ trần 12 GiB, khóa prompts, bboxes, seeds và authentic control hashes. | Machine-readable plan, schema v1.0.0, 2 replacement attempts, translation model disabled. |
+| `scripts/research/build_anytext_feasibility_plan.py` | Script tạo tự động kế hoạch máy `anytext_feasibility_plan.json` với kiểm tra tính toàn vẹn và mã băm tất định. | Deterministic plan builder, Protocol v1.3.0. |
+| `ml/evaluation/anytext_document_adapter.py` | Module trung gian xử lý hình học chuyên biệt cho AnyText: trích xuất context crop, tạo canvas 512x512 cho `ori_image`, tạo mask vị trí nhị phân `draw_pos`, ánh xạ ngược tọa độ và dán composite; kiểm chứng bitwise outside-mask equality (`max_outside_diff == 0`). | Geometry adapter, `prepare_anytext_editing_inputs`, `composite_anytext_editing_output`, bitwise equality guard. |
+| `scripts/research/run_anytext_colab.py` | Runner thực thi Colab GPU tự động: preflight kiểm tra GPU/đĩa/font, xác minh authentic control hashes trước khi load model, nạp pipeline ModelScope không dùng translation model, chạy 2 attempts độc lập, composite, xác minh outside equality và xuất contact sheet 5 cột. | Colab GPU Runner, token-free, translator disabled, per-attempt receipts, fail-closed verifier. |
+| `scripts/research/build_anytext_colab_notebook.py` | Script sinh canonical Colab notebook `independent_anytext_feasibility_colab.ipynb`: nhúng trực tiếp runner và plan, kiểm tra cú pháp biên dịch sạch cho 100% code cells. | Notebook builder, bitwise code synchronization, syntax compiler check. |
+| `notebooks/independent_anytext_feasibility_colab.ipynb` | Canonical turnkey Colab launcher 5 cells: thiết lập môi trường Colab, kiểm tra tài nguyên, cài đặt dependencies, chạy preflight/generation cho đúng 2 attempts và đóng gói kết quả. | Turnkey Colab notebook, zero-token, single attempt per source, strict stop rule. |
+| `ml/tests/test_anytext_feasibility.py` | Bộ test tự động kiểm chứng toàn diện các thành phần AnyText: (1) Schema kế hoạch và khóa tham số; (2) Adapter roundtrip và 100% outside equality; (3) Cú pháp notebook và ràng buộc bảo mật (zero-token, translator disabled); (4) Runner preflight mode trên máy LOCAL đạt mã thoát 0; (5) Đính chính phát biểu khoa học trong báo cáo chốt SDXL. | 5 unit/contract tests, 100% PASS trên LOCAL CPU. |
+
+

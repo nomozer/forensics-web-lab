@@ -1,0 +1,151 @@
+#!/usr/bin/env python3
+"""Deterministic AnyText Feasibility Plan Builder.
+
+Generates machine-readable configuration for testing AnyText on exactly
+two replacement sources (Attempt A and Attempt B) from the SDXL pilot.
+"""
+
+from __future__ import annotations
+
+import hashlib
+import json
+from pathlib import Path
+from typing import Any, Dict
+
+
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+PLAN_OUTPUT_PATH = REPO_ROOT / "research" / "evidence" / "document_pilot" / "anytext_feasibility_plan.json"
+
+ANYTEXT_PLAN: Dict[str, Any] = {
+    "plan_id": "anytext_feasibility_plan_v1.0.0",
+    "protocol_version": "1.3.0",
+    "created_at": "2026-10-13T20:00:00+07:00",
+    "official_project_title": "Nghiên cứu và xây dựng công cụ phát hiện ảnh và tài liệu giả mạo sinh bởi AI.",
+    "objective": (
+        "Evaluate specialized text editor AnyText on two replacement sources "
+        "from the closed SDXL pilot to determine feasibility of generating "
+        "forensically relevant text-edited document samples without full dataset downloads or training."
+    ),
+    "model_specification": {
+        "model_name": "AnyText: Multilingual Visual Text Generation And Editing",
+        "paper_url": "https://arxiv.org/abs/2311.03054",
+        "official_repo_url": "https://github.com/tyxsspa/AnyText",
+        "code_commit_sha": "3d4a260c67d92c0e27d6e18ed69990e19a40de6d",
+        "modelscope_repo_id": "damo/cv_anytext_text_generation_editing",
+        "model_revision": "v1.1.3",
+        "checkpoint_file": "anytext_v1.1.ckpt",
+        "checkpoint_sha256": "09c88d145aa08f067641dc1d10c8890855939fa756d4cdc991e781a5f3918f59",
+        "checkpoint_size_bytes": 5730281759,
+        "clip_subfolder": "clip-vit-large-patch14",
+        "clip_weights_size_bytes": 1710671599,
+        "total_required_weights_bytes": 7440953358,
+        "total_required_weights_gib": 6.9299,
+        "translator_subfolder_excluded": "nlp_csanmt_translation_zh2en (7,881,046,036 bytes / 7.34 GiB excluded to respect 12 GiB ceiling)",
+        "translator_policy": "DISABLED (use_translator=False, --no_translator)",
+        "dtype": "fp16",
+        "licenses": {
+            "code_license": "Apache License 2.0",
+            "modelscope_model_license": "Apache License 2.0",
+            "font_license": "Bitstream Vera / Free Software License (SIL OFL compatible)"
+        },
+        "font_specification": {
+            "font_name": "DejaVuSans.ttf",
+            "font_package": "fonts-dejavu-core",
+            "font_path_default_linux": "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+            "font_path_fallback_linux": "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+            "font_size_pt": 60,
+            "font_source": "Debian/Ubuntu system package (open source, verified free distribution)"
+        }
+    },
+    "resource_budget": {
+        "max_colab_download_gib": 12.0,
+        "planned_colab_download_gib": 6.93,
+        "max_local_transfer_mib": 100.0,
+        "max_gpu_execution_minutes": 60.0,
+        "target_gpu": "Tesla T4 (15 GB VRAM, Google Colab free tier)",
+        "authentication_required": False
+    },
+    "geometry_contract": {
+        "native_document_dimensions_preserved": True,
+        "intermediate_canvas_resolution": [512, 512],
+        "context_margin_ratio": 0.5,
+        "interpolation_image": "BICUBIC",
+        "interpolation_mask": "NEAREST (strictly binary {0, 255})",
+        "outside_mask_equality_contract": "np.array_equal == True, max_outside_diff == 0",
+        "resolution_difference_vs_sdxl": (
+            "AnyText uses SD1.5 latent resolution (512x512 canvas) whereas SDXL pilot used 1024x1024. "
+            "This is a known editor/configuration difference, not an isolated architecture study."
+        ),
+        "post_generation_policy": (
+            "Raw model output and final composited document are saved separately. "
+            "No post-generation typesetting or text stamping is performed."
+        )
+    },
+    "attempts": [
+        {
+            "attempt_id": "attempt_A_replacement_price",
+            "source_row_index": 22,
+            "source_image_id": 22,
+            "operation": "replacement",
+            "original_text": "280,000",
+            "target_text": "350,000",
+            "target_bbox": [442, 406, 468, 488],
+            "native_dimensions": [576, 864],
+            "authentic_sha256": "b335696aaeb1ba1a607e87cd7acf76798dbc65a188b2f38e347473a762aba087",
+            "seed": 20261012,
+            "prompt": 'A receipt bill with price "350,000"',
+            "a_prompt": "best quality, extremely detailed, clear text edges, neat writing, no watermarks",
+            "n_prompt": "low-res, bad anatomy, cropped, worst quality, low quality, watermark, unreadable text, messy words, distorted text",
+            "sampling_parameters": {
+                "mode": "text-editing",
+                "ddim_steps": 20,
+                "cfg_scale": 9.0,
+                "strength": 1.0,
+                "eta": 0.0,
+                "canvas_width": 512,
+                "canvas_height": 512,
+                "context_margin_ratio": 0.5
+            }
+        },
+        {
+            "attempt_id": "attempt_B_replacement_item_name",
+            "source_row_index": 61,
+            "source_image_id": 61,
+            "operation": "replacement",
+            "original_text": "Populaire Chocolate",
+            "target_text": "Magnum Gold Almond",
+            "target_bbox": [1085, 128, 1156, 749],
+            "native_dimensions": [1356, 2315],
+            "authentic_sha256": "77d047b9791ff4667bf85b0b86448daf154af15660686cf72047d9db407b5ed0",
+            "seed": 20261013,
+            "prompt": 'A receipt bill menu with item name "Magnum Gold Almond"',
+            "a_prompt": "best quality, extremely detailed, clear text edges, neat writing, no watermarks",
+            "n_prompt": "low-res, bad anatomy, cropped, worst quality, low quality, watermark, unreadable text, messy words, distorted text",
+            "sampling_parameters": {
+                "mode": "text-editing",
+                "ddim_steps": 20,
+                "cfg_scale": 9.0,
+                "strength": 1.0,
+                "eta": 0.0,
+                "canvas_width": 512,
+                "canvas_height": 512,
+                "context_margin_ratio": 0.5
+            }
+        }
+    ]
+}
+
+
+def build_and_save_plan() -> Dict[str, Any]:
+    """Serializes the plan, computes SHA-256 and writes to target file."""
+    PLAN_OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    plan_json = json.dumps(ANYTEXT_PLAN, indent=2, ensure_ascii=False)
+    PLAN_OUTPUT_PATH.write_text(plan_json, encoding="utf-8")
+    plan_sha256 = hashlib.sha256(PLAN_OUTPUT_PATH.read_bytes()).hexdigest()
+    print(f"[OK] AnyText plan written to: {PLAN_OUTPUT_PATH}")
+    print(f"     SHA-256: {plan_sha256}")
+    return {"path": str(PLAN_OUTPUT_PATH), "sha256": plan_sha256, "plan": ANYTEXT_PLAN}
+
+
+if __name__ == "__main__":
+    build_and_save_plan()

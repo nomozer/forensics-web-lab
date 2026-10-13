@@ -98,7 +98,7 @@ Dưới đây là bảng đối soát chi tiết 5 điểm mâu thuẫn được
 3. **Chất lượng vùng sửa**:
    - Vùng sửa để lại các mảng vá phẳng làm lộ rõ vết ghép (cắt ngang bóng đổ, làm phẳng nếp nhăn).
 4. **Ảnh hưởng quan sát được của hình học (Geometry Impact)**:
-   - Đối chứng $I_1$ chứng minh khâu xử lý hình học thông thường (crop, resize, letterbox, composite) hoạt động chính xác và không gây mờ chữ hay tạo mép vá giả. Mọi khiếm khuyết thị giác ở $I_2$ xuất phát từ chính mô hình tạo sinh diffusion và VAE decoding.
+   - Đối chứng $I_1$ chưa tái hiện bất thường lớn trên bốn mẫu khảo sát (không làm mờ chữ mắt thường, các đường nét đi qua ranh giới mask liền mạch). Tuy nhiên, quan sát trên 4 mẫu này **không chứng minh geometry hoàn toàn không có lỗi** trong mọi trường hợp, và đối chứng này **chưa cô lập VAE reconstruction** hoặc toàn bộ tương tác phức tạp giữa model và composite. Mọi khiếm khuyết vĩ mô ghi nhận ở $I_2$ (text collapse, sai chính tả, mất bóng đổ) thuộc về năng lực tạo sinh của cấu hình SDXL inpainting.
 5. **Giới hạn về nguồn và generator**:
    - Cỡ mẫu $N=4$ là feasibility pilot; không suy rộng thành khẳng định SDXL nói chung "không thể thay chữ".
    - Vết vá lộ rõ trong pilot này KHÔNG đồng nghĩa với việc các detector sẽ dễ dàng phát hiện các tài liệu AI chất lượng cao được tạo bởi các công cụ chuyên dụng.
@@ -107,14 +107,18 @@ Dưới đây là bảng đối soát chi tiết 5 điểm mâu thuẫn được
 
 ## 6. Đề Xuất Duy Nhất Cho Lượt Tiếp Theo (Direction Toward Detection)
 
-Do đối chứng $I_1$ xác nhận module hình học đã đạt chuẩn kỹ thuật, hạn chế cốt lõi nằm ở **chất lượng tạo sinh của cấu hình vanilla SDXL inpainting** đối với văn bản tài liệu.
+Do đối chứng $I_1$ cho thấy các bước xử lý hình học thông thường không gây dị thường vĩ mô tương tự $I_2$, hạn chế cốt lõi nằm ở **chất lượng tạo sinh của cấu hình vanilla SDXL inpainting** đối với văn bản tài liệu vi mô.
 
 **Đề xuất duy nhất**: **Chọn phương án dữ liệu / editor phù hợp hơn cho bài toán phát hiện giả mạo tài liệu** thay vì mở rộng SDXL vanilla thành panel 40 nguồn:
 - **Căn cứ**: Vanilla diffusion inpainting không thể sinh chữ đạt chuẩn OCR mà không có module text-rendering hoặc conditioned adapter (như AnyText hay TextDiffuser). Việc mở rộng 40 mẫu với SDXL vanilla sẽ chỉ nhân bản các mẫu lỗi text collapse và hallucinated typo, không đại diện cho tài liệu giả mạo thực tế có độ tinh vi cao.
 - **Thiết kế tối thiểu cho lượt sau**:
-  1. *Hướng ưu tiên dữ liệu có sẵn*: Sử dụng panel tài liệu đã được tiếp nhận và kiểm toán cách ly độc lập (như RealText-V2 $N=40$ đã có sẵn trên LOCAL) để thử nghiệm trực tiếp quan sát hình học P1 Letterbox Canvas trên các detector, thay vì cố gắng tự tạo sinh bằng diffusion thuần túy.
-  2. *Nếu tiếp tục tạo sinh*: Giới hạn bài toán ở tác vụ Text Removal / Inpainting Nền Sạch (Clean Inpainting), hoặc thiết kế quy trình 2 bước (Typesetting quang học bằng font in nhiệt chuẩn $\to$ Diffusion blend mép) trên quy mô pilot nhỏ.
-  - *Ranh giới cam kết*: Không tự ý tải checkpoint mới, không tạo cohort mới, và không huấn luyện khi chưa có sự phê duyệt của người dùng.
+  1. *Hướng ưu tiên dữ liệu có sẵn*: Sử dụng panel tài liệu đã được tiếp nhận và kiểm toán cách ly độc lập (như RealText-V2 $N=40$ đã có sẵn trên LOCAL). Cần lưu ý rõ: việc hình học **P1 Letterbox Canvas bảo toàn trường nhìn không đồng nghĩa tối ưu detection** (do việc resize co nhỏ toàn trang có thể làm giảm tín hiệu vi mô của các detector).
+  2. *Nếu tiếp tục tạo sinh*: Thử nghiệm một editor chuyên về văn bản (AnyText) trên các mẫu replacement có sẵn để xác định khả năng tạo mẫu tài liệu AI phù hợp cho nghiên cứu detection, hoặc kết hợp quy trình typesetting quang học kèm diffusion blending.
+  - *Ranh giới cam kết*: Không tự ý tải checkpoint mới về LOCAL, không tạo cohort mới, và không huấn luyện khi chưa có sự phê duyệt của người dùng.
+
+> [!NOTE]
+> **Đính chính múi giờ (Timestamp Erratum Notice)**:
+> File receipt `document_feasibility_geometry_diagnostic_receipt.json` ghi nhận timestamp `2026-10-13T19:00:00Z`. Thời điểm thực hiện trên máy cục bộ là `19:00:00+07:00` (giờ ICT), tương đương `12:00:00Z`. Việc ghi `Z` là sơ suất nhầm lẫn giữa giờ địa phương và UTC. Theo nguyên tắc bảo toàn bằng chứng lịch sử (non-repudiation), file receipt gốc được giữ nguyên vẹn trên đĩa; sai lệch múi giờ được ghi nhận chính thức tại đây.
 
 ---
 
