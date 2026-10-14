@@ -178,6 +178,7 @@ def test_anytext_notebook_compilation_and_constraints():
     assert "Pillow==9.5.0" in all_code
     assert "torchmetrics==0.11.4" in all_code
     assert "pytorch-lightning==1.5.0" in all_code
+    assert "ujson==5.9.0" in all_code
     assert "pip==23.3.2" in all_code
     assert "setuptools==68.2.2" in all_code
     assert "wheel==0.42.0" in all_code
@@ -187,6 +188,7 @@ def test_anytext_notebook_compilation_and_constraints():
     assert "(512, 512, 1)" in all_code
     assert "350,000" in all_code and "Magnum Gold Almond" in all_code
     assert "DejaVuSans.ttf" in all_code
+    assert "'-u'" in all_code or '"-u"' in all_code
 
 
 def test_anytext_runner_preflight_on_local(tmp_path):
@@ -407,5 +409,94 @@ def test_download_inventory_and_network_accounting_contract(monkeypatch, tmp_pat
     }
     with pytest.raises(RuntimeError, match="Supplementary post-download check failed"):
         download_and_verify_modelscope_anytext(plan_supp_budget, cache_dir3)
+
+
+def test_anytext_runner_lock_mechanism(tmp_path):
+    """Verify single-instance runner lock prevents concurrent execution and cleans up on exit."""
+    from scripts.research.run_anytext_colab import acquire_runner_lock, release_runner_lock
+
+    lock_file = tmp_path / ".runner.lock"
+    # Acquire lock for current process
+    acquire_runner_lock(lock_file)
+    assert lock_file.is_file()
+
+    # Second acquisition by active process raises RuntimeError
+    with pytest.raises(RuntimeError, match="Another AnyText runner process .* is currently running"):
+        acquire_runner_lock(lock_file)
+
+    # Release lock
+    release_runner_lock(lock_file)
+    assert not lock_file.is_file()
+
+
+def test_anytext_find_prior_completed_attempt(tmp_path):
+    """Verify find_prior_completed_attempt correctly finds valid attempts and ignores invalid or active run."""
+    from scripts.research.run_anytext_colab import find_prior_completed_attempt
+
+    output_root = tmp_path / "outputs"
+    output_root.mkdir()
+
+    # Run 1: has valid attempt_A
+    run1 = output_root / "run_01"
+    att_a1 = run1 / "attempt_A_replacement_price"
+    att_a1.mkdir(parents=True)
+    (att_a1 / "anytext_raw_canvas.png").write_bytes(b"dummy")
+    (att_a1 / "anytext_final_edited.png").write_bytes(b"dummy")
+    (att_a1 / "attempt_receipt.json").write_text(
+        json.dumps({
+            "status": "TECHNICAL_QC_PASS",
+            "outside_mask_bitwise_equal": True,
+        }),
+        encoding="utf-8",
+    )
+
+    # Search without exclude
+    found = find_prior_completed_attempt(output_root, "attempt_A_replacement_price")
+    assert found is not None
+    assert found == att_a1
+
+    # Search with exclude matching run1 -> returns None
+    found_excluded = find_prior_completed_attempt(output_root, "attempt_A_replacement_price", exclude_dir=run1)
+    assert found_excluded is None
+
+    # Attempt B not yet executed -> returns None
+    assert find_prior_completed_attempt(output_root, "attempt_B_replacement_item_name") is None
+
+
+def test_anytext_cache_reuse_and_readme_filtering(monkeypatch, tmp_path):
+    """Verify cache reuse skips downloading when checkpoint and CLIP are verified, and ignore patterns include README."""
+    from scripts.research.run_anytext_colab import download_and_verify_modelscope_anytext
+
+    cache_dir = tmp_path / "cache"
+    cache_dir.mkdir()
+
+    dummy_ckpt = b"FULL_VALID_CKPT"
+    ckpt_sha = hashlib.sha256(dummy_ckpt).hexdigest()
+
+    model_dir = cache_dir / "damo" / "cv_anytext_text_generation_editing"
+    model_dir.mkdir(parents=True)
+    (model_dir / "anytext_v1.1.ckpt").write_bytes(dummy_ckpt)
+    clip_dir = model_dir / "clip-vit-large-patch14"
+    clip_dir.mkdir(parents=True)
+    (clip_dir / "pytorch_model.bin").write_bytes(b"CLIP_WEIGHTS")
+
+    plan = {
+        "model_specification": {
+            "modelscope_repo_id": "damo/cv_anytext_text_generation_editing",
+            "model_revision": "v1.1.3",
+            "checkpoint_file": "anytext_v1.1.ckpt",
+            "checkpoint_sha256": ckpt_sha,
+            "total_required_weights_bytes": len(dummy_ckpt),
+        },
+        "resource_budget": {
+            "max_colab_download_gib": 12.0,
+        },
+    }
+
+    # download_and_verify_modelscope_anytext should detect valid cache and reuse without calling snapshot_download
+    ret_dir, receipt = download_and_verify_modelscope_anytext(plan, cache_dir)
+    assert receipt["cache_reused"] is True
+    assert receipt["checkpoint_status"] == "VERIFIED_MATCH"
+    assert receipt["readme_excluded"] is True
 
 

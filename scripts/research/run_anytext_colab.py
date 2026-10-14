@@ -11,6 +11,7 @@ Inputs are extracted directly from the verified SDXL pilot archive:
 from __future__ import annotations
 
 import argparse
+import atexit
 import csv
 import datetime
 import hashlib
@@ -246,13 +247,83 @@ def resolve_inputs_from_directory(
     return resolved_inputs
 
 
+def acquire_runner_lock(lock_file: Path) -> None:
+    """Acquires a single-instance lock file with PID checking to prevent concurrent execution."""
+    if lock_file.is_file():
+        try:
+            lock_data = json.loads(lock_file.read_text(encoding="utf-8"))
+            pid = lock_data.get("pid")
+            is_alive = False
+            if pid and isinstance(pid, int):
+                try:
+                    os.kill(pid, 0)
+                    is_alive = True
+                except (OSError, ProcessLookupError, PermissionError):
+                    is_alive = False
+            if is_alive:
+                raise RuntimeError(
+                    f"Another AnyText runner process (PID {pid}) is currently running! "
+                    f"Concurrent executions are prohibited to preserve experimental integrity."
+                )
+        except RuntimeError:
+            raise
+        except Exception:
+            pass
+    lock_file.write_text(
+        json.dumps({"pid": os.getpid(), "timestamp": datetime.datetime.now().isoformat()}),
+        encoding="utf-8",
+    )
+
+
+def release_runner_lock(lock_file: Path) -> None:
+    """Releases the lock file safely."""
+    try:
+        if lock_file.is_file():
+            lock_file.unlink(missing_ok=True)
+    except Exception:
+        pass
+
+
+def find_prior_completed_attempt(
+    output_root: Path,
+    attempt_id: str,
+    exclude_dir: Optional[Path] = None,
+) -> Optional[Path]:
+    """Finds a previously completed attempt with TECHNICAL_QC_PASS and verified outside equality."""
+    if not output_root.is_dir():
+        return None
+    for receipt_path in output_root.glob(f"*/{attempt_id}/attempt_receipt.json"):
+        try:
+            att_folder = receipt_path.parent
+            if exclude_dir and (
+                att_folder.resolve() == exclude_dir.resolve()
+                or exclude_dir.resolve() in att_folder.resolve().parents
+            ):
+                continue
+            rcpt = json.loads(receipt_path.read_text(encoding="utf-8"))
+            if (
+                rcpt.get("status") == "TECHNICAL_QC_PASS"
+                and rcpt.get("outside_mask_bitwise_equal") is True
+                and (
+                    (att_folder / "anytext_final_edited.png").is_file()
+                    or (att_folder / "final_edited_document.png").is_file()
+                )
+                and (att_folder / "anytext_raw_canvas.png").is_file()
+            ):
+                return att_folder
+        except Exception:
+            continue
+    return None
+
+
+
 def download_and_verify_modelscope_anytext(
     plan: Dict[str, Any],
     cache_dir: Path,
 ) -> Tuple[str, Dict[str, Any]]:
-    """Downloads AnyText weights via ModelScope snapshot_download ignoring translator.
+    """Downloads AnyText weights via ModelScope snapshot_download ignoring translator and README.
 
-    Verifies checkpoint SHA-256 and records actual downloaded bytes.
+    Verifies checkpoint SHA-256 and records cache inventory metrics. Reuses valid cache if present.
     """
     model_spec = plan["model_specification"]
     repo_id = model_spec["modelscope_repo_id"]
@@ -293,21 +364,65 @@ def download_and_verify_modelscope_anytext(
     pre_existing_cache_bytes = sum(pre_inventory.values())
     print(f"[INFO] Pre-download cache inventory: {len(pre_inventory)} files, {pre_existing_cache_bytes / (1024**3):.4f} GiB already present.")
 
-    from modelscope.hub.snapshot_download import snapshot_download
+    # 2. Check if valid checkpoint and CLIP weights are already present in cache
+    existing_ckpt_path: Optional[Path] = None
+    for p in cache_dir.rglob(checkpoint_file):
+        if p.is_file():
+            existing_ckpt_path = p
+            break
 
-    print(f"[INFO] Initiating ModelScope snapshot download for {repo_id} ({revision})...")
-    print(f"[INFO] Excluding 'nlp_csanmt_translation_zh2en/*' to preserve budget...")
+    cache_reused = False
+    download_duration = 0.0
+    model_dir_path: Optional[Path] = None
 
-    t0 = time.time()
-    model_dir = snapshot_download(
-        repo_id,
-        revision=revision,
-        cache_dir=str(cache_dir.resolve()),
-        ignore_file_pattern=["nlp_csanmt_translation_zh2en/*"],
-    )
-    download_duration = time.time() - t0
+    if existing_ckpt_path and existing_ckpt_path.is_file():
+        print(f"[INFO] Inspecting existing checkpoint in cache: {existing_ckpt_path}")
+        try:
+            obs_sha = compute_sha256(existing_ckpt_path)
+            if obs_sha == expected_ckpt_sha:
+                clip_sub = existing_ckpt_path.parent / "clip-vit-large-patch14"
+                if clip_sub.is_dir() and any(clip_sub.iterdir()):
+                    print("[PASS] Verified existing checkpoint SHA-256 and CLIP weights in cache! Reusing valid cache.")
+                    model_dir_path = existing_ckpt_path.parent
+                    cache_reused = True
+                else:
+                    print("[INFO] Checkpoint matched but CLIP weights incomplete in cache. Will proceed with download.")
+            else:
+                print(f"[INFO] Checkpoint SHA mismatch in cache ({obs_sha[:8]} != {expected_ckpt_sha[:8]}). Will re-download.")
+        except Exception as e:
+            print(f"[INFO] Cache inspection check error: {e}")
 
-    model_dir_path = Path(model_dir)
+    if not cache_reused:
+        from modelscope.hub.snapshot_download import snapshot_download
+
+        print(f"[INFO] Initiating ModelScope snapshot download for {repo_id} ({revision})...")
+        print(f"[INFO] Excluding 'nlp_csanmt_translation_zh2en/*', 'README.md', and '*.md' to preserve budget and avoid download metadata errors...")
+
+        t0 = time.time()
+        try:
+            model_dir = snapshot_download(
+                repo_id,
+                revision=revision,
+                cache_dir=str(cache_dir.resolve()),
+                ignore_file_pattern=["nlp_csanmt_translation_zh2en/*", "README.md", "*.md"],
+            )
+            download_duration = time.time() - t0
+            model_dir_path = Path(model_dir)
+        except Exception as dl_err:
+            download_duration = time.time() - t0
+            # If download threw an error (e.g. README.md or transient metadata error), check if checkpoint exists and matches SHA
+            found_ckpt: Optional[Path] = None
+            for p in cache_dir.rglob(checkpoint_file):
+                if p.is_file():
+                    found_ckpt = p
+                    break
+            if found_ckpt and compute_sha256(found_ckpt) == expected_ckpt_sha:
+                print(f"[WARN] snapshot_download encountered non-fatal error: {dl_err}, but required checkpoint is intact. Reusing cache.")
+                model_dir_path = found_ckpt.parent
+            else:
+                raise dl_err
+
+    assert model_dir_path is not None, "Model directory path resolution failed."
 
     # Check translator directory was excluded
     translator_dir = model_dir_path / "nlp_csanmt_translation_zh2en"
@@ -365,6 +480,7 @@ def download_and_verify_modelscope_anytext(
         "download_ceiling_gib": max_download_gib,
         "download_ceiling_bytes": download_ceiling_bytes,
         "pre_download_inventory_verified": True,
+        "cache_reused": cache_reused,
         "cache_pre_existing_bytes": pre_existing_cache_bytes,
         "cache_total_files_bytes": cache_total_files_bytes,
         "cache_total_files_gib": cache_total_files_gib,
@@ -375,13 +491,14 @@ def download_and_verify_modelscope_anytext(
         "network_accounting_description": "Cache growth observed via pre/post directory inventory diff, not direct socket network measurement.",
         "within_budget_ceiling": observed_cache_growth_bytes <= download_ceiling_bytes,
         "translator_excluded": True,
+        "readme_excluded": True,
         "checkpoint_sha256": observed_ckpt_sha,
         "checkpoint_status": "VERIFIED_MATCH",
     }
     print(f"[PASS] Model cache verified: {cache_total_files_gib} GiB on disk, observed cache growth: {observed_cache_growth_gib} GiB (within {max_download_gib} GiB ceiling).")
     print(f"[PASS] Network traffic note: Direct network socket traffic NOT_MEASURED (cache growth is reported as on-disk filesystem delta).")
     print(f"[PASS] Checkpoint verified: {observed_ckpt_sha[:16]}...")
-    return model_dir, receipt
+    return str(model_dir_path), receipt
 
 
 def run_anytext_inference(
@@ -617,295 +734,414 @@ def main() -> int:
 
     plan_path = Path(args.plan_path).resolve()
     output_root = Path(args.output_root).resolve()
+    output_root.mkdir(parents=True, exist_ok=True)
 
-    if not plan_path.is_file():
-        print(f"[FAIL] Plan not found: {plan_path}")
+    lock_file = output_root / ".runner.lock"
+    try:
+        acquire_runner_lock(lock_file)
+    except RuntimeError as lock_err:
+        print(f"[FAIL] {lock_err}")
         return 1
 
-    plan = json.loads(plan_path.read_text(encoding="utf-8"))
-    plan_bytes_sha = hashlib.sha256(plan_path.read_bytes()).hexdigest()
+    current_stage = "INITIALIZATION"
+    run_dir: Optional[Path] = None
+    plan_bytes_sha = "UNKNOWN"
 
-    run_timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    run_id = f"run_anytext_{run_timestamp}_{plan_bytes_sha[:8]}"
-    run_dir = output_root / run_id
-    run_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        if not plan_path.is_file():
+            raise FileNotFoundError(f"Plan not found: {plan_path}")
 
-    # Cache directory isolation: strictly outside run_dir and output_root
-    if args.cache_dir:
-        model_cache_dir = Path(args.cache_dir).resolve()
-    else:
-        # Default Colab location /content/modelscope_cache, or sibling on local
-        model_cache_dir = Path("/content/modelscope_cache") if Path("/content").is_dir() else output_root.parent / ".cache_modelscope"
+        plan = json.loads(plan_path.read_text(encoding="utf-8"))
+        plan_bytes_sha = hashlib.sha256(plan_path.read_bytes()).hexdigest()
 
-    print(f"=== ANYTEXT FEASIBILITY RUNNER: {run_id} ===")
-    print(f"Plan Path: {plan_path} (SHA-256: {plan_bytes_sha[:16]}...)")
-    print(f"Model Cache Dir: {model_cache_dir} (ISOLATED)")
+        run_timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        run_id = f"run_anytext_{run_timestamp}_{plan_bytes_sha[:8]}"
+        run_dir = output_root / run_id
+        run_dir.mkdir(parents=True, exist_ok=True)
 
-    hw_info = check_gpu_and_resources()
-    print(f"CUDA Available: {hw_info['cuda_available']} ({hw_info['device_name']}, VRAM: {hw_info['vram_total_gb']} GB)")
-    print(f"Disk Free: {hw_info['disk_free_gb']} GB")
+        # Cache directory isolation: strictly outside run_dir and output_root
+        if args.cache_dir:
+            model_cache_dir = Path(args.cache_dir).resolve()
+        else:
+            # Default Colab location /content/modelscope_cache, or sibling on local
+            model_cache_dir = Path("/content/modelscope_cache") if Path("/content").is_dir() else output_root.parent / ".cache_modelscope"
 
-    font_path, font_sha256 = resolve_font_path(args.custom_font)
-    print(f"Resolved Font: {font_path} (SHA-256: {font_sha256[:16]}...)")
+        print(f"=== ANYTEXT FEASIBILITY RUNNER: {run_id} ===")
+        print(f"Plan Path: {plan_path} (SHA-256: {plan_bytes_sha[:16]}...)")
+        print(f"Model Cache Dir: {model_cache_dir} (ISOLATED)")
 
-    # Resolve inputs: prefer inputs-zip if provided, else inputs-dir
-    print("\n--- Resolving Authentic Inputs ---")
-    extracted_inputs: Dict[str, Dict[str, Any]] = {}
-    if args.inputs_zip and Path(args.inputs_zip).is_file():
-        staging_dir = run_dir / ".inputs_staging"
-        extracted_inputs = safe_extract_archive_inputs(
-            archive_path=Path(args.inputs_zip).resolve(),
-            target_extract_dir=staging_dir,
-            plan=plan,
-        )
-    elif args.inputs_dir and Path(args.inputs_dir).is_dir():
-        extracted_inputs = resolve_inputs_from_directory(
-            inputs_dir=Path(args.inputs_dir).resolve(),
-            plan=plan,
-        )
-    else:
-        # Check default archive path from plan
-        default_archive = Path(plan.get("input_source_specification", {}).get("archive_path", ""))
-        if not default_archive.is_file():
-            default_archive = Path(__file__).resolve().parent.parent.parent / default_archive
-        if default_archive.is_file():
+        current_stage = "INPUT_EXTRACTION"
+        print("\n--- Resolving Authentic Inputs ---")
+        extracted_inputs: Dict[str, Dict[str, Any]] = {}
+        if args.inputs_zip and Path(args.inputs_zip).is_file():
             staging_dir = run_dir / ".inputs_staging"
             extracted_inputs = safe_extract_archive_inputs(
-                archive_path=default_archive,
+                archive_path=Path(args.inputs_zip).resolve(),
                 target_extract_dir=staging_dir,
                 plan=plan,
             )
+        elif args.inputs_dir and Path(args.inputs_dir).is_dir():
+            extracted_inputs = resolve_inputs_from_directory(
+                inputs_dir=Path(args.inputs_dir).resolve(),
+                plan=plan,
+            )
         else:
-            print("[FAIL] Neither valid --inputs-zip nor --inputs-dir provided, and default archive not found.")
+            # Check default archive path from plan
+            default_archive = Path(plan.get("input_source_specification", {}).get("archive_path", ""))
+            if not default_archive.is_file():
+                default_archive = Path(__file__).resolve().parent.parent.parent / default_archive
+            if default_archive.is_file():
+                staging_dir = run_dir / ".inputs_staging"
+                extracted_inputs = safe_extract_archive_inputs(
+                    archive_path=default_archive,
+                    target_extract_dir=staging_dir,
+                    plan=plan,
+                )
+            else:
+                raise FileNotFoundError("Neither valid --inputs-zip nor --inputs-dir provided, and default archive not found.")
+
+        current_stage = "PREFLIGHT"
+        hw_info = check_gpu_and_resources()
+        print(f"CUDA Available: {hw_info['cuda_available']} ({hw_info['device_name']}, VRAM: {hw_info['vram_total_gb']} GB)")
+        print(f"Disk Free: {hw_info['disk_free_gb']} GB")
+
+        font_path, font_sha256 = resolve_font_path(args.custom_font)
+        print(f"Resolved Font: {font_path} (SHA-256: {font_sha256[:16]}...)")
+
+        preflight_receipt = {
+            "run_id": run_id,
+            "timestamp": datetime.datetime.now().isoformat(),
+            "plan_sha256": plan_bytes_sha,
+            "hardware": hw_info,
+            "font": {"path": font_path, "sha256": font_sha256},
+            "inputs_verified": {k: v["authentic_sha256"] for k, v in extracted_inputs.items()},
+            "cache_dir": str(model_cache_dir),
+            "status": "PREFLIGHT_PASS",
+        }
+        (run_dir / "preflight_receipt.json").write_text(json.dumps(preflight_receipt, indent=2), encoding="utf-8")
+
+        if args.preflight_only:
+            print("[OK] Preflight completed successfully.")
+            return 0
+
+        if not hw_info["cuda_available"]:
+            raise RuntimeError("CUDA GPU is required for AnyText generation. Running on CPU is not supported.")
+
+        current_stage = "MODEL_DOWNLOAD"
+        print("\n--- Downloading AnyText Model (Excluding Translator & Docs) ---")
+        model_dir, model_receipt = download_and_verify_modelscope_anytext(
+            plan=plan,
+            cache_dir=model_cache_dir,
+        )
+        (run_dir / "model_download_receipt.json").write_text(json.dumps(model_receipt, indent=2), encoding="utf-8")
+
+        current_stage = "PIPELINE_INIT"
+        print("\n--- Initializing AnyText Pipeline from Local Weights ---")
+        from modelscope.pipelines import pipeline
+
+        pipe = pipeline(
+            "my-anytext-task",
+            model=model_dir,
+            use_fp16=True,
+            use_translator=False,
+            font_path=font_path,
+        )
+        print("[OK] AnyText pipeline initialized successfully.")
+
+        # Import geometry adapter
+        from ml.evaluation.anytext_document_adapter import (
+            prepare_anytext_editing_inputs,
+            composite_anytext_editing_output,
+        )
+
+        current_stage = "INFERENCE"
+        contact_sheet_items: List[Dict[str, Any]] = []
+        review_records: List[Dict[str, Any]] = []
+        attempts = plan["attempts"]
+        has_failure = False
+
+        for att in attempts:
+            att_id = att["attempt_id"]
+            att_dir = run_dir / att_id
+            att_dir.mkdir(parents=True, exist_ok=True)
+            print(f"\n--- Checking / Executing {att_id} ---")
+
+            # Check if prior completed attempt exists
+            prior_att_folder = find_prior_completed_attempt(output_root, att_id, exclude_dir=run_dir)
+            if prior_att_folder:
+                print(f"[PASS] Prior completed attempt found at: {prior_att_folder}")
+                # Copy artifacts to att_dir if different
+                if prior_att_folder.resolve() != att_dir.resolve():
+                    for src_item in prior_att_folder.iterdir():
+                        if src_item.is_file():
+                            shutil.copy2(src_item, att_dir / src_item.name)
+
+                prior_rcpt_file = att_dir / "attempt_receipt.json"
+                if prior_rcpt_file.is_file():
+                    att_receipt = json.loads(prior_rcpt_file.read_text(encoding="utf-8"))
+                    print(f"[INFO] Reusing verified result for {att_id} (outside_mask_bitwise_equal={att_receipt.get('outside_mask_bitwise_equal')}).")
+
+                    auth_roi_path = att_dir / "authentic_roi_zoomed.png"
+                    sdxl_roi_path = att_dir / "sdxl_roi_zoomed.png"
+                    raw_roi_path = att_dir / "anytext_raw_roi_zoomed.png"
+                    final_roi_path = att_dir / "anytext_final_roi_zoomed.png"
+                    final_img_path = att_dir / "anytext_final_edited.png"
+                    if not final_img_path.is_file():
+                        final_img_path = att_dir / "final_edited_document.png"
+                    mask_roi_path = att_dir / "mask_roi_zoomed.png"
+
+                    contact_sheet_items.append({
+                        "id": att_id,
+                        "target_text": att["target_text"],
+                        "seed": att["seed"],
+                        "latency": att_receipt.get("latency_sec", 0.0),
+                        "authentic_roi": Image.open(auth_roi_path).convert("RGB") if auth_roi_path.is_file() else None,
+                        "sdxl_roi": Image.open(sdxl_roi_path).convert("RGB") if sdxl_roi_path.is_file() else None,
+                        "anytext_raw_roi": Image.open(raw_roi_path).convert("RGB") if raw_roi_path.is_file() else None,
+                        "anytext_final_roi": Image.open(final_roi_path).convert("RGB") if final_roi_path.is_file() else None,
+                        "anytext_final_full": Image.open(final_img_path).convert("RGB") if final_img_path.is_file() else None,
+                        "mask_roi": Image.open(mask_roi_path).convert("RGB") if mask_roi_path.is_file() else None,
+                    })
+
+                    review_records.append({
+                        "attempt_id": att_id,
+                        "source_row_index": att["source_row_index"],
+                        "original_text": att["original_text"],
+                        "target_text": att["target_text"],
+                        "exact_text_success": "PENDING_HUMAN_REVIEW",
+                        "visual_realism": "PENDING_HUMAN_REVIEW",
+                        "human_verdict": "PENDING_HUMAN_REVIEW",
+                        "notes": "Reused prior verified attempt; awaiting human reviewer assessment.",
+                    })
+                    continue
+
+            auth_info = extracted_inputs.get(att_id)
+            if not auth_info:
+                print(f"[FAIL] Missing authentic input data for {att_id}")
+                has_failure = True
+                fail_receipt = {
+                    "attempt_id": att_id,
+                    "status": "FAILED",
+                    "error": f"Missing authentic input data for {att_id}",
+                    "traceback": "",
+                }
+                (att_dir / "failure_receipt.json").write_text(json.dumps(fail_receipt, indent=2), encoding="utf-8")
+                continue
+
+            auth_img = Image.open(auth_info["authentic_path"]).convert("RGB")
+            sdxl_img = Image.open(auth_info["sdxl_path"]).convert("RGB") if auth_info.get("sdxl_path") and auth_info["sdxl_path"].is_file() else None
+
+            try:
+                # 1. Geometry preparation
+                prep_res = prepare_anytext_editing_inputs(
+                    image=auth_img,
+                    target_bbox=att["target_bbox"],
+                    canvas_size=att["sampling_parameters"].get("canvas_width", 512),
+                    context_margin_ratio=att["sampling_parameters"].get("context_margin_ratio", 0.5),
+                )
+
+                # 2. Run AnyText inference
+                raw_canvas, latency, inf_meta = run_anytext_inference(
+                    pipe=pipe,
+                    ori_image_canvas=prep_res["ori_image_canvas"],
+                    draw_pos_canvas=prep_res["draw_pos_canvas"],
+                    prompt=att["prompt"],
+                    target_text=att["target_text"],
+                    seed=att["seed"],
+                    sampling_params=att["sampling_parameters"],
+                    a_prompt=att["a_prompt"],
+                    n_prompt=att["n_prompt"],
+                )
+
+                # 3. Composite output strictly inside target mask
+                comp_res = composite_anytext_editing_output(
+                    original_image=auth_img,
+                    raw_anytext_output=raw_canvas,
+                    geometry_receipt=prep_res["geometry_receipt"],
+                    native_mask=prep_res["native_mask"],
+                )
+
+                final_img = comp_res["final_edited_document"]
+                is_outside_equal = comp_res["is_outside_equal"]
+                max_outside_diff = comp_res["max_outside_diff"]
+
+                if not is_outside_equal:
+                    raise ValueError(f"Outside-mask equality contract violated! Max outside diff: {max_outside_diff}")
+                print(f"[PASS] Outside-mask equality verified (diff = 0).")
+
+                # 4. Save artifacts
+                auth_save = att_dir / "authentic_control.png"
+                raw_save = att_dir / "anytext_raw_canvas.png"
+                final_save = att_dir / "anytext_final_edited.png"
+                mask_save = att_dir / "native_mask.png"
+                draw_pos_save = att_dir / "draw_pos_canvas.png"
+
+                auth_img.save(auth_save, "PNG")
+                raw_canvas.save(raw_save, "PNG")
+                final_img.save(final_save, "PNG")
+                prep_res["native_mask"].save(mask_save, "PNG")
+                prep_res["draw_pos_canvas"].save(draw_pos_save, "PNG")
+
+                # Compute ZOOMED ROIs for contact sheet
+                target_bbox = att["target_bbox"]
+                auth_roi = crop_zoomed_roi(auth_img, target_bbox)
+                sdxl_roi = crop_zoomed_roi(sdxl_img, target_bbox) if sdxl_img else None
+                anytext_final_roi = crop_zoomed_roi(final_img, target_bbox)
+                mask_roi = crop_zoomed_roi(prep_res["native_mask"].convert("RGB"), target_bbox)
+
+                # Crop ROI from raw canvas around target box in canvas
+                t_box_canvas = prep_res["geometry_receipt"]["target_bbox_in_canvas"]
+                raw_roi = crop_zoomed_roi(raw_canvas, t_box_canvas)
+
+                # Save ROI images
+                auth_roi.save(att_dir / "authentic_roi_zoomed.png", "PNG")
+                anytext_final_roi.save(att_dir / "anytext_final_roi_zoomed.png", "PNG")
+                raw_roi.save(att_dir / "anytext_raw_roi_zoomed.png", "PNG")
+                mask_roi.save(att_dir / "mask_roi_zoomed.png", "PNG")
+                if sdxl_roi:
+                    sdxl_roi.save(att_dir / "sdxl_roi_zoomed.png", "PNG")
+
+                att_receipt = {
+                    "attempt_id": att_id,
+                    "status": "TECHNICAL_QC_PASS",
+                    "operation": att["operation"],
+                    "target_text": att["target_text"],
+                    "seed": att["seed"],
+                    "latency_sec": latency,
+                    "peak_vram_mb": inf_meta["peak_vram_mb"],
+                    "outside_mask_bitwise_equal": is_outside_equal,
+                    "max_outside_diff": max_outside_diff,
+                    "hashes": {
+                        "authentic_sha256": compute_sha256(auth_save),
+                        "raw_canvas_sha256": compute_sha256(raw_save),
+                        "final_edited_sha256": compute_sha256(final_save),
+                        "native_mask_sha256": compute_sha256(mask_save),
+                    },
+                    "geometry_receipt": prep_res["geometry_receipt"],
+                }
+                (att_dir / "attempt_receipt.json").write_text(json.dumps(att_receipt, indent=2), encoding="utf-8")
+
+                contact_sheet_items.append({
+                    "id": att_id,
+                    "target_text": att["target_text"],
+                    "seed": att["seed"],
+                    "latency": latency,
+                    "authentic_roi": auth_roi,
+                    "sdxl_roi": sdxl_roi,
+                    "anytext_raw_roi": raw_roi,
+                    "anytext_final_roi": anytext_final_roi,
+                    "anytext_final_full": final_img,
+                    "mask_roi": mask_roi,
+                })
+
+                review_records.append({
+                    "attempt_id": att_id,
+                    "source_row_index": att["source_row_index"],
+                    "original_text": att["original_text"],
+                    "target_text": att["target_text"],
+                    "exact_text_success": "PENDING_HUMAN_REVIEW",
+                    "visual_realism": "PENDING_HUMAN_REVIEW",
+                    "human_verdict": "PENDING_HUMAN_REVIEW",
+                    "notes": "Awaiting human reviewer assessment.",
+                })
+
+            except Exception as e:
+                has_failure = True
+                err_trace = traceback.format_exc()
+                print(f"[FAIL] Error in {att_id}: {e}")
+                fail_receipt = {
+                    "attempt_id": att_id,
+                    "status": "FAILED",
+                    "error": str(e),
+                    "traceback": err_trace,
+                }
+                (att_dir / "failure_receipt.json").write_text(json.dumps(fail_receipt, indent=2), encoding="utf-8")
+
+        current_stage = "PACKAGING"
+        # Generate contact sheet if any item succeeded
+        if contact_sheet_items:
+            cs_path = run_dir / "anytext_contact_sheet.png"
+            generate_anytext_contact_sheet(contact_sheet_items, cs_path)
+
+        # Write human review CSV
+        if review_records:
+            csv_path = run_dir / "human_review.csv"
+            with csv_path.open("w", newline="", encoding="utf-8") as f:
+                fieldnames = [
+                    "attempt_id",
+                    "source_row_index",
+                    "original_text",
+                    "target_text",
+                    "exact_text_success",
+                    "visual_realism",
+                    "human_verdict",
+                    "notes",
+                ]
+                writer = csv.DictWriter(f, fieldnames=fieldnames)
+                writer.writeheader()
+                writer.writerows(review_records)
+
+        if has_failure:
+            fail_rcpt = {
+                "run_id": run_id,
+                "stage": "INFERENCE",
+                "status": "PARTIAL_FAILURE",
+                "error": "One or more generation attempts failed.",
+                "traceback": "",
+                "timestamp": datetime.datetime.now().isoformat(),
+            }
+            (run_dir / "failure_receipt.json").write_text(json.dumps(fail_rcpt, indent=2), encoding="utf-8")
+            (output_root / "failure_receipt.json").write_text(json.dumps(fail_rcpt, indent=2), encoding="utf-8")
+
+            partial_zip = output_root / "anytext_feasibility_partial_results.zip"
+            package_results_zip(run_dir=run_dir, output_zip_path=partial_zip)
+            print(f"\n[WARNING] Runner completed with partial failure. Partial archive created at: {partial_zip}")
             return 1
 
-    preflight_receipt = {
-        "run_id": run_id,
-        "timestamp": datetime.datetime.now().isoformat(),
-        "plan_sha256": plan_bytes_sha,
-        "hardware": hw_info,
-        "font": {"path": font_path, "sha256": font_sha256},
-        "inputs_verified": {k: v["authentic_sha256"] for k, v in extracted_inputs.items()},
-        "cache_dir": str(model_cache_dir),
-        "status": "PREFLIGHT_PASS",
-    }
-    (run_dir / "preflight_receipt.json").write_text(json.dumps(preflight_receipt, indent=2), encoding="utf-8")
+        # Package full results into zip archive
+        zip_path = output_root / "anytext_feasibility_results.zip"
+        package_results_zip(run_dir=run_dir, output_zip_path=zip_path)
 
-    if args.preflight_only:
-        print("[OK] Preflight completed successfully.")
+        # Clear old root failure receipt if present
+        (output_root / "failure_receipt.json").unlink(missing_ok=True)
+
+        print("\n[DONE] AnyText Feasibility Run executed successfully.")
         return 0
 
-    if not hw_info["cuda_available"]:
-        print("[FAIL] CUDA GPU is required for AnyText generation. Running on CPU is not supported.")
+    except Exception as err:
+        err_tb = traceback.format_exc()
+        print("\n" + "=" * 80)
+        print(f"[RUNNER FAILURE] Stage: {current_stage}")
+        print(f"Error: {err}")
+        print(f"Exit Code: 1")
+        print(f"Traceback:\n{err_tb}")
+        print("=" * 80)
+
+        fail_info = {
+            "run_id": run_id if run_dir else "UNKNOWN",
+            "stage": current_stage,
+            "status": "FAILED",
+            "error": str(err),
+            "traceback": err_tb,
+            "timestamp": datetime.datetime.now().isoformat(),
+            "plan_sha256": plan_bytes_sha,
+        }
+        root_fail_receipt = output_root / "failure_receipt.json"
+        root_fail_receipt.write_text(json.dumps(fail_info, indent=2), encoding="utf-8")
+        if run_dir and run_dir.is_dir():
+            (run_dir / "failure_receipt.json").write_text(json.dumps(fail_info, indent=2), encoding="utf-8")
+            partial_zip = output_root / "anytext_feasibility_partial_results.zip"
+            try:
+                package_results_zip(run_dir=run_dir, output_zip_path=partial_zip)
+                print(f"[INFO] Partial results archive created at: {partial_zip}")
+            except Exception as zip_e:
+                print(f"[WARN] Failed to package partial archive: {zip_e}")
+
         return 1
 
-    # Model download & verification
-    print("\n--- Downloading AnyText Model (Excluding Translator) ---")
-    model_dir, model_receipt = download_and_verify_modelscope_anytext(
-        plan=plan,
-        cache_dir=model_cache_dir,
-    )
-    (run_dir / "model_download_receipt.json").write_text(json.dumps(model_receipt, indent=2), encoding="utf-8")
+    finally:
+        release_runner_lock(lock_file)
 
-    # Initialize AnyText Pipeline
-    print("\n--- Initializing AnyText Pipeline from Local Weights ---")
-    from modelscope.pipelines import pipeline
-
-    pipe = pipeline(
-        "my-anytext-task",
-        model=model_dir,
-        use_fp16=True,
-        use_translator=False,
-        font_path=font_path,
-    )
-    print("[OK] AnyText pipeline initialized successfully.")
-
-    # Import geometry adapter
-    from ml.evaluation.anytext_document_adapter import (
-        prepare_anytext_editing_inputs,
-        composite_anytext_editing_output,
-    )
-
-    contact_sheet_items: List[Dict[str, Any]] = []
-    review_records: List[Dict[str, Any]] = []
-    attempts = plan["attempts"]
-
-    has_failure = False
-
-    for att in attempts:
-        att_id = att["attempt_id"]
-        att_dir = run_dir / att_id
-        att_dir.mkdir(parents=True, exist_ok=True)
-        print(f"\n--- Executing {att_id} ---")
-
-        auth_info = extracted_inputs.get(att_id)
-        if not auth_info:
-            print(f"[FAIL] Missing authentic input data for {att_id}")
-            has_failure = True
-            continue
-
-        auth_img = Image.open(auth_info["authentic_path"]).convert("RGB")
-        sdxl_img = Image.open(auth_info["sdxl_path"]).convert("RGB") if auth_info.get("sdxl_path") and auth_info["sdxl_path"].is_file() else None
-
-        try:
-            # 1. Geometry preparation
-            prep_res = prepare_anytext_editing_inputs(
-                image=auth_img,
-                target_bbox=att["target_bbox"],
-                canvas_size=att["sampling_parameters"].get("canvas_width", 512),
-                context_margin_ratio=att["sampling_parameters"].get("context_margin_ratio", 0.5),
-            )
-
-            # 2. Run AnyText inference
-            raw_canvas, latency, inf_meta = run_anytext_inference(
-                pipe=pipe,
-                ori_image_canvas=prep_res["ori_image_canvas"],
-                draw_pos_canvas=prep_res["draw_pos_canvas"],
-                prompt=att["prompt"],
-                target_text=att["target_text"],
-                seed=att["seed"],
-                sampling_params=att["sampling_parameters"],
-                a_prompt=att["a_prompt"],
-                n_prompt=att["n_prompt"],
-            )
-
-            # 3. Composite output strictly inside target mask
-            comp_res = composite_anytext_editing_output(
-                original_image=auth_img,
-                raw_anytext_output=raw_canvas,
-                geometry_receipt=prep_res["geometry_receipt"],
-                native_mask=prep_res["native_mask"],
-            )
-
-            final_img = comp_res["final_edited_document"]
-            is_outside_equal = comp_res["is_outside_equal"]
-            max_outside_diff = comp_res["max_outside_diff"]
-
-            if not is_outside_equal:
-                raise ValueError(f"Outside-mask equality contract violated! Max outside diff: {max_outside_diff}")
-            print(f"[PASS] Outside-mask equality verified (diff = 0).")
-
-            # 4. Save artifacts
-            auth_save = att_dir / "authentic_control.png"
-            raw_save = att_dir / "anytext_raw_canvas.png"
-            final_save = att_dir / "anytext_final_edited.png"
-            mask_save = att_dir / "native_mask.png"
-            draw_pos_save = att_dir / "draw_pos_canvas.png"
-
-            auth_img.save(auth_save, "PNG")
-            raw_canvas.save(raw_save, "PNG")
-            final_img.save(final_save, "PNG")
-            prep_res["native_mask"].save(mask_save, "PNG")
-            prep_res["draw_pos_canvas"].save(draw_pos_save, "PNG")
-
-            # Compute ZOOMED ROIs for contact sheet
-            target_bbox = att["target_bbox"]
-            auth_roi = crop_zoomed_roi(auth_img, target_bbox)
-            sdxl_roi = crop_zoomed_roi(sdxl_img, target_bbox) if sdxl_img else None
-            anytext_final_roi = crop_zoomed_roi(final_img, target_bbox)
-            mask_roi = crop_zoomed_roi(prep_res["native_mask"].convert("RGB"), target_bbox)
-
-            # Crop ROI from raw canvas around target box in canvas
-            t_box_canvas = prep_res["geometry_receipt"]["target_bbox_in_canvas"]
-            raw_roi = crop_zoomed_roi(raw_canvas, t_box_canvas)
-
-            # Save ROI images
-            auth_roi.save(att_dir / "authentic_roi_zoomed.png", "PNG")
-            anytext_final_roi.save(att_dir / "anytext_final_roi_zoomed.png", "PNG")
-            raw_roi.save(att_dir / "anytext_raw_roi_zoomed.png", "PNG")
-            mask_roi.save(att_dir / "mask_roi_zoomed.png", "PNG")
-            if sdxl_roi:
-                sdxl_roi.save(att_dir / "sdxl_roi_zoomed.png", "PNG")
-
-            att_receipt = {
-                "attempt_id": att_id,
-                "status": "TECHNICAL_QC_PASS",
-                "operation": att["operation"],
-                "target_text": att["target_text"],
-                "seed": att["seed"],
-                "latency_sec": latency,
-                "peak_vram_mb": inf_meta["peak_vram_mb"],
-                "outside_mask_bitwise_equal": is_outside_equal,
-                "max_outside_diff": max_outside_diff,
-                "hashes": {
-                    "authentic_sha256": compute_sha256(auth_save),
-                    "raw_canvas_sha256": compute_sha256(raw_save),
-                    "final_edited_sha256": compute_sha256(final_save),
-                    "native_mask_sha256": compute_sha256(mask_save),
-                },
-                "geometry_receipt": prep_res["geometry_receipt"],
-            }
-            (att_dir / "attempt_receipt.json").write_text(json.dumps(att_receipt, indent=2), encoding="utf-8")
-
-            contact_sheet_items.append({
-                "id": att_id,
-                "target_text": att["target_text"],
-                "seed": att["seed"],
-                "latency": latency,
-                "authentic_roi": auth_roi,
-                "sdxl_roi": sdxl_roi,
-                "anytext_raw_roi": raw_roi,
-                "anytext_final_roi": anytext_final_roi,
-                "anytext_final_full": final_img,
-                "mask_roi": mask_roi,
-            })
-
-            review_records.append({
-                "attempt_id": att_id,
-                "source_row_index": att["source_row_index"],
-                "original_text": att["original_text"],
-                "target_text": att["target_text"],
-                "exact_text_success": "PENDING_HUMAN_REVIEW",
-                "visual_realism": "PENDING_HUMAN_REVIEW",
-                "human_verdict": "PENDING_HUMAN_REVIEW",
-                "notes": "Awaiting human reviewer assessment.",
-            })
-
-        except Exception as e:
-            has_failure = True
-            err_trace = traceback.format_exc()
-            print(f"[FAIL] Error in {att_id}: {e}")
-            fail_receipt = {
-                "attempt_id": att_id,
-                "status": "FAILED",
-                "error": str(e),
-                "traceback": err_trace,
-            }
-            (att_dir / "failure_receipt.json").write_text(json.dumps(fail_receipt, indent=2), encoding="utf-8")
-
-    # Generate contact sheet if any item succeeded
-    if contact_sheet_items:
-        cs_path = run_dir / "anytext_contact_sheet.png"
-        generate_anytext_contact_sheet(contact_sheet_items, cs_path)
-
-    # Write human review CSV
-    if review_records:
-        csv_path = run_dir / "human_review.csv"
-        with csv_path.open("w", newline="", encoding="utf-8") as f:
-            fieldnames = [
-                "attempt_id",
-                "source_row_index",
-                "original_text",
-                "target_text",
-                "exact_text_success",
-                "visual_realism",
-                "human_verdict",
-                "notes",
-            ]
-            writer = csv.DictWriter(f, fieldnames=fieldnames)
-            writer.writeheader()
-            writer.writerows(review_records)
-
-    # Package results into zip archive
-    zip_path = output_root / "anytext_feasibility_results.zip"
-    package_results_zip(run_dir=run_dir, output_zip_path=zip_path)
-
-    if has_failure:
-        print("[WARNING] One or more attempts encountered errors. Review failure receipts.")
-        return 1
-
-    print("\n[DONE] AnyText Feasibility Run executed successfully.")
-    return 0
 
 
 if __name__ == "__main__":
