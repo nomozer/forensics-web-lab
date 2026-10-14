@@ -52,7 +52,16 @@ def build_notebook() -> None:
                 "- **Môi trường Python**: Thiết lập môi trường Python 3.10 riêng biệt (`/content/anytext_env`) khớp hoàn toàn `environment.yaml` upstream; không can thiệp Python hệ thống của Colab (Python 3.13) và không nâng packages lên latest.\n",
                 "- **Dữ liệu đầu vào**: Tải trực tiếp từ archive SDXL đã có (`document_feasibility_results.zip`, SHA-256 `deadd9205207...`). Không tải lại shard CORD parquet.\n",
                 "- **Bảo toàn hình học**: Native dimensions, context crop 512x512, strict composite inside target bbox, kiểm tra bitwise outside-mask equality.\n",
-                "- **Yêu cầu môi trường**: Google Colab GPU (Tesla T4 miễn phí, >= 15 GB disk, zero-token, zero-login)."
+                "- **Yêu cầu môi trường**: Google Colab GPU (Tesla T4 miễn phí, >= 15 GB disk, zero-token, zero-login).\n",
+                "\n",
+                "### Cấu trúc và Thứ tự Thực thi Notebook (Tổng cộng 7 cells: 1 Markdown + 6 Code cells):\n",
+                "- **Cell 0 [Markdown]**: Tổng quan mục tiêu, thông số checkpoint, môi trường và hướng dẫn thực thi.\n",
+                "- **Cell 1 [Code]**: Hardware Preflight & Disk Inspection (Xác minh GPU VRAM >= 7 GB, Disk >= 12 GB).\n",
+                "- **Cell 2 [Code]**: Setup Dedicated Python 3.10 Runtime, Clone AnyText & Verify Dependencies (Cài đặt môi trường Python 3.10 cô lập, pip check 0 lỗi, smoke test modules & functional glyph/position guidance).\n",
+                "- **Cell 3 [Code]**: Staging Geometry Modules, Runner & Plan with Bit-Exact Verification (Staging 4 files với SHA-256 đối soát bit-exact).\n",
+                "- **Cell 4 [Code]**: Upload and Verify SDXL Feasibility Archive (Tải lên document_feasibility_results.zip, SHA-256 deadd9205207...).\n",
+                "- **Cell 5 [Code]**: Execute AnyText Feasibility Runner using Dedicated Python 3.10 Environment (Chạy python -u run_anytext_colab.py, stream log trực tiếp, bắt lỗi stage chi tiết, tạo failure receipt và partial results zip nếu lỗi).\n",
+                "- **Cell 6 [Code]**: Visual Inspection & Download Whitelisted Results Archive (Hiển thị contact sheet và tải về kết quả <= 100 MiB)."
             ]
         },
         {

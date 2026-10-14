@@ -339,10 +339,18 @@ def test_download_inventory_and_network_accounting_contract(monkeypatch, tmp_pat
         }
     }
 
+    clip_dir = model_dir / "clip-vit-large-patch14"
+    clip_files_bytes = len(b"CLIP") + len(b"{}") * 3
+
     # Mock snapshot_download
     def mock_snapshot_download(repo_id, revision, cache_dir, ignore_file_pattern):
-        # Simulate writing checkpoint during download
+        # Simulate writing checkpoint and mandatory CLIP files during download
         ckpt_file.write_bytes(dummy_ckpt)
+        clip_dir.mkdir(parents=True, exist_ok=True)
+        (clip_dir / "pytorch_model.bin").write_bytes(b"CLIP")
+        (clip_dir / "config.json").write_bytes(b"{}")
+        (clip_dir / "vocab.json").write_bytes(b"{}")
+        (clip_dir / "tokenizer_config.json").write_bytes(b"{}")
         return str(model_dir)
 
     import sys
@@ -363,7 +371,8 @@ def test_download_inventory_and_network_accounting_contract(monkeypatch, tmp_pat
     assert receipt["checkpoint_sha256"] == dummy_ckpt_sha
     assert receipt["download_ceiling_gib"] == 12.0
     assert receipt["cache_pre_existing_bytes"] == 1024
-    assert receipt["observed_cache_growth_bytes"] == len(dummy_ckpt)
+    assert receipt["observed_cache_growth_bytes"] == len(dummy_ckpt) + clip_files_bytes
+    assert receipt["clip_complete"] is True
     assert receipt["network_traffic_bytes"] == "NOT_MEASURED"
     assert receipt["network_accounting_status"] == "NOT_MEASURED"
     assert receipt["pre_download_inventory_verified"] is True
@@ -478,7 +487,11 @@ def test_anytext_cache_reuse_and_readme_filtering(monkeypatch, tmp_path):
     (model_dir / "anytext_v1.1.ckpt").write_bytes(dummy_ckpt)
     clip_dir = model_dir / "clip-vit-large-patch14"
     clip_dir.mkdir(parents=True)
+    # All mandatory CLIP files must be present for hardened verification
     (clip_dir / "pytorch_model.bin").write_bytes(b"CLIP_WEIGHTS")
+    (clip_dir / "config.json").write_bytes(b"{}")
+    (clip_dir / "vocab.json").write_bytes(b"{}")
+    (clip_dir / "tokenizer_config.json").write_bytes(b"{}")
 
     plan = {
         "model_specification": {
@@ -498,5 +511,114 @@ def test_anytext_cache_reuse_and_readme_filtering(monkeypatch, tmp_path):
     assert receipt["cache_reused"] is True
     assert receipt["checkpoint_status"] == "VERIFIED_MATCH"
     assert receipt["readme_excluded"] is True
+    assert receipt["clip_complete"] is True
+    assert receipt["clip_missing_files"] == []
 
 
+def test_anytext_cache_reuse_incomplete_clip_falls_through(monkeypatch, tmp_path):
+    """Verify that cache with valid checkpoint but incomplete CLIP does NOT reuse cache.
+
+    When CLIP is missing mandatory files, cache reuse must be skipped and the code
+    must proceed to snapshot_download. Since snapshot_download is not mocked to succeed,
+    we expect a download attempt that fails (NameError or ImportError for modelscope),
+    proving that the incomplete-CLIP cache was correctly rejected.
+    """
+    from scripts.research.run_anytext_colab import download_and_verify_modelscope_anytext
+
+    cache_dir = tmp_path / "cache"
+    cache_dir.mkdir()
+
+    dummy_ckpt = b"FULL_VALID_CKPT_V2"
+    ckpt_sha = hashlib.sha256(dummy_ckpt).hexdigest()
+
+    model_dir = cache_dir / "damo" / "cv_anytext_text_generation_editing"
+    model_dir.mkdir(parents=True)
+    (model_dir / "anytext_v1.1.ckpt").write_bytes(dummy_ckpt)
+    clip_dir = model_dir / "clip-vit-large-patch14"
+    clip_dir.mkdir(parents=True)
+    # Only pytorch_model.bin — missing config.json, vocab.json, tokenizer_config.json
+    (clip_dir / "pytorch_model.bin").write_bytes(b"CLIP_WEIGHTS")
+
+    plan = {
+        "model_specification": {
+            "modelscope_repo_id": "damo/cv_anytext_text_generation_editing",
+            "model_revision": "v1.1.3",
+            "checkpoint_file": "anytext_v1.1.ckpt",
+            "checkpoint_sha256": ckpt_sha,
+            "total_required_weights_bytes": len(dummy_ckpt),
+        },
+        "resource_budget": {
+            "max_colab_download_gib": 12.0,
+        },
+    }
+
+    # Should NOT reuse cache (CLIP incomplete), should attempt snapshot_download
+    # which will fail because modelscope is not installed locally
+    with pytest.raises(Exception):
+        download_and_verify_modelscope_anytext(plan, cache_dir)
+
+
+def test_anytext_snapshot_download_error_handler_incomplete_clip_fails(monkeypatch, tmp_path):
+    """Verify that when snapshot_download errors, if checkpoint matches SHA but CLIP is incomplete,
+
+    the runner does NOT swallow the error: it writes failure_receipt.json and raises RuntimeError.
+    """
+    from scripts.research.run_anytext_colab import download_and_verify_modelscope_anytext
+
+    cache_dir = tmp_path / "cache_err"
+    cache_dir.mkdir()
+
+    dummy_ckpt = b"FULL_VALID_CKPT_FOR_ERR_TEST"
+    ckpt_sha = hashlib.sha256(dummy_ckpt).hexdigest()
+
+    model_dir = cache_dir / "damo" / "cv_anytext_text_generation_editing"
+    model_dir.mkdir(parents=True)
+    ckpt_file = model_dir / "anytext_v1.1.ckpt"
+
+    # Mock snapshot_download to write checkpoint, but leave CLIP incomplete, then raise
+    def mock_failing_snapshot_download(repo_id, revision, cache_dir, ignore_file_pattern):
+        ckpt_file.write_bytes(dummy_ckpt)
+        # Create CLIP folder with only 1 file (incomplete)
+        clip_dir = model_dir / "clip-vit-large-patch14"
+        clip_dir.mkdir(parents=True, exist_ok=True)
+        (clip_dir / "config.json").write_bytes(b"{}")
+        raise RuntimeError("Transient network error during snapshot_download")
+
+    import sys
+    import types
+    fake_modelscope = types.ModuleType("modelscope")
+    fake_hub = types.ModuleType("modelscope.hub")
+    fake_snapshot = types.ModuleType("modelscope.hub.snapshot_download")
+    fake_snapshot.snapshot_download = mock_failing_snapshot_download
+    fake_hub.snapshot_download = fake_snapshot
+    fake_modelscope.hub = fake_hub
+
+    monkeypatch.setitem(sys.modules, "modelscope", fake_modelscope)
+    monkeypatch.setitem(sys.modules, "modelscope.hub", fake_hub)
+    monkeypatch.setitem(sys.modules, "modelscope.hub.snapshot_download", fake_snapshot)
+
+    plan = {
+        "model_specification": {
+            "modelscope_repo_id": "damo/cv_anytext_text_generation_editing",
+            "model_revision": "v1.1.3",
+            "checkpoint_file": "anytext_v1.1.ckpt",
+            "checkpoint_sha256": ckpt_sha,
+            "total_required_weights_bytes": len(dummy_ckpt),
+        },
+        "resource_budget": {
+            "max_colab_download_gib": 12.0,
+        },
+    }
+
+    # Must raise RuntimeError citing CLIP weights incomplete
+    with pytest.raises(RuntimeError, match="CLIP weights incomplete after snapshot_download error"):
+        download_and_verify_modelscope_anytext(plan, cache_dir)
+
+    # Verify failure_receipt.json was written
+    receipt_file = model_dir / "failure_receipt.json"
+    assert receipt_file.is_file(), f"Missing failure receipt: {receipt_file}"
+    receipt_data = json.loads(receipt_file.read_text(encoding="utf-8"))
+    assert receipt_data["status"] == "FAILED"
+    assert receipt_data["checkpoint_sha256_matched"] is True
+    assert receipt_data["clip_complete"] is False
+    assert len(receipt_data["clip_missing_files"]) > 0

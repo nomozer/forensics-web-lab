@@ -284,6 +284,41 @@ def release_runner_lock(lock_file: Path) -> None:
         pass
 
 
+# Mandatory CLIP files required for AnyText inference (clip-vit-large-patch14).
+# A non-empty CLIP directory is NOT proof that weights are complete.
+CLIP_MANDATORY_FILES = [
+    "config.json",
+    "vocab.json",
+    "tokenizer_config.json",
+]
+# At least one of these weight files must exist:
+CLIP_WEIGHT_FILE_CANDIDATES = [
+    "pytorch_model.bin",
+    "model.safetensors",
+]
+
+
+def verify_clip_weights_complete(clip_dir: Path) -> Tuple[bool, List[str]]:
+    """Verifies that all mandatory CLIP inference files are present.
+
+    Returns:
+        Tuple of (is_complete, list_of_missing_files).
+    """
+    if not clip_dir.is_dir():
+        return False, ["directory_not_found"]
+
+    missing: List[str] = []
+    for f in CLIP_MANDATORY_FILES:
+        if not (clip_dir / f).is_file():
+            missing.append(f)
+
+    has_weights = any((clip_dir / w).is_file() for w in CLIP_WEIGHT_FILE_CANDIDATES)
+    if not has_weights:
+        missing.append(f"one_of({', '.join(CLIP_WEIGHT_FILE_CANDIDATES)})")
+
+    return len(missing) == 0, missing
+
+
 def find_prior_completed_attempt(
     output_root: Path,
     attempt_id: str,
@@ -381,12 +416,13 @@ def download_and_verify_modelscope_anytext(
             obs_sha = compute_sha256(existing_ckpt_path)
             if obs_sha == expected_ckpt_sha:
                 clip_sub = existing_ckpt_path.parent / "clip-vit-large-patch14"
-                if clip_sub.is_dir() and any(clip_sub.iterdir()):
+                clip_ok, clip_missing = verify_clip_weights_complete(clip_sub)
+                if clip_ok:
                     print("[PASS] Verified existing checkpoint SHA-256 and CLIP weights in cache! Reusing valid cache.")
                     model_dir_path = existing_ckpt_path.parent
                     cache_reused = True
                 else:
-                    print("[INFO] Checkpoint matched but CLIP weights incomplete in cache. Will proceed with download.")
+                    print(f"[INFO] Checkpoint matched but CLIP weights incomplete in cache (missing: {clip_missing}). Will proceed with download.")
             else:
                 print(f"[INFO] Checkpoint SHA mismatch in cache ({obs_sha[:8]} != {expected_ckpt_sha[:8]}). Will re-download.")
         except Exception as e:
@@ -417,7 +453,27 @@ def download_and_verify_modelscope_anytext(
                     found_ckpt = p
                     break
             if found_ckpt and compute_sha256(found_ckpt) == expected_ckpt_sha:
-                print(f"[WARN] snapshot_download encountered non-fatal error: {dl_err}, but required checkpoint is intact. Reusing cache.")
+                # Checkpoint is intact — also verify CLIP weights are complete
+                clip_sub_err = found_ckpt.parent / "clip-vit-large-patch14"
+                clip_ok_err, clip_missing_err = verify_clip_weights_complete(clip_sub_err)
+                if not clip_ok_err:
+                    failure_receipt = {
+                        "status": "FAILED",
+                        "stage": "snapshot_download_error_handler",
+                        "error": str(dl_err),
+                        "checkpoint_sha256_matched": True,
+                        "clip_complete": False,
+                        "clip_missing_files": clip_missing_err,
+                        "message": "Checkpoint intact but CLIP weights incomplete after download error. Cannot continue.",
+                    }
+                    receipt_path = found_ckpt.parent / "failure_receipt.json"
+                    receipt_path.write_text(json.dumps(failure_receipt, indent=2), encoding="utf-8")
+                    print(f"[FAIL] Checkpoint intact but CLIP incomplete (missing: {clip_missing_err}). Failure receipt: {receipt_path}")
+                    raise RuntimeError(
+                        f"CLIP weights incomplete after snapshot_download error (missing: {clip_missing_err}). "
+                        f"Failure receipt written to {receipt_path}"
+                    ) from dl_err
+                print(f"[WARN] snapshot_download encountered non-fatal error: {dl_err}, but required checkpoint and CLIP weights are intact. Reusing cache.")
                 model_dir_path = found_ckpt.parent
             else:
                 raise dl_err
@@ -470,6 +526,25 @@ def download_and_verify_modelscope_anytext(
             f"Checkpoint SHA-256 mismatch! Expected {expected_ckpt_sha}, got {observed_ckpt_sha}"
         )
 
+    # CLIP weights completeness verification (fail-closed)
+    clip_dir_post = model_dir_path / "clip-vit-large-patch14"
+    clip_complete_post, clip_missing_post = verify_clip_weights_complete(clip_dir_post)
+    if not clip_complete_post:
+        failure_receipt = {
+            "status": "FAILED",
+            "stage": "post_download_clip_verification",
+            "checkpoint_sha256_matched": True,
+            "clip_complete": False,
+            "clip_missing_files": clip_missing_post,
+            "message": "Checkpoint verified but CLIP weights incomplete. Cannot proceed to inference.",
+        }
+        failure_path = model_dir_path / "failure_receipt.json"
+        failure_path.write_text(json.dumps(failure_receipt, indent=2), encoding="utf-8")
+        raise RuntimeError(
+            f"CLIP weights incomplete after download (missing: {clip_missing_post}). "
+            f"Failure receipt: {failure_path}"
+        )
+
     receipt = {
         "model_dir": str(model_dir_path),
         "repo_id": repo_id,
@@ -494,10 +569,13 @@ def download_and_verify_modelscope_anytext(
         "readme_excluded": True,
         "checkpoint_sha256": observed_ckpt_sha,
         "checkpoint_status": "VERIFIED_MATCH",
+        "clip_complete": True,
+        "clip_missing_files": [],
     }
     print(f"[PASS] Model cache verified: {cache_total_files_gib} GiB on disk, observed cache growth: {observed_cache_growth_gib} GiB (within {max_download_gib} GiB ceiling).")
     print(f"[PASS] Network traffic note: Direct network socket traffic NOT_MEASURED (cache growth is reported as on-disk filesystem delta).")
     print(f"[PASS] Checkpoint verified: {observed_ckpt_sha[:16]}...")
+    print(f"[PASS] CLIP weights verified: all mandatory files present.")
     return str(model_dir_path), receipt
 
 

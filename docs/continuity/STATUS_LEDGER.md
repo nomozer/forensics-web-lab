@@ -1,3 +1,11 @@
+## AnyText Feasibility Reconciliation, Hardened Cache Reuse & Failure Handlers (Phase 4C.8 trace, branch research/independent-cohort-acquisition)
+
+- **Truy Nguyên Chênh Lệch Mã Băm Runner & Kiểm Chứng Exclude-Dir ($systematic-debugging)**: Xác định nguyên nhân chênh lệch hash runner nhúng (`0c44842a...`) vs đĩa (`54f4c4f3...`): notebook được sinh trước khi commit sửa `exclude_dir`; đối chiếu byte/newline xác nhận không do CRLF. Kiểm chứng `exclude_dir` loại trừ toàn bộ attempts con trong run.
+- **Làm Cứng Cache Reuse & Xử Lý Lỗi Snapshot-Download Fail-Closed ($verification-before-completion)**: Thay thế kiểm tra thư mục CLIP không rỗng bằng hàm `verify_clip_weights_complete` kiểm tra đủ 4 file bắt buộc (`config.json`, `vocab.json`, `tokenizer_config.json`, weight file). Xử lý lỗi `snapshot_download` fail-closed: xuất `failure_receipt.json` khi thiếu file thay vì nuốt lỗi. Bổ sung kiểm tra CLIP sau tải.
+- **Tái Sinh Canonical Notebook 7 Cells & Mở Rộng 13/13 Tests ($verification-before-completion)**: Tái sinh `independent_anytext_feasibility_colab.ipynb` (SHA-256 `89b822e5...`, 7 cells: 1 markdown + 6 code), nhúng runner khớp đĩa bit-for-bit (SHA-256 `8be60b3f...`), chuẩn hóa hướng dẫn đánh số cells. Bộ test `ml/tests/test_anytext_feasibility.py` mở rộng đạt 13/13 PASS. Trạng thái thực thi GPU: **`PREPARED_NOT_EXECUTED`**.
+
+---
+
 ## AnyText Feasibility Smoke Shape (80, 512, 1), Pre-download Inventory Check & Cache Growth Accounting (Phase 4C.8 trace, branch research/independent-cohort-acquisition)
 
 - **Đường Dẫn Tuyệt Đối /content/AnyText & Khóa Toolchain Installer ($systematic-debugging, $executing-plans)**: Khắc phục lỗi clone lồng nhau và phụ thuộc cwd khi chạy lại Cell 2 bằng cách gán cố định đích đến `/content/AnyText`; kiểm tra `.git` trước khi clone và thực thi `git checkout` với `cwd=/content/AnyText`. Khóa cứng bộ công cụ cài đặt (`pip==23.3.2`, `setuptools==68.2.2`, `wheel==0.42.0`) trong môi trường ảo Python 3.10 riêng biệt, loại bỏ hành vi tự động nâng lên latest không kiểm chứng.

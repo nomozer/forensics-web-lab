@@ -2,7 +2,7 @@
 
 > **Tài liệu đọc đầu tiên bắt buộc cho mọi phiên làm việc AI mới.**<br>
 > **Base main commit**: `7fd7b8851819154dee849a440a5e0dfb69f46c0d` (main with Phase 4C.7A finalized; CI success)<br>
-> **Phase gần nhất**: Phase 4C.8 trace — AnyText Feasibility Launcher & Runner Hardening (ujson==5.9.0 pinned and smoke-tested; ModelScope ignore_file_pattern filters README.md and *.md alongside translator; pre-download cache verification reuses valid checkpoint and CLIP weights; unbuffered python -u execution with live log streaming and structured stage failure receipt banners; partial results ZIP archiving under failure; single-instance lock file .runner.lock with PID checking; attempt idempotency skipping completed attempts; 11/11 anytext tests PASS; Local Preflight & Unit Contracts Verified PASS; Execution Status: PREPARED_NOT_EXECUTED)<br>
+> **Phase gần nhất**: Phase 4C.8 trace — AnyText Feasibility Reconciliation & Runner Hardening (Truy nguyên và đồng bộ hash runner nhúng trong notebook khớp bit-for-bit với disk 8be60b3f...; exclude_dir loại bỏ toàn bộ attempts trong active run; làm cứng cache reuse yêu cầu đầy đủ các files inference bắt buộc [config.json, vocab.json, tokenizer_config.json, weight file]; snapshot_download error handler fail-closed với failure_receipt.json khi thiếu file; tái sinh canonical notebook 7 cells [1 markdown + 6 code] với hướng dẫn chi tiết; 13/13 anytext tests PASS; Local Preflight & Unit Contracts Verified PASS; Execution Status: PREPARED_NOT_EXECUTED)<br>
 > **Branch**: `research/independent-cohort-acquisition` (no PR)<br>
 > **Current TGIF intake execution commit**: `9d98a2d5c6afea16f9b3a71a03f0c2d6f43204e4` (archive-layout-resolving TGIF N=400 Colab worker snapshot; canonical notebook pins this full SHA by detached checkout, while the local auditor remains on the handoff branch; historical pilot/diagnostic/calibration bindings remain unchanged)<br>
 > **Repository naming status**: `FUNCTIONAL_NAMES_NORMALIZED` — 46 active, unsealed files now use work-oriented names; the complete migration table is in `docs/REPOSITORY_NAMING_MAP.md`. Twenty-one sealed config/notebook/operator/package/confirmatory paths and all historical evidence/raw artifact paths retain their exact names and bindings.<br>
@@ -422,12 +422,19 @@
 >      * Đọc trần download trực tiếp từ kế hoạch (`resource_budget.max_colab_download_gib` = 12.0 GiB).
 >      * Thực hiện kiểm tra inventory (`cache_dir.rglob`) trước khi tải để ghi nhận các files đã có sẵn trong cache (`pre_existing_cache_bytes`).
 >      * Phân biệt rạch ròi giữa dung lượng files trên đĩa trong cache (`cache_total_files_bytes`) và số bytes thực sự tải qua mạng trong phiên (`actual_network_downloaded_bytes`, ghi nhận `MEASURED_NEW_TRANSFERS_ONLY`); fail-closed nếu số bytes mạng thực sự vượt trần kế hoạch.
->    - **Turnkey Colab Notebook & Runner Đã Tiền Kiểm Chứng**:
->      * Script sinh tự động `build_anytext_colab_notebook.py` xuất `notebooks/independent_anytext_feasibility_colab.ipynb` 6 cells sạch với staging tuyệt đối `/content/AnyText` và đối soát SHA-256 bit-exact.
+>    - **Đối Soát Runner Chuẩn Tắc & Làm Cứng Toàn Diện ($systematic-debugging, $verification-before-completion)**:
+>      * Truy nguyên nguyên nhân chênh lệch mã băm runner nhúng trong notebook (`0c44842a...`) so với runner trên đĩa (`54f4c4f3...`): notebook được sinh trước khi đoạn mã sửa `exclude_dir` 3 dòng được commit; đối chiếu byte và newline xác nhận hoàn toàn không có lỗi CRLF.
+>      * Kiểm chứng hành vi `exclude_dir`: runner bỏ qua mọi attempt directories con nằm trong run hiện tại (`exclude_dir.resolve() in att_folder.resolve().parents`).
+>      * Làm cứng cache reuse: thay thế kiểm tra `any(clip_sub.iterdir())` bằng hàm kiểm tra chuẩn tắc `verify_clip_weights_complete(clip_sub)` bắt buộc đủ `config.json`, `vocab.json`, `tokenizer_config.json` và ít nhất một file weights (`pytorch_model.bin` hoặc `model.safetensors`). Thư mục không rỗng không còn được coi là bằng chứng weights đầy đủ.
+>      * Xử lý lỗi `snapshot_download` fail-closed: khi gặp lỗi tải metadata (ví dụ README.md), runner chỉ cho phép tái sử dụng khi CẢ checkpoint lẫn CLIP weights đều vượt qua kiểm tra toàn vẹn. Nếu thiếu file bắt buộc, runner ghi nhận `failure_receipt.json` và dừng thực thi, không nuốt lỗi.
+>      * Bổ sung kiểm tra toàn vẹn CLIP vào kiểm tra bổ sung sau tải (post-download check), ghi nhận `clip_complete: True` và `clip_missing_files: []` trong receipt thành công.
+>    - **Turnkey Colab Notebook 7 Cells & Đối Soát Bit-Exact**:
+>      * Script `build_anytext_colab_notebook.py` tái sinh `notebooks/independent_anytext_feasibility_colab.ipynb` (SHA-256 `89b822e5...`) gồm 7 cells chuẩn (1 markdown + 6 code cells), có hướng dẫn thứ tự thực thi rõ ràng tại Cell 0.
+>      * Payload staging nhúng trong Cell 3 đối soát bit-for-bit với file thực tế trên đĩa (runner SHA-256 `8be60b3f...`, plan `88f7e328...`, adapter `d30342c4...`, geometry `566d1067...`).
 >      * Runner `scripts/research/run_anytext_colab.py` hỗ trợ `--preflight-only` đã chạy thành công trên LOCAL (xác minh 2/2 nguồn thật, phần cứng, font và plan với exit code 0).
->      * Trạng thái thực thi trung thực: **`PREPARED_NOT_EXECUTED`** (không tự giả lập kết quả GPU trên máy local; compile/tests trên LOCAL không được coi là Colab runtime PASS; chưa chạy được môi trường Python 3.10 trên Linux/Colab thực tế).
->    - **Kiểm Thử Mở Rộng 8/8 Tests**:
->      * Bộ test `ml/tests/test_anytext_feasibility.py` mở rộng đạt 8/8 PASS (thêm kiểm thử hợp đồng kế toán mạng phân biệt cache, trần ngân sách, và assertion ràng buộc notebook mới).
+>      * Trạng thái thực thi trung thực: **`PREPARED_NOT_EXECUTED`** (không tự giả lập kết quả GPU trên máy local; compile/tests trên LOCAL không được coi là Colab runtime PASS; chưa chạy môi trường Python 3.10 trên Linux/Colab thực tế).
+>    - **Kiểm Thử Mở Rộng 13/13 Tests**:
+>      * Bộ test `ml/tests/test_anytext_feasibility.py` mở rộng đạt 13/13 PASS (bổ sung tests khóa runner lock, kiểm chứng exclude_dir, cache reuse với CLIP đầy đủ/thiếu, và kiểm tra snapshot_download fail-closed khi thiếu CLIP).
 >    **Phase status**: `ANYTEXT_FEASIBILITY_PREPARED_NOT_EXECUTED`<br>
 >    **Next approved action**: Người dùng chạy `notebooks/independent_anytext_feasibility_colab.ipynb` trên Google Colab GPU (T4), tải kết quả về LOCAL để đối soát kỹ thuật và thẩm định nội dung.<br>
 >
