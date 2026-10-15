@@ -1,0 +1,29 @@
+{
+  "run_id": "run_anytext_local_stub_e2e_20261015_230706_88f7e328",
+  "run_label": "local_stub_e2e",
+  "status": "COMPLETE",
+  "stage_reached": "PACKAGING",
+  "plan_sha256": "88f7e32873ff4c4e96dc60aae33a50aee677a550291e3316a027e1584e69b3ad",
+  "runner_sha256": "47cbec74a42d6f8ecbaf7cad2925e68cc2be9aa790de0657d040c1f9fbdd7971",
+  "precision_policy": {
+    "policy_id": "fp16-weights-xformers-0.0.20-no-autocast-v1",
+    "torch": "2.0.1+cu118",
+    "xformers_available": true,
+    "attn_precision_env": null,
+    "attn_precision_effective": "fp32",
+    "autocast": "not used",
+    "xformers": "0.0.20"
+  },
+  "attempts": {
+    "attempt_A_replacement_price": {
+      "status": "TECHNICAL_QC_PASS",
+      "config_fingerprint": "b760e73ac917d8feb52f73fdd24a8d7345c765043b4da4db51cdaec6cb91e152"
+    },
+    "attempt_B_replacement_item_name": {
+      "status": "TECHNICAL_QC_PASS",
+      "config_fingerprint": "28a41cc7ceabb41a15fc283318d1f9746b202e0f6d05bc6efa420e41194b5477"
+    }
+  },
+  "human_content_qc": "PENDING_HUMAN_REVIEW",
+  "timestamp": "2026-10-15T23:15:49.798646"
+}

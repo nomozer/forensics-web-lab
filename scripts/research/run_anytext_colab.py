@@ -371,12 +371,146 @@ def verify_clip_weights_complete(
     return len(missing) == 0, missing
 
 
+PRECISION_POLICY_ID = "fp16-weights-xformers-0.0.20-no-autocast-v1"
+
+
+def assert_fp16_attention_path() -> Dict[str, Any]:
+    """Fails closed unless AnyText's xformers MemoryEfficientCrossAttention is active.
+
+    Without xformers, upstream CrossAttention upcasts q/k to fp32 (ATTN_PRECISION defaults to "fp32")
+    while v stays fp16 under model.half(), raising "expected scalar type Half but found Float".
+    We do not silently fall back to an environment override: that would change the precision policy.
+    """
+    import torch
+    import ldm.modules.attention as attn
+
+    info: Dict[str, Any] = {
+        "policy_id": PRECISION_POLICY_ID,
+        "torch": torch.__version__,
+        "xformers_available": bool(attn.XFORMERS_IS_AVAILBLE),
+        "attn_precision_env": os.environ.get("ATTN_PRECISION"),
+        "attn_precision_effective": getattr(attn, "_ATTN_PRECISION", None),
+        "autocast": "not used",
+    }
+    try:
+        import xformers
+
+        info["xformers"] = xformers.__version__
+    except ImportError:
+        info["xformers"] = None
+    if not info["xformers_available"]:
+        raise RuntimeError(
+            "AnyText xformers attention is not active (ldm.modules.attention.XFORMERS_IS_AVAILBLE is False). "
+            "The fp16 path requires xformers==0.0.20 from scripts/research/anytext_requirements.txt; "
+            "refusing to run with the fp32-upcast CrossAttention that fails with 'expected scalar type Half but found Float'."
+        )
+    return info
+
+
+def describe_failure_site(exc: BaseException, max_tensors: int = 24) -> Dict[str, Any]:
+    """Describes the failing frames: location, tensor dtype/device/shape and module parameter dtypes."""
+    frames = []
+    tb = exc.__traceback__
+    while tb is not None:
+        frames.append((tb.tb_frame, tb.tb_lineno))
+        tb = tb.tb_next
+    site: Dict[str, Any] = {"exception_type": type(exc).__name__, "frames": []}
+    try:
+        import torch
+    except ImportError:
+        return site
+
+    def _frame_info(frame: Any, lineno: int) -> Dict[str, Any]:
+        info: Dict[str, Any] = {
+            "file": frame.f_code.co_filename,
+            "line": lineno,
+            "function": frame.f_code.co_name,
+            "tensors": {},
+            "module_parameter_dtypes": {},
+        }
+        for name, val in list(frame.f_locals.items()):
+            if len(info["tensors"]) >= max_tensors:
+                break
+            if isinstance(val, torch.Tensor):
+                info["tensors"][name] = {"dtype": str(val.dtype), "device": str(val.device), "shape": list(val.shape)}
+            elif isinstance(val, (tuple, list)) and val and all(isinstance(v, torch.Tensor) for v in val):
+                info["tensors"][name] = [{"dtype": str(v.dtype), "device": str(v.device), "shape": list(v.shape)} for v in val]
+            elif isinstance(val, torch.nn.Module):
+                counts: Dict[str, int] = {}
+                devices = set()
+                for p in val.parameters():
+                    counts[str(p.dtype)] = counts.get(str(p.dtype), 0) + 1
+                    devices.add(str(p.device))
+                info["module_parameter_dtypes"][f"{name}:{type(val).__name__}"] = {"dtypes": counts, "devices": sorted(devices)}
+        return info
+
+    try:
+        if frames:
+            innermost = _frame_info(*frames[-1])
+            site["innermost_frame"] = innermost
+            # first non-torch, non-stdlib frame from the end = the module/operation that called into torch
+            for frame, lineno in reversed(frames):
+                fname = frame.f_code.co_filename.replace("\\", "/")
+                if "/site-packages/torch/" not in fname and "/lib/python" not in fname:
+                    site["innermost_project_frame"] = _frame_info(frame, lineno)
+                    break
+    except Exception as diag_err:  # diagnostics must never mask the original failure
+        site["diagnostic_error"] = repr(diag_err)
+    return site
+
+
+def build_failure_receipt(
+    stage: str,
+    exc: BaseException,
+    attempt_id: Optional[str] = None,
+    run_id: Optional[str] = None,
+    extra: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """Structured failure receipt keeping stage, attempt id, original traceback and dtype/device evidence."""
+    receipt: Dict[str, Any] = {
+        "run_id": run_id,
+        "attempt_id": attempt_id,
+        "stage": stage,
+        "status": "FAILED",
+        "error": str(exc),
+        "error_type": type(exc).__name__,
+        "traceback": "".join(traceback.format_exception(type(exc), exc, exc.__traceback__)),
+        "failure_site": describe_failure_site(exc),
+        "timestamp": datetime.datetime.now().isoformat(),
+    }
+    if extra:
+        receipt.update(extra)
+    return receipt
+
+
+def compute_attempt_fingerprint(plan: Dict[str, Any], att: Dict[str, Any], authentic_sha256: str) -> str:
+    """Binds a result to model revision, source bytes, text, seed, sampling and precision policy."""
+    spec = plan.get("model_specification", {})
+    payload = {
+        "code_commit_sha": spec.get("code_commit_sha"),
+        "model_revision": spec.get("model_revision"),
+        "checkpoint_sha256": spec.get("checkpoint_sha256"),
+        "geometry_contract": plan.get("geometry_contract"),
+        "attempt": {
+            k: att.get(k)
+            for k in (
+                "attempt_id", "source_row_index", "original_text", "target_text", "target_bbox",
+                "seed", "prompt", "a_prompt", "n_prompt", "sampling_parameters",
+            )
+        },
+        "authentic_sha256": authentic_sha256,
+        "precision_policy_id": PRECISION_POLICY_ID,
+    }
+    return hashlib.sha256(json.dumps(payload, sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()
+
+
 def find_prior_completed_attempt(
     output_root: Path,
     attempt_id: str,
+    expected_fingerprint: str,
     exclude_dir: Optional[Path] = None,
 ) -> Optional[Path]:
-    """Finds a previously completed attempt with TECHNICAL_QC_PASS and verified outside equality."""
+    """Finds a prior TECHNICAL_QC_PASS attempt whose fingerprint and artifact hashes are verified."""
     if not output_root.is_dir():
         return None
     for receipt_path in output_root.glob(f"*/{attempt_id}/attempt_receipt.json"):
@@ -388,16 +522,20 @@ def find_prior_completed_attempt(
             ):
                 continue
             rcpt = json.loads(receipt_path.read_text(encoding="utf-8"))
-            if (
-                rcpt.get("status") == "TECHNICAL_QC_PASS"
-                and rcpt.get("outside_mask_bitwise_equal") is True
-                and (
-                    (att_folder / "anytext_final_edited.png").is_file()
-                    or (att_folder / "final_edited_document.png").is_file()
-                )
-                and (att_folder / "anytext_raw_canvas.png").is_file()
-            ):
-                return att_folder
+            if rcpt.get("status") != "TECHNICAL_QC_PASS" or rcpt.get("outside_mask_bitwise_equal") is not True:
+                continue
+            if rcpt.get("config_fingerprint") != expected_fingerprint:
+                continue
+            raw_path = att_folder / "anytext_raw_canvas.png"
+            final_path = att_folder / "anytext_final_edited.png"
+            hashes = rcpt.get("hashes", {})
+            if not raw_path.is_file() or not final_path.is_file():
+                continue
+            if compute_sha256(raw_path) != hashes.get("raw_canvas_sha256"):
+                continue
+            if compute_sha256(final_path) != hashes.get("final_edited_sha256"):
+                continue
+            return att_folder
         except Exception:
             continue
     return None
@@ -1362,6 +1500,20 @@ def run_anytext_inference(
     return raw_output_img, latency_sec, meta
 
 
+def target_bbox_in_canvas(geometry_receipt: Dict[str, Any]) -> List[int]:
+    """Maps the native target bbox [ymin, xmin, ymax, xmax] into 512x512 model-canvas coordinates."""
+    crop_ymin, crop_xmin, _, _ = geometry_receipt["crop_bbox"]
+    ymin, xmin, ymax, xmax = geometry_receipt["target_bbox"]
+    pad_y, pad_x = geometry_receipt["padding"]
+    scale = geometry_receipt["scale"]
+    return [
+        int(round(pad_y + (ymin - crop_ymin) * scale)),
+        int(round(pad_x + (xmin - crop_xmin) * scale)),
+        int(round(pad_y + (ymax - crop_ymin) * scale)),
+        int(round(pad_x + (xmax - crop_xmin) * scale)),
+    ]
+
+
 def crop_zoomed_roi(
     image: Image.Image,
     target_bbox: List[int],
@@ -1506,6 +1658,46 @@ def package_results_zip(
     return output_zip_path
 
 
+def finalize_run(
+    output_root: Path,
+    run_dir: Path,
+    run_id: str,
+    status: str,
+    plan_sha256: str,
+    stage: str,
+    attempt_statuses: Dict[str, Dict[str, Any]],
+    precision_info: Optional[Dict[str, Any]],
+    run_label: str,
+) -> Path:
+    """Writes run_manifest.json, archives the run under a run-specific name and updates latest_run.json."""
+    manifest = {
+        "run_id": run_id,
+        "run_label": run_label,
+        "status": status,
+        "stage_reached": stage,
+        "plan_sha256": plan_sha256,
+        "runner_sha256": compute_sha256(Path(__file__).resolve()),
+        "precision_policy": precision_info,
+        "attempts": attempt_statuses,
+        "human_content_qc": "PENDING_HUMAN_REVIEW",
+        "timestamp": datetime.datetime.now().isoformat(),
+    }
+    (run_dir / "run_manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    kind = "results" if status == "COMPLETE" else "partial_results"
+    zip_path = output_root / f"anytext_feasibility_{kind}_{run_id}.zip"
+    package_results_zip(run_dir=run_dir, output_zip_path=zip_path)
+    pointer = {
+        "run_id": run_id,
+        "status": status,
+        "run_dir": run_dir.name,
+        "archive": zip_path.name,
+        "archive_sha256": compute_sha256(zip_path),
+        "timestamp": manifest["timestamp"],
+    }
+    (output_root / "latest_run.json").write_text(json.dumps(pointer, indent=2), encoding="utf-8")
+    return zip_path
+
+
 def main() -> int:
     # Ensure script directory and current working directory are in sys.path
     script_dir = Path(__file__).resolve().parent
@@ -1522,6 +1714,7 @@ def main() -> int:
     parser.add_argument("--cache-dir", type=str, default=None, help="Path to ModelScope cache directory")
     parser.add_argument("--custom-font", type=str, default=None, help="Custom TTF font path")
     parser.add_argument("--preflight-only", action="store_true", help="Run preflight checks only")
+    parser.add_argument("--run-label", type=str, default="", help="Short label embedded in the run id (e.g. repair_fp16_xformers)")
     args = parser.parse_args()
 
     plan_path = Path(args.plan_path).resolve()
@@ -1538,6 +1731,9 @@ def main() -> int:
     current_stage = "INITIALIZATION"
     run_dir: Optional[Path] = None
     plan_bytes_sha = "UNKNOWN"
+    run_id = "UNKNOWN"
+    precision_info: Optional[Dict[str, Any]] = None
+    attempt_statuses: Dict[str, Dict[str, Any]] = {}
 
     try:
         if not plan_path.is_file():
@@ -1547,7 +1743,8 @@ def main() -> int:
         plan_bytes_sha = hashlib.sha256(plan_path.read_bytes()).hexdigest()
 
         run_timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        run_id = f"run_anytext_{run_timestamp}_{plan_bytes_sha[:8]}"
+        label = re.sub(r"[^A-Za-z0-9_-]", "", args.run_label)
+        run_id = f"run_anytext_{label + '_' if label else ''}{run_timestamp}_{plan_bytes_sha[:8]}"
         run_dir = output_root / run_id
         run_dir.mkdir(parents=True, exist_ok=True)
 
@@ -1630,6 +1827,8 @@ def main() -> int:
 
         current_stage = "PIPELINE_INIT"
         print("\n--- Initializing AnyText Pipeline from Local Weights ---")
+        precision_info = assert_fp16_attention_path()
+        print(f"[PASS] fp16 attention path: xformers {precision_info['xformers']} active (policy {PRECISION_POLICY_ID}).")
         from modelscope.pipelines import pipeline
 
         pipe = pipeline(
@@ -1659,8 +1858,24 @@ def main() -> int:
             att_dir.mkdir(parents=True, exist_ok=True)
             print(f"\n--- Checking / Executing {att_id} ---")
 
+            auth_info = extracted_inputs.get(att_id)
+            if not auth_info:
+                print(f"[FAIL] Missing authentic input data for {att_id}")
+                has_failure = True
+                fail_receipt = {
+                    "attempt_id": att_id,
+                    "stage": "INPUT_EXTRACTION",
+                    "status": "FAILED",
+                    "error": f"Missing authentic input data for {att_id}",
+                    "traceback": "",
+                }
+                attempt_statuses[att_id] = {"status": "FAILED", "stage": "INPUT_EXTRACTION"}
+                (att_dir / "failure_receipt.json").write_text(json.dumps(fail_receipt, indent=2), encoding="utf-8")
+                continue
+
+            att_fingerprint = compute_attempt_fingerprint(plan, att, auth_info["authentic_sha256"])
             # Check if prior completed attempt exists
-            prior_att_folder = find_prior_completed_attempt(output_root, att_id, exclude_dir=run_dir)
+            prior_att_folder = find_prior_completed_attempt(output_root, att_id, att_fingerprint, exclude_dir=run_dir)
             if prior_att_folder:
                 print(f"[PASS] Prior completed attempt found at: {prior_att_folder}")
                 # Copy artifacts to att_dir if different
@@ -1673,6 +1888,7 @@ def main() -> int:
                 if prior_rcpt_file.is_file():
                     att_receipt = json.loads(prior_rcpt_file.read_text(encoding="utf-8"))
                     print(f"[INFO] Reusing verified result for {att_id} (outside_mask_bitwise_equal={att_receipt.get('outside_mask_bitwise_equal')}).")
+                    attempt_statuses[att_id] = {"status": "REUSED_VERIFIED", "reused_from": prior_att_folder.parent.name, "config_fingerprint": att_fingerprint}
 
                     auth_roi_path = att_dir / "authentic_roi_zoomed.png"
                     sdxl_roi_path = att_dir / "sdxl_roi_zoomed.png"
@@ -1707,19 +1923,6 @@ def main() -> int:
                         "notes": "Reused prior verified attempt; awaiting human reviewer assessment.",
                     })
                     continue
-
-            auth_info = extracted_inputs.get(att_id)
-            if not auth_info:
-                print(f"[FAIL] Missing authentic input data for {att_id}")
-                has_failure = True
-                fail_receipt = {
-                    "attempt_id": att_id,
-                    "status": "FAILED",
-                    "error": f"Missing authentic input data for {att_id}",
-                    "traceback": "",
-                }
-                (att_dir / "failure_receipt.json").write_text(json.dumps(fail_receipt, indent=2), encoding="utf-8")
-                continue
 
             auth_img = Image.open(auth_info["authentic_path"]).convert("RGB")
             sdxl_img = Image.open(auth_info["sdxl_path"]).convert("RGB") if auth_info.get("sdxl_path") and auth_info["sdxl_path"].is_file() else None
@@ -1783,7 +1986,7 @@ def main() -> int:
                 mask_roi = crop_zoomed_roi(prep_res["native_mask"].convert("RGB"), target_bbox)
 
                 # Crop ROI from raw canvas around target box in canvas
-                t_box_canvas = prep_res["geometry_receipt"]["target_bbox_in_canvas"]
+                t_box_canvas = target_bbox_in_canvas(prep_res["geometry_receipt"])
                 raw_roi = crop_zoomed_roi(raw_canvas, t_box_canvas)
 
                 # Save ROI images
@@ -1797,6 +2000,9 @@ def main() -> int:
                 att_receipt = {
                     "attempt_id": att_id,
                     "status": "TECHNICAL_QC_PASS",
+                    "run_id": run_id,
+                    "config_fingerprint": att_fingerprint,
+                    "precision_policy": precision_info,
                     "operation": att["operation"],
                     "target_text": att["target_text"],
                     "seed": att["seed"],
@@ -1813,6 +2019,7 @@ def main() -> int:
                     "geometry_receipt": prep_res["geometry_receipt"],
                 }
                 (att_dir / "attempt_receipt.json").write_text(json.dumps(att_receipt, indent=2), encoding="utf-8")
+                attempt_statuses[att_id] = {"status": "TECHNICAL_QC_PASS", "config_fingerprint": att_fingerprint}
 
                 contact_sheet_items.append({
                     "id": att_id,
@@ -1840,14 +2047,14 @@ def main() -> int:
 
             except Exception as e:
                 has_failure = True
-                err_trace = traceback.format_exc()
-                print(f"[FAIL] Error in {att_id}: {e}")
-                fail_receipt = {
-                    "attempt_id": att_id,
-                    "status": "FAILED",
-                    "error": str(e),
-                    "traceback": err_trace,
-                }
+                print(f"[FAIL] Error in {att_id}: {type(e).__name__}: {e}")
+                fail_receipt = build_failure_receipt(
+                    "INFERENCE", e, attempt_id=att_id, run_id=run_id,
+                    extra={"precision_policy": precision_info, "config_fingerprint": att_fingerprint},
+                )
+                print(f"[FAIL] Failing frame: {fail_receipt['failure_site'].get('innermost_project_frame', {}).get('file')}:"
+                      f"{fail_receipt['failure_site'].get('innermost_project_frame', {}).get('line')}")
+                attempt_statuses[att_id] = {"status": "FAILED", "stage": "INFERENCE", "error_type": type(e).__name__}
                 (att_dir / "failure_receipt.json").write_text(json.dumps(fail_receipt, indent=2), encoding="utf-8")
 
         current_stage = "PACKAGING"
@@ -1883,20 +2090,14 @@ def main() -> int:
                 "traceback": "",
                 "timestamp": datetime.datetime.now().isoformat(),
             }
+            fail_rcpt["attempts"] = attempt_statuses
             (run_dir / "failure_receipt.json").write_text(json.dumps(fail_rcpt, indent=2), encoding="utf-8")
-            (output_root / "failure_receipt.json").write_text(json.dumps(fail_rcpt, indent=2), encoding="utf-8")
 
-            partial_zip = output_root / "anytext_feasibility_partial_results.zip"
-            package_results_zip(run_dir=run_dir, output_zip_path=partial_zip)
+            partial_zip = finalize_run(output_root, run_dir, run_id, "PARTIAL_FAILURE", plan_bytes_sha, current_stage, attempt_statuses, precision_info, args.run_label)
             print(f"\n[WARNING] Runner completed with partial failure. Partial archive created at: {partial_zip}")
             return 1
 
-        # Package full results into zip archive
-        zip_path = output_root / "anytext_feasibility_results.zip"
-        package_results_zip(run_dir=run_dir, output_zip_path=zip_path)
-
-        # Clear old root failure receipt if present
-        (output_root / "failure_receipt.json").unlink(missing_ok=True)
+        finalize_run(output_root, run_dir, run_id, "COMPLETE", plan_bytes_sha, current_stage, attempt_statuses, precision_info, args.run_label)
 
         print("\n[DONE] AnyText Feasibility Run executed successfully.")
         return 0
@@ -1910,25 +2111,21 @@ def main() -> int:
         print(f"Traceback:\n{err_tb}")
         print("=" * 80)
 
-        fail_info = {
-            "run_id": run_id if run_dir else "UNKNOWN",
-            "stage": current_stage,
-            "status": "FAILED",
-            "error": str(err),
-            "traceback": err_tb,
-            "timestamp": datetime.datetime.now().isoformat(),
-            "plan_sha256": plan_bytes_sha,
-        }
-        root_fail_receipt = output_root / "failure_receipt.json"
-        root_fail_receipt.write_text(json.dumps(fail_info, indent=2), encoding="utf-8")
+        fail_info = build_failure_receipt(
+            current_stage, err, run_id=run_id,
+            extra={"plan_sha256": plan_bytes_sha, "precision_policy": precision_info, "attempts": attempt_statuses},
+        )
         if run_dir and run_dir.is_dir():
             (run_dir / "failure_receipt.json").write_text(json.dumps(fail_info, indent=2), encoding="utf-8")
-            partial_zip = output_root / "anytext_feasibility_partial_results.zip"
             try:
-                package_results_zip(run_dir=run_dir, output_zip_path=partial_zip)
+                partial_zip = finalize_run(output_root, run_dir, run_id, "FAILED", plan_bytes_sha, current_stage, attempt_statuses, precision_info, args.run_label)
                 print(f"[INFO] Partial results archive created at: {partial_zip}")
             except Exception as zip_e:
                 print(f"[WARN] Failed to package partial archive: {zip_e}")
+        else:
+            # No run directory yet: unique name so earlier receipts are never overwritten.
+            stamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+            (output_root / f"failure_receipt_init_{stamp}.json").write_text(json.dumps(fail_info, indent=2), encoding="utf-8")
 
         return 1
 

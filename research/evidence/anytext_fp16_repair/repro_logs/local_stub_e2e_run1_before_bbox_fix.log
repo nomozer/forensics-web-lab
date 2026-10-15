@@ -1,0 +1,67 @@
+A matching Triton is not available, some optimizations will not be enabled.
+Error caught was: No module named 'triton'
+2026-10-15 22:58:21,490 - modelscope - INFO - PyTorch version 2.0.1+cu118 Found.
+2026-10-15 22:58:21,494 - modelscope - INFO - Loading ast index from C:\Users\Bunny\.cache\modelscope\ast_indexer
+2026-10-15 22:58:21,654 - modelscope - INFO - Loading done! Current index file version is 1.10.0, with md5 c65ddd96e7ec84665341adcb06daaba1 and a total number of 946 components indexed
+2026-10-15 22:58:24,291 - modelscope - WARNING - ('PIPELINES', 'my-anytext-task', 'anytext-pipeline') not found in ast index file
+Global seed set to 20261012
+=== ANYTEXT FEASIBILITY RUNNER: run_anytext_local_stub_e2e_20261015_225817_88f7e328 ===
+Plan Path: D:\Documents\forensics-web-lab\research\evidence\document_pilot\anytext_feasibility_plan.json (SHA-256: 88f7e32873ff4c4e...)
+Model Cache Dir: C:\Users\Bunny\AppData\Local\Temp\claude\d--Documents-forensics-web-lab\1382dfeb-471e-4be3-a794-5ec6a3239bca\scratchpad\.cache_modelscope (ISOLATED)
+--- Resolving Authentic Inputs ---
+[PASS] Archive SHA-256 verified: deadd9205207eaaa...
+[PASS] Extracted and verified authentic input for attempt_A_replacement_price: b335696aaeb1ba1a...
+[PASS] Extracted and verified authentic input for attempt_B_replacement_item_name: 77d047b9791ff466...
+CUDA Available: True (NVIDIA GeForce GTX 1650, VRAM: 4.0 GB)
+Disk Free: 63.36 GB
+Resolved Font: C:\Windows\Fonts\arial.ttf (SHA-256: b3658eadae55e682...)
+--- Downloading AnyText Model (Excluding Translator & Docs) ---
+--- Initializing AnyText Pipeline from Local Weights ---
+[PASS] fp16 attention path: xformers 0.0.20 active (policy fp16-weights-xformers-0.0.20-no-autocast-v1).
+ControlLDM: Running in eps-prediction mode
+Setting up MemoryEfficientCrossAttention. Query dim is 320, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 320, context_dim is 768 and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 320, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 320, context_dim is 768 and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 640, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 640, context_dim is 768 and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 640, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 640, context_dim is 768 and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 1280, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 1280, context_dim is 768 and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 1280, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 1280, context_dim is 768 and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 1280, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 1280, context_dim is 768 and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 1280, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 1280, context_dim is 768 and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 1280, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 1280, context_dim is 768 and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 1280, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 1280, context_dim is 768 and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 640, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 640, context_dim is 768 and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 640, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 640, context_dim is 768 and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 640, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 640, context_dim is 768 and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 320, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 320, context_dim is 768 and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 320, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 320, context_dim is 768 and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 320, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 320, context_dim is 768 and using 8 heads.
+DiffusionWrapper has 859.52 M params.
+making attention of type 'vanilla-xformers' with 512 in_channels
+building MemoryEfficientAttnBlock with 512 in_channels...
+Working with z of shape (1, 4, 32, 32) = 4096 dimensions.
+making attention of type 'vanilla-xformers' with 512 in_channels
+building MemoryEfficientAttnBlock with 512 in_channels...
+Setting up MemoryEfficientCrossAttention. Query dim is 320, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 320, context_dim is 768 and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 320, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 320, context_dim is 768 and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 640, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 640, context_dim is 768 and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 640, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Qu

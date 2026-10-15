@@ -1,0 +1,81 @@
+2026-10-15 22:37:22,709 - modelscope - INFO - PyTorch version 2.0.1+cu118 Found.
+2026-10-15 22:37:22,713 - modelscope - INFO - Loading ast index from C:\Users\Bunny\.cache\modelscope\ast_indexer
+2026-10-15 22:37:22,713 - modelscope - INFO - No valid ast index found from C:\Users\Bunny\.cache\modelscope\ast_indexer, generating ast index from prebuilt!
+2026-10-15 22:37:23,152 - modelscope - INFO - Loading done! Current index file version is 1.10.0, with md5 c65ddd96e7ec84665341adcb06daaba1 and a total number of 946 components indexed
+2026-10-15 22:37:27,526 - modelscope - WARNING - ('PIPELINES', 'my-anytext-task', 'anytext-pipeline') not found in ast index file
+Global seed set to 20261012
+No module 'xformers'. Proceeding without it.
+ControlLDM: Running in eps-prediction mode
+DiffusionWrapper has 859.52 M params.
+making attention of type 'vanilla' with 512 in_channels
+Working with z of shape (1, 4, 32, 32) = 4096 dimensions.
+making attention of type 'vanilla' with 512 in_channels
+Loaded model config from [models_yaml/anytext_sd15.yaml]
+Loaded state_dict from [C:/Users/Bunny/AppData/Local/Temp/claude/d--Documents-forensics-web-lab/1382dfeb-471e-4be3-a794-5ec6a3239bca/scratchpad/repro/ms_model\anytext_v1.1.ckpt]
+Original weights loaded!
+PIPELINE_INIT_OK
+Data shape for DDIM sampling is (1, 4, 64, 64), eta 0.0
+Running DDIM Sampling with 20 timesteps
+DDIM Sampler:   0%|          | 0/20 [00:00<?, ?it/s]DDIM Sampler:   0%|          | 0/20 [00:01<?, ?it/s]
+Traceback (most recent call last):
+  File "C:\Users\Bunny\AppData\Local\Temp\claude\d--Documents-forensics-web-lab\1382dfeb-471e-4be3-a794-5ec6a3239bca\scratchpad\repro\repro_infer.py", line 17, in <module>
+    out = runner.run_anytext_inference(pipe=pipe, ori_image_canvas=prep["ori_image_canvas"], draw_pos_canvas=prep["draw_pos_canvas"], prompt=att["prompt"], target_text=att["target_text"], seed=att["seed"], sampling_params=att["sampling_parameters"], a_prompt=att["a_prompt"], n_prompt=att["n_prompt"])
+  File "D:\Documents\forensics-web-lab\scripts\research\run_anytext_colab.py", line 1338, in run_anytext_inference
+    results, rtn_code, rtn_warning, debug_info = pipe(input_data, **forward_params)
+  File "C:\Users\Bunny\AppData\Local\Temp\claude\d--Documents-forensics-web-lab\1382dfeb-471e-4be3-a794-5ec6a3239bca\scratchpad\anytext_env\lib\site-packages\modelscope\pipelines\base.py", line 219, in __call__
+    output = self._process_single(input, *args, **kwargs)
+  File "C:\Users\Bunny\AppData\Local\Temp\claude\d--Documents-forensics-web-lab\1382dfeb-471e-4be3-a794-5ec6a3239bca\scratchpad\anytext_env\lib\site-packages\modelscope\pipelines\base.py", line 254, in _process_single
+    out = self.forward(out, **forward_params)
+  File "C:\Users\Bunny\.cache\modelscope\modelscope_modules\ms_model\ms_wrapper.py", line 493, in forward
+    return super().forward(inputs, **forward_params)
+  File "C:\Users\Bunny\AppData\Local\Temp\claude\d--Documents-forensics-web-lab\1382dfeb-471e-4be3-a794-5ec6a3239bca\scratchpad\anytext_env\lib\site-packages\modelscope\pipelines\base.py", line 397, in forward
+    return self.model(inputs, **forward_params)
+  File "C:\Users\Bunny\AppData\Local\Temp\claude\d--Documents-forensics-web-lab\1382dfeb-471e-4be3-a794-5ec6a3239bca\scratchpad\anytext_env\lib\site-packages\modelscope\models\base\base_torch_model.py", line 36, in __call__
+    return self.postprocess(self.forward(*args, **kwargs))
+  File "C:\Users\Bunny\.cache\modelscope\modelscope_modules\ms_model\ms_wrapper.py", line 224, in forward
+    samples, intermediates = self.ddim_sampler.sample(ddim_steps, img_count,
+  File "C:\Users\Bunny\AppData\Local\Temp\claude\d--Documents-forensics-web-lab\1382dfeb-471e-4be3-a794-5ec6a3239bca\scratchpad\anytext_env\lib\site-packages\torch\utils\_contextlib.py", line 115, in decorate_context
+    return func(*args, **kwargs)
+  File "C:\Users\Bunny\AppData\Local\Temp\claude\d--Documents-forensics-web-lab\1382dfeb-471e-4be3-a794-5ec6a3239bca\scratchpad\AnyText\.\cldm\ddim_hacked.py", line 103, in sample
+    samples, intermediates = self.ddim_sampling(conditioning, size,
+  File "C:\Users\Bunny\AppData\Local\Temp\claude\d--Documents-forensics-web-lab\1382dfeb-471e-4be3-a794-5ec6a3239bca\scratchpad\anytext_env\lib\site-packages\torch\utils\_contextlib.py", line 115, in decorate_context
+    return func(*args, **kwargs)
+  File "C:\Users\Bunny\AppData\Local\Temp\claude\d--Documents-forensics-web-lab\1382dfeb-471e-4be3-a794-5ec6a3239bca\scratchpad\AnyText\.\cldm\ddim_hacked.py", line 163, in ddim_sampling
+    outs = self.p_sample_ddim(img, cond, ts, index=index, use_original_steps=ddim_use_original_steps,
+  File "C:\Users\Bunny\AppData\Local\Temp\claude\d--Documents-forensics-web-lab\1382dfeb-471e-4be3-a794-5ec6a3239bca\scratchpad\anytext_env\lib\site-packages\torch\utils\_contextlib.py", line 115, in decorate_context
+    return func(*args, **kwargs)
+  File "C:\Users\Bunny\AppData\Local\Temp\claude\d--Documents-forensics-web-lab\1382dfeb-471e-4be3-a794-5ec6a3239bca\scratchpad\AnyText\.\cldm\ddim_hacked.py", line 190, in p_sample_ddim
+    model_t = self.model.apply_model(x, t, c)
+  File "C:\Users\Bunny\AppData\Local\Temp\claude\d--Documents-forensics-web-lab\1382dfeb-471e-4be3-a794-5ec6a3239bca\scratchpad\AnyText\.\cldm\cldm.py", line 446, in apply_model
+    control = self.control_model(x=x_noisy, timesteps=t, context=_cond, hint=_hint, text_info=cond['text_info'])
+  File "C:\Users\Bunny\AppData\Local\Temp\claude\d--Documents-forensics-web-lab\1382dfeb-471e-4be3-a794-5ec6a3239bca\scratchpad\anytext_env\lib\site-packages\torch\nn\modules\module.py", line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "C:\Users\Bunny\AppData\Local\Temp\claude\d--Documents-forensics-web-lab\1382dfeb-471e-4be3-a794-5ec6a3239bca\scratchpad\AnyText\.\cldm\cldm.py", line 340, in forward
+    h = module(h, emb, context)
+  File "C:\Users\Bunny\AppData\Local\Temp\claude\d--Documents-forensics-web-lab\1382dfeb-471e-4be3-a794-5ec6a3239bca\scratchpad\anytext_env\lib\site-packages\torch\nn\modules\module.py", line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "C:\Users\Bunny\AppData\Local\Temp\claude\d--Documents-forensics-web-lab\1382dfeb-471e-4be3-a794-5ec6a3239bca\scratchpad\AnyText\.\ldm\modules\diffusionmodules\openaimodel.py", line 84, in forward
+    x = layer(x, context)
+  File "C:\Users\Bunny\AppData\Local\Temp\claude\d--Documents-forensics-web-lab\1382dfeb-471e-4be3-a794-5ec6a3239bca\scratchpad\anytext_env\lib\site-packages\torch\nn\modules\module.py", line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "C:\Users\Bunny\AppData\Local\Temp\claude\d--Documents-forensics-web-lab\1382dfeb-471e-4be3-a794-5ec6a3239bca\scratchpad\AnyText\.\ldm\modules\attention.py", line 334, in forward
+    x = block(x, context=context[i])
+  File "C:\Users\Bunny\AppData\Local\Temp\claude\d--Documents-forensics-web-lab\1382dfeb-471e-4be3-a794-5ec6a3239bca\scratchpad\anytext_env\lib\site-packages\torch\nn\modules\module.py", line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "C:\Users\Bunny\AppData\Local\Temp\claude\d--Documents-forensics-web-lab\1382dfeb-471e-4be3-a794-5ec6a3239bca\scratchpad\AnyText\.\ldm\modules\attention.py", line 269, in forward
+    return checkpoint(self._forward, (x, context), self.parameters(), self.checkpoint)
+  File "C:\Users\Bunny\AppData\Local\Temp\claude\d--Documents-forensics-web-lab\1382dfeb-471e-4be3-a794-5ec6a3239bca\scratchpad\AnyText\.\ldm\modules\diffusionmodules\util.py", line 114, in checkpoint
+    return CheckpointFunction.apply(func, len(inputs), *args)
+  File "C:\Users\Bunny\AppData\Local\Temp\claude\d--Documents-forensics-web-lab\1382dfeb-471e-4be3-a794-5ec6a3239bca\scratchpad\anytext_env\lib\site-packages\torch\autograd\function.py", line 506, in apply
+    return super().apply(*args, **kwargs)  # type: ignore[misc]
+  File "C:\Users\Bunny\AppData\Local\Temp\claude\d--Documents-forensics-web-lab\1382dfeb-471e-4be3-a794-5ec6a3239bca\scratchpad\AnyText\.\ldm\modules\diffusionmodules\util.py", line 129, in forward
+    output_tensors = ctx.run_function(*ctx.input_tensors)
+  File "C:\Users\Bunny\AppData\Local\Temp\claude\d--Documents-forensics-web-lab\1382dfeb-471e-4be3-a794-5ec6a3239bca\scratchpad\AnyText\.\ldm\modules\attention.py", line 272, in _forward
+    x = self.attn1(self.norm1(x), context=context if self.disable_self_attn else None) + x
+  File "C:\Users\Bunny\AppData\Local\Temp\claude\d--Documents-forensics-web-lab\1382dfeb-471e-4be3-a794-5ec6a3239bca\scratchpad\anytext_env\lib\site-packages\torch\nn\modules\module.py", line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "C:\Users\Bunny\AppData\Local\Temp\claude\d--Documents-forensics-web-lab\1382dfeb-471e-4be3-a794-5ec6a3239bca\scratchpad\AnyText\.\ldm\modules\attention.py", line 192, in forward
+    out = einsum('b i j, b j d -> b i d', sim, v)
+  File "C:\Users\Bunny\AppData\Local\Temp\claude\d--Documents-forensics-web-lab\1382dfeb-471e-4be3-a794-5ec6a3239bca\scratchpad\anytext_env\lib\site-packages\torch\functional.py", line 378, in einsum
+    return _VF.einsum(equation, operands)  # type: ignore[attr-defined]
+RuntimeError: expected scalar type Half but found Float

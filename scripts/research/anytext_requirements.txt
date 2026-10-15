@@ -1,0 +1,30 @@
+# AnyText inference environment (Python 3.10, isolated venv). Single source of truth.
+# torch/torchvision are installed first from the cu118 index by anytext_colab_setup.py
+# (torch==2.0.1, torchvision==0.15.2) and are intentionally not listed here.
+numpy==1.23.3
+Pillow==9.5.0
+torchmetrics==0.11.4
+pytorch-lightning==1.5.0
+omegaconf==2.2.3
+einops==0.4.1
+opencv-python==4.7.0.72
+transformers==4.30.2
+open_clip_torch==2.7.0
+modelscope==1.10.0
+addict==2.4.0
+yapf==0.32.0
+timm==0.6.7
+safetensors==0.4.0
+easydict==1.10
+scikit-image==0.20.0
+scipy==1.10.1
+six==1.16.0
+tqdm==4.66.1
+ujson==5.9.0
+# diffusers 0.10.2 imports huggingface_hub.cached_download (removed in >=0.26); lora_util imports diffusers.
+diffusers==0.10.2
+huggingface_hub==0.25.2
+sentencepiece==0.1.99
+# upstream environment.yaml pin; selects MemoryEfficientCrossAttention (fp16-safe). Without it the
+# default fp32 attention upcast raises "expected scalar type Half but found Float" under model.half().
+xformers==0.0.20

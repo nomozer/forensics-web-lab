@@ -1,0 +1,69 @@
+2026-10-15 22:45:02,036 - modelscope - INFO - PyTorch version 2.0.1+cu118 Found.
+2026-10-15 22:45:02,040 - modelscope - INFO - Loading ast index from C:\Users\Bunny\.cache\modelscope\ast_indexer
+2026-10-15 22:45:02,258 - modelscope - INFO - Loading done! Current index file version is 1.10.0, with md5 c65ddd96e7ec84665341adcb06daaba1 and a total number of 946 components indexed
+A matching Triton is not available, some optimizations will not be enabled.
+Error caught was: No module named 'triton'
+2026-10-15 22:45:06,210 - modelscope - WARNING - ('PIPELINES', 'my-anytext-task', 'anytext-pipeline') not found in ast index file
+Global seed set to 20261012
+ControlLDM: Running in eps-prediction mode
+Setting up MemoryEfficientCrossAttention. Query dim is 320, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 320, context_dim is 768 and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 320, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 320, context_dim is 768 and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 640, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 640, context_dim is 768 and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 640, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 640, context_dim is 768 and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 1280, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 1280, context_dim is 768 and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 1280, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 1280, context_dim is 768 and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 1280, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 1280, context_dim is 768 and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 1280, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 1280, context_dim is 768 and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 1280, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 1280, context_dim is 768 and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 1280, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 1280, context_dim is 768 and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 640, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 640, context_dim is 768 and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 640, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 640, context_dim is 768 and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 640, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 640, context_dim is 768 and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 320, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 320, context_dim is 768 and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 320, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 320, context_dim is 768 and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 320, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 320, context_dim is 768 and using 8 heads.
+DiffusionWrapper has 859.52 M params.
+making attention of type 'vanilla-xformers' with 512 in_channels
+building MemoryEfficientAttnBlock with 512 in_channels...
+Working with z of shape (1, 4, 32, 32) = 4096 dimensions.
+making attention of type 'vanilla-xformers' with 512 in_channels
+building MemoryEfficientAttnBlock with 512 in_channels...
+Setting up MemoryEfficientCrossAttention. Query dim is 320, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 320, context_dim is 768 and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 320, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 320, context_dim is 768 and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 640, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 640, context_dim is 768 and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 640, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 640, context_dim is 768 and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 1280, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 1280, context_dim is 768 and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 1280, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 1280, context_dim is 768 and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 1280, context_dim is None and using 8 heads.
+Setting up MemoryEfficientCrossAttention. Query dim is 1280, context_dim is 768 and using 8 heads.
+Loaded model config from [models_yaml/anytext_sd15.yaml]
+Loaded state_dict from [C:/Users/Bunny/AppData/Local/Temp/claude/d--Documents-forensics-web-lab/1382dfeb-471e-4be3-a794-5ec6a3239bca/scratchpad/repro/ms_model\anytext_v1.1.ckpt]
+Original weights loaded!
+PIPELINE_INIT_OK
+Data shape for DDIM sampling is (1, 4, 64, 64), eta 0.0
+Running DDIM Sampling with 20 timesteps
+DDIM Sampler:   0%|          | 0/20 [00:00<?, ?it/s]DDIM Sampler:   5%|▌         | 1/20 [00:10<03:27, 10.90s/it]DDIM Sampler:  10%|█         | 2/20 [00:21<03:15, 10.83s/it]DDIM Sampler:  15%|█▌        | 3/20 [00:32<03:04, 10.86s/it]DDIM Sampler:  20%|██        | 4/20 [00:43<02:54, 10.89s/it]DDIM Sampler:  25%|██▌       | 5/20 [00:54<02:41, 10.80s/it]DDIM Sampler:  30%|███       | 6/20 [01:04<02:31, 10.80s/it]DDIM Sampler:  35%|███▌      | 7/20 [01:15<02:18, 10.63s/it]DDIM Sampler:  40%|████      | 8/20 [01:25<02:06, 10.51s/it]DDIM Sampler:  45%|████▌     | 9/20 [01:35<01:54, 10.44s/it]DDIM Sampler:  50%|█████     | 10/20 [01:46<01:44, 10.42s/it]DDIM Sampler:  55%|█████▌    | 11/20 [01:56<01:34, 10.52s/it]DDIM Sampler:  60%|██████    | 12/20 [02:07<01:23, 10.48s/it]DDIM Sampler:  65%|██████▌   | 13/20 [02:17<01:13, 10.48s/it]DDIM Sampler:  70%|███████   | 14/20 [02:28<01:02, 10.45s/it]DDIM Sampler:  75%|███████▌  | 15/20 [02:38<00:52, 10.41s/it]DDIM Sampler:  80%|████████  | 16/20 [02:48<00:41, 10.40s/it]DDIM Sampler:  85%|████████▌ | 17/20 [02:58<00:30, 10.31s/it]DDIM Sampler:  90%|█████████ | 18/20 [03:09<00:20, 10.29s/it]DDIM Sampler:  95%|█████████▌| 19/20 [03:19<00:10, 10.28s/it]DDIM Sampler: 100%|██████████| 20/20 [03:29<00:00, 10.33s/it]DDIM Sampler: 100%|██████████| 20/20 [03:29<00:00, 10.50s/it]
+Prompt: A receipt bill with price  "350,000" 
+INFERENCE_OK 229.55595564842224 {'latency_sec': 229.56, 'rtn_code': 0, 'rtn_warning': '', 'peak_vram_mb': 6630.11}

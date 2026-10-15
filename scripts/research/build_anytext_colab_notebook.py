@@ -1,451 +1,165 @@
 #!/usr/bin/env python3
-"""Canonical AnyText Colab Notebook Builder.
+"""Builds the short AnyText Colab launcher notebook.
 
-Generates `notebooks/independent_anytext_feasibility_colab.ipynb` embedding
-the canonical plan and verified runner for executing Attempt A and B on Colab T4.
-Uses a dedicated Python 3.10 environment to match AnyText upstream environment.yaml.
-Inputs are loaded strictly from the verified SDXL pilot archive.
+The notebook embeds no code payloads. It fetches this repository at a full commit SHA (never a branch head),
+verifies the SHA-256 of every pinned source file, and calls scripts/research/anytext_colab_setup.py.
+
+Usage:  python scripts/research/build_anytext_colab_notebook.py --source-commit <40-hex SHA>
+
+The builder refuses a commit whose pinned files differ from the working tree, so the notebook can never
+point at stale sources. Rebuild (and re-verify) after the last change to any pinned file.
 """
 
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
+import re
+import subprocess
 from pathlib import Path
-
+from typing import Dict, List
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 NOTEBOOK_PATH = REPO_ROOT / "notebooks" / "independent_anytext_feasibility_colab.ipynb"
-PLAN_PATH = REPO_ROOT / "research" / "evidence" / "document_pilot" / "anytext_feasibility_plan.json"
-RUNNER_PATH = REPO_ROOT / "scripts" / "research" / "run_anytext_colab.py"
-ADAPTER_PATH = REPO_ROOT / "ml" / "evaluation" / "anytext_document_adapter.py"
-GEOMETRY_PATH = REPO_ROOT / "ml" / "evaluation" / "document_feasibility_geometry.py"
+PLAN_REL = "research/evidence/document_pilot/anytext_feasibility_plan.json"
+PINNED_FILES: List[str] = [
+    "scripts/research/run_anytext_colab.py",
+    "scripts/research/anytext_colab_setup.py",
+    "scripts/research/anytext_requirements.txt",
+    "ml/evaluation/anytext_document_adapter.py",
+    "ml/evaluation/document_feasibility_geometry.py",
+    PLAN_REL,
+]
+SPARSE_DIRS = ["scripts/research", "ml/evaluation", "research/evidence/document_pilot"]
+ARCHIVE_NAME = "document_feasibility_results.zip"
 
 
-def build_notebook() -> None:
-    """Builds canonical Colab notebook for AnyText."""
-    # Read strict UTF-8 bytes to ensure byte-exact SHA-256 invariance
-    plan_bytes = PLAN_PATH.read_bytes()
-    runner_bytes = RUNNER_PATH.read_bytes()
-    adapter_bytes = ADAPTER_PATH.read_bytes()
-    geom_bytes = GEOMETRY_PATH.read_bytes()
+def _sha256(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
 
-    plan_sha = hashlib.sha256(plan_bytes).hexdigest()
-    runner_sha = hashlib.sha256(runner_bytes).hexdigest()
-    adapter_sha = hashlib.sha256(adapter_bytes).hexdigest()
-    geom_sha = hashlib.sha256(geom_bytes).hexdigest()
 
-    plan_text = plan_bytes.decode("utf-8")
-    runner_text = runner_bytes.decode("utf-8")
-    adapter_text = adapter_bytes.decode("utf-8")
-    geom_text = geom_bytes.decode("utf-8")
+def pinned_hashes(source_commit: str, repo_root: Path = REPO_ROOT) -> Dict[str, str]:
+    """SHA-256 of each pinned file at `source_commit`; raises if it differs from the working tree."""
+    if not re.fullmatch(r"[0-9a-f]{40}", source_commit):
+        raise SystemExit(f"--source-commit must be a full 40-hex SHA, got {source_commit!r}")
+    hashes: Dict[str, str] = {}
+    for rel in PINNED_FILES:
+        blob = subprocess.run(
+            ["git", "show", f"{source_commit}:{rel}"], cwd=repo_root, capture_output=True, check=False
+        )
+        if blob.returncode != 0:
+            raise SystemExit(f"{rel} does not exist at {source_commit}")
+        working = (repo_root / rel).read_bytes()
+        if _sha256(blob.stdout) != _sha256(working):
+            raise SystemExit(f"{rel} differs between {source_commit[:12]} and the working tree; commit it and pass that SHA")
+        hashes[rel] = _sha256(blob.stdout)
+    return hashes
 
-    cells = [
-        {
-            "cell_type": "markdown",
-            "metadata": {},
-            "source": [
-                "# AnyText Document Generation Feasibility Study (Colab GPU)\n",
-                "\n",
-                "**Mục tiêu**: Đánh giá thực nghiệm editor chuyên biệt văn bản **AnyText** (ICLR 2024 Spotlight) trên đúng 2 nguồn thay thế chữ/số (Attempt A & B) từ pilot SDXL đã đóng.\n",
-                "- **Checkpoint**: `damo/cv_anytext_text_generation_editing` (ModelScope v1.1.3, ~6.93 GiB FP16; tắt và loại bỏ translator để bảo toàn ngân sách 12 GiB; tích hợp bản sửa downloader đối chiếu `Size` + `SHA-256` theo metadata chính thức khi thiếu `Content-Length` và tái sử dụng cache checkpoint hợp lệ).\n",
-                "- **Môi trường Python**: Thiết lập môi trường Python 3.10 riêng biệt (`/content/anytext_env`) khớp hoàn toàn `environment.yaml` upstream; không can thiệp Python hệ thống của Colab (Python 3.13) và không nâng packages lên latest.\n",
-                "- **Dữ liệu đầu vào**: Tải trực tiếp từ archive SDXL đã có (`document_feasibility_results.zip`, SHA-256 `deadd9205207...`). Không tải lại shard CORD parquet.\n",
-                "- **Bảo toàn hình học**: Native dimensions, context crop 512x512, strict composite inside target bbox, kiểm tra bitwise outside-mask equality.\n",
-                "- **Yêu cầu môi trường**: Google Colab GPU (Tesla T4 miễn phí, >= 15 GB disk, zero-token, zero-login).\n",
-                "\n",
-                "### Cấu trúc và Thứ tự Thực thi Notebook (Tổng cộng 7 cells: 1 Markdown + 6 Code cells):\n",
-                "- **Cell 0 [Markdown]**: Tổng quan mục tiêu, thông số checkpoint, môi trường và hướng dẫn thực thi.\n",
-                "- **Cell 1 [Code]**: Hardware Preflight & Disk Inspection (Xác minh GPU VRAM >= 7 GB, Disk >= 12 GB).\n",
-                "- **Cell 2 [Code]**: Setup Dedicated Python 3.10 Runtime, Clone AnyText & Verify Dependencies (Cài đặt môi trường Python 3.10 cô lập, pip check 0 lỗi, smoke test modules & functional glyph/position guidance).\n",
-                "- **Cell 3 [Code]**: Staging Geometry Modules, Runner & Plan with Bit-Exact Verification (Staging 4 files với SHA-256 đối soát bit-exact, đã tích hợp sẵn bản sửa ModelScope 1.10.0 downloader).\n",
-                "- **Cell 4 [Code]**: Upload and Verify SDXL Feasibility Archive (Tải lên document_feasibility_results.zip, SHA-256 deadd9205207...).\n",
-                "- **Cell 5 [Code]**: Execute AnyText Feasibility Runner using Dedicated Python 3.10 Environment (Chạy python -u run_anytext_colab.py, stream log trực tiếp, bắt lỗi stage chi tiết, tạo failure receipt và partial results zip nếu lỗi).\n",
-                "- **Cell 6 [Code]**: Visual Inspection & Download Whitelisted Results Archive (Hiển thị contact sheet và tải về kết quả <= 100 MiB)."
-            ]
-        },
-        {
-            "cell_type": "code",
-            "execution_count": None,
-            "metadata": {},
-            "outputs": [],
-            "source": [
-                "# Cell 1: Hardware Preflight & Disk Inspection\n",
-                "import torch, shutil, os\n",
-                "\n",
-                "assert torch.cuda.is_available(), 'ERROR: GPU runtime required! Please enable GPU via Runtime -> Change runtime type.'\n",
-                "gpu_name = torch.cuda.get_device_name(0)\n",
-                "vram_gb = round(torch.cuda.get_device_properties(0).total_memory / (1024**3), 2)\n",
-                "disk_free_gb = round(shutil.disk_usage('/').free / (1024**3), 2)\n",
-                "\n",
-                "print(f'[PASS] GPU Detected: {gpu_name} (VRAM: {vram_gb} GB)')\n",
-                "print(f'[PASS] Disk Free: {disk_free_gb} GB (Requires >= 15 GB for ModelScope download)')\n",
-                "assert vram_gb >= 7.0, f'VRAM {vram_gb} GB is insufficient for AnyText (requires >= 7 GB).'\n",
-                "assert disk_free_gb >= 12.0, f'Disk space {disk_free_gb} GB is insufficient for 6.93 GiB checkpoint.'"
-            ]
-        },
-        {
-            "cell_type": "code",
-            "execution_count": None,
-            "metadata": {},
-            "outputs": [],
-            "source": [
-                "# Cell 2: Setup Dedicated Python 3.10 Runtime, Clone AnyText & Verify Dependencies\n",
-                "import os, pathlib, shutil, subprocess, sys\n",
-                "\n",
-                "# 1. Install system font\n",
-                "subprocess.run(['apt-get', 'update', '-qq'], check=False, stdout=subprocess.DEVNULL)\n",
-                "subprocess.run(['apt-get', 'install', '-y', '-qq', 'fonts-dejavu-core'], check=False)\n",
-                "\n",
-                "# 2. Clone AnyText official repository to absolute path /content/AnyText and checkout locked commit\n",
-                "anytext_repo_dir = pathlib.Path('/content/AnyText')\n",
-                "locked_commit = '3d4a260c67d92c0e27d6e18ed69990e19a40de6d'\n",
-                "if not (anytext_repo_dir / '.git').is_dir():\n",
-                "    print(f'[INFO] Cloning AnyText repository into {anytext_repo_dir}...')\n",
-                "    subprocess.run(['git', 'clone', 'https://github.com/tyxsspa/AnyText.git', str(anytext_repo_dir)], check=True)\n",
-                "\n",
-                "subprocess.run(['git', 'checkout', locked_commit], cwd=str(anytext_repo_dir), check=True)\n",
-                "head_commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=str(anytext_repo_dir)).decode('utf-8').strip()\n",
-                "assert head_commit == locked_commit, f'Git commit mismatch! Expected {locked_commit}, got {head_commit}'\n",
-                "os.chdir(str(anytext_repo_dir))\n",
-                "print(f'[PASS] AnyText codebase verified at absolute path {anytext_repo_dir} (commit: {head_commit})')\n",
-                "\n",
-                "# 3. Create isolated Python 3.10 environment (/content/anytext_env)\n",
-                "# Host Python on Colab may be 3.13; we explicitly target Python 3.10\n",
-                "env_dir = pathlib.Path('/content/anytext_env')\n",
-                "py_bin = env_dir / 'bin' / 'python'\n",
-                "pip_bin = env_dir / 'bin' / 'pip'\n",
-                "\n",
-                "if not py_bin.is_file():\n",
-                "    py310_sys = shutil.which('python3.10')\n",
-                "    if not py310_sys:\n",
-                "        print('[INFO] Installing python3.10 and python3.10-venv from deadsnakes PPA...')\n",
-                "        subprocess.run(['apt-get', 'install', '-y', '-qq', 'software-properties-common'], check=False, stdout=subprocess.DEVNULL)\n",
-                "        subprocess.run(['add-apt-repository', '-y', 'ppa:deadsnakes/ppa'], check=False, stdout=subprocess.DEVNULL)\n",
-                "        subprocess.run(['apt-get', 'update', '-qq'], check=False, stdout=subprocess.DEVNULL)\n",
-                "        subprocess.run(['apt-get', 'install', '-y', '-qq', 'python3.10', 'python3.10-venv', 'python3.10-dev'], check=False)\n",
-                "        py310_sys = shutil.which('python3.10')\n",
-                "\n",
-                "    if py310_sys:\n",
-                "        print(f'[INFO] Creating virtualenv using system {py310_sys}...')\n",
-                "        subprocess.run([py310_sys, '-m', 'venv', str(env_dir)], check=True)\n",
-                "    else:\n",
-                "        print('[INFO] System python3.10 not found. Bootstrapping standalone Python 3.10 via uv...')\n",
-                "        subprocess.run([sys.executable, '-m', 'pip', 'install', '-q', 'uv'], check=True)\n",
-                "        subprocess.run(['uv', 'venv', str(env_dir), '--python', '3.10', '--seed'], check=True)\n",
-                "\n",
-                "assert py_bin.is_file(), f'Dedicated Python 3.10 binary failed to create at {py_bin}'\n",
-                "py_ver = subprocess.check_output([str(py_bin), '--version']).decode('utf-8').strip()\n",
-                "print(f'[PASS] Dedicated Python environment verified: {py_ver} at {py_bin}')\n",
-                "assert '3.10' in py_ver, f'Expected Python 3.10 environment, but found {py_ver}! Refusing to proceed.'\n",
-                "\n",
-                "# 4. Lock installer toolchain versions (avoid unverified latest upgrades)\n",
-                "print('[INFO] Locking installer versions (pip==23.3.2, setuptools==68.2.2, wheel==0.42.0)...')\n",
-                "subprocess.run([str(pip_bin), 'install', 'pip==23.3.2', 'setuptools==68.2.2', 'wheel==0.42.0'], check=True)\n",
-                "\n",
-                "# 5. Install PyTorch 2.0.1 (CUDA 11.8) matching upstream environment.yaml\n",
-                "print('[INFO] Installing PyTorch 2.0.1 (CUDA 11.8) matching upstream environment.yaml...')\n",
-                "subprocess.run([\n",
-                "    str(pip_bin), 'install',\n",
-                "    'torch==2.0.1', 'torchvision==0.15.2',\n",
-                "    '--index-url', 'https://download.pytorch.org/whl/cu118'\n",
-                "], check=True)\n",
-                "\n",
-                "# 6. Install locked AnyText inference dependencies from upstream environment.yaml & import graph\n",
-                "print('[INFO] Installing AnyText locked inference dependencies...')\n",
-                "deps = [\n",
-                "    'numpy==1.23.3',\n",
-                "    'Pillow==9.5.0',\n",
-                "    'torchmetrics==0.11.4',\n",
-                "    'pytorch-lightning==1.5.0',\n",
-                "    'omegaconf==2.2.3',\n",
-                "    'einops==0.4.1',\n",
-                "    'opencv-python==4.7.0.72',\n",
-                "    'transformers==4.30.2',\n",
-                "    'open_clip_torch==2.7.0',\n",
-                "    'modelscope==1.10.0',\n",
-                "    'addict==2.4.0',\n",
-                "    'yapf==0.32.0',\n",
-                "    'timm==0.6.7',\n",
-                "    'safetensors==0.4.0',\n",
-                "    'easydict==1.10',\n",
-                "    'scikit-image==0.20.0',\n",
-                "    'scipy==1.10.1',\n",
-                "    'six==1.16.0',\n",
-                "    'tqdm==4.66.1',\n",
-                "    'ujson==5.9.0'\n",
-                "]\n",
-                "subprocess.run([str(pip_bin), 'install'] + deps, check=True)\n",
-                "\n",
-                "# 7. pip check verification\n",
-                "print('[INFO] Executing pip check on dedicated environment...')\n",
-                "chk_res = subprocess.run([str(pip_bin), 'check'], capture_output=True, text=True)\n",
-                "print(chk_res.stdout)\n",
-                "if chk_res.stderr:\n",
-                "    print(chk_res.stderr)\n",
-                "assert chk_res.returncode == 0, f'pip check failed with dependency conflict:\\n{chk_res.stdout}\\n{chk_res.stderr}'\n",
-                "print('[PASS] pip check passed with 0 broken requirements.')\n",
-                "\n",
-                "# 8. Import Smoke Test and Functional Glyph/Position Guidance Test\n",
-                "print('[INFO] Executing import and functional smoke test in Python 3.10...')\n",
-                "smoke_code = (\n",
-                "    'import sys\\n'\n",
-                "    'print(f\"[SMOKE] Python interpreter: {sys.executable} ({sys.version})\")\\n'\n",
-                "    'assert \"3.10\" in sys.version, f\"Wrong python version: {sys.version}\"\\n'\n",
-                "    '\\n'\n",
-                "    'import torch, torchvision, numpy as np, PIL, pytorch_lightning as pl, torchmetrics, ujson\\n'\n",
-                "    'print(f\"[SMOKE] Package versions: torch={torch.__version__}, torchvision={torchvision.__version__}, numpy={np.__version__}, PIL={PIL.__version__}, pl={pl.__version__}, torchmetrics={torchmetrics.__version__}, ujson={ujson.__version__}\")\\n'\n",
-                "    'assert np.__version__ == \"1.23.3\", f\"numpy version mismatch: {np.__version__}\"\\n'\n",
-                "    'assert PIL.__version__ == \"9.5.0\", f\"PIL version mismatch: {PIL.__version__}\"\\n'\n",
-                "    'assert pl.__version__ == \"1.5.0\", f\"pl version mismatch: {pl.__version__}\"\\n'\n",
-                "    'assert torchmetrics.__version__ == \"0.11.4\", f\"torchmetrics version mismatch: {torchmetrics.__version__}\"\\n'\n",
-                "    'assert ujson.__version__ == \"5.9.0\", f\"ujson version mismatch: {ujson.__version__}\"\\n'\n",
-                "    'assert torch.__version__.startswith(\"2.0.1\"), f\"torch version mismatch: {torch.__version__}\"\\n'\n",
-                "    'assert torchvision.__version__.startswith(\"0.15.2\"), f\"torchvision version mismatch: {torchvision.__version__}\"\\n'\n",
-                "    '\\n'\n",
-                "    'assert torch.cuda.is_available(), \"CUDA is not available in PyTorch! Check Colab GPU runtime.\"\\n'\n",
-                "    'print(f\"[SMOKE CUDA] Device: {torch.cuda.get_device_name(0)}, CUDA version: {torch.version.cuda}\")\\n'\n",
-                "    '\\n'\n",
-                "    'import cv2, einops, omegaconf, transformers, open_clip, addict, yapf, timm, safetensors, easydict, skimage, six, tqdm, ujson, modelscope\\n'\n",
-                "    'from modelscope.pipelines import pipeline\\n'\n",
-                "    'import cldm.model, cldm.cldm, cldm.ddim_hacked, cldm.recognizer, t3_dataset, util, bert_tokenizer\\n'\n",
-                "    'print(\"[PASS] Import smoke test: 100% of required inference modules and AnyText submodules imported cleanly!\")\\n'\n",
-                "    '\\n'\n",
-                "    '# Functional Smoke Test: Generate glyph and position guidance with DejaVuSans for both target texts without loading checkpoint\\n'\n",
-                "    'from PIL import ImageFont\\n'\n",
-                "    'font_path = \"/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf\"\\n'\n",
-                "    'font = ImageFont.truetype(font_path, size=60)\\n'\n",
-                "    '\\n'\n",
-                "    '# Target 1: \"350,000\"\\n'\n",
-                "    't1 = \"350,000\"\\n'\n",
-                "    'g1 = t3_dataset.draw_glyph(font, t1)\\n'\n",
-                "    'assert g1.shape == (80, 512, 1), f\"Unexpected glyph shape: {g1.shape}\"\\n'\n",
-                "    'assert g1.sum() > 0, \"Target 1 glyph rasterization has 0 pixels!\"\\n'\n",
-                "    'poly1 = np.array([[100, 200], [300, 200], [300, 280], [100, 280]])\\n'\n",
-                "    'gp1 = t3_dataset.draw_glyph2(font, t1, poly1, width=512, height=512)\\n'\n",
-                "    'assert gp1.shape == (512, 512, 1), f\"Unexpected pos shape: {gp1.shape}\"\\n'\n",
-                "    'assert gp1.sum() > 0, \"Target 1 position guidance has 0 pixels!\"\\n'\n",
-                "    '\\n'\n",
-                "    '# Target 2: \"Magnum Gold Almond\"\\n'\n",
-                "    't2 = \"Magnum Gold Almond\"\\n'\n",
-                "    'g2 = t3_dataset.draw_glyph(font, t2)\\n'\n",
-                "    'assert g2.shape == (80, 512, 1), f\"Unexpected glyph shape: {g2.shape}\"\\n'\n",
-                "    'assert g2.sum() > 0, \"Target 2 glyph rasterization has 0 pixels!\"\\n'\n",
-                "    'poly2 = np.array([[50, 150], [450, 150], [450, 250], [50, 250]])\\n'\n",
-                "    'gp2 = t3_dataset.draw_glyph2(font, t2, poly2, width=512, height=512)\\n'\n",
-                "    'assert gp2.shape == (512, 512, 1), f\"Unexpected pos shape: {gp2.shape}\"\\n'\n",
-                "    'assert gp2.sum() > 0, \"Target 2 position guidance has 0 pixels!\"\\n'\n",
-                "    '\\n'\n",
-                "    'print(f\"[PASS] Functional smoke test passed: glyphs & position guidance generated for \\'{t1}\\' (glyph: {int(g1.sum())}, pos: {int(gp1.sum())}) and \\'{t2}\\' (glyph: {int(g2.sum())}, pos: {int(gp2.sum())}).\")\\n'\n",
-                ")\n",
-                "smoke_env = os.environ.copy()\n",
-                "smoke_env['PYTHONPATH'] = str(anytext_repo_dir)\n",
-                "smoke_res = subprocess.run([str(py_bin), '-c', smoke_code], capture_output=True, text=True, cwd=str(anytext_repo_dir), env=smoke_env)\n",
-                "print(smoke_res.stdout)\n",
-                "if smoke_res.stderr:\n",
-                "    print(smoke_res.stderr)\n",
-                "assert smoke_res.returncode == 0, f'Smoke test failed:\\n{smoke_res.stderr}'"
-            ]
-        },
-        {
-            "cell_type": "code",
-            "execution_count": None,
-            "metadata": {},
-            "outputs": [],
-            "source": [
-                "# Cell 3: Staging Geometry Modules, Runner & Plan with Bit-Exact Verification\n",
-                "import os, pathlib, hashlib\n",
-                "\n",
-                "repo_dir = pathlib.Path('/content/AnyText')\n",
-                "os.chdir(str(repo_dir))\n",
-                "\n",
-                "(repo_dir / 'ml/evaluation').mkdir(parents=True, exist_ok=True)\n",
-                "(repo_dir / 'research/evidence/document_pilot').mkdir(parents=True, exist_ok=True)\n",
-                "\n",
-                "p_plan = repo_dir / 'research/evidence/document_pilot/anytext_feasibility_plan.json'\n",
-                "p_plan.write_bytes(" + repr(plan_text) + ".encode('utf-8'))\n",
-                "assert hashlib.sha256(p_plan.read_bytes()).hexdigest() == '" + plan_sha + "', 'Plan SHA mismatch after staging!'\n",
-                "\n",
-                "p_geom = repo_dir / 'ml/evaluation/document_feasibility_geometry.py'\n",
-                "p_geom.write_bytes(" + repr(geom_text) + ".encode('utf-8'))\n",
-                "assert hashlib.sha256(p_geom.read_bytes()).hexdigest() == '" + geom_sha + "', 'Geometry SHA mismatch after staging!'\n",
-                "\n",
-                "p_adapt = repo_dir / 'ml/evaluation/anytext_document_adapter.py'\n",
-                "p_adapt.write_bytes(" + repr(adapter_text) + ".encode('utf-8'))\n",
-                "assert hashlib.sha256(p_adapt.read_bytes()).hexdigest() == '" + adapter_sha + "', 'Adapter SHA mismatch after staging!'\n",
-                "\n",
-                "p_runner = repo_dir / 'run_anytext_colab.py'\n",
-                "p_runner.write_bytes(" + repr(runner_text) + ".encode('utf-8'))\n",
-                "assert hashlib.sha256(p_runner.read_bytes()).hexdigest() == '" + runner_sha + "', 'Runner SHA mismatch after staging!'\n",
-                "\n",
-                "print('[PASS] Staged plan, geometry, adapter, and runner at /content/AnyText with bit-exact SHA-256 verification.')"
-            ]
-        },
-        {
-            "cell_type": "code",
-            "execution_count": None,
-            "metadata": {},
-            "outputs": [],
-            "source": [
-                "# Cell 4: Upload and Verify SDXL Feasibility Archive\n",
-                "# Archive contains authentic controls and SDXL pilot outputs from the closed pilot.\n",
-                "import hashlib, os, pathlib\n",
-                "from google.colab import files\n",
-                "\n",
-                "archive_name = 'document_feasibility_results.zip'\n",
-                "archive_path = pathlib.Path(f'/content/{archive_name}')\n",
-                "expected_archive_sha = 'deadd9205207eaaa296a8d9eeb493ee48eeea76ee7afd210684187e4026ed684'\n",
-                "\n",
-                "if not archive_path.is_file():\n",
-                "    print(f'Vui lòng tải lên tệp: {archive_name}')\n",
-                "    uploaded = files.upload()\n",
-                "    for fname, data in uploaded.items():\n",
-                "        if fname.endswith('.zip'):\n",
-                "            archive_path.write_bytes(data)\n",
-                "            break\n",
-                "\n",
-                "assert archive_path.is_file(), f'Không tìm thấy {archive_path}! Vui lòng upload archive SDXL.'\n",
-                "observed_sha = hashlib.sha256(archive_path.read_bytes()).hexdigest()\n",
-                "assert observed_sha == expected_archive_sha, f'Archive SHA mismatch! Expected {expected_archive_sha}, got {observed_sha}'\n",
-                "print(f'[PASS] Archive SDXL đã xác nhận: {archive_path} (SHA-256: {observed_sha[:16]}...)')"
-            ]
-        },
-        {
-            "cell_type": "code",
-            "execution_count": None,
-            "metadata": {},
-            "outputs": [],
-            "source": [
-                "# Cell 5: Execute AnyText Feasibility Runner using Dedicated Python 3.10 Environment\n",
-                "import json, os, pathlib, subprocess, sys\n",
-                "\n",
-                "repo_dir = pathlib.Path('/content/AnyText')\n",
-                "os.chdir(str(repo_dir))\n",
-                "\n",
-                "output_root = pathlib.Path('/content/outputs')\n",
-                "output_root.mkdir(parents=True, exist_ok=True)\n",
-                "log_path = output_root / 'runner_execution.log'\n",
-                "\n",
-                "py_bin = '/content/anytext_env/bin/python'\n",
-                "cmd = [\n",
-                "    py_bin, '-u', str(repo_dir / 'run_anytext_colab.py'),\n",
-                "    '--plan-path', str(repo_dir / 'research/evidence/document_pilot/anytext_feasibility_plan.json'),\n",
-                "    '--inputs-zip', '/content/document_feasibility_results.zip',\n",
-                "    '--output-root', str(output_root),\n",
-                "    '--cache-dir', '/content/modelscope_cache',\n",
-                "    '--custom-font', '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'\n",
-                "]\n",
-                "print('Bắt đầu thực thi AnyText Runner trên GPU bằng Python 3.10 (-u unbuffered)...')\n",
-                "print(f'Log file: {log_path}\\n')\n",
-                "\n",
-                "with open(log_path, 'w', encoding='utf-8') as log_f:\n",
-                "    proc = subprocess.Popen(\n",
-                "        cmd,\n",
-                "        cwd=str(repo_dir),\n",
-                "        stdout=subprocess.PIPE,\n",
-                "        stderr=subprocess.STDOUT,\n",
-                "        text=True,\n",
-                "        bufsize=1\n",
-                "    )\n",
-                "    for line in iter(proc.stdout.readline, ''):\n",
-                "        sys.stdout.write(line)\n",
-                "        sys.stdout.flush()\n",
-                "        log_f.write(line)\n",
-                "        log_f.flush()\n",
-                "    proc.wait()\n",
-                "\n",
-                "exit_code = proc.returncode\n",
-                "if exit_code != 0:\n",
-                "    print('\\n' + '=' * 80)\n",
-                "    print(f'[FAIL] Runner thất bại với exit code {exit_code}!')\n",
-                "    receipt_path = output_root / 'failure_receipt.json'\n",
-                "    if not receipt_path.is_file():\n",
-                "        sub_receipts = list(output_root.glob('*/failure_receipt.json'))\n",
-                "        if sub_receipts:\n",
-                "            receipt_path = sub_receipts[0]\n",
-                "    if receipt_path.is_file():\n",
-                "        try:\n",
-                "            rcpt = json.loads(receipt_path.read_text(encoding='utf-8'))\n",
-                "            print(f\"Stage gây lỗi: {rcpt.get('stage', 'UNKNOWN')}\")\n",
-                "            print(f\"Lỗi: {rcpt.get('error', 'UNKNOWN')}\")\n",
-                "            print(f\"Đường dẫn receipt: {receipt_path}\")\n",
-                "            print(f\"Đường dẫn log: {log_path}\")\n",
-                "            print('Traceback gốc:')\n",
-                "            print(rcpt.get('traceback', 'Không có traceback.'))\n",
-                "        except Exception as e:\n",
-                "            print(f'Không thể phân tích failure receipt: {e}')\n",
-                "    else:\n",
-                "        print(f'Đường dẫn log: {log_path}')\n",
-                "        print('Không tìm thấy failure_receipt.json. 50 dòng cuối log:')\n",
-                "        if log_path.is_file():\n",
-                "            lines = log_path.read_text(encoding='utf-8', errors='replace').splitlines()\n",
-                "            for l in lines[-50:]:\n",
-                "                print(l)\n",
-                "    print('=' * 80)\n",
-                "    raise RuntimeError(f'AnyText Runner failed with exit code {exit_code}')\n",
-                "else:\n",
-                "    print('\\n[PASS] Quá trình thực thi runner hoàn thành thành công.')"
-            ]
-        },
-        {
-            "cell_type": "code",
-            "execution_count": None,
-            "metadata": {},
-            "outputs": [],
-            "source": [
-                "# Cell 6: Visual Inspection & Download Whitelisted Results Archive\n",
-                "import glob, json, os, pathlib\n",
-                "from IPython.display import Image as IPImage, display\n",
-                "from google.colab import files\n",
-                "\n",
-                "output_root = pathlib.Path('/content/outputs')\n",
-                "\n",
-                "# 1. Hiển thị bảng đối chiếu phóng đại (Zoomed ROI Contact Sheet) nếu có\n",
-                "cs_files = sorted(list(output_root.glob('*/anytext_contact_sheet.png')))\n",
-                "if cs_files:\n",
-                "    print('Bảng đối chiếu phóng đại (Zoomed ROI Contact Sheet):')\n",
-                "    display(IPImage(str(cs_files[-1])))\n",
-                "\n",
-                "# 2. Kiểm tra và tải về kết quả đã đóng gói (ưu tiên full results, fallback partial results, trần <= 100 MiB)\n",
-                "full_zip = output_root / 'anytext_feasibility_results.zip'\n",
-                "partial_zip = output_root / 'anytext_feasibility_partial_results.zip'\n",
-                "\n",
-                "target_zip = None\n",
-                "if full_zip.is_file():\n",
-                "    target_zip = full_zip\n",
-                "    print(f'[OK] Tìm thấy full results archive: {full_zip.name}')\n",
-                "elif partial_zip.is_file():\n",
-                "    target_zip = partial_zip\n",
-                "    print(f'[WARNING] Không có full results; tìm thấy partial results archive: {partial_zip.name}')\n",
-                "else:\n",
-                "    print('[WARNING] Không tìm thấy archive kết quả (cả full lẫn partial).')\n",
-                "\n",
-                "if target_zip:\n",
-                "    size_mib = target_zip.stat().st_size / (1024**2)\n",
-                "    assert size_mib <= 100.0, f'Archive size {size_mib:.2f} MiB vượt quá trần 100 MiB!'\n",
-                "    print(f'[PASS] Archive hợp lệ ({size_mib:.2f} MiB <= 100 MiB). Bắt đầu download: {target_zip.name}...')\n",
-                "    files.download(str(target_zip))\n"
-            ]
-        }
-    ]
 
-    nb_data = {
-        "cells": cells,
-        "metadata": {
-            "accelerator": "GPU",
-            "colab": {"provenance": []},
-            "language_info": {"name": "python"}
-        },
-        "nbformat": 4,
-        "nbformat_minor": 0
+def _code(title: str, lines: List[str]) -> dict:
+    return {
+        "cell_type": "code", "execution_count": None, "metadata": {}, "outputs": [],
+        "source": [f"# {title}\n"] + [ln + "\n" for ln in lines[:-1]] + [lines[-1]],
     }
 
+
+def build_cells(source_commit: str, hashes: Dict[str, str]) -> List[dict]:
+    plan = json.loads((REPO_ROOT / PLAN_REL).read_text(encoding="utf-8"))
+    archive_sha = plan["input_source_specification"]["archive_sha256"]
+    md = [
+        "# AnyText Document Feasibility (Colab GPU) - launcher\n",
+        "\n",
+        "Chạy lần lượt 4 bước. Không cần dán thêm cell vá; mã nguồn được tải từ commit đã khóa và kiểm tra SHA-256.\n",
+        "\n",
+        "1. **Chuẩn bị và kiểm tra môi trường** (Python 3.10 cô lập, `pip check`, smoke test GPU fp16).\n",
+        "2. **Nhận archive đầu vào và preflight** (tải lên `document_feasibility_results.zip`).\n",
+        "3. **Chạy hai attempts** (A: CORD row 22, B: CORD row 61; hiển thị tiến độ, log đầy đủ lưu riêng).\n",
+        "4. **Xem kết quả và tải archive** của đúng lần chạy hiện tại.\n",
+        "\n",
+        f"Nguồn: `nomozer/forensics-web-lab` @ `{source_commit}`. Cần runtime GPU (T4 trở lên), không cần token/đăng nhập.\n",
+        "Human Content QC luôn ở trạng thái `PENDING_HUMAN_REVIEW`.",
+    ]
+    step1 = _code("Bước 1: Chuẩn bị và kiểm tra môi trường", [
+        "import hashlib, pathlib, subprocess, sys",
+        f"COMMIT = '{source_commit}'",
+        f"PINNED = {json.dumps(hashes, indent=4)}",
+        "REPO = pathlib.Path('/content/forensics-web-lab')",
+        "SETUP = REPO / 'scripts/research/anytext_colab_setup.py'",
+        "",
+        "def sh(cmd, cwd=None):",
+        "    p = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)",
+        "    for line in p.stdout:",
+        "        print(line, end='')",
+        "    rc = p.wait()",
+        "    assert rc == 0, f'{cmd[:3]} failed with exit code {rc}'",
+        "",
+        "REPO.mkdir(parents=True, exist_ok=True)",
+        "if not (REPO / '.git').is_dir():",
+        "    sh(['git', 'init', '-q'], cwd=REPO)",
+        "    sh(['git', 'remote', 'add', 'origin', 'https://github.com/nomozer/forensics-web-lab.git'], cwd=REPO)",
+        "sh(['git', 'fetch', '-q', '--depth', '1', '--filter=blob:none', 'origin', COMMIT], cwd=REPO)",
+        f"sh(['git', 'sparse-checkout', 'set', '--cone', {', '.join(repr(d) for d in SPARSE_DIRS)}], cwd=REPO)",
+        "sh(['git', 'checkout', '-q', '-f', COMMIT], cwd=REPO)",
+        "head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=REPO, text=True).strip()",
+        "assert head == COMMIT, f'commit mismatch: {head}'",
+        "for rel, sha in PINNED.items():",
+        "    assert hashlib.sha256((REPO / rel).read_bytes()).hexdigest() == sha, f'SHA-256 mismatch: {rel}'",
+        "print(f'[PASS] {len(PINNED)} source files verified at {COMMIT[:12]}')",
+        "sh([sys.executable, '-u', str(SETUP), 'env', '--repo-root', str(REPO)])",
+    ])
+    step2 = _code("Bước 2: Nhận archive đầu vào và preflight", [
+        "import hashlib, pathlib",
+        "from google.colab import files",
+        f"ARCHIVE = pathlib.Path('/content/{ARCHIVE_NAME}')",
+        f"ARCHIVE_SHA256 = '{archive_sha}'",
+        "if not ARCHIVE.is_file():",
+        f"    print('Tải lên {ARCHIVE_NAME}')",
+        "    for name, data in files.upload().items():",
+        f"        if name.endswith('.zip'):",
+        "            ARCHIVE.write_bytes(data)",
+        "assert ARCHIVE.is_file() and hashlib.sha256(ARCHIVE.read_bytes()).hexdigest() == ARCHIVE_SHA256, 'archive SHA-256 mismatch'",
+        "sh([sys.executable, '-u', str(SETUP), 'run', '--archive', str(ARCHIVE), '--preflight-only'])",
+    ])
+    step3 = _code("Bước 3: Chạy hai attempts (A và B)", [
+        "import time",
+        "RUN_STARTED = time.time()",
+        "sh([sys.executable, '-u', str(SETUP), 'run', '--archive', str(ARCHIVE), '--label', 'repair_fp16_xformers'])",
+    ])
+    step4 = _code("Bước 4: Xem kết quả và tải archive của lần chạy hiện tại", [
+        "import datetime, hashlib, json, pathlib",
+        "from IPython.display import Image, display",
+        "from google.colab import files",
+        "out = pathlib.Path('/content/outputs')",
+        "ptr = json.loads((out / 'latest_run.json').read_text(encoding='utf-8'))",
+        "assert datetime.datetime.fromisoformat(ptr['timestamp']).timestamp() >= RUN_STARTED, 'latest_run.json belongs to an older run'",
+        "sheet = out / ptr['run_dir'] / 'anytext_contact_sheet.png'",
+        "if sheet.is_file():",
+        "    display(Image(str(sheet)))",
+        "zip_path = out / ptr['archive']",
+        "assert hashlib.sha256(zip_path.read_bytes()).hexdigest() == ptr['archive_sha256'], 'archive hash mismatch'",
+        "print(f\"Run {ptr['run_id']}: {ptr['status']} -> {zip_path.name} ({zip_path.stat().st_size / 2**20:.1f} MiB)\")",
+        "files.download(str(zip_path))",
+    ])
+    return [{"cell_type": "markdown", "metadata": {}, "source": md}, step1, step2, step3, step4]
+
+
+def build_notebook(source_commit: str) -> None:
+    hashes = pinned_hashes(source_commit)
+    nb = {
+        "cells": build_cells(source_commit, hashes),
+        "metadata": {"accelerator": "GPU", "colab": {"provenance": []}, "language_info": {"name": "python"}},
+        "nbformat": 4,
+        "nbformat_minor": 0,
+    }
     NOTEBOOK_PATH.parent.mkdir(parents=True, exist_ok=True)
-    # Write notebook with strict UTF-8
-    NOTEBOOK_PATH.write_text(json.dumps(nb_data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    print(f"[OK] AnyText canonical Colab notebook generated at: {NOTEBOOK_PATH}")
-    print(f"     SHA-256: {hashlib.sha256(NOTEBOOK_PATH.read_bytes()).hexdigest()}")
+    NOTEBOOK_PATH.write_text(json.dumps(nb, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    print(f"[OK] Launcher notebook written: {NOTEBOOK_PATH}")
+    print(f"     Source commit: {source_commit}")
+    print(f"     SHA-256: {_sha256(NOTEBOOK_PATH.read_bytes())}")
 
 
 if __name__ == "__main__":
-    build_notebook()
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--source-commit", required=True)
+    build_notebook(ap.parse_args().source_commit)

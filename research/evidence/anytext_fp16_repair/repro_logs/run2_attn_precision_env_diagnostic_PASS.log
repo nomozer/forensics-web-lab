@@ -1,0 +1,20 @@
+2026-10-15 22:38:40,877 - modelscope - INFO - PyTorch version 2.0.1+cu118 Found.
+2026-10-15 22:38:40,880 - modelscope - INFO - Loading ast index from C:\Users\Bunny\.cache\modelscope\ast_indexer
+2026-10-15 22:38:41,112 - modelscope - INFO - Loading done! Current index file version is 1.10.0, with md5 c65ddd96e7ec84665341adcb06daaba1 and a total number of 946 components indexed
+2026-10-15 22:38:44,089 - modelscope - WARNING - ('PIPELINES', 'my-anytext-task', 'anytext-pipeline') not found in ast index file
+Global seed set to 20261012
+No module 'xformers'. Proceeding without it.
+ControlLDM: Running in eps-prediction mode
+DiffusionWrapper has 859.52 M params.
+making attention of type 'vanilla' with 512 in_channels
+Working with z of shape (1, 4, 32, 32) = 4096 dimensions.
+making attention of type 'vanilla' with 512 in_channels
+Loaded model config from [models_yaml/anytext_sd15.yaml]
+Loaded state_dict from [C:/Users/Bunny/AppData/Local/Temp/claude/d--Documents-forensics-web-lab/1382dfeb-471e-4be3-a794-5ec6a3239bca/scratchpad/repro/ms_model\anytext_v1.1.ckpt]
+Original weights loaded!
+PIPELINE_INIT_OK
+Data shape for DDIM sampling is (1, 4, 64, 64), eta 0.0
+Running DDIM Sampling with 20 timesteps
+DDIM Sampler:   0%|          | 0/20 [00:00<?, ?it/s]DDIM Sampler:   5%|▌         | 1/20 [00:13<04:21, 13.77s/it]DDIM Sampler:  10%|█         | 2/20 [00:27<04:12, 14.02s/it]DDIM Sampler:  15%|█▌        | 3/20 [00:41<03:54, 13.81s/it]DDIM Sampler:  20%|██        | 4/20 [00:55<03:40, 13.75s/it]DDIM Sampler:  25%|██▌       | 5/20 [01:08<03:25, 13.73s/it]DDIM Sampler:  30%|███       | 6/20 [01:22<03:13, 13.80s/it]DDIM Sampler:  35%|███▌      | 7/20 [01:36<02:59, 13.80s/it]DDIM Sampler:  40%|████      | 8/20 [01:50<02:45, 13.83s/it]DDIM Sampler:  45%|████▌     | 9/20 [02:04<02:32, 13.85s/it]DDIM Sampler:  50%|█████     | 10/20 [02:18<02:20, 14.02s/it]DDIM Sampler:  55%|█████▌    | 11/20 [02:33<02:07, 14.15s/it]DDIM Sampler:  60%|██████    | 12/20 [02:47<01:53, 14.25s/it]DDIM Sampler:  65%|██████▌   | 13/20 [03:01<01:39, 14.20s/it]DDIM Sampler:  70%|███████   | 14/20 [03:15<01:24, 14.10s/it]DDIM Sampler:  75%|███████▌  | 15/20 [03:29<01:10, 14.04s/it]DDIM Sampler:  80%|████████  | 16/20 [03:44<00:56, 14.16s/it]DDIM Sampler:  85%|████████▌ | 17/20 [03:58<00:42, 14.16s/it]DDIM Sampler:  90%|█████████ | 18/20 [04:12<00:28, 14.15s/it]DDIM Sampler:  95%|█████████▌| 19/20 [04:26<00:14, 14.30s/it]DDIM Sampler: 100%|██████████| 20/20 [04:41<00:00, 14.24s/it]DDIM Sampler: 100%|██████████| 20/20 [04:41<00:00, 14.05s/it]
+Prompt: A receipt bill with price  "350,000" 
+INFERENCE_OK 298.545636177063 {'latency_sec': 298.55, 'rtn_code': 0, 'rtn_warning': '', 'peak_vram_mb': 6630.57}

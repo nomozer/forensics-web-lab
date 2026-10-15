@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 import py_compile
+import re
 import subprocess
 import sys
 import tempfile
@@ -152,61 +153,6 @@ def test_anytext_document_adapter_roundtrip():
     assert comp_res["verification"]["outside_equal"] is True
     assert comp_res["verification"]["max_outside_diff"] == 0
     assert comp_res["verification"]["modified_pixel_count"] > 0
-
-
-def test_anytext_notebook_compilation_and_constraints():
-    """Verify the canonical Colab notebook is valid JSON, all code cells compile, and respects safety constraints."""
-    nb_path = REPO_ROOT / "notebooks" / "independent_anytext_feasibility_colab.ipynb"
-    assert nb_path.exists(), f"Missing notebook: {nb_path}"
-
-    nb_data = json.loads(nb_path.read_text(encoding="utf-8"))
-    assert nb_data["nbformat"] >= 4
-
-    cells = nb_data["cells"]
-    code_cells = [c for c in cells if c.get("cell_type") == "code"]
-    assert len(code_cells) >= 6, "Expected at least 6 code cells"
-
-    all_code = ""
-    for i, cell in enumerate(code_cells):
-        src = "".join(cell.get("source", []))
-        all_code += "\n" + src
-        # Ensure code compiles without syntax error
-        py_lines = [line for line in src.splitlines() if not line.strip().startswith("!")]
-        py_src = "\n".join(py_lines)
-        try:
-            compile(py_src, f"<cell_{i}>", "exec")
-        except SyntaxError as e:
-            pytest.fail(f"Syntax error in notebook cell {i}: {e}")
-
-    # Safety constraints in notebook
-    assert "use_translator=False" in all_code or "use_translator" in all_code
-    assert "HUGGINGFACE_TOKEN" not in all_code
-    assert "hf_" not in all_code
-    assert "3d4a260c67d92c0e27d6e18ed69990e19a40de6d" in all_code
-    assert "document_feasibility_results.zip" in all_code
-    assert "deadd9205207eaaa296a8d9eeb493ee48eeea76ee7afd210684187e4026ed684" in all_code
-    assert "anytext_feasibility_plan.json" in all_code
-    assert "/content/anytext_env" in all_code
-    assert "python3.10" in all_code
-    assert "/content/AnyText" in all_code
-    assert "pip" in all_code and "check" in all_code
-    assert "torch==2.0.1" in all_code
-    assert "torchvision==0.15.2" in all_code
-    assert "numpy==1.23.3" in all_code
-    assert "Pillow==9.5.0" in all_code
-    assert "torchmetrics==0.11.4" in all_code
-    assert "pytorch-lightning==1.5.0" in all_code
-    assert "ujson==5.9.0" in all_code
-    assert "pip==23.3.2" in all_code
-    assert "setuptools==68.2.2" in all_code
-    assert "wheel==0.42.0" in all_code
-    assert "scikit-image==0.20.0" in all_code
-    assert "draw_glyph" in all_code and "draw_glyph2" in all_code
-    assert "(80, 512, 1)" in all_code
-    assert "(512, 512, 1)" in all_code
-    assert "350,000" in all_code and "Magnum Gold Almond" in all_code
-    assert "DejaVuSans.ttf" in all_code
-    assert "'-u'" in all_code or '"-u"' in all_code
 
 
 def test_anytext_runner_preflight_on_local(tmp_path):
@@ -457,40 +403,6 @@ def test_anytext_runner_lock_mechanism(tmp_path):
     # Release lock
     release_runner_lock(lock_file)
     assert not lock_file.is_file()
-
-
-def test_anytext_find_prior_completed_attempt(tmp_path):
-    """Verify find_prior_completed_attempt correctly finds valid attempts and ignores invalid or active run."""
-    from scripts.research.run_anytext_colab import find_prior_completed_attempt
-
-    output_root = tmp_path / "outputs"
-    output_root.mkdir()
-
-    # Run 1: has valid attempt_A
-    run1 = output_root / "run_01"
-    att_a1 = run1 / "attempt_A_replacement_price"
-    att_a1.mkdir(parents=True)
-    (att_a1 / "anytext_raw_canvas.png").write_bytes(b"dummy")
-    (att_a1 / "anytext_final_edited.png").write_bytes(b"dummy")
-    (att_a1 / "attempt_receipt.json").write_text(
-        json.dumps({
-            "status": "TECHNICAL_QC_PASS",
-            "outside_mask_bitwise_equal": True,
-        }),
-        encoding="utf-8",
-    )
-
-    # Search without exclude
-    found = find_prior_completed_attempt(output_root, "attempt_A_replacement_price")
-    assert found is not None
-    assert found == att_a1
-
-    # Search with exclude matching run1 -> returns None
-    found_excluded = find_prior_completed_attempt(output_root, "attempt_A_replacement_price", exclude_dir=run1)
-    assert found_excluded is None
-
-    # Attempt B not yet executed -> returns None
-    assert find_prior_completed_attempt(output_root, "attempt_B_replacement_item_name") is None
 
 
 def test_anytext_cache_reuse_and_readme_filtering(monkeypatch, tmp_path):
@@ -1150,28 +1062,261 @@ def test_live_download_small_file_from_modelscope(tmp_path):
     assert content.get("pipeline", {}).get("type") == "anytext-pipeline"
 
 
-def test_notebook_embedded_payload_hashes_bit_exact(tmp_path):
-    """Verify Cell 3 of the generated notebook stages bit-exact copies of plan, geometry, adapter, and runner."""
-    nb_path = REPO_ROOT / "notebooks" / "independent_anytext_feasibility_colab.ipynb"
-    nb_data = json.loads(nb_path.read_text(encoding="utf-8"))
-    cell3_src = "".join(nb_data["cells"][3]["source"])
+# ---------------------------------------------------------------------------------------------------------------
+# fp16 attention repair + launcher notebook (behavioural tests)
+# ---------------------------------------------------------------------------------------------------------------
+NOTEBOOK_PATH = REPO_ROOT / "notebooks" / "independent_anytext_feasibility_colab.ipynb"
 
-    expected_hashes = {
-        "anytext_feasibility_plan.json": compute_file_sha256(
-            REPO_ROOT / "research" / "evidence" / "document_pilot" / "anytext_feasibility_plan.json"
-        ),
-        "document_feasibility_geometry.py": compute_file_sha256(
-            REPO_ROOT / "ml" / "evaluation" / "document_feasibility_geometry.py"
-        ),
-        "anytext_document_adapter.py": compute_file_sha256(
-            REPO_ROOT / "ml" / "evaluation" / "anytext_document_adapter.py"
-        ),
-        "run_anytext_colab.py": compute_file_sha256(
-            REPO_ROOT / "scripts" / "research" / "run_anytext_colab.py"
-        ),
+
+def _load_plan():
+    return json.loads(
+        (REPO_ROOT / "research" / "evidence" / "document_pilot" / "anytext_feasibility_plan.json").read_text(encoding="utf-8")
+    )
+
+
+def test_requirements_pin_every_dependency_the_runtime_needs():
+    from scripts.research.anytext_colab_setup import read_pins
+
+    pins = read_pins()
+    for name, version in {
+        "ujson": "5.9.0", "diffusers": "0.10.2", "huggingface_hub": "0.25.2",
+        "sentencepiece": "0.1.99", "xformers": "0.0.20", "modelscope": "1.10.0", "numpy": "1.23.3",
+    }.items():
+        assert pins.get(name) == version, f"{name} pin: {pins.get(name)} != {version}"
+    assert all(v for v in pins.values()) and len(pins) == 24
+
+
+def test_launcher_notebook_is_short_pinned_and_free_of_payloads():
+    nb = json.loads(NOTEBOOK_PATH.read_text(encoding="utf-8"))
+    code = [c for c in nb["cells"] if c["cell_type"] == "code"]
+    assert len(code) == 4, "launcher must have exactly four user steps"
+    joined = "\n".join("".join(c["source"]) for c in code)
+    for i, c in enumerate(code):
+        src = "".join(c["source"])
+        assert len(src.splitlines()) <= 40, f"cell {i + 1} is not a short launcher cell"
+        compile("\n".join(ln for ln in src.splitlines() if not ln.startswith("!")), f"<cell_{i + 1}>", "exec")
+    assert len(NOTEBOOK_PATH.read_bytes()) < 12_000, "notebook embeds payloads"
+    assert "HUGGINGFACE" not in joined.upper() and "hf_" not in joined
+    assert "ATTN_PRECISION" not in joined
+    commit = re.search(r"COMMIT = '([0-9a-f]{40})'", joined)
+    assert commit, "notebook must pin a full 40-hex commit, not a branch"
+    assert "main" not in joined.split("COMMIT")[1].split("\n")[0]
+    assert "latest_run.json" in joined and "glob(" not in joined, "download step must use the run pointer, not a glob"
+
+
+def test_launcher_notebook_pins_match_current_sources():
+    """Regeneration reconciliation: every pinned hash equals the current working-tree file."""
+    nb = json.loads(NOTEBOOK_PATH.read_text(encoding="utf-8"))
+    step1 = "".join(nb["cells"][1]["source"])
+    pinned = json.loads(re.search(r"PINNED = (\{.*?\n\})", step1, flags=re.S).group(1))
+    from scripts.research.build_anytext_colab_notebook import PINNED_FILES
+
+    assert sorted(pinned) == sorted(PINNED_FILES)
+    for rel, sha in pinned.items():
+        assert compute_file_sha256(REPO_ROOT / rel) == sha, f"{rel} changed since the notebook was built; rebuild it"
+
+
+def _git(cwd, *args):
+    return subprocess.run(["git", *args], cwd=cwd, check=True, capture_output=True, text=True).stdout.strip()
+
+
+def test_builder_refuses_commit_that_differs_from_working_tree(tmp_path, monkeypatch):
+    from scripts.research import build_anytext_colab_notebook as b
+
+    _git(tmp_path, "init", "-q")
+    _git(tmp_path, "config", "user.email", "t@example.com")
+    _git(tmp_path, "config", "user.name", "t")
+    (tmp_path / "a.txt").write_text("one", encoding="utf-8")
+    _git(tmp_path, "add", "a.txt")
+    _git(tmp_path, "commit", "-q", "-m", "c1")
+    sha = _git(tmp_path, "rev-parse", "HEAD")
+    monkeypatch.setattr(b, "PINNED_FILES", ["a.txt"])
+    assert b.pinned_hashes(sha, repo_root=tmp_path)["a.txt"] == hashlib.sha256(b"one").hexdigest()
+    (tmp_path / "a.txt").write_text("two", encoding="utf-8")
+    with pytest.raises(SystemExit, match="differs"):
+        b.pinned_hashes(sha, repo_root=tmp_path)
+    with pytest.raises(SystemExit, match="40-hex"):
+        b.pinned_hashes("main", repo_root=tmp_path)
+
+
+def test_failure_receipt_records_dtype_mismatch_site_from_real_torch_error():
+    """Reproduces the AnyText failure operation (fp32 `sim` x fp16 `v` einsum) and checks the diagnostic evidence."""
+    torch = pytest.importorskip("torch")
+    if not hasattr(torch, "einsum"):
+        pytest.skip("real torch required")
+    from scripts.research.run_anytext_colab import build_failure_receipt
+
+    class Attn(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.to_v = torch.nn.Linear(4, 4).half()
+
+        def forward(self, x):
+            v = self.to_v(x.half())
+            sim = torch.ones(1, 4, 4, dtype=torch.float32)  # the fp32 upcast of upstream CrossAttention
+            return torch.einsum("b i j, b j d -> b i d", sim, v)
+
+    try:
+        Attn()(torch.ones(1, 4, 4))
+    except RuntimeError as exc:
+        receipt = build_failure_receipt("INFERENCE", exc, attempt_id="attempt_A_replacement_price", run_id="r1")
+    else:  # pragma: no cover
+        pytest.skip("this torch build promotes mixed dtypes in einsum")
+    assert receipt["stage"] == "INFERENCE" and receipt["attempt_id"] == "attempt_A_replacement_price"
+    assert "Half" in receipt["error"] or "dtype" in receipt["error"].lower()
+    assert "Traceback" in receipt["traceback"] and "einsum" in receipt["traceback"]
+    frame = receipt["failure_site"]["innermost_project_frame"]
+    assert frame["function"] == "forward"
+    assert frame["tensors"]["sim"]["dtype"] == "torch.float32"
+    assert frame["tensors"]["v"]["dtype"] == "torch.float16"
+    assert frame["module_parameter_dtypes"]["self:Attn"]["dtypes"] == {"torch.float16": 2}
+
+
+def test_precision_precondition_fails_closed_without_xformers(monkeypatch):
+    pytest.importorskip("torch")
+    import types
+    from scripts.research import run_anytext_colab as r
+
+    fake_attn = types.ModuleType("ldm.modules.attention")
+    fake_attn.XFORMERS_IS_AVAILBLE = False
+    fake_attn._ATTN_PRECISION = "fp32"
+    for name in ("ldm", "ldm.modules"):
+        monkeypatch.setitem(sys.modules, name, types.ModuleType(name))
+    monkeypatch.setitem(sys.modules, "ldm.modules.attention", fake_attn)
+    with pytest.raises(RuntimeError, match="xformers"):
+        r.assert_fp16_attention_path()
+    fake_attn.XFORMERS_IS_AVAILBLE = True
+    info = r.assert_fp16_attention_path()
+    assert info["xformers_available"] is True and info["autocast"] == "not used"
+
+
+def _write_attempt(folder: Path, fingerprint, tamper=False):
+    from scripts.research.run_anytext_colab import compute_sha256
+
+    folder.mkdir(parents=True)
+    (folder / "anytext_raw_canvas.png").write_bytes(b"raw")
+    (folder / "anytext_final_edited.png").write_bytes(b"final")
+    hashes = {
+        "raw_canvas_sha256": compute_sha256(folder / "anytext_raw_canvas.png"),
+        "final_edited_sha256": compute_sha256(folder / "anytext_final_edited.png"),
     }
+    (folder / "attempt_receipt.json").write_text(json.dumps({
+        "status": "TECHNICAL_QC_PASS", "outside_mask_bitwise_equal": True,
+        "config_fingerprint": fingerprint, "hashes": hashes,
+    }), encoding="utf-8")
+    if tamper:
+        (folder / "anytext_final_edited.png").write_bytes(b"changed")
 
-    for fname, exp_sha in expected_hashes.items():
-        assert exp_sha in cell3_src, f"Notebook Cell 3 does not embed current SHA-256 ({exp_sha}) for {fname}"
+
+def test_prior_attempt_reuse_requires_matching_fingerprint_and_artifact_hashes(tmp_path):
+    from scripts.research.run_anytext_colab import compute_attempt_fingerprint, find_prior_completed_attempt
+
+    plan = _load_plan()
+    att = plan["attempts"][0]
+    fp = compute_attempt_fingerprint(plan, att, att["authentic_sha256"])
+    assert fp == compute_attempt_fingerprint(plan, dict(att), att["authentic_sha256"])
+    assert fp != compute_attempt_fingerprint(plan, {**att, "seed": att["seed"] + 1}, att["authentic_sha256"])
+    assert fp != compute_attempt_fingerprint(plan, {**att, "target_text": "351,000"}, att["authentic_sha256"])
+    assert fp != compute_attempt_fingerprint(plan, att, "0" * 64)
+
+    out = tmp_path / "outputs"
+    a_id = att["attempt_id"]
+    _write_attempt(out / "run_ok" / a_id, fp)
+    assert find_prior_completed_attempt(out, a_id, fp) == out / "run_ok" / a_id
+    assert find_prior_completed_attempt(out, a_id, fp, exclude_dir=out / "run_ok") is None
+    assert find_prior_completed_attempt(out, a_id, "f" * 64) is None, "attempt id alone must not allow reuse"
+    assert find_prior_completed_attempt(out, plan["attempts"][1]["attempt_id"], fp) is None
+
+    _write_attempt(out / "run_tampered" / "x_attempt", fp, tamper=True)
+    assert find_prior_completed_attempt(out, "x_attempt", fp) is None, "modified artifact must not be reused"
+
+    legacy = out / "run_legacy" / "y_attempt"
+    legacy.mkdir(parents=True)
+    (legacy / "attempt_receipt.json").write_text(json.dumps({"status": "TECHNICAL_QC_PASS", "outside_mask_bitwise_equal": True}))
+    assert find_prior_completed_attempt(out, "y_attempt", fp) is None, "receipt without fingerprint must not be reused"
 
 
+def test_finalize_run_uses_run_specific_archive_and_preserves_earlier_evidence(tmp_path):
+    from scripts.research.run_anytext_colab import finalize_run
+
+    out = tmp_path / "outputs"
+    old_receipt = out / "failure_receipt.json"
+    out.mkdir()
+    old_receipt.write_text('{"keep": true}', encoding="utf-8")
+    old_zip = out / "anytext_feasibility_results.zip"
+    old_zip.write_bytes(b"old-run-zip")
+
+    run_dir = out / "run_anytext_repair_20261015_000000_deadbeef"
+    (run_dir / "attempt_A").mkdir(parents=True)
+    (run_dir / "attempt_A" / "attempt_receipt.json").write_text("{}", encoding="utf-8")
+    zip_path = finalize_run(out, run_dir, run_dir.name, "COMPLETE", "p" * 64, "PACKAGING",
+                            {"attempt_A": {"status": "TECHNICAL_QC_PASS"}}, {"policy_id": "x"}, "repair")
+    pointer = json.loads((out / "latest_run.json").read_text(encoding="utf-8"))
+    assert zip_path.name == f"anytext_feasibility_results_{run_dir.name}.zip" and pointer["archive"] == zip_path.name
+    assert pointer["run_id"] == run_dir.name and pointer["status"] == "COMPLETE"
+    assert old_receipt.read_text(encoding="utf-8") == '{"keep": true}'
+    assert old_zip.read_bytes() == b"old-run-zip", "older run archive must be untouched"
+    manifest = json.loads((run_dir / "run_manifest.json").read_text(encoding="utf-8"))
+    assert manifest["human_content_qc"] == "PENDING_HUMAN_REVIEW" and manifest["attempts"]["attempt_A"]["status"] == "TECHNICAL_QC_PASS"
+    with zipfile.ZipFile(zip_path) as zf:
+        assert any(n.endswith("run_manifest.json") for n in zf.namelist())
+
+    # a failed repair run does not clobber the previous success pointer's archive, and is labelled partial
+    run2 = out / "run_anytext_repair_20261015_010000_deadbeef"
+    run2.mkdir()
+    z2 = finalize_run(out, run2, run2.name, "PARTIAL_FAILURE", "p" * 64, "INFERENCE", {}, None, "repair")
+    assert "partial_results" in z2.name and zip_path.is_file()
+
+
+def test_console_filter_keeps_stage_progress_and_errors_only():
+    from scripts.research.anytext_colab_setup import filter_console_line
+
+    assert filter_console_line("--- Checking / Executing attempt_A ---") is not None
+    assert filter_console_line("[PASS] fp16 attention path: xformers 0.0.20 active") is not None
+    assert filter_console_line("[FAIL] Error in attempt_A: RuntimeError: x") is not None
+    assert filter_console_line("RuntimeError: expected scalar type Half but found Float") is not None
+    assert filter_console_line("Loaded state_dict from [/content/x.ckpt]") is None
+    assert filter_console_line("DDIM Sampler:  25%|##5       | 5/20 [00:10<00:30]") == "    DDIM step 5/20"
+    assert filter_console_line("DDIM Sampler:  20%|##        | 4/20 [00:08<00:30]") is None
+
+
+def test_result_summary_reports_current_run_and_failure_site(tmp_path, capsys):
+    from scripts.research.anytext_colab_setup import cmd_result
+    import argparse
+
+    out = tmp_path / "outputs"
+    run_dir = out / "run_r2"
+    (run_dir / "attempt_A").mkdir(parents=True)
+    (run_dir / "run_manifest.json").write_text(json.dumps({"attempts": {"attempt_A": {"status": "FAILED"}}}), encoding="utf-8")
+    (run_dir / "attempt_A" / "failure_receipt.json").write_text(json.dumps({
+        "error_type": "RuntimeError", "error": "expected scalar type Half but found Float",
+        "failure_site": {"innermost_project_frame": {"file": "attention.py", "line": 192, "function": "forward",
+                                                      "tensors": {"sim": {"dtype": "torch.float32"}}, "module_parameter_dtypes": {}}},
+    }), encoding="utf-8")
+    (out / "latest_run.json").write_text(json.dumps({
+        "run_id": "run_r2", "status": "PARTIAL_FAILURE", "run_dir": "run_r2", "archive": "a.zip", "archive_sha256": "a" * 64,
+    }), encoding="utf-8")
+    rc = cmd_result(argparse.Namespace(output_root=str(out)))
+    text = capsys.readouterr().out
+    assert rc == 1 and "run_r2" in text and "attention.py:192" in text and "torch.float32" in text
+
+
+
+def test_target_bbox_in_canvas_matches_adapter_geometry_for_both_attempts():
+    """Regression: the runner crashed with KeyError 'target_bbox_in_canvas' after successful inference."""
+    from ml.evaluation.anytext_document_adapter import prepare_anytext_editing_inputs
+    from scripts.research.run_anytext_colab import target_bbox_in_canvas
+
+    for att in _load_plan()["attempts"]:
+        w, h = att["native_dimensions"]
+        prep = prepare_anytext_editing_inputs(
+            image=Image.new("RGB", (w, h), (200, 200, 200)), target_bbox=att["target_bbox"],
+            canvas_size=512, context_margin_ratio=att["sampling_parameters"]["context_margin_ratio"],
+        )
+        ymin, xmin, ymax, xmax = target_bbox_in_canvas(prep["geometry_receipt"])
+        assert 0 <= ymin < ymax <= 512 and 0 <= xmin < xmax <= 512
+        # the model canvas mask must be (nearly) exactly the mapped box
+        mask = np.array(prep["draw_pos_canvas"].convert("L")) > 127
+        ys, xs = np.where(mask)
+        assert abs(ys.min() - ymin) <= 2 and abs(ys.max() + 1 - ymax) <= 2
+        assert abs(xs.min() - xmin) <= 2 and abs(xs.max() + 1 - xmax) <= 2

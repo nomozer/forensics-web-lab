@@ -1,0 +1,38 @@
+{
+  "run_id": "run_anytext_local_stub_e2e_20261015_225817_88f7e328",
+  "attempt_id": "attempt_A_replacement_price",
+  "stage": "INFERENCE",
+  "status": "FAILED",
+  "error": "'target_bbox_in_canvas'",
+  "error_type": "KeyError",
+  "traceback": "Traceback (most recent call last):\n  File \"D:\\Documents\\forensics-web-lab\\scripts\\research\\run_anytext_colab.py\", line 1975, in main\n    t_box_canvas = prep_res[\"geometry_receipt\"][\"target_bbox_in_canvas\"]\nKeyError: 'target_bbox_in_canvas'\n",
+  "failure_site": {
+    "exception_type": "KeyError",
+    "frames": [],
+    "innermost_frame": {
+      "file": "D:\\Documents\\forensics-web-lab\\scripts\\research\\run_anytext_colab.py",
+      "line": 1975,
+      "function": "main",
+      "tensors": {},
+      "module_parameter_dtypes": {}
+    },
+    "innermost_project_frame": {
+      "file": "D:\\Documents\\forensics-web-lab\\scripts\\research\\run_anytext_colab.py",
+      "line": 1975,
+      "function": "main",
+      "tensors": {},
+      "module_parameter_dtypes": {}
+    }
+  },
+  "timestamp": "2026-10-15T23:03:06.338120",
+  "precision_policy": {
+    "policy_id": "fp16-weights-xformers-0.0.20-no-autocast-v1",
+    "torch": "2.0.1+cu118",
+    "xformers_available": true,
+    "attn_precision_env": null,
+    "attn_precision_effective": "fp32",
+    "autocast": "not used",
+    "xformers": "0.0.20"
+  },
+  "config_fingerprint": "b760e73ac917d8feb52f73fdd24a8d7345c765043b4da4db51cdaec6cb91e152"
+}
