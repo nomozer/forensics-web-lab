@@ -1,5 +1,13 @@
 # Handoff: Sửa AnyText / ModelScope 1.10.0 Downloader
 
+> **CẬP NHẬT 2026-10-15 (phiên fp16 repair) — đọc trước**: Nội dung bên dưới là lịch sử của đợt sửa downloader (HEAD lúc đó `111f910`; downloader đã commit ở `98127db`/`18096ba`). Trạng thái hiện tại:
+> - Downloader hoạt động trên Colab (báo cáo người dùng): 11 file xác minh Size/SHA-256, cache hợp lệ được tái sử dụng. Pipeline AnyText khởi tạo thành công. Hai attempts **đã bắt đầu inference** và đều thất bại `expected scalar type Half but found Float`. Chưa có ảnh sinh thành công. (Artifacts/log Colab của các attempts thất bại không có trên LOCAL.)
+> - Nguyên nhân đã tái hiện và xác minh LOCAL (random weights): thiếu `xformers` → fp32-upcast `CrossAttention`. Sửa: `xformers==0.0.20` trong `scripts/research/anytext_requirements.txt`. Xem `research/evidence/anytext_fp16_repair/README.md` và kế hoạch `docs/superpowers/plans/2026-10-15-anytext-fp16-attention-launcher-repair.md`.
+> - Notebook cũ (embedded payload, SHA-256 `3dfda233...`) đã được thay bằng launcher ngắn; `SHA256_RECEIPT.txt` trong thư mục này là bản ghi lịch sử, không còn đúng với notebook hiện tại.
+> - Trạng thái thực thi Colab GPU với trọng số thật: **chưa chạy sau bản sửa** (`ANYTEXT_FP16_REPAIR_IMPLEMENTED_LOCAL_VERIFIED_COLAB_GPU_NOT_EXECUTED`).
+
+---
+
 > **Cập nhật lần cuối**: `2026-10-15T21:05:00+07:00` (Khôi phục ngữ cảnh phiên `dfbe6afa-0d6c-4e02-82cb-e72bd43b3fe9`)
 > **Trạng thái thực thi Colab GPU**: `PREPARED_NOT_EXECUTED`
 > **Trạng thái kiểm thử LOCAL**: suite mặc định (Bash, `pytest -p no:cacheprovider ml/tests/test_anytext_feasibility.py -v -rs`): **18 passed, 1 skipped** (log: `logs/bash_default_suite.log`). Test live ModelScope (`test_live_download_small_file_from_modelscope`) nay là opt-in (`ANYTEXT_LIVE_NETWORK=1`, `timeout=15`, `max_retries=2`), chạy riêng: **1 passed** (`logs/bash_live_network.log`). Skip KHÔNG được tính là PASS; coverage của suite mặc định không gồm mạng thật.

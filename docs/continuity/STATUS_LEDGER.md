@@ -1,3 +1,12 @@
+## AnyText fp16 Attention Repair, Structured Failure Receipts & Short Launcher Notebook (Phase 4C.8 trace, branch research/independent-cohort-acquisition)
+
+- **Truy Nguyên Half/Float Bằng Tái Hiện LOCAL ($systematic-debugging)**: Tái hiện đúng lỗi `expected scalar type Half but found Float` tại `ldm/modules/attention.py:192` với `ms_wrapper.py` ModelScope v1.1.3 thật, torch 2.0.1+cu118, Python 3.10 cô lập, random weights. Nguyên nhân: thiếu `xformers` nên `CrossAttention` upcast q/k lên fp32 (`ATTN_PRECISION` mặc định `fp32`) còn `v` là fp16. Ba lần chạy đổi một biến: không xformers FAIL; `ATTN_PRECISION=fp16` PASS (chỉ chẩn đoán); `xformers==0.0.20` PASS. Traceback Colab gốc không có trên LOCAL (chưa xác minh trực tiếp).
+- **Sửa Tại Biên Gây Lỗi, Không Đổi Precision Policy ($executing-plans)**: Cài `xformers==0.0.20` đúng `environment.yaml` upstream; dependency pins tập trung ở `scripts/research/anytext_requirements.txt`; runner fail-closed nếu xformers attention không active; không đổi checkpoint, prompt, seed, scheduler, số bước, không dùng autocast hay `.half()` lên mọi tensor.
+- **Failure Receipt, Reuse Có Fingerprint, Archive Theo Run ($verification-before-completion)**: Receipt giữ stage, attempt id, traceback gốc, frame lỗi, dtype/device tensor, dtype tham số module; reuse chỉ khi `config_fingerprint` và hash artifact khớp; archive `anytext_feasibility_{results|partial_results}_<run_id>.zip` + `latest_run.json` + `run_manifest.json`; không xóa/ghi đè failure receipt cũ. E2E LOCAL với checkpoint ngẫu nhiên phát hiện và sửa `KeyError: target_bbox_in_canvas` xảy ra ngay sau inference thành công.
+- **Notebook Launcher Ngắn**: 1 markdown + 4 code cells, không nhúng payload, pin commit `80ecfd72abc8` + 6 SHA-256 nguồn; backend `scripts/research/anytext_colab_setup.py`. LOCAL: 26 passed + 1 skipped. Colab GPU với trọng số thật CHƯA chạy; không có ảnh sinh thành công, không có metric.
+
+---
+
 ## AnyText Feasibility Reconciliation, Hardened Cache Reuse & Failure Handlers (Phase 4C.8 trace, branch research/independent-cohort-acquisition)
 
 - **Truy Nguyên Chênh Lệch Mã Băm Runner & Kiểm Chứng Exclude-Dir ($systematic-debugging)**: Xác định nguyên nhân chênh lệch hash runner nhúng (`0c44842a...`) vs đĩa (`54f4c4f3...`): notebook được sinh trước khi commit sửa `exclude_dir`; đối chiếu byte/newline xác nhận không do CRLF. Kiểm chứng `exclude_dir` loại trừ toàn bộ attempts con trong run.
