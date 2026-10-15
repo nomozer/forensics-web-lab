@@ -1,0 +1,24 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.1.1, pluggy-1.6.0 -- D:\Documents\forensics-web-lab\ml\.venv\Scripts\python.exe
+rootdir: D:\Documents\forensics-web-lab\ml
+configfile: pyproject.toml
+plugins: platformdirs-4.12.0
+collecting ... collected 19 items
+
+ml\tests\test_anytext_feasibility.py::test_anytext_feasibility_plan_schema_and_integrity PASSED [  5%]
+ml\tests\test_anytext_feasibility.py::test_anytext_document_adapter_roundtrip PASSED [ 10%]
+ml\tests\test_anytext_feasibility.py::test_anytext_notebook_compilation_and_constraints PASSED [ 15%]
+ml\tests\test_anytext_feasibility.py::test_anytext_runner_preflight_on_local PASSED [ 21%]
+ml\tests\test_anytext_feasibility.py::test_anytext_safe_extract_security_and_hashing PASSED [ 26%]
+ml\tests\test_anytext_feasibility.py::test_anytext_package_results_zip_whitelist_and_ceiling PASSED [ 31%]
+ml\tests\test_anytext_feasibility.py::test_sdxl_closure_report_scientific_corrections PASSED [ 36%]
+ml\tests\test_anytext_feasibility.py::test_download_inventory_and_network_accounting_contract PASSED [ 42%]
+ml\tests\test_anytext_feasibility.py::test_anytext_runner_lock_mechanism PASSED [ 47%]
+ml\tests\test_anytext_feasibility.py::test_anytext_find_prior_completed_attempt PASSED [ 52%]
+ml\tests\test_anytext_feasibility.py::test_anytext_cache_reuse_and_readme_filtering PASSED [ 57%]
+ml\tests\test_anytext_feasibility.py::test_anytext_cache_reuse_incomplete_clip_falls_through PASSED [ 63%]
+ml\tests\test_anytext_feasibility.py::test_anytext_snapshot_download_error_handler_incomplete_clip_fails PASSED [ 68%]
+ml\tests\test_anytext_feasibility.py::test_filter_repo_files_excludes_translator_and_retains_clip_and_merges PASSED [ 73%]
+ml\tests\test_anytext_feasibility.py::test_robust_download_file_no_content_length_and_fail_closed PASSED [ 78%]
+ml\tests\test_anytext_feasibility.py::test_patch_modelscope_http_get_file_contract PASSED [ 84%]
+ml\tests\test_anytext_feasibility.py::test_catalog_inventory_and_selective_cache_repair PASSED [ 89%]

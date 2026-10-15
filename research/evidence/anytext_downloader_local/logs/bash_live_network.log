@@ -1,0 +1,10 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.1.1, pluggy-1.6.0 -- D:\Documents\forensics-web-lab\ml\.venv\Scripts\python.exe
+rootdir: D:\Documents\forensics-web-lab\ml
+configfile: pyproject.toml
+plugins: platformdirs-4.12.0
+collecting ... collected 19 items / 18 deselected / 1 selected
+
+ml\tests\test_anytext_feasibility.py::test_live_download_small_file_from_modelscope PASSED [100%]
+
+====================== 1 passed, 18 deselected in 10.67s ======================
